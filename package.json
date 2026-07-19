@@ -5,7 +5,11 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "cp index.html.template index.html && vite build && cp dist/index.html index.html"
+    "build": "cp index.html.template index.html && vite build && cp dist/index.html index.html",
+    "memory:start": "powershell -ExecutionPolicy Bypass -File scripts/agent-memory.ps1 start",
+    "memory:checkpoint": "powershell -ExecutionPolicy Bypass -File scripts/agent-memory.ps1 checkpoint",
+    "memory:status": "powershell -ExecutionPolicy Bypass -File scripts/agent-memory.ps1 status",
+    "memory:handoff": "powershell -ExecutionPolicy Bypass -File scripts/agent-memory.ps1 handoff"
   },
   "dependencies": {
     "@playwright/test": "^1.61.1",
