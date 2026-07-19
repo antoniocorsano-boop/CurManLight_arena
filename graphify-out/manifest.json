@@ -1,0 +1,97 @@
+{
+  ".config/configstore/update-notifier-netlify.json": {
+    "mtime": 1783876999.8012543,
+    "ast_hash": "e0b8cf3fd53cf184846126e226cb5dd3",
+    "semantic_hash": "e0b8cf3fd53cf184846126e226cb5dd3"
+  },
+  ".config/netlify/autocompletion.json": {
+    "mtime": 1783876999.8012543,
+    "ast_hash": "d62a44845a6d98e93dfdba0e25f3baee",
+    "semantic_hash": "d62a44845a6d98e93dfdba0e25f3baee"
+  },
+  ".config/netlify/config.json": {
+    "mtime": 1783876999.8012543,
+    "ast_hash": "7d75640480cd21d3b90bf92ca1c9e818",
+    "semantic_hash": "7d75640480cd21d3b90bf92ca1c9e818"
+  },
+  ".netlify/state.json": {
+    "mtime": 1783876999.8012543,
+    "ast_hash": "b83be97d18ffc3cbfd9a062dda961b2d",
+    "semantic_hash": "b83be97d18ffc3cbfd9a062dda961b2d"
+  },
+  "clean_react_exports.py": {
+    "mtime": 1783876999.8012543,
+    "ast_hash": "03db98e879efcadfafc3e9bd869a1c1a",
+    "semantic_hash": "03db98e879efcadfafc3e9bd869a1c1a"
+  },
+  "curmanlight.spec.js": {
+    "mtime": 1783876999.8012543,
+    "ast_hash": "7d5082145f856b81ac38b0b30902c3bf",
+    "semantic_hash": "7d5082145f856b81ac38b0b30902c3bf"
+  },
+  "manifest.json": {
+    "mtime": 1783876999.8052545,
+    "ast_hash": "d0e817e9c61b23ff3d69e2351e34c9bf",
+    "semantic_hash": "d0e817e9c61b23ff3d69e2351e34c9bf"
+  },
+  "package.json": {
+    "mtime": 1783876999.8052545,
+    "ast_hash": "b68c8f31854e5125162ff1b9885c0db3",
+    "semantic_hash": "b68c8f31854e5125162ff1b9885c0db3"
+  },
+  "postcss.config.js": {
+    "mtime": 1783876999.8052545,
+    "ast_hash": "ef3ba2a81ba19f8ea5ddf625521e96f0",
+    "semantic_hash": "ef3ba2a81ba19f8ea5ddf625521e96f0"
+  },
+  "src/App.tsx": {
+    "mtime": 1783876999.8052545,
+    "ast_hash": "3c8023cdb53bc5fdf0a19832253e5224",
+    "semantic_hash": "3c8023cdb53bc5fdf0a19832253e5224"
+  },
+  "src/data/curriculumKB.ts": {
+    "mtime": 1783876999.8052545,
+    "ast_hash": "218ab94430c3809efa9ee6db84cf5f9d",
+    "semantic_hash": "218ab94430c3809efa9ee6db84cf5f9d"
+  },
+  "src/main.tsx": {
+    "mtime": 1783876999.8052545,
+    "ast_hash": "fb08cfad94a5805fd4aa047809990591",
+    "semantic_hash": "fb08cfad94a5805fd4aa047809990591"
+  },
+  "src/store/useCurriculumStore.ts": {
+    "mtime": 1783876999.8052545,
+    "ast_hash": "64cf9b20769688bba7534897d8552271",
+    "semantic_hash": "64cf9b20769688bba7534897d8552271"
+  },
+  "src/types/curriculum.ts": {
+    "mtime": 1783876999.8052545,
+    "ast_hash": "726584c761ddc1c275f73faacc4ec460",
+    "semantic_hash": "726584c761ddc1c275f73faacc4ec460"
+  },
+  "sw.js": {
+    "mtime": 1783876999.8052545,
+    "ast_hash": "1ab25823f62585278de58c74390bba70",
+    "semantic_hash": "1ab25823f62585278de58c74390bba70"
+  },
+  "tailwind.config.js": {
+    "mtime": 1783876999.8052545,
+    "ast_hash": "664bc873f37d1cede3c338018e0796a5",
+    "semantic_hash": "664bc873f37d1cede3c338018e0796a5"
+  },
+  "test-results/.last-run.json": {
+    "mtime": 1783876999.8052545,
+    "ast_hash": "f196824657d8858bc7fa44eecbba38b1",
+    "semantic_hash": "f196824657d8858bc7fa44eecbba38b1"
+  },
+  "tsconfig.json": {
+    "mtime": 1783876999.8052545,
+    "ast_hash": "cd59c9975a1132f781cb21228416042b",
+    "semantic_hash": "cd59c9975a1132f781cb21228416042b"
+  },
+  "vite.config.ts": {
+    "mtime": 1783876999.8132544,
+    "ast_hash": "d56e10a0aed2003d9fd5b82269e95575",
+    "semantic_hash": "d56e10a0aed2003d9fd5b82269e95575"
+  }
+}
