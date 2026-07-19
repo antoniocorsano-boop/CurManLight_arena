@@ -41,6 +41,14 @@ Tutta la terminologia tecnica è stata convertita in eleganti termini accademici
 * **Proposta 2 (Sintetizzatore Qualitativo)**: Integra una selezione a discesa per i giudizi e i descrittori qualitativi degli studenti conformemente al D.M. 14/2024, con filtro lessicale per la conformità GDPR.
 * **Proposta 3 (Cloud Sync Side-by-Side)**: Consente di confrontare in tempo reale le UDA locali e quelle presenti nel cloud scolastico tramite una finestra di approvazione comparativa.
 
+### 2.bis Fascicoli di Sviluppo A.S. 2026/2027 (implementati il 19 Luglio 2026)
+In attuazione del Rapporto di Audit Ergonomico Evolutivo (`AUDIT_UX_EVOLUTIVO_E_FASCICOLI_DI_SVILUPPO_2026_2027.md`), sono stati codificati in `src/App.tsx` i tre fascicoli deliberati dall'OIV:
+
+* **Fascicolo 1 — Ricerca semantica traguardi**: Nel Passo 2 del wizard UDA è attivo il campo "Ricerca rapida tra i traguardi" che esegue una scansione lessicale locale su `localCurriculum` filtrando per disciplina e grado attivi. I traguardi storicamente più usati nel plesso (rilevati dalle UDA in archivio) compaiono in cima con il badge **"Consigliato d'Istituto"**. In assenza di corrispondenze, il sistema non mostra una lista vuota ma propone i 3 traguardi standard della disciplina. Con un clic su "Selezione manuale (albero completo)" il docente rifiuta i suggerimenti e torna all'albero integrale.
+* **Fascicolo 2 — Assistente ergonomico adattivo (TEP)**: Un listener globale rileva il **Tasso d'Errore di Puntamento**: oltre 3 clic a vuoto in meno di 10 secondi su bersagli sotto i 44px attivano un banner accogliente e non coercitivo ("Rilevate difficoltà di puntamento... Desideri passare all'Assistente Guidato o semplificare la Griglia?") con scelta esplicita del docente (mai automatismi forzati). Il toggle **"Focus Disciplina"** attenua al 40% di opacità i rami del curricolo non pertinenti (Legge di Hick). La preferenza di layout (griglia/wizard) è persistita nello Spazio di Memorizzazione d'Aula.
+* **Fascicolo 3 — Design anticipatorio e clonazione adattiva**: Il pulsante **"Pre-compila bozza"** analizza le ultime 5 UDA del docente e pre-compila Compito di Realtà e Note d'inclusione con i valori più frequenti, filtrati a monte dal **Filtro Preventivo Lessicale GDPR**. I campi pre-compilati restano evidenziati in giallo tenue con badge "Bozza assistita — Conferma" fino a modifica o conferma esplicita del docente. Il pulsante **"Clona ed Adatta"** clona un'UDA ri-allineando automaticamente i traguardi sui codici della Banca Dati del livello d'insegnamento corrente, con sanitizzazione GDPR di compito e note.
+
+
 ### 3. Gestione Sezioni e Combinazioni
 * Semplificata la gestione delle sezioni d'istituto con possibilità di ridenominazione inline, rimozione immediata tramite pulsante `✕` e ripristino delle impostazioni predefinite d'istituto ("Rossa, Verde, Blu").
 * Visualizzazione delle combinazioni d'onboarding selezionate come pillole interattive rimovibili con un singolo clic.

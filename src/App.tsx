@@ -881,8 +881,21 @@ export default function App() {
  const [openAccordions, setOpenAccordions] = useState<Record<string, boolean>>({});
 
  // Local Component States for Wizards
- const [progettazioneMode, setProgettazioneMode] = useState<'grid' | 'wizard'>('grid');
+ const [progettazioneMode, setProgettazioneMode] = useState<'grid' | 'wizard'>(() => (safeLocalStorageGetItem('curman_progettazioneMode', 'grid') as 'grid' | 'wizard'));
  const [wizardStep, setWizardStep] = useState<number>(1);
+
+ // FASCICOLO 1 (A.S. 2026/2027): Ricerca semantica traguardi - stati del motore lessicale locale
+ const [traguardiSearchQuery, setTraguardiSearchQuery] = useState('');
+ const [showFullTraguardiTree, setShowFullTraguardiTree] = useState(false);
+
+ // FASCICOLO 2 (A.S. 2026/2027): Assistente ergonomico adattivo - stati TEP e highlight rami
+ const [tepBannerVisible, setTepBannerVisible] = useState(false);
+ const [tepBannerDismissed, setTepBannerDismissed] = useState(false);
+ const [branchFocusHighlight, setBranchFocusHighlight] = useState(() => safeLocalStorageGetItem('curman_branchFocusHighlight', 'false') === 'true');
+ const tepMissClickLog = useRef<number[]>([]);
+
+ // FASCICOLO 3 (A.S. 2026/2027): Design anticipatorio - campi pre-compilati in attesa di conferma docente
+ const [anticipatedFields, setAnticipatedFields] = useState<string[]>([]);
 
  // States and functions for AI Template Engine (v1.7.0)
  const [esportazioniTab, setEsportazioniTab] = useState<'standard' | 'template'>('standard');
@@ -1327,6 +1340,173 @@ export default function App() {
   safeLocalStorageSetItem('curman_progCoAuthors', progCoAuthors);
   showToast("Bozza della programmazione annuale salvata con successo!");
  };
+
+ // ============================================================================
+ // FASCICOLO 1 (A.S. 2026/2027): Motore di ricerca semantica locale per traguardi
+ // Criteri d'accettazione consiliare: analisi lessicale su localCurriculum,
+ // highlight dei preferiti d'Istituto, bypass della lista vuota, libertà docente.
+ // ============================================================================
+ const getFrequentTraguardiIndexes = (): number[] => {
+  // Traguardi storicamente più utilizzati nel plesso (dalle UDA salvate in archivio)
+  const currentData = localCurriculum[discipline]?.[order] || { traguardi: [] };
+  const usageCount: Record<number, number> = {};
+  savedUda.forEach(u => {
+   if (u.discipline !== discipline || u.order !== order) return;
+   (u.traguardi || []).forEach(t => {
+    const idx = currentData.traguardi.indexOf(t);
+    if (idx > -1) usageCount[idx] = (usageCount[idx] || 0) + 1;
+   });
+  });
+  return Object.entries(usageCount)
+   .sort((a, b) => b[1] - a[1])
+   .slice(0, 3)
+   .map(([idx]) => Number(idx));
+ };
+
+ const getSemanticTraguardiResults = (): { idx: number; text: string; recommended: boolean }[] => {
+  const currentData = localCurriculum[discipline]?.[order] || { traguardi: [] };
+  const frequent = getFrequentTraguardiIndexes();
+  const q = traguardiSearchQuery.trim().toLowerCase();
+  if (!q) return [];
+  const matched = currentData.traguardi
+   .map((t: string, idx: number) => ({ idx, text: t, recommended: frequent.includes(idx) }))
+   .filter(item => item.text.toLowerCase().includes(q));
+  // Preferiti d'Istituto in cima ai risultati
+  matched.sort((a, b) => Number(b.recommended) - Number(a.recommended));
+  return matched;
+ };
+
+ const applySemanticSuggestion = (idx: number) => {
+  if (!selectedTraguardi.includes(idx)) {
+   toggleTraguardoSelection(idx);
+  }
+ };
+
+ const semanticResults = getSemanticTraguardiResults();
+ const queryActive = traguardiSearchQuery.trim().length > 0;
+ // Criterio 3 - Bypass lista vuota: 3 traguardi standard pre-compilati se nessuna corrispondenza
+ const fallbackTraguardi = (localCurriculum[discipline]?.[order]?.traguardi || [])
+  .slice(0, 3)
+  .map((t: string) => ({ idx: (localCurriculum[discipline]?.[order]?.traguardi || []).indexOf(t), text: t, recommended: false }));
+
+ // ============================================================================
+ // FASCICOLO 2 (A.S. 2026/2027): Diagnostica Tasso d'Errore di Puntamento (TEP)
+ // Rileva >3 clic a vuoto in <10s su elementi sub-44px e propone (senza forzare)
+ // il passaggio al Wizard o la semplificazione della griglia. Human-in-the-loop.
+ // ============================================================================
+ useEffect(() => {
+  const handleDocumentClick = (e: MouseEvent) => {
+   if (tepBannerDismissed) return;
+   const target = e.target as HTMLElement | null;
+   if (!target) return;
+   // Ignora clic su controlli chiaramente dimensionati (>= 44px, Legge di Fitts)
+   const interactive = target.closest('button, a, input, select, textarea, label, [role="button"]');
+   const isSmallTarget = interactive ? (() => {
+    const rect = (interactive as HTMLElement).getBoundingClientRect();
+    return rect.width < 44 || rect.height < 44;
+   })() : true;
+   // Clic a vuoto: nessun interattivo colpito, oppure bersaglio sotto la soglia ergonomica
+   if (!interactive || isSmallTarget) {
+    const now = Date.now();
+    tepMissClickLog.current = [...tepMissClickLog.current.filter(ts => now - ts < 10000), now];
+    if (tepMissClickLog.current.length > 3) {
+     setTepBannerVisible(true);
+     tepMissClickLog.current = [];
+    }
+   }
+  };
+  document.addEventListener('click', handleDocumentClick);
+  return () => document.removeEventListener('click', handleDocumentClick);
+ }, [tepBannerDismissed]);
+
+ const handleTepSwitchToWizard = () => {
+  setProgettazioneMode('wizard');
+  safeLocalStorageSetItem('curman_progettazioneMode', 'wizard');
+  setTepBannerVisible(false);
+  setTepBannerDismissed(true);
+  showToast("Sei passato all'Assistente Guidato (Wizard): passaggi semplificati attivi.", true);
+ };
+
+ const handleTepSimplifyGrid = () => {
+  setBranchFocusHighlight(true);
+  safeLocalStorageSetItem('curman_branchFocusHighlight', 'true');
+  setTepBannerVisible(false);
+  setTepBannerDismissed(true);
+  showToast("Griglia semplificata: rami non pertinenti attenuati al 40% di opacità.", true);
+ };
+
+ const toggleBranchFocusHighlight = () => {
+  const next = !branchFocusHighlight;
+  setBranchFocusHighlight(next);
+  safeLocalStorageSetItem('curman_branchFocusHighlight', String(next));
+ };
+
+ // ============================================================================
+ // FASCICOLO 3 (A.S. 2026/2027): Design anticipatorio e clonazione adattiva
+ // Pre-compilazione proattiva dalle ultime 5 UDA + filtro GDPR + editing esplicito.
+ // ============================================================================
+ const gdprSanitizeText = (text: string): string => {
+  // Filtro Preventivo Lessicale GDPR: ripulisce riferimenti sensibili ereditati
+  const forbiddenPatterns = [
+   /\b(104)\b/gi, /\b(dsa)\b/gi, /\b(bes)\b/gi, /\b(pei)\b/gi, /\b(pdp)\b/gi,
+   /\b(disabilit[aà])\b/gi, /\b(clinica)\b/gi, /\b(sindrome)\b/gi, /\b(certificazion[ei])\b/gi
+  ];
+  let sanitized = text;
+  forbiddenPatterns.forEach(p => { sanitized = sanitized.replace(p, '[misura inclusiva]'); });
+  return sanitized;
+ };
+
+ const applyAnticipatoryPrefill = () => {
+  // Analizza le ultime 5 UDA del docente e pre-compila i campi ricorrenti
+  const recent = [...savedUda].slice(-5);
+  if (recent.length === 0) return;
+  const mostCommon = (values: string[]) => {
+   const freq: Record<string, number> = {};
+   values.filter(v => v && v.trim()).forEach(v => { freq[v] = (freq[v] || 0) + 1; });
+   const sorted = Object.entries(freq).sort((a, b) => b[1] - a[1]);
+   return sorted.length > 0 ? sorted[0][0] : '';
+  };
+  const prefillNotes = gdprSanitizeText(mostCommon(recent.map(u => u.notes)));
+  const prefillTask = gdprSanitizeText(mostCommon(recent.map(u => u.realTask)));
+  const fields: string[] = [];
+  if (prefillNotes && !progNotes.trim()) { setProgNotes(prefillNotes); fields.push('progNotes'); }
+  if (prefillTask && !realTaskInput.trim()) { setRealTaskInput(prefillTask); fields.push('realTaskInput'); }
+  if (fields.length > 0) {
+   setAnticipatedFields(fields);
+   showToast("Bozza assistita d'Istituto: campi ricorrenti pre-compilati dallo storico (verifica e conferma).", true);
+  }
+ };
+
+ const confirmAnticipatedField = (field: string) => {
+  setAnticipatedFields(prev => prev.filter(f => f !== field));
+ };
+
+ const handleCloneUdaAdaptive = (uda: any) => {
+  // Clonazione intelligente: ri-allinea i traguardi sui codici della classe target corrente
+  const currentData = localCurriculum[uda.discipline]?.[order] || { traguardi: [], obiettivi: [] };
+  const realignedTraguardi = (uda.traguardi || []).map((t: string) => {
+   const exactIdx = currentData.traguardi.indexOf(t);
+   if (exactIdx > -1) return currentData.traguardi[exactIdx];
+   // Raccordo approssimativo sul nuovo livello d'insegnamento: prima corrispondenza lessicale
+   const keywords = t.toLowerCase().split(/\s+/).filter((w: string) => w.length > 5);
+   const found = currentData.traguardi.find((ct: string) => keywords.some((k: string) => ct.toLowerCase().includes(k)));
+   return found || t;
+  });
+  const titleSuffix = order === 'infanzia' ? '' : ` (Target: ${targetClass}^${targetSection})`;
+  const cloned: UdaModel = {
+   ...uda,
+   id: `uda-cloned-${Date.now()}`,
+   title: `${uda.title.replace(/\s*\((Clonata|Importata|Target:[^)]*)\)/g, '')} (Clonata)${titleSuffix}`,
+   status: 'bozza',
+   traguardi: realignedTraguardi,
+   realTask: gdprSanitizeText(uda.realTask || ''),
+   notes: gdprSanitizeText(uda.notes || ''),
+   createdAt: new Date().toLocaleDateString('it-IT')
+  };
+  addUda(cloned);
+  showToast(`UDA clonata e ri-allineata sulla classe target ${order === 'infanzia' ? 'Fascia Unica' : `${targetClass}^${targetSection}`} con filtro GDPR applicato!`, true);
+ };
+
 
  const triggerPwaInstall = () => {
   showToast("Installazione avviata o non supportata dal tuo browser.", true);
@@ -3214,18 +3394,6 @@ export default function App() {
 
   addUda(newPersonalUda);
   showToast("UDA importata con successo nel tuo Archivio Personale!");
- };
-
- const handleCloneUdaLocal = (uda: any) => {
-  const cloned: UdaModel = {
-   ...uda,
-   id: `uda-cloned-${Date.now()}`,
-   title: `${uda.title} (Clonata)`,
-   status: 'bozza',
-   createdAt: new Date().toLocaleDateString('it-IT')
-  };
-  addUda(cloned);
-  showToast("UDA clonata ed adattata con successo nel tuo Archivio d'Istituto!", true);
  };
 
  const handleLikeUda = (sharedId: string) => {
@@ -5409,22 +5577,22 @@ export default function App() {
               <span className="text-[9px] font-black text-slate-400 uppercase tracking-wider block">Discipline attive d'Istituto</span>
               <p className="text-[10px] text-slate-500 font-medium">Seleziona una materia per consultarne i contenuti verticali e i traguardi.</p>
              </div>
-             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-1.5">
-              {Object.keys(localCurriculum).filter(disc => {
-               if (order !== 'secondaria' && disc === 'latino') return false;
-               if (showOnlyProfileCurriculum && disc !== discipline) return false;
-               return true;
-              }).map(disc => (
-               <button
-                key={disc}
-                onClick={() => { setDiscipline(disc); showToast(`Curricolo caricato: ${getDisciplineLabel(disc).toUpperCase()}`); }}
-                className={`p-2 rounded-xl text-left font-black text-xs transition flex items-center justify-between border ${discipline === disc ? 'bg-primary-600 text-white border-primary-600 shadow-sm' : 'bg-white hover:bg-slate-100 text-slate-700 border-slate-200'}`}
-               >
-                <span className="truncate">{getDisciplineLabel(disc)}</span>
-                <ChevronRight className="w-3.5 h-3.5 opacity-60" />
-               </button>
-              ))}
-             </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-1.5">
+               {Object.keys(localCurriculum).filter(disc => {
+                if (order !== 'secondaria' && disc === 'latino') return false;
+                if (showOnlyProfileCurriculum && disc !== discipline) return false;
+                return true;
+               }).map(disc => (
+                <button
+                 key={disc}
+                 onClick={() => { setDiscipline(disc); showToast(`Curricolo caricato: ${getDisciplineLabel(disc).toUpperCase()}`); }}
+                 className={`p-2 rounded-xl text-left font-black text-xs transition flex items-center justify-between border ${discipline === disc ? 'bg-primary-600 text-white border-primary-600 shadow-sm' : 'bg-white hover:bg-slate-100 text-slate-700 border-slate-200'} ${branchFocusHighlight && discipline !== disc ? 'opacity-40' : ''}`}
+                >
+                 <span className="truncate">{getDisciplineLabel(disc)}</span>
+                 <ChevronRight className="w-3.5 h-3.5 opacity-60" />
+                </button>
+               ))}
+              </div>
             </div>
 
             {/* Right Column: Dynamic target/objective cards */}
@@ -6227,23 +6395,48 @@ storia,secondaria,traguardo,Padroneggia la comprensione critica delle fonti</pre
          </div>
        )}
 
-       {activeProgTab === 'annuale' && (
-        <div className="space-y-6">
-         
-         {/* Selector of layout */}
-         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-white p-3.5 border border-slate-200 rounded-2xl shadow-sm gap-3">
-          <div className="space-y-0.5">
-           <div className="text-xs font-black text-slate-800 uppercase tracking-wider flex items-center space-x-1">
-            <Sparkles className="w-4 h-4 text-indigo-500 animate-pulse" />
-            <span>Layout di Compilazione d'Istituto</span>
+        {activeProgTab === 'annuale' && (
+         <div className="space-y-6">
+
+          {/* FASCICOLO 2: Banner Assistente Ergonomico Adattivo (TEP - Human-in-the-loop) */}
+          {tepBannerVisible && (
+           <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 fade-in">
+            <div className="space-y-1 text-left">
+             <span className="text-[9px] font-black text-amber-700 uppercase tracking-wider block">Assistente Ergonomico d'Aula</span>
+             <p className="text-xs font-bold text-amber-950 leading-relaxed">Rilevate difficoltà di puntamento su questo schermo d'aula. Desideri passare all'Assistente Guidato (Wizard) o semplificare la Griglia?</p>
+            </div>
+            <div className="flex flex-wrap gap-2 shrink-0 text-[10px] font-black uppercase tracking-wider">
+             <button onClick={handleTepSwitchToWizard} className="px-3 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl transition shadow-sm">Passa al Wizard</button>
+             <button onClick={handleTepSimplifyGrid} className="px-3 py-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 rounded-xl transition">Semplifica Griglia</button>
+             <button onClick={() => { setTepBannerVisible(false); setTepBannerDismissed(true); }} className="px-3 py-2 text-slate-400 hover:text-slate-600 transition">Ignora</button>
+            </div>
            </div>
-           <div className="text-[10px] text-slate-500 font-semibold">Scegli la visualizzazione ottimale per progettare la tua Unità di Apprendimento d'Istituto</div>
+          )}
+
+          {/* Selector of layout */}
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-white p-3.5 border border-slate-200 rounded-2xl shadow-sm gap-3">
+           <div className="space-y-0.5">
+            <div className="text-xs font-black text-slate-800 uppercase tracking-wider flex items-center space-x-1">
+             <Sparkles className="w-4 h-4 text-indigo-500 animate-pulse" />
+             <span>Layout di Compilazione d'Istituto</span>
+            </div>
+            <div className="text-[10px] text-slate-500 font-semibold">Scegli la visualizzazione ottimale per progettare la tua Unità di Apprendimento d'Istituto</div>
+           </div>
+           <div className="flex items-center gap-2 flex-wrap self-stretch sm:self-auto">
+            {/* FASCICOLO 2 - Criterio 3: Filtro di contrasto manuale (highlight rami rilevanti) */}
+            <button
+             onClick={toggleBranchFocusHighlight}
+             title="Attenua al 40% di opacità i rami non pertinenti alla disciplina attiva (Legge di Hick)"
+             className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider border transition ${branchFocusHighlight ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm' : 'bg-white text-slate-500 border-slate-200 hover:bg-slate-50'}`}
+            >
+             Focus Disciplina {branchFocusHighlight ? 'Attivo' : 'Off'}
+            </button>
+            <div className="bg-slate-100 p-1 rounded-xl flex space-x-1 text-xs font-bold shadow-sm">
+             <button onClick={() => { setProgettazioneMode('grid'); safeLocalStorageSetItem('curman_progettazioneMode', 'grid'); }} className={`px-3 py-1.5 rounded-lg transition ${progettazioneMode === 'grid' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500'}`}> Griglia 3 Colonne</button>
+             <button onClick={() => { setProgettazioneMode('wizard'); safeLocalStorageSetItem('curman_progettazioneMode', 'wizard'); }} className={`px-3 py-1.5 rounded-lg transition ${progettazioneMode === 'wizard' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500'}`}>‍ Procedura Guidata Wizard</button>
+            </div>
+           </div>
           </div>
-          <div className="bg-slate-100 p-1 rounded-xl flex space-x-1 text-xs font-bold shadow-sm self-stretch sm:self-auto">
-           <button onClick={() => setProgettazioneMode('grid')} className={`px-3 py-1.5 rounded-lg transition ${progettazioneMode === 'grid' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500'}`}> Griglia 3 Colonne</button>
-           <button onClick={() => setProgettazioneMode('wizard')} className={`px-3 py-1.5 rounded-lg transition ${progettazioneMode === 'wizard' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500'}`}>‍ Procedura Guidata Wizard</button>
-          </div>
-         </div>
 
          {progettazioneMode === 'grid' ? (
           /* Step-by-Step Continuous Unified Flow Grid */
@@ -6418,8 +6611,13 @@ storia,secondaria,traguardo,Padroneggia la comprensione critica delle fonti</pre
             </div>
 
             <div className="space-y-3">
-             <strong className="text-slate-400 uppercase text-[9px] tracking-wide block">Compito di Realtà</strong>
-             <textarea value={realTaskInput} onChange={(e) => setRealTaskInput(e.target.value)} rows={2} className="w-full border rounded-lg p-2 bg-slate-50 text-xs font-semibold focus:bg-white transition" placeholder="E.g. Realizzazione di un opuscolo illustrato d'istituto..." />
+             <div className="flex items-center justify-between">
+              <strong className="text-slate-400 uppercase text-[9px] tracking-wide block">Compito di Realtà</strong>
+              {anticipatedFields.includes('realTaskInput') && (
+               <button type="button" onClick={() => confirmAnticipatedField('realTaskInput')} className="px-2 py-0.5 bg-amber-100 hover:bg-amber-200 text-amber-800 border border-amber-300 rounded-lg text-[8px] font-black uppercase tracking-wider transition">Bozza assistita — Conferma</button>
+              )}
+             </div>
+             <textarea value={realTaskInput} onChange={(e) => { setRealTaskInput(e.target.value); confirmAnticipatedField('realTaskInput'); }} rows={2} className={`w-full border rounded-lg p-2 text-xs font-semibold focus:bg-white transition ${anticipatedFields.includes('realTaskInput') ? 'bg-amber-50 border-amber-300' : 'bg-slate-50'}`} placeholder="E.g. Realizzazione di un opuscolo illustrato d'istituto..." />
             </div>
            </div>
 
@@ -6435,9 +6633,19 @@ storia,secondaria,traguardo,Padroneggia la comprensione critica delle fonti</pre
             </div>
 
             <div className="space-y-2">
-             <strong className="text-slate-400 uppercase text-[9px] tracking-wide block">Note Metodologiche d'Inclusione (BES/DSA)</strong>
-             <textarea value={progNotes} onChange={(e) => setProgNotes(e.target.value)} rows={2} className="w-full border rounded-lg p-2 bg-slate-50 text-xs font-semibold focus:bg-white transition" placeholder="Scrivi note d'inclusione o adattamenti..." />
+             <div className="flex items-center justify-between">
+              <strong className="text-slate-400 uppercase text-[9px] tracking-wide block">Note Metodologiche d'Inclusione (BES/DSA)</strong>
+              {anticipatedFields.includes('progNotes') && (
+               <button type="button" onClick={() => confirmAnticipatedField('progNotes')} className="px-2 py-0.5 bg-amber-100 hover:bg-amber-200 text-amber-800 border border-amber-300 rounded-lg text-[8px] font-black uppercase tracking-wider transition">Bozza assistita — Conferma</button>
+              )}
+             </div>
+             <textarea value={progNotes} onChange={(e) => { setProgNotes(e.target.value); confirmAnticipatedField('progNotes'); }} rows={2} className={`w-full border rounded-lg p-2 text-xs font-semibold focus:bg-white transition ${anticipatedFields.includes('progNotes') ? 'bg-amber-50 border-amber-300' : 'bg-slate-50'}`} placeholder="Scrivi note d'inclusione o adattamenti..." />
             </div>
+
+            {/* FASCICOLO 3: Bozza Assistita Anticipatoria (griglia) */}
+            {savedUda.length > 0 && anticipatedFields.length === 0 && (
+             <button type="button" onClick={applyAnticipatoryPrefill} className="w-full px-3 py-2 bg-violet-50 hover:bg-violet-100 text-violet-800 border border-violet-200 rounded-xl text-[9px] font-black uppercase tracking-wider transition">Pre-compila da storico (Design Anticipatorio)</button>
+            )}
 
             <div className="flex gap-2">
              <button onClick={saveProgDraft} className="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2 rounded-xl transition flex items-center justify-center space-x-1 shadow-md shadow-indigo-600/10 text-xs"><Save className="w-4 h-4" /> <span>Salva Bozza</span></button>
@@ -6610,6 +6818,57 @@ storia,secondaria,traguardo,Padroneggia la comprensione critica delle fonti</pre
             {/* STEP 2: TRAGUARDI & OBIETTIVI */}
             {wizardStep === 2 && (
              <div className="space-y-4 fade-in">
+
+              {/* FASCICOLO 1: Motore di ricerca semantica traguardi (A.S. 2026/2027) */}
+              <div className="bg-indigo-50/60 border border-indigo-150 rounded-2xl p-3.5 space-y-2.5">
+               <div className="flex items-center justify-between gap-2 flex-wrap">
+                <label className="text-[10px] font-black uppercase text-indigo-900 flex items-center space-x-1.5">
+                 <Search className="w-3.5 h-3.5 text-indigo-500" />
+                 <span>Ricerca rapida tra i traguardi (motore lessicale d'Istituto)</span>
+                </label>
+                {queryActive && (
+                 <button type="button" onClick={() => { setTraguardiSearchQuery(''); setShowFullTraguardiTree(false); }} className="text-[9px] font-black uppercase text-indigo-600 hover:text-indigo-800 transition">
+                  Selezione manuale (albero completo)
+                 </button>
+                )}
+               </div>
+               <input
+                type="text"
+                value={traguardiSearchQuery}
+                onChange={(e) => setTraguardiSearchQuery(e.target.value)}
+                placeholder="Digita un argomento in italiano (es. frazioni, corsivo, ecosistema)..."
+                className="w-full border border-indigo-200 rounded-xl p-2.5 bg-white text-xs font-semibold focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition"
+               />
+
+               {/* Risultati semantici con badge Consigliato d'Istituto */}
+               {queryActive && semanticResults.length > 0 && !showFullTraguardiTree && (
+                <div className="space-y-1.5 max-h-[180px] overflow-y-auto">
+                 {semanticResults.map(item => (
+                  <label key={item.idx} className="flex items-start space-x-2.5 p-2 bg-white rounded-xl border border-indigo-200 hover:bg-indigo-50 cursor-pointer text-[10px] font-semibold text-slate-700 leading-normal transition">
+                   <input type="checkbox" checked={selectedTraguardi.includes(item.idx)} onChange={() => applySemanticSuggestion(item.idx)} className="rounded border-slate-300 text-indigo-600 mt-0.5" />
+                   <span className="flex-1">T{item.idx + 1}. {item.text}</span>
+                   {item.recommended && (
+                    <span className="shrink-0 px-1.5 py-0.5 bg-amber-100 text-amber-800 border border-amber-200 rounded text-[7px] font-black uppercase tracking-wider">Consigliato d'Istituto</span>
+                   )}
+                  </label>
+                 ))}
+                </div>
+               )}
+
+               {/* Bypass lista vuota: suggerimento proattivo dei 3 traguardi standard */}
+               {queryActive && semanticResults.length === 0 && !showFullTraguardiTree && (
+                <div className="space-y-1.5">
+                 <p className="text-[10px] text-slate-500 font-semibold italic">Nessuna corrispondenza esatta. Il co-pilota propone i 3 traguardi standard della disciplina (selezione pre-compilata, modificabile):</p>
+                 {fallbackTraguardi.map(item => (
+                  <label key={item.idx} className="flex items-start space-x-2.5 p-2 bg-white rounded-xl border border-slate-200 hover:bg-indigo-50/50 cursor-pointer text-[10px] font-semibold text-slate-700 leading-normal transition">
+                   <input type="checkbox" checked={selectedTraguardi.includes(item.idx)} onChange={() => toggleTraguardoSelection(item.idx)} className="rounded border-slate-300 text-indigo-600 mt-0.5" />
+                   <span>T{item.idx + 1}. {item.text}</span>
+                  </label>
+                 ))}
+                </div>
+               )}
+              </div>
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
                <div className="space-y-2">
                 <strong className="text-indigo-600 uppercase text-[9px] tracking-wide block">Traguardi di Competenza d'Istituto:</strong>
@@ -6668,44 +6927,73 @@ storia,secondaria,traguardo,Padroneggia la comprensione critica delle fonti</pre
             {/* STEP 4: COMPITO & NOTE INCLUSIONE */}
             {wizardStep === 4 && (
              <div className="space-y-4 fade-in text-xs font-bold text-slate-700">
+
+              {/* FASCICOLO 3: Pulsante Bozza Assistita Anticipatoria (pre-compilazione dallo storico) */}
+              {savedUda.length > 0 && anticipatedFields.length === 0 && (
+               <div className="bg-violet-50/70 border border-violet-150 rounded-2xl p-3 flex items-center justify-between gap-3">
+                <p className="text-[10px] font-semibold text-violet-900 leading-relaxed">Design Anticipatorio: pre-compila Compito e Note d'inclusione dai valori più frequenti delle tue ultime 5 UDA (filtro GDPR attivo).</p>
+                <button type="button" onClick={applyAnticipatoryPrefill} className="shrink-0 px-3 py-1.5 bg-violet-600 hover:bg-violet-500 text-white text-[9px] font-black uppercase tracking-wider rounded-lg transition">Pre-compila bozza</button>
+               </div>
+              )}
+
               <div className="space-y-1">
                <div className="flex justify-between items-center">
                 <label className="text-[10px] font-black uppercase text-slate-500">Compito Autentico / Compito di Realtà d'Istituto</label>
-                <button 
-                  type="button" 
-                  onClick={() => handleTriggerGemSuggestion('uda-realtask')}
-                  className="p-1 hover:bg-slate-100 rounded-full text-slate-400 hover:text-indigo-600 transition cursor-pointer"
-                  title="Ottieni suggerimento compito (Gemma Co-pilota)"
-                >
-                  <svg className="w-3.5 h-3.5 text-indigo-500 animate-pulse shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M6 3h12l4 6-10 13L2 9z" />
-                    <path d="M11 3 8 9l10 13" />
-                    <path d="M13 3l3 6L6 22" />
-                    <path d="M2 9h20" />
-                  </svg>
-                </button>
+                <div className="flex items-center space-x-1.5">
+                 {anticipatedFields.includes('realTaskInput') && (
+                  <button type="button" onClick={() => confirmAnticipatedField('realTaskInput')} className="px-2 py-0.5 bg-amber-100 hover:bg-amber-200 text-amber-800 border border-amber-300 rounded-lg text-[8px] font-black uppercase tracking-wider transition" title="Bozza assistita d'Istituto: clicca per confermare esplicitamente il valore pre-compilato">
+                   Bozza assistita — Conferma
+                  </button>
+                 )}
+                 <button 
+                   type="button" 
+                   onClick={() => handleTriggerGemSuggestion('uda-realtask')}
+                   className="p-1 hover:bg-slate-100 rounded-full text-slate-400 hover:text-indigo-600 transition cursor-pointer"
+                   title="Ottieni suggerimento compito (Gemma Co-pilota)"
+                 >
+                   <svg className="w-3.5 h-3.5 text-indigo-500 animate-pulse shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                     <path d="M6 3h12l4 6-10 13L2 9z" />
+                     <path d="M11 3 8 9l10 13" />
+                     <path d="M13 3l3 6L6 22" />
+                     <path d="M2 9h20" />
+                   </svg>
+                 </button>
+                </div>
                </div>
-               <textarea value={realTaskInput} onChange={(e) => setRealTaskInput(e.target.value)} rows={3} className="w-full border border-slate-200 rounded-xl p-3 bg-slate-50 text-xs font-semibold focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition leading-relaxed" placeholder="Descrivere il prodotto finale e l'attività che gli studenti sono chiamati a realizzare per dimostrare la competenza..." />
+               <textarea value={realTaskInput} onChange={(e) => { setRealTaskInput(e.target.value); confirmAnticipatedField('realTaskInput'); }} rows={3} className={`w-full border rounded-xl p-3 text-xs font-semibold focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition leading-relaxed ${anticipatedFields.includes('realTaskInput') ? 'bg-amber-50 border-amber-300' : 'bg-slate-50 border-slate-200'}`} placeholder="Descrivere il prodotto finale e l'attività che gli studenti sono chiamati a realizzare per dimostrare la competenza..." />
+               {anticipatedFields.includes('realTaskInput') && (
+                <p className="text-[9px] text-amber-700 font-semibold">Valore pre-compilato dallo storico d'Istituto (evidenziato in giallo): modificato o confermato che sia, resterà sotto il tuo controllo esplicito.</p>
+               )}
               </div>
 
               <div className="space-y-1">
                <div className="flex justify-between items-center">
                 <label className="text-[10px] font-black uppercase text-slate-500">Note Metodologiche d'Inclusione (Misure Compensative/Dispensative per BES/DSA)</label>
-                <button 
-                  type="button" 
-                  onClick={() => handleTriggerGemSuggestion('uda-inclusion')}
-                  className="p-1 hover:bg-slate-100 rounded-full text-slate-400 hover:text-indigo-600 transition cursor-pointer"
-                  title="Ottieni suggerimento misure (Gemma Co-pilota)"
-                >
-                  <svg className="w-3.5 h-3.5 text-indigo-500 animate-pulse shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M6 3h12l4 6-10 13L2 9z" />
-                    <path d="M11 3 8 9l10 13" />
-                    <path d="M13 3l3 6L6 22" />
-                    <path d="M2 9h20" />
-                  </svg>
-                </button>
+                <div className="flex items-center space-x-1.5">
+                 {anticipatedFields.includes('progNotes') && (
+                  <button type="button" onClick={() => confirmAnticipatedField('progNotes')} className="px-2 py-0.5 bg-amber-100 hover:bg-amber-200 text-amber-800 border border-amber-300 rounded-lg text-[8px] font-black uppercase tracking-wider transition" title="Bozza assistita d'Istituto: clicca per confermare esplicitamente il valore pre-compilato">
+                   Bozza assistita — Conferma
+                  </button>
+                 )}
+                 <button 
+                   type="button" 
+                   onClick={() => handleTriggerGemSuggestion('uda-inclusion')}
+                   className="p-1 hover:bg-slate-100 rounded-full text-slate-400 hover:text-indigo-600 transition cursor-pointer"
+                   title="Ottieni suggerimento misure (Gemma Co-pilota)"
+                 >
+                   <svg className="w-3.5 h-3.5 text-indigo-500 animate-pulse shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                     <path d="M6 3h12l4 6-10 13L2 9z" />
+                     <path d="M11 3 8 9l10 13" />
+                     <path d="M13 3l3 6L6 22" />
+                     <path d="M2 9h20" />
+                   </svg>
+                 </button>
+                </div>
                </div>
-               <textarea value={progNotes} onChange={(e) => setProgNotes(e.target.value)} rows={2} className="w-full border border-slate-200 rounded-xl p-3 bg-slate-50 text-xs font-semibold focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition leading-relaxed" placeholder="Fornire indicazioni d'aula, schemi facilitati o strumenti compensativi necessari d'Istituto..." />
+               <textarea value={progNotes} onChange={(e) => { setProgNotes(e.target.value); confirmAnticipatedField('progNotes'); }} rows={2} className={`w-full border rounded-xl p-3 text-xs font-semibold focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition leading-relaxed ${anticipatedFields.includes('progNotes') ? 'bg-amber-50 border-amber-300' : 'bg-slate-50 border-slate-200'}`} placeholder="Fornire indicazioni d'aula, schemi facilitati o strumenti compensativi necessari d'Istituto..." />
+               {anticipatedFields.includes('progNotes') && (
+                <p className="text-[9px] text-amber-700 font-semibold">Valore pre-compilato dallo storico d'Istituto (evidenziato in giallo): modificato o confermato che sia, resterà sotto il tuo controllo esplicito.</p>
+               )}
                
                {/* QUICK INCLUSIVE MEASURES PRESETS */}
                <div className="pt-1.5 space-y-1.5">
@@ -6858,7 +7146,7 @@ storia,secondaria,traguardo,Padroneggia la comprensione critica delle fonti</pre
                  <div className="flex justify-end space-x-3 pt-1 border-t border-slate-100">
                   <button onClick={() => setSelectedUda(u)} className="text-primary-600 hover:text-primary-800 font-bold text-[10px] flex items-center space-x-1"><Eye className="w-3.5 h-3.5" /> <span>Esamina</span></button>
                   <button onClick={() => copyUdaTextLocal(u.id)} className="text-indigo-600 hover:text-indigo-800 font-bold text-[10px] flex items-center space-x-1"><Copy className="w-3.5 h-3.5" /> <span>Copia</span></button>
-                  <button onClick={() => handleCloneUdaLocal(u)} className="text-emerald-600 hover:text-emerald-800 font-bold text-[10px] flex items-center space-x-1" title="Clona ed adatta questa UDA nel tuo Archivio"><RefreshCw className="w-3.5 h-3.5" /> <span>Clona</span></button>
+                   <button onClick={() => handleCloneUdaAdaptive(u)} className="text-emerald-600 hover:text-emerald-800 font-bold text-[10px] flex items-center space-x-1" title="Clona ed adatta questa UDA alla classe target corrente, con ri-allineamento dei traguardi e filtro GDPR"><RefreshCw className="w-3.5 h-3.5" /> <span>Clona ed Adatta</span></button>
                  </div>
                 </div>
                </div>
