@@ -1,0 +1,12 @@
+{
+  "recommendations": [
+    "mikesoft.vscode-super-cli",
+    "paql4711.agent-space",
+    "viberules.viberules",
+    "kilocode.kilo-code",
+    "anthropic.claude-code",
+    "kwickramasekara.opencode-chat-unofficial",
+    "google.gemini-cli-vscode-ide-companion",
+    "qwenlm.qwen-code-vscode-ide-companion"
+  ]
+}

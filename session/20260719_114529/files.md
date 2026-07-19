@@ -20,3 +20,7 @@
 - `.clinerules/agent-memory.md` - Cline-specific adapter for shared session memory.
 - `.kilo/rules/agent-memory.md` - Kilo Code-specific adapter for shared session memory.
 - `kilo.jsonc` - Kilo Code project rules configuration.
+- `docs/AGENT_ORCHESTRATION.md` - routing matrix and operational workflow for installed agents.
+- `.vscode/extensions.json` - recommended orchestration and agent extensions.
+- `.vscode/settings.json` - Agent Space custom tools and workspace orchestration settings.
+- `.gitignore` - ignores Agent Space worktrees.

@@ -1,7 +1,7 @@
 # Handoff
 
 ## Resume From Here
-Shared agent memory has been implemented for Codex, opencode, Copilot, Claude, Cline, and Kilo Code. The canonical startup file is `AGENTS.md`; Claude imports it through `CLAUDE.md`; Copilot gets `.github/copilot-instructions.md` plus path-scoped instructions; Cline gets `.clinerules/agent-memory.md`; Kilo gets `kilo.jsonc` and `.kilo/rules/agent-memory.md`. A PowerShell helper exists at `scripts/agent-memory.ps1`, with npm shortcuts in `package.json`.
+Shared agent memory and VS Code orchestration are in place. Super CLI launches installed coding CLIs from one sidebar; Agent Space manages feature worktrees/persistent sessions; Vibe Rules manages shared skills/rules. Use `docs/AGENT_ORCHESTRATION.md` for routing by task type and `npm run memory:status` before starting new work.
 
 ## Next Actions
 - For the next task, start with `npm run memory:status`.

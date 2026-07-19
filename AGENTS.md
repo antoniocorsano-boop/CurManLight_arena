@@ -43,6 +43,7 @@ powershell -ExecutionPolicy Bypass -File scripts/agent-memory.ps1 status
 - Knowledge base and project documentation: root Markdown files and `second-brain/`.
 - Generated graph artifacts: `graphify-out/`.
 - Build command: `npm run build`.
+- Agent routing guide: `docs/AGENT_ORCHESTRATION.md`.
 
 ## Agent Notes
 

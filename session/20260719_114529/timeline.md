@@ -21,3 +21,12 @@
 
 ## 2026-07-19 11:54:28 +02:00
 - Verified Cline and Kilo Code memory adapters before commit.
+## 2026-07-19 12:20:00 +02:00
+- User asked to proceed with a VS Code orchestration solution for installed coding agents.
+- Installed Super CLI directly from the Marketplace.
+- Marketplace CLI lookup failed for Agent Space and Vibe Rules, so their official VSIX packages were resolved through the Marketplace API and installed locally.
+- Detected available CLIs: `claude`, `codex`, `opencode`, `kilo`, `copilot`, `qwen`, and `gemini`.
+- Added workspace recommendations, Agent Space custom tools, `.worktrees/` ignore rule, and `docs/AGENT_ORCHESTRATION.md`.
+
+## 2026-07-19 12:25:03 +02:00
+- Installed VS Code orchestration extensions and added routing documentation/settings.

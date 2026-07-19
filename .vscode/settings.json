@@ -3,6 +3,29 @@
   "chat.instructionsFilesLocations": {
     ".github/instructions": true
   },
-  "chat.includeApplyingInstructions": true
+  "chat.includeApplyingInstructions": true,
+  "agentSpace.defaultTool": "codex",
+  "agentSpace.worktreeBasePath": ".worktrees",
+  "agentSpace.enablePerAgentIsolation": true,
+  "agentSpace.codingTools": [
+    {
+      "id": "kilo",
+      "name": "Kilo Code CLI",
+      "command": "kilo",
+      "args": []
+    },
+    {
+      "id": "qwen",
+      "name": "Qwen Code CLI",
+      "command": "qwen",
+      "args": []
+    },
+    {
+      "id": "gemini",
+      "name": "Gemini CLI",
+      "command": "gemini",
+      "args": []
+    }
+  ],
+  "superCli.terminalLocation": "beside"
 }
-
