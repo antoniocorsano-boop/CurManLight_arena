@@ -17,4 +17,6 @@
 
 ## Generated
 - None beyond the session files above.
-
+- `.clinerules/agent-memory.md` - Cline-specific adapter for shared session memory.
+- `.kilo/rules/agent-memory.md` - Kilo Code-specific adapter for shared session memory.
+- `kilo.jsonc` - Kilo Code project rules configuration.

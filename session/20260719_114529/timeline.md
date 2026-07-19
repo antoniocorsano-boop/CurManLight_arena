@@ -13,3 +13,11 @@
 
 ## 2026-07-19 11:49:37 +02:00
 - Final verification before commit: memory status/handoff, package JSON parse, and git diff check passed.
+## 2026-07-19 11:52:00 +02:00
+- User asked to apply the same memory integration to Kilo Code and Cline.
+- Verified Cline uses `.clinerules/` and can recognize `AGENTS.md`.
+- Verified Kilo Code uses `AGENTS.md` and can load project rules from `kilo.jsonc` pointing at `.kilo/rules/*.md`.
+- Added Cline and Kilo adapters that reuse the existing `session/` protocol.
+
+## 2026-07-19 11:54:28 +02:00
+- Verified Cline and Kilo Code memory adapters before commit.

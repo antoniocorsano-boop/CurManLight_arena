@@ -1,0 +1,8 @@
+{
+  // Project-level Kilo Code rules.
+  // Keep AGENTS.md as the canonical shared instruction file; this rule only
+  // ensures Kilo's rules loader also points at the shared memory workflow.
+  "instructions": [
+    ".kilo/rules/*.md"
+  ]
+}

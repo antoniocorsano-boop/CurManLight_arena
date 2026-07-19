@@ -49,4 +49,6 @@ powershell -ExecutionPolicy Bypass -File scripts/agent-memory.ps1 status
 - Codex and opencode: use this `AGENTS.md` as the primary project instruction file.
 - GitHub Copilot: also read `.github/copilot-instructions.md` and matching `.github/instructions/*.instructions.md`.
 - Claude Code: read `CLAUDE.md`; it imports this file.
+- Cline: also read `.clinerules/agent-memory.md`.
+- Kilo Code: also read `kilo.jsonc` and `.kilo/rules/agent-memory.md`.
 

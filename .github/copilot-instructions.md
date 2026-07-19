@@ -1,6 +1,6 @@
 # CurManLight Copilot Instructions
 
-Use `AGENTS.md` as the shared project operating guide. Before making non-trivial edits, inspect the latest relevant `session/*/handoff.md` and `session_state.md` so VS Code chat work stays aligned with terminal agents.
+Use `AGENTS.md` as the shared project operating guide. Before making non-trivial edits, inspect the latest relevant `session/*/handoff.md` and `session_state.md` so VS Code chat work stays aligned with terminal agents, Cline, and Kilo Code.
 
 Keep context usage small:
 

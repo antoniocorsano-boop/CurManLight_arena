@@ -1,6 +1,6 @@
 # Agent Memory Protocol
 
-CurManLight agents share memory through small Markdown files committed with the repository. This lets Codex, opencode, GitHub Copilot in VS Code, and Claude Code resume work without relying on a hidden chat transcript.
+CurManLight agents share memory through small Markdown files committed with the repository. This lets Codex, opencode, GitHub Copilot in VS Code, Claude Code, Cline, and Kilo Code resume work without relying on a hidden chat transcript.
 
 ## Why
 
@@ -96,3 +96,10 @@ powershell -ExecutionPolicy Bypass -File scripts/agent-memory.ps1 status
 
 The script is intentionally simple so every agent can inspect or modify the Markdown directly when needed.
 
+## Agent Adapters
+
+- Codex/opencode: `AGENTS.md`.
+- Claude Code: `CLAUDE.md` imports `AGENTS.md`.
+- GitHub Copilot in VS Code: `.github/copilot-instructions.md` and `.github/instructions/*.instructions.md`.
+- Cline: `.clinerules/agent-memory.md`, plus `AGENTS.md` when available.
+- Kilo Code: `AGENTS.md` plus `kilo.jsonc` pointing to `.kilo/rules/*.md`.
