@@ -60,13 +60,12 @@ Draft
 
 | Metric | Value | Evidence |
 |---|:---:|---|
-| CML-604 Status | **In Progress** | CML-604A, 604B, 604C, 604D verified; CML-604F next |
+| CML-604 Status | **Completed** | All phases verified, gate PASSED |
 | Navigation decisions | 1 / 1 Verified | NAV-002 (React Router) Verified |
 | Shell decisions | 1 / 1 Verified | Shell-001 (Application Shell) Verified |
 | Persistence decisions | 1 / 1 Verified | Persist-001 (State Persistence Rules) Verified |
 | Navigation tests | 1 / 1 Verified | NavTest-001 (Navigation Behavior Tests) Verified |
-| Architecture Gate | Pending | CML-604F after all phases complete |
-| Next phase | CML-604F Architecture Gate | Final gate for CML-604 |
+| Architecture Gate | **PASSED** | CML-604F All 10 criteria met |
 
 ## Known External Blockers
 

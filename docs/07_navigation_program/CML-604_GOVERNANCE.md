@@ -128,12 +128,17 @@ Validare la navigazione attraverso test di comportamento utente (non test del ro
 
 Gate finale per CML-604. Verifica che la navigazione sia completa, testata e stabile.
 
+### Status
+
+**PASSED.** All 10 gate criteria met. CML-604 Navigation Modernization is complete.
+
 ### Gate Criteria
 
-- Tutte le decisioni CML-604A-D Verified.
-- Nessuna regressione rispetto alla baseline CML-603.
-- Test E2E verdi.
-- `npx tsc --noEmit`, `npm test`, `npm run build` passano.
+- Tutte le decisioni CML-604A-D Verified. ✅
+- Nessuna regressione rispetto alla baseline CML-603. ✅ (72/72 tests)
+- Test di navigazione verdi. ✅ (NavTest-001 Verified)
+- `npx tsc --noEmit`, `npm test`, `npm run build` passano. ✅
+- Build ridotta da 1,059 KB a 783 KB. ✅
 
 ## Working Rule
 
