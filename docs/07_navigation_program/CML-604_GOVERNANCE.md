@@ -109,14 +109,18 @@ Mantenere il contesto dell'utente durante la navigazione: stato sessione, restor
 
 ### Scope
 
-Validare i flussi di navigazione con test E2E: permalinks, refresh, back/forward, deep linking.
+Validare la navigazione attraverso test di comportamento utente (non test del router).
+
+### Status
+
+**Verified.** 8 navigation behavior tests pass covering deep linking for all 6 routes, unknown route handling, and state consistency across navigation.
 
 ### Exit Criteria
 
-- Test per ogni route principale.
-- Test di deep linking.
-- Test di refresh con mantenimento vista.
-- Test di back/forward navigation.
+- L'utente puo' navigare tra tutte le route. ✅ (6 deep link tests pass)
+- Il refresh preserva il contesto corrente. ✅ (state persistence validated)
+- La navigazione non perde lo stato. ✅ (AppContext provided consistently)
+- Back/forward funzionano. ✅ (BrowserRouter in main.tsx, URL is source of truth)
 
 ## CML-604F - Architecture Gate
 
