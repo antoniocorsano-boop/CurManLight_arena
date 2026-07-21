@@ -261,6 +261,9 @@ export function AppViewsLayer(props: AppViewsLayerProps) {
        role={role}
        savedUda={savedUda}
        decisions={decisions}
+       wizardStep={wizardStep}
+       progTitle={progTitle}
+       progStatus={progStatus}
        handleDownloadCml={handleDownloadCml}
        handleTabSwitch={(tab) => { if (isAppTab(tab)) handleTabSwitch(tab); }}
        setSelectedBrainDoc={setSelectedBrainDoc}

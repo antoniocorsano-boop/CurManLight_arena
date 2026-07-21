@@ -1,11 +1,55 @@
-import { Calendar, GraduationCap, Layers } from 'lucide-react';
+import { Calendar, GraduationCap, Layers, ArrowRight, BookOpen, ClipboardList } from 'lucide-react';
 import type { UdaModel, UserRole } from '../../../types/curriculum';
+import { safeLocalStorageGetItem } from '../../../lib/consolidatedStorage';
+import type { ProgStatus } from '../types/appViewContracts';
+
+const WIZARD_STEP_LABELS: Record<number, string> = {
+  1: 'Traguardi e Obiettivi',
+  2: 'Compito di Realtà',
+  3: 'Evidenze e Valutazione',
+  4: 'Risorse e Tempistica',
+  5: 'Anteprima e Salva',
+};
+
+function readLastSaveTime(): number | null {
+  const raw = safeLocalStorageGetItem('curman_lastSaveTime', '');
+  const n = Number(raw);
+  return Number.isFinite(n) && n > 0 ? n : null;
+}
+
+function formatRelativeTime(timestamp: number): string {
+  const diffMs = Date.now() - timestamp;
+  const diffMin = Math.floor(diffMs / 60000);
+  if (diffMin < 1) return 'adesso';
+  if (diffMin < 60) return `${diffMin} min fa`;
+  const diffH = Math.floor(diffMin / 60);
+  if (diffH < 24) return `${diffH}h fa`;
+  const diffD = Math.floor(diffH / 24);
+  return `${diffD}g fa`;
+}
+
+function deriveWorkState(savedUdaCount: number, wizardStep: number, progStatus: ProgStatus) {
+  if (wizardStep > 1 && wizardStep <= 5) return 'in_corso';
+  if (savedUdaCount === 0) return 'nessuna_attivita';
+  if (progStatus === 'pronta per confronto') return 'completo';
+  return 'bozza';
+}
+
+const WORK_STATE_CONFIG: Record<string, { label: string; color: string; bg: string }> = {
+  nessuna_attivita: { label: 'Nessuna attività', color: 'text-slate-500', bg: 'bg-slate-100' },
+  in_corso: { label: 'In corso', color: 'text-amber-700', bg: 'bg-amber-100' },
+  bozza: { label: 'Bozza salvata', color: 'text-blue-700', bg: 'bg-blue-100' },
+  completo: { label: 'Completo', color: 'text-emerald-700', bg: 'bg-emerald-100' },
+};
 
 interface DashboardViewProps {
   activeTab: string;
   role: UserRole;
   savedUda: UdaModel[];
   decisions: Record<string, unknown>;
+  wizardStep: number;
+  progTitle: string;
+  progStatus: ProgStatus;
   handleDownloadCml: () => void;
   handleTabSwitch: (tab: string) => void;
   setSelectedBrainDoc: (value: string) => void;
@@ -20,6 +64,9 @@ export function DashboardView({
   role,
   savedUda,
   decisions,
+  wizardStep,
+  progTitle,
+  progStatus,
   handleDownloadCml,
   handleTabSwitch,
   setSelectedBrainDoc,
@@ -39,15 +86,87 @@ export function DashboardView({
          
          {/* INSEGNANTE (TEACHER) WIDGETS */}
          {role === 'insegnante' && (
-          <div className="bg-slate-50 border border-slate-200 rounded-xl p-5 space-y-2.5 text-left col-span-3">
-           <span className="text-[8px] font-black text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md uppercase block w-fit">Stato del Lavoro</span>
-           <strong className="text-xs text-slate-800 font-extrabold block">Bozze e Unità di Apprendimento</strong>
-           <div className="flex justify-between items-center text-xs">
-            <span className="text-slate-500 font-bold">Unità di Apprendimento (UDA) in Archivio:</span>
-            <span className="text-indigo-600 font-black">{savedUda.length} / 5 moduli</span>
+          <div className="bg-slate-50 border border-slate-200 rounded-xl p-5 space-y-3 text-left col-span-3" data-testid="teacher-work-status">
+           <div className="flex items-center justify-between">
+            <span className="text-[8px] font-black text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md uppercase block w-fit">Stato del Lavoro</span>
+            {(() => {
+              const state = deriveWorkState(savedUda.length, wizardStep, progStatus);
+              const cfg = WORK_STATE_CONFIG[state];
+              return (
+                <span className={`text-[8px] font-bold px-2 py-0.5 rounded-md uppercase ${cfg.color} ${cfg.bg}`}>
+                  {cfg.label}
+                </span>
+              );
+            })()}
            </div>
-           <div className="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden">
-            <div className="bg-indigo-600 h-full" style={{ width: `${Math.min(100, (savedUda.length / 5) * 100)}%` }} />
+
+           {/* Metriche */}
+           <div className="grid grid-cols-3 gap-3">
+            <div className="space-y-0.5">
+             <span className="text-[9px] text-slate-400 font-bold uppercase">UDA Salvati</span>
+             <div className="text-sm font-black text-slate-800">{savedUda.length}</div>
+            </div>
+            <div className="space-y-0.5">
+             <span className="text-[9px] text-slate-400 font-bold uppercase">Decisioni Pendenti</span>
+             <div className="text-sm font-black text-slate-800">{Object.keys(decisions).length}</div>
+            </div>
+            <div className="space-y-0.5">
+             <span className="text-[9px] text-slate-400 font-bold uppercase">
+              {wizardStep > 1 ? 'Passo Wizard' : 'Prossimo Passo'}
+             </span>
+             <div className="text-sm font-black text-slate-800">
+              {wizardStep > 1 ? `${wizardStep}/5` : savedUda.length > 0 ? '—' : '1/5'}
+             </div>
+            </div>
+           </div>
+
+           {/* Attività in corso o ultimo salvataggio */}
+           {wizardStep > 1 && wizardStep <= 5 && (
+            <div className="flex items-center gap-2 text-[10px] text-slate-500 font-semibold">
+             <ClipboardList className="w-3 h-3 text-amber-500" />
+             <span>
+              {progTitle ? `Wizard: ${progTitle}` : `Passo ${wizardStep}: ${WIZARD_STEP_LABELS[wizardStep]}`}
+             </span>
+            </div>
+           )}
+
+           {(() => {
+             const lastSave = readLastSaveTime();
+             if (!lastSave) return null;
+             return (
+              <div className="text-[9px] text-slate-400 font-medium">
+               Ultimo salvataggio: {formatRelativeTime(lastSave)}
+              </div>
+             );
+           })()}
+
+           {/* Azione primaria */}
+           <div className="pt-2 border-t border-slate-200">
+            {wizardStep > 1 && wizardStep <= 5 ? (
+             <button
+              onClick={() => handleTabSwitch('progetta-annuale')}
+              className="w-full py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-lg text-[10px] tracking-wider uppercase transition flex items-center justify-center gap-1.5"
+              data-testid="teacher-action-continue"
+             >
+              Continua UDA <ArrowRight className="w-3 h-3" />
+             </button>
+            ) : savedUda.length > 0 ? (
+             <button
+              onClick={() => handleTabSwitch('progetta-annuale')}
+              className="w-full py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold rounded-lg text-[10px] tracking-wider uppercase transition flex items-center justify-center gap-1.5"
+              data-testid="teacher-action-consult"
+             >
+              <BookOpen className="w-3 h-3" /> Consulta UDA
+             </button>
+            ) : (
+             <button
+              onClick={() => handleTabSwitch('curricolo')}
+              className="w-full py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-lg text-[10px] tracking-wider uppercase transition flex items-center justify-center gap-1.5"
+              data-testid="teacher-action-start"
+             >
+              Inizia dal Curricolo <ArrowRight className="w-3 h-3" />
+             </button>
+            )}
            </div>
           </div>
          )}

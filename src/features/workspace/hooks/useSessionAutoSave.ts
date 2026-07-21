@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import type { DecisionStatus, SchoolOrder, UdaModel, UserRole, UserState } from '../../../types/curriculum';
 import type { CurriculumMap } from '../../session';
+import { safeLocalStorageSetItem } from '../../../lib/consolidatedStorage';
 
 interface SessionAutoSaveState {
   localCurriculum: CurriculumMap;
@@ -95,6 +96,7 @@ export const useSessionAutoSave = ({
 
       try {
         localStorage.setItem('curman_emergency_backup', fileContent);
+        safeLocalStorageSetItem('curman_lastSaveTime', String(Date.now()));
         console.log("[CurManLight Auto-Saver] Copia d'Emergenza salvata in localStorage.");
       } catch (e) {
         console.warn("[CurManLight Auto-Saver] Scrittura localStorage inibita:", e);

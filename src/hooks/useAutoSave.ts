@@ -1,6 +1,7 @@
 ﻿import { useEffect, useRef, useCallback } from 'react';
 import { useCurriculumStore, useClassroomStore, useWorkspaceStore, useSessionStore } from '../stores';
 import { safeLocalStorageSetLarge } from '../lib/storage';
+import { safeLocalStorageSetItem } from '../lib/consolidatedStorage';
 
 type AutoSaveSnapshot = {
   curriculum: ReturnType<typeof useCurriculumStore.getState>;
@@ -36,6 +37,7 @@ export function useAutoSave(): void {
     const handleBeforeUnload = () => {
       syncRef();
       safeLocalStorageSetLarge('curmanlight-emergency-backup', JSON.stringify(stateRef.current));
+      safeLocalStorageSetItem('curman_lastSaveTime', String(Date.now()));
     };
 
     const handleVisibilityChange = () => {
