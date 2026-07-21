@@ -1,3 +1,7 @@
+import { useAppContext } from '../components/layout/AppContext';
+import { ProgettazioneTab } from '../features/progettazione';
+
 export default function PlanningPage() {
-  return <div>PlanningPage — placeholder</div>;
+ const ctx = useAppContext();
+ return <ProgettazioneTab {...ctx} />;
 }

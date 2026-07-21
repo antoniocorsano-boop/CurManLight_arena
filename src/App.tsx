@@ -1,9 +1,13 @@
+import { useState } from 'react';
+import { Suspense } from 'react';
 import { Check } from 'lucide-react';
+import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useCurriculumStore } from './store/useCurriculumStore';
 import { SchoolOrder, UdaModel } from './types/curriculum';
-import { AppModalsLayer, AppViewsLayer, useAppLocalHandlers, useAppStartupEffects, useAppWorkflowState, useOnboardingProfile, useSessionUiState, useToast, type AppModalsLayerProps, type AppViewsLayerProps } from './features/session';
+import { AppModalsLayer, useAppLocalHandlers, useAppStartupEffects, useAppWorkflowState, useOnboardingProfile, useSessionUiState, useToast, type AppModalsLayerProps, type AppViewsLayerProps } from './features/session';
 import { CopilotChatSidebar, useCopilotInteractionHandlers, useLocalAgentSetup } from './features/copilot';
-import { AppHeader, AppSidebar, GlobalAlerts, MobileBottomNav, useAppNavigation } from './features/navigation';
+import { AppHeader, AppSidebar, GlobalAlerts, MobileBottomNav, type AppTab } from './features/navigation';
+import { AppContext, type AppContextValue } from './components/layout/AppContext';
 import { initialEdges, initialNodes } from './lib/architectureGraph';
 import { safeLocalStorageSetItem } from './lib/consolidatedStorage';
 import { getDisciplineIcon, getDisciplineLabel, orderLabelsForMap } from './lib/disciplineLabels';
@@ -421,18 +425,74 @@ export default function App() {
   showToast
  });
 
- const {
-  activeTab,
-  sidebarCollapsed,
-  toggleSidebar,
-  handleTabSwitch
- } = useAppNavigation({
-  secondBrainTab,
-  activeGeneralSubtab,
-  activeProgTab,
-  activeProcessoTab,
-  wikiWorkspaceTab
- });
+ // Derive activeTab from URL (React Router)
+ const location = useLocation();
+ const navigate = useNavigate();
+
+ const pathnameToTab = (pathname: string): AppTab => {
+  if (pathname.startsWith('/curriculum') || pathname.startsWith('/revisione')) return 'curricolo';
+  if (pathname.startsWith('/classroom')) return 'progetta-annuale';
+  if (pathname.startsWith('/planning')) return 'progetta-annuale';
+  if (pathname.startsWith('/documents')) return 'esportazioni';
+  if (pathname.startsWith('/copilot')) return 'dashboard';
+  if (pathname.startsWith('/knowledge') || pathname.startsWith('/second-brain')) return 'second-brain';
+  if (pathname.startsWith('/social')) return 'dashboard';
+  if (pathname.startsWith('/settings') || pathname.startsWith('/fonti')) return 'fonti';
+  if (pathname.startsWith('/guida')) return 'guida';
+  if (pathname.startsWith('/onboarding')) return 'dashboard';
+  return 'dashboard';
+ };
+
+ const activeTab = pathnameToTab(location.pathname);
+ const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+
+ const toggleSidebar = () => {
+  if (window.innerWidth < 768) {
+   const sidebar = document.getElementById('sidebar');
+   if (sidebar) {
+    if (sidebar.classList.contains('hidden')) {
+     sidebar.className = "fixed inset-y-16 left-4 bg-white border-2 border-slate-200 shadow-2xl z-40 p-4 rounded-2xl w-[280px] space-y-4 overflow-y-auto fade-in block";
+    } else {
+     sidebar.className = "hidden md:block w-full md:w-64 shrink-0 space-y-4 transition-all duration-300";
+    }
+   }
+  } else {
+   setSidebarCollapsed(prev => !prev);
+  }
+ };
+
+ const tabToPath = (tab: AppTab): string => {
+  switch (tab) {
+   case 'curricolo': return '/curriculum';
+   case 'revisione': return '/curriculum';
+   case 'progetta-annuale': return '/planning';
+   case 'processo': return '/planning';
+   case 'esportazioni': return '/documents';
+   case 'certificazione-pa': return '/documents';
+   case 'second-brain': return '/knowledge';
+   case 'fonti': return '/settings';
+   case 'guida': return '/guida';
+   case 'dashboard':
+   default: return '/';
+  }
+ };
+
+ const handleTabSwitch = (tab: AppTab) => {
+  navigate(tabToPath(tab));
+  // Close mobile sidebar
+  if (window.innerWidth < 768) {
+   const sidebar = document.getElementById('sidebar');
+   if (sidebar) {
+    sidebar.className = "hidden md:block w-full md:w-64 shrink-0 space-y-4 transition-all duration-300";
+   }
+  }
+  // Reset scroll
+  const mainEl = document.getElementById('main-content');
+  if (mainEl) mainEl.scrollTop = 0;
+  window.scrollTo({ top: 0, behavior: 'auto' });
+  document.body.scrollTop = 0;
+  if (document.documentElement) document.documentElement.scrollTop = 0;
+ };
 
  useResetSpeechOnContextChange({
   selectedBrainDoc,
@@ -1029,7 +1089,13 @@ export default function App() {
   handleAddCustomKbDoc
  };
 
+ const appContextValue: AppContextValue = {
+  ...appViewsLayerProps,
+  handleTabSwitch: (tab: AppTab) => handleTabSwitch(tab)
+ };
+
  return (
+  <AppContext.Provider value={appContextValue}>
   <div className="flex-1 flex flex-col">
    {/* Dynamic Toast */}
    {toastMessage && (
@@ -1074,7 +1140,7 @@ export default function App() {
      activeCurricoloView={activeCurricoloView}
      activeProgTab={activeProgTab}
      pendingCount={pendingCount}
-     handleTabSwitch={(tab) => handleTabSwitch(tab as any)}
+     handleTabSwitch={(tab) => handleTabSwitch(tab as AppTab)}
      setActiveCurricoloView={(view) => setActiveCurricoloView(view as any)}
      setActiveProgTab={(tab) => setActiveProgTab(tab as any)}
     />
@@ -1092,8 +1158,10 @@ export default function App() {
      />
      <main id="main-content" className="flex-1 bg-white border border-slate-200 rounded-2xl shadow-sm p-6 overflow-y-auto relative">
 
-      {/* VIEW LAYER */}
-      <AppViewsLayer {...appViewsLayerProps} />
+      {/* VIEW LAYER - Route-based rendering */}
+      <Suspense fallback={<div className="flex items-center justify-center h-32"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div></div>}>
+       <Outlet />
+      </Suspense>
      </main>
     </div>
     {/* CONTEXTUAL COPILOT CHAT SIDEBAR (OIV ERGONOMIC ENHANCEMENT) */}
@@ -1119,11 +1187,12 @@ export default function App() {
    {/* MODAL LAYER */}
    <AppModalsLayer {...appModalsLayerProps} />
    {/* MOBILE BOTTOM NAV */}
-   <MobileBottomNav
-    activeTab={activeTab}
-    pendingCount={pendingCount}
-    handleTabSwitch={(tab) => handleTabSwitch(tab as any)}
+    <MobileBottomNav
+     activeTab={activeTab}
+     pendingCount={pendingCount}
+     handleTabSwitch={(tab) => handleTabSwitch(tab as AppTab)}
    />  </div>
+  </AppContext.Provider>
  );
 }
 

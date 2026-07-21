@@ -1,3 +1,7 @@
+import { useAppContext } from '../components/layout/AppContext';
+import { SecondBrainTab } from '../features/documents';
+
 export default function KnowledgePage() {
-  return <div>KnowledgePage — placeholder</div>;
+ const ctx = useAppContext();
+ return <SecondBrainTab {...ctx} />;
 }

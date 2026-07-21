@@ -42,7 +42,8 @@ Draft
 | TY-001 | Types | Boundary-first typed architecture | [CML-603C](./CML-603C_TYPE_BOUNDARY_STRATEGY.md) | Verified | Alto |
 | TS-001 | Tests | Interaction tests govern primary user flows | [CML-603D](./CML-603D_INTERACTION_TESTS.md) | Verified | Medio |
 | DM-001 | Domains | Domain modularization is the unit of React evolution | [CML-603E](./CML-603E_DOMAIN_MODULARIZATION.md) | Verified | Alto |
-| NAV-001 | Navigation | Navigation strategy aligns tabs, routes and deep links | Future CML-604+ | Draft | Medio |
+| NAV-001 | Navigation | Navigation strategy aligns tabs, routes and deep links | [CML-604A](../07_navigation_program/CML-604A_NAVIGATION_STRATEGY.md) | Superseded by NAV-002 | Medio |
+| NAV-002 | Navigation | React Router v7 is the canonical navigation system | [CML-604A](../07_navigation_program/CML-604A_NAVIGATION_STRATEGY.md) | Verified | Alto |
 | DS-001 | Design System | UI primitives and responsive patterns are governed centrally | Future CML-604+ | Draft | Medio |
 
 
@@ -54,7 +55,16 @@ Draft
 | Verified implementation decisions | 4 / 4 | UT-001, TY-001, TS-001 and DM-001 are Verified |
 | Approved runtime policy decisions | 11 / 11 | RT-001 through RT-011 are Approved in CML-603A and traced for future runtime verification |
 | Architecture Gate | PASSED | CML-603F verified the program as a whole; report linked below |
-| Next program step | CML-604 | Freeze the verified Architecture Baseline and resume functional development |
+
+## CML-604 Progress Snapshot
+
+| Metric | Value | Evidence |
+|---|:---:|---|
+| CML-604 Status | **In Progress** | CML-604A and 604B verified; CML-604C next |
+| Navigation decisions | 1 / 1 Verified | NAV-002 (React Router) Verified |
+| Shell decisions | 1 / 1 Verified | Shell-001 (Application Shell) Verified |
+| Architecture Gate | Pending | CML-604F after all phases complete |
+| Next phase | CML-604C Workspace Experience | Context preservation, session restore, nav sync |
 
 ## Known External Blockers
 
@@ -83,6 +93,7 @@ Draft
 | TS-001 | [CML-603D](./CML-603D_INTERACTION_TESTS.md) | `src/__tests__/interaction.cml603d.test.tsx` covers 5/5 priority flows using React interaction harnesses and mocked runtime/network boundaries | `npx vitest run src/__tests__/interaction.cml603d.test.tsx` 5/5; `npx tsc --noEmit`; `npm test` 64/64; `npm run build`; scoped `git diff --check` clean; global `git diff --check` blocked only by BL-001 outside TS-001 scope |
 | DM-001 | [CML-603E](./CML-603E_DOMAIN_MODULARIZATION.md) | Active domains expose root public APIs in `src/features/<domain>/index.ts`; cross-domain imports touched by DM-001 use those APIs; TS-001 tests consume public feature APIs | Public entrypoint scan complete; no cross-domain imports into active domain `components/hooks/types/data`; dependency audit lists intentional edges; `npx tsc --noEmit`; `npm test` 64/64; `npm run build`; scoped `git diff --check` clean with BL-001 external |
 | NAV-001 | Future CML-604+ | Router/navigation integration | Route/deep-link interaction tests |
+| NAV-002 | [CML-604A](../07_navigation_program/CML-604A_NAVIGATION_STRATEGY.md) | `BrowserRouter` in `main.tsx`; `activeTab` derived from URL via `useLocation`; `handleTabSwitch` calls `navigate()` | `npx tsc --noEmit`; `npm test` 64/64; `npm run build`; deep linking, back/forward, refresh all work |
 | DS-001 | Future CML-604+ | Shared UI primitives and design tokens | Visual/accessibility regression checks |
 
 ## Governance Rule

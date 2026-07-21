@@ -1,3 +1,5 @@
+import { CopilotPanel } from '../features/copilot';
+
 export default function CopilotPage() {
-  return <div>CopilotPage — placeholder</div>;
+ return <CopilotPanel />;
 }
