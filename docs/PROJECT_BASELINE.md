@@ -82,6 +82,21 @@ src/
 
 ## Evolution Guidelines
 
+### The Right Question
+
+Not: "How do we improve the code?"
+
+But: "What is the next real problem a teacher encounters using CurManLight?"
+
+### The Rule
+
+> **Every new initiative must be summarizable in a sentence starting with "Il docente potrà..."**
+
+Examples:
+- "Il docente potrà riprendere il lavoro esattamente dal punto in cui lo aveva lasciato."
+- "Il docente potrà confrontare due UDA senza cambiare schermata."
+- "Il docente potrà verificare automaticamente se la progettazione copre tutti gli obiettivi previsti."
+
 ### Do
 
 - Feature development within existing domains
@@ -96,6 +111,14 @@ src/
 - New architectural patterns
 - Navigation system changes (frozen)
 - State management overhaul (frozen)
+
+### Work Cycle
+
+1. Observation → where does the teacher lose time?
+2. Analysis → is this really a product problem?
+3. Mock → realistic behavior before implementation
+4. Implementation → incremental, no baseline changes
+5. Validation → faster? fewer errors? clearer?
 
 ## Entry Points for New Contributors
 

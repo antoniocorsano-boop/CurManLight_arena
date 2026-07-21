@@ -16,6 +16,35 @@ CurManLight NON è più in fase di migrazione tecnica.
 
 Ogni modifica deve produrre un beneficio concreto per l'utente finale.
 
+## La domanda giusta
+
+Non: "Come miglioriamo il codice?"
+
+Ma: "Qual è il prossimo problema reale che un docente incontra usando CurManLight?"
+
+## Ciclo di lavoro
+
+1. **Osservazione del lavoro del docente**
+   - dove perde tempo?
+   - dove si blocca?
+   - dove deve ricordare troppe cose?
+
+2. **Analisi funzionale**
+   - il problema è davvero del prodotto?
+   - è un problema di flusso, di linguaggio o di informazioni?
+
+3. **Mock realistico**
+   - comportamento prima dell'implementazione
+   - un solo cambiamento significativo per volta
+
+4. **Implementazione incrementale**
+   - senza toccare la baseline salvo necessità documentata
+
+5. **Validazione**
+   - il docente completa il lavoro più velocemente?
+   - commette meno errori?
+   - capisce meglio cosa fare?
+
 ## Vincoli
 
 ### Vietato
@@ -45,6 +74,17 @@ Ogni proposta deve essere valutata secondo questo ordine:
 3. Riduzione del tempo necessario per svolgere il lavoro
 4. Riduzione della complessità percepita
 5. Solo infine impatto tecnico
+
+## Regola per ogni proposta
+
+> **Ogni nuova iniziativa deve poter essere riassunta in una frase che inizi con "Il docente potrà..."**
+
+Esempi:
+- "Il docente potrà riprendere il lavoro esattamente dal punto in cui lo aveva lasciato."
+- "Il docente potrà confrontare due UDA senza cambiare schermata."
+- "Il docente potrà verificare automaticamente se la progettazione copre tutti gli obiettivi previsti."
+
+Se una proposta non riesce a essere espressa in questo modo, probabilmente è ancora centrata sulla tecnologia invece che sul prodotto.
 
 ## Ambiti consentiti
 
@@ -76,16 +116,29 @@ Ogni proposta deve essere valutata secondo questo ordine:
 
 Ogni proposta deve contenere:
 
-1. Problema osservato
-2. Impatto sugli utenti
-3. Analisi UX
-4. Analisi funzionale
-5. Mock del comportamento
-6. Piano incrementale
-7. Rischi
-8. Criteri di validazione
+1. **Frase "Il docente potrà..."**
+2. Problema osservato
+3. Impatto sugli utenti
+4. Analisi UX
+5. Analisi funzionale
+6. Mock del comportamento
+7. Piano incrementale
+8. Rischi
+9. Criteri di validazione
 
 Solo dopo approvazione procedere con l'implementazione.
+
+## Iniziative tipo
+
+Più che milestone tecniche, programmi orientati al lavoro reale:
+
+- **Teacher Workspace**: ridurre il carico cognitivo durante la progettazione
+- **Department Collaboration**: migliorare il confronto tra docenti e dipartimento
+- **Knowledge Companion**: usare la base documentale per dare suggerimenti contestuali
+- **Curriculum Review**: aiutare il docente a verificare completezza e coerenza prima dell'esportazione
+- **First-time Experience**: fare in modo che un docente nuovo riesca a usare il sistema senza spiegazioni esterne
+
+Queste iniziative sfruttano la piattaforma costruita invece di modificarla.
 
 ## Obiettivo finale
 
