@@ -1,0 +1,11 @@
+export { copyText } from './clipboard';
+export { escapeHtml } from './escapeHtml';
+export { safeLocalStorageSetLarge, dispatchStorageQuotaEvent, isQuotaExceededError, STORAGE_QUOTA_EVENT, throttledSetLarge, pruneStaleConsolidatedEntries, getStorageUsage } from './storage';
+export { generateWikiResponse, type WikiVolume, type WikiCustomDoc } from './wikiLLM';
+export { escapeRegExp } from './semanticSearch';
+export { generateProgrammazioneAnnuale, generateRelazione, generateSpecificoGrado, generateUdaDocument, printDocument } from './documentGenerator';
+export { filterGdpr, containsPersonalData } from './gdprFilter';
+export { generateScormManifest } from './scormGenerator';
+export { testOllamaConnection, generateWithOllama } from './ollamaClient';
+export { googleAuth, exchangeCode, uploadToDrive, downloadFromDrive, listFiles } from './googleDrive';
+export { parseCsv, importCsvToCurriculum } from './csvParser';

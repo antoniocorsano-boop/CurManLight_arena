@@ -54,8 +54,8 @@ export interface UserState {
   selectedTraguardi: number[];
   selectedObiettivi: number[];
   selectedEvidenze: string[];
-  activeProgTab: 'annuale' | 'uda' | 'certificazione' | 'social' | 'classe';
-  activeCurricoloView: 'albero' | 'mappa' | 'popolamento';
+  activeProgTab: 'home' | 'annuale' | 'uda' | 'certificazione' | 'social' | 'classe-home' | 'classe';
+  activeCurricoloView: 'home' | 'albero' | 'mappa' | 'popolamento';
   activeProcessoTab: 'flusso' | 'verifica';
   activeGeneralSubtab: 'premessa' | 'riforma' | 'obiettivi' | 'livelli';
 }

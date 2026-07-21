@@ -19,7 +19,12 @@ const getCurriculumKB = () => {
 };
 
 // Configure Dexie for Local IndexedDB storage bypassing localStorage limits!
-let db: any = null;
+type PersistedStateRecord = {
+  key: string;
+  value: string;
+};
+
+let db: Dexie | null = null;
 try {
   if (typeof window !== 'undefined' && window.indexedDB) {
     db = new Dexie('CurManLightDB_Evoluto_v1.3');
@@ -38,7 +43,7 @@ const indexedDBStorage = {
   getItem: async (name: string): Promise<string | null> => {
     try {
       if (!db) throw new Error("IndexedDB non inizializzato");
-      const val = await db.table('state').get(name);
+      const val = (await db.table('state').get(name)) as PersistedStateRecord | undefined;
       return val ? val.value : null;
     } catch (e) {
       console.warn("[CurManLight Storage Guard] Impossibile leggere da IndexedDB, uso la memoria temporanea:", e);

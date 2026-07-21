@@ -1,0 +1,1 @@
+export { ProcessoTab } from './ProcessoTab';
