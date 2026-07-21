@@ -45,6 +45,24 @@ powershell -ExecutionPolicy Bypass -File scripts/agent-memory.ps1 status
 - Build command: `npm run build`.
 - Agent routing guide: `docs/AGENT_ORCHESTRATION.md`.
 
+## Working Mode (Post-CML-604)
+
+**Read `docs/WORKING_PROTOCOL.md` before starting any task.**
+
+The architecture is frozen. Focus is on product evolution for teachers.
+
+- **DO**: UX improvements, workflow enhancements, feature development
+- **DON'T**: refactoring, structural changes, new patterns, new frameworks
+
+Every proposal must follow the evaluation order:
+1. Value for the teacher
+2. Value for the department
+3. Time reduction
+4. Perceived complexity reduction
+5. Technical impact (last)
+
+See `docs/PROJECT_BASELINE.md` for current state.
+
 ## Agent Notes
 
 - Codex and opencode: use this `AGENTS.md` as the primary project instruction file.
