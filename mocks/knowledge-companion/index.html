@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Knowledge Companion — Mock di Validazione</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <header class="mock-header">
+    <span>Knowledge Companion</span>
+    <span>Mock di Validazione — Wizard UDA</span>
+  </header>
+
+  <div class="mock-shell">
+    <!-- Step indicators -->
+    <div class="step-indicators">
+      <div class="step-dot active" data-step="2" onclick="renderStep(0)">
+        <span class="step-num">2</span>
+        <span class="step-name">Traguardi</span>
+      </div>
+      <div class="step-connector"></div>
+      <div class="step-dot" data-step="3" onclick="renderStep(1)">
+        <span class="step-num">3</span>
+        <span class="step-name">Evidenze</span>
+      </div>
+      <div class="step-connector"></div>
+      <div class="step-dot" data-step="4" onclick="renderStep(2)">
+        <span class="step-num">4</span>
+        <span class="step-name">Compito</span>
+      </div>
+      <div class="step-connector"></div>
+      <div class="step-dot" data-step="5">
+        <span class="step-num">&#10003;</span>
+        <span class="step-name">Riepilogo</span>
+      </div>
+    </div>
+
+    <main class="mock-main">
+      <div class="wizard-card" id="wizard-body"></div>
+    </main>
+  </div>
+
+  <!-- Overlay -->
+  <div class="overlay-mask" id="overlay" onclick="closeOverlay()">
+    <div class="overlay-box" onclick="event.stopPropagation()">
+      <div class="overlay-header">
+        <h3></h3>
+        <button class="overlay-close" onclick="closeOverlay()">&#10005;</button>
+      </div>
+      <div class="overlay-body"></div>
+    </div>
+  </div>
+
+  <!-- Observer log -->
+  <button class="observer-toggle" id="observer-toggle">Log osservatore</button>
+  <div class="observer-log" id="observer-log">
+    <div class="observer-log-header">Log osservatore (premi L)</div>
+    <div class="observer-log-body" id="log-body"></div>
+  </div>
+
+  <!-- Facilitator panel -->
+  <button class="facilitator-toggle" id="facilitator-toggle">Modalità test</button>
+  <div class="facilitator-panel" id="facilitator-panel">
+    <div class="facilitator-header">Varianti di test</div>
+    <div class="facilitator-body" id="variant-list"></div>
+    <div class="facilitator-footer">
+      <button class="facilitator-exit" onclick="exitVariant()">Torna al percorso</button>
+    </div>
+  </div>
+
+  <script src="data.js"></script>
+  <script src="scenarios.js"></script>
+  <script>init();</script>
+</body>
+</html>

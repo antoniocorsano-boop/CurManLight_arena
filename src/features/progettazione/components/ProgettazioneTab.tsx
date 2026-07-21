@@ -3,6 +3,8 @@ import { useCurriculumStore } from '../../../store/useCurriculumStore';
 import { ClasseTab } from '../../classroom';
 import { SocialTab } from '../../social';
 import { CertificazioneTab } from './CertificazioneTab';
+import { KnowledgeCompanionPanel, VolumeReaderOverlay } from './KnowledgeCompanionPanel';
+import { useKnowledgeCompanion } from '../hooks/useKnowledgeCompanion';
 import type { SchoolOrder, UdaModel } from '../../../types/curriculum';
 import type { AppViewsLayerProps, CurriculumMap, LibrarySorting, ProgStatus, ProgettazioneMode } from '../../session';
 
@@ -546,6 +548,8 @@ function ProgettazioneAnnualeView({
 }: ProgettazioneAnnualeViewProps) {
   const { discipline, order, schoolYear, selectedTraguardi, selectedObiettivi, selectedEvidenze, savedUda, toggleTraguardoSelection, toggleObiettivoSelection, toggleEvidenceSelection } = useCurriculumStore();
 
+  const kc = useKnowledgeCompanion(wizardStep, discipline, order);
+
   return (
     <div className="space-y-6">
       {/* TEP Banner */}
@@ -800,6 +804,17 @@ function ProgettazioneAnnualeView({
               </div>
             )}
 
+            {kc.visible && (
+              <KnowledgeCompanionPanel
+                intro={kc.intro}
+                mainRef={kc.mainRef}
+                additionalRefs={kc.additionalRefs}
+                expanded={kc.expanded}
+                onToggleExpand={kc.toggleExpand}
+                onOpenVolume={kc.openOverlay}
+              />
+            )}
+
             {wizardStep === 5 && (
               <div className="space-y-4 fade-in">
                 <div className="bg-slate-950 text-slate-100 p-3 rounded-xl font-mono text-[9px] h-[250px] overflow-y-auto leading-relaxed select-all border border-slate-800 text-left shadow-inner">
@@ -819,6 +834,8 @@ function ProgettazioneAnnualeView({
           </div>
         </div>
       )}
+
+      <VolumeReaderOverlay content={kc.overlayContent} onClose={kc.closeOverlay} />
     </div>
   );
 }
