@@ -144,7 +144,7 @@ export function DashboardView({
            <div className="pt-2 border-t border-slate-200">
             {wizardStep > 1 && wizardStep <= 5 ? (
              <button
-              onClick={() => handleTabSwitch('progetta-annuale')}
+              onClick={() => { handleTabSwitch('progetta-annuale'); setActiveProgTab('annuale'); }}
               className="w-full py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-lg text-[10px] tracking-wider uppercase transition flex items-center justify-center gap-1.5"
               data-testid="teacher-action-continue"
              >
@@ -152,7 +152,7 @@ export function DashboardView({
              </button>
             ) : savedUda.length > 0 ? (
              <button
-              onClick={() => handleTabSwitch('progetta-annuale')}
+              onClick={() => { handleTabSwitch('progetta-annuale'); setActiveProgTab('uda'); }}
               className="w-full py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold rounded-lg text-[10px] tracking-wider uppercase transition flex items-center justify-center gap-1.5"
               data-testid="teacher-action-consult"
              >

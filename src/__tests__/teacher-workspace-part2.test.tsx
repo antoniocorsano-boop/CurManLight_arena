@@ -127,19 +127,23 @@ describe('Teacher Workspace Part 2 — Dashboard work status', () => {
 
   // --- Actions ---
 
-  it('16. azione Continua UDA → progetta-annuale', () => {
+  it('16. azione Continua UDA → progetta-annuale + activeProgTab annuale', () => {
     const handleTabSwitch = vi.fn();
-    render(<DashboardView {...baseProps} wizardStep={3} handleTabSwitch={handleTabSwitch} />);
+    const setActiveProgTab = vi.fn();
+    render(<DashboardView {...baseProps} wizardStep={3} handleTabSwitch={handleTabSwitch} setActiveProgTab={setActiveProgTab} />);
     screen.getByTestId('teacher-action-continue').click();
     expect(handleTabSwitch).toHaveBeenCalledWith('progetta-annuale');
+    expect(setActiveProgTab).toHaveBeenCalledWith('annuale');
   });
 
-  it('17. azione Consulta UDA → progetta-annuale', () => {
+  it('17. azione Consulta UDA → progetta-annuale + activeProgTab uda', () => {
     const handleTabSwitch = vi.fn();
+    const setActiveProgTab = vi.fn();
     const savedUda = [{ id: '1', title: 'Test UDA' }] as never[];
-    render(<DashboardView {...baseProps} savedUda={savedUda} handleTabSwitch={handleTabSwitch} />);
+    render(<DashboardView {...baseProps} savedUda={savedUda} handleTabSwitch={handleTabSwitch} setActiveProgTab={setActiveProgTab} />);
     screen.getByTestId('teacher-action-consult').click();
     expect(handleTabSwitch).toHaveBeenCalledWith('progetta-annuale');
+    expect(setActiveProgTab).toHaveBeenCalledWith('uda');
   });
 
   it('18. azione Inizia dal Curricolo → curricolo', () => {
