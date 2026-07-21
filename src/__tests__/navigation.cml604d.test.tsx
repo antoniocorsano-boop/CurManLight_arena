@@ -57,7 +57,7 @@ function createMockContext(overrides: Partial<AppContextValue> = {}): AppContext
   assignedCombinations: [],
   progettazioneMode: 'grid',
   setProgettazioneMode: vi.fn(),
-  wizardStep: 0,
+  wizardStep: 1,
   setWizardStep: vi.fn(),
   progTitle: '',
   setProgTitle: vi.fn(),
