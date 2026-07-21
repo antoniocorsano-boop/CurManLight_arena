@@ -95,11 +95,15 @@ Definire il layout compositivo delle route: routing layout, lazy loading, naviga
 
 Mantenere il contesto dell'utente durante la navigazione: stato sessione, restore, sincronizzazione navigazione.
 
+### Status
+
+**Verified.** State persistence rules defined and implemented. `useWorkspaceStore` and `useSessionStore` use Zustand `persist` middleware. Tier 1 state (workspace config, session flags) survives refresh. Tier 2 state (UI, chat, knowledge) survives navigation. Tier 3 state (navigation, scroll, wizard) is ephemeral.
+
 ### Exit Criteria
 
-- Il contesto di sessione si mantiene tra le route.
-- Il restore della sessione funziona dopo refresh.
-- La sincronizzazione workspace non interrompe la navigazione.
+- Il contesto di sessione si mantiene tra le route. ✅ (Tier 1 and Tier 2 persist)
+- Il restore della sessione funziona dopo refresh. ✅ (Zustand persist middleware)
+- La sincronizzazione workspace non interrompe la navigazione. ✅ (workspace state persists independently)
 
 ## CML-604D - Navigation Validation
 

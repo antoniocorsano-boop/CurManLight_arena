@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 
 export interface WorkspaceUser {
   id: string;
@@ -24,22 +25,9 @@ export interface WorkspaceState {
   logout: () => void;
 }
 
-export const useWorkspaceStore = create<WorkspaceState>()((set) => ({
-  accessToken: null,
-  refreshToken: null,
-  userInfo: null,
-  folderId: null,
-  lastSyncTime: null,
-  isSyncLocked: false,
-  syncProgress: 0,
-
-  setTokens: (accessToken, refreshToken) => set({ accessToken, refreshToken }),
-  setUserInfo: (userInfo) => set({ userInfo }),
-  setFolderId: (folderId) => set({ folderId }),
-  setSyncStatus: (isSyncLocked, syncProgress) => set({ isSyncLocked, syncProgress }),
-  setLastSyncTime: (lastSyncTime) => set({ lastSyncTime }),
-  logout: () =>
-    set({
+export const useWorkspaceStore = create<WorkspaceState>()(
+  persist(
+    (set) => ({
       accessToken: null,
       refreshToken: null,
       userInfo: null,
@@ -47,5 +35,23 @@ export const useWorkspaceStore = create<WorkspaceState>()((set) => ({
       lastSyncTime: null,
       isSyncLocked: false,
       syncProgress: 0,
+
+      setTokens: (accessToken, refreshToken) => set({ accessToken, refreshToken }),
+      setUserInfo: (userInfo) => set({ userInfo }),
+      setFolderId: (folderId) => set({ folderId }),
+      setSyncStatus: (isSyncLocked, syncProgress) => set({ isSyncLocked, syncProgress }),
+      setLastSyncTime: (lastSyncTime) => set({ lastSyncTime }),
+      logout: () =>
+        set({
+          accessToken: null,
+          refreshToken: null,
+          userInfo: null,
+          folderId: null,
+          lastSyncTime: null,
+          isSyncLocked: false,
+          syncProgress: 0,
+        }),
     }),
-}));
+    { name: 'curmanlight-workspace-v1' }
+  )
+);

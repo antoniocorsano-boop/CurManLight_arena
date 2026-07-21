@@ -60,11 +60,12 @@ Draft
 
 | Metric | Value | Evidence |
 |---|:---:|---|
-| CML-604 Status | **In Progress** | CML-604A and 604B verified; CML-604C next |
+| CML-604 Status | **In Progress** | CML-604A, 604B, 604C verified; CML-604D next |
 | Navigation decisions | 1 / 1 Verified | NAV-002 (React Router) Verified |
 | Shell decisions | 1 / 1 Verified | Shell-001 (Application Shell) Verified |
+| Persistence decisions | 1 / 1 Verified | Persist-001 (State Persistence Rules) Verified |
 | Architecture Gate | Pending | CML-604F after all phases complete |
-| Next phase | CML-604C Workspace Experience | Context preservation, session restore, nav sync |
+| Next phase | CML-604D Navigation Validation | E2E tests for user navigation behaviors |
 
 ## Known External Blockers
 
