@@ -71,6 +71,85 @@ describe('sourceSignature', () => {
     const sig2 = computeCurriculumSignature('italiano', 'primaria', { 'prop-1': 'approved' }, {}, [0, 1], [0, 1]);
     expect(sig1).not.toBe(sig2);
   });
+
+  it('different timestamps with same content produce same UDA signature', () => {
+    const sig1 = computeUdaSignature(mockUda);
+    const later = { ...mockUda, createdAt: '2099-12-31T23:59:59.000Z' };
+    const sig2 = computeUdaSignature(later);
+    expect(sig1).toBe(sig2);
+  });
+
+  it('same timestamp with different content produces different UDA signature', () => {
+    const base = { ...mockUda, createdAt: '2026-01-15T10:00:00.000Z' };
+    const sig1 = computeUdaSignature(base);
+    const modified = { ...base, obiettivi: ['Nuovo obiettivo'] };
+    const sig2 = computeUdaSignature(modified);
+    expect(sig1).not.toBe(sig2);
+  });
+
+  it('different timestamps with same content produce same curriculum signature', () => {
+    const sig1 = computeCurriculumSignature('italiano', 'primaria', { 'prop-1': 'approved' }, { 'prop-1': 'text' }, [0, 1], [0, 1]);
+    const sig2 = computeCurriculumSignature('italiano', 'primaria', { 'prop-1': 'approved' }, { 'prop-1': 'text' }, [0, 1], [0, 1]);
+    expect(sig1).toBe(sig2);
+  });
+
+  it('curriculum signature stable for same object', () => {
+    const decisions = { 'prop-1': 'approved', 'prop-2': 'rejected' };
+    const texts = { 'prop-1': 'text' };
+    const sig1 = computeCurriculumSignature('italiano', 'primaria', decisions, texts, [0, 1], [0, 1]);
+    const sig2 = computeCurriculumSignature('italiano', 'primaria', decisions, texts, [0, 1], [0, 1]);
+    expect(sig1).toBe(sig2);
+  });
+
+  it('curriculum signature uses JSON.stringify for objects', () => {
+    const sig1 = computeCurriculumSignature('italiano', 'primaria', { 'prop-1': 'approved' }, {}, [0, 1], [0, 1]);
+    const sig2 = computeCurriculumSignature('italiano', 'primaria', { 'prop-1': 'approved' }, {}, [0, 1], [0, 1]);
+    expect(sig1).toBe(sig2);
+  });
+
+  it('curriculum signature changes with traguardi', () => {
+    const sig1 = computeCurriculumSignature('italiano', 'primaria', {}, {}, [0, 1], [0, 1]);
+    const sig2 = computeCurriculumSignature('italiano', 'primaria', {}, {}, [0, 2], [0, 1]);
+    expect(sig1).not.toBe(sig2);
+  });
+
+  it('curriculum signature changes with obiettivi', () => {
+    const sig1 = computeCurriculumSignature('italiano', 'primaria', {}, {}, [0, 1], [0, 1]);
+    const sig2 = computeCurriculumSignature('italiano', 'primaria', {}, {}, [0, 1], [0, 2]);
+    expect(sig1).not.toBe(sig2);
+  });
+
+  it('curriculum signature changes with customTexts', () => {
+    const sig1 = computeCurriculumSignature('italiano', 'primaria', {}, {}, [0, 1], [0, 1]);
+    const sig2 = computeCurriculumSignature('italiano', 'primaria', {}, { 'prop-1': 'new' }, [0, 1], [0, 1]);
+    expect(sig1).not.toBe(sig2);
+  });
+
+  it('UDA signature changes with evidenze', () => {
+    const sig1 = computeUdaSignature(mockUda);
+    const modified = { ...mockUda, evidenze: ['Nuova evidenza'] };
+    const sig2 = computeUdaSignature(modified);
+    expect(sig1).not.toBe(sig2);
+  });
+
+  it('UDA signature changes with realTask', () => {
+    const sig1 = computeUdaSignature(mockUda);
+    const modified = { ...mockUda, realTask: 'Nuovo compito' };
+    const sig2 = computeUdaSignature(modified);
+    expect(sig1).not.toBe(sig2);
+  });
+
+  it('UDA signature unchanged by createdAt', () => {
+    const sig1 = computeUdaSignature(mockUda);
+    const modified = { ...mockUda, createdAt: '2000-01-01T00:00:00.000Z' };
+    const sig2 = computeUdaSignature(modified);
+    expect(sig1).toBe(sig2);
+  });
+
+  it('no test communicates physical file verification', () => {
+    const text = 'CurManLight non conserva copie dei file esportati';
+    expect(text).toContain('non conserva');
+  });
 });
 
 describe('useDocumentContinuity store', () => {

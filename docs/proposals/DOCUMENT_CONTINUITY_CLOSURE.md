@@ -38,7 +38,7 @@ DocumentExportEvent: id, documentType, format, label, sourceKind, sourceId, sour
 - unverifiable: senza sorgente
 
 ## Test
-- 43 CML-605, 210 totali, 0 regressioni
+- 55 CML-605, 222 totali, 0 regressioni
 
 ## Build
 - 788 KB (+4 KB), verde
@@ -53,6 +53,11 @@ DocumentExportEvent: id, documentType, format, label, sourceKind, sourceId, sour
 - Nessun backend
 - Nessuna nuova rotta
 - Nessuna modifica a WS/KC
+
+## Rischi residui
+- La coerenza confronta lo stato locale sorgente, non il file esportato sul dispositivo
+- I casi di tipo 'programmazione' o 'relazione' sono classificati unverifiable perche la sorgente e aggregata
+- exportedAt e solo informazione visiva, non partecipa al confronto
 
 ## Verdetto
 CML_605_DOCUMENT_CONTINUITY_READY_FOR_INTEGRATION
