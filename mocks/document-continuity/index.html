@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document Continuity — Mock</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="shell">
+    <!-- Sidebar (static context) -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <h2>CurManLight</h2>
+        <p>Curricolo Verticale</p>
+      </div>
+      <ul class="sidebar-nav">
+        <li><span class="icon">&#127968;</span> Dashboard</li>
+        <li><span class="icon">&#128218;</span> Consulta Curricolo</li>
+        <li><span class="icon">&#9998;</span> Progettazione UDA</li>
+        <li class="active"><span class="icon">&#128196;</span> Documenti</li>
+        <li><span class="icon">&#127979;</span> Spazio d'Aula</li>
+        <li><span class="icon">&#128214;</span> Second Brain</li>
+      </ul>
+    </aside>
+
+    <!-- Main content -->
+    <main class="main-content">
+      <h1>Documenti prodotti</h1>
+      <p class="subtitle">Documenti esportati dal tuo lavoro. Ogni documento mostra la fonte e lo stato di aggiornamento.</p>
+
+      <!-- Test panel -->
+      <details class="test-panel" open>
+        <summary>Modalita test</summary>
+        <div class="controls">
+          <button class="test-btn active" data-scenario="empty" onclick="setScenario('empty')">Nessun documento</button>
+          <button class="test-btn" data-scenario="justExported" onclick="setScenario('justExported')">Appena esportato</button>
+          <button class="test-btn" data-scenario="multipleDocs" onclick="setScenario('multipleDocs')">Piu documenti</button>
+          <button class="test-btn" data-scenario="modifiedWork" onclick="setScenario('modifiedWork')">Lavoro modificato</button>
+          <button class="test-btn" data-scenario="coherent" onclick="setScenario('coherent')">Stato coerente</button>
+          <button class="test-btn" data-scenario="unknown" onclick="setScenario('unknown')">Stato non verificabile</button>
+        </div>
+      </details>
+
+      <!-- Registry container -->
+      <div id="registry"></div>
+
+      <!-- Detail overlay -->
+      <div id="detail-overlay" class="detail-overlay" style="display:none">
+        <div id="detail-modal" class="detail-modal"></div>
+      </div>
+    </main>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
