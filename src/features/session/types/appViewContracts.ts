@@ -352,6 +352,24 @@ export interface AppViewsLayerProps {
   handleGenerateProgrammazioneAnnualeDoc: () => void;
   handleGenerateRelazioneDoc: () => void;
   handleGenerateSpecificoGradoDoc: () => void;
+  documentExportHistory: Array<{
+    id: string;
+    documentType: string;
+    format: string;
+    label: string;
+    sourceKind: string;
+    sourceId?: string;
+    sourceTitle?: string;
+    discipline: string;
+    order: string;
+    classLabel?: string;
+    workStatus?: string;
+    exportedAt: string;
+    sourceSignature?: string;
+    sourceView?: string;
+    coherence: 'current' | 'modified' | 'unverifiable';
+  }>;
+  clearDocumentExportHistory: () => void;
   activeGeneralSubtab: 'premessa' | 'riforma' | 'obiettivi' | 'livelli';
   setActiveGeneralSubtab: (subtab: 'premessa' | 'riforma' | 'obiettivi' | 'livelli') => void;
   secondBrainTab: SecondBrainTab;

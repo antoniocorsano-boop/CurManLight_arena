@@ -1,6 +1,7 @@
 import { FileText, Code, Printer, ShieldAlert, Sparkles } from 'lucide-react';
 import { useCurriculumStore } from '../../../store/useCurriculumStore';
 import type { AppViewsLayerProps, TemplateJsonState, TemplateSection } from '../../session';
+import { DocumentExportHistory } from './DocumentExportHistory';
 
 const getDisciplineLabel = (disc: string) => {
   const labels: Record<string, string> = {
@@ -40,6 +41,8 @@ export type EsportazioniTabProps = Pick<AppViewsLayerProps,
   | 'targetClass'
   | 'targetSection'
   | 'showToast'
+  | 'documentExportHistory'
+  | 'clearDocumentExportHistory'
 >;
 
 export function EsportazioniTab(props: EsportazioniTabProps) {
@@ -72,6 +75,8 @@ export function EsportazioniTab(props: EsportazioniTabProps) {
     targetClass,
     targetSection,
     showToast,
+    documentExportHistory,
+    clearDocumentExportHistory,
   } = props;
 
   return (
@@ -219,6 +224,14 @@ export function EsportazioniTab(props: EsportazioniTabProps) {
                 )}
               </div>
             </div>
+          </div>
+
+          {/* Document Export History */}
+          <div className="bg-white border border-slate-200 rounded-3xl p-5 shadow-sm space-y-4 text-left">
+            <DocumentExportHistory
+              events={documentExportHistory}
+              onClearHistory={clearDocumentExportHistory}
+            />
           </div>
         </div>
       ) : (

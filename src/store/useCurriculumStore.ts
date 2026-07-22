@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import { UserState, DecisionStatus, UdaModel, SchoolOrder, UserRole } from '../types/curriculum';
+import { UserState, DecisionStatus, UdaModel, SchoolOrder, UserRole, DocumentExportEvent } from '../types/curriculum';
 import { curriculumKB } from '../data/curriculumKB';
 import Dexie from 'dexie';
 
@@ -91,6 +91,8 @@ interface StoreActions extends UserState {
   setActiveGeneralSubtab: (subtab: UserState['activeGeneralSubtab']) => void;
   resetAll: () => void;
   restoreBackupState: (newState: Partial<UserState>) => void;
+  addDocumentExportEvent: (event: DocumentExportEvent) => void;
+  clearDocumentExportHistory: () => void;
 }
 
 export const useCurriculumStore = create<StoreActions>()(
@@ -114,6 +116,7 @@ export const useCurriculumStore = create<StoreActions>()(
       activeCurricoloView: 'albero',
       activeProcessoTab: 'flusso',
       activeGeneralSubtab: 'premessa',
+      documentExportHistory: [],
 
       setRole: (role) => set({ role }),
       setDiscipline: (discipline) => set((state) => {
@@ -188,8 +191,14 @@ export const useCurriculumStore = create<StoreActions>()(
       setActiveProcessoTab: (activeProcessoTab) => set({ activeProcessoTab }),
       setActiveGeneralSubtab: (activeGeneralSubtab) => set({ activeGeneralSubtab }),
       
-      resetAll: () => set({ decisions: {}, customTexts: {}, savedUda: [], selectedTraguardi: [], selectedObiettivi: [], selectedEvidenze: [] }),
-      restoreBackupState: (newState) => set((state) => ({ ...state, ...newState }))
+      resetAll: () => set({ decisions: {}, customTexts: {}, savedUda: [], selectedTraguardi: [], selectedObiettivi: [], selectedEvidenze: [], documentExportHistory: [] }),
+      restoreBackupState: (newState) => set((state) => ({ ...state, ...newState })),
+      addDocumentExportEvent: (event) =>
+        set((state) => {
+          const history = [event, ...state.documentExportHistory].slice(0, 5);
+          return { documentExportHistory: history };
+        }),
+      clearDocumentExportHistory: () => set({ documentExportHistory: [] })
     }),
     {
       name: 'curmanlight-react-db-state-v1.4.0',

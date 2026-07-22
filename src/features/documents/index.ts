@@ -1,7 +1,9 @@
 export { AddKbDocumentModal, EsportazioniTab, SecondBrainTab, WikiReaderModal } from './components';
+export { DocumentExportHistory } from './components/DocumentExportHistory';
 export type { EsportazioniTabProps, SecondBrainTabProps } from './components';
 export { useBackupHandlers } from './hooks/useBackupHandlers';
 export { useDocumentExportHandlers } from './hooks/useDocumentExportHandlers';
+export { useDocumentContinuity } from './hooks/useDocumentContinuity';
 export { useKnowledgeBaseHandlers } from './hooks/useKnowledgeBaseHandlers';
 export type { CustomKbDoc } from './hooks/useKnowledgeBaseHandlers';
 export { useResetSpeechOnContextChange } from './hooks/useResetSpeechOnContextChange';

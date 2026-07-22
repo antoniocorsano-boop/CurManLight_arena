@@ -12,7 +12,7 @@ import { initialEdges, initialNodes } from './lib/architectureGraph';
 import { safeLocalStorageSetItem } from './lib/consolidatedStorage';
 import { getDisciplineIcon, getDisciplineLabel, orderLabelsForMap } from './lib/disciplineLabels';
 import { useClassroomSocialHandlers, useClassroomSocialState } from './features/classroom';
-import { useBackupHandlers, useDocumentExportHandlers, useKnowledgeBaseHandlers, useResetSpeechOnContextChange, useTemplateEngine, useUdaPackageHandlers, useWikiGlossaryHandlers } from './features/documents';
+import { useBackupHandlers, useDocumentExportHandlers, useDocumentContinuity, useKnowledgeBaseHandlers, useResetSpeechOnContextChange, useTemplateEngine, useUdaPackageHandlers, useWikiGlossaryHandlers } from './features/documents';
 import { useCurriculumImportHandlers, useCurriculumProgressStats, useLocalCurriculum } from './features/curriculum';
 import { useProgettazioneAssistiveHandlers, useUdaProgrammingHandlers } from './features/progettazione';
 import { useSessionAutoSave, useWorkspaceState, useWorkspaceSyncHandlers } from './features/workspace';
@@ -697,6 +697,14 @@ export default function App() {
   setGeneratedDocTitle,
   setGeneratedDocText
  });
+
+ const {
+  recordExport,
+  clearDocumentExportHistory,
+  documentExportHistory,
+  computeCurrentCurriculumSignature,
+ } = useDocumentContinuity();
+
  const {
   esportazioniTab,
   setEsportazioniTab,
@@ -909,19 +917,21 @@ export default function App() {
   setTemplateChatInput,
   templateChatHistory,
   handleSendTemplateInstruction,
-  handleDownloadWordDefinitivo,
-  handleDownloadWordDocx,
-  handleDownloadODF,
-  handleDownloadCurricoloPDF,
-  handleCopyToClipboardFormatted,
-  handleDownloadTxt,
-  handleDownloadWordConfronto,
-  handleDownloadRichMarkdown,
-  handleDownloadPdfDirect,
+  handleDownloadWordDefinitivo: () => { handleDownloadWordDefinitivo(); recordExport({ documentType: 'curricolo', format: 'DOC', label: `Curricolo Verticale ${schoolYear}`, sourceKind: 'curriculum', discipline, order, sourceSignature: computeCurrentCurriculumSignature(), sourceView: 'esportazioni' }); },
+  handleDownloadWordDocx: () => { handleDownloadWordDocx(); recordExport({ documentType: 'curricolo', format: 'DOCX', label: `Curricolo Verticale ${schoolYear}`, sourceKind: 'curriculum', discipline, order, sourceSignature: computeCurrentCurriculumSignature(), sourceView: 'esportazioni' }); },
+  handleDownloadODF: () => { handleDownloadODF(); recordExport({ documentType: 'curricolo', format: 'ODF', label: `Curricolo Verticale ${schoolYear}`, sourceKind: 'curriculum', discipline, order, sourceSignature: computeCurrentCurriculumSignature(), sourceView: 'esportazioni' }); },
+  handleDownloadCurricoloPDF: () => { handleDownloadCurricoloPDF(); recordExport({ documentType: 'curricolo', format: 'PDF', label: `Curricolo Verticale ${schoolYear}`, sourceKind: 'curriculum', discipline, order, sourceSignature: computeCurrentCurriculumSignature(), sourceView: 'esportazioni' }); },
+  handleCopyToClipboardFormatted: handleCopyToClipboardFormatted,
+  handleDownloadTxt: () => { handleDownloadTxt(); recordExport({ documentType: 'curricolo', format: 'TXT', label: `Bozza ${discipline} ${order}`, sourceKind: 'curriculum', discipline, order, sourceSignature: computeCurrentCurriculumSignature(), sourceView: 'esportazioni' }); },
+  handleDownloadWordConfronto: () => { handleDownloadWordConfronto(); recordExport({ documentType: 'confronto', format: 'DOC', label: `Tavola Confronto ${schoolYear}`, sourceKind: 'curriculum', discipline, order, sourceSignature: computeCurrentCurriculumSignature(), sourceView: 'esportazioni' }); },
+  handleDownloadRichMarkdown: () => { handleDownloadRichMarkdown(); recordExport({ documentType: 'curricolo', format: 'Markdown', label: `Curricolo Verticale ${schoolYear}`, sourceKind: 'curriculum', discipline, order, sourceSignature: computeCurrentCurriculumSignature(), sourceView: 'esportazioni' }); },
+  handleDownloadPdfDirect: () => { handleDownloadPdfDirect(); recordExport({ documentType: 'curricolo', format: 'PDF', label: `Curricolo Verticale ${schoolYear}`, sourceKind: 'curriculum', discipline, order, sourceSignature: computeCurrentCurriculumSignature(), sourceView: 'esportazioni' }); },
   handleClearLocalStorageWithReset,
   handleGenerateProgrammazioneAnnualeDoc,
   handleGenerateRelazioneDoc,
   handleGenerateSpecificoGradoDoc,
+  documentExportHistory,
+  clearDocumentExportHistory,
   activeGeneralSubtab,
   setActiveGeneralSubtab,
   secondBrainTab,

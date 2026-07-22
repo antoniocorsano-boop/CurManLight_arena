@@ -42,6 +42,24 @@ export interface UdaModel {
   createdAt: string;
 }
 
+export interface DocumentExportEvent {
+  id: string;
+  documentType: string;
+  format: string;
+  label: string;
+  sourceKind: string;
+  sourceId?: string;
+  sourceTitle?: string;
+  discipline: string;
+  order: string;
+  classLabel?: string;
+  workStatus?: string;
+  exportedAt: string;
+  sourceSignature?: string;
+  sourceView?: string;
+  coherence: 'current' | 'modified' | 'unverifiable';
+}
+
 export interface UserState {
   role: UserRole;
   discipline: string;
@@ -58,4 +76,5 @@ export interface UserState {
   activeCurricoloView: 'home' | 'albero' | 'mappa' | 'popolamento';
   activeProcessoTab: 'flusso' | 'verifica';
   activeGeneralSubtab: 'premessa' | 'riforma' | 'obiettivi' | 'livelli';
+  documentExportHistory: DocumentExportEvent[];
 }

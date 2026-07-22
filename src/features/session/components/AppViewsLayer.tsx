@@ -217,6 +217,8 @@ export function AppViewsLayer(props: AppViewsLayerProps) {
     handleGenerateProgrammazioneAnnualeDoc,
     handleGenerateRelazioneDoc,
     handleGenerateSpecificoGradoDoc,
+    documentExportHistory,
+    clearDocumentExportHistory,
     activeGeneralSubtab,
     setActiveGeneralSubtab,
     secondBrainTab,
@@ -489,10 +491,12 @@ export function AppViewsLayer(props: AppViewsLayerProps) {
        handleDownloadRichMarkdown={handleDownloadRichMarkdown}
        handleDownloadPdfDirect={handleDownloadPdfDirect}
        handleClearLocalStorageWithReset={handleClearLocalStorageWithReset}
-       handleGenerateProgrammazioneAnnualeDoc={handleGenerateProgrammazioneAnnualeDoc}
-       handleGenerateRelazioneDoc={handleGenerateRelazioneDoc}
-       handleGenerateSpecificoGradoDoc={handleGenerateSpecificoGradoDoc}
-       targetClass={targetClass}
+        handleGenerateProgrammazioneAnnualeDoc={handleGenerateProgrammazioneAnnualeDoc}
+        handleGenerateRelazioneDoc={handleGenerateRelazioneDoc}
+        handleGenerateSpecificoGradoDoc={handleGenerateSpecificoGradoDoc}
+        documentExportHistory={documentExportHistory}
+        clearDocumentExportHistory={clearDocumentExportHistory}
+        targetClass={targetClass}
        targetSection={targetSection}
        showToast={showToast}
       />
