@@ -2,6 +2,65 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ============================================
+   CurManLight UI System — Semantic Tokens
+   ============================================ */
+
+:root {
+  /* Surfaces */
+  --ui-page: #f8f9fa;
+  --ui-surface: #ffffff;
+  --ui-surface-subtle: #f1f3f5;
+  --ui-surface-emphasis: #e9ecef;
+
+  /* Text */
+  --ui-text: #212529;
+  --ui-text-secondary: #495057;
+  --ui-text-muted: #868e96;
+
+  /* Borders */
+  --ui-border: #dee2e6;
+  --ui-border-strong: #adb5bd;
+
+  /* Action */
+  --ui-action: #2563eb;
+  --ui-action-hover: #1d4ed8;
+  --ui-action-soft: #eff6ff;
+
+  /* Semantic */
+  --ui-success: #16a34a;
+  --ui-success-soft: #f0fdf4;
+  --ui-warning: #d97706;
+  --ui-warning-soft: #fffbeb;
+  --ui-danger: #dc2626;
+  --ui-danger-soft: #fef2f2;
+
+  /* Focus */
+  --ui-focus: #2563eb;
+
+  /* Radius */
+  --ui-radius-control: 6px;
+  --ui-radius-panel: 8px;
+  --ui-radius-dialog: 12px;
+
+  /* Spacing */
+  --ui-space-1: 4px;
+  --ui-space-2: 8px;
+  --ui-space-3: 12px;
+  --ui-space-4: 16px;
+  --ui-space-5: 20px;
+  --ui-space-6: 24px;
+  --ui-page-gutter: 24px;
+
+  /* Layout */
+  --ui-content-max: 1200px;
+  --ui-control-height-sm: 32px;
+  --ui-control-height-md: 36px;
+
+  /* Shadow */
+  --ui-shadow-dialog: 0 4px 24px rgba(0, 0, 0, 0.12);
+}
+
 /* Custom Scrollbars */
 ::-webkit-scrollbar {
   width: 8px;
