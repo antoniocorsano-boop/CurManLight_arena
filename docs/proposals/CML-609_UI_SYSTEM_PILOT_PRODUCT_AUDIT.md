@@ -14,7 +14,7 @@
 | Test finale | 222/222 PASS ✅ |
 | Build applicazione | 1,085.98 kB (gzip 283.74 kB) ✅ |
 | Build Storybook | SUCCESS (3,061.75 kB) ✅ |
-| Test Storybook | FAIL 5 suites (aria-query); non introdotto da CML-609 (solo docs) ⚠️ |
+| Test Storybook | 21/21 PASS (fixed in CML-609A) ✅ |
 | TypeScript | 143 errori pre-esistenti |
 | Verifica dinamica | ✅ Completata su build di produzione |
 | Screenshot | 4 file, 512 KB, locale non versionato |
@@ -96,7 +96,7 @@ Basate sui report CML-606 e analisi del codice
 - Nessun colore arbitrario
 - Tailwind config esteso con token UI
 - Build Storybook funzionante
-- Test Storybook: 5 failed suites (aria-query incompatibility issue)
+- Test Storybook: 21/21 PASS (fixed in CML-609A: Vite 5→6 upgrade + cjsEsmBridge)
 
 ---
 
@@ -329,14 +329,13 @@ type UiTabsProps = {
 - Stories definite: 5 componenti (UiButton, UiPanel, UiStatusMessage, UiEmptyState, UiConfirmDialog)
 - Build time: 19.37s
 
-**Test Status**: ❌ FAIL (5 test suites failed)
-- Aria-query export incompatibility: "The requested module '/node_modules/aria-query/lib/index.js' does not provide an export named 'elementRoles'"
-- Suites failed: UiButton.stories, UiConfirmDialog.stories, UiEmptyState.stories, UiPanel.stories, UiStatusMessage.stories
-- Causa: vite-react-babel plugin configuration conflict con aria-query
-- **Non è una regressione CML-609**: Issue preesistente da CML-606
-- **Non blocca** l'applicazione: npm test (applicazione) 222/222 PASS
+**Test Status**: ✅ PASS (21/21 tests, fixed in CML-609A)
+- Root cause: vitest@4.1.10 peer dependency mismatch with vite@5.4.21
+- Fix: Vite upgraded to 6.4.3; cjsEsmBridge plugin for aria-query/lz-string CJS→ESM
+- Suites: UiButton.stories, UiConfirmDialog.stories, UiEmptyState.stories, UiPanel.stories, UiStatusMessage.stories — all passing
+- npm test: EXIT CODE 0, 15/15 files, 243/243 tests
 
-**Verdetto**: Build Storybook ✅, Test Storybook ⚠️ (preesistente, non bloccante)
+**Verdetto**: Build Storybook ✅, Test Storybook ✅ (CML-609A completato)
 
 ---
 
@@ -574,7 +573,7 @@ PROSSIMA SLICE: C — Stati vuoti e messaggi operativi
 
 ### Non affrontati in CML-609
 - Refactoring DocumentExportHistory (analitico, rinviato)
-- Correzione aria-query issue in Storybook (infrastruttura, CML-610)
+- ~~Correzione aria-query issue in Storybook~~ → CML-609A completato (Vite 6 + cjsEsmBridge)
 - Implementazione UiButton in altre viste (applicazione, CML-610+)
 - Migrazione dialoghi (scopo futuro, CML-611)
 - Migrazione tab-buttons (scopo futuro, CML-612)
@@ -585,7 +584,7 @@ PROSSIMA SLICE: C — Stati vuoti e messaggi operativi
 
 | Rischio | Probabilità | Impatto | Mitigation |
 |---|---|---|---|
-| Storybook test fallisce per aria-query | 🟡 Media | 🟢 Basso | Fix in CML-610 con aggiornamento deps |
+| ~~Storybook test fallisce per aria-query~~ | ~~🟡 Media~~ | ~~🟢 Basso~~ | ✅ Risolto in CML-609A |
 | DocumentExportHistory inconsistenza stilistica | 🟢 Bassa | 🟡 Medio | Consolidato con componenti UI quando usato |
 | Over-estensione dei componenti | 🟡 Media | 🟡 Medio | Matrice decisionale e perimetri chiari per slice |
 | Regressione accessibilità | 🟢 Bassa | 🔴 Alto | Verifica WCAG AA su ogni estensione |
