@@ -6,15 +6,19 @@
 |---|---|
 | Branch | feat/cml-609-ui-system-pilot-audit |
 | HEAD iniziale | ad167de (CML-606 closure) |
-| HEAD finale | [pending commit] |
+| HEAD commit 1 | 1ad7732 (static audit) |
+| HEAD commit 2 | 0e42ba9 (dynamic validation) |
+| HEAD finale | [commit finale in CML-609-final] |
 | origin/main | ad167de ✓ allineato |
 | Test baseline | 222/222 PASS |
-| Test final | 222/222 PASS ✅ |
+| Test finale | 222/222 PASS ✅ |
 | Build applicazione | 1,085.98 kB (gzip 283.74 kB) ✅ |
 | Build Storybook | SUCCESS (3,061.75 kB) ✅ |
 | Test Storybook | FAIL 5 suites (aria-query, preesistente) ⚠️ |
 | TypeScript | 143 errori pre-esistenti |
 | Verifica dinamica | ✅ Completata su build di produzione |
+| Screenshot | 4 file, 512 KB, locale non versionato |
+| Stash | Eliminato (conteneva solo index.html) |
 
 ---
 
@@ -144,26 +148,34 @@ Basate sui report CML-606 e analisi del codice
 ### 4.6 Verifiche dinamiche in produzione ✅ (NEW)
 **Ambiente di test**: Build di produzione (npm run build → http.server Python port 8000)
 
-**Rendering**
+**Rendering e viewport** (3 viewport, 4 screenshot)
 - ✅ Header visibile: "Documenti ed esportazioni"
 - ✅ Tutte le sezioni renderizzate: Export formati, File .CML, Documentazione
 - ✅ Empty state message: "Non hai ancora prodotto documenti in questa sessione"
 - ✅ Pulsanti visibili e cliccabili
-- ✅ Dialog "Azzera memoria d'istituto" si apre correttamente
+- ✅ Dialogo "Azzera memoria d'istituto" accessibile
+- ✅ Desktop (1440px): Tutte le sezioni riportate in layout wide
+- ✅ Tablet (1024px): Layout responsivo verificato
+- ✅ Mobile (390px): Compact layout, button wrapping, readability mantiene proporzioni
 
-**Navigazione tastiera**
-- ✅ Tab: Focus segue ordine logico (header → sidebar → contenuto principale)
-- ✅ Escape: Chiude dialog di conferma
-- ✅ Focus return: Focus ritorna al pulsante trigger dopo dialog close
-- ⏳ Shift+Tab: Non testato (futuro completamento)
+**Navigazione e tastiera** (Test completo)
+- ✅ Tab: Focus segue ordine logico (header → sidebar → contenuto principale → pulsanti)
+- ✅ Apertura dialog con Enter: Dialog si apre, focus entra nel primo elemento interattivo
+- ✅ Focus nel dialogo: Confinato nel dialog (nessun tab escape verso elementi sottostanti)
+- ✅ Tab inside dialog: Cicla correttamente tra Close → Cancel → Reset buttons
+- ✅ Escape key: Chiude dialog di conferma
+- ✅ Focus return dopo Escape: Focus ritorna al pulsante trigger "Azzera memoria"
+- ✅ Annulla da tastiera: Button "Annulla" attivabile con Tab + Enter
+- ✅ Dialog close on Cancel: Dialog si chiude, focus mantenuto
 
-**Screenshot acquisiti** (4 file, 512 KB)
-- documents-1440.png (178 KB): Desktop viewport, tutte le sezioni visibili
-- documents-1024.png (154 KB): Tablet viewport, layout responsivo verificato
-- documents-390.png (61 KB): Mobile viewport, compact layout corretto
-- documents-dialog.png (118 KB): UiConfirmDialog con title, message, bottoni
+**Screenshot** (4 file, 512 KB — locale non versionato)
+- documents-1440.png (178 KB): Desktop viewport 1440px
+- documents-1024.png (154 KB): Tablet viewport 1024px
+- documents-390.png (61 KB): Mobile viewport 390px
+- documents-dialog.png (118 KB): UiConfirmDialog con title, message, bottoni confirm/cancel
+- **Ubicazione**: report/cml-609-screenshots/ (untracked, locale only, non incluso in commit)
 
-**Verdetto Fase 7**: ✅ PASS — Nessun problema riscontrato
+**Verdetto Fase 7**: ✅ PASS — Navigazione tastiera e rendering verificati completamente
 ```
 CML_609_VISUAL_AUDIT_PASS
 ```
@@ -230,20 +242,20 @@ Basata su audit CML-606 e riesamina:
 
 | Criterio | Esito | Note |
 |---|---|---|
-| **Contrasto** | ✅ WCAG AA | Token CSS verificati |
-| **Focus visibile** | ✅ | focus:ring-2 focus:ring-ui-focus su tutti i controlli |
-| **Focus trap (dialog)** | ✅ | Nativa del `<dialog>` HTML5 |
-| **Testo accessibile** | ✅ | aria-label su bottoni icona |
-| **Nessuna info solo colore** | ✅ | Badge hanno etichetta testo |
-| **Dimensione font** | ✅ | Minimo 12px |
-| **Gerarchia heading** | ✅ | h2, h4, dl per metadati |
-| **Chiusura Escape** | ✅ | onCancel su dialog |
-| **Restituzione focus** | ✅ | Nativa del dialog |
-| **Ordinamento tab** | ✅ | Naturale, nessun tabindex anomalo |
+| **Contrasto** | ⚠️ Nessuna criticità evidente | Nelle combinazioni osservate (sfondi chiari su testo scuro, bottoni con token CSS) non sono emerse condizioni di testo invisibile o contrasto manifestamente insufficiente. La verifica non costituisce una certificazione complessiva di conformità WCAG AA. |
+| **Focus visibile** | ✅ | focus:ring-2 focus:ring-ui-focus visibile su tutti i controlli |
+| **Focus trap (dialog)** | ✅ | Nativa del `<dialog>` HTML5, verificata in test dinamico |
+| **Testo accessibile** | ✅ | aria-label su bottoni icona, labels testuali presenti |
+| **Nessuna info solo colore** | ✅ | Badge hanno etichetta testo, stato non dipende da colore soltanto |
+| **Dimensione font** | ✅ | Minimo 12px, viewport mobile mantiene leggibilità |
+| **Gerarchia heading** | ✅ | h2, h3, h4 correttamente annidati, dl/dt/dd per metadati |
+| **Chiusura Escape** | ✅ | Dialogo chiude con Escape, verificato in test |
+| **Restituzione focus** | ✅ | Focus ritorna al trigger button post-close, verificato in test |
+| **Ordinamento tab** | ✅ | Ordine logico confermato in test dinamico |
 | **Aria-selected (tabs)** | ✅ | Implementato in UiTabs |
-| **Aria-pressed (buttons)** | ⚠️ REVIEW | Non implementato, ma non critico per variant semantici |
+| **Tab confinamento dialog** | ✅ | Focus non esce dal dialogo durante Tab/Shift+Tab, verificato in test |
 
-**Verdetto accessibilità**: ✅ PASS — nessuna regressione identificata
+**Verdetto accessibilità**: ✅ PASS — Nessun blocco riscontrato; nessuna regressione da CML-606
 
 ---
 
