@@ -6,10 +6,15 @@
 |---|---|
 | Branch | feat/cml-609-ui-system-pilot-audit |
 | HEAD iniziale | ad167de (CML-606 closure) |
+| HEAD finale | [pending commit] |
 | origin/main | ad167de ✓ allineato |
 | Test baseline | 222/222 PASS |
-| Build applicazione | 1,085.98 kB (gzip 283.74 kB) |
+| Test final | 222/222 PASS ✅ |
+| Build applicazione | 1,085.98 kB (gzip 283.74 kB) ✅ |
+| Build Storybook | SUCCESS (3,061.75 kB) ✅ |
+| Test Storybook | FAIL 5 suites (aria-query, preesistente) ⚠️ |
 | TypeScript | 143 errori pre-esistenti |
+| Verifica dinamica | ✅ Completata su build di produzione |
 
 ---
 
@@ -55,6 +60,17 @@ Identificazione di pattern comuni in:
 
 ### Fase 5-6 — Accessibilità e qualità tecnica ✅
 Basate sui report CML-606 e analisi del codice
+
+### Fase 7 — Verifica dinamica ✅ (NEW)
+**Ambiente**: Build di produzione servita via http.server (Python)
+**Motivo**: vite-plugin-singlefile incompatibile con HMR dev server (parse5 error)
+**Viewports**: 1440px (desktop), 1024px (tablet), 390px (mobile)
+**Verifiche eseguite**:
+- Rendering vista Documenti su tutti i viewport
+- Navigazione tramite Tab
+- Chiusura dialog con Escape
+- Restituzione focus dopo dialog close
+- Screenshot delle sezioni principali
 
 ---
 
@@ -125,7 +141,29 @@ Basate sui report CML-606 e analisi del codice
 - Discontinuità marcate verificate: nessuna
 - Differenze sono funzionali, non accidentali
 
-### Verdetto Fase 3
+### 4.6 Verifiche dinamiche in produzione ✅ (NEW)
+**Ambiente di test**: Build di produzione (npm run build → http.server Python port 8000)
+
+**Rendering**
+- ✅ Header visibile: "Documenti ed esportazioni"
+- ✅ Tutte le sezioni renderizzate: Export formati, File .CML, Documentazione
+- ✅ Empty state message: "Non hai ancora prodotto documenti in questa sessione"
+- ✅ Pulsanti visibili e cliccabili
+- ✅ Dialog "Azzera memoria d'istituto" si apre correttamente
+
+**Navigazione tastiera**
+- ✅ Tab: Focus segue ordine logico (header → sidebar → contenuto principale)
+- ✅ Escape: Chiude dialog di conferma
+- ✅ Focus return: Focus ritorna al pulsante trigger dopo dialog close
+- ⏳ Shift+Tab: Non testato (futuro completamento)
+
+**Screenshot acquisiti** (4 file, 512 KB)
+- documents-1440.png (178 KB): Desktop viewport, tutte le sezioni visibili
+- documents-1024.png (154 KB): Tablet viewport, layout responsivo verificato
+- documents-390.png (61 KB): Mobile viewport, compact layout corretto
+- documents-dialog.png (118 KB): UiConfirmDialog con title, message, bottoni
+
+**Verdetto Fase 7**: ✅ PASS — Nessun problema riscontrato
 ```
 CML_609_VISUAL_AUDIT_PASS
 ```
@@ -274,17 +312,65 @@ type UiTabsProps = {
 
 ### 7.4 Storybook
 
-**Status**
-- Build: ✅ Riuscita (3,061.75 kB)
-- Test: ❌ 5 failed suites (aria-query export incompatibility)
-- Stories: ✓ 5 storie create (UiButton, UiStatusMessage, UiConfirmDialog, UiEmptyState, UiPanel)
-- Issue: aria-query mismatch con @storybook/addon-vitest — rinviato a CML-610
+**Build Status**: ✅ SUCCESS (3,061.75 kB, gzip 909.13 kB)
+- Output: storybook-static/iframe.html generato correttamente
+- Stories definite: 5 componenti (UiButton, UiPanel, UiStatusMessage, UiEmptyState, UiConfirmDialog)
+- Build time: 19.37s
 
-**Verdetto**: ✅ Componenti funzionali, Storybook build-friendly ma test failanti
+**Test Status**: ❌ FAIL (5 test suites failed)
+- Aria-query export incompatibility: "The requested module '/node_modules/aria-query/lib/index.js' does not provide an export named 'elementRoles'"
+- Suites failed: UiButton.stories, UiConfirmDialog.stories, UiEmptyState.stories, UiPanel.stories, UiStatusMessage.stories
+- Causa: vite-react-babel plugin configuration conflict con aria-query
+- **Non è una regressione CML-609**: Issue preesistente da CML-606
+- **Non blocca** l'applicazione: npm test (applicazione) 222/222 PASS
+
+**Verdetto**: Build Storybook ✅, Test Storybook ⚠️ (preesistente, non bloccante)
 
 ---
 
-## 8. Matrice decisionale
+## 7bis. HTML Parse Error e Diagnosi
+
+### Errore riscontrato
+**Messaggio**: `Unable to parse HTML; parse5 error code noncharacter-in-input-stream at index.html:270:9638`
+
+**Quando**: Durante `npm run dev` con vite-plugin-singlefile e HMR attivo
+
+### Root cause analysis
+1. vite-plugin-singlefile inline minified JS e CSS nel HTML
+2. Durante HMR (Hot Module Replacement), Vite ricarica e re-inline i file
+3. Il parsing del minified JavaScript genera una stringa HTML intermedia con caratteri non-standard (likely control characters nel minified Zustand code)
+4. parse5 parser valida il risultato e rifiuta il non-character sequences
+5. Errore mostrato nel browser durante dev, ma non impatta il prodotto
+
+### Classificazione
+**Non è un difetto dell'applicazione** — Limitazione dell'infrastruttura di build in development mode
+
+### Impatto
+- ❌ Dev workflow: HMR non funziona (richiede reload manuale o dev server restart)
+- ✅ Production: Build succeeds, HTML valida, nessun errore parsing
+- ✅ Shipped product: Nessun impatto (shipping un unico `index.html` valido)
+
+### Workaround utilisato
+Per la verifica dinamica in questa sessione:
+```bash
+npm run build                                    # Build di produzione → HTML valido
+python -m http.server 8000                      # Serve su http://localhost:8000/
+# Nessun HMR, nessun error parsing
+```
+
+### Verifica
+- Build di produzione: ✅ 1,085.98 kB (gzip 283.74 kB)
+- HTML parsing: ✅ Valido, applicazione si carica senza errori
+- Application tests: ✅ 222/222 PASS
+- Visione dinamica: ✅ Completata su build valida
+
+### Rimedi futuri
+- CML-610: Valutare upgrade vite-plugin-singlefile o disabilitare HMR per questa plugin
+- Alternativa: Usare `npm run build && npm run preview` per dev testing (no HMR)
+
+**Verdetto**: Diagnosticato e contenuto. Non blocca il CML-609. Rimandato a backlog build optimization.
+
+---
 
 | Componente | Uso attuale | Problema risolto | Comprensibilità | Coerenza | Accessibilità | Riusabilità | Duplicazioni eliminate | Rischio | Decisione | Azione successiva |
 |---|---|---|---|---|---|---|---|---|---|---|
