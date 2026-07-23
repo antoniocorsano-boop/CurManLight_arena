@@ -100,9 +100,10 @@ npm ls pretty-format
 ## Validation
 
 ### npm ci
-- `npm ci` fails on Windows due to file locking (opencode's node processes hold `rollup`/`esbuild` binaries)
-- Verified through alternative: `npm install` produces identical packages, no lockfile drift
-- `npm ls vite vitest` confirms Vite 6.4.3, Vitest 4.1.10, no peer dependency mismatches
+- `npm ci` succeeded after stopping node/esbuild processes and removing node_modules
+- `npm ci` EXIT CODE 0 — 429 packages installed, 0 vulnerabilities
+- Verified: Vite 6.4.3, Vitest 4.1.10, no peer dependency mismatches
+- Reproducibility confirmed from clean lockfile
 
 ### Tests
 ```
@@ -129,18 +130,33 @@ npm run build-storybook → EXIT CODE 0 — 3,075.63 kB (gzip 911.14 kB)
 | `vitest.config.ts` | Added cjsEsmBridge plugin | 3778097 |
 | `docs/03_execution/CML-609A.md` | Created | 3778097 |
 
-## Extraneous Files
-- `report/cml-609-screenshots/` — pre-existing untracked directory, not part of CML-609A
-
 ## Residual Risk
 - **Low**: Bridge is test-only, well-scoped, and removable when upstream fixes land
-- **Medium**: Windows `npm ci` blocked by file locking (environment issue, not code issue)
 - **Low**: Vite 5→6 upgrade is a major version bump, but all plugins confirmed compatible
+
+## Closure Reserves (resolved)
+
+### npm ci reproducibility
+`npm ci` succeeded (EXIT CODE 0) after stopping node processes and removing node_modules. Reproducibility from clean lockfile confirmed.
+
+### Stash audit
+Four pre-existing stash entries audited:
+| Stash | Branch | Content | CML-609A files |
+|---|---|---|---|
+| `{0}` | feat/cml-609-ui-system-pilot-audit | CML-609.md, CML-609 proposal, index.html | No |
+| `{1}` | feat/cml-609-ui-system-pilot-audit | index.html | No |
+| `{2}` | main | index.html, kilo.jsonc, session files | No |
+| `{3}` | feat/cml-606-ui-system-documents-pilot | index.html, session files, App.tsx, DocumentExportHistory.tsx, SessionModals.tsx, main.tsx | No |
+
+No stash created or modified by CML-609A. All four are pre-existing, not pertinent to this slice.
+
+### Untracked screenshots
+Four screenshots in `report/cml-609-screenshots/` are local evidence from the CML-609 audit. They are intentionally not versioned — not available in the PR, not part of the commit. Cited in `CML-609.md` as reference evidence.
 
 ## Verdict
 
 ```
-CML_609A_STORYBOOK_ARIA_QUERY_COMPATIBILITY_FIXED_LOCAL
+CML_609A_STORYBOOK_ARIA_QUERY_COMPATIBILITY_FIXED_AND_REPRODUCIBLE_LOCAL
 ```
 
 ## Commit
