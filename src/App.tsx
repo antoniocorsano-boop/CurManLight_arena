@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { Suspense } from 'react';
 import { Check } from 'lucide-react';
-import { Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useCurriculumStore } from './store/useCurriculumStore';
 import { SchoolOrder, UdaModel } from './types/curriculum';
-import { AppModalsLayer, useAppLocalHandlers, useAppStartupEffects, useAppWorkflowState, useOnboardingProfile, useSessionUiState, useToast, type AppModalsLayerProps, type AppViewsLayerProps } from './features/session';
+import { AppModalsLayer, AppViewsLayer, useAppLocalHandlers, useAppStartupEffects, useAppWorkflowState, useOnboardingProfile, useSessionUiState, useToast, type AppModalsLayerProps, type AppViewsLayerProps } from './features/session';
 import { CopilotChatSidebar, useCopilotInteractionHandlers, useLocalAgentSetup } from './features/copilot';
 import { AppHeader, AppSidebar, GlobalAlerts, MobileBottomNav, type AppTab } from './features/navigation';
 import { AppContext, type AppContextValue } from './components/layout/AppContext';
@@ -1168,9 +1168,9 @@ export default function App() {
      />
      <main id="main-content" className="flex-1 bg-white border border-slate-200 rounded-2xl shadow-sm p-6 overflow-y-auto relative">
 
-      {/* VIEW LAYER - Route-based rendering */}
+      {/* VIEW LAYER - Application views rendered via AppViewsLayer */}
       <Suspense fallback={<div className="flex items-center justify-center h-32"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div></div>}>
-       <Outlet />
+       <AppViewsLayer {...appViewsLayerProps} />
       </Suspense>
      </main>
     </div>
