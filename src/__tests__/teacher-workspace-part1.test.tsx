@@ -1,9 +1,9 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useAppWorkflowState } from '../features/session/hooks/useAppWorkflowState';
 import type { GraphNode } from '../lib/architectureGraph';
 
-const mockNodes: GraphNode[] = [{ id: 'app', label: 'App', level: 0 }];
+const mockNodes: GraphNode[] = [{ id: 'app', label: 'App', category: 'codice', x: 180, y: 120, desc: '', details: '' }];
 
 describe('Teacher Workspace Part 1 — wizardStep persistence', () => {
  beforeEach(() => {
