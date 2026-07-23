@@ -1,6 +1,7 @@
 import React from 'react';
-import { Milestone, Info, Sparkles, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Milestone, Info, Sparkles, ChevronLeft, ChevronRight, FileSearch } from 'lucide-react';
 import { useCurriculumStore } from '../../../store/useCurriculumStore';
+import { UiEmptyState } from '../../../ui/components/UiEmptyState';
 import type { DecisionStatus, Proposal } from '../../../types/curriculum';
 import type { AppViewsLayerProps } from '../../session';
 
@@ -79,14 +80,26 @@ export function RevisioneTab({
 
       {revisioneMode === 'list' ? (
         /* Stack comparison cards */
-        <div id="gap-comparison-container" className="space-y-4">
-          {currentDisciplineProps.filter(p => {
+        (() => {
+          const filteredList = currentDisciplineProps.filter(p => {
             const s = decisions[p.id];
             if (activeRevisionFilter === 'pending' && s) return false;
             if (activeRevisionFilter === 'approved' && s !== 'approved' && s !== 'custom') return false;
             if (activeRevisionFilter === 'rejected' && s !== 'rejected') return false;
             return true;
-          }).map(p => {
+          });
+          if (filteredList.length === 0) {
+            return (
+              <UiEmptyState
+                icon={FileSearch}
+                title="Nessuna variazione da mostrare"
+                description="Tutte le schede per questa categoria di filtro sono state deliberate, oppure non ci sono elementi corrispondenti."
+              />
+            );
+          }
+          return (
+          <div id="gap-comparison-container" className="space-y-4">
+          {filteredList.map(p => {
             const s = decisions[p.id];
             const cText = customTexts[p.id] || "";
             let cardBorder = "border-slate-200";
@@ -130,6 +143,8 @@ export function RevisioneTab({
             );
           })}
         </div>
+          );
+        })()
       ) : (
         /* Step-by-Step Wizard */
         <RevisioneWizard
