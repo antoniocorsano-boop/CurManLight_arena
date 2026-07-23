@@ -14,7 +14,7 @@
 | Test finale | 222/222 PASS ✅ |
 | Build applicazione | 1,085.98 kB (gzip 283.74 kB) ✅ |
 | Build Storybook | SUCCESS (3,061.75 kB) ✅ |
-| Test Storybook | FAIL 5 suites (aria-query, preesistente) ⚠️ |
+| Test Storybook | FAIL 5 suites (aria-query); non introdotto da CML-609 (solo docs) ⚠️ |
 | TypeScript | 143 errori pre-esistenti |
 | Verifica dinamica | ✅ Completata su build di produzione |
 | Screenshot | 4 file, 512 KB, locale non versionato |
