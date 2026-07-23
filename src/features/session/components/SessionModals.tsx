@@ -387,7 +387,7 @@ export function OnboardingModal({
         }} 
         disabled={onboardingStep === 1}
         className={`px-4 py-2 border rounded-xl flex items-center space-x-1.5 font-bold text-xs transition ${
-         onboardingStep === 1 ? 'border-slate-200 text-slate-300 bg-slate-50 cursor-not-allowed' : 'border-slate-200 hover:bg-slate-100 text-slate-700 bg-white'
+         onboardingStep === 1 ? 'border-slate-200 text-slate-400 bg-slate-50 cursor-not-allowed' : 'border-slate-200 hover:bg-slate-100 text-slate-700 bg-white'
         }`}
        >
         <ChevronLeft className="w-4 h-4" />
