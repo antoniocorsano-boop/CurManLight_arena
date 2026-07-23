@@ -1,8 +1,9 @@
-import { Sparkles, ShieldCheck, ServerCog, Code, X, Copy, Search, Library } from 'lucide-react';
+import { Sparkles, ShieldCheck, ServerCog, Code, X, Copy, Search, Library, BookOpen } from 'lucide-react';
 import { useCurriculumStore } from '../../../store/useCurriculumStore';
 import { getVolumeTitle, getVolumeFullHtml, getVolumePlainTxt } from '../../../data/volumesKB';
 import { copyText } from '../../../lib/clipboard';
 import { escapeHtml } from '../../../lib/escapeHtml';
+import { UiEmptyState } from '../../../ui/components/UiEmptyState';
 import type { GraphNode } from '../../../lib/architectureGraph';
 import type { AppViewsLayerProps } from '../../session';
 
@@ -651,7 +652,11 @@ export default function SecondBrainTab({
                   if (!glossarySearch) return true;
                   return item.term.toLowerCase().includes(glossarySearch.toLowerCase()) || item.definition.toLowerCase().includes(glossarySearch.toLowerCase());
                 }).length === 0 && (
-                  <div className="text-center py-6 text-slate-400 text-xs italic font-semibold">Nessun termine corrispondente trovato nel Glossario.</div>
+                  <UiEmptyState
+                    icon={BookOpen}
+                    title="Nessun termine corrispondente trovato nel Glossario"
+                    description="Prova a modificare il termine di ricerca o sfoglia l'elenco completo."
+                  />
                 )}
               </div>
 

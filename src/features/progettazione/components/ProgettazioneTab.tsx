@@ -1,10 +1,11 @@
-import { Save, Zap, Eye, Copy, Users, Search, RefreshCw } from 'lucide-react';
+import { Save, Zap, Eye, Copy, Users, Search, RefreshCw, Filter } from 'lucide-react';
 import { useCurriculumStore } from '../../../store/useCurriculumStore';
 import { ClasseTab } from '../../classroom';
 import { SocialTab } from '../../social';
 import { CertificazioneTab } from './CertificazioneTab';
 import { KnowledgeCompanionPanel, VolumeReaderOverlay } from './KnowledgeCompanionPanel';
 import { useKnowledgeCompanion } from '../hooks/useKnowledgeCompanion';
+import { UiEmptyState } from '../../../ui/components/UiEmptyState';
 import type { SchoolOrder, UdaModel } from '../../../types/curriculum';
 import type { AppViewsLayerProps, CurriculumMap, LibrarySorting, ProgStatus, ProgettazioneMode } from '../../session';
 
@@ -1054,7 +1055,18 @@ function ArchivioUdaView({
             </div>
           </div>
         ))}
-        {savedUda.filter(handleApplyLibFilters).length === 0 && <p className="col-span-2 text-center py-10 text-slate-400 italic text-xs bg-slate-50 border rounded-xl">Nessun elemento registrato in archivio corrispondente ai filtri.</p>}
+        {savedUda.filter(handleApplyLibFilters).length === 0 && (
+          <UiEmptyState
+            icon={Filter}
+            title="Nessun elemento corrispondente ai filtri"
+            description="Prova a modificare i filtri di ricerca o a ripristinare l'elenco completo."
+            action={
+              <button onClick={handleClearLibFilters} className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-lg text-xs font-bold transition">
+                Pulisci filtri
+              </button>
+            }
+          />
+        )}
       </div>
     </div>
   );
