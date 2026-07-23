@@ -33,26 +33,24 @@ export function useAppLocalHandlers({
  }, [progTitle, setWizardStep, showToast, wizardStep]);
 
  const handleClearLocalStorageWithReset = useCallback(() => {
-  if (confirm("Attenzione! Questo azzererÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â  tutte le modifiche d'istituto, le proposte, l'archivio delle UDA e tutti i dati personali d'aula. Vuoi procedere?")) {
-   resetAll();
-   safeLocalStorageRemoveItem('curmanlight-react-db-state-v1.4.0');
+  resetAll();
+  safeLocalStorageRemoveItem('curmanlight-react-db-state-v1.4.0');
 
-   try {
-    const keys = Object.keys(localStorage);
-    keys.forEach((key) => {
-     if (key.startsWith('curman_') || key.startsWith('curmanlight-')) {
-      localStorage.removeItem(key);
-     }
-    });
-   } catch (e) {
-    console.error('Purge failed:', e);
-   }
-
-   showToast("Tutti i dati locali d'Istituto sono stati cancellati con successo!");
-   setTimeout(() => {
-    window.location.reload();
-   }, 1000);
+  try {
+   const keys = Object.keys(localStorage);
+   keys.forEach((key) => {
+    if (key.startsWith('curman_') || key.startsWith('curmanlight-')) {
+     localStorage.removeItem(key);
+    }
+   });
+  } catch (e) {
+   console.error('Purge failed:', e);
   }
+
+  showToast("Tutti i dati locali d'Istituto sono stati cancellati con successo!");
+  setTimeout(() => {
+   window.location.reload();
+  }, 1000);
  }, [resetAll, showToast]);
 
  const triggerPwaInstall = useCallback(() => {

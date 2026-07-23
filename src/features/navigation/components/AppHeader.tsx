@@ -1,4 +1,6 @@
 import { Building, DownloadCloud, Menu, RotateCcw, Save, ServerCog, ShieldAlert, Sparkles } from 'lucide-react';
+import { useState } from 'react';
+import { UiConfirmDialog } from '../../../ui/components/UiConfirmDialog';
 
 interface AppHeaderProps {
   toggleSidebar: () => void;
@@ -45,8 +47,10 @@ export function AppHeader({
   handleWorkspaceLogout,
   setShowCloudAccountModal,
 }: AppHeaderProps) {
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
   return (
-   <header className="bg-slate-900 text-white shadow-md border-b border-slate-800 sticky top-0 z-50 shrink-0">
+    <>
+    <header className="bg-slate-900 text-white shadow-md border-b border-slate-800 sticky top-0 z-50 shrink-0">
     <div className="w-full px-4 sm:px-6 lg:px-8">
      <div className="flex items-center justify-between h-16">
       <div className="flex items-center space-x-3">
@@ -167,7 +171,7 @@ export function AppHeader({
           </div>
           <div className="py-1">
            <button 
-            onClick={() => { handleClearLocalStorageWithReset(); setRoleDropdownOpen(false); }} 
+            onClick={() => { setShowResetConfirm(true); setRoleDropdownOpen(false); }} 
             className="w-full text-left px-4 py-2 hover:bg-slate-700 text-rose-400 flex items-center space-x-2 font-bold"
            >
             <ShieldAlert className="w-3.5 h-3.5" />
@@ -197,9 +201,18 @@ export function AppHeader({
 
       </div>
      </div>
-    </div>
-   </header>
-
-  );
+      </div>
+     </header>
+     <UiConfirmDialog
+       open={showResetConfirm}
+       title="Azzera la memoria"
+       message="Questa operazione cancellerà tutte le decisioni, i testi personalizzati e le UDA salvate. I file scaricati sul tuo dispositivo non verranno eliminati."
+       confirmLabel="Azzera"
+       variant="danger"
+       onConfirm={() => { handleClearLocalStorageWithReset(); setShowResetConfirm(false); }}
+       onCancel={() => setShowResetConfirm(false)}
+     />
+    </>
+   );
 }
 

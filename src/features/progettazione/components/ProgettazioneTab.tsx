@@ -1,5 +1,7 @@
 import { Save, Zap, Eye, Copy, Users, Search, RefreshCw, Filter } from 'lucide-react';
+import { useState } from 'react';
 import { useCurriculumStore } from '../../../store/useCurriculumStore';
+import { UiConfirmDialog } from '../../../ui/components/UiConfirmDialog';
 import { ClasseTab } from '../../classroom';
 import { SocialTab } from '../../social';
 import { CertificazioneTab } from './CertificazioneTab';
@@ -900,6 +902,8 @@ function ArchivioUdaView({
   setSelectedUda,
 }: ArchivioUdaViewProps) {
   const { role, deleteUda, clearUdaLibrary } = useCurriculumStore();
+  const [udaToDelete, setUdaToDelete] = useState<string | null>(null);
+  const [showClearAllConfirm, setShowClearAllConfirm] = useState(false);
 
   const getRoleLabel = (r: string) => r === 'insegnante' ? 'Docente' : r === 'dirigente' ? 'Dirigente' : 'CT';
 
@@ -1028,7 +1032,7 @@ function ArchivioUdaView({
         </div>
         <div className="flex items-end justify-end space-x-2 pt-4">
           <button onClick={handleClearLibFilters} className="px-3 py-2 bg-slate-100 hover:bg-slate-200 border rounded-xl font-bold transition">Pulisci filtri</button>
-          <button onClick={clearUdaLibrary} className="px-3 py-2 bg-rose-50 border border-rose-200 text-rose-600 hover:bg-rose-100 rounded-xl font-bold transition">Svuota tutto</button>
+          <button onClick={() => setShowClearAllConfirm(true)} className="px-3 py-2 bg-rose-50 border border-rose-200 text-rose-600 hover:bg-rose-100 rounded-xl font-bold transition">Svuota tutto</button>
         </div>
       </div>
 
@@ -1050,7 +1054,7 @@ function ArchivioUdaView({
               <div className="flex space-x-3">
                 <button onClick={() => setSelectedUda(u)} className="text-primary-600 hover:text-primary-800 flex items-center space-x-1"><Eye className="w-3.5 h-3.5" /> <span>Dettaglio</span></button>
                 <button onClick={() => handleShareUdaToSocial(u.id)} className="text-indigo-600 hover:text-indigo-800 flex items-center space-x-1"><Users className="w-3.5 h-3.5" /> <span>Condividi</span></button>
-                <button onClick={() => deleteUda(u.id)} className="text-rose-600 hover:text-rose-800 font-bold">Rimuovi</button>
+                <button onClick={() => setUdaToDelete(u.id)} className="text-rose-600 hover:text-rose-800 font-bold">Rimuovi</button>
               </div>
             </div>
           </div>
@@ -1068,6 +1072,25 @@ function ArchivioUdaView({
           />
         )}
       </div>
+
+      <UiConfirmDialog
+        open={udaToDelete !== null}
+        title="Rimuovi UDA"
+        message="Vuoi davvero rimuovere questa UDA dall'archivio? L'operazione non può essere annullata."
+        confirmLabel="Rimuovi"
+        variant="danger"
+        onConfirm={() => { if (udaToDelete) deleteUda(udaToDelete); setUdaToDelete(null); }}
+        onCancel={() => setUdaToDelete(null)}
+      />
+      <UiConfirmDialog
+        open={showClearAllConfirm}
+        title="Svuota archivio UDA"
+        message="Questa operazione cancellerà tutte le UDA salvate. L'operazione non può essere annullata."
+        confirmLabel="Svuota tutto"
+        variant="danger"
+        onConfirm={() => { clearUdaLibrary(); setShowClearAllConfirm(false); }}
+        onCancel={() => setShowClearAllConfirm(false)}
+      />
     </div>
   );
 }
