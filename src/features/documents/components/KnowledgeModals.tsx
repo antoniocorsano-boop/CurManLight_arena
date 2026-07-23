@@ -1,4 +1,6 @@
 import { Check, Copy, X } from 'lucide-react';
+import { useState } from 'react';
+import { UiConfirmDialog } from '../../../ui/components/UiConfirmDialog';
 
 interface WikiReaderModalProps {
   showWikiReaderModal: boolean;
@@ -21,9 +23,11 @@ export function WikiReaderModal({
   handleDeleteCustomKbDoc,
   showToast,
 }: WikiReaderModalProps) {
+  const [docToDelete, setDocToDelete] = useState<string | null>(null);
   if (!showWikiReaderModal) return null;
 
   return (
+    <>
     <div role="dialog" aria-modal="true" className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[180] flex items-center justify-center p-4">
       <div className="bg-white border border-slate-200 max-w-4xl w-full rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[95vh] md:max-h-[90vh] h-auto fade-in text-left">
         <div className="bg-slate-900 text-white px-6 py-4 flex justify-between items-center shrink-0">
@@ -51,7 +55,7 @@ export function WikiReaderModal({
               <span>Copia Testo Volume</span>
             </button>
             {selectedBrainDoc.startsWith('vol-custom-') && (
-              <button onClick={() => handleDeleteCustomKbDoc(selectedBrainDoc)} className="px-3.5 py-1.5 bg-rose-600 hover:bg-rose-500 text-white font-bold rounded-xl transition text-[10px] flex items-center space-x-1">
+              <button onClick={() => setDocToDelete(selectedBrainDoc)} className="px-3.5 py-1.5 bg-rose-600 hover:bg-rose-500 text-white font-bold rounded-xl transition text-[10px] flex items-center space-x-1">
                 <X className="w-3.5 h-3.5" />
                 <span>Elimina Volume</span>
               </button>
@@ -66,6 +70,16 @@ export function WikiReaderModal({
         </div>
       </div>
     </div>
+    <UiConfirmDialog
+      open={docToDelete !== null}
+      title="Elimina volume"
+      message="Vuoi davvero eliminare questo volume dalla Second Brain? L'operazione non può essere annullata."
+      confirmLabel="Elimina"
+      variant="danger"
+      onConfirm={() => { if (docToDelete) handleDeleteCustomKbDoc(docToDelete); setDocToDelete(null); }}
+      onCancel={() => setDocToDelete(null)}
+    />
+    </>
   );
 }
 

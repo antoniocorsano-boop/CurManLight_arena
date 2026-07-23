@@ -1,4 +1,6 @@
 import { X, Award, Sliders, Save, DownloadCloud, RotateCcw, Smartphone, UserCog, Check, ChevronLeft, ChevronRight, FileText, Printer, Copy } from 'lucide-react';
+import { useState } from 'react';
+import { UiConfirmDialog } from '../../../ui/components/UiConfirmDialog';
 import type { SchoolOrder, UserRole } from '../../../types/curriculum';
 import type { CurriculumMap } from '../types/appViewContracts';
 
@@ -478,8 +480,10 @@ export function SaveSettingsModal({
   setShowMottoModal,
   triggerPwaInstall,
 }: SaveSettingsModalProps) {
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
   if (!showSaveModal) return null;
   return (
+    <>
     <div role="dialog" aria-modal="true" className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[160] flex items-center justify-center p-4">
      <div className="bg-white border max-w-lg w-full rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] fade-in text-slate-700 text-left">
       <div className="bg-slate-900 text-white px-5 py-3 flex justify-between items-center shrink-0 border-b border-slate-800">
@@ -545,7 +549,7 @@ export function SaveSettingsModal({
            <input type="file" onChange={(e) => { handleRestoreBackup(e); setShowSaveModal(false); }} className="hidden" accept=".json" />
           </label>
 
-          <button onClick={() => { handleClearLocalStorageWithReset(); setShowSaveModal(false); }} className="w-full p-2 bg-white hover:bg-red-50 border border-slate-200 hover:border-red-200 rounded-lg flex items-center space-x-2.5 text-left font-bold shadow-sm transition group">
+          <button onClick={() => { setShowResetConfirm(true); setShowSaveModal(false); }} className="w-full p-2 bg-white hover:bg-red-50 border border-slate-200 hover:border-red-200 rounded-lg flex items-center space-x-2.5 text-left font-bold shadow-sm transition group">
            <RotateCcw className="w-4 h-4 text-rose-600 group-hover:animate-spin" />
            <div className="space-y-0.5">
             <div className="text-[11px] text-slate-800 group-hover:text-red-700">Azzera Memoria d'Istituto</div>
@@ -680,6 +684,16 @@ export function SaveSettingsModal({
       </div>
      </div>
     </div>
+    <UiConfirmDialog
+      open={showResetConfirm}
+      title="Azzera la memoria"
+      message="Questa operazione cancellerà tutte le decisioni, i testi personalizzati e le UDA salvate. I file scaricati sul tuo dispositivo non verranno eliminati."
+      confirmLabel="Azzera"
+      variant="danger"
+      onConfirm={() => { handleClearLocalStorageWithReset(); setShowResetConfirm(false); }}
+      onCancel={() => setShowResetConfirm(false)}
+    />
+    </>
   );
 }
 

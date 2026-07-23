@@ -1,9 +1,11 @@
 import { Sparkles, ShieldCheck, ServerCog, Code, X, Copy, Search, Library, BookOpen } from 'lucide-react';
+import { useState } from 'react';
 import { useCurriculumStore } from '../../../store/useCurriculumStore';
 import { getVolumeTitle, getVolumeFullHtml, getVolumePlainTxt } from '../../../data/volumesKB';
 import { copyText } from '../../../lib/clipboard';
 import { escapeHtml } from '../../../lib/escapeHtml';
 import { UiEmptyState } from '../../../ui/components/UiEmptyState';
+import { UiConfirmDialog } from '../../../ui/components/UiConfirmDialog';
 import type { GraphNode } from '../../../lib/architectureGraph';
 import type { AppViewsLayerProps } from '../../session';
 
@@ -98,6 +100,7 @@ export default function SecondBrainTab({
   initialEdges,
 }: SecondBrainTabProps) {
   const role = useCurriculumStore(s => s.role);
+  const [docToDelete, setDocToDelete] = useState<string | null>(null);
 
   const getVolumeTitleWithCustom = (id: string) => {
     if (id.startsWith('vol-custom-')) {
@@ -335,7 +338,7 @@ export default function SecondBrainTab({
                         <span>Copia Testo</span>
                       </button>
                       {selectedBrainDoc.startsWith('vol-custom-') && (
-                        <button onClick={() => handleDeleteCustomKbDoc(selectedBrainDoc)} className="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 font-black rounded-lg transition text-[9px] border border-rose-150 flex items-center space-x-1">
+                        <button onClick={() => setDocToDelete(selectedBrainDoc)} className="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 font-black rounded-lg transition text-[9px] border border-rose-150 flex items-center space-x-1">
                           <X className="w-3 h-3" />
                           <span>Elimina</span>
                         </button>
@@ -694,6 +697,15 @@ export default function SecondBrainTab({
           </div>
         </div>
       )}
+      <UiConfirmDialog
+        open={docToDelete !== null}
+        title="Elimina documento"
+        message="Vuoi davvero eliminare questo documento dalla Second Brain? L'operazione non può essere annullata."
+        confirmLabel="Elimina"
+        variant="danger"
+        onConfirm={() => { if (docToDelete) handleDeleteCustomKbDoc(docToDelete); setDocToDelete(null); }}
+        onCancel={() => setDocToDelete(null)}
+      />
     </div>
   );
 }
