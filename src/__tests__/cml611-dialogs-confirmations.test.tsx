@@ -2,11 +2,13 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { UiConfirmDialog } from '../ui/components/UiConfirmDialog';
-import fs from 'fs';
-import path from 'path';
-
-const srcFile = (rel: string) =>
-  fs.readFileSync(path.resolve(__dirname, '..', rel), 'utf-8');
+import progettazioneTabSrc from '../features/progettazione/components/ProgettazioneTab.tsx?raw';
+import secondBrainTabSrc from '../features/documents/components/SecondBrainTab.tsx?raw';
+import knowledgeModalsSrc from '../features/documents/components/KnowledgeModals.tsx?raw';
+import useAppLocalHandlersSrc from '../features/session/hooks/useAppLocalHandlers.ts?raw';
+import appHeaderSrc from '../features/navigation/components/AppHeader.tsx?raw';
+import sessionModalsSrc from '../features/session/components/SessionModals.tsx?raw';
+import esportazioniTabSrc from '../features/documents/components/EsportazioniTab.tsx?raw';
 
 describe('CML-611 — Destructive confirmation flows', () => {
   beforeEach(() => {
@@ -106,34 +108,34 @@ describe('CML-611 — Destructive confirmation flows', () => {
 
   describe('C28 — UDA single deletion (ProgettazioneTab)', () => {
     it('button sets udaToDelete state, not deleteUda directly', () => {
-      const src = srcFile('features/progettazione/components/ProgettazioneTab.tsx');
+      const src = progettazioneTabSrc;
       expect(src).toContain('setUdaToDelete(u.id)');
       expect(src).not.toMatch(/onClick=\{.*\(\)\s*=>\s*deleteUda/);
     });
 
     it('UiConfirmDialog opens when udaToDelete is non-null', () => {
-      const src = srcFile('features/progettazione/components/ProgettazioneTab.tsx');
+      const src = progettazioneTabSrc;
       expect(src).toContain('open={udaToDelete !== null}');
     });
 
     it('onConfirm calls deleteUda and clears state', () => {
-      const src = srcFile('features/progettazione/components/ProgettazioneTab.tsx');
+      const src = progettazioneTabSrc;
       expect(src).toContain('if (udaToDelete) deleteUda(udaToDelete); setUdaToDelete(null)');
     });
 
     it('onCancel clears state without calling deleteUda', () => {
-      const src = srcFile('features/progettazione/components/ProgettazioneTab.tsx');
+      const src = progettazioneTabSrc;
       expect(src).toContain('onCancel={() => setUdaToDelete(null)}');
     });
 
     it('dialog has danger variant', () => {
-      const src = srcFile('features/progettazione/components/ProgettazioneTab.tsx');
+      const src = progettazioneTabSrc;
       const udaBlock = src.substring(src.indexOf('open={udaToDelete'));
       expect(udaBlock).toContain('variant="danger"');
     });
 
     it('dialog title and message are specific to UDA', () => {
-      const src = srcFile('features/progettazione/components/ProgettazioneTab.tsx');
+      const src = progettazioneTabSrc;
       expect(src).toContain('Rimuovi UDA');
       expect(src).toContain('rimuovere questa UDA');
     });
@@ -143,23 +145,23 @@ describe('CML-611 — Destructive confirmation flows', () => {
 
   describe('C29 — Clear all UDAs (ProgettazioneTab)', () => {
     it('button opens dialog, not clearUdaLibrary directly', () => {
-      const src = srcFile('features/progettazione/components/ProgettazioneTab.tsx');
+      const src = progettazioneTabSrc;
       expect(src).toContain('setShowClearAllConfirm(true)');
       expect(src).not.toMatch(/onClick=\{clearUdaLibrary\}/);
     });
 
     it('onConfirm calls clearUdaLibrary exactly once', () => {
-      const src = srcFile('features/progettazione/components/ProgettazioneTab.tsx');
+      const src = progettazioneTabSrc;
       expect(src).toContain('clearUdaLibrary(); setShowClearAllConfirm(false)');
     });
 
     it('onCancel clears state without calling clearUdaLibrary', () => {
-      const src = srcFile('features/progettazione/components/ProgettazioneTab.tsx');
+      const src = progettazioneTabSrc;
       expect(src).toContain('onCancel={() => setShowClearAllConfirm(false)}');
     });
 
     it('dialog has danger variant and clear-specific text', () => {
-      const src = srcFile('features/progettazione/components/ProgettazioneTab.tsx');
+      const src = progettazioneTabSrc;
       const clearBlock = src.substring(src.indexOf('open={showClearAllConfirm'));
       expect(clearBlock).toContain('variant="danger"');
       expect(clearBlock).toContain('Svuota archivio UDA');
@@ -171,28 +173,28 @@ describe('CML-611 — Destructive confirmation flows', () => {
 
   describe('C30 — Custom KB doc deletion (SecondBrainTab)', () => {
     it('button sets docToDelete, not handleDeleteCustomKbDoc directly', () => {
-      const src = srcFile('features/documents/components/SecondBrainTab.tsx');
+      const src = secondBrainTabSrc;
       expect(src).toContain('setDocToDelete(selectedBrainDoc)');
       expect(src).not.toMatch(/onClick=\{.*handleDeleteCustomKbDoc/);
     });
 
     it('UiConfirmDialog opens when docToDelete is non-null', () => {
-      const src = srcFile('features/documents/components/SecondBrainTab.tsx');
+      const src = secondBrainTabSrc;
       expect(src).toContain('open={docToDelete !== null}');
     });
 
     it('onConfirm calls handleDeleteCustomKbDoc with preserved ID', () => {
-      const src = srcFile('features/documents/components/SecondBrainTab.tsx');
+      const src = secondBrainTabSrc;
       expect(src).toContain('if (docToDelete) handleDeleteCustomKbDoc(docToDelete); setDocToDelete(null)');
     });
 
     it('onCancel clears state without calling handler', () => {
-      const src = srcFile('features/documents/components/SecondBrainTab.tsx');
+      const src = secondBrainTabSrc;
       expect(src).toContain('onCancel={() => setDocToDelete(null)}');
     });
 
     it('dialog has danger variant and KB-specific text', () => {
-      const src = srcFile('features/documents/components/SecondBrainTab.tsx');
+      const src = secondBrainTabSrc;
       const docBlock = src.substring(src.indexOf('open={docToDelete'));
       expect(docBlock).toContain('variant="danger"');
       expect(docBlock).toContain('Elimina documento');
@@ -202,18 +204,18 @@ describe('CML-611 — Destructive confirmation flows', () => {
 
   describe('C30 — Custom KB doc deletion (KnowledgeModals)', () => {
     it('button sets docToDelete, not handleDeleteCustomKbDoc directly', () => {
-      const src = srcFile('features/documents/components/KnowledgeModals.tsx');
+      const src = knowledgeModalsSrc;
       expect(src).toContain('setDocToDelete(selectedBrainDoc)');
       expect(src).not.toMatch(/onClick=\{.*handleDeleteCustomKbDoc/);
     });
 
     it('onConfirm calls handler with preserved ID', () => {
-      const src = srcFile('features/documents/components/KnowledgeModals.tsx');
+      const src = knowledgeModalsSrc;
       expect(src).toContain('if (docToDelete) handleDeleteCustomKbDoc(docToDelete); setDocToDelete(null)');
     });
 
     it('dialog has danger variant and volume-specific text', () => {
-      const src = srcFile('features/documents/components/KnowledgeModals.tsx');
+      const src = knowledgeModalsSrc;
       const volBlock = src.substring(src.indexOf('open={docToDelete'));
       expect(volBlock).toContain('variant="danger"');
       expect(volBlock).toContain('Elimina volume');
@@ -225,52 +227,52 @@ describe('CML-611 — Destructive confirmation flows', () => {
 
   describe('C7 — Double-confirm fix', () => {
     it('useAppLocalHandlers has no native confirm() call', () => {
-      const src = srcFile('features/session/hooks/useAppLocalHandlers.ts');
+      const src = useAppLocalHandlersSrc;
       expect(src).not.toMatch(/confirm\s*\(/);
     });
 
     it('handleClearLocalStorageWithReset executes resetAll directly (no guard)', () => {
-      const src = srcFile('features/session/hooks/useAppLocalHandlers.ts');
+      const src = useAppLocalHandlersSrc;
       const fn = src.substring(src.indexOf('handleClearLocalStorageWithReset'));
       expect(fn).toMatch(/resetAll\(\);\s*\n/);
     });
 
     it('AppHeader uses showResetConfirm state for reset button', () => {
-      const src = srcFile('features/navigation/components/AppHeader.tsx');
+      const src = appHeaderSrc;
       expect(src).toContain('const [showResetConfirm, setShowResetConfirm]');
       expect(src).toContain('setShowResetConfirm(true)');
       expect(src).not.toMatch(/onClick=\{.*handleClearLocalStorageWithReset.*setRoleDropdownOpen/);
     });
 
     it('AppHeader has UiConfirmDialog with reset text', () => {
-      const src = srcFile('features/navigation/components/AppHeader.tsx');
+      const src = appHeaderSrc;
       expect(src).toContain('UiConfirmDialog');
       expect(src).toContain('Azzera la memoria');
       expect(src).toContain('onConfirm={() => { handleClearLocalStorageWithReset(); setShowResetConfirm(false); }}');
     });
 
     it('SessionModals uses showResetConfirm state for reset button', () => {
-      const src = srcFile('features/session/components/SessionModals.tsx');
+      const src = sessionModalsSrc;
       expect(src).toContain('const [showResetConfirm, setShowResetConfirm]');
       expect(src).toContain('setShowResetConfirm(true)');
     });
 
     it('SessionModals has UiConfirmDialog with reset text', () => {
-      const src = srcFile('features/session/components/SessionModals.tsx');
+      const src = sessionModalsSrc;
       expect(src).toContain('UiConfirmDialog');
       expect(src).toContain('Azzera la memoria');
     });
 
     it('EsportazioniTab calls handler directly (UiConfirmDialog already guards)', () => {
-      const src = srcFile('features/documents/components/EsportazioniTab.tsx');
+      const src = esportazioniTabSrc;
       expect(src).toContain('handleClearLocalStorageWithReset();');
       expect(src).toContain('setShowResetConfirm(false)');
     });
 
     it('all three call sites have corresponding UiConfirmDialog', () => {
-      const appHeader = srcFile('features/navigation/components/AppHeader.tsx');
-      const sessionModals = srcFile('features/session/components/SessionModals.tsx');
-      const esportazioni = srcFile('features/documents/components/EsportazioniTab.tsx');
+      const appHeader = appHeaderSrc;
+      const sessionModals = sessionModalsSrc;
+      const esportazioni = esportazioniTabSrc;
 
       expect(appHeader).toContain('showResetConfirm');
       expect(sessionModals).toContain('showResetConfirm');

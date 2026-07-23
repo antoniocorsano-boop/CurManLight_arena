@@ -10,3 +10,5 @@ coverage/
 .worktrees/
 
 storybook-static/
+report/cml-*-screenshots/
+scripts/cml611-screenshots.mjs
