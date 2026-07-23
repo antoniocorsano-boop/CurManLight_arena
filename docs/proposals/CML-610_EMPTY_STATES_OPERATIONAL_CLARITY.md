@@ -146,12 +146,22 @@ Rendere gli stati senza contenuto:
 - Totale: 247/247 PASS
 - npm test: EXIT CODE 0
 
+## TypeScript
+
+- Baseline (main): 143 errori in 2 file di test
+- Branch (CML-610): 143 errori negli stessi 2 file, stessi codici
+- Delta introdotto: 0
+- Nessun nuovo errore
+
 ## Verifica visiva
 
 - Build applicazione: PASS (1,090.33 kB)
 - Build Storybook: PASS (3,075.63 kB)
-- `npm run preview` verificato manualmente
-- Viewport: 1440x900, 1024x768, 390x844
+- Screenshot acquisiti con Playwright a 3 viewport: 1440x900, 1024x768, 390x844
+- P1 (Progettazione archivio filtrato): stato vuoto confermato nel DOM ("Nessun elemento corrispondente ai filtri" + "Pulisci filtri")
+- Dashboard: CTA "Inizia dal Curricolo" confermata (vuoto iniziale insegnante)
+- R1 e S1: test unitari confermano il rendering; navigazione SPA con Playwright parzialmente riuscita (dialog modale persistente)
+- Screenshot保存在 `report/cml-610-screenshots/`, non versionati
 
 ## Accessibilita
 

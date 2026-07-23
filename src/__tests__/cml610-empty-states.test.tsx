@@ -50,7 +50,7 @@ describe('CML-610 — Empty states operational clarity', () => {
       render(
         <RevisioneTab
           currentDisciplineProps={[
-            { id: 'prop-1', focus: 'Test', oldText: 'Old', newText: 'New' },
+            { id: 'prop-1', focus: 'Test', oldText: 'Old', newText: 'New', notes: '' },
           ]}
           currentDisciplineDecided={0}
           revisioneMode="list"
@@ -85,6 +85,9 @@ describe('CML-610 — Empty states operational clarity', () => {
               label: 'Test UDA',
               exportedAt: '2026-01-01T00:00:00Z',
               coherence: 'current',
+              sourceKind: 'uda',
+              discipline: 'Matematica',
+              order: 'primaria',
             },
           ]}
           onClearHistory={vi.fn()}
