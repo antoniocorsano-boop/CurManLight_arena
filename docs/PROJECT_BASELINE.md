@@ -9,8 +9,8 @@
 | Architettura | **Congelata** | CML-603 Gate PASSED |
 | Navigazione | **Congelata** | CML-604 Gate PASSED |
 | Fase | **Evoluzione prodotto** | `docs/WORKING_PROTOCOL.md` |
-| Teacher Workspace | **Operativo** | CML-616, CML-617A, CML-617B |
-| Test | **Suite completa verde** | Ultima evidenza: 339 test in 18 file, CML-624, verificata il 24 luglio 2026 |
+| Teacher Workspace | **Operativo** | CML-616, CML-617A/B, CML-620, CML-621, CML-625 |
+| Test | **Suite completa verde** | Ultima evidenza registrata: 327/327 test in 18 file, verificata con CML-626 |
 | TypeScript | **Zero errori noti** | CML-613 e CML-614 |
 | Blocker critici | **Nessuno** | BL-001 risolto da CML-622 |
 
@@ -34,6 +34,7 @@ La baseline stabilisce i vincoli entro cui evolvere il prodotto. Non autorizza r
 | CML-621 | Rilevanza e ordinamento globale delle attività recenti |
 | CML-622 | Build Vite non mutante e `dist/index.html` come artefatto distribuibile |
 | CML-624 | Riallineamento della baseline post-CML-622 |
+| CML-625 | Teacher Workspace Action Consolidation: wizard e CTA primaria mantenuti in Stato del lavoro; Attività recenti riservate a un massimo di tre UDA o esportazioni, con stato vuoto senza CTA e regole CML-620/621 preservate |
 
 ## Baseline architetturale (CML-603)
 
@@ -69,9 +70,18 @@ Il Teacher Workspace non è una nuova vista o un nuovo dominio. Compone le super
 
 1. qual è lo stato del lavoro;
 2. cosa è successo di recente;
-3. quale attività può essere ripresa subito.
+3. quale azione eseguire per proseguire il lavoro corrente.
 
-La Dashboard docente presenta Stato del lavoro, Attività recenti, quindi card e widget successivi. Il contratto e il mock approvato sono:
+La Dashboard docente presenta Stato del lavoro, Attività recenti, quindi card e widget successivi. Il contratto corrente distingue:
+
+```text
+Stato del lavoro → lavoro corrente e prossima azione
+Attività recenti → UDA salvate ed esportazioni recenti
+```
+
+Il wizard attivo compare esclusivamente in Stato del lavoro e `Continua UDA` è la sua unica CTA di ripresa. `RecentActivity` non rappresenta il wizard: assegna tutti e tre gli slot al pool globale di UDA salvate ed esportazioni recenti. In assenza di eventi mostra uno stato vuoto informativo senza CTA. Le regole CML-620 e CML-621 restano operative per timestamp, ranking deterministico e deduplicazione tramite `sourceId`.
+
+Il contratto e il mock approvato sono:
 
 - `docs/07_product_evolution/CML-616_TEACHER_WORKSPACE_CONTRACT.md`;
 - `docs/07_product_evolution/CML-617A_ACTIVITY_MOCK.md`.
@@ -114,7 +124,7 @@ git diff --check
 git status --short
 ```
 
-- Ultima evidenza CML-624: `npm test` comprende 339 test in 18 file, inclusi i test Storybook.
+- Suite completa verde. Ultima evidenza registrata: 327/327 test in 18 file, verificata con CML-626.
 - `index.html` è il sorgente Vite canonico e `npm run build` esegue `vite build`.
 - `dist/index.html` è l'artefatto single-file distribuibile; `index.html.template` non esiste più.
 - `npm run build` e `npm run build-storybook` non modificano file tracciati.
@@ -147,6 +157,14 @@ Indice autorevole: `docs/06_architecture_governance/ARCHITECTURE_DECISION_INDEX.
 | BL-001 | Risolto da CML-622: la build Vite non modifica più file tracciati |
 | Tempo del wizard | Risolto da CML-620 con fonti temporali attendibili e senza nuova persistenza |
 | Rilevanza attività | Risolto da CML-621 con ordinamento globale deterministico |
+| Duplicazione azione wizard | Risolta da CML-625 separando lavoro corrente e attività storiche |
+
+## Prossima slice
+
+```text
+NEXT_SLICE_STATUS: DA_IDENTIFICARE
+IMPLEMENTAZIONE: NON AUTORIZZATA
+```
 
 ## Regole per l'evoluzione
 
@@ -166,4 +184,4 @@ Sono consentiti miglioramenti di UX, workflow, onboarding, progettazione, gestio
 
 ---
 
-*Ultimo aggiornamento: CML-624, 24 luglio 2026.*
+*Ultimo aggiornamento: CML-626, 24 luglio 2026.*
