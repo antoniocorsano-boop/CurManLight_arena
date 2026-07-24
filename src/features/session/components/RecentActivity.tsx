@@ -2,6 +2,7 @@ import { ArrowRight } from 'lucide-react';
 import type { UdaModel, DocumentExportEvent } from '../../../types/curriculum';
 
 const WIZARD_MAX_STEP = 5;
+const MAX_ACTIVITY_ITEMS = 3;
 
 function localDaySerial(date: Date): number {
   return Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()) / 86400000;
@@ -29,45 +30,6 @@ function safeDateValue(raw: string | undefined): number | null {
   return Number.isFinite(t) ? t : null;
 }
 
-function getMostRecentUda(savedUda: UdaModel[]): UdaModel | null {
-  if (savedUda.length === 0) return null;
-
-  let latest = savedUda[0];
-  let latestTime = safeDateValue(latest.updatedAt) ?? safeDateValue(latest.createdAt) ?? 0;
-
-  for (let i = 1; i < savedUda.length; i++) {
-    const current = savedUda[i];
-    const currentTime = safeDateValue(current.updatedAt) ?? safeDateValue(current.createdAt) ?? 0;
-
-    if (currentTime > latestTime) {
-      latest = current;
-      latestTime = currentTime;
-    } else if (currentTime === latestTime) {
-      latest = current;
-    }
-  }
-
-  return latest;
-}
-
-function getMostRecentExport(history: DocumentExportEvent[] | undefined): DocumentExportEvent | null {
-  if (!history || history.length === 0) return null;
-
-  let latest = history[0];
-  let latestTime = safeDateValue(latest.exportedAt) ?? 0;
-
-  for (let i = 1; i < history.length; i++) {
-    const current = history[i];
-    const currentTime = safeDateValue(current.exportedAt) ?? 0;
-    if (currentTime > latestTime) {
-      latest = current;
-      latestTime = currentTime;
-    }
-  }
-
-  return latest;
-}
-
 interface ActivityItem {
   id: string;
   title: string;
@@ -75,6 +37,30 @@ interface ActivityItem {
   timeLabel: string;
   actionLabel: string;
   onAction: () => void;
+}
+
+interface RankedActivity extends ActivityItem {
+  kind: 'uda' | 'export';
+  stableId: string;
+  timestamp: number | null;
+}
+
+function reliableDateValue(raw: string | undefined): number | null {
+  const timestamp = safeDateValue(raw);
+  if (timestamp === null || timestamp <= 0 || timestamp > Date.now()) return null;
+  return timestamp;
+}
+
+function compareRankedActivities(a: RankedActivity, b: RankedActivity): number {
+  const aHasTime = a.timestamp !== null;
+  const bHasTime = b.timestamp !== null;
+
+  if (aHasTime !== bHasTime) return aHasTime ? -1 : 1;
+  if (a.timestamp !== null && b.timestamp !== null && a.timestamp !== b.timestamp) {
+    return b.timestamp - a.timestamp;
+  }
+  if (a.kind !== b.kind) return a.kind === 'uda' ? -1 : 1;
+  return a.stableId.localeCompare(b.stableId);
 }
 
 function buildActivities(
@@ -87,6 +73,9 @@ function buildActivities(
   setActiveProgTab: (value: string) => void
 ): ActivityItem[] {
   const activities: ActivityItem[] = [];
+  const sourceFamilies = new Map<string, RankedActivity>();
+  const independentExports: RankedActivity[] = [];
+  const udaIds = new Set(savedUda.map((uda) => uda.id));
 
   if (wizardStep > 1 && wizardStep <= WIZARD_MAX_STEP) {
     activities.push({
@@ -99,44 +88,56 @@ function buildActivities(
     });
   }
 
-  const recentUda = getMostRecentUda(savedUda);
-  if (recentUda) {
-    const hasUpdatedAt = Boolean(safeDateValue(recentUda.updatedAt));
-    const udaTime = safeDateValue(recentUda.updatedAt) ?? safeDateValue(recentUda.createdAt);
-
-    activities.push({
-      id: `uda-${recentUda.id}`,
-      title: recentUda.title,
-      description: hasUpdatedAt ? recentUda.status : 'UDA salvata',
-      timeLabel: formatDay(udaTime ?? 0),
+  savedUda.forEach((uda) => {
+    const updatedTime = reliableDateValue(uda.updatedAt);
+    const timestamp = updatedTime ?? reliableDateValue(uda.createdAt);
+    const candidate: RankedActivity = {
+      kind: 'uda',
+      stableId: uda.id,
+      timestamp,
+      id: `uda-${uda.id}`,
+      title: uda.title,
+      description: updatedTime !== null ? uda.status : 'UDA salvata',
+      timeLabel: formatDay(timestamp ?? 0),
       actionLabel: 'Apri \u2192',
       onAction: () => { handleTabSwitch('progetta-annuale'); setActiveProgTab('uda'); },
-    });
-  }
-
-  const recentExport = getMostRecentExport(documentExportHistory);
-  if (recentExport) {
-    const isDup = activities.some(a => {
-      if (a.id.startsWith('uda-')) {
-        const udaId = a.id.replace('uda-', '');
-        return recentExport.sourceId === udaId;
-      }
-      return false;
-    });
-
-    if (!isDup) {
-      activities.push({
-        id: `export-${recentExport.id}`,
-        title: recentExport.label,
-        description: 'documento esportato',
-        timeLabel: formatDay(safeDateValue(recentExport.exportedAt) ?? 0),
-        actionLabel: 'Apri \u2192',
-        onAction: () => { handleTabSwitch('esportazioni'); },
-      });
+    };
+    const current = sourceFamilies.get(uda.id);
+    if (!current || compareRankedActivities(candidate, current) < 0) {
+      sourceFamilies.set(uda.id, candidate);
     }
-  }
+  });
 
-  return activities.slice(0, 3);
+  (documentExportHistory ?? []).forEach((event) => {
+    const timestamp = reliableDateValue(event.exportedAt);
+    const candidate: RankedActivity = {
+      kind: 'export',
+      stableId: event.id,
+      timestamp,
+      id: `export-${event.id}`,
+      title: event.label,
+      description: 'documento esportato',
+      timeLabel: formatDay(timestamp ?? 0),
+      actionLabel: 'Apri \u2192',
+      onAction: () => { handleTabSwitch('esportazioni'); },
+    };
+
+    if (event.sourceId && udaIds.has(event.sourceId)) {
+      const current = sourceFamilies.get(event.sourceId);
+      if (!current || compareRankedActivities(candidate, current) < 0) {
+        sourceFamilies.set(event.sourceId, candidate);
+      }
+    } else {
+      independentExports.push(candidate);
+    }
+  });
+
+  const rankedEvents = [...sourceFamilies.values(), ...independentExports]
+    .sort(compareRankedActivities);
+  const remainingSlots = MAX_ACTIVITY_ITEMS - activities.length;
+  activities.push(...rankedEvents.slice(0, remainingSlots));
+
+  return activities;
 }
 
 interface RecentActivityProps {

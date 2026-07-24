@@ -242,8 +242,12 @@ describe('CML-617B \u2014 RecentActivity widget', () => {
     ];
 
     render(<RecentActivity {...baseProps} savedUda={savedUda} />);
-    expect(screen.getByText('New UDA')).toBeDefined();
-    expect(screen.queryByText('Old UDA')).toBeNull();
+    expect(
+      screen.getAllByTestId(/recent-activity-action-/).map((node) => node.getAttribute('data-testid')),
+    ).toEqual([
+      'recent-activity-action-uda-uda-new',
+      'recent-activity-action-uda-uda-old',
+    ]);
   });
 
   // 11. Ripiego su createdAt
@@ -254,8 +258,12 @@ describe('CML-617B \u2014 RecentActivity widget', () => {
     ];
 
     render(<RecentActivity {...baseProps} savedUda={savedUda} />);
-    expect(screen.getByText('Later')).toBeDefined();
-    expect(screen.queryByText('Earlier')).toBeNull();
+    expect(
+      screen.getAllByTestId(/recent-activity-action-/).map((node) => node.getAttribute('data-testid')),
+    ).toEqual([
+      'recent-activity-action-uda-uda-2',
+      'recent-activity-action-uda-uda-1',
+    ]);
   });
 
   it('11b. neutral description when only createdAt available', () => {
@@ -311,8 +319,9 @@ describe('CML-617B \u2014 RecentActivity widget', () => {
     render(<RecentActivity {...baseProps} savedUda={savedUda} />);
 
     const udaItems = screen.getAllByText('Duplicate Title');
-    expect(udaItems.length).toBe(1);
+    expect(udaItems.length).toBe(2);
 
+    expect(screen.getByTestId('recent-activity-action-uda-uda-1')).toBeDefined();
     expect(screen.getByTestId('recent-activity-action-uda-uda-2')).toBeDefined();
   });
 
@@ -498,15 +507,19 @@ describe('CML-617B \u2014 RecentActivity widget', () => {
     expect(screen.getByText('documento esportato')).toBeDefined();
   });
 
-  it('array position as tiebreaker: last item wins when timestamps equal', () => {
+  it('stable id resolves equal timestamps independently of array position', () => {
     const savedUda = [
       makeUda({ id: 'uda-1', title: 'First', createdAt: '2026-07-20T08:00:00.000Z' }),
       makeUda({ id: 'uda-2', title: 'Last', createdAt: '2026-07-20T08:00:00.000Z' }),
     ];
 
     render(<RecentActivity {...baseProps} savedUda={savedUda} />);
-    expect(screen.getByText('Last')).toBeDefined();
-    expect(screen.queryByText('First')).toBeNull();
+    expect(
+      screen.getAllByTestId(/recent-activity-action-/).map((node) => node.getAttribute('data-testid')),
+    ).toEqual([
+      'recent-activity-action-uda-uda-1',
+      'recent-activity-action-uda-uda-2',
+    ]);
   });
 
   it('does not show "Invalid Date" for completely empty dates', () => {
@@ -574,5 +587,154 @@ describe('CML-617B \u2014 RecentActivity widget', () => {
 
     expect(screen.getByText('The UDA')).toBeDefined();
     expect(screen.getByText('The UDA export')).toBeDefined();
+  });
+  describe('CML-621 — global relevance selection', () => {
+    const actionIds = () => screen.getAllByTestId(/recent-activity-action-/).map((node) => node.getAttribute('data-testid'));
+
+    it('shows three recent UDAs when no wizard is active', () => {
+      const savedUda = [
+        makeUda({ id: 'uda-1', title: 'UDA One', createdAt: '2026-07-21T08:00:00.000Z' }),
+        makeUda({ id: 'uda-2', title: 'UDA Two', createdAt: '2026-07-22T08:00:00.000Z' }),
+        makeUda({ id: 'uda-3', title: 'UDA Three', createdAt: '2026-07-23T08:00:00.000Z' }),
+      ];
+
+      render(<RecentActivity {...baseProps} savedUda={savedUda} />);
+
+      expect(screen.getByText('UDA One')).toBeDefined();
+      expect(screen.getByText('UDA Two')).toBeDefined();
+      expect(screen.getByText('UDA Three')).toBeDefined();
+      expect(actionIds()).toHaveLength(3);
+    });
+
+    it('shows three recent exports when no wizard is active', () => {
+      const documentExportHistory = [
+        makeExport({ id: 'exp-1', label: 'Export One', exportedAt: '2026-07-21T08:00:00.000Z' }),
+        makeExport({ id: 'exp-2', label: 'Export Two', exportedAt: '2026-07-22T08:00:00.000Z' }),
+        makeExport({ id: 'exp-3', label: 'Export Three', exportedAt: '2026-07-23T08:00:00.000Z' }),
+      ];
+
+      render(<RecentActivity {...baseProps} documentExportHistory={documentExportHistory} />);
+
+      expect(screen.getByText('Export One')).toBeDefined();
+      expect(screen.getByText('Export Two')).toBeDefined();
+      expect(screen.getByText('Export Three')).toBeDefined();
+      expect(actionIds()).toHaveLength(3);
+    });
+
+    it('keeps the wizard first and fills two slots with globally recent events', () => {
+      const savedUda = [
+        makeUda({ id: 'uda-1', title: 'Recent UDA', createdAt: '2026-07-23T10:00:00.000Z' }),
+        makeUda({ id: 'uda-2', title: 'Second UDA', createdAt: '2026-07-22T10:00:00.000Z' }),
+      ];
+      const documentExportHistory = [
+        makeExport({ id: 'exp-old', label: 'Old Export', exportedAt: '2026-07-01T08:00:00.000Z' }),
+      ];
+
+      render(
+        <RecentActivity
+          {...baseProps}
+          wizardStep={3}
+          progTitle="Open Wizard"
+          wizardLastSaveTime={new Date('2026-07-20T08:00:00.000Z').getTime()}
+          savedUda={savedUda}
+          documentExportHistory={documentExportHistory}
+        />
+      );
+
+      expect(actionIds()).toEqual([
+        'recent-activity-action-wizard-Open Wizard',
+        'recent-activity-action-uda-uda-1',
+        'recent-activity-action-uda-uda-2',
+      ]);
+      expect(screen.queryByText('Old Export')).toBeNull();
+    });
+
+    it('produces the same order after reversing both source arrays', () => {
+      const savedUda = [
+        makeUda({ id: 'uda-b', title: 'UDA B', createdAt: '2026-07-23T08:00:00.000Z' }),
+        makeUda({ id: 'uda-a', title: 'UDA A', createdAt: '2026-07-23T08:00:00.000Z' }),
+      ];
+      const exports = [
+        makeExport({ id: 'exp-b', label: 'Export B', exportedAt: '2026-07-20T08:00:00.000Z' }),
+        makeExport({ id: 'exp-a', label: 'Export A', exportedAt: '2026-07-21T08:00:00.000Z' }),
+      ];
+      const first = render(<RecentActivity {...baseProps} savedUda={savedUda} documentExportHistory={exports} />);
+      const firstOrder = actionIds();
+      first.unmount();
+
+      render(<RecentActivity {...baseProps} savedUda={[...savedUda].reverse()} documentExportHistory={[...exports].reverse()} />);
+
+      expect(actionIds()).toEqual(firstOrder);
+    });
+
+    it('keeps the newest event in a verified UDA-export source family', () => {
+      const savedUda = [makeUda({ id: 'uda-source', title: 'Source UDA', createdAt: '2026-07-20T08:00:00.000Z' })];
+      const exports = [makeExport({ id: 'exp-new', label: 'Newer Export', sourceId: 'uda-source', exportedAt: '2026-07-23T08:00:00.000Z' })];
+
+      render(<RecentActivity {...baseProps} savedUda={savedUda} documentExportHistory={exports} />);
+
+      expect(screen.getByText('Newer Export')).toBeDefined();
+      expect(screen.queryByText('Source UDA')).toBeNull();
+    });
+
+    it('reduces multiple exports of a known source to the newest event', () => {
+      const savedUda = [makeUda({ id: 'uda-source', title: 'Source UDA', createdAt: '2026-07-20T08:00:00.000Z' })];
+      const exports = [
+        makeExport({ id: 'exp-old', label: 'Old Source Export', sourceId: 'uda-source', exportedAt: '2026-07-21T08:00:00.000Z' }),
+        makeExport({ id: 'exp-new', label: 'New Source Export', sourceId: 'uda-source', exportedAt: '2026-07-23T08:00:00.000Z' }),
+      ];
+
+      render(<RecentActivity {...baseProps} savedUda={savedUda} documentExportHistory={exports} />);
+
+      expect(screen.getByText('New Source Export')).toBeDefined();
+      expect(screen.queryByText('Old Source Export')).toBeNull();
+      expect(screen.queryByText('Source UDA')).toBeNull();
+      expect(actionIds()).toHaveLength(1);
+    });
+
+    it('keeps exports without sourceId as independent events', () => {
+      const exports = [
+        makeExport({ id: 'exp-1', label: 'Independent One', exportedAt: '2026-07-22T08:00:00.000Z' }),
+        makeExport({ id: 'exp-2', label: 'Independent Two', exportedAt: '2026-07-23T08:00:00.000Z' }),
+      ];
+
+      render(<RecentActivity {...baseProps} documentExportHistory={exports} />);
+
+      expect(screen.getByText('Independent One')).toBeDefined();
+      expect(screen.getByText('Independent Two')).toBeDefined();
+    });
+
+    it('resolves equal timestamps deterministically by category then stable id', () => {
+      const timestamp = '2026-07-23T08:00:00.000Z';
+      const savedUda = [
+        makeUda({ id: 'uda-b', title: 'UDA B', createdAt: timestamp }),
+        makeUda({ id: 'uda-a', title: 'UDA A', createdAt: timestamp }),
+      ];
+      const exports = [makeExport({ id: 'exp-a', label: 'Export A', exportedAt: timestamp })];
+
+      render(<RecentActivity {...baseProps} savedUda={savedUda} documentExportHistory={exports} />);
+
+      expect(actionIds()).toEqual([
+        'recent-activity-action-uda-uda-a',
+        'recent-activity-action-uda-uda-b',
+        'recent-activity-action-export-exp-a',
+      ]);
+    });
+
+    it('places invalid timestamps after all valid events', () => {
+      const savedUda = [
+        makeUda({ id: 'uda-invalid', title: 'Invalid UDA', createdAt: 'invalid' }),
+        makeUda({ id: 'uda-new', title: 'Newest UDA', createdAt: '2026-07-23T08:00:00.000Z' }),
+        makeUda({ id: 'uda-old', title: 'Older UDA', createdAt: '2026-07-21T08:00:00.000Z' }),
+      ];
+      const exports = [makeExport({ id: 'exp-valid', label: 'Valid Export', exportedAt: '2026-07-22T08:00:00.000Z' })];
+
+      render(<RecentActivity {...baseProps} savedUda={savedUda} documentExportHistory={exports} />);
+
+      expect(screen.getByText('Newest UDA')).toBeDefined();
+      expect(screen.getByText('Valid Export')).toBeDefined();
+      expect(screen.getByText('Older UDA')).toBeDefined();
+      expect(screen.queryByText('Invalid UDA')).toBeNull();
+    });
   });
 });
