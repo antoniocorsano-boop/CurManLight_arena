@@ -81,8 +81,9 @@ See `docs/PROJECT_BASELINE.md` for current state.
 | CML-630F — Curriculum Transition Documentation Alignment | COMPLETE_REMOTE | `5c34dc8` | `main` |
 | CML-630B — Institute Curriculum Version and Segment Model | COMPLETE_REMOTE | `5c34dc8` | `main` |
 | CML-630C — Curriculum e-Twin Domain Validation Prototype | COMPLETE_REMOTE | `635fd6a` | `main` |
-| CML-630D — Vertical Curriculum Link Domain Decision | PR_OPEN | `pending` | `feat/cml-630d-vertical-curriculum-link-domain-decision` |
-| CML-630E — Production Domain Integration | PENDING | — | — |
+| CML-630D — Vertical Curriculum Link Domain Decision | COMPLETE_REMOTE | `7e6b2eb` | `main` |
+| CML-630E — Production Domain Integration | COMPLETE_LOCAL | `pending` | `feat/cml-630e-productive-curriculum-domain` |
+| CML-630F2 — Legacy Compatibility | PENDING | — | — |
 
 ### CML-630D Decision
 
@@ -98,15 +99,26 @@ CML_630E_REQUIRED_FOR_IMPLEMENTATION
 - `CurriculumSegment` → relazioni strutturali (provenienza, sostituzione, appartenenza)
 - `VerticalCurriculumLink` → relazioni pedagogiche (continuità, sviluppo, prerequisito, integrazione)
 
-### CML-630E Requirements
+### CML-630E Status
 
-**Title:** Production Domain Integration  
-**Objective:** Integrate `VerticalCurriculumLink` and `CurriculumNode` into production domain
+**CML-630E1 — Productive Domain Contracts:** COMPLETE_LOCAL
+- 5 entity types defined in `src/domain/curriculum/`
+- 13 validation functions
+- 55 tests
+- TypeScript, test, build, Storybook: all green
+
+**CML-630E2 — Persistence Plan:** COMPLETE_LOCAL
+- Documented in `docs/CML_630E2_PERSISTENCE_AND_LEGACY_COMPATIBILITY_PLAN.md`
+- Not yet implemented
+
+### CML-630E2 Requirements
+
+**Title:** Legacy Compatibility
+**Objective:** Implement adapters between legacy domain and new productive domain
 
 **Scope:**
-- Add types to `src/types/`
-- Update store to support new entities
-- Add UI for relationship visualization
-- Implement workflow for relationship validation
+- Implement persistence for new entities
+- Migrate legacy data (curriculumKB → CurriculumSegment)
+- Add adapters for schoolYear → AcademicYear
 - No breaking changes to existing functionality
 
