@@ -1,33 +1,63 @@
 @AGENTS.md
 
-## Claude Code
+# Claude Code
 
-Use the shared session files in `session/` as the durable project memory. Keep auto memory for preferences and recurring lessons, but write task state, handoff notes, and command outcomes into the repository session directory so Codex, opencode, Copilot, and Claude can all resume from the same source.
+## Source hierarchy
 
-## CurManLight Project
+Use project guidance in this order:
 
-Italian school curriculum management tool. React 18 + TypeScript + Vite + Zustand + Dexie, compiled to single-file HTML via `vite-plugin-singlefile`.
+1. `AGENTS.md`
+2. `docs/WORKING_PROTOCOL.md`
+3. `docs/PROJECT_BASELINE.md`
+4. Documents specific to the approved slice
+5. The verified repository state
 
-### Commands
-- `npm run build` — production build (copies index.html.template, builds, copies output)
-- `npx vitest run` — run all tests (51+ tests: copilot, storage, wikiLLM)
-- `npx tsc --noEmit` — typecheck (note: App.tsx has many pre-existing TS6133/TS7006 warnings, these are not blocking)
+If these sources conflict, stop and report the divergence instead of inventing a resolution.
 
-### Architecture
-- **`src/App.tsx`** — single ~12,500-line component (entire UI). All state, modals, handlers inline.
-- **`src/utils/`** — extracted pure modules: `storage.ts`, `clipboard.ts`, `escapeHtml.ts`, `semanticSearch.ts`, `wikiLLM.ts`
-- **`src/utils/wikiLLM.ts`** — WikiLLM response generation: `generateWikiResponse()`, `detectDiscipline()` (word-boundary for short keywords), `findBestVolumeMatch()`, `scoreVolumeByTerms()`
-- **`src/utils/storage.ts`** — `safeLocalStorageSetLarge`, `throttledSetLarge`, `pruneStaleConsolidatedEntries`, `getStorageUsage`, quota event dispatch
+## Shared memory
 
-### Key Patterns
-- **Storage dual-write**: `safeLocalStorageSetItem(key, val)` writes to both standalone key AND `curmanlight_stato_consolidato` consolidated blob (with timestamps for TTL). `safeLocalStorageSetLarge(key, val)` writes directly only.
-- **Emergency backup**: Throttled via `throttledSetLarge` (max once/60s) on `beforeunload`/`visibilitychange`.
-- **Storage startup maintenance**: `pruneStaleConsolidatedEntries()` removes entries > 30 days old. `getStorageUsage()` warns if > 4MB.
-- **Discipline detection**: `detectDiscipline()` uses `\b` word-boundary regex for short keywords (< 4 chars like `'ia'`, `'lel'`) to prevent false positives. Longer keywords use `includes()`.
-- **Single-file HTML output**: Final build is one `index.html` with all JS/CSS inlined. Test framework (Vitest) is excluded via `vitest.config.ts` include pattern.
-- **No comments**: Do not add comments to code unless explicitly requested.
+The `session/` directory contains shared project memory and handoffs. Agent-local memory may retain preferences and recurring lessons, but task state, results, commands, blockers, and next actions belong in the shared sources defined by the memory protocol.
 
-### TSConfig
-- `noUnusedLocals: true` and `noUnusedParameters: true` are enabled — unused imports/vars are errors.
-- Prefix unused destructured vars with `_` if needed.
+Do not include session files in a commit unless the approved slice explicitly authorizes them.
 
+## Project identity
+
+CurManLight Arena is a React and TypeScript application for teachers and curriculum work. It uses Vite, local persistence, and a single-file HTML distribution. The primary runtime does not require a backend.
+
+Exact library versions belong in `package.json`, `package-lock.json`, and `docs/PROJECT_BASELINE.md`.
+
+## Verified commands
+
+```powershell
+npm test
+npx tsc --noEmit
+npm run build
+npm run build-storybook
+```
+
+- `npm run build` performs a non-mutating Vite build and writes the single-file application to `dist/index.html`.
+- `npm run build-storybook` writes Storybook output to `storybook-static/`.
+- `dist/` and `storybook-static/` are generated artifacts ignored by Git.
+- Do not add fixed test counts here; use the latest verified evidence in `docs/PROJECT_BASELINE.md`.
+
+## Operating rules
+
+- Start from the verified repository state.
+- Do not modify `main` or publish changes without explicit authorization.
+- Respect the approved slice and do not broaden a correction without approval.
+- Run `git diff --check` before closure.
+- Confirm that build and Storybook do not modify tracked files.
+- Never include generated artifacts in commits.
+- Keep architecture and navigation frozen unless a formal decision authorizes a change.
+- Prefer product evolution and observable value for teachers over structural work.
+
+## Architecture references
+
+Do not duplicate volatile architecture details here. Use:
+
+- `docs/PROJECT_BASELINE.md` for the current verified baseline;
+- `docs/WORKING_PROTOCOL.md` for product-evolution rules;
+- `docs/06_architecture_governance/` for architecture decisions;
+- `docs/07_navigation_program/` for the frozen navigation baseline.
+
+TypeScript validation is a green gate. Do not classify compiler errors as pre-existing or non-blocking without a current, explicit governance decision.
