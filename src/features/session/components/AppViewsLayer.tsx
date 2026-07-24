@@ -274,6 +274,7 @@ export function AppViewsLayer(props: AppViewsLayerProps) {
         setShowSaveModal={setShowSaveModal}
         setActiveCurricoloView={setActiveCurricoloView}
         setActiveProgTab={(tab) => { if (isActiveProgTab(tab)) setActiveProgTab(tab); }}
+        setSelectedUda={setSelectedUda}
        />
      {/* VIEW: CURRICOLO */}
      {activeTab === 'curricolo' && (

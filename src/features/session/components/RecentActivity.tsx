@@ -66,7 +66,8 @@ function buildActivities(
   savedUda: UdaModel[],
   documentExportHistory: DocumentExportEvent[] | undefined,
   handleTabSwitch: (tab: string) => void,
-  setActiveProgTab: (value: string) => void
+  setActiveProgTab: (value: string) => void,
+  setSelectedUda: (uda: UdaModel | null) => void
 ): ActivityItem[] {
   const sourceFamilies = new Map<string, RankedActivity>();
   const independentExports: RankedActivity[] = [];
@@ -84,7 +85,7 @@ function buildActivities(
       description: updatedTime !== null ? uda.status : 'UDA salvata',
       timeLabel: formatDay(timestamp ?? 0),
       actionLabel: 'Apri \u2192',
-      onAction: () => { handleTabSwitch('progetta-annuale'); setActiveProgTab('uda'); },
+      onAction: () => { handleTabSwitch('progetta-annuale'); setActiveProgTab('uda'); setSelectedUda(uda); },
     };
     const current = sourceFamilies.get(uda.id);
     if (!current || compareRankedActivities(candidate, current) < 0) {
@@ -126,6 +127,7 @@ interface RecentActivityProps {
   documentExportHistory?: DocumentExportEvent[];
   handleTabSwitch: (tab: string) => void;
   setActiveProgTab: (value: string) => void;
+  setSelectedUda: (uda: UdaModel | null) => void;
 }
 
 export function RecentActivity({
@@ -133,12 +135,14 @@ export function RecentActivity({
   documentExportHistory,
   handleTabSwitch,
   setActiveProgTab,
+  setSelectedUda,
 }: RecentActivityProps) {
   const activities = buildActivities(
     savedUda,
     documentExportHistory,
     handleTabSwitch,
-    setActiveProgTab
+    setActiveProgTab,
+    setSelectedUda
   );
 
   if (activities.length === 0) {

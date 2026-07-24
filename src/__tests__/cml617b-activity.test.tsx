@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { RecentActivity } from '../features/session/components/RecentActivity';
 import { DashboardView } from '../features/session/components/DashboardView';
 import type { UdaModel, DocumentExportEvent, UserRole } from '../types/curriculum';
@@ -40,6 +40,7 @@ const baseProps = {
   documentExportHistory: [] as DocumentExportEvent[],
   handleTabSwitch: vi.fn(),
   setActiveProgTab: vi.fn(),
+  setSelectedUda: vi.fn(),
 };
 
 const dashboardBaseProps = {
@@ -58,6 +59,7 @@ const dashboardBaseProps = {
   setShowSaveModal: vi.fn(),
   setActiveCurricoloView: vi.fn(),
   setActiveProgTab: vi.fn(),
+  setSelectedUda: vi.fn(),
 };
 
 beforeEach(() => {
@@ -643,5 +645,89 @@ describe('CML-617B \u2014 RecentActivity widget', () => {
       expect(screen.getByText('Older UDA')).toBeDefined();
       expect(screen.queryByText('Invalid UDA')).toBeNull();
     });
+  });
+});
+
+describe('CML-627 — Recent UDA Direct Opening', () => {
+  it('UDA action calls setSelectedUda with the full UdaModel', () => {
+    const uda = makeUda({ id: 'uda-target', title: 'Target UDA' });
+    const savedUda = [uda];
+    const setSelectedUda = vi.fn();
+
+    render(<RecentActivity {...baseProps} savedUda={savedUda} setSelectedUda={setSelectedUda} />);
+    fireEvent.click(screen.getByTestId('recent-activity-action-uda-uda-target'));
+
+    expect(setSelectedUda).toHaveBeenCalledTimes(1);
+    expect(setSelectedUda).toHaveBeenCalledWith(uda);
+  });
+
+  it('UDA action opens progetta-annuale and selects uda sub-tab', () => {
+    const savedUda = [makeUda({ id: 'uda-x', title: 'UDA X' })];
+    const handleTabSwitch = vi.fn();
+    const setActiveProgTab = vi.fn();
+
+    render(
+      <RecentActivity
+        {...baseProps}
+        savedUda={savedUda}
+        handleTabSwitch={handleTabSwitch}
+        setActiveProgTab={setActiveProgTab}
+        setSelectedUda={vi.fn()}
+      />
+    );
+    fireEvent.click(screen.getByTestId('recent-activity-action-uda-uda-x'));
+
+    expect(handleTabSwitch).toHaveBeenCalledWith('progetta-annuale');
+    expect(setActiveProgTab).toHaveBeenCalledWith('uda');
+  });
+
+  it('export action does NOT call setSelectedUda', () => {
+    const exports = [makeExport({ id: 'exp-1', label: 'Export One' })];
+    const setSelectedUda = vi.fn();
+
+    render(
+      <RecentActivity
+        {...baseProps}
+        documentExportHistory={exports}
+        setSelectedUda={setSelectedUda}
+      />
+    );
+    fireEvent.click(screen.getByTestId('recent-activity-action-export-exp-1'));
+
+    expect(setSelectedUda).not.toHaveBeenCalled();
+  });
+
+  it('export action opens esportazioni tab', () => {
+    const exports = [makeExport({ id: 'exp-2', label: 'Export Two' })];
+    const handleTabSwitch = vi.fn();
+
+    render(
+      <RecentActivity
+        {...baseProps}
+        documentExportHistory={exports}
+        handleTabSwitch={handleTabSwitch}
+        setSelectedUda={vi.fn()}
+      />
+    );
+    fireEvent.click(screen.getByTestId('recent-activity-action-export-exp-2'));
+
+    expect(handleTabSwitch).toHaveBeenCalledWith('esportazioni');
+  });
+
+  it('DashboardView forwards setSelectedUda to RecentActivity', () => {
+    const uda = makeUda({ id: 'uda-dash', title: 'Dashboard UDA' });
+    const setSelectedUda = vi.fn();
+
+    render(
+      <DashboardView
+        {...dashboardBaseProps}
+        savedUda={[uda]}
+        setSelectedUda={setSelectedUda}
+      />
+    );
+    fireEvent.click(screen.getByTestId('recent-activity-action-uda-uda-dash'));
+
+    expect(setSelectedUda).toHaveBeenCalledTimes(1);
+    expect(setSelectedUda).toHaveBeenCalledWith(uda);
   });
 });

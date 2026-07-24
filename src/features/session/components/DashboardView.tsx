@@ -59,6 +59,7 @@ interface DashboardViewProps {
   setShowSaveModal: (value: boolean) => void;
   setActiveCurricoloView: (value: 'albero' | 'mappa' | 'popolamento') => void;
   setActiveProgTab: (value: string) => void;
+  setSelectedUda: (uda: UdaModel | null) => void;
 }
 
 export function DashboardView({
@@ -77,6 +78,7 @@ export function DashboardView({
   setShowSaveModal,
   setActiveCurricoloView,
   setActiveProgTab,
+  setSelectedUda,
 }: DashboardViewProps) {
   const lastSaveTime = readLastSaveTime();
 
@@ -179,6 +181,7 @@ export function DashboardView({
               documentExportHistory={documentExportHistory}
               handleTabSwitch={handleTabSwitch}
               setActiveProgTab={setActiveProgTab}
+              setSelectedUda={setSelectedUda}
             />
           )}
 
