@@ -9,8 +9,8 @@
 | Architettura | **Congelata** | CML-603 Gate PASSED |
 | Navigazione | **Congelata** | CML-604 Gate PASSED |
 | Fase | **Evoluzione prodotto** | `docs/WORKING_PROTOCOL.md` |
-| Teacher Workspace | **Operativo** | CML-616, CML-617A/B, CML-620, CML-621, CML-625 |
-| Test | **Suite completa verde** | Ultima evidenza registrata: 327/327 test in 18 file, verificata con CML-626 |
+| Teacher Workspace | **Operativo** | CML-616, CML-617A/B, CML-620, CML-621, CML-625, CML-627 |
+| Test | **Suite completa verde** | Ultima evidenza registrata: 332/332 test in 18 file, verificata con CML-627 |
 | TypeScript | **Zero errori noti** | CML-613 e CML-614 |
 | Blocker critici | **Nessuno** | BL-001 risolto da CML-622 |
 
@@ -35,6 +35,7 @@ La baseline stabilisce i vincoli entro cui evolvere il prodotto. Non autorizza r
 | CML-622 | Build Vite non mutante e `dist/index.html` come artefatto distribuibile |
 | CML-624 | Riallineamento della baseline post-CML-622 |
 | CML-625 | Teacher Workspace Action Consolidation: wizard e CTA primaria mantenuti in Stato del lavoro; Attività recenti riservate a un massimo di tre UDA o esportazioni, con stato vuoto senza CTA e regole CML-620/621 preservate |
+| CML-627 | Apertura diretta dell'UDA dalle Attività recenti: il docente preme "Apri →" e viene portato al dettaglio UDA senza cercarla nell'archivio; wiring `setSelectedUda` da `RecentActivity` a `AppViewsLayer` |
 
 ## Baseline architetturale (CML-603)
 
@@ -124,7 +125,7 @@ git diff --check
 git status --short
 ```
 
-- Suite completa verde. Ultima evidenza registrata: 327/327 test in 18 file, verificata con CML-626.
+- Suite completa verde. Ultima evidenza registrata: 332/332 test in 18 file, verificata con CML-627.
 - `index.html` è il sorgente Vite canonico e `npm run build` esegue `vite build`.
 - `dist/index.html` è l'artefatto single-file distribuibile; `index.html.template` non esiste più.
 - `npm run build` e `npm run build-storybook` non modificano file tracciati.
@@ -184,4 +185,4 @@ Sono consentiti miglioramenti di UX, workflow, onboarding, progettazione, gestio
 
 ---
 
-*Ultimo aggiornamento: CML-626, 24 luglio 2026.*
+*Ultimo aggiornamento: CML-628, 24 luglio 2026.*
