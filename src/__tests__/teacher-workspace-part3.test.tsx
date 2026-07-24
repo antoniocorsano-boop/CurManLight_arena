@@ -20,6 +20,7 @@ const baseProps = {
   setShowSaveModal: vi.fn(),
   setActiveCurricoloView: vi.fn(),
   setActiveProgTab: vi.fn(),
+  setSelectedUda: vi.fn(),
 };
 
 describe('Teacher Workspace Part 3 — Action navigation integration', () => {
