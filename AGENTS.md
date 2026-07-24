@@ -80,43 +80,33 @@ See `docs/PROJECT_BASELINE.md` for current state.
 | CML-630A — National Framework Applicability Foundation | COMPLETE_REMOTE | `6c8c93c` | `main` |
 | CML-630F — Curriculum Transition Documentation Alignment | COMPLETE_REMOTE | `5c34dc8` | `main` |
 | CML-630B — Institute Curriculum Version and Segment Model | COMPLETE_REMOTE | `5c34dc8` | `main` |
-| CML-630C — Curriculum e-Twin Domain Validation Prototype | PR_OPEN | `57cf7b7` | `feat/cml-630c-curriculum-etwin-domain-validation` |
-| CML-630D — Vertical Curriculum Link Domain Decision | PENDING | — | — |
+| CML-630C — Curriculum e-Twin Domain Validation Prototype | COMPLETE_REMOTE | `635fd6a` | `main` |
+| CML-630D — Vertical Curriculum Link Domain Decision | PR_OPEN | `pending` | `feat/cml-630d-vertical-curriculum-link-domain-decision` |
+| CML-630E — Production Domain Integration | PENDING | — | — |
 
-### CML-630C Audit Verdict
+### CML-630D Decision
 
 ```
-CML_630C_PR_AUDIT_COMPLETE
-ISOLATION_CONFIRMED
-DOMAIN_CONFLICT_IDENTIFIED
-CML_630D_REQUIRED_BEFORE_FINAL_DOMAIN_ADOPTION
+CML_630D_DECISION_COMPLETE
+MODELLO_C_IBRIDO_ADOPTED
+VERTICAL_CURRICULUM_LINK_PROMOTED_TO_PRODUCTION_DOMAIN
+CURRICULUM_NODE_PROMOTED_TO_PRODUCTION_DOMAIN
+CML_630E_REQUIRED_FOR_IMPLEMENTATION
 ```
 
-**Key finding:** CML-630B chose Modello A (relazioni incorporate). CML-630C prototype recommends Modello B (relazioni esplicite). This conflict is intentional — the prototype served its function.
+**Decision:** Modello C ibrido
+- `CurriculumSegment` → relazioni strutturali (provenienza, sostituzione, appartenenza)
+- `VerticalCurriculumLink` → relazioni pedagogiche (continuità, sviluppo, prerequisito, integrazione)
 
-**PR #6:** https://github.com/antoniocorsano-boop/CurManLight_arena/pull/6
-- Status: ARCHITECTURALLY_ISOLATED, DOMAIN_EVIDENCE_VALID, FINAL_DOMAIN_DECISION_PENDING
-- Safe to merge as experimental prototype (no production impact)
+### CML-630E Requirements
 
-### CML-630D Requirements
+**Title:** Production Domain Integration  
+**Objective:** Integrate `VerticalCurriculumLink` and `CurriculumNode` into production domain
 
-**Title:** Vertical Curriculum Link Domain Decision  
-**Objective:** Formally decide between Modello A (incorporate), B (esplicite), or C (ibrido)
-
-**Decision criteria:**
-
-| Criterio | Modello A | Modello B |
-|----------|-----------|-----------|
-| Semplicità strutturale | superiore | inferiore |
-| Precisione pedagogica | limitata | elevata |
-| Relazioni interdisciplinari | debole | nativa |
-| Validazione indipendente | non naturale | nativa |
-| Tracciabilità | ridotta | completa |
-| Carico implementativo | minore | maggiore |
-| Utilità per e-Twin | limitata | elevata |
-| Compatibilità con uso documentale semplice | elevata | potenzialmente eccessiva |
-
-**Expected outcome:** Modello C (ibrido)
-- CurriculumSegment → relazioni strutturali (provenienza, sostituzione, appartenenza)
-- VerticalCurriculumLink → relazioni pedagogiche (continuità, sviluppo, prerequisito, integrazione)
+**Scope:**
+- Add types to `src/types/`
+- Update store to support new entities
+- Add UI for relationship visualization
+- Implement workflow for relationship validation
+- No breaking changes to existing functionality
 

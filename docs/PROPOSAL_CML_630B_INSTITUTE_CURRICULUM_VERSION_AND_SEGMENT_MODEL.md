@@ -316,41 +316,87 @@ La collaborazione è **concettuale**, non tecnica simultanea. CurManLight resta 
 
 ## 8. Relazioni verticali
 
-### 8.1 Alternativa scelta: Relazioni incorporate nel segmento
+> **Aggiornamento CML-630D:** La sezione originale (Modello A) è stata sostituita con la decisione formale (Modello C ibrido). Vedere `docs/CML_630D_VERTICAL_CURRICULUM_LINK_DOMAIN_DECISION.md` per l'analisi completa.
+
+### 8.1 Alternativa scelta: Modello C ibrido
 
 ```typescript
+// Relazioni strutturali (tecniche, nel segmento)
 interface CurriculumSegment {
   // ... campi base ...
-  sourceSegmentId?: string;      // segmento da cui deriva (clonazione/evoluzione)
-  replacesSegmentId?: string;    // segmento che sostituisce (storico)
+  sourceSegmentId?: string;      // provenienza (clonazione/evoluzione)
+  replacesSegmentId?: string;    // sostituzione (storico)
+}
+
+// Relazioni pedagogiche (entità separata)
+interface VerticalCurriculumLink {
+  id: string;
+  sourceNodeId: string;
+  targetNodeId: string;
+  relationType: 'continuity' | 'development' | 'deepening' | 'integration' | 'prerequisite' | 'discontinuity';
+  status: 'draft' | 'proposed' | 'validated' | 'rejected';
+  scope: SegmentScope;
+  metadata: {
+    pedagogicalRationale: string;
+    proposedBy: InstitutionalRole;
+    validatedBy?: InstitutionalRole;
+    validatedAt?: string;
+  };
 }
 ```
 
 ### 8.2 Motivazione
 
-| Alternativa | Beneficio | Rischio | Complessità | Compatibilità offline | Verdetto |
-|-------------|-----------|---------|-------------|----------------------|----------|
-| **A — Incorporate nel segmento** | Semplicità, un solo oggetto da consultare | Segmento più grande | Bassa | Perfetta | **Scelta** |
-| B — Entità separata (`VerticalCurriculumLink`) | Flessibilità massima, query indipendenti | Doppia gestione, complessità relazionale | Media | Ottima | Scartata — over-engineering |
-| C — Modello ibrido | Flessibilità + semplicità | Complessità mista, confusione | Alta | Buona | Scartata — troppo complesso |
+| Alternativa | Beneficio | Rischio | Complessità | Utilità e-Twin | Verdetto |
+|-------------|-----------|---------|-------------|----------------|----------|
+| A — Incorporate nel segmento | Semplicità | Limitata per relazioni pedagogiche | Bassa | Limitata | Scartata — insufficiente |
+| B — Entità separata (`VerticalCurriculumLink`) | Flessibilità massima | Eccessiva per relazioni strutturali | Media | Elevata | Scartata — troppo per strutturali |
+| **C — Modello ibrido** | Separazione responsabilità | Gestione due entità | Media | Elevata | **Scelta** — bilancia complessità e valore |
 
-### 8.3 Rappresentazione delle relazioni verticali
+### 8.3 Separazione responsabilità
 
-Le relazioni sono implicite nella struttura:
+| Entità | Relazioni gestite | Motivazione |
+|--------|-------------------|-------------|
+| `CurriculumSegment` | provenienza, sostituzione, appartenenza versione | Tecniche, non pedagogiche |
+| `VerticalCurriculumLink` | continuità, sviluppo, approfondimento, prerequisito, integrazione, discontinuità | Pedagogiche, con stato e workflow |
 
-1. **Continuità infanzia→primaria→secondaria:** Lo stesso `disciplineOrField` in segmenti di ordini diversi
-2. **Progressione tra classi:** Stesso `disciplineOrField`, `classLevel` diverso, stessa `applicableFramework`
-3. **Raccordi traguardi/obiettivi:** Contenuti nel campo `proposals` di `CurriculumSegmentContent`
-4. **Dipendenze tra segmenti:** `sourceSegmentId` (evoluzione) e `replacesSegmentId` (sostituzione)
-5. **Segmenti mancanti:** Stato `not-started` nel segmento
-6. **Discontinuità:** Visibili nella vista multi-classe quando `applicableFramework` cambia tra classi adiacenti
+### 8.4 Rappresentazione delle relazioni verticali
 
-### 8.4 Rilevamento discontinuità
+Le relazioni sono ora rappresentate su due livelli:
+
+1. **Relazioni strutturali (nel segmento):**
+   - provenienza: `sourceSegmentId`
+   - sostituzione: `replacesSegmentId`
+   - appartenenza: `versionId`
+
+2. **Relazioni pedagogiche (VerticalCurriculumLink):**
+   - continuità infanzia→primaria→secondaria
+   - progressione tra classi
+   - raccordi traguardi/obiettivi
+   - dipendenze pedagogiche
+   - discontinuità identificate
+
+### 8.5 Rilevamento discontinuità
 
 Il sistema può calcolare automaticamente:
 - Framework diverso tra classi adiacenti dello stesso ordine e disciplina
 - Segmenti con stato `not-started` o `draft` in zone critiche
 - Transizioni IN2012→IN2025 non ancora lavorate
+- Relazioni pedagogiche con stato `rejected` o `draft`
+
+### 8.6 Workflow relazioni pedagogiche
+
+```text
+draft → proposed → validated → approved
+                  ↓
+               rejected
+```
+
+**Ruoli:**
+- `docente`: propone relazioni
+- `dipartimento`: valida internamente
+- `referente`: consolida
+- `collegio`: approva (solo per versione complessiva)
 
 ---
 
