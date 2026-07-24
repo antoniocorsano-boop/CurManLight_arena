@@ -12,3 +12,4 @@ coverage/
 storybook-static/
 report/cml-*-screenshots/
 scripts/cml611-screenshots.mjs
+docs/superpowers/
