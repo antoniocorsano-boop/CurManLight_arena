@@ -176,9 +176,6 @@ export function DashboardView({
           {role === 'insegnante' && (
             <RecentActivity
               savedUda={savedUda}
-              wizardStep={wizardStep}
-              progTitle={progTitle}
-              wizardLastSaveTime={lastSaveTime}
               documentExportHistory={documentExportHistory}
               handleTabSwitch={handleTabSwitch}
               setActiveProgTab={setActiveProgTab}
@@ -392,4 +389,3 @@ export function DashboardView({
     </>
   );
 }
-

@@ -1,7 +1,6 @@
 import { ArrowRight } from 'lucide-react';
 import type { UdaModel, DocumentExportEvent } from '../../../types/curriculum';
 
-const WIZARD_MAX_STEP = 5;
 const MAX_ACTIVITY_ITEMS = 3;
 
 function localDaySerial(date: Date): number {
@@ -65,28 +64,13 @@ function compareRankedActivities(a: RankedActivity, b: RankedActivity): number {
 
 function buildActivities(
   savedUda: UdaModel[],
-  wizardStep: number,
-  progTitle: string,
-  wizardLastSaveTime: number | null,
   documentExportHistory: DocumentExportEvent[] | undefined,
   handleTabSwitch: (tab: string) => void,
   setActiveProgTab: (value: string) => void
 ): ActivityItem[] {
-  const activities: ActivityItem[] = [];
   const sourceFamilies = new Map<string, RankedActivity>();
   const independentExports: RankedActivity[] = [];
   const udaIds = new Set(savedUda.map((uda) => uda.id));
-
-  if (wizardStep > 1 && wizardStep <= WIZARD_MAX_STEP) {
-    activities.push({
-      id: `wizard-${progTitle || 'nuova-uda'}`,
-      title: progTitle || 'Nuova UDA',
-      description: `in corso \u2014 passo ${wizardStep}/${WIZARD_MAX_STEP}`,
-      timeLabel: formatDay(wizardLastSaveTime ?? 0),
-      actionLabel: 'Riprendi \u2192',
-      onAction: () => { handleTabSwitch('progetta-annuale'); setActiveProgTab('annuale'); },
-    });
-  }
 
   savedUda.forEach((uda) => {
     const updatedTime = reliableDateValue(uda.updatedAt);
@@ -134,17 +118,11 @@ function buildActivities(
 
   const rankedEvents = [...sourceFamilies.values(), ...independentExports]
     .sort(compareRankedActivities);
-  const remainingSlots = MAX_ACTIVITY_ITEMS - activities.length;
-  activities.push(...rankedEvents.slice(0, remainingSlots));
-
-  return activities;
+  return rankedEvents.slice(0, MAX_ACTIVITY_ITEMS);
 }
 
 interface RecentActivityProps {
   savedUda: UdaModel[];
-  wizardStep: number;
-  progTitle: string;
-  wizardLastSaveTime?: number | null;
   documentExportHistory?: DocumentExportEvent[];
   handleTabSwitch: (tab: string) => void;
   setActiveProgTab: (value: string) => void;
@@ -152,18 +130,12 @@ interface RecentActivityProps {
 
 export function RecentActivity({
   savedUda,
-  wizardStep,
-  progTitle,
-  wizardLastSaveTime = null,
   documentExportHistory,
   handleTabSwitch,
   setActiveProgTab,
 }: RecentActivityProps) {
   const activities = buildActivities(
     savedUda,
-    wizardStep,
-    progTitle,
-    wizardLastSaveTime,
     documentExportHistory,
     handleTabSwitch,
     setActiveProgTab
@@ -174,15 +146,8 @@ export function RecentActivity({
       <div className="bg-slate-50 border border-slate-200 rounded-xl p-5 space-y-3 text-left col-span-3" data-testid="recent-activity-empty">
         <span className="text-[8px] font-black text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md uppercase block w-fit">{"Attività recenti"}</span>
         <p className="text-[11px] text-slate-500 leading-relaxed font-medium">
-          {"Non hai ancora attività. Inizia a progettare un\u2019UDA o consulta il curricolo per impostare il tuo percorso didattico."}
+          Le UDA salvate e le esportazioni recenti compariranno qui.
         </p>
-        <button
-          onClick={() => handleTabSwitch('curricolo')}
-          className="w-full py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-lg text-[10px] tracking-wider uppercase transition flex items-center justify-center gap-1.5"
-          data-testid="recent-activity-start"
-        >
-          Inizia dal Curricolo <ArrowRight className="w-3 h-3" />
-        </button>
       </div>
     );
   }

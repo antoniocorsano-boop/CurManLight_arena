@@ -37,9 +37,6 @@ function makeExport(overrides: Partial<DocumentExportEvent> & { id: string; labe
 
 const baseProps = {
   savedUda: [] as UdaModel[],
-  wizardStep: 1,
-  progTitle: '',
-  wizardLastSaveTime: null as number | null,
   documentExportHistory: [] as DocumentExportEvent[],
   handleTabSwitch: vi.fn(),
   setActiveProgTab: vi.fn(),
@@ -99,81 +96,39 @@ describe('CML-617B \u2014 RecentActivity widget', () => {
   });
 
   // 3. Stato vuoto
-  it('3. shows empty state when no activities', () => {
+  it('3. shows the approved informational empty state when no historical activities exist', () => {
     render(<RecentActivity {...baseProps} />);
     expect(screen.getByTestId('recent-activity-empty')).toBeDefined();
-    expect(screen.getByText(/Non hai ancora attività/)).toBeDefined();
+    expect(screen.getByText('Le UDA salvate e le esportazioni recenti compariranno qui.')).toBeDefined();
   });
 
   // 4. CTA "Inizia dal Curricolo"
-  it('4. empty state CTA navigates to curricolo', () => {
+  it('4. empty state has no CTA or navigation action', () => {
     const handleTabSwitch = vi.fn();
     render(<RecentActivity {...baseProps} handleTabSwitch={handleTabSwitch} />);
-    screen.getByTestId('recent-activity-start').click();
-    expect(handleTabSwitch).toHaveBeenCalledWith('curricolo');
+    expect(screen.queryByRole('button')).toBeNull();
+    expect(screen.queryByTestId('recent-activity-start')).toBeNull();
+    expect(handleTabSwitch).not.toHaveBeenCalled();
   });
 
-  it('4b. CTA button text is "Inizia dal Curricolo"', () => {
-    render(<RecentActivity {...baseProps} />);
-    expect(screen.getByText(/Inizia dal Curricolo/)).toBeDefined();
-  });
-
-  // 5. Rendering della progettazione in corso
-  it('5. renders wizard in progress', () => {
-    render(<RecentActivity {...baseProps} wizardStep={3} progTitle="Miapro UDA" />);
-    expect(screen.getByText('Miapro UDA')).toBeDefined();
-    expect(screen.getByText('in corso \u2014 passo 3/5')).toBeDefined();
-  });
-
-  // 6. Rendering dell'UDA recente
-  it('5b. uses the available wizard save time instead of defaulting to today', () => {
-    render(
-      <RecentActivity
-        {...baseProps}
-        wizardStep={3}
-        progTitle="Wizard precedente"
-        wizardLastSaveTime={new Date('2026-07-23T08:00:00.000Z').getTime()}
-      />
-    );
-
-    expect(screen.getByText('ieri')).toBeDefined();
-    expect(screen.queryByText('oggi')).toBeNull();
-  });
-
-  it.each([
-    ['missing', null],
-    ['negative', -1],
-    ['not finite', Number.POSITIVE_INFINITY],
-    ['future', new Date('2026-07-25T08:00:00.000Z').getTime()],
-  ])('5c. hides wizard time when the timestamp is %s', (_case, wizardLastSaveTime) => {
-    render(
-      <RecentActivity
-        {...baseProps}
-        wizardStep={3}
-        progTitle="Wizard senza tempo attendibile"
-        wizardLastSaveTime={wizardLastSaveTime}
-      />
-    );
-
-    expect(screen.queryByText('oggi')).toBeNull();
-  });
-
-  it('5d. Dashboard passes curman_lastSaveTime to the wizard activity', () => {
-    localStorage.setItem(
-      'curman_lastSaveTime',
-      String(new Date('2026-07-23T08:00:00.000Z').getTime())
-    );
-
+  it('5. keeps the active wizard and its only resume action in the work-status card', () => {
+    const handleTabSwitch = vi.fn();
+    const setActiveProgTab = vi.fn();
     render(
       <DashboardView
         {...dashboardBaseProps}
         wizardStep={3}
         progTitle="Wizard persistito"
+        handleTabSwitch={handleTabSwitch}
+        setActiveProgTab={setActiveProgTab}
       />
     );
 
-    expect(screen.getByText('ieri')).toBeDefined();
-    expect(screen.queryByText('oggi')).toBeNull();
+    expect(screen.getByText('Wizard: Wizard persistito')).toBeDefined();
+    expect(screen.queryByTestId(/recent-activity-action-wizard-/)).toBeNull();
+    screen.getByTestId('teacher-action-continue').click();
+    expect(handleTabSwitch).toHaveBeenCalledWith('progetta-annuale');
+    expect(setActiveProgTab).toHaveBeenCalledWith('annuale');
   });
 
   it('6. renders recent UDA', () => {
@@ -204,8 +159,6 @@ describe('CML-617B \u2014 RecentActivity widget', () => {
     render(
       <RecentActivity
         {...baseProps}
-        wizardStep={2}
-        progTitle="Wizard"
         savedUda={savedUda}
         documentExportHistory={documentExportHistory}
       />
@@ -213,25 +166,6 @@ describe('CML-617B \u2014 RecentActivity widget', () => {
 
     const items = screen.getAllByTestId(/recent-activity-action-/);
     expect(items.length).toBeLessThanOrEqual(3);
-  });
-
-  // 9. Priorità del wizard
-  it('9. wizard takes priority and appears first', () => {
-    const savedUda = [makeUda({ id: 'uda-1', title: 'Some UDA', createdAt: '2026-07-23T08:00:00.000Z' })];
-    const documentExportHistory = [makeExport({ id: 'exp-1', label: 'Some Export', exportedAt: '2026-07-23T08:00:00.000Z' })];
-
-    render(
-      <RecentActivity
-        {...baseProps}
-        wizardStep={3}
-        progTitle="Wizard UDA"
-        savedUda={savedUda}
-        documentExportHistory={documentExportHistory}
-      />
-    );
-
-    const titles = screen.getAllByText(/(Wizard UDA|Some UDA|Some Export)/);
-    expect(titles[0].textContent).toBe('Wizard UDA');
   });
 
   // 10. Uso di updatedAt prima di createdAt
@@ -272,23 +206,6 @@ describe('CML-617B \u2014 RecentActivity widget', () => {
     expect(screen.getByText('UDA salvata')).toBeDefined();
   });
 
-  // 12. Wizard e UDA con titolo uguale NON vengono deduplicati (nessuna dedup per titolo)
-  it('12. wizard and UDA with same title both appear — no title-based dedup', () => {
-    const savedUda = [makeUda({ id: 'uda-1', title: 'Shared Title', createdAt: '2026-07-23T08:00:00.000Z' })];
-
-    render(
-      <RecentActivity
-        {...baseProps}
-        wizardStep={3}
-        progTitle="Shared Title"
-        savedUda={savedUda}
-      />
-    );
-
-    const matching = screen.getAllByText('Shared Title');
-    expect(matching.length).toBe(2);
-  });
-
   // 13. Deduplicazione tramite chiave composita
   it('13. deduplicates export when sourceId matches UDA id', () => {
     const savedUda = [makeUda({ id: 'uda-1', title: 'My UDA', createdAt: '2026-07-23T08:00:00.000Z' })];
@@ -299,7 +216,6 @@ describe('CML-617B \u2014 RecentActivity widget', () => {
     render(
       <RecentActivity
         {...baseProps}
-        wizardStep={1}
         savedUda={savedUda}
         documentExportHistory={documentExportHistory}
       />
@@ -381,25 +297,6 @@ describe('CML-617B \u2014 RecentActivity widget', () => {
     expect(screen.queryByText('Invalid Date')).toBeNull();
   });
 
-  // 20. Navigazione "Riprendi"
-  it('20. wizard action navigates to progetta-annuale + annuale', () => {
-    const handleTabSwitch = vi.fn();
-    const setActiveProgTab = vi.fn();
-    render(
-      <RecentActivity
-        {...baseProps}
-        wizardStep={3}
-        progTitle="Test"
-        handleTabSwitch={handleTabSwitch}
-        setActiveProgTab={setActiveProgTab}
-      />
-    );
-
-    screen.getByTestId('recent-activity-action-wizard-Test').click();
-    expect(handleTabSwitch).toHaveBeenCalledWith('progetta-annuale');
-    expect(setActiveProgTab).toHaveBeenCalledWith('annuale');
-  });
-
   // 21. Navigazione "Apri" per UDA
   it('21. UDA action navigates to progetta-annuale + uda', () => {
     const handleTabSwitch = vi.fn();
@@ -409,7 +306,6 @@ describe('CML-617B \u2014 RecentActivity widget', () => {
     render(
       <RecentActivity
         {...baseProps}
-        wizardStep={1}
         savedUda={savedUda}
         handleTabSwitch={handleTabSwitch}
         setActiveProgTab={setActiveProgTab}
@@ -429,7 +325,6 @@ describe('CML-617B \u2014 RecentActivity widget', () => {
     render(
       <RecentActivity
         {...baseProps}
-        wizardStep={1}
         documentExportHistory={documentExportHistory}
         handleTabSwitch={handleTabSwitch}
       />
@@ -440,21 +335,6 @@ describe('CML-617B \u2014 RecentActivity widget', () => {
   });
 
   // --- Additional edge cases ---
-
-  it('wizardStep 1 does not show wizard activity', () => {
-    render(<RecentActivity {...baseProps} wizardStep={1} />);
-    expect(screen.getByTestId('recent-activity-empty')).toBeDefined();
-  });
-
-  it('wizardStep 6 does not show wizard activity', () => {
-    render(<RecentActivity {...baseProps} wizardStep={6} />);
-    expect(screen.getByTestId('recent-activity-empty')).toBeDefined();
-  });
-
-  it('empty progTitle defaults to "Nuova UDA"', () => {
-    render(<RecentActivity {...baseProps} wizardStep={2} progTitle="" />);
-    expect(screen.getByText('Nuova UDA')).toBeDefined();
-  });
 
   it('UDA with updatedAt shows status as description', () => {
     const savedUda = [makeUda({ id: 'uda-1', title: 'UDA', status: 'in revisione', createdAt: '2026-07-23T08:00:00.000Z', updatedAt: '2026-07-23T08:00:00.000Z' })];
@@ -471,7 +351,6 @@ describe('CML-617B \u2014 RecentActivity widget', () => {
     render(
       <RecentActivity
         {...baseProps}
-        wizardStep={1}
         savedUda={savedUda}
         documentExportHistory={documentExportHistory}
       />
@@ -490,7 +369,6 @@ describe('CML-617B \u2014 RecentActivity widget', () => {
     render(
       <RecentActivity
         {...baseProps}
-        wizardStep={1}
         savedUda={savedUda}
         documentExportHistory={documentExportHistory}
       />
@@ -554,22 +432,6 @@ describe('CML-617B \u2014 RecentActivity widget', () => {
     expect(screen.getByText('ieri')).toBeDefined();
   });
 
-  it('no shared identifier between wizard and UDA — both shown even with same title', () => {
-    const savedUda = [makeUda({ id: 'uda-x', title: 'My Work', createdAt: '2026-07-23T08:00:00.000Z' })];
-
-    render(
-      <RecentActivity
-        {...baseProps}
-        wizardStep={2}
-        progTitle="My Work"
-        savedUda={savedUda}
-      />
-    );
-
-    const items = screen.getAllByTestId(/recent-activity-action-/);
-    expect(items.length).toBe(2);
-  });
-
   it('export without sourceId is never deduplicated against UDA', () => {
     const savedUda = [makeUda({ id: 'uda-1', title: 'The UDA', createdAt: '2026-07-23T08:00:00.000Z' })];
     const documentExportHistory = [
@@ -579,7 +441,6 @@ describe('CML-617B \u2014 RecentActivity widget', () => {
     render(
       <RecentActivity
         {...baseProps}
-        wizardStep={1}
         savedUda={savedUda}
         documentExportHistory={documentExportHistory}
       />
@@ -621,32 +482,78 @@ describe('CML-617B \u2014 RecentActivity widget', () => {
       expect(actionIds()).toHaveLength(3);
     });
 
-    it('keeps the wizard first and fills two slots with globally recent events', () => {
+    it('uses all three slots for globally recent events regardless of wizard state', () => {
       const savedUda = [
         makeUda({ id: 'uda-1', title: 'Recent UDA', createdAt: '2026-07-23T10:00:00.000Z' }),
         makeUda({ id: 'uda-2', title: 'Second UDA', createdAt: '2026-07-22T10:00:00.000Z' }),
       ];
       const documentExportHistory = [
-        makeExport({ id: 'exp-old', label: 'Old Export', exportedAt: '2026-07-01T08:00:00.000Z' }),
+        makeExport({ id: 'exp-old', label: 'Old Export', exportedAt: '2026-07-21T08:00:00.000Z' }),
       ];
 
       render(
         <RecentActivity
           {...baseProps}
-          wizardStep={3}
-          progTitle="Open Wizard"
-          wizardLastSaveTime={new Date('2026-07-20T08:00:00.000Z').getTime()}
           savedUda={savedUda}
           documentExportHistory={documentExportHistory}
         />
       );
 
       expect(actionIds()).toEqual([
-        'recent-activity-action-wizard-Open Wizard',
         'recent-activity-action-uda-uda-1',
         'recent-activity-action-uda-uda-2',
+        'recent-activity-action-export-exp-old',
       ]);
-      expect(screen.queryByText('Old Export')).toBeNull();
+      expect(screen.getByText('Old Export')).toBeDefined();
+    });
+
+    it('keeps the same historical order with and without an active wizard', () => {
+      const savedUda = [
+        makeUda({ id: 'uda-1', title: 'Recent UDA', createdAt: '2026-07-23T10:00:00.000Z' }),
+        makeUda({ id: 'uda-2', title: 'Second UDA', createdAt: '2026-07-22T10:00:00.000Z' }),
+      ];
+      const documentExportHistory = [
+        makeExport({ id: 'exp-1', label: 'Recent Export', exportedAt: '2026-07-21T10:00:00.000Z' }),
+      ];
+      const first = render(
+        <DashboardView
+          {...dashboardBaseProps}
+          savedUda={savedUda}
+          documentExportHistory={documentExportHistory}
+          wizardStep={1}
+        />
+      );
+      const withoutWizard = actionIds();
+      first.unmount();
+
+      render(
+        <DashboardView
+          {...dashboardBaseProps}
+          savedUda={savedUda}
+          documentExportHistory={documentExportHistory}
+          wizardStep={3}
+          progTitle="Open Wizard"
+        />
+      );
+
+      expect(actionIds()).toEqual(withoutWizard);
+      expect(screen.queryByTestId(/recent-activity-action-wizard-/)).toBeNull();
+    });
+
+    it('shows exactly one or two available historical events without fillers', () => {
+      const savedUda = [
+        makeUda({ id: 'uda-1', title: 'Only UDA', createdAt: '2026-07-23T08:00:00.000Z' }),
+      ];
+      const first = render(<RecentActivity {...baseProps} savedUda={savedUda} />);
+      expect(actionIds()).toHaveLength(1);
+      first.unmount();
+
+      const exports = [
+        makeExport({ id: 'exp-1', label: 'Only Export', exportedAt: '2026-07-22T08:00:00.000Z' }),
+      ];
+      render(<RecentActivity {...baseProps} savedUda={savedUda} documentExportHistory={exports} />);
+      expect(actionIds()).toHaveLength(2);
+      expect(screen.queryByTestId(/recent-activity-action-wizard-/)).toBeNull();
     });
 
     it('produces the same order after reversing both source arrays', () => {
