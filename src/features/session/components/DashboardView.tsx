@@ -1,7 +1,8 @@
 import { Calendar, GraduationCap, Layers, ArrowRight, BookOpen, ClipboardList } from 'lucide-react';
-import type { UdaModel, UserRole } from '../../../types/curriculum';
+import type { UdaModel, UserRole, DocumentExportEvent } from '../../../types/curriculum';
 import { safeLocalStorageGetItem } from '../../../lib/consolidatedStorage';
 import type { ProgStatus } from '../types/appViewContracts';
+import { RecentActivity } from './RecentActivity';
 
 const WIZARD_STEP_LABELS: Record<number, string> = {
   1: 'Traguardi e Obiettivi',
@@ -50,6 +51,7 @@ interface DashboardViewProps {
   wizardStep: number;
   progTitle: string;
   progStatus: ProgStatus;
+  documentExportHistory: DocumentExportEvent[];
   handleDownloadCml: () => void;
   handleTabSwitch: (tab: string) => void;
   setSelectedBrainDoc: (value: string) => void;
@@ -67,6 +69,7 @@ export function DashboardView({
   wizardStep,
   progTitle,
   progStatus,
+  documentExportHistory,
   handleDownloadCml,
   handleTabSwitch,
   setSelectedBrainDoc,
@@ -169,9 +172,21 @@ export function DashboardView({
             )}
            </div>
           </div>
-         )}
+)}
 
-        {/* DIPARTIMENTO (DEPARTMENT) WIDGETS */}
+          {/* ATTIVITÀ RECENTI (insegnante) */}
+          {role === 'insegnante' && (
+            <RecentActivity
+              savedUda={savedUda}
+              wizardStep={wizardStep}
+              progTitle={progTitle}
+              documentExportHistory={documentExportHistory}
+              handleTabSwitch={handleTabSwitch}
+              setActiveProgTab={setActiveProgTab}
+            />
+          )}
+
+          {/* DIPARTIMENTO (DEPARTMENT) WIDGETS */}
         {role === 'dipartimento' && (
          <>
           <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-2.5 text-left">

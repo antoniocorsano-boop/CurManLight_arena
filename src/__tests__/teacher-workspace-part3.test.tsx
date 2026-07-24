@@ -12,6 +12,7 @@ const baseProps = {
   wizardStep: 1,
   progTitle: '',
   progStatus: 'bozza' as ProgStatus,
+  documentExportHistory: [] as never[],
   handleDownloadCml: vi.fn(),
   handleTabSwitch: vi.fn(),
   setSelectedBrainDoc: vi.fn(),

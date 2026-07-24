@@ -40,6 +40,7 @@ export interface UdaModel {
   realTask: string;
   notes: string;
   createdAt: string;
+  updatedAt?: string;
 }
 
 export interface DocumentExportEvent {

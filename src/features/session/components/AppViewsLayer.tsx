@@ -257,23 +257,24 @@ export function AppViewsLayer(props: AppViewsLayerProps) {
 
   return (
     <>
-      {/* VIEW: DASHBOARD */}
+{/* VIEW: DASHBOARD */}
       <DashboardView
-       activeTab={activeTab}
-       role={role}
-       savedUda={savedUda}
-       decisions={decisions}
-       wizardStep={wizardStep}
-       progTitle={progTitle}
-       progStatus={progStatus}
-       handleDownloadCml={handleDownloadCml}
-       handleTabSwitch={(tab) => { if (isAppTab(tab)) handleTabSwitch(tab); }}
-       setSelectedBrainDoc={setSelectedBrainDoc}
-       setWikiWorkspaceTab={setWikiWorkspaceTab}
-       setShowSaveModal={setShowSaveModal}
-       setActiveCurricoloView={setActiveCurricoloView}
-       setActiveProgTab={(tab) => { if (isActiveProgTab(tab)) setActiveProgTab(tab); }}
-      />
+        activeTab={activeTab}
+        role={role}
+        savedUda={savedUda}
+        decisions={decisions}
+        wizardStep={wizardStep}
+        progTitle={progTitle}
+        progStatus={progStatus}
+        documentExportHistory={documentExportHistory}
+        handleDownloadCml={handleDownloadCml}
+        handleTabSwitch={(tab) => { if (isAppTab(tab)) handleTabSwitch(tab); }}
+        setSelectedBrainDoc={setSelectedBrainDoc}
+        setWikiWorkspaceTab={setWikiWorkspaceTab}
+        setShowSaveModal={setShowSaveModal}
+        setActiveCurricoloView={setActiveCurricoloView}
+        setActiveProgTab={(tab) => { if (isActiveProgTab(tab)) setActiveProgTab(tab); }}
+       />
      {/* VIEW: CURRICOLO */}
      {activeTab === 'curricolo' && (
       <CurriculumTab
