@@ -10,9 +10,9 @@
 | Navigazione | **Congelata** | CML-604 Gate PASSED |
 | Fase | **Evoluzione prodotto** | `docs/WORKING_PROTOCOL.md` |
 | Teacher Workspace | **Operativo** | CML-616, CML-617A, CML-617B |
-| Test | **324/324 superati** | Baseline CML-619: 18 file, verificata il 24 luglio 2026 |
+| Test | **Suite completa verde** | Ultima evidenza: 339 test in 18 file, CML-624, verificata il 24 luglio 2026 |
 | TypeScript | **Zero errori noti** | CML-613 e CML-614 |
-| Blocker critici | **Nessuno** | BL-001 è aperto ma accettato |
+| Blocker critici | **Nessuno** | BL-001 risolto da CML-622 |
 
 La baseline stabilisce i vincoli entro cui evolvere il prodotto. Non autorizza refactoring strutturali, nuovi pattern, modifiche alla shell o al routing.
 
@@ -30,6 +30,10 @@ La baseline stabilisce i vincoli entro cui evolvere il prodotto. Non autorizza r
 | CML-617A/B | Mock e attività recenti nella Dashboard docente |
 | CML-618 | Politica LF tramite `.gitattributes` |
 | CML-619 | Riallineamento di questa baseline |
+| CML-620 | Integrità temporale delle attività recenti |
+| CML-621 | Rilevanza e ordinamento globale delle attività recenti |
+| CML-622 | Build Vite non mutante e `dist/index.html` come artefatto distribuibile |
+| CML-624 | Riallineamento della baseline post-CML-622 |
 
 ## Baseline architetturale (CML-603)
 
@@ -104,14 +108,18 @@ src/
 ```powershell
 npm test
 npx tsc --noEmit
-npm run build-storybook
 npm run build
-git diff --check -- . ':!index.html'
+npm run build-storybook
+git diff --check
+git status --short
 ```
 
-- Baseline CML-619: `npm test` comprende 324 test in 18 file, inclusi i test Storybook.
-- `npm run build` aggiorna anche `index.html` e può sporcare il working tree.
-- Il diff check esclude `index.html` finché BL-001 non sarà risolto.
+- Ultima evidenza CML-624: `npm test` comprende 339 test in 18 file, inclusi i test Storybook.
+- `index.html` è il sorgente Vite canonico e `npm run build` esegue `vite build`.
+- `dist/index.html` è l'artefatto single-file distribuibile; `index.html.template` non esiste più.
+- `npm run build` e `npm run build-storybook` non modificano file tracciati.
+- `dist/` e `storybook-static/` sono artefatti generati ignorati da Git.
+- Con Vitest 4 usare `npm test` senza l'opzione non supportata `--reporter=basic`.
 - `.gitattributes` impone LF ai file di testo (CML-618).
 
 ## Decisioni attive
@@ -129,11 +137,16 @@ Indice autorevole: `docs/06_architecture_governance/ARCHITECTURE_DECISION_INDEX.
 
 | ID / area | Stato e trattamento |
 |---|---|
-| BL-001 | Aperto e accettato: la build modifica `index.html`; candidato CML-622 |
-| Tempo del wizard | Usare l'ultimo salvataggio senza nuova persistenza; CML-620 |
-| Rilevanza attività | Decisione prodotto tra categorie ed eventi reali; CML-621 |
 | `AppViewsLayerProps` | Nessuna nuova prop senza verifica di derivazione o contratto esistente |
 | Dipendenze dev | Riclassificare separatamente dalle slice prodotto |
+
+## Debiti risolti
+
+| ID / area | Risoluzione |
+|---|---|
+| BL-001 | Risolto da CML-622: la build Vite non modifica più file tracciati |
+| Tempo del wizard | Risolto da CML-620 con fonti temporali attendibili e senza nuova persistenza |
+| Rilevanza attività | Risolto da CML-621 con ordinamento globale deterministico |
 
 ## Regole per l'evoluzione
 
@@ -153,4 +166,4 @@ Sono consentiti miglioramenti di UX, workflow, onboarding, progettazione, gestio
 
 ---
 
-*Ultimo aggiornamento: CML-619, 24 luglio 2026.*
+*Ultimo aggiornamento: CML-624, 24 luglio 2026.*
