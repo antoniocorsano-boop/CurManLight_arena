@@ -2,7 +2,8 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { UserState, DecisionStatus, UdaModel, SchoolOrder, UserRole, DocumentExportEvent } from '../types/curriculum';
 import { curriculumKB } from '../data/curriculumKB';
-import Dexie from 'dexie';
+import type Dexie from 'dexie';
+import { createCurriculumDatabase } from '../domain/curriculum/persistence';
 
 const getCurriculumKB = () => {
   if (typeof window !== 'undefined') {
@@ -27,10 +28,7 @@ type PersistedStateRecord = {
 let db: Dexie | null = null;
 try {
   if (typeof window !== 'undefined' && window.indexedDB) {
-    db = new Dexie('CurManLightDB_Evoluto_v1.3');
-    db.version(1).stores({
-      state: 'key, value'
-    });
+    db = createCurriculumDatabase();
   }
 } catch (e) {
   console.warn("[CurManLight Storage Guard] Impossibile configurare Dexie/IndexedDB:", e);
