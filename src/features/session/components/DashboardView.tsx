@@ -78,6 +78,8 @@ export function DashboardView({
   setActiveCurricoloView,
   setActiveProgTab,
 }: DashboardViewProps) {
+  const lastSaveTime = readLastSaveTime();
+
   return (
     <>
       {/* VIEW: DASHBOARD */}
@@ -133,15 +135,11 @@ export function DashboardView({
             </div>
            )}
 
-           {(() => {
-             const lastSave = readLastSaveTime();
-             if (!lastSave) return null;
-             return (
-              <div className="text-[9px] text-slate-400 font-medium">
-               Ultimo salvataggio: {formatRelativeTime(lastSave)}
-              </div>
-             );
-           })()}
+           {lastSaveTime && (
+            <div className="text-[9px] text-slate-400 font-medium">
+             Ultimo salvataggio: {formatRelativeTime(lastSaveTime)}
+            </div>
+           )}
 
            {/* Azione primaria */}
            <div className="pt-2 border-t border-slate-200">
@@ -180,6 +178,7 @@ export function DashboardView({
               savedUda={savedUda}
               wizardStep={wizardStep}
               progTitle={progTitle}
+              wizardLastSaveTime={lastSaveTime}
               documentExportHistory={documentExportHistory}
               handleTabSwitch={handleTabSwitch}
               setActiveProgTab={setActiveProgTab}

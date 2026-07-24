@@ -8,7 +8,7 @@ function localDaySerial(date: Date): number {
 }
 
 function formatDay(timestamp: number): string {
-  if (!Number.isFinite(timestamp)) return '';
+  if (!Number.isFinite(timestamp) || timestamp <= 0 || timestamp > Date.now()) return '';
   const d = new Date(timestamp);
   if (Number.isNaN(d.getTime())) return '';
 
@@ -81,6 +81,7 @@ function buildActivities(
   savedUda: UdaModel[],
   wizardStep: number,
   progTitle: string,
+  wizardLastSaveTime: number | null,
   documentExportHistory: DocumentExportEvent[] | undefined,
   handleTabSwitch: (tab: string) => void,
   setActiveProgTab: (value: string) => void
@@ -92,7 +93,7 @@ function buildActivities(
       id: `wizard-${progTitle || 'nuova-uda'}`,
       title: progTitle || 'Nuova UDA',
       description: `in corso \u2014 passo ${wizardStep}/${WIZARD_MAX_STEP}`,
-      timeLabel: 'oggi',
+      timeLabel: formatDay(wizardLastSaveTime ?? 0),
       actionLabel: 'Riprendi \u2192',
       onAction: () => { handleTabSwitch('progetta-annuale'); setActiveProgTab('annuale'); },
     });
@@ -142,6 +143,7 @@ interface RecentActivityProps {
   savedUda: UdaModel[];
   wizardStep: number;
   progTitle: string;
+  wizardLastSaveTime?: number | null;
   documentExportHistory?: DocumentExportEvent[];
   handleTabSwitch: (tab: string) => void;
   setActiveProgTab: (value: string) => void;
@@ -151,6 +153,7 @@ export function RecentActivity({
   savedUda,
   wizardStep,
   progTitle,
+  wizardLastSaveTime = null,
   documentExportHistory,
   handleTabSwitch,
   setActiveProgTab,
@@ -159,6 +162,7 @@ export function RecentActivity({
     savedUda,
     wizardStep,
     progTitle,
+    wizardLastSaveTime,
     documentExportHistory,
     handleTabSwitch,
     setActiveProgTab

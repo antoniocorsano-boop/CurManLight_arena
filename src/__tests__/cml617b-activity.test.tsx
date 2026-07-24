@@ -39,6 +39,7 @@ const baseProps = {
   savedUda: [] as UdaModel[],
   wizardStep: 1,
   progTitle: '',
+  wizardLastSaveTime: null as number | null,
   documentExportHistory: [] as DocumentExportEvent[],
   handleTabSwitch: vi.fn(),
   setActiveProgTab: vi.fn(),
@@ -66,6 +67,7 @@ beforeEach(() => {
   vi.useFakeTimers();
   vi.setSystemTime(new Date('2026-07-24T12:00:00.000Z'));
   vi.clearAllMocks();
+  localStorage.clear();
 });
 
 afterEach(() => {
@@ -124,6 +126,56 @@ describe('CML-617B \u2014 RecentActivity widget', () => {
   });
 
   // 6. Rendering dell'UDA recente
+  it('5b. uses the available wizard save time instead of defaulting to today', () => {
+    render(
+      <RecentActivity
+        {...baseProps}
+        wizardStep={3}
+        progTitle="Wizard precedente"
+        wizardLastSaveTime={new Date('2026-07-23T08:00:00.000Z').getTime()}
+      />
+    );
+
+    expect(screen.getByText('ieri')).toBeDefined();
+    expect(screen.queryByText('oggi')).toBeNull();
+  });
+
+  it.each([
+    ['missing', null],
+    ['negative', -1],
+    ['not finite', Number.POSITIVE_INFINITY],
+    ['future', new Date('2026-07-25T08:00:00.000Z').getTime()],
+  ])('5c. hides wizard time when the timestamp is %s', (_case, wizardLastSaveTime) => {
+    render(
+      <RecentActivity
+        {...baseProps}
+        wizardStep={3}
+        progTitle="Wizard senza tempo attendibile"
+        wizardLastSaveTime={wizardLastSaveTime}
+      />
+    );
+
+    expect(screen.queryByText('oggi')).toBeNull();
+  });
+
+  it('5d. Dashboard passes curman_lastSaveTime to the wizard activity', () => {
+    localStorage.setItem(
+      'curman_lastSaveTime',
+      String(new Date('2026-07-23T08:00:00.000Z').getTime())
+    );
+
+    render(
+      <DashboardView
+        {...dashboardBaseProps}
+        wizardStep={3}
+        progTitle="Wizard persistito"
+      />
+    );
+
+    expect(screen.getByText('ieri')).toBeDefined();
+    expect(screen.queryByText('oggi')).toBeNull();
+  });
+
   it('6. renders recent UDA', () => {
     const savedUda = [makeUda({ id: 'uda-1', title: 'UDA Italiano', createdAt: '2026-07-23T08:00:00.000Z' })];
     render(<RecentActivity {...baseProps} savedUda={savedUda} />);
