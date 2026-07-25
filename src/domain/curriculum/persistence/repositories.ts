@@ -5,6 +5,7 @@ import type { InstituteCurriculumVersion } from '../version';
 import type { VerticalCurriculumLink } from '../verticalLink';
 import {
   isApprovedVersionImmutable,
+  detectInvalidStructuralCycles,
   validateCurriculumNode,
   validateCurriculumSegment,
   validateInstituteCurriculumVersion,
@@ -24,6 +25,19 @@ function assertValid(issues: DomainValidationIssue[]): void {
       'DOMAIN_VALIDATION_FAILED',
       'Domain validation rejected the write',
       errors.map(issue => issue.code),
+    );
+  }
+}
+
+async function write(operation: () => Promise<void>, message: string): Promise<void> {
+  try {
+    await operation();
+  } catch (error) {
+    if (error instanceof CurriculumPersistenceError) throw error;
+    throw new CurriculumPersistenceError(
+      'TRANSACTION_FAILED',
+      message,
+      [error instanceof Error ? error.message : String(error)],
     );
   }
 }
@@ -53,10 +67,12 @@ export class InstituteCurriculumVersionRepository {
       throw new CurriculumPersistenceError('IMMUTABLE_VERSION', `Version '${value.id}' is immutable`);
     }
     assertValid(validateInstituteCurriculumVersion(value, all));
-    await this.backend.putVersion(value);
-    if (!await this.backend.getVersion(value.id)) {
-      throw new CurriculumPersistenceError('TRANSACTION_FAILED', `Version '${value.id}' was not persisted`);
-    }
+    await write(async () => {
+      await this.backend.putVersion(value);
+      if (!await this.backend.getVersion(value.id)) {
+        throw new CurriculumPersistenceError('TRANSACTION_FAILED', `Version '${value.id}' was not persisted`);
+      }
+    }, `Version '${value.id}' could not be persisted`);
   }
 
   async delete(id: string): Promise<void> {
@@ -70,7 +86,7 @@ export class InstituteCurriculumVersionRepository {
     if (existing && isApprovedVersionImmutable(existing)) {
       throw new CurriculumPersistenceError('IMMUTABLE_VERSION', `Version '${id}' is immutable`);
     }
-    await this.backend.deleteVersion(id);
+    await write(() => this.backend.deleteVersion(id), `Version '${id}' could not be deleted`);
   }
 }
 
@@ -85,8 +101,24 @@ export class CurriculumSegmentRepository {
     await assertMutableVersion(this.backend, value.versionId);
     const segments = await this.backend.listSegments();
     const versions = await this.backend.listVersions();
+    for (const reference of [value.sourceSegmentId, value.replacesSegmentId]) {
+      if (reference && !segments.some(segment => segment.id === reference)) {
+        throw new CurriculumPersistenceError(
+          'REFERENCE_NOT_FOUND',
+          `Segment reference '${reference}' was not found`,
+        );
+      }
+    }
     assertValid(validateCurriculumSegment(value, segments, versions));
-    await this.backend.putSegment(value);
+    const candidateSegments = [...segments.filter(segment => segment.id !== value.id), value];
+    if (detectInvalidStructuralCycles(candidateSegments).length > 0) {
+      throw new CurriculumPersistenceError(
+        'DOMAIN_VALIDATION_FAILED',
+        'Domain validation rejected the write',
+        ['SEGMENT_STRUCTURAL_CYCLE'],
+      );
+    }
+    await write(() => this.backend.putSegment(value), `Segment '${value.id}' could not be persisted`);
   }
 
   async delete(id: string): Promise<void> {
@@ -99,7 +131,7 @@ export class CurriculumSegmentRepository {
       || segments.some(candidate => candidate.sourceSegmentId === id || candidate.replacesSegmentId === id)) {
       throw new CurriculumPersistenceError('DELETE_RESTRICTED', `Segment '${id}' is referenced`);
     }
-    await this.backend.deleteSegment(id);
+    await write(() => this.backend.deleteSegment(id), `Segment '${id}' could not be deleted`);
   }
 }
 
@@ -117,8 +149,16 @@ export class CurriculumNodeRepository {
     await assertMutableVersion(this.backend, value.versionId);
     const nodes = await this.backend.listNodes();
     const segments = await this.backend.listSegments();
+    for (const reference of [value.sourceNodeId, value.replacesNodeId]) {
+      if (reference && !nodes.some(node => node.id === reference)) {
+        throw new CurriculumPersistenceError(
+          'REFERENCE_NOT_FOUND',
+          `Node reference '${reference}' was not found`,
+        );
+      }
+    }
     assertValid(validateCurriculumNode(value, nodes, segments));
-    await this.backend.putNode(value);
+    await write(() => this.backend.putNode(value), `Node '${value.id}' could not be persisted`);
   }
 
   async delete(id: string): Promise<void> {
@@ -131,7 +171,7 @@ export class CurriculumNodeRepository {
       || nodes.some(candidate => candidate.sourceNodeId === id || candidate.replacesNodeId === id)) {
       throw new CurriculumPersistenceError('DELETE_RESTRICTED', `Node '${id}' is referenced`);
     }
-    await this.backend.deleteNode(id);
+    await write(() => this.backend.deleteNode(id), `Node '${id}' could not be deleted`);
   }
 }
 
@@ -163,14 +203,14 @@ export class VerticalCurriculumLinkRepository {
     if (endpoints.some(node => node.versionId !== value.versionId)) {
       throw new CurriculumPersistenceError('REFERENCE_NOT_FOUND', 'Link endpoints must belong to its version');
     }
-    await this.backend.putLink(value);
+    await write(() => this.backend.putLink(value), `Link '${value.id}' could not be persisted`);
   }
 
   async delete(id: string): Promise<void> {
     const link = await this.backend.getLink(id);
     if (!link) return;
     await assertMutableVersion(this.backend, link.versionId);
-    await this.backend.deleteLink(id);
+    await write(() => this.backend.deleteLink(id), `Link '${id}' could not be deleted`);
   }
 }
 

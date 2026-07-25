@@ -63,6 +63,37 @@ describe('CML-630E2 typed repositories', () => {
       .rejects.toMatchObject({ code: 'DUPLICATE_RECORD' });
   });
 
+  it.each([
+    ['segment source', async () => {
+      const backend = new MemoryCurriculumPersistenceBackend();
+      const repositories = createCurriculumRepositories(backend);
+      await repositories.versions.save(version());
+      await repositories.segments.save(segment({ sourceSegmentId: 'missing-segment' }));
+    }],
+    ['segment replacement', async () => {
+      const backend = new MemoryCurriculumPersistenceBackend();
+      const repositories = createCurriculumRepositories(backend);
+      await repositories.versions.save(version());
+      await repositories.segments.save(segment({ replacesSegmentId: 'missing-segment' }));
+    }],
+    ['node source', async () => {
+      const backend = new MemoryCurriculumPersistenceBackend();
+      const repositories = createCurriculumRepositories(backend);
+      await repositories.versions.save(version());
+      await repositories.segments.save(segment());
+      await repositories.nodes.save(node({ sourceNodeId: 'missing-node' }));
+    }],
+    ['node replacement', async () => {
+      const backend = new MemoryCurriculumPersistenceBackend();
+      const repositories = createCurriculumRepositories(backend);
+      await repositories.versions.save(version());
+      await repositories.segments.save(segment());
+      await repositories.nodes.save(node({ replacesNodeId: 'missing-node' }));
+    }],
+  ])('rejects a missing %s reference even when it is the first record', async (_case, action) => {
+    await expect(action()).rejects.toMatchObject({ code: 'REFERENCE_NOT_FOUND' });
+  });
+
   it('protects version, segment and node deletion when referenced', async () => {
     const { repositories } = await prepared();
     await repositories.links.save(link());
@@ -81,6 +112,34 @@ describe('CML-630E2 typed repositories', () => {
       throw new Error('abort');
     })).rejects.toThrow('abort');
     expect(await backend.listVersions()).toEqual([]);
+  });
+
+  it('rejects a structural cycle before persisting the segment', async () => {
+    const backend = new MemoryCurriculumPersistenceBackend();
+    const repositories = createCurriculumRepositories(backend);
+    await repositories.versions.save(version());
+    await repositories.segments.save(segment({ id: 'segment-a' }));
+    await repositories.segments.save(segment({ id: 'segment-b', sourceSegmentId: 'segment-a' }));
+
+    await expect(repositories.segments.save(segment({
+      id: 'segment-a',
+      sourceSegmentId: 'segment-b',
+    }))).rejects.toMatchObject({
+      code: 'DOMAIN_VALIDATION_FAILED',
+      details: expect.arrayContaining(['SEGMENT_STRUCTURAL_CYCLE']),
+    });
+    expect((await repositories.segments.getById('segment-a'))?.sourceSegmentId).toBeUndefined();
+  });
+
+  it('wraps unclassified backend write failures in a typed transaction error', async () => {
+    class FailingBackend extends MemoryCurriculumPersistenceBackend {
+      override async putVersion(): Promise<void> {
+        throw new Error('simulated backend failure');
+      }
+    }
+    const repositories = createCurriculumRepositories(new FailingBackend());
+    await expect(repositories.versions.save(version()))
+      .rejects.toMatchObject({ code: 'TRANSACTION_FAILED' });
   });
 });
 

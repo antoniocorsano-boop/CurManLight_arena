@@ -61,6 +61,8 @@ Lo schema dichiarato è Dexie versione 2 e preserva `state` senza variazioni.
 `createCurriculumDatabase()` configura entrambe le versioni. Il runtime la usa
 esclusivamente per continuare a leggere e scrivere lo store legacy `state`;
 nessun repository nuovo o comando di migrazione è istanziato automaticamente.
+Il punto di apertura importa direttamente la factory da `backend.ts`, senza
+attraversare il barrel che espone repository e migrazione.
 
 ## 5. Repository ed errori
 
@@ -88,12 +90,15 @@ non esistono cascade implicite.
 ## 7. Adattamento legacy
 
 `adaptLegacyCurriculum()` è puro, non muta l'origine, ordina le discipline e
-produce warning strutturati. La mappa è:
+produce warning strutturati. Supporta inoltre classe singola e intervallo
+quando questi metadati sono disponibili. La mappa è:
 
 | Legacy | Nuovo dominio |
 | --- | --- |
 | disciplina | `subjectOrFieldId` |
 | ordine | `schoolLevel` |
+| classe singola | scope `grade` |
+| intervallo di classi | scope `grade-range` |
 | livello senza classe | scope `school-level` |
 | traguardo | nodo `milestone` |
 | obiettivo | nodo `objective` |
@@ -113,21 +118,25 @@ La migrazione ha identificativo stabile
 `CML-630E2-LEGACY-CURRICULUM-MIGRATION-V1` ed è richiamabile solo tramite
 `migrateLegacyCurriculum()`.
 
-Sequenza: preflight metadati, adattamento in memoria, snapshot, metadato
-`running`, transazione su versione/segmenti/nodi/metadato `completed`,
-verifica dei conteggi. La versione generata è `Legacy imported baseline`,
+Sequenza: preflight metadati, snapshot, metadato `running`, adattamento in
+memoria, validazione, transazione su versione/segmenti/nodi, verifica reale
+dei conteggi e metadato `completed`. La versione generata è `Legacy imported baseline`,
 `draft`, priva di approvazione, efficacia e autore. Non sono generati link.
 
 Un secondo avvio completato restituisce `already-migrated`; uno stato
 incompleto produce `MIGRATION_INCOMPLETE`. Un errore di scrittura annulla i
-record parziali e registra `failed`. I dati legacy non vengono scritti,
-rimossi o modificati.
+record parziali e registra `failed`. Sono coperti errori in backup,
+trasformazione, validazione, versione, segmenti, nodi e completamento. I dati
+legacy non vengono scritti, rimossi o modificati.
 
 ## 9. Backup e rollback
 
-Prima della scrittura viene salvato uno snapshot locale con schema sorgente,
+Prima della trasformazione viene salvato uno snapshot locale con schema sorgente,
 timestamp, conteggi e checksum FNV-1a deterministico sul payload normalizzato.
 Il payload resta `unknown` ed è verificato tramite checksum prima del rollback.
+FNV-1a serve esclusivamente a rilevare alterazioni locali accidentali: non è
+un checksum crittografico. Un backup valido esistente viene riusato solo per
+lo stesso payload; una sorgente diversa è rifiutata senza sovrascrittura.
 
 `rollbackLegacyCurriculumMigration()` elimina, in ordine link → nodi →
 segmenti → versione, soltanto record con provenienza della migrazione. Record
@@ -154,26 +163,29 @@ L'apertura aggiorna in modo non distruttivo lo schema v1 a v2 preservando
 
 ## 12. Test e verifiche
 
-La suite mirata copre 37 casi: dichiarazione di store/indici, preservazione
-legacy, modalità, CRUD e query, validazione, riferimenti, duplicati,
-cancellazioni protette, atomicità, immutabilità, adattamento deterministico,
-warning, assenza di link inventati, migrazione completa/vuota/incompleta,
-idempotenza, failure injection, conteggi, backup/checksum, rollback selettivo
-e idempotente.
+La suite mirata copre 56 casi: dichiarazione di store/indici, upgrade reale
+v1→v2 in Chromium isolato, preservazione e riapertura dello store `state`,
+database vuoto, modalità, CRUD e query, validazione, riferimenti, cicli
+strutturali, duplicati, cancellazioni protette, atomicità, immutabilità,
+adattamento deterministico, warning, assenza di link inventati, migrazione
+completa/vuota/incompleta, idempotenza, failure injection per ogni fase
+critica, conteggi verificati, backup non sovrascrivibile/checksum, rollback
+selettivo, atomico e idempotente.
 
 Verifiche finali eseguite:
 
 ```text
 npx tsc --noEmit
-npm test                 → 599/599 in 25 file
+npm test                 → 618/618 in 25 file
 npm run build            → verde, dist/index.html single-file
 npm run build-storybook  → verde
 git diff --check         → pulito
 ```
 
 Non sono presenti script architetturali aggiuntivi nel repository. La ricerca
-statica conferma assenza di `any`/`as any`, assenza di import runtime del nuovo
-backend o della migrazione e nessuna modifica a dipendenze o store correnti.
+statica conferma assenza di `any`/`as any`, assenza di import runtime di
+repository o migrazione e nessuna modifica a dipendenze o comportamento dello
+store corrente.
 
 ## 13. File
 
@@ -201,9 +213,8 @@ hook, routing, UDA, programmazione, import/export, dipendenza o configurazione
   inferiti.
 - Attivazione dual-read/dual-write, adozione nelle viste, UI amministrativa,
   import/export del nuovo dominio e rimozione legacy restano fuori perimetro.
-- La prova di upgrade IndexedDB reale dipende dal runtime browser; la suite
-  senza browser verifica dichiarazione, versione, store e indici, mentre build
-  e test di non regressione verificano l'isolamento applicativo.
+- La prova di upgrade IndexedDB reale usa Chromium e database sintetici con
+  nomi isolati; non accede al profilo locale dell'utente.
 
 ## 15. Raccomandazione
 

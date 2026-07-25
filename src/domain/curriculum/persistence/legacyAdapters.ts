@@ -8,6 +8,8 @@ export type LegacyCurriculumLevel = Partial<CurricularLevel> & {
   conoscenze?: string[];
   abilita?: string[];
   competenze?: string[];
+  classLabel?: string;
+  classRange?: string[];
 };
 
 export type LegacyCurriculumSource =
@@ -61,6 +63,16 @@ const emptyContent = (): CurriculumSegmentContent => ({
   proposals: [],
 });
 
+function adaptLegacyScope(level: LegacyCurriculumLevel): CurriculumSegment['scope'] {
+  if (level.classRange && level.classRange.length > 0) {
+    return { type: 'grade-range', grades: [...level.classRange] };
+  }
+  if (level.classLabel?.trim()) {
+    return { type: 'grade', grade: level.classLabel.trim() };
+  }
+  return { type: 'school-level' };
+}
+
 function warning(code: string, entityId: string, message: string): DomainValidationIssue {
   return { code, severity: 'warning', entityType: 'LegacyCurriculum', entityId, message };
 }
@@ -106,7 +118,7 @@ export function adaptLegacyCurriculum(
         versionId,
         schoolLevel,
         subjectOrFieldId: subject,
-        scope: { type: 'school-level' },
+        scope: adaptLegacyScope(level),
         frameworkApplicability: {
           framework: null,
           resolutionStatus: 'requires-context-confirmation',

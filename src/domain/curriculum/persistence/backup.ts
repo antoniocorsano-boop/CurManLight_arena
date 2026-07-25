@@ -32,6 +32,18 @@ export async function createMigrationBackup(
   recordCounts: Record<string, number>,
   now: string,
 ): Promise<CurriculumMigrationBackup> {
+  const checksum = checksumPayload(payload);
+  const existing = await backend.getBackup(migrationId);
+  if (existing) {
+    assertValidBackup(existing);
+    if (existing.checksum !== checksum) {
+      throw new CurriculumPersistenceError(
+        'BACKUP_ALREADY_EXISTS',
+        `Backup for migration '${migrationId}' already contains a different source snapshot`,
+      );
+    }
+    return existing;
+  }
   const backup: CurriculumMigrationBackup = {
     id: `backup-${migrationId}`,
     migrationId,
@@ -39,9 +51,17 @@ export async function createMigrationBackup(
     schemaVersion: LEGACY_SCHEMA_VERSION,
     payload: structuredClone(payload),
     recordCounts,
-    checksum: checksumPayload(payload),
+    checksum,
   };
-  await backend.putBackup(backup);
+  try {
+    await backend.putBackup(backup);
+  } catch (error) {
+    throw new CurriculumPersistenceError(
+      'BACKUP_FAILED',
+      `Backup for migration '${migrationId}' could not be persisted`,
+      [error instanceof Error ? error.message : String(error)],
+    );
+  }
   return backup;
 }
 

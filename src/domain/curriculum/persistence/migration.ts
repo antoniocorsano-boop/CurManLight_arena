@@ -4,6 +4,8 @@ import { CurriculumPersistenceError } from './errors';
 import {
   adaptLegacyCurriculum,
   countLegacyLevels,
+  type AdaptedLegacyCurriculum,
+  type LegacyAdaptationResult,
   type LegacyCurriculumSource,
 } from './legacyAdapters';
 import type { CurriculumMigrationMetadata } from './records';
@@ -26,11 +28,16 @@ export interface CurriculumMigrationResult {
 }
 
 const metadataId = `metadata-${LEGACY_CURRICULUM_MIGRATION_ID}`;
+type LegacyCurriculumAdapter = (
+  source: LegacyCurriculumSource,
+  now: string,
+) => LegacyAdaptationResult<AdaptedLegacyCurriculum>;
 
 export async function migrateLegacyCurriculum(
   backend: CurriculumPersistenceBackend,
   source: LegacyCurriculumSource,
   now = new Date().toISOString(),
+  adapter: LegacyCurriculumAdapter = adaptLegacyCurriculum,
 ): Promise<CurriculumMigrationResult> {
   const existing = await backend.getMigration(LEGACY_CURRICULUM_MIGRATION_ID);
   if (existing?.status === 'completed') {
@@ -44,8 +51,13 @@ export async function migrateLegacyCurriculum(
   }
 
   const sourceRecordCount = countLegacyLevels(source);
-  const adaptation = adaptLegacyCurriculum(source, now);
-  const issueCodes = adaptation.issues.map(issue => issue.code);
+  const backup = await createMigrationBackup(
+    backend,
+    LEGACY_CURRICULUM_MIGRATION_ID,
+    source,
+    { curriculumLevels: sourceRecordCount },
+    now,
+  );
   const running: CurriculumMigrationMetadata = {
     id: metadataId,
     migrationId: LEGACY_CURRICULUM_MIGRATION_ID,
@@ -55,36 +67,36 @@ export async function migrateLegacyCurriculum(
     status: 'running',
     sourceRecordCount,
     migratedRecordCount: 0,
-    skippedRecordCount: adaptation.value ? 0 : sourceRecordCount,
-    issueCount: adaptation.issues.length,
+    skippedRecordCount: 0,
+    issueCount: 0,
+    checksum: backup.checksum,
   };
-  const backup = await createMigrationBackup(
-    backend,
-    LEGACY_CURRICULUM_MIGRATION_ID,
-    source,
-    { curriculumLevels: sourceRecordCount },
-    now,
-  );
-  running.checksum = backup.checksum;
-  await backend.putMigration(running);
-
-  if (!adaptation.value) {
-    const completed: CurriculumMigrationMetadata = {
-      ...running,
-      status: 'completed',
-      completedAt: now,
-    };
-    await backend.putMigration(completed);
-    return { outcome: 'no-data', metadata: completed, issueCodes };
-  }
-
-  const adapted = adaptation.value;
-  const repositories = createCurriculumRepositories(backend);
-  const provenance = {
-    _migrationId: LEGACY_CURRICULUM_MIGRATION_ID,
-    _importedFromLegacy: true,
-  } as const;
   try {
+    await backend.putMigration(running);
+    const adaptation = adapter(source, now);
+    const issueCodes = adaptation.issues.map(issue => issue.code);
+    const migrationState: CurriculumMigrationMetadata = {
+      ...running,
+      skippedRecordCount: adaptation.value ? 0 : sourceRecordCount,
+      issueCount: adaptation.issues.length,
+    };
+
+    if (!adaptation.value) {
+      const completed: CurriculumMigrationMetadata = {
+        ...migrationState,
+        status: 'completed',
+        completedAt: now,
+      };
+      await backend.transaction(() => backend.putMigration(completed));
+      return { outcome: 'no-data', metadata: completed, issueCodes };
+    }
+
+    const adapted = adaptation.value;
+    const repositories = createCurriculumRepositories(backend);
+    const provenance = {
+      _migrationId: LEGACY_CURRICULUM_MIGRATION_ID,
+      _importedFromLegacy: true,
+    } as const;
     const migratedRecordCount = await backend.transaction(async () => {
       await repositories.versions.save({ ...adapted.version, ...provenance });
       for (const segment of adapted.segments) {
@@ -93,14 +105,25 @@ export async function migrateLegacyCurriculum(
       for (const node of adapted.nodes) {
         await repositories.nodes.save({ ...node, ...provenance });
       }
-      const count = 1 + adapted.segments.length + adapted.nodes.length;
+      const expectedCount = 1 + adapted.segments.length + adapted.nodes.length;
+      const actualCount = [
+        ...(await backend.listVersions()),
+        ...(await backend.listSegments()),
+        ...(await backend.listNodes()),
+      ].filter(record => record._migrationId === LEGACY_CURRICULUM_MIGRATION_ID).length;
+      if (actualCount !== expectedCount) {
+        throw new CurriculumPersistenceError(
+          'MIGRATION_FAILED',
+          `Migration count mismatch: expected ${expectedCount}, found ${actualCount}`,
+        );
+      }
       await backend.putMigration({
-        ...running,
+        ...migrationState,
         status: 'completed',
         completedAt: now,
-        migratedRecordCount: count,
+        migratedRecordCount: actualCount,
       });
-      return count;
+      return actualCount;
     });
     const completed = await backend.getMigration(LEGACY_CURRICULUM_MIGRATION_ID);
     if (!completed) {
@@ -118,7 +141,18 @@ export async function migrateLegacyCurriculum(
       completedAt: now,
       errorCode: error instanceof CurriculumPersistenceError ? error.code : 'TRANSACTION_FAILED',
     };
-    await backend.putMigration(failed);
+    try {
+      await backend.putMigration(failed);
+    } catch (metadataError) {
+      throw new CurriculumPersistenceError(
+        'MIGRATION_FAILED',
+        'Legacy curriculum migration failed and failed state could not be persisted',
+        [
+          error instanceof Error ? error.message : String(error),
+          metadataError instanceof Error ? metadataError.message : String(metadataError),
+        ],
+      );
+    }
     throw new CurriculumPersistenceError(
       'MIGRATION_FAILED',
       'Legacy curriculum migration failed',

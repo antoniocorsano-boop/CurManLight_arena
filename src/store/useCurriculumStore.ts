@@ -3,7 +3,7 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 import { UserState, DecisionStatus, UdaModel, SchoolOrder, UserRole, DocumentExportEvent } from '../types/curriculum';
 import { curriculumKB } from '../data/curriculumKB';
 import type Dexie from 'dexie';
-import { createCurriculumDatabase } from '../domain/curriculum/persistence';
+import { createCurriculumDatabase } from '../domain/curriculum/persistence/backend';
 
 const getCurriculumKB = () => {
   if (typeof window !== 'undefined') {
