@@ -1,0 +1,6 @@
+interface:
+  display_name: "CurManLight Arena"
+  short_description: "Repo-specific patterns and workflows for CurManLight_arena"
+  default_prompt: "Use the CurManLight_arena repo skill to follow existing architecture, testing, and workflow conventions."
+policy:
+  allow_implicit_invocation: true
