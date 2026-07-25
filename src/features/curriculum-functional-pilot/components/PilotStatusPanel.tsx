@@ -45,14 +45,15 @@ export function PilotStatusPanel({
       {/* Activation Mode Selector */}
       <div className="space-y-2">
         <span className="text-[9px] font-black text-slate-400 uppercase tracking-wider block">
-          Modalita di attivazione:
+          Modalità di attivazione:
         </span>
-        <div className="flex space-x-2">
+        <div className="flex flex-wrap gap-2">
           {(['disabled', 'pilot-read-only', 'pilot-contribution'] as CurriculumFunctionalActivationMode[]).map(mode => (
             <button
               key={mode}
               onClick={() => onSetMode(mode)}
-              className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider transition border ${
+              aria-pressed={activationMode === mode}
+              className={`px-3 py-2 rounded-lg text-[10px] font-black uppercase tracking-wider transition border focus:outline-none focus:ring-2 focus:ring-indigo-500/40 ${
                 activationMode === mode
                   ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm'
                   : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
@@ -95,11 +96,12 @@ export function PilotStatusPanel({
         ) : (
           <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 space-y-2">
             <p className="text-[10px] text-slate-600 font-semibold">
-              Il dataset pilota non e stato inizializzato.
+              Il dataset pilota non è stato inizializzato.
             </p>
             <button
               onClick={() => onInitialize()}
-              className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-[10px] font-black uppercase tracking-wider rounded-lg transition"
+              aria-label="Inizializza dataset pilota"
+              className="px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-[10px] font-black uppercase tracking-wider rounded-lg transition focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
             >
               Inizializza Dataset Pilota
             </button>

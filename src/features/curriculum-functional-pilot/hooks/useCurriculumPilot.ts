@@ -183,12 +183,12 @@ export function useCurriculumPilot(): UseCurriculumPilotReturn {
 
   const getRelationTypeLabel = useCallback((type: VerticalCurriculumRelationType): string => {
     const labels: Record<VerticalCurriculumRelationType, string> = {
-      continuity: 'Continuita',
+      continuity: 'Continuità',
       development: 'Sviluppo',
       prerequisite: 'Prerequisito',
       integration: 'Integrazione',
       deepening: 'Approfondimento',
-      discontinuity: 'Discontinuita',
+      discontinuity: 'Discontinuità',
     };
     return labels[type] || type;
   }, []);
