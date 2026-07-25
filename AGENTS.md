@@ -84,6 +84,7 @@ See `docs/PROJECT_BASELINE.md` for current state.
 | CML-630D — Vertical Curriculum Link Domain Decision | COMPLETE_REMOTE | `7e6b2eb` | `main` |
 | CML-630E — Production Domain Integration | COMPLETE_LOCAL | `pending` | `feat/cml-630e-productive-curriculum-domain` |
 | CML-630F2 — Legacy Compatibility | PENDING | — | — |
+| CML-631A — Curriculum Domain Functional Activation Pilot | COMPLETE_REMOTE | `f6a9e81` | `main` |
 
 ### CML-630D Decision
 
