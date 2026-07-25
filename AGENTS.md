@@ -87,6 +87,7 @@ See `docs/PROJECT_BASELINE.md` for current state.
 | CML-631A — Curriculum Domain Functional Activation Pilot | COMPLETE_REMOTE | `f6a9e81` | `main` |
 | CML-631B — Curriculum Functional Pilot Evaluation | COMPLETE_REMOTE | `301cf01` | `main` |
 | CML-631C — Curriculum Pilot Usability Corrections | COMPLETE_REMOTE | `e1c5124` | `main` |
+| CML-631D — Curriculum Pilot Teacher Validation | IN_PROGRESS | `e45a74c` | `feat/cml-631d-curriculum-pilot-teacher-validation` |
 
 ### CML-630D Decision
 
