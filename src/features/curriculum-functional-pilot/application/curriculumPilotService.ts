@@ -93,20 +93,20 @@ export function getPilotDataset(): PilotDataset | null {
 
 export function listPilotVersions(): ServiceResult<InstituteCurriculumVersion[]> {
   if (!isPilotActive()) {
-    return { ok: false, error: { code: 'PILOT_DISABLED', message: 'La modalita pilota non e attiva' } };
+    return { ok: false, error: { code: 'PILOT_DISABLED', message: 'La modalità pilota non è attiva' } };
   }
   if (!isPilotInitialized()) {
-    return { ok: false, error: { code: 'PILOT_NOT_INITIALIZED', message: 'Il dataset pilota non e stato inizializzato' } };
+    return { ok: false, error: { code: 'PILOT_NOT_INITIALIZED', message: 'Il dataset pilota non è stato inizializzato' } };
   }
   return { ok: true, data: [PILOT_VERSION] };
 }
 
 export function listPilotSegments(versionId: string): ServiceResult<CurriculumSegment[]> {
   if (!isPilotActive()) {
-    return { ok: false, error: { code: 'PILOT_DISABLED', message: 'La modalita pilota non e attiva' } };
+    return { ok: false, error: { code: 'PILOT_DISABLED', message: 'La modalità pilota non è attiva' } };
   }
   if (!isPilotInitialized()) {
-    return { ok: false, error: { code: 'PILOT_NOT_INITIALIZED', message: 'Il dataset pilota non e stato inizializzato' } };
+    return { ok: false, error: { code: 'PILOT_NOT_INITIALIZED', message: 'Il dataset pilota non è stato inizializzato' } };
   }
   if (versionId !== PILOT_VERSION.id) {
     return { ok: false, error: { code: 'VERSION_NOT_FOUND', message: 'Versione non trovata' } };
@@ -116,10 +116,10 @@ export function listPilotSegments(versionId: string): ServiceResult<CurriculumSe
 
 export function listPilotNodes(segmentId: string): ServiceResult<CurriculumNode[]> {
   if (!isPilotActive()) {
-    return { ok: false, error: { code: 'PILOT_DISABLED', message: 'La modalita pilota non e attiva' } };
+    return { ok: false, error: { code: 'PILOT_DISABLED', message: 'La modalità pilota non è attiva' } };
   }
   if (!isPilotInitialized()) {
-    return { ok: false, error: { code: 'PILOT_NOT_INITIALIZED', message: 'Il dataset pilota non e stato inizializzato' } };
+    return { ok: false, error: { code: 'PILOT_NOT_INITIALIZED', message: 'Il dataset pilota non è stato inizializzato' } };
   }
   const nodes = PILOT_NODES.filter(n => n.segmentId === segmentId);
   return { ok: true, data: nodes };
@@ -127,10 +127,10 @@ export function listPilotNodes(segmentId: string): ServiceResult<CurriculumNode[
 
 export function listPilotLinks(versionId: string): ServiceResult<VerticalCurriculumLink[]> {
   if (!isPilotActive()) {
-    return { ok: false, error: { code: 'PILOT_DISABLED', message: 'La modalita pilota non e attiva' } };
+    return { ok: false, error: { code: 'PILOT_DISABLED', message: 'La modalità pilota non è attiva' } };
   }
   if (!isPilotInitialized()) {
-    return { ok: false, error: { code: 'PILOT_NOT_INITIALIZED', message: 'Il dataset pilota non e stato inizializzato' } };
+    return { ok: false, error: { code: 'PILOT_NOT_INITIALIZED', message: 'Il dataset pilota non è stato inizializzato' } };
   }
   const links = pilotLinks.filter(l => l.versionId === versionId);
   return { ok: true, data: links };
@@ -147,16 +147,16 @@ export function proposeVerticalLink(input: {
   createdByRole?: string;
 }): ServiceResult<VerticalCurriculumLink> {
   if (!isContributionAllowed()) {
-    return { ok: false, error: { code: 'CONTRIBUTION_NOT_ALLOWED', message: 'La modalita pilota non consente contributi' } };
+    return { ok: false, error: { code: 'CONTRIBUTION_NOT_ALLOWED', message: 'La modalità pilota non consente contributi' } };
   }
 
   if (!isPilotInitialized()) {
-    return { ok: false, error: { code: 'PILOT_NOT_INITIALIZED', message: 'Il dataset pilota non e stato inizializzato' } };
+    return { ok: false, error: { code: 'PILOT_NOT_INITIALIZED', message: 'Il dataset pilota non è stato inizializzato' } };
   }
 
   // Check version immutability
   if (isApprovedVersionImmutable(PILOT_VERSION)) {
-    return { ok: false, error: { code: 'VERSION_IMMUTABLE', message: 'La versione approvata non puo essere modificata' } };
+    return { ok: false, error: { code: 'VERSION_IMMUTABLE', message: 'La versione approvata non può essere modificata' } };
   }
 
   // Validate source and target exist
@@ -209,7 +209,7 @@ export function proposeVerticalLink(input: {
 
   const duplicates = findDuplicateVerticalLinks([...pilotLinks, newLink]);
   if (duplicates.length > 0) {
-    return { ok: false, error: { code: 'DUPLICATE_LINK', message: 'Questo collegamento e gia presente' } };
+    return { ok: false, error: { code: 'DUPLICATE_LINK', message: 'Questo collegamento è già presente' } };
   }
 
   pilotLinks = [...pilotLinks, newLink];
@@ -222,7 +222,7 @@ export function updateDraftVerticalLink(input: {
   rationale?: string;
 }): ServiceResult<VerticalCurriculumLink> {
   if (!isContributionAllowed()) {
-    return { ok: false, error: { code: 'CONTRIBUTION_NOT_ALLOWED', message: 'La modalita pilota non consente contributi' } };
+    return { ok: false, error: { code: 'CONTRIBUTION_NOT_ALLOWED', message: 'La modalità pilota non consente contributi' } };
   }
 
   const linkIndex = pilotLinks.findIndex(l => l.id === input.linkId);
@@ -232,7 +232,7 @@ export function updateDraftVerticalLink(input: {
 
   const link = pilotLinks[linkIndex];
   if (link.status === 'validated') {
-    return { ok: false, error: { code: 'LINK_VALIDATED', message: 'Un collegamento validato non puo essere modificato' } };
+    return { ok: false, error: { code: 'LINK_VALIDATED', message: 'Un collegamento validato non può essere modificato' } };
   }
 
   const updated: VerticalCurriculumLink = {
@@ -261,7 +261,7 @@ export function updateDraftVerticalLink(input: {
 
 export function deleteDraftVerticalLink(linkId: string): ServiceResult<boolean> {
   if (!isContributionAllowed()) {
-    return { ok: false, error: { code: 'CONTRIBUTION_NOT_ALLOWED', message: 'La modalita pilota non consente contributi' } };
+    return { ok: false, error: { code: 'CONTRIBUTION_NOT_ALLOWED', message: 'La modalità pilota non consente contributi' } };
   }
 
   const link = pilotLinks.find(l => l.id === linkId);
@@ -270,7 +270,7 @@ export function deleteDraftVerticalLink(linkId: string): ServiceResult<boolean> 
   }
 
   if (link.status === 'validated') {
-    return { ok: false, error: { code: 'LINK_VALIDATED', message: 'Un collegamento validato non puo essere eliminato' } };
+    return { ok: false, error: { code: 'LINK_VALIDATED', message: 'Un collegamento validato non può essere eliminato' } };
   }
 
   pilotLinks = pilotLinks.filter(l => l.id !== linkId);

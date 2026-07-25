@@ -86,7 +86,8 @@ export function PilotLinkList({
                     <div className="flex space-x-1">
                       <button
                         onClick={() => onDelete(link.id)}
-                        className="px-2 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 text-[8px] font-bold uppercase tracking-wider rounded border border-rose-200 transition"
+                        aria-label={`Elimina collegamento ${getRelationTypeLabel(link.relationType)}`}
+                        className="px-2 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 text-[8px] font-bold uppercase tracking-wider rounded border border-rose-200 transition focus:outline-none focus:ring-2 focus:ring-rose-500/40"
                       >
                         Elimina
                       </button>

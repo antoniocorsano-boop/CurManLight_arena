@@ -39,6 +39,7 @@ export function PilotNodePicker({
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
         placeholder="Cerca nodo curricolare..."
+        aria-label={`Cerca tra i nodi per ${label}`}
         className="w-full border border-slate-200 rounded-xl p-2.5 text-xs font-semibold outline-none focus:ring-2 focus:ring-indigo-500/20"
       />
       <div className="max-h-[200px] overflow-y-auto space-y-1">
@@ -46,7 +47,8 @@ export function PilotNodePicker({
           <button
             key={node.id}
             onClick={() => onSelect(node.id === selectedNodeId ? null : node.id)}
-            className={`w-full text-left p-2.5 rounded-xl text-[10px] font-semibold transition border ${
+            aria-label={`${getNodeLabel(node)}${selectedNodeId === node.id ? ' (selezionato)' : ''}`}
+            className={`w-full text-left p-2.5 rounded-xl text-[10px] font-semibold transition border focus:outline-none focus:ring-2 focus:ring-indigo-500/40 ${
               selectedNodeId === node.id
                 ? 'bg-indigo-50 border-indigo-200 text-indigo-800'
                 : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'

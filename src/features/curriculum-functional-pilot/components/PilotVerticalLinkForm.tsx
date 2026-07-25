@@ -70,17 +70,18 @@ export function PilotVerticalLinkForm({
             <button
               key={type}
               onClick={() => setRelationType(type)}
-              className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider transition border ${
+              aria-pressed={relationType === type}
+              className={`px-3 py-2 rounded-lg text-[10px] font-black uppercase tracking-wider transition border focus:outline-none focus:ring-2 focus:ring-indigo-500/40 ${
                 relationType === type
                   ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm'
                   : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
               }`}
             >
-              {type === 'continuity' ? 'Continuita' :
+              {type === 'continuity' ? 'Continuità' :
                type === 'development' ? 'Sviluppo' :
                type === 'prerequisite' ? 'Prerequisito' :
                type === 'integration' ? 'Integrazione' :
-               type === 'deepening' ? 'Approfondimento' : 'Discontinuita'}
+               type === 'deepening' ? 'Approfondimento' : 'Discontinuità'}
             </button>
           ))}
         </div>
@@ -95,6 +96,7 @@ export function PilotVerticalLinkForm({
           value={rationale}
           onChange={(e) => setRationale(e.target.value)}
           placeholder="Descrivi brevemente la motivazione pedagogica di questo collegamento..."
+          aria-label="Motivazione pedagogica del collegamento"
           className="w-full border border-slate-200 rounded-xl p-2.5 text-xs font-semibold outline-none focus:ring-2 focus:ring-indigo-500/20 resize-none"
           rows={3}
         />
@@ -104,7 +106,7 @@ export function PilotVerticalLinkForm({
       <button
         onClick={handleSubmit}
         disabled={isSubmitting || !rationale.trim()}
-        className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-300 text-white font-black text-[10px] uppercase tracking-wider py-2.5 rounded-xl transition"
+        className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-300 text-white font-black text-[10px] uppercase tracking-wider py-2.5 rounded-xl transition focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
       >
         {isSubmitting ? 'Invio in corso...' : 'Proponi Collegamento'}
       </button>

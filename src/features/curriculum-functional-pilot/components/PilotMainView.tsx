@@ -23,17 +23,17 @@ export function PilotMainView() {
       <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 transition duration-200">
         <div className="space-y-1">
           <span className="text-[9px] font-black text-indigo-600 uppercase tracking-wider block">
-            Dominio Produttivo — Pilota Funzionale
+            Dominio Produttivo — Pilota Sperimentale
           </span>
           <h2 className="text-sm font-black text-slate-800 uppercase tracking-wide">
-            CML-631A — COLLEGAMENTI VERTICALI CURRICOLARI
+            COLLEGAMENTI VERTICALI CURRICOLARI
           </h2>
           <p className="text-xs text-slate-600 font-semibold leading-relaxed max-w-2xl">
             {pilot.isContributionAllowed
-              ? 'Modalita contributo attiva: puoi proporre, modificare ed eliminare collegamenti verticali bozza.'
+              ? 'Modalità contributo attiva: puoi proporre, modificare ed eliminare collegamenti verticali bozza.'
               : pilot.isPilotActive
-                ? 'Modalita sola lettura: puoi consultare i collegamenti verticali esistenti.'
-                : 'Il pilota non e attivo. Attivalo per iniziare.'}
+                ? 'Modalità sola lettura: puoi consultare i collegamenti verticali esistenti.'
+                : 'Il pilota non è attivo. Attivalo per iniziare.'}
           </p>
         </div>
         <div className="flex items-center space-x-2">
@@ -65,10 +65,10 @@ export function PilotMainView() {
           <div className="bg-white border border-slate-200 rounded-2xl p-5 space-y-4">
             <div className="space-y-1">
               <span className="text-[9px] font-black text-indigo-600 uppercase tracking-wider block">
-                PUNTO DI PARTENZA E ARRIVO
+                SELEZIONA I NODI DA COLLEGARE
               </span>
               <h3 className="text-xs font-black text-slate-800 uppercase tracking-wide">
-                Seleziona i nodi curricolari da collegare
+                Scegli i due nodi curricolari da collegare
               </h3>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
