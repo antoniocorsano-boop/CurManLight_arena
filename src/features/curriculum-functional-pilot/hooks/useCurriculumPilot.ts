@@ -92,7 +92,11 @@ export function useCurriculumPilot(): UseCurriculumPilotReturn {
     setVersionsState(listPilotVersions().ok ? (listPilotVersions() as { ok: true; data: InstituteCurriculumVersion[] }).data : []);
     if (pilotDatasetState) {
       setSegmentsState(listPilotSegments(pilotDatasetState.versionId).ok ? (listPilotSegments(pilotDatasetState.versionId) as { ok: true; data: CurriculumSegment[] }).data : []);
-      setNodesState(listPilotNodes(pilotDatasetState.segmentIds[0] || '').ok ? (listPilotNodes(pilotDatasetState.segmentIds[0] || '') as { ok: true; data: CurriculumNode[] }).data : []);
+      const allNodes = pilotDatasetState.segmentIds.flatMap(segmentId => {
+        const result = listPilotNodes(segmentId);
+        return result.ok ? (result as { ok: true; data: CurriculumNode[] }).data : [];
+      });
+      setNodesState(allNodes);
       setLinksState(listPilotLinks(pilotDatasetState.versionId).ok ? (listPilotLinks(pilotDatasetState.versionId) as { ok: true; data: VerticalCurriculumLink[] }).data : []);
     }
   }, [pilotDatasetState]);
