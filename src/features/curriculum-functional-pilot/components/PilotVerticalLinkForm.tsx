@@ -1,7 +1,8 @@
 /**
- * CML-631A — PilotVerticalLinkForm
+ * CML-631E — PilotVerticalLinkForm
  *
  * Form per proporre un nuovo collegamento verticale.
+ * I tipi di relazione sono accessibili tramite tocco, tastiera e mouse.
  */
 
 import { useState } from 'react';
@@ -61,36 +62,42 @@ export function PilotVerticalLinkForm({
           PROPONI COLLEGAMENTO VERTICALE
         </span>
         <h3 className="text-xs font-black text-slate-800 uppercase tracking-wide">
-          Definisci la relazione tra i nodi selezionati
+          Definisci la relazione tra i due elementi selezionati
         </h3>
       </div>
 
-      {/* Relation Type Selector */}
+      {/* Relation Type Selector — touch accessible */}
       <div className="space-y-2">
         <span className="text-[9px] font-black text-slate-400 uppercase tracking-wider block">
           Tipo di relazione:
         </span>
-        <div className="flex flex-wrap gap-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2" role="radiogroup" aria-label="Tipo di relazione">
           {(['continuity', 'development', 'prerequisite', 'integration', 'deepening', 'discontinuity'] as VerticalCurriculumRelationType[]).map(type => {
             const guidance = getRelationTypeGuidance(type);
+            const isSelected = relationType === type;
             return (
               <button
                 key={type}
+                role="radio"
+                aria-checked={isSelected}
                 onClick={() => setRelationType(type)}
-                aria-pressed={relationType === type}
-                title={`${guidance.description} Esempio: ${guidance.example}`}
-                className={`px-3 py-2 rounded-lg text-[10px] font-black uppercase tracking-wider transition border focus:outline-none focus:ring-2 focus:ring-indigo-500/40 ${
-                relationType === type
-                  ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm'
-                  : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
-              }`}
-            >
-              {type === 'continuity' ? 'Continuità' :
-               type === 'development' ? 'Sviluppo' :
-               type === 'prerequisite' ? 'Prerequisito' :
-               type === 'integration' ? 'Integrazione' :
-               type === 'deepening' ? 'Approfondimento' : 'Discontinuità'}
-            </button>
+                className={`w-full text-left p-3 rounded-xl text-[10px] font-semibold transition border focus:outline-none focus:ring-2 focus:ring-indigo-500/40 ${
+                  isSelected
+                    ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm'
+                    : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
+                }`}
+              >
+                <div className="font-bold text-[11px] mb-1">
+                  {type === 'continuity' ? 'Continuità' :
+                   type === 'development' ? 'Sviluppo' :
+                   type === 'prerequisite' ? 'Prerequisito' :
+                   type === 'integration' ? 'Integrazione' :
+                   type === 'deepening' ? 'Approfondimento' : 'Discontinuità'}
+                </div>
+                <p className={`text-[9px] leading-relaxed ${isSelected ? 'text-indigo-100' : 'text-slate-500'}`}>
+                  {guidance.description}
+                </p>
+              </button>
             );
           })}
         </div>
@@ -106,7 +113,7 @@ export function PilotVerticalLinkForm({
           onChange={(e) => setRationale(e.target.value)}
           placeholder="Descrivi brevemente la motivazione pedagogica di questo collegamento..."
           aria-label="Motivazione pedagogica del collegamento"
-          className="w-full border border-slate-200 rounded-xl p-2.5 text-xs font-semibold outline-none focus:ring-2 focus:ring-indigo-500/20 resize-none"
+          className="w-full border border-slate-200 rounded-xl p-2.5 text-xs font-semibold outline-none focus:ring-2 focus:ring-indigo-500/20 resize-none disabled:bg-slate-100"
           rows={3}
         />
       </div>
@@ -115,7 +122,7 @@ export function PilotVerticalLinkForm({
       <button
         onClick={handleSubmit}
         disabled={isSubmitDisabled || !rationale.trim()}
-        className={`w-full bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-300 text-white font-black text-[10px] uppercase tracking-wider py-2.5 rounded-xl transition focus:outline-none focus:ring-2 focus:ring-indigo-500/40 ${isSubmitDisabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+        className={`w-full bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-300 text-white font-black text-[10px] uppercase tracking-wider py-2.5 rounded-xl transition focus:outline-none focus:ring-2 focus:ring-indigo-500/40 ${isSubmitDisabled || !rationale.trim() ? 'opacity-50 cursor-not-allowed' : ''}`}
       >
         {isSubmitDisabled && asyncOperation === 'create-link' ? 'Invio in corso...' : 'Proponi Collegamento'}
       </button>

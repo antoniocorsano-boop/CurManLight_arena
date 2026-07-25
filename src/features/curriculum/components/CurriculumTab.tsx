@@ -2,6 +2,7 @@ import { ChevronRight } from 'lucide-react';
 import { useCurriculumStore } from '../../../store/useCurriculumStore';
 import type { DecisionStatus, Proposal, SchoolOrder } from '../../../types/curriculum';
 import type { AppViewsLayerProps, CurriculumMap, GeneratedKnowledgeOutput, PopolamentoTab } from '../../session';
+import { PilotMainView } from '../../curriculum-functional-pilot';
 
 const orderLabelsForMap: Record<string, string> = {
   infanzia: "Scuola dell'Infanzia (Mappe di Senso & Campi d'Esperienza)",
@@ -213,6 +214,11 @@ export function CurriculumTab({
           handleCSVUpload={handleCSVUpload}
           handleResetCurriculumToBaseline={handleResetCurriculumToBaseline}
         />
+      )}
+
+      {/* VIEW D: PILOTA SPERIMENTALE */}
+      {activeCurricoloView === 'pilota' && (
+        <PilotMainView />
       )}
     </div>
   );

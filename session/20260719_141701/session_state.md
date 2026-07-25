@@ -4,7 +4,7 @@
 - Repo: C:/Users/anton/CurManLight_arena
 - Branch: main
 - Started: 2026-07-19 14:17:01 +02:00
-- Updated: 2026-07-20 23:29:04 +02:00
+- Updated: 2026-07-25 13:41:50 +02:00
 
 ## Goal
 Fix bug critici, sicurezza, a11y e test per CurManLight (Fasi 1-4)

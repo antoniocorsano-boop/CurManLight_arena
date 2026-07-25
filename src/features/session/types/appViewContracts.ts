@@ -3,7 +3,7 @@ import type { AppTab } from '../../navigation';
 import type { GraphEdge, GraphNode } from '../../../lib/architectureGraph';
 import type { CurricularLevel, DecisionStatus, Proposal, SchoolOrder, UdaModel, UserRole } from '../../../types/curriculum';
 
-export type ActiveCurricoloView = 'home' | 'albero' | 'mappa' | 'popolamento';
+export type ActiveCurricoloView = 'home' | 'albero' | 'mappa' | 'popolamento' | 'pilota';
 export type ActiveProcessoTab = 'flusso' | 'verifica';
 export type ActiveProgTab = 'home' | 'annuale' | 'uda' | 'certificazione' | 'social' | 'classe-home' | 'classe';
 export type ClasseSubTab = 'registro' | 'strumenti' | 'pianificazione';

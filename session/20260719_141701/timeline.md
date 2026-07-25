@@ -318,3 +318,6 @@
 
 ## 2026-07-20 23:29:04 +02:00
 - CML-603F Architecture Gate PASSED. Fresh evidence: tsc exit 0; npm test 64/64; TS-001 5/5; build 1619 modules; governance links 0 broken; scoped diff-check clean. BL-001 reproduced, classified Open-Accepted with no architectural impact. Gate report added; ADI/governance/index/React checklist aligned. Next: CML-604 Architecture Baseline.
+
+## 2026-07-25 13:41:50 +02:00
+- CML-631E proposal created for guided curriculum connection flow. CML-631F (real teacher validation) suspended until CML-631E criteria are met. Proposal at docs/PROPOSAL_CML_631E_GUIDED_CURRICULUM_CONNECTION_FLOW.md. No code implementation performed.

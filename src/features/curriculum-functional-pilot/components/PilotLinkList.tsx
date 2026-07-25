@@ -1,8 +1,8 @@
 /**
- * CML-631A — PilotLinkList
+ * CML-631E — PilotLinkList
  *
- * Lista dei collegamenti verticali esistenti.
- * Permette modifica ed eliminazione per bozze.
+ * Lista dei collegamenti verticali proposti.
+ * Posizionata in modo secondario rispetto alla creazione.
  */
 
 import { useState } from 'react';
@@ -40,20 +40,20 @@ export function PilotLinkList({
     <div className="bg-white border border-slate-200 rounded-2xl p-5 space-y-4">
       <div className="space-y-1">
         <span className="text-[9px] font-black text-indigo-600 uppercase tracking-wider block">
-          COLLEGAMENTI VERTICALI ESISTENTI
+          COLLEGAMENTI PROPOSTI
         </span>
         <h3 className="text-xs font-black text-slate-800 uppercase tracking-wide">
-          Elenco dei collegamenti ({links.length})
+          Collegamenti salvati ({links.length})
         </h3>
       </div>
 
       {links.length === 0 ? (
         <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 text-center">
           <p className="text-[10px] text-slate-500 font-semibold">
-            Nessun collegamento verticale presente.
+            Non hai ancora creato collegamenti.
           </p>
           <p className="text-[9px] text-slate-400 font-semibold mt-1">
-            Seleziona due nodi curricolari e proponi un collegamento.
+            Seleziona due elementi del curricolo e proponi un collegamento.
           </p>
         </div>
       ) : (

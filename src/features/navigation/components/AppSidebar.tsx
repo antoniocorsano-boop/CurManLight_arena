@@ -96,6 +96,16 @@ export function AppSidebar({
          >
           <span>Fonti d'Istituto</span>
          </div>
+
+         <div
+          role="button"
+          onClick={() => { handleTabSwitch('curricolo'); setActiveCurricoloView('pilota'); }}
+          className={`w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer transition ${
+            activeTab === 'curricolo' && activeCurricoloView === 'pilota' ? 'bg-indigo-50 text-indigo-700 font-bold' : 'text-slate-500 hover:text-slate-800'
+          }`}
+         >
+          <span>★ Pilota Sperimentale</span>
+         </div>
         </div>
        )}
       </div>
