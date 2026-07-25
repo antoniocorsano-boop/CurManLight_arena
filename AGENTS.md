@@ -85,7 +85,7 @@ See `docs/PROJECT_BASELINE.md` for current state.
 | CML-630E — Production Domain Integration | COMPLETE_LOCAL | `pending` | `feat/cml-630e-productive-curriculum-domain` |
 | CML-630F2 — Legacy Compatibility | PENDING | — | — |
 | CML-631A — Curriculum Domain Functional Activation Pilot | COMPLETE_REMOTE | `f6a9e81` | `main` |
-| CML-631B — Curriculum Functional Pilot Evaluation | COMPLETE_LOCAL | `pending` | `feat/cml-631b-curriculum-functional-pilot-evaluation` |
+| CML-631B — Curriculum Functional Pilot Evaluation | COMPLETE_REMOTE | `301cf01` | `main` |
 
 ### CML-630D Decision
 
