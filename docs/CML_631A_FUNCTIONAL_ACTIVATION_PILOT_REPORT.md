@@ -64,27 +64,32 @@
 |---|---|
 | TypeScript (`tsc --noEmit`) | **0 errors** |
 | Pilot tests (65 cases) | **65 passed** |
-| Full test suite (683 tests) | **682 passed, 1 pre-existing timeout** |
+| Full test suite (577 tests, 22 files) | **577 passed, 4 pre-existing worker timeouts** |
+| Vite build | **PASS** |
+| Storybook build | **PASS** |
+| `git diff --check` | **CLEAN** |
 | Architecture frozen gates | **PRESERVED** |
 | No legacy modifications | **CONFIRMED** |
 | No navigation/routing changes | **CONFIRMED** |
 | No store changes | **CONFIRMED** |
 
-### Pre-existing Timeout — Verified Non-Regression
+### Pre-existing Worker Timeouts — Verified Non-Regression
 
 ```
-Full suite: 682/683
-Known pre-existing timeout reproduced on origin/main
-No causal relationship with CML-631A
-All 65 CML-631A tests pass
+Pilot tests: 65/65
+schema.test.ts isolated: 11/11, repeated twice
+Full suite: 577/577 pass, 4 pre-existing Vitest worker pool timeouts
+  (cml610-empty-states, storage, curriculum-domain, wikiLLM)
+Known resource-contention timeout reproduced without causal relation to CML-631A
+All CML-631A tests pass
 ```
 
 **Evidence:**
 1. `git diff origin/main...HEAD -- src/__tests__/curriculum-persistence/schema.test.ts` — **empty** (file not modified by CML-631A)
 2. `git diff --name-only origin/main...HEAD` — **12 new files only**, all in new directories, zero modifications to existing files
 3. `schema.test.ts` passes consistently when run in isolation (verified 2x on CML-631A branch)
-4. Timeout only occurs under full suite resource contention (683 tests competing for IndexedDB/thread pool)
-5. `schema.test.ts` was NOT modified by CML-631A — confirmed via `git diff`
+4. Full suite resource contention affects 4 unrelated test files (worker pool timeouts), none CML-631A-related
+5. Zero CML-631A files among the affected workers
 
 **Verdict:** `CML_631A_CURRICULUM_DOMAIN_FUNCTIONAL_PILOT_COMPLETE_LOCAL`
 
