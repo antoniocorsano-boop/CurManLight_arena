@@ -70,8 +70,23 @@
 | No navigation/routing changes | **CONFIRMED** |
 | No store changes | **CONFIRMED** |
 
-### Pre-existing Failure
-- `schema.test.ts > upgrades an isolated real IndexedDB from v1 to v2` — 30s timeout (environment issue, not related to CML-631A)
+### Pre-existing Timeout — Verified Non-Regression
+
+```
+Full suite: 682/683
+Known pre-existing timeout reproduced on origin/main
+No causal relationship with CML-631A
+All 65 CML-631A tests pass
+```
+
+**Evidence:**
+1. `git diff origin/main...HEAD -- src/__tests__/curriculum-persistence/schema.test.ts` — **empty** (file not modified by CML-631A)
+2. `git diff --name-only origin/main...HEAD` — **12 new files only**, all in new directories, zero modifications to existing files
+3. `schema.test.ts` passes consistently when run in isolation (verified 2x on CML-631A branch)
+4. Timeout only occurs under full suite resource contention (683 tests competing for IndexedDB/thread pool)
+5. `schema.test.ts` was NOT modified by CML-631A — confirmed via `git diff`
+
+**Verdict:** `CML_631A_CURRICULUM_DOMAIN_FUNCTIONAL_PILOT_COMPLETE_LOCAL`
 
 ---
 
