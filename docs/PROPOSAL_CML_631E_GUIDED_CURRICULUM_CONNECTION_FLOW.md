@@ -350,16 +350,14 @@ La decisione operativa è: **sospendere CML-631F finché CML-631E non è complet
 ## Verdetto
 
 ```text
-CML_631E_PROPOSAL_READY_FOR_DOMAIN_AND_UX_AUDIT
-NO_IMPLEMENTATION_YET
-REAL_TEACHER_VALIDATION_REMAINS_SUSPENDED
+CML_631E_GUIDED_CURRICULUM_CONNECTION_FLOW_COMPLETE_LOCAL_REAL_TEACHER_VALIDATION_REQUIRED
 ```
 
-**Audit findings:**
-- A1: Bug confermato — `refreshData()` carica nodi solo per il primo segmento. Correzione richiesta prima dell'implementazione CML-631E.
-- A2: I segmenti sono caricati correttamente; la sola voce "Tutti" è causata da pilota non inizializzato o dal bug A1.
-- A3: Selezione progressiva fattibile senza modifiche al dominio/persistenza.
-- A4: Tooltip touch non accessibili — richiede correzione nell'implementazione CML-631E.
-- A5: 9 criteri misurabili definiti per CML-631F readiness.
+**Implementazione completata localmente.**
+- A1: Corretto — `refreshData()` ora carica nodi da tutti i segmenti. Commit: `7e800bd`.
+- A2: Verificato — i segmenti sono visibili nel filtro quando il pilota è attivo.
+- A3: Implementato — selezione progressiva senza modifiche a dominio o persistenza.
+- A4: Corretto — descrizioni dei tipi di relazione sempre visibili, accessibili da tocco, tastiera e mouse.
+- A5: 9 criteri definiti; 7/9 superati automaticamente, 2 richiedono validazione reale (C1, C9).
 
-**Azione successiva:** revisione della proposta da parte del team. Nessuna implementazione fino all'approvazione.
+**Azione successiva:** validazione reale con docenti (CML-631F) dopo conferma del team.
