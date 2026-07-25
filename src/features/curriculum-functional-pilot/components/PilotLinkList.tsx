@@ -5,13 +5,17 @@
  * Permette modifica ed eliminazione per bozze.
  */
 
+import { useState } from 'react';
 import type { VerticalCurriculumLink, VerticalCurriculumRelationType, CurriculumNode } from '../../../domain/curriculum';
 import type { ServiceResult } from '../application/curriculumPilotService';
+import type { PilotAsyncOperation } from '../types';
 
 export interface PilotLinkListProps {
   links: VerticalCurriculumLink[];
   nodes: CurriculumNode[];
   isContributionAllowed: boolean;
+  isLoading: boolean;
+  asyncOperation: PilotAsyncOperation;
   getRelationTypeLabel: (type: VerticalCurriculumRelationType) => string;
   getStatusLabel: (status: string) => string;
   getNodeLabel: (node: CurriculumNode) => string;
@@ -22,11 +26,14 @@ export function PilotLinkList({
   links,
   nodes,
   isContributionAllowed,
+  isLoading,
+  asyncOperation,
   getRelationTypeLabel,
   getStatusLabel,
   getNodeLabel,
   onDelete,
 }: PilotLinkListProps) {
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
   const getNodeById = (id: string): CurriculumNode | undefined => nodes.find(n => n.id === id);
 
   return (
@@ -84,13 +91,34 @@ export function PilotLinkList({
                   </div>
                   {isContributionAllowed && link.status === 'draft' && (
                     <div className="flex space-x-1">
-                      <button
-                        onClick={() => onDelete(link.id)}
-                        aria-label={`Elimina collegamento ${getRelationTypeLabel(link.relationType)}`}
-                        className="px-2 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 text-[8px] font-bold uppercase tracking-wider rounded border border-rose-200 transition focus:outline-none focus:ring-2 focus:ring-rose-500/40"
-                      >
-                        Elimina
-                      </button>
+                      {pendingDeleteId === link.id ? (
+                        <div className="flex space-x-1 items-center">
+                          <span className="text-[8px] text-rose-600 font-semibold">
+                            Eliminare {getRelationTypeLabel(link.relationType)}?
+                          </span>
+                          <button
+                            onClick={() => { onDelete(link.id); setPendingDeleteId(null); }}
+                            disabled={isLoading && asyncOperation === 'delete-link'}
+                            className={`px-2 py-1.5 bg-rose-600 hover:bg-rose-700 text-white text-[8px] font-bold uppercase tracking-wider rounded border border-rose-600 transition focus:outline-none focus:ring-2 focus:ring-rose-500/40 ${isLoading && asyncOperation === 'delete-link' ? 'opacity-50 cursor-not-allowed' : ''}`}
+                          >
+                            {isLoading && asyncOperation === 'delete-link' ? 'Eliminazione...' : 'Conferma'}
+                          </button>
+                          <button
+                            onClick={() => setPendingDeleteId(null)}
+                            className="px-2 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 text-[8px] font-bold uppercase tracking-wider rounded border border-slate-200 transition focus:outline-none focus:ring-2 focus:ring-slate-500/40"
+                          >
+                            Annulla
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => setPendingDeleteId(link.id)}
+                          aria-label={`Elimina collegamento ${getRelationTypeLabel(link.relationType)}`}
+                          className="px-2 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 text-[8px] font-bold uppercase tracking-wider rounded border border-rose-200 transition focus:outline-none focus:ring-2 focus:ring-rose-500/40"
+                        >
+                          Elimina
+                        </button>
+                      )}
                     </div>
                   )}
                 </div>

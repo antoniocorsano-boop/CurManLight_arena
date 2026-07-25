@@ -5,7 +5,7 @@
  * Mostra stato attivazione, dati inizializzati, errori.
  */
 
-import type { CurriculumFunctionalActivationMode, PilotDataset } from '../types';
+import type { CurriculumFunctionalActivationMode, PilotDataset, PilotAsyncOperation } from '../types';
 import type { InstituteCurriculumVersion, CurriculumSegment, VerticalCurriculumLink } from '../../../domain/curriculum';
 import type { ServiceError } from '../application/curriculumPilotService';
 
@@ -17,6 +17,8 @@ export interface PilotStatusPanelProps {
   segments: CurriculumSegment[];
   links: VerticalCurriculumLink[];
   lastError: ServiceError | null;
+  isLoading: boolean;
+  asyncOperation: PilotAsyncOperation;
   onInitialize: () => { ok: true; data: PilotDataset } | { ok: false; error: ServiceError };
   onSetMode: (mode: CurriculumFunctionalActivationMode) => void;
 }
@@ -28,6 +30,8 @@ export function PilotStatusPanel({
   segments,
   links,
   lastError,
+  isLoading,
+  asyncOperation,
   onInitialize,
   onSetMode,
 }: PilotStatusPanelProps) {
@@ -100,10 +104,11 @@ export function PilotStatusPanel({
             </p>
             <button
               onClick={() => onInitialize()}
+              disabled={isLoading}
               aria-label="Inizializza dataset pilota"
-              className="px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-[10px] font-black uppercase tracking-wider rounded-lg transition focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
+              className={`px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-[10px] font-black uppercase tracking-wider rounded-lg transition focus:outline-none focus:ring-2 focus:ring-indigo-500/40 ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
-              Inizializza Dataset Pilota
+              {isLoading && asyncOperation === 'init' ? 'Inizializzazione in corso...' : 'Inizializza Dataset Pilota'}
             </button>
           </div>
         )}

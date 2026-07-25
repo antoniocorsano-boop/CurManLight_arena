@@ -7,11 +7,15 @@
 import { useState } from 'react';
 import type { VerticalCurriculumRelationType, VerticalCurriculumLink } from '../../../domain/curriculum';
 import type { ServiceResult } from '../application/curriculumPilotService';
+import type { PilotAsyncOperation } from '../types';
+import { getRelationTypeGuidance } from '../relationTypeGuidance';
 
 export interface PilotVerticalLinkFormProps {
   versionId: string;
   sourceNodeId: string;
   targetNodeId: string;
+  isLoading: boolean;
+  asyncOperation: PilotAsyncOperation;
   onPropose: (input: {
     versionId: string;
     sourceNodeId: string;
@@ -25,15 +29,17 @@ export function PilotVerticalLinkForm({
   versionId,
   sourceNodeId,
   targetNodeId,
+  isLoading,
+  asyncOperation,
   onPropose,
 }: PilotVerticalLinkFormProps) {
   const [relationType, setRelationType] = useState<VerticalCurriculumRelationType>('continuity');
   const [rationale, setRationale] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [lastResult, setLastResult] = useState<ServiceResult<VerticalCurriculumLink> | null>(null);
 
+  const isSubmitDisabled = isLoading || asyncOperation === 'create-link';
+
   const handleSubmit = () => {
-    setIsSubmitting(true);
     const result = onPropose({
       versionId,
       sourceNodeId,
@@ -42,7 +48,6 @@ export function PilotVerticalLinkForm({
       rationale,
     });
     setLastResult(result);
-    setIsSubmitting(false);
     if (result.ok) {
       setRationale('');
       setRelationType('continuity');
@@ -66,12 +71,15 @@ export function PilotVerticalLinkForm({
           Tipo di relazione:
         </span>
         <div className="flex flex-wrap gap-2">
-          {(['continuity', 'development', 'prerequisite', 'integration', 'deepening', 'discontinuity'] as VerticalCurriculumRelationType[]).map(type => (
-            <button
-              key={type}
-              onClick={() => setRelationType(type)}
-              aria-pressed={relationType === type}
-              className={`px-3 py-2 rounded-lg text-[10px] font-black uppercase tracking-wider transition border focus:outline-none focus:ring-2 focus:ring-indigo-500/40 ${
+          {(['continuity', 'development', 'prerequisite', 'integration', 'deepening', 'discontinuity'] as VerticalCurriculumRelationType[]).map(type => {
+            const guidance = getRelationTypeGuidance(type);
+            return (
+              <button
+                key={type}
+                onClick={() => setRelationType(type)}
+                aria-pressed={relationType === type}
+                title={`${guidance.description} Esempio: ${guidance.example}`}
+                className={`px-3 py-2 rounded-lg text-[10px] font-black uppercase tracking-wider transition border focus:outline-none focus:ring-2 focus:ring-indigo-500/40 ${
                 relationType === type
                   ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm'
                   : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
@@ -83,7 +91,8 @@ export function PilotVerticalLinkForm({
                type === 'integration' ? 'Integrazione' :
                type === 'deepening' ? 'Approfondimento' : 'Discontinuità'}
             </button>
-          ))}
+            );
+          })}
         </div>
       </div>
 
@@ -105,10 +114,10 @@ export function PilotVerticalLinkForm({
       {/* Submit Button */}
       <button
         onClick={handleSubmit}
-        disabled={isSubmitting || !rationale.trim()}
-        className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-300 text-white font-black text-[10px] uppercase tracking-wider py-2.5 rounded-xl transition focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
+        disabled={isSubmitDisabled || !rationale.trim()}
+        className={`w-full bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-300 text-white font-black text-[10px] uppercase tracking-wider py-2.5 rounded-xl transition focus:outline-none focus:ring-2 focus:ring-indigo-500/40 ${isSubmitDisabled ? 'opacity-50 cursor-not-allowed' : ''}`}
       >
-        {isSubmitting ? 'Invio in corso...' : 'Proponi Collegamento'}
+        {isSubmitDisabled && asyncOperation === 'create-link' ? 'Invio in corso...' : 'Proponi Collegamento'}
       </button>
 
       {/* Result Display */}

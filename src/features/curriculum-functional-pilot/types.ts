@@ -9,6 +9,14 @@ export type CurriculumFunctionalActivationMode =
   | 'pilot-read-only'
   | 'pilot-contribution';
 
+export type PilotAsyncOperation =
+  | 'init'
+  | 'activate'
+  | 'create-link'
+  | 'update-link'
+  | 'delete-link'
+  | 'none';
+
 export interface PilotConfig {
   mode: CurriculumFunctionalActivationMode;
   datasetId: string;
