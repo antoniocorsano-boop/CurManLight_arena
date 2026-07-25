@@ -13,7 +13,7 @@ import type {
   VerticalCurriculumLink,
   VerticalCurriculumRelationType,
 } from '../../../domain/curriculum';
-import type { CurriculumFunctionalActivationMode, PilotDataset } from '../types';
+import type { CurriculumFunctionalActivationMode, PilotDataset, PilotAsyncOperation } from '../types';
 import {
   getActivationMode,
   setActivationMode,
@@ -33,6 +33,7 @@ import {
   type ServiceResult,
   type ServiceError,
 } from '../application/curriculumPilotService';
+import { getRelationTypeGuidance, type RelationTypeGuidance } from '../relationTypeGuidance';
 
 export interface UseCurriculumPilotReturn {
   // State
@@ -47,6 +48,7 @@ export interface UseCurriculumPilotReturn {
   links: VerticalCurriculumLink[];
   lastError: ServiceError | null;
   isLoading: boolean;
+  asyncOperation: PilotAsyncOperation;
 
   // Actions
   initializeDataset: () => ServiceResult<PilotDataset>;
@@ -72,6 +74,7 @@ export interface UseCurriculumPilotReturn {
   getSegmentLabel: (segment: CurriculumSegment) => string;
   getNodeLabel: (node: CurriculumNode) => string;
   getRelationTypeLabel: (type: VerticalCurriculumRelationType) => string;
+  getRelationTypeDescription: (type: VerticalCurriculumRelationType) => RelationTypeGuidance;
   getStatusLabel: (status: string) => string;
 }
 
@@ -83,6 +86,7 @@ export function useCurriculumPilot(): UseCurriculumPilotReturn {
   const [nodesState, setNodesState] = useState<CurriculumNode[]>([]);
   const [linksState, setLinksState] = useState<VerticalCurriculumLink[]>([]);
   const [lastError, setLastError] = useState<ServiceError | null>(null);
+  const [asyncOperation, setAsyncOperation] = useState<PilotAsyncOperation>('none');
 
   const refreshData = useCallback(() => {
     setVersionsState(listPilotVersions().ok ? (listPilotVersions() as { ok: true; data: InstituteCurriculumVersion[] }).data : []);
@@ -94,6 +98,7 @@ export function useCurriculumPilot(): UseCurriculumPilotReturn {
   }, [pilotDatasetState]);
 
   const initializeDataset = useCallback((): ServiceResult<PilotDataset> => {
+    setAsyncOperation('init');
     const result = initializePilotDataset();
     if (result.ok) {
       setPilotDatasetState(result.data);
@@ -102,6 +107,7 @@ export function useCurriculumPilot(): UseCurriculumPilotReturn {
     } else {
       setLastError(result.error);
     }
+    queueMicrotask(() => setAsyncOperation('none'));
     return result;
   }, [refreshData]);
 
@@ -118,6 +124,7 @@ export function useCurriculumPilot(): UseCurriculumPilotReturn {
     relationType: VerticalCurriculumRelationType;
     rationale: string;
   }): ServiceResult<VerticalCurriculumLink> => {
+    setAsyncOperation('create-link');
     const result = proposeVerticalLink(input);
     if (result.ok) {
       setLastError(null);
@@ -125,6 +132,7 @@ export function useCurriculumPilot(): UseCurriculumPilotReturn {
     } else {
       setLastError(result.error);
     }
+    queueMicrotask(() => setAsyncOperation('none'));
     return result;
   }, [refreshData]);
 
@@ -133,6 +141,7 @@ export function useCurriculumPilot(): UseCurriculumPilotReturn {
     relationType?: VerticalCurriculumRelationType;
     rationale?: string;
   }): ServiceResult<VerticalCurriculumLink> => {
+    setAsyncOperation('update-link');
     const result = updateDraftVerticalLink(input);
     if (result.ok) {
       setLastError(null);
@@ -140,10 +149,12 @@ export function useCurriculumPilot(): UseCurriculumPilotReturn {
     } else {
       setLastError(result.error);
     }
+    queueMicrotask(() => setAsyncOperation('none'));
     return result;
   }, [refreshData]);
 
   const deleteLink = useCallback((linkId: string): ServiceResult<boolean> => {
+    setAsyncOperation('delete-link');
     const result = deleteDraftVerticalLink(linkId);
     if (result.ok) {
       setLastError(null);
@@ -151,6 +162,7 @@ export function useCurriculumPilot(): UseCurriculumPilotReturn {
     } else {
       setLastError(result.error);
     }
+    queueMicrotask(() => setAsyncOperation('none'));
     return result;
   }, [refreshData]);
 
@@ -163,6 +175,7 @@ export function useCurriculumPilot(): UseCurriculumPilotReturn {
     setNodesState([]);
     setLinksState([]);
     setLastError(null);
+    setAsyncOperation('none');
   }, []);
 
   const getNodesBySegment = useCallback((segmentId: string): CurriculumNode[] => {
@@ -193,6 +206,10 @@ export function useCurriculumPilot(): UseCurriculumPilotReturn {
     return labels[type] || type;
   }, []);
 
+  const getRelationTypeDescription = useCallback((type: VerticalCurriculumRelationType): RelationTypeGuidance => {
+    return getRelationTypeGuidance(type);
+  }, []);
+
   const getStatusLabel = useCallback((status: string): string => {
     const labels: Record<string, string> = {
       draft: 'Bozza',
@@ -214,7 +231,8 @@ export function useCurriculumPilot(): UseCurriculumPilotReturn {
     nodes: nodesState,
     links: linksState,
     lastError,
-    isLoading: false,
+    isLoading: asyncOperation !== 'none',
+    asyncOperation,
     initializeDataset,
     setMode,
     proposeLink,
@@ -226,6 +244,7 @@ export function useCurriculumPilot(): UseCurriculumPilotReturn {
     getSegmentLabel,
     getNodeLabel,
     getRelationTypeLabel,
+    getRelationTypeDescription,
     getStatusLabel,
   }), [
     activationModeState,
@@ -235,6 +254,7 @@ export function useCurriculumPilot(): UseCurriculumPilotReturn {
     nodesState,
     linksState,
     lastError,
+    asyncOperation,
     initializeDataset,
     setMode,
     proposeLink,
@@ -246,6 +266,7 @@ export function useCurriculumPilot(): UseCurriculumPilotReturn {
     getSegmentLabel,
     getNodeLabel,
     getRelationTypeLabel,
+    getRelationTypeDescription,
     getStatusLabel,
   ]);
 }
