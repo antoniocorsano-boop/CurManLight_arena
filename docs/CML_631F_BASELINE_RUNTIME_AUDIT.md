@@ -217,3 +217,41 @@ The baseline is **not usable** for real teacher validation because:
 - No test modifications made during this audit
 - No data modifications made during this audit
 - No push, merge, or publication performed
+
+## CML-631G — Fix Status
+
+La correzione CML-631G è stata implementata sul branch `fix/cml-631g-pilot-initialization-refresh`.
+
+### Modifiche
+
+1. **Hook fix**: `useCurriculumPilot.ts` — aggiunto `useEffect` per reagire a `pilotDatasetState` e modificato `refreshData` per accettare `overrideDataset`;
+2. **Test di integrazione**: aggiunto `cml631g-pilot-init.test.tsx` con 8 test che attraversano il componente `PilotMainView`;
+3. **Documentazione**: creato `docs/CML_631G_PILOT_INITIALIZATION_REFRESH_FIX.md`.
+
+### Verdetto
+
+```text
+CML_631G_PILOT_INITIALIZATION_REFRESH_COMPLETE_LOCAL
+```
+
+### Nuova baseline
+
+```text
+CML_631F_VALIDATION_BASELINE_02_RUNTIME_VERIFIED_READY_LOCAL
+```
+
+Vedi: `docs/CML_631F_VALIDATION_BASELINE_02.md`
+
+### Baseline precedente
+
+```text
+CML-631F-BASELINE-01 — REVOKED
+```
+
+La baseline `CML-631F-BASELINE-01` non deve più essere utilizzata per alcuna sessione reale.
+
+## Notes
+
+- Il difetto era già presente in `b39e2d7`;
+- Il commit `ec2899e` (docs-only) è indipendente dal difetto funzionale;
+- Il Storage Guard rimane classificato come non bloccante e non causale.
