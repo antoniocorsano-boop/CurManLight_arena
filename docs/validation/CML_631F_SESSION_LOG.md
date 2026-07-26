@@ -1,59 +1,46 @@
 # CML-631F — Session Log
 
-## Baseline Identifier
+## Baseline
 
 ```text
-CML-631F-BASELINE-01
+CML-631F-BASELINE-03
+Commit: e0b33f2
+Branch: fix/cml-631h-runtime-pilot-data-population
 ```
 
 ## Sessions
 
-| Participant | Date | Time | Device | Browser | Completed | Without help | Time (min:sec) | Hesitations | Incorrect actions | Help requests | Returns | Relations understood | Summary understood | Confirmation recognized | Final result recognized |
-|-------------|------|------|--------|---------|-----------|--------------|----------------|-------------|-------------------|---------------|---------|----------------------|--------------------|-------------------------|--------------------------|
-| T01 | — | — | — | — | — | — | —:— | — | — | — | — | — | — | — | — |
-| T02 | — | — | — | — | — | — | —:— | — | — | — | — | — | — | — | — |
-| T03 | — | — | — | — | — | — | —:— | — | — | — | — | — | — | — | — |
-| T04 | — | — | — | — | — | — | —:— | — | — | — | — | — | — | — | — |
-| T05 | — | — | — | — | — | — | —:— | — | — | — | — | — | — | — | — |
+| Session | Participant | Date | Time | Device | Browser | Completed | Without Help | Duration | Status |
+|---------|-------------|------|------|--------|---------|-----------|-------------|----------|--------|
+| T01 | _____ | _____ | _____ | _____ | _____ | — | — | _____ | PENDING |
+| T02 | _____ | _____ | _____ | _____ | _____ | — | — | _____ | PENDING |
+| T03 | _____ | _____ | _____ | _____ | _____ | — | — | _____ | PENDING |
+| T04 | _____ | _____ | _____ | _____ | _____ | — | — | _____ | PENDING |
+| T05 | _____ | _____ | _____ | _____ | _____ | — | — | _____ | PENDING |
 
-## Aggregated Results (to be filled after last session)
+## Aggregate Summary
 
-| Metric | Value |
-|--------|-------|
-| Overall completion rate | — |
-| Completion without help | — |
-| Median time | —:— |
-| Mean hesitations | — |
-| Mean incorrect actions | — |
-| Participants understanding relations | — / 5 |
-| Participants understanding summary | — / 5 |
+- Total sessions: 0 / 5
+- Valid sessions: _____
+- C1 (completion rate): _____%
+- C9 (completion without help): _____%
 
-## C1 Evaluation
+## Facilitator Interventions
 
-- Passed: —
-- Threshold: ≥ 80% without help
-- Result: Not measured
+| Session | Step | Moment | Reason | Wording | Effect |
+|---------|------|--------|--------|---------|--------|
+| — | — | — | — | — | — |
 
-## C9 Evaluation
+## Issues Discovered
 
-- Passed: —
-- Threshold: ≥ 4/5 participants satisfy all conditions
-- Result: Not measured
+| Session | Category | Step | Description | Severity |
+|---------|----------|------|-------------|----------|
+| — | — | — | — | — |
 
-## Blocking Issues
+## Status
 
-None identified yet.
+```text
+CML_631F_REAL_TEACHER_VALIDATION_NOT_EXECUTED
+```
 
-## Significant Issues
-
-None identified yet.
-
-## Minor Issues
-
-None identified yet.
-
-## Notes
-
-- No sessions have been conducted yet.
-- Do not fill this log with simulated data.
-- Update only after actual sessions with T01–T05.
+Sessions T01–T05 not yet conducted. No push, merge, or publication performed.

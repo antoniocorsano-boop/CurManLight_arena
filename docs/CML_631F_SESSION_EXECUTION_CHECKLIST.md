@@ -3,28 +3,29 @@
 ## Baseline
 
 ```text
-CML-631F-BASELINE-01
-Commit: b39e2d7
-Branch: feat/cml-631e-guided-curriculum-connection-flow
+CML-631F-BASELINE-03
+Commit: e0b33f2
+Branch: fix/cml-631h-runtime-pilot-data-population
 ```
 
 ## Pre-Session Verification
 
-- [ ] `git rev-parse --short HEAD` returns `b39e2d7`
-- [ ] `git branch --show-current` returns `feat/cml-631e-guided-curriculum-connection-flow`
-- [ ] `git status --short` returns empty output
+- [ ] `git rev-parse --short HEAD` returns `e0b33f2`
+- [ ] `git branch --show-current` returns `fix/cml-631h-runtime-pilot-data-population`
+- [ ] `git status --short` shows only `kilo.jsonc` (pre-existing unrelated) and untracked observation files
 - [ ] Dev server starts with `npm run dev`
 - [ ] Application loads without errors
-- [ ] Pilot can be initialized
-- [ ] All 6 nodes are visible
-- [ ] Segment filter shows all segments
+- [ ] Pilot mode starts as "Disattivato"
+- [ ] Init button is disabled
+- [ ] After activation: init button enabled
+- [ ] After init: 1 version, 2 segments, 6 nodes visible
 - [ ] Browser and device recorded in grid
 - [ ] Observation grid for current participant opened
 
 ## Session Start
 
 - [ ] Participant code confirmed (T01–T05)
-- [ ] Baseline identifier recorded: `CML-631F-BASELINE-01`
+- [ ] Baseline identifier recorded: `CML-631F-BASELINE-03`
 - [ ] Date and time recorded
 - [ ] Device and browser recorded
 - [ ] Introduction read verbatim
@@ -68,8 +69,8 @@ Branch: feat/cml-631e-guided-curriculum-connection-flow
 
 - [ ] All 5 grids complete
 - [ ] Session log updated
-- [ ] All sessions use same baseline `CML-631F-BASELINE-01`
-- [ ] All commits verified as `b39e2d7`
+- [ ] All sessions use same baseline `CML-631F-BASELINE-03`
+- [ ] All commits verified as `e0b33f2`
 - [ ] No personal data in any document
 - [ ] Aggregated results calculated
 - [ ] C1 and C9 evaluated formally
