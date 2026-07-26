@@ -18,14 +18,15 @@ CML_631F_VALIDATION_BASELINE_04_READY_FOR_SESSIONS
 
 ## Commit
 
-| Tipo | Hash |
-|------|------|
-| Docs (CML-631H alignment) | `24ca552` |
-| Feat (engine) | `e656a94` |
-| Feat (UI) | `41f6085` |
-| Test | `7442494` |
-| Docs (CML-631I) | `b403e4d` |
-| Docs (protocol + baseline, HEAD) | `58efdb6` |
+| Ruolo | Hash | Descrizione |
+|-------|------|-------------|
+| Contenuto validato | `a475c01` | Engine, UI, test, doc CML-631I, protocollo aggiornato |
+| Sigillo documentale | `c899374` | Aggiunta documento baseline (questo file) |
+
+**Tag Git:** `cml-631f-baseline-04` → punta a `a475c01`
+
+Le sessioni T01–T05 devono validare esattamente il contenuto del commit `a475c01`.
+Il commit `c899374` è il sigillo documentale e non introduce modifiche funzionali.
 
 ## Data
 
@@ -130,7 +131,9 @@ Totale: 13 regole, max 3 suggerimenti per coppia, ordinati per confidenza.
 
 ## Dichiarazione di immutabilità
 
-Questa baseline è congelata al commit HEAD sul branch `feat/cml-631i-assisted-pedagogical-relation-suggestions`.
+La baseline è congelata al commit `a475c01` (contenuto validato) sul branch `feat/cml-631i-assisted-pedagogical-relation-suggestions`.
+
+Tag di riferimento: `cml-631f-baseline-04` → `a475c01`.
 
 Le modifiche rispetto alla baseline 03:
 - Aggiunta engine di suggerimenti pedagogici (CML-631I)

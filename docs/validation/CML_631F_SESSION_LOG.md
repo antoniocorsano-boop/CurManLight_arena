@@ -4,7 +4,8 @@
 
 ```text
 CML-631F-BASELINE-04
-Commit: f4eb5ed
+Tag: cml-631f-baseline-04
+Commit validato: a475c01
 Branch: feat/cml-631i-assisted-pedagogical-relation-suggestions
 ```
 

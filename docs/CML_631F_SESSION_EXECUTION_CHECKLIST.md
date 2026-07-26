@@ -4,13 +4,14 @@
 
 ```text
 CML-631F-BASELINE-04
-Commit: f4eb5ed
+Tag: cml-631f-baseline-04
+Commit validato: a475c01
 Branch: feat/cml-631i-assisted-pedagogical-relation-suggestions
 ```
 
 ## Pre-Session Verification
 
-- [ ] `git rev-parse --short HEAD` returns baseline commit hash
+- [ ] `git rev-parse --short cml-631f-baseline-04` returns `a475c01`
 - [ ] `git branch --show-current` returns `feat/cml-631i-assisted-pedagogical-relation-suggestions`
 - [ ] `git status --short` shows only untracked observation files
 - [ ] Dev server starts with `npm run dev`
@@ -82,7 +83,7 @@ Branch: feat/cml-631i-assisted-pedagogical-relation-suggestions
 - [ ] All 5 grids complete
 - [ ] Session log updated
 - [ ] All sessions use same baseline `CML-631F-BASELINE-04`
-- [ ] All commits verified as baseline commit hash
+- [ ] `git rev-parse --short cml-631f-baseline-04` returns `a475c01` for all sessions
 - [ ] No personal data in any document
 - [ ] Aggregated results calculated
 - [ ] C1 and C9 evaluated formally
