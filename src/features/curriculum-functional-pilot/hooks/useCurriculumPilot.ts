@@ -5,7 +5,7 @@
  * Orchestra dominio e persistenza per il pilot.
  */
 
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
 import type {
   CurriculumNode,
   CurriculumSegment,
@@ -88,18 +88,25 @@ export function useCurriculumPilot(): UseCurriculumPilotReturn {
   const [lastError, setLastError] = useState<ServiceError | null>(null);
   const [asyncOperation, setAsyncOperation] = useState<PilotAsyncOperation>('none');
 
-  const refreshData = useCallback(() => {
+  const refreshData = useCallback((overrideDataset?: PilotDataset | null) => {
+    const dataset = overrideDataset ?? pilotDatasetState;
     setVersionsState(listPilotVersions().ok ? (listPilotVersions() as { ok: true; data: InstituteCurriculumVersion[] }).data : []);
-    if (pilotDatasetState) {
-      setSegmentsState(listPilotSegments(pilotDatasetState.versionId).ok ? (listPilotSegments(pilotDatasetState.versionId) as { ok: true; data: CurriculumSegment[] }).data : []);
-      const allNodes = pilotDatasetState.segmentIds.flatMap(segmentId => {
+    if (dataset) {
+      setSegmentsState(listPilotSegments(dataset.versionId).ok ? (listPilotSegments(dataset.versionId) as { ok: true; data: CurriculumSegment[] }).data : []);
+      const allNodes = dataset.segmentIds.flatMap(segmentId => {
         const result = listPilotNodes(segmentId);
         return result.ok ? (result as { ok: true; data: CurriculumNode[] }).data : [];
       });
       setNodesState(allNodes);
-      setLinksState(listPilotLinks(pilotDatasetState.versionId).ok ? (listPilotLinks(pilotDatasetState.versionId) as { ok: true; data: VerticalCurriculumLink[] }).data : []);
+      setLinksState(listPilotLinks(dataset.versionId).ok ? (listPilotLinks(dataset.versionId) as { ok: true; data: VerticalCurriculumLink[] }).data : []);
     }
   }, [pilotDatasetState]);
+
+  useEffect(() => {
+    if (pilotDatasetState) {
+      refreshData(pilotDatasetState);
+    }
+  }, [pilotDatasetState, refreshData]);
 
   const initializeDataset = useCallback((): ServiceResult<PilotDataset> => {
     setAsyncOperation('init');
@@ -107,7 +114,6 @@ export function useCurriculumPilot(): UseCurriculumPilotReturn {
     if (result.ok) {
       setPilotDatasetState(result.data);
       setLastError(null);
-      refreshData();
     } else {
       setLastError(result.error);
     }
