@@ -77,7 +77,6 @@ export function initializePilotDataset(): ServiceResult<PilotDataset> {
     nodeIds: PILOT_NODES.map(n => n.id),
     initializedAt: new Date().toISOString(),
   };
-
   return { ok: true, data: pilotDataset };
 }
 
@@ -131,6 +130,9 @@ export function listPilotLinks(versionId: string): ServiceResult<VerticalCurricu
   }
   if (!isPilotInitialized()) {
     return { ok: false, error: { code: 'PILOT_NOT_INITIALIZED', message: 'Il dataset pilota non è stato inizializzato' } };
+  }
+  if (versionId !== PILOT_VERSION.id) {
+    return { ok: false, error: { code: 'VERSION_NOT_FOUND', message: 'Versione non trovata' } };
   }
   const links = pilotLinks.filter(l => l.versionId === versionId);
   return { ok: true, data: links };

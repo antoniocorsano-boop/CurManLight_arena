@@ -104,9 +104,9 @@ export function PilotStatusPanel({
             </p>
             <button
               onClick={() => onInitialize()}
-              disabled={isLoading}
+              disabled={isLoading || activationMode === 'disabled'}
               aria-label="Inizializza dataset pilota"
-              className={`px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-[10px] font-black uppercase tracking-wider rounded-lg transition focus:outline-none focus:ring-2 focus:ring-indigo-500/40 ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+              className={`px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-[10px] font-black uppercase tracking-wider rounded-lg transition focus:outline-none focus:ring-2 focus:ring-indigo-500/40 ${isLoading || activationMode === 'disabled' ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
               {isLoading && asyncOperation === 'init' ? 'Inizializzazione in corso...' : 'Inizializza Dataset Pilota'}
             </button>
