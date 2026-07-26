@@ -20,8 +20,8 @@ CML_631F_VALIDATION_BASELINE_02_BROWSER_SMOKE_REQUIRED
 
 | Tipo | Hash |
 |------|------|
-| Completo | `0d6ae17` (HEAD corrente) |
-| Breve | `0d6ae17` |
+| Completo | `46d548e` (HEAD corrente) |
+| Breve | `46d548e` |
 
 ## Data
 
@@ -115,7 +115,7 @@ Prima di autorizzare T01–T05 è necessaria una verifica browser reale che conf
 
 ## Dichiarazione di immutabilità
 
-Questa baseline è congelata al commit `0d6ae17` sul branch `fix/cml-631g-pilot-initialization-refresh`.
+Questa baseline è congelata al commit `46d548e` sul branch `fix/cml-631g-pilot-initialization-refresh`.
 
 Non sono state introdotte modifiche a:
 - dati curricolari canonici
