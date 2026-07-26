@@ -1,20 +1,24 @@
 /**
- * CML-631E — PilotVerticalLinkForm
+ * CML-631E/631I — PilotVerticalLinkForm
  *
  * Form per proporre un nuovo collegamento verticale.
- * I tipi di relazione sono accessibili tramite tocco, tastiera e mouse.
+ * Include assistenza pedagogica (CML-631I): suggerimenti motivati per il tipo di relazione.
+ * Il docente decide sempre: i suggerimenti sono proposte, non imposizioni.
  */
 
-import { useState } from 'react';
-import type { VerticalCurriculumRelationType, VerticalCurriculumLink } from '../../../domain/curriculum';
+import { useState, useMemo } from 'react';
+import type { CurriculumNode, VerticalCurriculumRelationType, VerticalCurriculumLink } from '../../../domain/curriculum';
 import type { ServiceResult } from '../application/curriculumPilotService';
 import type { PilotAsyncOperation } from '../types';
 import { getRelationTypeGuidance } from '../relationTypeGuidance';
+import { generatePedagogicalSuggestions, type PedagogicalSuggestion } from '../pedagogicalSuggestionEngine';
 
 export interface PilotVerticalLinkFormProps {
   versionId: string;
   sourceNodeId: string;
   targetNodeId: string;
+  sourceNode?: CurriculumNode | null;
+  targetNode?: CurriculumNode | null;
   isLoading: boolean;
   asyncOperation: PilotAsyncOperation;
   onPropose: (input: {
@@ -30,6 +34,8 @@ export function PilotVerticalLinkForm({
   versionId,
   sourceNodeId,
   targetNodeId,
+  sourceNode,
+  targetNode,
   isLoading,
   asyncOperation,
   onPropose,
@@ -37,8 +43,22 @@ export function PilotVerticalLinkForm({
   const [relationType, setRelationType] = useState<VerticalCurriculumRelationType>('continuity');
   const [rationale, setRationale] = useState('');
   const [lastResult, setLastResult] = useState<ServiceResult<VerticalCurriculumLink> | null>(null);
+  const [dismissedSuggestions, setDismissedSuggestions] = useState(false);
 
   const isSubmitDisabled = isLoading || asyncOperation === 'create-link';
+
+  // CML-631I: Generate suggestions when both nodes are available
+  const suggestions: PedagogicalSuggestion[] = useMemo(() => {
+    if (!sourceNode || !targetNode) return [];
+    return generatePedagogicalSuggestions(sourceNode, targetNode);
+  }, [sourceNode, targetNode]);
+
+  const showSuggestions = suggestions.length > 0 && !dismissedSuggestions;
+
+  const handleUseSuggestion = (suggestion: PedagogicalSuggestion) => {
+    setRelationType(suggestion.relationType);
+    setRationale(suggestion.motivation);
+  };
 
   const handleSubmit = () => {
     const result = onPropose({
@@ -52,6 +72,7 @@ export function PilotVerticalLinkForm({
     if (result.ok) {
       setRationale('');
       setRelationType('continuity');
+      setDismissedSuggestions(false);
     }
   };
 
@@ -65,6 +86,66 @@ export function PilotVerticalLinkForm({
           Definisci la relazione tra i due elementi selezionati
         </h3>
       </div>
+
+      {/* CML-631I: Pedagogical Suggestions Section */}
+      {showSuggestions && (
+        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="text-[9px] font-black text-amber-700 uppercase tracking-wider">
+              Possibili relazioni suggerite
+            </span>
+            <button
+              onClick={() => setDismissedSuggestions(true)}
+              className="text-[9px] font-bold text-amber-600 hover:text-amber-800 uppercase tracking-wider transition"
+              aria-label="Ignora tutti i suggerimenti"
+            >
+              Ignora
+            </button>
+          </div>
+          <p className="text-[9px] text-amber-600 font-semibold">
+            Il sistema analizza i due nodi e propone le relazioni più probabili. Puoi usarle come punto di partenza o ignorarle.
+          </p>
+          <div className="space-y-2">
+            {suggestions.map((suggestion) => {
+              return (
+                <div
+                  key={suggestion.relationType}
+                  className="bg-white border border-amber-100 rounded-lg p-3 space-y-2"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] font-black text-amber-800 uppercase">
+                        {suggestion.relationType === 'continuity' ? 'Continuità' :
+                         suggestion.relationType === 'development' ? 'Sviluppo' :
+                         suggestion.relationType === 'prerequisite' ? 'Prerequisito' :
+                         suggestion.relationType === 'integration' ? 'Integrazione' :
+                         suggestion.relationType === 'deepening' ? 'Approfondimento' : 'Discontinuità'}
+                      </span>
+                      <span className={`text-[8px] font-bold uppercase px-1.5 py-0.5 rounded ${
+                        suggestion.confidence === 'high' ? 'bg-emerald-100 text-emerald-700' :
+                        suggestion.confidence === 'medium' ? 'bg-amber-100 text-amber-700' :
+                        'bg-slate-100 text-slate-600'
+                      }`}>
+                        {suggestion.confidence}
+                      </span>
+                    </div>
+                    <button
+                      onClick={() => handleUseSuggestion(suggestion)}
+                      className="text-[9px] font-black text-amber-700 hover:text-amber-900 uppercase tracking-wider transition bg-amber-100 hover:bg-amber-200 px-2 py-1 rounded-lg"
+                      aria-label={`Usa la proposta: ${suggestion.relationType}`}
+                    >
+                      Usa questa proposta
+                    </button>
+                  </div>
+                  <p className="text-[9px] text-slate-600 font-semibold leading-relaxed">
+                    {suggestion.motivation}
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* Relation Type Selector — touch accessible */}
       <div className="space-y-2">

@@ -270,6 +270,8 @@ export function PilotMainView() {
               versionId={pilot.versions[0]?.id || ''}
               sourceNodeId={selectedSourceNodeId}
               targetNodeId={selectedTargetNodeId}
+              sourceNode={sourceNode}
+              targetNode={targetNode}
               isLoading={pilot.isLoading}
               asyncOperation={pilot.asyncOperation}
               onPropose={pilot.proposeLink}
