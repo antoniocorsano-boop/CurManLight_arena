@@ -25,7 +25,7 @@ CML_631F_VALIDATION_BASELINE_04_READY_FOR_SESSIONS
 | Feat (UI) | `41f6085` |
 | Test | `7442494` |
 | Docs (CML-631I) | `b403e4d` |
-| Docs (protocol + baseline, HEAD) | `bd23ae3` |
+| Docs (protocol + baseline, HEAD) | `b9475f5` |
 
 ## Data
 
