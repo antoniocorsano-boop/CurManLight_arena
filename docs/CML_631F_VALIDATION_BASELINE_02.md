@@ -9,7 +9,7 @@ CML-631F-BASELINE-02
 ## Stato
 
 ```text
-CML_631F_VALIDATION_BASELINE_02_RUNTIME_VERIFIED_READY_LOCAL
+CML_631F_VALIDATION_BASELINE_02_BROWSER_SMOKE_REQUIRED
 ```
 
 ## Branch
@@ -20,8 +20,8 @@ CML_631F_VALIDATION_BASELINE_02_RUNTIME_VERIFIED_READY_LOCAL
 
 | Tipo | Hash |
 |------|------|
-| Completo | `b429807` (HEAD corrente) |
-| Breve | `b429807` |
+| Completo | `0d6ae17` (HEAD corrente) |
+| Breve | `0d6ae17` |
 
 ## Data
 
@@ -76,7 +76,9 @@ Totale: 6 nodi
 
 ## Verifica browser
 
-La verifica da browser pulito è stata sostituita da test di integrazione React con `@testing-library/react` che simulano il flusso completo:
+Verifica da browser pulito **non ancora eseguita** in questo ambiente CLI.
+
+La verifica locale è attualmente limitata a test di integrazione React con `@testing-library/react`, che simulano il flusso:
 
 1. Apertura applicazione → mount `PilotMainView`
 2. Apertura funzione sperimentale → vista già attiva
@@ -91,6 +93,14 @@ La verifica da browser pulito è stata sostituita da test di integrazione React 
 11. Conferma → salvataggio collegamento
 12. Ricaricamento → persistenza mantenuta (testato indirettamente tramite service layer)
 
+Prima di autorizzare T01–T05 è necessaria una verifica browser reale che confermi:
+- caricamento immediato dei 2 segmenti dopo inizializzazione;
+- disponibilità dei 6 nodi;
+- funzionamento della ricerca;
+- selezione sorgente/destinazione;
+- conferma e persistenza dopo ricaricamento;
+- assenza di errori pertinenti nella console.
+
 ## Persistenza
 
 - IndexedDB: funzionante
@@ -99,13 +109,13 @@ La verifica da browser pulito è stata sostituita da test di integrazione React 
 
 ## Limiti noti
 
-- Nessuna verifica con browser reale in questo ambiente CLI
+- Verifica da browser reale non ancora eseguita in questo ambiente CLI
 - Nessun test per scenario di errore di rete (service layer mock)
 - `navigator.storage.persist()` potrebbe fallire su browser senza supporto (non bloccante)
 
 ## Dichiarazione di immutabilità
 
-Questa baseline è congelata al commit `b429807` sul branch `fix/cml-631g-pilot-initialization-refresh`.
+Questa baseline è congelata al commit `0d6ae17` sul branch `fix/cml-631g-pilot-initialization-refresh`.
 
 Non sono state introdotte modifiche a:
 - dati curricolari canonici

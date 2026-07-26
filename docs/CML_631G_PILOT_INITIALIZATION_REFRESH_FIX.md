@@ -217,8 +217,16 @@ CML_631F_STORAGE_PERSISTENCE_WARNING_CONFIRMED_NON_BLOCKING
 
 ## 12. Decisione sulla nuova baseline
 
-La correzione è completa e verificata. La nuova baseline `CML-631F-BASELINE-02` è pronta per il congelamento.
+La correzione è completa e verificata a livello di integrazione React.
 
 ```text
 CML_631G_PILOT_INITIALIZATION_REFRESH_COMPLETE_LOCAL
 ```
+
+La baseline `CML-631F-BASELINE-02` è una **candidata** congelata al commit `0d6ae17`, ma richiede una verifica browser pulito prima di autorizzare T01–T05.
+
+```text
+CML_631F_VALIDATION_BASELINE_02_BROWSER_SMOKE_REQUIRED
+```
+
+Vedi: `docs/CML_631F_VALIDATION_BASELINE_02.md`
