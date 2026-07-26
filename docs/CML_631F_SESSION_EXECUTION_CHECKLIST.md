@@ -3,29 +3,35 @@
 ## Baseline
 
 ```text
-CML-631F-BASELINE-03
-Commit: e0b33f2
-Branch: fix/cml-631h-runtime-pilot-data-population
+CML-631F-BASELINE-04
+Commit: f4eb5ed
+Branch: feat/cml-631i-assisted-pedagogical-relation-suggestions
 ```
 
 ## Pre-Session Verification
 
-- [ ] `git rev-parse --short HEAD` returns `e0b33f2`
-- [ ] `git branch --show-current` returns `fix/cml-631h-runtime-pilot-data-population`
-- [ ] `git status --short` shows only `kilo.jsonc` (pre-existing unrelated) and untracked observation files
+- [ ] `git rev-parse --short HEAD` returns baseline commit hash
+- [ ] `git branch --show-current` returns `feat/cml-631i-assisted-pedagogical-relation-suggestions`
+- [ ] `git status --short` shows only untracked observation files
 - [ ] Dev server starts with `npm run dev`
 - [ ] Application loads without errors
 - [ ] Pilot mode starts as "Disattivato"
 - [ ] Init button is disabled
 - [ ] After activation: init button enabled
 - [ ] After init: 1 version, 2 segments, 6 nodes visible
+- [ ] Selecting source + target shows pedagogical suggestions (1–3 proposals)
+- [ ] "Usa questa proposta" auto-fills rationale and selects relation type
+- [ ] Rationale remains editable after auto-fill
+- [ ] "Ignora" dismisses suggestions
+- [ ] Manual relation type override works
+- [ ] No auto-confirm on suggestion use
 - [ ] Browser and device recorded in grid
 - [ ] Observation grid for current participant opened
 
 ## Session Start
 
 - [ ] Participant code confirmed (T01–T05)
-- [ ] Baseline identifier recorded: `CML-631F-BASELINE-03`
+- [ ] Baseline identifier recorded: `CML-631F-BASELINE-04`
 - [ ] Date and time recorded
 - [ ] Device and browser recorded
 - [ ] Introduction read verbatim
@@ -42,11 +48,17 @@ Branch: fix/cml-631h-runtime-pilot-data-population
 - [ ] No guidance provided unless participant is completely blocked
 - [ ] Post-test questions asked in order after task completion
 - [ ] No leading or suggesting answers
+- [ ] Observer notes if participant notices suggestions
+- [ ] Observer notes if participant uses, modifies, or ignores suggestions
+- [ ] Observer notes if participant edits rationale after auto-fill
+- [ ] Observer notes if participant changes relation type after suggestion
+- [ ] Observer notes if participant makes manual choice without suggestions
 
 ## Post-Session
 
 - [ ] Step-by-step observation completed
 - [ ] Metrics filled: time, hesitations, errors, help requests
+- [ ] Suggestion-specific indicators filled (see below)
 - [ ] Post-test answers recorded
 - [ ] Issue classification completed (if any)
 - [ ] Facilitator notes added
@@ -69,11 +81,12 @@ Branch: fix/cml-631h-runtime-pilot-data-population
 
 - [ ] All 5 grids complete
 - [ ] Session log updated
-- [ ] All sessions use same baseline `CML-631F-BASELINE-03`
-- [ ] All commits verified as `e0b33f2`
+- [ ] All sessions use same baseline `CML-631F-BASELINE-04`
+- [ ] All commits verified as baseline commit hash
 - [ ] No personal data in any document
 - [ ] Aggregated results calculated
 - [ ] C1 and C9 evaluated formally
+- [ ] Suggestion indicators aggregated across sessions
 - [ ] Issues classified
 - [ ] Final report populated in `docs/CML_631F_REAL_TEACHER_VALIDATION_REPORT.md`
 - [ ] Verdict assigned from the four CML-631F options

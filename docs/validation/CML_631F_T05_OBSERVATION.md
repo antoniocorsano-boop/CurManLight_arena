@@ -3,7 +3,7 @@
 ## Baseline Identifier
 
 ```text
-CML-631F-BASELINE-03
+CML-631F-BASELINE-04
 ```
 
 ## Participant Code
@@ -91,6 +91,21 @@ _____
 ### Step 12 — Indicate next steps
 - Observation:
 - Notes:
+
+## CML-631I — Pedagogical Suggestion Indicators
+
+| Indicator | Value |
+|-----------|-------|
+| Noticed suggestions appeared | — |
+| Understood optional nature | — |
+| Used a proposal (which: _____) | — |
+| Edited rationale after auto-fill | — |
+| Ignored all proposals | — |
+| Made manual choice without suggestions | — |
+| Perceived suggestions as excessive influence | — |
+| Understood final responsibility is theirs | — |
+
+Notes:
 
 ## Significant Hesitations
 

@@ -3,9 +3,9 @@
 ## Baseline
 
 ```text
-CML-631F-BASELINE-03
-Commit: e0b33f2
-Branch: fix/cml-631h-runtime-pilot-data-population
+CML-631F-BASELINE-04
+Commit: f4eb5ed
+Branch: feat/cml-631i-assisted-pedagogical-relation-suggestions
 ```
 
 ## Sessions
@@ -24,6 +24,16 @@ Branch: fix/cml-631h-runtime-pilot-data-population
 - Valid sessions: _____
 - C1 (completion rate): _____%
 - C9 (completion without help): _____%
+
+## CML-631I — Suggestion Indicator Summary
+
+- Noticed suggestions: _____ / 5
+- Used a proposal: _____ / 5
+- Edited rationale after auto-fill: _____ / 5
+- Ignored all proposals: _____ / 5
+- Manual choice without suggestions: _____ / 5
+- Perceived excessive influence: _____ / 5
+- Understood final responsibility: _____ / 5
 
 ## Facilitator Interventions
 
