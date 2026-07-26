@@ -141,4 +141,23 @@ describe('CML-631G — Pilot Initialization Integration', () => {
     expect(screen.getByText('primaria - matematica (5a)')).toBeDefined();
     expect(screen.getAllByText(/Numeri naturali e calcolo \(competence\)/).length).toBeGreaterThanOrEqual(1);
   });
+
+  it('G.9 — renders non-empty counters after initialization', async () => {
+    const user = userEvent.setup();
+    render(<PilotMainView />);
+
+    const initButton = screen.getByRole('button', { name: /inizializza dataset pilota/i });
+    await user.click(initButton);
+
+    await waitFor(() => {
+      expect(screen.getByText('Dataset inizializzato')).toBeDefined();
+    });
+
+    const grid = document.querySelector('.grid.grid-cols-3');
+    expect(grid).not.toBeNull();
+    const counters = grid!.querySelectorAll('.text-emerald-800');
+    const values = Array.from(counters).map(el => el.textContent?.trim());
+    expect(values).toEqual(['1', '2', '0']);
+    expect(screen.queryByText('Nessun elemento corrisponde alla ricerca')).toBeNull();
+  });
 });
