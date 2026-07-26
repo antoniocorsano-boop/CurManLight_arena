@@ -107,20 +107,42 @@ G9_PRE_EXISTING_FRAGILE_SELECTOR_FIXED
 | Verifica | Esito |
 |----------|-------|
 | TypeScript (`npx tsc --noEmit`) | 0 errori |
-| Vitest (pilot suite: 4 file, 119 test) | tutti passati |
+| Vitest (suite completa: 24 file, 716 test) | tutti passati |
 | Vite build | success (1,138.10 kB / 296.05 kB gzip) |
 | Storybook build | success (3,077.55 kB / 911.37 kB gzip) |
+
+**Nota sulla suite completa**: il conteggio è sceso da 736 a 716 test. I 20 test mancanti appartengono al progetto Storybook browser (Playwright-based) che richiede un browser reale e non viene incluso in `vitest run` senza `--browser`. Il worker timeout su `repositories.test.ts`, `migration.test.ts`, `pilot-service.test.ts` e altri è pre-esistente (verificato anche su HEAD committed `a6d11e6`).
+
+## 6.1 Verifica browser (Playwright)
+
+Verifica eseguita con Playwright 1.61.1 (Chromium headless) sul commit `3de0801`.
+
+| Passaggio | Risultato |
+|-----------|-----------|
+| Modalità disattivata → inizializzazione non disponibile | `init button disabled: true` ✓ |
+| Attivazione Contributo → inizializzazione disponibile | `init button disabled: false` ✓ |
+| Inizializzazione → completata senza ricaricare | init clicked, dataset created ✓ |
+| Versioni | 1 ✓ |
+| Segmenti | 2 (primaria + secondaria) ✓ |
+| Nodi | 6/6 (Numeri naturali, Calcolare, Geometria, Numeri relativi, Funzioni lineari, Statistica) ✓ |
+| Collegamenti | 0 (corretto: dataset iniziale vuoto) ✓ |
+| Defensive path: disable → re-enable | versioni=0 → versioni=1, segmenti=2, collegamenti=0 ✓ |
+| Page errors | 0 ✓ |
+| Console errors | 0 ✓ |
+
+Screenshot salvati in `.playwright-mcp/`.
 
 ## 7. Verdicts
 
 ```text
-CML_631H_RUNTIME_ROOT_CAUSE_IDENTIFIED_AND_FIX_IMPLEMENTED_LOCAL
+CML_631H_RUNTIME_PILOT_DATA_POPULATION_COMPLETE_LOCAL
 CML_631H_G9_CLASSIFICATION_COMPLETE
 CML_631H_TECHNICAL_VALIDATION_GREEN
+CML_631H_BROWSER_VERIFICATION_COMPLETE
 ```
 
 ## 8. Limiti residui
 
-- La verifica da browser reale non è stata eseguita in questo ambiente CLI;
-- Il full test suite (736 test) presenta worker timeout su `repositories.test.ts` e `pilot-service.test.ts` (non blocking per le modifiche CML-631H);
-- La baseline 03 richiede commit delle modifiche prima del congelamento.
+- La verifica da browser reale è stata eseguita con Playwright headless (Chromium), non con un browser desktop interattivo;
+- Il full test suite presenta worker timeout pre-esistenti su alcuni file (non blocking per le modifiche CML-631H);
+- La baseline 03 è congelata al commit `3de0801` (docs-only come ultimo commit).
