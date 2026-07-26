@@ -11,7 +11,7 @@ Branch: feat/cml-631i-assisted-pedagogical-relation-suggestions
 
 ## Pre-Session Verification
 
-- [ ] `git rev-parse --short cml-631f-baseline-04` returns `a475c01`
+- [ ] `git log -1 --format="%h" cml-631f-baseline-04` returns `a475c01`
 - [ ] `git branch --show-current` returns `feat/cml-631i-assisted-pedagogical-relation-suggestions`
 - [ ] `git status --short` shows only untracked observation files
 - [ ] Dev server starts with `npm run dev`
@@ -83,7 +83,7 @@ Branch: feat/cml-631i-assisted-pedagogical-relation-suggestions
 - [ ] All 5 grids complete
 - [ ] Session log updated
 - [ ] All sessions use same baseline `CML-631F-BASELINE-04`
-- [ ] `git rev-parse --short cml-631f-baseline-04` returns `a475c01` for all sessions
+- [ ] `git log -1 --format="%h" cml-631f-baseline-04` returns `a475c01` for all sessions
 - [ ] No personal data in any document
 - [ ] Aggregated results calculated
 - [ ] C1 and C9 evaluated formally
