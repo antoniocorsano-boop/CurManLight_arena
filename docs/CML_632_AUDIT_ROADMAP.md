@@ -119,8 +119,8 @@ A12 (Guide) — independent
 |----|------|--------|---------|--------|
 | A01 | Home & Orientation | AUDIT_COMPLETE | REDESIGN | `4e02417` |
 | A02 | Curriculum Consultation | AUDIT_COMPLETE | REDESIGN | `a6f3325` |
-| A03 | Curriculum Revision | AUDIT_COMPLETE | REDESIGN | `pending` |
-| A04 | Teaching Design (UDA) | PENDING | — | — |
+| A03 | Curriculum Revision | AUDIT_COMPLETE | REDESIGN | `c70f1d8` |
+| A04 | Teaching Design (UDA) | AUDIT_COMPLETE | REDESIGN | `pending` |
 | A05 | Process & Consent | PENDING | — | — |
 | A06 | Classroom & Social | PENDING | — | — |
 | A07 | Documents & Export | PENDING | — | — |
