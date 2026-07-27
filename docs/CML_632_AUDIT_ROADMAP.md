@@ -117,7 +117,7 @@ A12 (Guide) — independent
 
 | ID | Area | Status | Verdict | Commit |
 |----|------|--------|---------|--------|
-| A01 | Home & Orientation | PENDING | — | — |
+| A01 | Home & Orientation | AUDIT_COMPLETE | REDESIGN | 6cef1e6→audit |
 | A02 | Curriculum Consultation | PENDING | — | — |
 | A03 | Curriculum Revision | PENDING | — | — |
 | A04 | Teaching Design (UDA) | PENDING | — | — |
