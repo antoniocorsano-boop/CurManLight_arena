@@ -123,13 +123,14 @@ A12 (Guide) — independent
 | A04 | Teaching Design (UDA) | AUDIT_COMPLETE | REDESIGN | `b39a1b7` |
 | A05 | Process & Consent | PENDING | — | — |
 | A06 | Classroom & Social | PENDING | — | — |
-| A07 | Documents & Export | AUDIT_COMPLETE | REDESIGN | `64840dd` |
+| A07 | Documents & Export | AUDIT_COMPLETE | REDESIGN | `e1395a5` |
 | A08 | Teacher Workspace | PENDING | — | — |
 | A09 | Copilot & AI | PENDING | — | — |
 | A10 | Second Brain & Knowledge | PENDING | — | — |
 | A11 | Institute Sources | AUDIT_COMPLETE | REDESIGN | `eddbf6b` |
 | A12 | User Guide | PENDING | — | — |
 | A13 | PA Certification | PENDING | — | — |
+| **H** | **Cross-Area Structural Synthesis** | **AUDIT_COMPLETE** | **STRUCTURAL_REFOUNDATION** | `ee647be` |
 
 ---
 
