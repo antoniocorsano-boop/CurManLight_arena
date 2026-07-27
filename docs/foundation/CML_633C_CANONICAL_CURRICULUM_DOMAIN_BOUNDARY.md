@@ -13,10 +13,10 @@ transizione.
 
 Sono disponibili:
 
-- `Source`, con tipo, stato, ambito e localizzatore;
+- `Source` e `SourceVersion`, con tipo, stato, ambito, localizzatore e catena di versione;
 - `CurriculumVersion`, `CurriculumSegment`, `CurriculumNode` e `CurriculumLink` canonici;
 - vocabolari per ordini, discipline, nuclei, nodi e relazioni;
-- costruttori, validatori puri, repository in memoria e adapter di sola lettura da `curriculumKB`.
+- costruttori, validatori puri, repository in memoria, serializzazione con rifiuto degli schemi futuri e adapter di sola lettura da `curriculumKB`.
 
 ## Compatibilita' CML-631
 
@@ -46,13 +46,13 @@ la verifica di parita' dei dati e la dismissione esplicita dei contratti legacy.
 | traguardi | `CurriculumNode` di tipo `traguardo` | adattato in sola lettura |
 | obiettivi | `CurriculumNode` di tipo `obiettivo` | adattato in sola lettura |
 | evidenze | `CurriculumNode` di tipo `evidenza` | adattato in sola lettura |
-| nuclei fondanti | vocabolario `NUCLEI_FONDANTI` | disponibile, non assegnato automaticamente |
-| proposte | nessuna promozione automatica | conservato nel legacy, migrazione rinviata |
+| nuclei fondanti | vocabolario e note del segmento | preservati; multi-nucleo non assegnato arbitrariamente |
+| proposte | nodo sperimentale separato | conservato senza promozione ad attivo |
 
 Gli adapter non scrivono dati, non modificano `curriculumKB` e non sono una
-migrazione persistente. Una migrazione effettiva richiedera' una decisione
-esplicita, mapping stabile degli identificativi, conservazione completa e
-rollback.
+migrazione persistente. Gli ID derivati sono deterministici da contesto e testo;
+una migrazione effettiva richiedera' una decisione esplicita, conservazione degli
+ID gia' assegnati, parita' completa dei dati e rollback.
 
 `curriculumKB` resta l'autorita' legacy in sola lettura. Non esistono doppia
 scrittura, promozione automatica, sincronizzazione o persistenza dei dati
@@ -64,6 +64,8 @@ canonici derivati.
 - Ogni segmento fa riferimento a una versione curricolare valida.
 - Ogni nodo fa riferimento a versione e segmento validi.
 - Ogni link collega due nodi distinti e validi.
+- Ogni segmento adattato appartiene alla versione legacy del proprio ordine, mai a
+  una versione `primaria` usata come default per altri ordini.
 - Una fonte legacy attiva genera un avviso: richiede conferma esplicita.
 - I dati legacy restano autorevoli in lettura finche' non viene approvata una
   migrazione persistente.
@@ -81,7 +83,7 @@ canonici derivati.
 
 ## Evidenza di verifica
 
-- Test del dominio canonico: 50 test.
+- Test del dominio canonico: 59 test.
 - Test identita' e dominio legacy: 125 test.
 - Test di compatibilita' del barrel pubblico: 2 test.
 - `npx tsc --noEmit`: nessun errore.

@@ -147,6 +147,7 @@ export {
 export {
   createSource,
   createLegacySource,
+  createSourceVersion,
   createCurriculumVersion,
   createCurriculumSegment,
   createCurriculumNode,
@@ -175,6 +176,7 @@ export {
 // Repositories
 export {
   SourceRepository,
+  SourceVersionRepository,
   CurriculumVersionRepository,
   CurriculumSegmentRepository,
   CurriculumNodeRepository,
@@ -188,3 +190,14 @@ export {
   adaptDiscipline,
   verifyMigrationMatrix,
 } from './adapters';
+
+export {
+  serializeCanonicalCurriculumDomain,
+  deserializeCanonicalCurriculumDomain,
+} from './serialization';
+
+export {
+  createA11SourceReadModel,
+  createA02CurriculumReadModel,
+} from './readModels';
+export type { A11SourceSummary, A02CurriculumQuery } from './readModels';

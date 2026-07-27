@@ -10,7 +10,7 @@ import {
   validateCurriculumSegment,
   validateInstituteCurriculumVersion,
   validateVerticalCurriculumLink,
-} from '../validation';
+} from '../validation-legacy';
 import type { CurriculumPersistenceBackend } from './backend';
 import { CurriculumPersistenceError } from './errors';
 import type { MigrationProvenance } from './records';

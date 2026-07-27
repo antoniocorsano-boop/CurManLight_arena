@@ -12,7 +12,7 @@ import {
   findDanglingNodeReferences,
   findDanglingSegmentReferences,
   detectInvalidStructuralCycles,
-} from '../../domain/curriculum/validation';
+} from '../../domain/curriculum/validation-legacy';
 import type { InstituteCurriculumVersion } from '../../domain/curriculum/version';
 import type { CurriculumSegment, CurriculumSegmentContent } from '../../domain/curriculum/segment';
 import type { CurriculumNode } from '../../domain/curriculum/node';
