@@ -321,3 +321,27 @@
 
 ## 2026-07-25 13:41:50 +02:00
 - CML-631E proposal created for guided curriculum connection flow. CML-631F (real teacher validation) suspended until CML-631E criteria are met. Proposal at docs/PROPOSAL_CML_631E_GUIDED_CURRICULUM_CONNECTION_FLOW.md. No code implementation performed.
+
+## 2026-07-26 22:03:58 +02:00
+- BASELINE-04 frozen at c899374. Protocol updated with suggestion indicators. 19/19 browser checks passed. T01-T05 re-enabled.
+
+## 2026-07-26 22:27:11 +02:00
+- BASELINE-04 corrected: two-commit model with annotated tag. Tag cml-631f-baseline-04 -> a475c01 (content). Seal commits are docs-only. MISMATCH resolved.
+
+## 2026-07-26 22:30:00 +02:00
+- CML-631F real teacher validation status confirmed. Branch: feat/cml-631i-assisted-pedagogical-relation-suggestions. Baseline a475c01 verified. T01-T05 observation grids, session log, and execution checklist all prepared. Status: CML_631F_REAL_TEACHER_VALIDATION_NOT_EXECUTED. Awaiting real teacher sessions.
+
+## 2026-07-27 00:00:00 +02:00
+- CML-631 frozen: curriculum pilot non idoneo alla validazione. CML-631I complete local but not adopted. New phase: CML-632 area-by-area audit. Created CML-632A system area inventory (13 areas, 18 views, 7 cross-cutting flows), CML-632 audit framework (9 dimensions, 0-4 scale, 6 verdicts), CML-632 audit roadmap (5 phases, 13 areas ordered). Commit: 6cef1e6. Product not modified. No push/merge/publication.
+
+## 2026-07-27 06:50:00 +02:00
+- CML-632B A01 Home & Orientation audit complete. Branch: audit/cml-632b-a01-home-orientation. Verdict: REDESIGN. 3 blocking (no product ID, no onboarding, 8px fonts), 8 significant (jargon, equal cards, hardcoded data, no headings, mobile gaps), 6 minor, 4 opportunities. 7/10 dimensions below threshold. Commit: 4e02417. Product not modified. No push/merge/publication.
+
+## 2026-07-26 22:54:28 +02:00
+- CML-631F real teacher validation confirmed ready. Baseline a475c01 verified. Awaiting T01-T05 sessions.
+
+## 2026-07-27 06:32:52 +02:00
+- CML-632A complete: 13 areas, 9-dimension framework, 5-phase roadmap. Commit 6cef1e6. Product not modified.
+
+## 2026-07-27 06:52:02 +02:00
+- CML-632B A01 audit complete. Verdict: REDESIGN. 3 blocking, 8 significant findings. Commit 4e02417.
