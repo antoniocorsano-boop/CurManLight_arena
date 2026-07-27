@@ -127,7 +127,7 @@ A12 (Guide) — independent
 | A08 | Teacher Workspace | PENDING | — | — |
 | A09 | Copilot & AI | PENDING | — | — |
 | A10 | Second Brain & Knowledge | PENDING | — | — |
-| A11 | Institute Sources | PENDING | — | — |
+| A11 | Institute Sources | AUDIT_COMPLETE | REDESIGN | pending |
 | A12 | User Guide | PENDING | — | — |
 | A13 | PA Certification | PENDING | — | — |
 
