@@ -209,13 +209,83 @@
 | **Risultato** | Codice rimosso, dati preservati |
 | **Razionalizzazione** | Pulizia codice, riduzione complessità, focus su funzionalità core |
 
+### D21: EntityId come Branded Type (CML-633B)
+
+| Campo | Valore |
+|-------|--------|
+| **Data** | 27 luglio 2026 |
+| **Decisione** | Usare branded type per EntityId |
+| **Alternativa** | String semplice |
+| **Risultato** | Type safety a compile time |
+| **Razionalizzazione** | Previene scambi di tipi, rende esplicito il contratto |
+
+### D22: generateEntityId() con Fallback (CML-633B)
+
+| Campo | Valore |
+|-------|--------|
+| **Data** | 27 luglio 2026 |
+| **Decisione** | Usare crypto.randomUUID() con fallback UUID v4 |
+| **Alternativa** | Solo Math.random() |
+| **Risultato** | Standard industriale, fallback sicuro |
+| **Razionalizzazione** | Qualità crittografica quando disponibile, compatibilità sempre |
+
+### D23: SchemaVersion Numerico (CML-633B)
+
+| Campo | Valore |
+|-------|--------|
+| **Data** | 27 luglio 2026 |
+| **Decisione** | Usare numero intero per SchemaVersion |
+| **Alternativa** | Stringa semver |
+| **Risultato** | Semplice, ordinabile |
+| **Razionalizzazione** | Minima complessità, sufficiente per il dominio |
+
+### D24: 9 Origini con Registry (CML-633B)
+
+| Campo | Valore |
+|-------|--------|
+| **Data** | 27 luglio 2026 |
+| **Decisione** | Definire 9 origini con registry completo |
+| **Alternativa** | Enum semplice senza metadati |
+| **Risultato** | Flessibilità, tracciabilità, affidabilità dichiarata |
+| **Razionalizzazione** | Ogni origina ha regole chiare, prevenzione di promozione automatica |
+
+### D25: Legacy Non Promosso Automaticamente (CML-633B)
+
+| Campo | Valore |
+|-------|--------|
+| **Data** | 27 luglio 2026 |
+| **Decisione** | I dati legacy non sono promossi a institute senza evento esplicito |
+| **Alternativa** | Promozione automatica per dati completi |
+| **Risultato** | Prevenzione di reinterpretazione indebita |
+| **Razionalizzazione** | Integrità dati, tracciabilità, conferma umana richiesta |
+
+### D26: Adattatori Legacy Pilota (CML-633B)
+
+| Campo | Valore |
+|-------|--------|
+| **Data** | 27 luglio 2026 |
+| **Decisione** | Implementare adattatori per curriculumKB e UDA |
+| **Alternativa** | Nessun adattatore, solo tipi |
+| **Risultato** | Verifica pratica dei contratti |
+| **Razionalizzazione** | Validazione su dati reali, identificazione problemi |
+
+### D27: Validatori Puri (CML-633B)
+
+| Campo | Valore |
+|-------|--------|
+| **Data** | 27 luglio 2026 |
+| **Decisione** | Validatori funzioni pure senza effetti collaterali |
+| **Alternativa** | Classi con stato |
+| **Risultato** | Testabilità, riutilizzabilità, determinismo |
+| **Razionalizzazione** | Funzioni pure sono più facili da testare e combinare |
+
 ---
 
 ## 2. Statistiche
 
 | Metrica | Valore |
 |---------|--------|
-| Decisioni totali | 20 |
-| Decisioni implementate | 0 (design phase) |
+| Decisioni totali | 27 |
+| Decisioni implementate | 7 (CML-633B) |
 | Decisioni in revisione | 0 |
 | Decisioni deprecate | 0 |

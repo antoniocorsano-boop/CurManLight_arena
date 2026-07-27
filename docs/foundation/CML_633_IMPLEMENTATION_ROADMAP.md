@@ -24,14 +24,22 @@
 | A9: Validazione dominio | 4h | A1-A8 |
 | A10: Transizioni stato | 3h | A1-A8 |
 
-### CML-633B: Persistenza (30h)
+### CML-633B: Canonical Identity and Metadata (12h) ✅ COMPLETO
 
-| Task | Durata | Dipendenze |
-|------|--------|------------|
-| B1: Schema IndexedDB | 3h | 633A |
-| B2-B9: Repository (8 entità) | 20h | B1 |
-| B10: Calcolo hash | 3h | — |
-| B11: Backup e restore | 4h | B2-B9 |
+| Task | Durata | Dipendenze | Stato |
+|------|--------|------------|-------|
+| B1: EntityId e generateEntityId | 1h | — | ✅ |
+| B2: EntityMetadata | 1h | B1 | ✅ |
+| B3: ContentOrigin | 1h | — | ✅ |
+| B4: ActorReference | 1h | B1 | ✅ |
+| B5: EntityReference | 1h | B1 | ✅ |
+| B6: SchemaVersion | 1h | — | ✅ |
+| B7: EntityType enum | 1h | — | ✅ |
+| B8: MigrationStatus | 1h | — | ✅ |
+| B9: Validatori puri | 2h | B1-B8 | ✅ |
+| B10: Costruttori canonici | 1h | B1-B8 | ✅ |
+| B11: Adattatori legacy | 1h | B1-B10 | ✅ |
+| B12: Test unitari | 1h | B1-B11 | ✅ |
 
 ### CML-633C: Event Log (13h)
 
