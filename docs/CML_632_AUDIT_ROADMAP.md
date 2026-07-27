@@ -120,10 +120,10 @@ A12 (Guide) — independent
 | A01 | Home & Orientation | AUDIT_COMPLETE | REDESIGN | `4e02417` |
 | A02 | Curriculum Consultation | AUDIT_COMPLETE | REDESIGN | `a6f3325` |
 | A03 | Curriculum Revision | AUDIT_COMPLETE | REDESIGN | `c70f1d8` |
-| A04 | Teaching Design (UDA) | AUDIT_COMPLETE | REDESIGN | `pending` |
+| A04 | Teaching Design (UDA) | AUDIT_COMPLETE | REDESIGN | `b39a1b7` |
 | A05 | Process & Consent | PENDING | — | — |
 | A06 | Classroom & Social | PENDING | — | — |
-| A07 | Documents & Export | PENDING | — | — |
+| A07 | Documents & Export | AUDIT_COMPLETE | REDESIGN | `64840dd` |
 | A08 | Teacher Workspace | PENDING | — | — |
 | A09 | Copilot & AI | PENDING | — | — |
 | A10 | Second Brain & Knowledge | PENDING | — | — |
