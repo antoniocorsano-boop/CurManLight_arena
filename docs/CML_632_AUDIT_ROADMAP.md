@@ -117,9 +117,9 @@ A12 (Guide) — independent
 
 | ID | Area | Status | Verdict | Commit |
 |----|------|--------|---------|--------|
-| A01 | Home & Orientation | AUDIT_COMPLETE | REDESIGN | 6cef1e6→audit |
-| A02 | Curriculum Consultation | AUDIT_COMPLETE | REDESIGN | pending |
-| A03 | Curriculum Revision | PENDING | — | — |
+| A01 | Home & Orientation | AUDIT_COMPLETE | REDESIGN | `4e02417` |
+| A02 | Curriculum Consultation | AUDIT_COMPLETE | REDESIGN | `a6f3325` |
+| A03 | Curriculum Revision | AUDIT_COMPLETE | REDESIGN | `pending` |
 | A04 | Teaching Design (UDA) | PENDING | — | — |
 | A05 | Process & Consent | PENDING | — | — |
 | A06 | Classroom & Social | PENDING | — | — |
@@ -127,7 +127,7 @@ A12 (Guide) — independent
 | A08 | Teacher Workspace | PENDING | — | — |
 | A09 | Copilot & AI | PENDING | — | — |
 | A10 | Second Brain & Knowledge | PENDING | — | — |
-| A11 | Institute Sources | AUDIT_COMPLETE | REDESIGN | pending |
+| A11 | Institute Sources | AUDIT_COMPLETE | REDESIGN | `eddbf6b` |
 | A12 | User Guide | PENDING | — | — |
 | A13 | PA Certification | PENDING | — | — |
 
