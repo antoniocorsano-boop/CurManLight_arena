@@ -1,9 +1,272 @@
 import React from 'react';
-import { Milestone, Info, Sparkles, ChevronLeft, ChevronRight, FileSearch } from 'lucide-react';
+import { Milestone, Info, Sparkles, ChevronLeft, ChevronRight, FileSearch, Layers, History } from 'lucide-react';
 import { useCurriculumStore } from '../../../store/useCurriculumStore';
 import { UiEmptyState } from '../../../ui/components/UiEmptyState';
 import type { DecisionStatus, Proposal } from '../../../types/curriculum';
 import type { AppViewsLayerProps } from '../../session';
+import {
+  PROPOSAL_STATUS_LABELS,
+  DECISION_OUTCOME_LABELS,
+  DECISION_STATUS_LABELS,
+} from '../../../domain/revision/vocabularies';
+import { getLatestProposalVersion, findDecisionsByProposal, getEventsByProposal } from '../../../domain/revision';
+import type { RevisionProposal } from '../../../domain/revision';
+import { transitionProposalStatus } from '../../../domain/revision/repository';
+import { addProposal } from '../../../domain/revision/repository';
+import { createEntityReference } from '../../../domain/curriculum/identity';
+import type { EntityId } from '../../../domain/curriculum/identity/types';
+
+// ─── Canonical Proposal Actions (no double-write) ────────────────────────
+
+function useCanonicalRevisionActions() {
+  const { revisionArchive, replaceRevisionArchive } = useCurriculumStore();
+
+  const transitionProposal = (proposalId: string, newStatus: RevisionProposal['status'], rationale?: string) => {
+    const prev = revisionArchive;
+    const result = transitionProposalStatus(prev, proposalId as EntityId, newStatus, undefined, rationale);
+    if (result.success) {
+      replaceRevisionArchive(result.archive);
+    }
+    return result;
+  };
+
+  const createDraft = (targetLabel: string, currentText: string) => {
+    const result = addProposal(revisionArchive, {
+      targetNodeRef: createEntityReference(`node-${Date.now()}` as never, 'curriculum-node' as never, targetLabel),
+      curriculumVersionRef: createEntityReference('cv-current' as never, 'curriculum-version' as never),
+      currentTextSnapshot: currentText,
+      proposedText: currentText,
+      rationale: '',
+    });
+    if (result.success) {
+      replaceRevisionArchive(result.archive);
+    }
+    return result;
+  };
+
+  return { transitionProposal, createDraft };
+}
+
+// ─── Canonical Proposals Section ─────────────────────────────────────────
+
+function CanonicalProposalsSection() {
+  const { revisionArchive } = useCurriculumStore();
+  const { transitionProposal } = useCanonicalRevisionActions();
+  const proposals = revisionArchive.proposals.filter(p => p.status !== 'legacy');
+
+  if (proposals.length === 0) {
+    return (
+      <div className="space-y-2">
+        <h2 className="text-sm font-extrabold text-slate-800 flex items-center space-x-2">
+          <Layers className="w-4 h-4 text-indigo-500" />
+          <span>Proposte strutturate</span>
+          <span className="text-[10px] font-normal text-slate-500">— Registro locale, non protocollo ufficiale</span>
+        </h2>
+        <UiEmptyState
+          icon={Layers}
+          title="Nessuna proposta canonica"
+          description="Le proposte di revisione create con il nuovo modello appariranno qui. Le valutazioni personali precedenti sono nella sezione sottostante."
+        />
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-3">
+      <h2 className="text-sm font-extrabold text-slate-800 flex items-center space-x-2">
+        <Layers className="w-4 h-4 text-indigo-500" />
+        <span>Proposte strutturate</span>
+        <span className="text-[10px] font-normal text-slate-500">— Registro locale, non protocollo ufficiale</span>
+      </h2>
+
+      {proposals.map(proposal => {
+        const version = getLatestProposalVersion(revisionArchive, proposal);
+        const decisions = findDecisionsByProposal(revisionArchive, proposal.id);
+        const latestDecision = decisions.length > 0 ? decisions[decisions.length - 1] : undefined;
+        const events = getEventsByProposal(revisionArchive, proposal.id);
+
+        const statusLabel = PROPOSAL_STATUS_LABELS[proposal.status];
+        const nodeLabel = proposal.targetNodeRef.snapshotLabel || proposal.targetNodeRef.id;
+
+        return (
+          <div key={proposal.id} className="bg-white border-2 border-indigo-200 rounded-xl overflow-hidden">
+            {/* Header */}
+            <div className="bg-indigo-50 border-b border-indigo-100 px-4 py-2.5 flex items-center justify-between text-xs font-bold">
+              <span className="flex items-center space-x-2">
+                <span className="bg-indigo-100 text-indigo-700 text-[10px] font-extrabold px-1.5 py-0.5 rounded">{nodeLabel}</span>
+                <span className="text-slate-600">{statusLabel}</span>
+              </span>
+              <span className="text-slate-400 text-[10px]">
+                v{version?.versionNumber ?? 1} | {proposal.metadata.createdAt.slice(0, 10)}
+              </span>
+            </div>
+
+            {/* Comparison */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 p-4 text-xs leading-relaxed">
+              <div className="space-y-1">
+                <strong className="text-slate-400 block text-[9px] uppercase">Testo vigente</strong>
+                <p className="bg-slate-50 p-2.5 border rounded-lg italic">"{proposal.currentTextSnapshot}"</p>
+              </div>
+              <div className="space-y-1">
+                <strong className="text-slate-400 block text-[9px] uppercase">Testo proposto</strong>
+                <p className="bg-indigo-50/30 p-2.5 border border-indigo-100 rounded-lg">"{version?.proposedText ?? proposal.proposedText}"</p>
+              </div>
+            </div>
+
+            {/* Rationale */}
+            {proposal.rationale && (
+              <div className="px-4 pb-3">
+                <strong className="text-[9px] uppercase text-slate-400">Motivazione</strong>
+                <p className="text-xs text-slate-600 mt-0.5">{proposal.rationale}</p>
+              </div>
+            )}
+
+            {/* Decisions */}
+            {latestDecision && (
+              <div className="px-4 pb-3 text-xs">
+                <strong className="text-[9px] uppercase text-slate-400">
+                  Decisione: {DECISION_STATUS_LABELS[latestDecision.status]}
+                </strong>
+                <p className="text-slate-600 mt-0.5">
+                  {DECISION_OUTCOME_LABELS[latestDecision.outcome]} — {latestDecision.authority.declaredRole}
+                  {latestDecision.rationale && ` — ${latestDecision.rationale}`}
+                </p>
+              </div>
+            )}
+
+            {/* Event history (minimal) */}
+            {events.length > 0 && (
+              <details className="px-4 pb-3">
+                <summary className="text-[10px] text-slate-400 cursor-pointer hover:text-slate-600">
+                  <History className="w-3 h-3 inline mr-1" />
+                  Registro locale ({events.length} eventi)
+                </summary>
+                <div className="mt-1 space-y-0.5 max-h-32 overflow-y-auto text-[10px] text-slate-500">
+                  {events.slice(-5).reverse().map(e => (
+                    <div key={e.id} className="flex space-x-2">
+                      <span className="text-slate-400 shrink-0">{e.timestamp.slice(11, 19)}</span>
+                      <span>{e.eventType}{e.rationale ? ` — ${e.rationale.slice(0, 60)}` : ''}</span>
+                    </div>
+                  ))}
+                </div>
+              </details>
+            )}
+
+            {/* State-aware actions */}
+            <div className="bg-slate-50 border-t border-slate-100 px-4 py-2 flex flex-wrap gap-1.5">
+              {proposal.status === 'draft' && (
+                <>
+                  <button
+                    onClick={() => transitionProposal(proposal.id, 'ready-for-review', proposal.rationale || undefined)}
+                    className="px-2.5 py-1 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded text-xs transition"
+                    disabled={!proposal.rationale}
+                    title={!proposal.rationale ? 'Motivazione richiesta' : undefined}
+                  >
+                    Prepara per revisione
+                  </button>
+                  <button
+                    onClick={() => transitionProposal(proposal.id, 'archived')}
+                    className="px-2.5 py-1 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded text-xs transition"
+                  >
+                    Archivia
+                  </button>
+                  {!proposal.rationale && (
+                    <span className="text-[10px] text-amber-600 self-center">⚠ Motivazione obbligatoria</span>
+                  )}
+                </>
+              )}
+              {proposal.status === 'ready-for-review' && (
+                <button
+                  onClick={() => transitionProposal(proposal.id, 'submitted')}
+                  className="px-2.5 py-1 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded text-xs transition"
+                >
+                  Invia
+                </button>
+              )}
+              {proposal.status === 'submitted' && (
+                <>
+                  <button
+                    onClick={() => transitionProposal(proposal.id, 'under-review')}
+                    className="px-2.5 py-1 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded text-xs transition"
+                  >
+                    Prendi in carico
+                  </button>
+                  <button
+                    onClick={() => transitionProposal(proposal.id, 'withdrawn')}
+                    className="px-2.5 py-1 bg-rose-100 hover:bg-rose-200 text-rose-700 font-bold rounded text-xs transition"
+                  >
+                    Ritira
+                  </button>
+                </>
+              )}
+              {proposal.status === 'under-review' && (
+                <>
+                  <button
+                    onClick={() => transitionProposal(proposal.id, 'changes-requested', 'Modifiche richieste dal revisore')}
+                    className="px-2.5 py-1 bg-amber-500 hover:bg-amber-400 text-white font-bold rounded text-xs transition"
+                  >
+                    Richiedi modifiche
+                  </button>
+                  <button
+                    onClick={() => transitionProposal(proposal.id, 'accepted-for-decision')}
+                    className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded text-xs transition"
+                  >
+                    Ammetti alla decisione
+                  </button>
+                  <button
+                    onClick={() => transitionProposal(proposal.id, 'rejected')}
+                    className="px-2.5 py-1 bg-rose-200 hover:bg-rose-300 text-rose-700 font-bold rounded text-xs transition"
+                  >
+                    Rigetta
+                  </button>
+                </>
+              )}
+              {proposal.status === 'changes-requested' && (
+                <>
+                  <button
+                    onClick={() => transitionProposal(proposal.id, 'ready-for-review')}
+                    className="px-2.5 py-1 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded text-xs transition"
+                  >
+                    Nuova versione pronta
+                  </button>
+                  <button
+                    onClick={() => transitionProposal(proposal.id, 'withdrawn')}
+                    className="px-2.5 py-1 bg-rose-100 hover:bg-rose-200 text-rose-700 font-bold rounded text-xs transition"
+                  >
+                    Ritira
+                  </button>
+                </>
+              )}
+              {proposal.status === 'accepted-for-decision' && (
+                <span className="text-[10px] text-slate-500 self-center">
+                  In attesa di registrazione decisione — usare il pannello decisioni
+                </span>
+              )}
+              {proposal.status === 'rejected' && (
+                <button
+                  onClick={() => transitionProposal(proposal.id, 'archived')}
+                  className="px-2.5 py-1 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded text-xs transition"
+                >
+                  Archivia
+                </button>
+              )}
+              {proposal.status === 'withdrawn' && (
+                <button
+                  onClick={() => transitionProposal(proposal.id, 'archived')}
+                  className="px-2.5 py-1 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded text-xs transition"
+                >
+                  Archivia
+                </button>
+              )}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// ─── Main RevisioneTab ───────────────────────────────────────────────────
 
 export type RevisioneTabProps = Pick<AppViewsLayerProps,
   | 'currentDisciplineProps'
@@ -52,6 +315,9 @@ export function RevisioneTab({
           <p className="font-semibold text-slate-700 leading-normal">Le scelte registrate sono note di lavoro non obbligatorie e non determinano applicabilità o adozione.</p>
         </div>
       </div>
+
+      {/* Canonical Proposals Section */}
+      <CanonicalProposalsSection />
 
       {/* Layout selector */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-white p-3.5 border border-slate-200 rounded-2xl shadow-sm gap-3">
