@@ -35,7 +35,6 @@ export function useAppStartupEffects({
  setWorkspaceTokenExpiry,
  setIsWorkspaceLoggedIn,
  setWorkspaceUserEmail,
- setCloudAccountType,
  setOnboardingRoleLocal,
  setOnboardingDiscLocal,
  setOnboardingOrdLocal,
@@ -68,7 +67,7 @@ export function useAppStartupEffects({
     if (!persisted) {
      navigator.storage.persist().then((granted) => {
       if (granted) {
-       console.log("[CurManLight Storage Guard] Memoria persistente d'Istituto concessa dal browser!");
+        console.log("[CurManLight Storage Guard] Il browser ha concesso la persistenza locale; durata e protezione non sono garantite.");
       } else {
        console.warn('[CurManLight Storage Guard] Memoria persistente rifiutata o non supportata dal browser.');
       }
@@ -102,18 +101,12 @@ export function useAppStartupEffects({
         setWorkspaceUserEmail(data.email);
         safeLocalStorageSetItem('curman_workspaceUserEmail', data.email);
 
-        const emailLower = data.email.toLowerCase();
-        const isScolastica = emailLower.endsWith('@icdonmilani.edu.it') || emailLower.endsWith('.edu.it') || emailLower.includes('donmilani');
-        const updatedType = isScolastica ? 'scolastica' : 'personale';
-        setCloudAccountType(updatedType);
-        safeLocalStorageSetItem('curman_cloudAccountType', updatedType);
-
-        showToast(`Connesso a Google Drive (${isScolastica ? 'Scolastico' : 'Personale'}): ${data.email}`, true);
+         showToast(`Sessione Google Drive attiva per ${data.email}. Tipo di account non verificato.`, true);
         handleWorkspaceAutoPull(token);
        }
       })
       .catch(() => {
-       showToast("Connesso a Google Workspace d'Istituto!", true);
+        showToast("Sessione Google avviata, ma le informazioni dell'account non sono state verificate.", false);
        handleWorkspaceAutoPull(token);
       });
 

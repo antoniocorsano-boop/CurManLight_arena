@@ -2,6 +2,7 @@ import type { ChangeEvent, Dispatch, SetStateAction } from 'react';
 import type { AppTab } from '../../navigation';
 import type { GraphEdge, GraphNode } from '../../../lib/architectureGraph';
 import type { CurricularLevel, DecisionStatus, Proposal, SchoolOrder, UdaModel, UserRole } from '../../../types/curriculum';
+import type { A07InstitutionalDocumentRead } from '../../../domain/institution';
 
 export type ActiveCurricoloView = 'home' | 'albero' | 'mappa' | 'popolamento' | 'pilota';
 export type ActiveProcessoTab = 'flusso' | 'verifica';
@@ -339,6 +340,8 @@ export interface AppViewsLayerProps {
   setTemplateChatInput: (value: string) => void;
   templateChatHistory: TemplateChatMessage[];
   handleSendTemplateInstruction: (text: string) => void;
+  resetTemplateState: () => void;
+  institutionalProfile: A07InstitutionalDocumentRead;
   handleDownloadWordDefinitivo: () => void;
   handleDownloadWordDocx: () => void;
   handleDownloadODF: () => void;

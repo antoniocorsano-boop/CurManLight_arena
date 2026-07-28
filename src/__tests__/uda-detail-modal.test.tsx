@@ -26,6 +26,7 @@ const baseProps = {
   handleDownloadScormManifest: vi.fn(),
   copyUdaForRegister: vi.fn(),
   copyUdaTextLocal: vi.fn(),
+  institutionalProfile: { configured: true, instituteName: 'Istituto Test', organizationId: 'institute-test' },
 };
 
 beforeEach(() => {

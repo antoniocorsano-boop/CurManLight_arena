@@ -7,6 +7,7 @@ import { UiButton } from '../../../ui/components/UiButton';
 import { UiPanel } from '../../../ui/components/UiPanel';
 import { UiSectionHeader } from '../../../ui/components/UiSectionHeader';
 import { UiConfirmDialog } from '../../../ui/components/UiConfirmDialog';
+import { projectA07InstitutionalDocumentHeader } from '../../../domain/institution';
 
 const getDisciplineLabel = (disc: string) => {
   const labels: Record<string, string> = {
@@ -48,10 +49,12 @@ export type EsportazioniTabProps = Pick<AppViewsLayerProps,
   | 'showToast'
   | 'documentExportHistory'
   | 'clearDocumentExportHistory'
+  | 'institutionalProfile'
+  | 'resetTemplateState'
 >;
 
 export function EsportazioniTab(props: EsportazioniTabProps) {
-  const { discipline, order, schoolYear } = useCurriculumStore();
+  const { discipline, order } = useCurriculumStore();
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const {
     esportazioniTab,
@@ -83,7 +86,11 @@ export function EsportazioniTab(props: EsportazioniTabProps) {
     showToast,
     documentExportHistory,
     clearDocumentExportHistory,
+    institutionalProfile,
+    resetTemplateState,
   } = props;
+  const institutionalProjection = projectA07InstitutionalDocumentHeader(institutionalProfile);
+  const bilingualSiteLabel = institutionalProfile.siteName || 'Sede non configurata';
 
   return (
     <div className="space-y-6 fade-in text-left">
@@ -94,8 +101,8 @@ export function EsportazioniTab(props: EsportazioniTabProps) {
             title="Documenti ed esportazioni"
             description={
               esportazioniTab === 'standard'
-                ? "Generazione e download dei documenti d'istituto in formato aperto ODF o Microsoft Word (.docx) conformi al PTOF."
-                : "Personalizzazione assistita del layout di stampa tramite comandi semantici raccordati alle linee guida AgID."
+                ? "Generazione e download di documenti curricolari locali in formato aperto ODF o Microsoft Word (.docx)."
+                : "Formattazione locale del layout di stampa tramite comandi testuali. Il risultato non è certificato né verificato rispetto ad AgID."
             }
           />
           <div className="flex bg-ui-surface border border-ui-border p-1 rounded-ui-control shrink-0">
@@ -123,6 +130,12 @@ export function EsportazioniTab(props: EsportazioniTabProps) {
         </div>
       </UiPanel>
 
+      {institutionalProfile.warning && (
+        <div role="status" className="rounded-ui-panel border border-amber-300 bg-amber-50 px-4 py-3 text-[13px] font-semibold text-amber-900">
+          {institutionalProfile.warning} Puoi comunque esportare in modalità personale o dimostrativa.
+        </div>
+      )}
+
       {esportazioniTab === 'standard' ? (
         <div className="space-y-6">
           {/* Esportazioni formati */}
@@ -133,7 +146,7 @@ export function EsportazioniTab(props: EsportazioniTabProps) {
                 <div className="flex items-start gap-3">
                   <FileText className="w-5 h-5 text-ui-action mt-0.5 shrink-0" />
                   <div className="space-y-2 flex-1">
-                    <h4 className="text-[14px] font-semibold text-ui-text">Esportazione nei formati di rito d'istituto</h4>
+                    <h4 className="text-[14px] font-semibold text-ui-text">Esportazione nei formati disponibili</h4>
                     <p className="text-[13px] text-ui-text-secondary">Scarica l'intero curricolo in formato Word o nel formato aperto ODF.</p>
                     <div className="flex flex-wrap gap-2">
                       <UiButton variant="primary" size="small" onClick={handleDownloadWordDefinitivo}>Scarica Word (.doc)</UiButton>
@@ -179,8 +192,8 @@ export function EsportazioniTab(props: EsportazioniTabProps) {
                   <ShieldAlert className="w-5 h-5 text-ui-danger mt-0.5 shrink-0" />
                   <div className="space-y-2 flex-1">
                     <h4 className="text-[14px] font-semibold text-ui-text">Sicurezza e reset</h4>
-                    <p className="text-[13px] text-ui-text-secondary">Ripristina un salvataggio di sicurezza o azzera l'intera memoria d'istituto.</p>
-                    <UiButton variant="danger" size="small" onClick={() => setShowResetConfirm(true)}>Azzera memoria d'istituto</UiButton>
+                    <p className="text-[13px] text-ui-text-secondary">Ripristina un salvataggio di sicurezza o azzera la memoria locale.</p>
+                    <UiButton variant="danger" size="small" onClick={() => setShowResetConfirm(true)}>Azzera memoria locale</UiButton>
                   </div>
                 </div>
               </UiPanel>
@@ -216,7 +229,7 @@ export function EsportazioniTab(props: EsportazioniTabProps) {
                   <p className="text-[13px] text-ui-text-secondary leading-relaxed">
                     {order === 'infanzia'
                       ? "Produce la griglia di osservazione qualitativa del comportamento e sviluppo dei bambini."
-                      : "Genera il report di classe disciplinare con climate, obiettivi, metodologie e livello di profitto d'istituto."}
+                      : "Genera il report locale di classe con clima, obiettivi, metodologie e livello di profitto."}
                   </p>
                 </div>
                 <UiButton variant="primary" size="small" className="w-full" onClick={handleGenerateRelazioneDoc}>
@@ -234,7 +247,7 @@ export function EsportazioniTab(props: EsportazioniTabProps) {
                   <p className="text-[13px] text-ui-text-secondary leading-relaxed">
                     {order === 'infanzia' && "Genera i criteri e le schede per la registrazione e monitoraggio dello sviluppo qualitativo dei bambini."}
                     {order === 'primaria' && "Genera la relazione descrittiva di fine anno per discipline con i 4 livelli."}
-                    {order === 'secondaria' && "Genera il documento ufficiale del programma svolto per l'esame di Stato."}
+                    {order === 'secondaria' && "Genera il documento del programma svolto per l'esame di Stato."}
                   </p>
                 </div>
                 {order === 'secondaria' && targetClass !== '3' ? (
@@ -275,7 +288,7 @@ export function EsportazioniTab(props: EsportazioniTabProps) {
                   setTemplateJsonState((prev: TemplateJsonState) => ({
                     ...prev,
                     sections: [
-                      { id: "sec1", title: "1. DATI GENERALI & CO-PROGETTAZIONE d'ISTITUTO", enabled: true },
+                      { id: "sec1", title: "1. DATI GENERALI & CO-PROGETTAZIONE LOCALE", enabled: true },
                       { id: "sec2", title: "2. MAPPA DI RACCORDO TRAGUARDI (D.M. 221/2025)", enabled: true },
                       { id: "sec3", title: "3. COMPITO DI REALTA & PRODOTTO FINALE", enabled: true },
                       { id: "sec4", title: "4. EVIDENZE OSSERVABILI & VALUTAZIONE INTEGRATA", enabled: true }
@@ -302,9 +315,9 @@ export function EsportazioniTab(props: EsportazioniTabProps) {
                   }));
                 }
               }} className="px-3 py-2 bg-ui-surface text-ui-text border border-ui-border rounded-ui-control text-[13px] font-medium focus:outline-none focus:ring-2 focus:ring-ui-focus">
-                <option value="relazione">Relazione Scolastica d'Istituto</option>
+                <option value="relazione">Relazione scolastica locale</option>
                 <option value="uda">Unità di Apprendimento Interdisciplinare (UDA)</option>
-                <option value="greci">Programmazione Bilingue (Plesso Greci / Arbëreshë)</option>
+                <option value="greci">Programmazione bilingue - {bilingualSiteLabel}</option>
               </select>
             </div>
           </UiPanel>
@@ -316,7 +329,7 @@ export function EsportazioniTab(props: EsportazioniTabProps) {
                 <div className="bg-ui-text px-4 py-2 flex items-center justify-between shrink-0">
                   <span className="text-[12px] font-semibold text-white flex items-center gap-1.5">
                     <Sparkles className="w-3.5 h-3.5 text-ui-action" />
-                    <span>Co-pilota dei Modelli d'Istituto</span>
+                    <span>Co-pilota dei modelli locali</span>
                   </span>
                 </div>
                 <div className="p-4 overflow-y-auto flex-1 space-y-2.5 text-[13px] leading-relaxed bg-ui-surface-subtle">
@@ -341,33 +354,13 @@ export function EsportazioniTab(props: EsportazioniTabProps) {
               </div>
 
               <UiPanel variant="subtle">
-                <span className="text-[12px] font-semibold text-ui-text-muted block mb-2">Suggerimenti rapidi d'istituto</span>
+                <span className="text-[12px] font-semibold text-ui-text-muted block mb-2">Suggerimenti rapidi</span>
                 <div className="flex flex-wrap gap-1.5">
-                  <UiButton variant="secondary" size="small" onClick={() => handleSendTemplateInstruction("Aggiungi il logo del PNRR nell'intestazione")}>Applica Loghi PNRR</UiButton>
                   <UiButton variant="secondary" size="small" onClick={() => handleSendTemplateInstruction("Cambia il carattere del testo in Times New Roman")}>Carattere Times New Roman</UiButton>
                   <UiButton variant="secondary" size="small" onClick={() => handleSendTemplateInstruction("Riduci i margini di stampa a 1.5 cm")}>Margini Stretti (1.5cm)</UiButton>
-                  <UiButton variant="secondary" size="small" onClick={() => handleSendTemplateInstruction("Aggiungi la firma del segretario del collegio")}>Aggiungi Firma Segretario</UiButton>
+                  <UiButton variant="secondary" size="small" onClick={() => handleSendTemplateInstruction("Nascondi intestazione")}>Nascondi intestazione</UiButton>
                 </div>
-                <UiButton variant="quiet" size="small" className="w-full mt-2" onClick={() => {
-                  setTemplateJsonState({
-                    fontFamily: "Arial, sans-serif",
-                    fontSize: "11pt",
-                    lineHeight: "1.5",
-                    showMinisterialHeader: true,
-                    logoLeft: "PNRR",
-                    logoRight: "Unione_Europea",
-                    margins: "Normali (2cm)",
-                    sections: [
-                      { id: "sec1", title: "1. PRESENTAZIONE GENERALE DELLA CLASSE", enabled: true },
-                      { id: "sec2", title: "2. SVOLGIMENTO DELLA PROGRAMMAZIONE & METODOLOGIE", enabled: true },
-                      { id: "sec3", title: "3. METODOLOGIE INCLUSIVE (PEI/PDP/DSA)", enabled: true },
-                      { id: "sec4", title: "4. PROPOSTE DI VALUTAZIONE E AUTOVALUTAZIONE", enabled: true }
-                    ],
-                    leftSignee: "Il Referente del Curricolo",
-                    rightSignee: "Il Dirigente Scolastico (Prof.ssa Maria Letizia CML)"
-                  });
-                  showToast("Modello d'istituto ripristinato allo stato originale!", true);
-                }}>
+                <UiButton variant="quiet" size="small" className="w-full mt-2" onClick={resetTemplateState}>
                   Azzera e ripristina modello di fabbrica
                 </UiButton>
               </UiPanel>
@@ -392,17 +385,10 @@ export function EsportazioniTab(props: EsportazioniTabProps) {
                 }}
               >
                 {templateJsonState.showMinisterialHeader && (
-                  <div className="border-b-2 border-ui-action pb-2.5 mb-6 flex justify-between items-center text-[10px] font-semibold text-ui-text-muted uppercase tracking-wider leading-tight" style={{ fontFamily: 'Times New Roman, serif' }}>
-                    <div className="flex items-center gap-1.5 shrink-0">
-                      <span>{templateJsonState.logoLeft === 'PNRR' ? 'PNRR NextGen' : 'U.E.'}</span>
-                    </div>
-                    <div className="text-center flex-1 mx-2">
-                      <div className="font-semibold text-[10px] text-ui-text-secondary">MINISTERO DELL'ISTRUZIONE E DEL MERITO</div>
-                      <div className="font-bold text-[12px] text-ui-text mt-0.5">ISTITUTO COMPRENSIVO "DON LORENZO MILANI" - ARIANO IRPINO</div>
-                    </div>
-                    <div className="flex items-center gap-1.5 shrink-0 text-right">
-                      <span>{templateJsonState.logoRight === 'Unione_Europea' ? 'Unione Europea' : 'USR Campania'}</span>
-                    </div>
+                  <div className="border-b-2 border-ui-action pb-2.5 mb-6 text-center text-[10px] text-ui-text-muted leading-tight space-y-1">
+                    {institutionalProjection.primaryHeading && <div className="font-semibold">{institutionalProjection.primaryHeading}</div>}
+                    <div className="font-bold text-[12px] text-ui-text">{institutionalProjection.displayName}</div>
+                    {institutionalProjection.secondaryLines.map(line => <div key={line}>{line}</div>)}
                   </div>
                 )}
 
@@ -410,9 +396,8 @@ export function EsportazioniTab(props: EsportazioniTabProps) {
                   <h2 className="text-[14px] font-bold text-ui-text uppercase tracking-wider">
                     {templateDocType === 'relazione' && 'RELAZIONE SCOLASTICA SULLA CLASSE (ATTIVA)'}
                     {templateDocType === 'uda' && 'PROGETTAZIONE UNITA DI APPRENDIMENTO (UDA) MODELLO'}
-                    {templateDocType === 'greci' && 'RELAZIONE DI INTERASSE BILINGUE - PLESSO GRECI'}
+                    {templateDocType === 'greci' && `RELAZIONE DI INTERASSE BILINGUE - ${bilingualSiteLabel.toUpperCase()}`}
                   </h2>
-                  <div className="text-[11px] font-semibold text-ui-action bg-ui-action-soft inline-block px-2.5 py-0.5 rounded-ui-control">ANNO SCOLASTICO {schoolYear}</div>
                 </div>
 
                 <div className="space-y-4 flex-1">
@@ -420,32 +405,21 @@ export function EsportazioniTab(props: EsportazioniTabProps) {
                     <div key={sec.id} className="space-y-1.5">
                       <h4 className="text-[12px] font-semibold text-ui-text border-b border-ui-border pb-0.5 uppercase tracking-wide">{sec.title}</h4>
                       <p className="text-ui-text-secondary text-justify leading-relaxed">
-                        {sec.id === 'sec1' && "Il percorso educativo è stato impostato con criteri di continuità d'istituto, valorizzando l'inclusione, la relazione e l'autonomia di ciascun allievo."}
-                        {sec.id === 'sec2' && "La programmazione disciplinare è stata svolta regolarmente facendo ampio ricorso al Cooperative Learning, al problem-solving d'istituto ed alle aule multimediali immersive PNRR."}
-                        {sec.id === 'sec3' && "Per gli alunni con bisogni educativi speciali (BES) o disturbi dell'apprendimento (DSA), sono state garantite le misure d'inclusione previste nel PEI d'istituto."}
-                        {sec.id === 'sec4' && "La valutazione è stata improntata in ottica formativa e diacronica d'istituto, raccordando i giudizi descrittivi della scuola primaria ed i voti in decimi della secondaria."}
+                        {sec.id === 'sec1' && "Il percorso educativo è stato impostato con criteri di continuità locale, valorizzando l'inclusione, la relazione e l'autonomia di ciascun allievo."}
+                        {sec.id === 'sec2' && "La programmazione disciplinare è stata svolta facendo ricorso al Cooperative Learning, al problem-solving e alle risorse multimediali disponibili."}
+                        {sec.id === 'sec3' && "Per gli alunni con bisogni educativi speciali (BES) o disturbi dell'apprendimento (DSA), sono state applicate le misure previste nei rispettivi percorsi."}
+                        {sec.id === 'sec4' && "La valutazione è stata impostata in ottica formativa e diacronica, raccordando giudizi descrittivi e voti in decimi."}
                       </p>
                     </div>
                   ))}
                 </div>
 
-                <div className="border-t border-ui-border pt-4 mt-8 flex justify-between items-start text-[11px] font-semibold text-ui-text-muted uppercase tracking-wider" style={{ fontFamily: 'Arial, sans-serif' }}>
-                  <div className="text-left">
-                    <strong>{templateJsonState.leftSignee}</strong>
-                    <div className="h-8" />
-                    <span className="text-[10px] text-ui-text-muted font-medium block">(Firma omessa ai sensi del CAD)</span>
-                  </div>
-                  <div className="text-right">
-                    <strong>Il Dirigente Scolastico</strong>
-                    <div className="h-8" />
-                    <span className="text-[10px] text-ui-text-muted font-medium block">(Prof.ssa Maria Letizia CML)</span>
-                  </div>
-                </div>
+                {institutionalProjection.footer && <div className="border-t border-ui-border pt-4 mt-8 text-center text-[10px] text-ui-text-muted">{institutionalProjection.footer}</div>}
               </div>
 
               <div className="flex gap-2 pt-1">
-                <UiButton variant="primary" size="small" className="flex-1" onClick={() => showToast("Modello Word d'istituto (.docx) generato con successo!", true)}>Genera Modello Word (.docx)</UiButton>
-                <UiButton variant="secondary" size="small" className="flex-1" onClick={() => showToast("Anteprima di stampa PDF del modello avviata!", true)}>Salva in PDF d'istituto</UiButton>
+                <UiButton variant="primary" size="small" className="flex-1" onClick={() => showToast("Modello Word locale (.docx) generato con successo!", true)}>Genera Modello Word (.docx)</UiButton>
+                <UiButton variant="secondary" size="small" className="flex-1" onClick={() => showToast("Anteprima di stampa PDF del modello avviata!", true)}>Salva in PDF</UiButton>
               </div>
             </div>
           </div>

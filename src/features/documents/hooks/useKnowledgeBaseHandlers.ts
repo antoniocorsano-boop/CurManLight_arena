@@ -58,7 +58,7 @@ export function useKnowledgeBaseHandlers({ showToast }: UseKnowledgeBaseHandlers
   const newDoc = {
    id: `vol-custom-${Date.now()}`,
    title: newKbDocTitle.trim(),
-   subtitle: newKbDocSubtitle.trim() || "Documento Personalizzato d'Istituto",
+   subtitle: newKbDocSubtitle.trim() || "Documento locale non verificato",
    content: newKbDocContent.trim()
   };
   const updated = [...customKbDocs, newDoc];
@@ -68,7 +68,7 @@ export function useKnowledgeBaseHandlers({ showToast }: UseKnowledgeBaseHandlers
   setNewKbDocSubtitle('');
   setNewKbDocContent('');
   setShowAddKbModal(false);
-  showToast(`Documento '${newDoc.title}' aggiunto alla KB d'Istituto!`, true);
+  showToast(`Documento '${newDoc.title}' aggiunto alla base locale non verificata.`, true);
  };
 
  const handleDeleteCustomKbDoc = (id: string) => {
@@ -78,7 +78,7 @@ export function useKnowledgeBaseHandlers({ showToast }: UseKnowledgeBaseHandlers
   if (selectedBrainDoc === id) {
    setSelectedBrainDoc('vol1');
   }
-  showToast("Documento rimosso dalla KB d'Istituto.", true);
+  showToast("Documento rimosso dalla base locale.", true);
  };
 
  const getVolumeTitleWithCustom = (id: string) => {
@@ -98,8 +98,8 @@ export function useKnowledgeBaseHandlers({ showToast }: UseKnowledgeBaseHandlers
      <h1 class="text-lg font-black text-indigo-950 uppercase border-b pb-2">${doc.title}</h1>
      <p class="text-xs font-bold text-slate-500">${doc.subtitle}</p>
      <div class="bg-amber-50/20 border border-amber-100 rounded-xl p-4 space-y-2">
-      <strong class="text-xs text-amber-900 block font-black"> Documento Caricato d'Istituto:</strong>
-      <p class="text-slate-700 leading-relaxed font-semibold">Questo faldone ÃƒÂ¨ stato caricato localmente per potenziare il Second Brain e indicizzarlo nel WikiLLM d'Istituto.</p>
+       <strong class="text-xs text-amber-900 block font-black">Documento locale caricato:</strong>
+       <p class="text-slate-700 leading-relaxed font-semibold">Questa fonte locale non è verificata e richiede controllo prima dell'uso.</p>
      </div>
      <div class="text-slate-700 leading-relaxed text-xs whitespace-pre-wrap font-semibold">${doc.content}</div>
     </div>

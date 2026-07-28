@@ -32,15 +32,15 @@ export function RevisioneTab({
             <Milestone className="w-5 h-5 text-amber-500" />
             <span>Revisione del Curricolo: Gap 2025</span>
           </h1>
-          <p className="text-[11px] text-slate-500">Esamina ed aggiorna i testi del curricolo secondo i nuovi standard ministeriali.</p>
+          <p className="text-[11px] text-slate-500">Confronta i testi e registra proposte locali non autoritative.</p>
         </div>
-        <span className="font-extrabold text-slate-700 text-xs">{currentDisciplineDecided}/{currentDisciplineProps.length} decisioni</span>
+        <span className="font-extrabold text-slate-700 text-xs">{currentDisciplineDecided}/{currentDisciplineProps.length} scelte locali</span>
       </div>
 
       <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-xs text-amber-900 flex items-start space-x-3 leading-relaxed">
         <Info className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
         <div>
-          <strong>Istruzioni operative:</strong> Vota <strong>Accetta 2025</strong> o <strong>Mantieni 2012</strong> per formulare la proposta da inviare al dipartimento, oppure personalizza la proposta modificandone direttamente il testo a mano.
+          <strong>Istruzioni operative:</strong> registra una scelta locale tra <strong>Usa testo 2025</strong>, <strong>Mantieni testo 2012</strong> o una proposta personalizzata. Nessuna scelta costituisce voto o approvazione.
         </div>
       </div>
 
@@ -48,8 +48,8 @@ export function RevisioneTab({
       <div className="bg-indigo-50 border border-indigo-150 rounded-xl p-4 text-xs text-indigo-950 flex items-start space-x-3 leading-relaxed shadow-sm">
         <Sparkles className="w-5 h-5 text-indigo-600 shrink-0 mt-0.5 animate-pulse" />
         <div className="space-y-1">
-          <strong className="text-indigo-950 font-black block uppercase text-[10px] tracking-wider">Informativa d'Istituto: Applicazione Graduale (D.M. 221/2025)</strong>
-          <p className="font-semibold text-slate-700 leading-normal">Le decisioni espresse diventeranno obbligatorie a partire dall'anno scolastico 2026/2027 solo per le Classi Prime.</p>
+          <strong className="text-indigo-950 font-black block uppercase text-[10px] tracking-wider">Scelte locali di confronto</strong>
+          <p className="font-semibold text-slate-700 leading-normal">Le scelte registrate sono note di lavoro non obbligatorie e non determinano applicabilità o adozione.</p>
         </div>
       </div>
 
@@ -58,9 +58,9 @@ export function RevisioneTab({
         <div className="space-y-0.5">
           <div className="text-xs font-black text-slate-800 uppercase tracking-wider flex items-center space-x-1">
             <Sparkles className="w-4 h-4 text-amber-500 animate-pulse" />
-            <span>Layout di Votazione d'Istituto</span>
+            <span>Riepilogo delle scelte locali</span>
           </div>
-          <div className="text-[10px] text-slate-500 font-semibold">Scegli come esaminare e votare le proposte di gap curricolari 2025</div>
+          <div className="text-[10px] text-slate-500 font-semibold">Scegli come esaminare le proposte e registrare note locali</div>
         </div>
         <div className="bg-slate-100 p-1 rounded-xl flex space-x-1 text-xs font-bold shadow-sm self-stretch sm:self-auto">
           <button onClick={() => setRevisioneMode('list')} className={`px-3 py-1.5 rounded-lg transition ${revisioneMode === 'list' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500'}`}>Elenco Completo</button>
@@ -73,7 +73,7 @@ export function RevisioneTab({
         <span className="mx-2">Filtro:</span>
         {(['all', 'pending', 'approved', 'rejected'] as const).map(f => (
           <button key={f} onClick={() => { setActiveRevisionFilter(f); setRevisioneWizardIndex(0); }} className={`px-2.5 py-1 rounded-lg transition ${activeRevisionFilter === f ? 'bg-slate-200 text-slate-800' : 'hover:bg-slate-100'}`}>
-            {f === 'all' ? 'Tutte' : f === 'pending' ? 'Da decidere' : f === 'approved' ? 'Approvati' : 'Rifiutati'}
+            {f === 'all' ? 'Tutte' : f === 'pending' ? 'Senza scelta' : f === 'approved' ? 'Testo proposto' : 'Testo precedente'}
           </button>
         ))}
       </div>
@@ -93,7 +93,7 @@ export function RevisioneTab({
               <UiEmptyState
                 icon={FileSearch}
                 title="Nessuna variazione da mostrare"
-                description="Tutte le schede per questa categoria di filtro sono state deliberate, oppure non ci sono elementi corrispondenti."
+                description="Non ci sono schede corrispondenti alla categoria selezionata."
               />
             );
           }
@@ -114,7 +114,7 @@ export function RevisioneTab({
                     <span className="bg-indigo-50 border border-indigo-100 text-indigo-700 text-[10px] font-extrabold px-1.5 py-0.5 rounded">{p.id.toUpperCase()}</span>
                     <span>{p.focus}</span>
                   </span>
-                  <span>{s === 'approved' ? 'Approvato' : s === 'rejected' ? 'Mantenuto' : s === 'custom' ? 'Personalizzato' : 'Da Decidere'}</span>
+                  <span>{s === 'approved' ? 'Scelta: testo proposto' : s === 'rejected' ? 'Scelta: testo precedente' : s === 'custom' ? 'Scelta: personalizzato' : 'Senza scelta'}</span>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 text-xs leading-relaxed">
                   <div className="space-y-1">
@@ -133,7 +133,7 @@ export function RevisioneTab({
                 )}
                 <div className="bg-slate-50/50 border-t border-slate-100 px-4 py-2 flex justify-between items-center gap-2">
                   <div className="flex space-x-1.5">
-                    <button onClick={() => setDecision(p.id, 'approved')} className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded text-xs transition">Accetta 2025</button>
+                    <button onClick={() => setDecision(p.id, 'approved')} className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded text-xs transition">Usa testo 2025</button>
                     <button onClick={() => setDecision(p.id, 'rejected')} className="px-2.5 py-1 bg-rose-600 hover:bg-rose-500 text-white font-bold rounded text-xs transition">Mantieni 2012</button>
                     <button onClick={() => setDecision(p.id, 'custom')} className="px-2.5 py-1 bg-amber-500 hover:bg-amber-400 text-white font-bold rounded text-xs transition">Modifica</button>
                   </div>
@@ -199,7 +199,7 @@ function RevisioneWizard({
       <div className="bg-slate-50 border border-dashed rounded-3xl p-8 text-center space-y-3.5">
         <div className="space-y-1">
           <h4 className="font-extrabold text-slate-800 text-sm">Nessuna variazione da mostrare</h4>
-          <p className="text-[11px] text-slate-500 leading-relaxed font-semibold max-w-sm mx-auto">Tutte le schede per questa categoria di filtro sono state deliberate, oppure non ci sono elementi corrispondenti.</p>
+          <p className="text-[11px] text-slate-500 leading-relaxed font-semibold max-w-sm mx-auto">Non ci sono schede corrispondenti alla categoria selezionata.</p>
         </div>
       </div>
     );
@@ -243,16 +243,16 @@ function RevisioneWizard({
       {/* Custom text area */}
       {s === 'custom' && (
         <div className="p-6 border-t border-slate-100 bg-amber-50/10 text-xs">
-          <label className="text-[10px] font-black uppercase text-amber-800 block mb-2">Inserisci il testo personalizzato della tua commissione:</label>
-          <textarea value={cText} onChange={(e) => setCustomText(p.id, e.target.value)} className="w-full border border-amber-200 rounded-xl p-3 text-xs bg-white focus:ring-2 focus:ring-amber-500/20 outline-none leading-relaxed" rows={3} placeholder="Digita le modifiche d'Istituto..." />
+          <label className="text-[10px] font-black uppercase text-amber-800 block mb-2">Inserisci una proposta personale locale:</label>
+          <textarea value={cText} onChange={(e) => setCustomText(p.id, e.target.value)} className="w-full border border-amber-200 rounded-xl p-3 text-xs bg-white focus:ring-2 focus:ring-amber-500/20 outline-none leading-relaxed" rows={3} placeholder="Digita una modifica locale non verificata..." />
         </div>
       )}
 
-      {/* Voting & Navigation */}
+      {/* Local choices and navigation */}
       <div className="bg-slate-50 border-t border-slate-150 px-6 py-4 flex flex-col sm:flex-row justify-between items-center gap-4">
         <div className="flex flex-wrap gap-2">
           <button onClick={() => setDecision(p.id, 'approved')} className={`px-4 py-2 rounded-xl font-bold text-xs transition flex items-center space-x-1.5 ${s === 'approved' ? 'bg-emerald-600 text-white shadow-md' : 'bg-white hover:bg-slate-100 border text-slate-700'}`}>
-            <span>Accetta 2025</span>
+            <span>Usa testo 2025</span>
           </button>
           <button onClick={() => setDecision(p.id, 'rejected')} className={`px-4 py-2 rounded-xl font-bold text-xs transition flex items-center space-x-1.5 ${s === 'rejected' ? 'bg-rose-600 text-white shadow-md' : 'bg-white hover:bg-slate-100 border text-slate-700'}`}>
             <span>Mantieni 2012</span>

@@ -12,6 +12,7 @@ import { useDocumentExportHandlers } from '../features/documents';
 import { useBackupHandlers } from '../features/documents';
 import type { CurriculumMap } from '../features/session';
 import type { DecisionStatus, SchoolOrder, UdaModel, UserRole, UserState } from '../types/curriculum';
+import { createEmptyInstitutionalArchive } from '../domain/institution';
 
 const showToast = vi.fn<(msg: string, success?: boolean) => void>();
 
@@ -112,7 +113,13 @@ function NavigationExportImportHarness({
   showToast,
   getDisciplineLabel: (disc) => disc,
   setGeneratedDocTitle: vi.fn(),
-  setGeneratedDocText: vi.fn()
+  setGeneratedDocText: vi.fn(),
+  institutionalProfile: {
+   configured: false,
+   instituteName: 'Istituto non configurato',
+   organizationId: 'curmanlight-local',
+   warning: 'Configurazione istituzionale incompleta',
+  }
  });
  const backupHandlers = useBackupHandlers({
   schoolYear: '2026-2027',
@@ -265,6 +272,7 @@ function WorkspaceHarness({
   role: 'insegnante',
   discipline: 'italiano',
   order: 'primaria',
+  institutionalArchive: createEmptyInstitutionalArchive(),
   stateRef,
   restoreBackupState: vi.fn(),
   setIsSyncingWorkspace: setSyncing,
@@ -363,7 +371,7 @@ describe('CML-603D TS-001 interaction flows', () => {
    title: 'Acqua e territorio (Target: 2^A)',
    discipline: 'italiano',
    order: 'primaria',
-   evidenze: ['Argomenta scelte e procedure'],
+    evidenze: ['Argomenta scelte e procedure'],
    realTask: 'Mostra cooperativa sul ciclo dell acqua'
   }));
   expect(onActiveProgTab).toHaveBeenCalledWith('uda');
@@ -383,7 +391,7 @@ describe('CML-603D TS-001 interaction flows', () => {
   });
 
   expect(screen.getByLabelText('wiki-response')).toHaveTextContent('Regolamento Laboratori');
-  expect(showToast).toHaveBeenCalledWith('Risposta WikiLLM generata!');
+  expect(showToast).toHaveBeenCalledWith('Risposta locale generata; contenuto non verificato.');
  });
 
  it('covers Workspace -> login state -> sync manuale -> logout with mocked network boundary', async () => {
@@ -403,7 +411,7 @@ describe('CML-603D TS-001 interaction flows', () => {
 
   await waitFor(() => {
    expect(fetchMock).toHaveBeenCalledTimes(2);
-   expect(showToast).toHaveBeenCalledWith(expect.stringContaining('Copia di Sicurezza sincronizzata'), true);
+   expect(showToast).toHaveBeenCalledWith(expect.stringContaining('Copia JSON caricata'), true);
   });
 
   await user.click(screen.getByRole('button', { name: 'Logout' }));

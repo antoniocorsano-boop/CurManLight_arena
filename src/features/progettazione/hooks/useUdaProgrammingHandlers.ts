@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import type { SchoolOrder, UdaModel, UserState } from '../../../types/curriculum';
 import type { CurriculumMap } from '../../session';
 import { safeLocalStorageGetItem, safeLocalStorageSetItem } from '../../../lib/consolidatedStorage';
+import { getA04InstitutionalRead } from '../../../domain/institution';
+import { useCurriculumStore } from '../../../store/useCurriculumStore';
 
 type ProgStatus = 'bozza' | 'in revisione' | 'pronta per confronto';
 
@@ -34,6 +36,10 @@ export const useUdaProgrammingHandlers = ({
   setActiveProgTab,
   showToast
 }: UseUdaProgrammingHandlersArgs) => {
+  const institutionalArchive = useCurriculumStore(state => state.institutionalArchive);
+  const institutionalRead = getA04InstitutionalRead(institutionalArchive, order);
+  const effectiveOrder = institutionalRead.order ?? order;
+  const effectiveSchoolYear = institutionalRead.academicYearLabel ?? schoolYear;
   const [progTitle, setProgTitle] = useState(() => safeLocalStorageGetItem('curman_progTitle', 'Modulo 1: Ascolto e Sintesi'));
   const [progPeriod, setProgPeriod] = useState(() => safeLocalStorageGetItem('curman_progPeriod', 'Primo Quadrimestre'));
   const [progStatus, setProgStatus] = useState<ProgStatus>(() => safeLocalStorageGetItem('curman_progStatus', 'bozza') as ProgStatus);
@@ -70,21 +76,25 @@ export const useUdaProgrammingHandlers = ({
   };
 
   const compileProgPreviewText = () => {
-    const currentData = localCurriculum[discipline]?.[order] || { traguardi: [], obiettivi: [] };
+    const currentData = localCurriculum[discipline]?.[effectiveOrder] || { traguardi: [], obiettivi: [] };
     const selTraguardi = selectedTraguardi.map(idx => currentData.traguardi[idx]);
     const selObiettivi = selectedObiettivi.map(idx => currentData.obiettivi[idx]);
 
-    const isReformed = !(schoolYear === '2026-2027' && targetClass !== '1' && order !== 'infanzia');
+    const isReformed = !(effectiveSchoolYear.replace('/', '-') === '2026-2027' && targetClass !== '1' && effectiveOrder !== 'infanzia');
     const normativeRef = isReformed ? "Nuovo Ordinamento D.M. 221/2025" : "Previgente Ordinamento D.M. 254/2012";
 
     let text = `========================================================\n`;
     text += `PROGRAMMAZIONE ANNUALE DISCIPLINARE - CURMANLIGHT\n`;
-    text += `Istituto Comprensivo "don Lorenzo Milani"\n`;
+    text += `${institutionalRead.instituteName}\n`;
+    if (institutionalRead.mechanicalCode) text += `COD. MECC.: ${institutionalRead.mechanicalCode}\n`;
+    if (institutionalRead.siteName) text += `SEDE: ${institutionalRead.siteName}\n`;
+    if (!institutionalRead.configured) text += `MODALITA: PERSONALE\n`;
+    if (institutionalRead.orderWarning) text += `AVVISO ORDINE: ${institutionalRead.orderWarning}\n`;
     text += `========================================================\n\n`;
     text += `DISCIPLINA: ${discipline.toUpperCase()}\n`;
-    text += `ORDINE:   ${order.toUpperCase()}\n`;
-    text += `CLASSE:   Classe ${order === 'infanzia' ? 'Fascia Unica' : targetClass + '^ Sez. ' + targetSection}\n`;
-    text += `ANNO SCOL.: ${schoolYear}\n`;
+    text += `ORDINE:   ${effectiveOrder.toUpperCase()}\n`;
+    text += `CLASSE:   Classe ${effectiveOrder === 'infanzia' ? 'Fascia Unica' : targetClass + '^ Sez. ' + targetSection}\n`;
+    text += `ANNO SCOL.: ${effectiveSchoolYear}\n`;
     text += `NORMATIVA:  ${normativeRef}\n`;
     text += `MODULO:   ${progTitle}\n`;
     text += `PERIODO:   ${progPeriod}\n`;
@@ -131,18 +141,22 @@ export const useUdaProgrammingHandlers = ({
   };
 
   const handleGenerateUda = () => {
+    if (!institutionalRead.orderAvailable) {
+      showToast(institutionalRead.orderWarning ?? "Seleziona un ordine scolastico configurato prima di generare l'UDA.", false);
+      return;
+    }
     if (!progTitle) {
       showToast("Inserisci un titolo valido per poter generare l'UDA!", false);
       return;
     }
 
-    const currentData = localCurriculum[discipline]?.[order] || { traguardi: [], obiettivi: [] };
-    const titleSuffix = order === 'infanzia' ? '' : ` (Target: ${targetClass}^${targetSection})`;
+    const currentData = localCurriculum[discipline]?.[effectiveOrder] || { traguardi: [], obiettivi: [] };
+    const titleSuffix = effectiveOrder === 'infanzia' ? '' : ` (Target: ${targetClass}^${targetSection})`;
     const newUda: UdaModel = {
       id: "uda-" + Date.now(),
       title: `${progTitle}${titleSuffix}`,
       discipline,
-      order,
+      order: effectiveOrder,
       period: progPeriod,
       hours: progHours,
       status: 'bozza',

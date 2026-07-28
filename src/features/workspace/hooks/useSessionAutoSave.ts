@@ -2,6 +2,11 @@ import { useEffect, useRef } from 'react';
 import type { DecisionStatus, SchoolOrder, UdaModel, UserRole, UserState } from '../../../types/curriculum';
 import type { CurriculumMap } from '../../session';
 import { safeLocalStorageSetItem } from '../../../lib/consolidatedStorage';
+import {
+  validateArchiveIntegrity,
+  type InstitutionalArchive,
+} from '../../../domain/institution';
+import type { RestoreBackupResult } from '../../../store/useCurriculumStore';
 
 interface SessionAutoSaveState {
   localCurriculum: CurriculumMap;
@@ -12,6 +17,7 @@ interface SessionAutoSaveState {
   role: UserRole;
   discipline: string;
   order: SchoolOrder;
+  institutionalArchive: InstitutionalArchive;
   isWorkspaceLoggedIn: boolean;
   workspaceAccessToken: string;
   isWorkspaceSyncLocked: boolean;
@@ -26,10 +32,11 @@ interface EmergencyBackupPayload {
   role: UserRole;
   discipline: string;
   order: SchoolOrder;
+  institutionalArchive: InstitutionalArchive;
 }
 
 interface UseSessionAutoSaveArgs extends SessionAutoSaveState {
-  restoreBackupState: (state: Partial<UserState>) => void;
+  restoreBackupState: (state: unknown) => RestoreBackupResult;
   showToast: (msg: string, success?: boolean) => void;
 }
 
@@ -41,7 +48,8 @@ const toEmergencyBackupPayload = (state: SessionAutoSaveState): EmergencyBackupP
   schoolYear: state.schoolYear,
   role: state.role,
   discipline: state.discipline,
-  order: state.order
+  order: state.order,
+  institutionalArchive: state.institutionalArchive
 });
 
 export const useSessionAutoSave = ({
@@ -53,6 +61,7 @@ export const useSessionAutoSave = ({
   role,
   discipline,
   order,
+  institutionalArchive,
   isWorkspaceLoggedIn,
   workspaceAccessToken,
   isWorkspaceSyncLocked,
@@ -68,6 +77,7 @@ export const useSessionAutoSave = ({
     role,
     discipline,
     order,
+    institutionalArchive,
     isWorkspaceLoggedIn,
     workspaceAccessToken,
     isWorkspaceSyncLocked
@@ -83,11 +93,12 @@ export const useSessionAutoSave = ({
       role,
       discipline,
       order,
+      institutionalArchive,
       isWorkspaceLoggedIn,
       workspaceAccessToken,
       isWorkspaceSyncLocked
     };
-  }, [localCurriculum, savedUda, decisions, customTexts, schoolYear, role, discipline, order, isWorkspaceLoggedIn, workspaceAccessToken, isWorkspaceSyncLocked]);
+  }, [localCurriculum, savedUda, decisions, customTexts, schoolYear, role, discipline, order, institutionalArchive, isWorkspaceLoggedIn, workspaceAccessToken, isWorkspaceSyncLocked]);
 
   useEffect(() => {
     const performSessionAutoSave = () => {
@@ -104,10 +115,10 @@ export const useSessionAutoSave = ({
 
       if (currentState.isWorkspaceLoggedIn && currentState.workspaceAccessToken) {
         if (currentState.isWorkspaceSyncLocked) {
-          console.log("[CurManLight Auto-Saver] Scrittura su Google Drive bloccata per prevenire la sovrascrittura di dati validi d'Istituto.");
+          console.log("[CurManLight Auto-Saver] Scrittura su Google Drive sospesa per evitare una sovrascrittura non confermata.");
           return;
         }
-        const fileName = `CurManLight_CopiaSicurezza_Milani_${currentState.schoolYear}.json`;
+        const fileName = `curmanlight_copia_sicurezza_${currentState.schoolYear || 'sessione'}.json`;
         const metadata = {
           name: fileName,
           mimeType: 'application/json'
@@ -167,7 +178,12 @@ export const useSessionAutoSave = ({
       if (typeof restoredState !== 'object' || restoredState === null) {
         throw new Error('Invalid emergency backup payload');
       }
-      restoreBackupState(restoredState as Partial<UserState>);
+      const backup = restoredState as Partial<UserState> & { institutionalArchive?: InstitutionalArchive };
+      if (backup.institutionalArchive !== undefined && !validateArchiveIntegrity(backup.institutionalArchive).valid) {
+        throw new Error('Invalid institutional archive');
+      }
+      const result = restoreBackupState(backup);
+      if (!result.success) throw new Error(result.message);
       showToast(" Copia d'Emergenza recuperata con successo dalla cache locale!", true);
     } catch (e) {
       showToast(" Errore durante il recupero d'emergenza.", false);

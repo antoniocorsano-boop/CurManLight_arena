@@ -229,14 +229,14 @@ export function ProgettazioneTab(props: ProgettazioneTabProps) {
       {/* Dynamic Contextual Header Panel */}
       <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4 transition duration-200">
         <div className="space-y-1">
-          <span className="text-[9px] font-black text-indigo-600 uppercase tracking-wider block">Ambito di Progettazione d'Istituto</span>
+          <span className="text-[9px] font-black text-indigo-600 uppercase tracking-wider block">Area di progettazione personale</span>
           <h2 className="text-sm font-black text-slate-800 uppercase tracking-wide">
             {activeProgTab === 'annuale'
               ? "Compilatore Unità di Apprendimento"
               : activeProgTab === 'uda'
                 ? "Archivio delle Unità Progettate"
                 : activeProgTab === 'certificazione'
-                  ? "Matrice delle Competenze d'Istituto"
+                  ? "Matrice locale delle competenze (non validata)"
                   : activeProgTab === 'social'
                     ? "Bacheca dei Riusi d'UDA"
                     : "Registro & Spazio Classe"}
@@ -250,15 +250,15 @@ export function ProgettazioneTab(props: ProgettazioneTabProps) {
                 return `Gestione dell'archivio delle Unità di Apprendimento. Attualmente memorizzate ${savedUda.length} bozze su questo dispositivo d'aula.`;
               }
               if (activeProgTab === 'certificazione') {
-                return "Matrice d'Istituto delle Competenze Chiave Europee raccordate alle evidenze osservative del D.M. 14/2024.";
+                return "Matrice locale non validata tra competenze europee ed evidenze selezionate.";
               }
               if (activeProgTab === 'social') {
-                return "Osservatorio degli Esiti, Co-progettazione e Riuso delle UDA d'Istituto";
+                return "Vista locale degli esiti, della co-progettazione e del riuso UDA.";
               }
               if (activeProgTab === 'classe') {
                 return "Ambiente di lavoro per il tracciamento didattico qualitativo degli studenti e la configurazione dei gruppi di studio.";
               }
-              return "Area di Progettazione d'Istituto.";
+              return "Area di progettazione personale e locale.";
             })()}
           </p>
         </div>
@@ -267,7 +267,7 @@ export function ProgettazioneTab(props: ProgettazioneTabProps) {
           <div className="bg-slate-100 p-1 rounded-xl flex flex-wrap gap-1 border border-slate-200 shrink-0 text-[10px] sm:text-xs font-bold shadow-sm self-end sm:self-auto">
             {(['annuale', 'uda', 'certificazione', 'social', 'classe'] as const).map(tab => (
               <button key={tab} onClick={() => setActiveProgTab(tab)} className={`px-2.5 py-1 rounded-lg transition ${activeProgTab === tab ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500'}`}>
-                {tab === 'annuale' ? 'Progettatore' : tab === 'uda' ? 'Archivio UDA' : tab === 'certificazione' ? 'Matrice Competenze (DM 14/24)' : tab === 'social' ? 'Bacheca Social d\'Istituto' : 'Registro & Ambiente Classe'}
+                {tab === 'annuale' ? 'Progettatore' : tab === 'uda' ? 'Archivio UDA' : tab === 'certificazione' ? 'Matrice Competenze (DM 14/24)' : tab === 'social' ? 'Bacheca locale' : 'Registro & Ambiente Classe'}
               </button>
             ))}
           </div>
@@ -287,11 +287,11 @@ export function ProgettazioneTab(props: ProgettazioneTabProps) {
             <button onClick={() => setActiveProgTab('annuale')} className="bg-white border border-slate-200 hover:border-indigo-400 p-5 rounded-2xl shadow-sm hover:shadow-md transition text-left space-y-2">
               <span className="text-[10px] font-black text-indigo-600 uppercase tracking-wider block">Azione 1</span>
               <h4 className="text-xs font-bold text-slate-800 uppercase">Compilatore UDA (Wizard)</h4>
-              <p className="text-[11px] text-slate-500 font-semibold leading-normal">Progetta una nuova Unità di Apprendimento d'Istituto raccordando traguardi, obiettivi ed evidenze.</p>
+              <p className="text-[11px] text-slate-500 font-semibold leading-normal">Prepara una bozza UDA personale collegando traguardi, obiettivi ed evidenze.</p>
             </button>
             <button onClick={() => setActiveProgTab('uda')} className="bg-white border border-slate-200 hover:border-indigo-400 p-5 rounded-2xl shadow-sm hover:shadow-md transition text-left space-y-2">
               <span className="text-[10px] font-black text-indigo-600 uppercase tracking-wider block">Azione 2</span>
-              <h4 className="text-xs font-bold text-slate-800 uppercase">Archivio UDA d'Istituto</h4>
+              <h4 className="text-xs font-bold text-slate-800 uppercase">Archivio UDA locale</h4>
               <p className="text-[11px] text-slate-500 font-semibold leading-normal">Consulta, modifica o duplica i moduli didattici progettati dai docenti della scuola.</p>
             </button>
             <button onClick={() => setActiveProgTab('certificazione')} className="bg-white border border-slate-200 hover:border-indigo-400 p-5 rounded-2xl shadow-sm hover:shadow-md transition text-left space-y-2">
@@ -305,7 +305,7 @@ export function ProgettazioneTab(props: ProgettazioneTabProps) {
           <div className="bg-white border rounded-3xl p-5 shadow-sm space-y-4">
             <div className="border-b pb-2.5 flex justify-between items-center flex-wrap gap-2 text-left">
               <div>
-                <span className="text-[9px] font-black text-indigo-600 uppercase tracking-wider block">Pianificazione Diacronica d'Istituto</span>
+                <span className="text-[9px] font-black text-indigo-600 uppercase tracking-wider block">Pianificazione diacronica locale</span>
                 <h3 className="text-xs font-black text-slate-800 uppercase tracking-wide">Programmazione Annuale delle Attività</h3>
               </div>
               <span className="bg-indigo-100 text-indigo-800 text-[8px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full border border-indigo-200/50">D.M. 221/2025</span>
@@ -338,7 +338,7 @@ export function ProgettazioneTab(props: ProgettazioneTabProps) {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   {[
                     { id: 'smart-home', title: "Smart Home con Blender 3D", disc: "matematica", hours: 30, period: "Secondo Quadrimestre" },
-                    { id: 'etica-ia', title: "Etica e Algoritmi d'Istituto", disc: "scienze", hours: 15, period: "Primo Quadrimestre" },
+                    { id: 'etica-ia', title: "Etica e algoritmi", disc: "scienze", hours: 15, period: "Primo Quadrimestre" },
                     { id: 'barbiana', title: "La Scrittura di Barbiana", disc: "italiano", hours: 25, period: "Secondo Quadrimestre" }
                   ].map((rec, idx) => (
                     <div key={idx} className="border p-4 rounded-2xl bg-white space-y-2 text-[10px] text-left">
@@ -352,7 +352,7 @@ export function ProgettazioneTab(props: ProgettazioneTabProps) {
                         onClick={() => handleLoadSuggestedUda(rec.id)}
                         className="w-full mt-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-black text-[8px] uppercase tracking-wider py-1.5 rounded-lg transition text-center cursor-pointer border border-indigo-100"
                       >
-                        Riusa ed Importa d'Istituto
+                        Riusa e importa localmente
                       </button>
                     </div>
                   ))}
@@ -452,12 +452,12 @@ export function ProgettazioneTab(props: ProgettazioneTabProps) {
             <button onClick={() => setActiveProgTab('classe')} className="bg-white border border-slate-200 hover:border-indigo-400 p-5 rounded-2xl shadow-sm hover:shadow-md transition text-left space-y-2">
               <span className="text-[10px] font-black text-indigo-600 uppercase tracking-wider block">Azione 1</span>
               <h4 className="text-xs font-bold text-slate-800 uppercase">Ambiente & Esiti Classe</h4>
-              <p className="text-[11px] text-slate-500 font-semibold leading-normal">Mappa i banchi, gestisci i vincoli relazionali dei gruppi cooperativi e inserisci giudizi qualitativi conformi al D.M. 14/2024.</p>
+              <p className="text-[11px] text-slate-500 font-semibold leading-normal">Mappa i banchi, gestisci vincoli cooperativi e inserisci osservazioni qualitative locali. La vista non verifica conformità normativa.</p>
             </button>
             <button onClick={() => setActiveProgTab('social')} className="bg-white border border-slate-200 hover:border-indigo-400 p-5 rounded-2xl shadow-sm hover:shadow-md transition text-left space-y-2">
               <span className="text-[10px] font-black text-indigo-600 uppercase tracking-wider block">Azione 2</span>
               <h4 className="text-xs font-bold text-slate-800 uppercase">Osservatorio dei Riusi d'UDA</h4>
-              <p className="text-[11px] text-slate-500 font-semibold leading-normal">Esplora le UDA piu utilizzate dell'Istituto e scopri i moduli pronti per essere clonati.</p>
+              <p className="text-[11px] text-slate-500 font-semibold leading-normal">Esplora esempi UDA presenti nell'archivio locale e duplicali come bozze personali non verificate.</p>
             </button>
           </div>
         </div>
@@ -574,7 +574,7 @@ function ProgettazioneAnnualeView({
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-white p-3.5 border border-slate-200 rounded-2xl shadow-sm gap-3">
         <div className="space-y-0.5">
           <div className="text-xs font-black text-slate-800 uppercase tracking-wider flex items-center space-x-1">
-            <span>Layout di Compilazione d'Istituto</span>
+              <span>Layout di compilazione locale</span>
           </div>
         </div>
         <div className="flex items-center gap-2 flex-wrap self-stretch sm:self-auto">
@@ -597,7 +597,7 @@ function ProgettazioneAnnualeView({
           {/* Col 1: Traguardi & Obiettivi */}
           <div className="lg:col-span-4 bg-white border border-slate-200 rounded-2xl shadow-sm p-4 space-y-4">
             <div>
-              <span className="text-[9px] font-black text-indigo-600 uppercase tracking-wider block">Passo 1: Criteri d'Istituto</span>
+              <span className="text-[9px] font-black text-indigo-600 uppercase tracking-wider block">Passo 1: criteri personali</span>
               <h3 className="text-xs font-bold text-slate-800">Traguardi & Obiettivi</h3>
             </div>
 
@@ -905,15 +905,15 @@ function ArchivioUdaView({
   const [udaToDelete, setUdaToDelete] = useState<string | null>(null);
   const [showClearAllConfirm, setShowClearAllConfirm] = useState(false);
 
-  const getRoleLabel = (r: string) => r === 'insegnante' ? 'Docente' : r === 'dirigente' ? 'Dirigente' : 'CT';
+  const getRoleLabel = (r: string) => r === 'non-dichiarato' ? 'Ruolo non dichiarato' : r === 'insegnante' ? 'Docente' : r === 'dirigente' ? 'Dirigente' : 'CT';
 
   return (
     <div className="space-y-6">
       {/* Timeline */}
       <div className="bg-white border border-slate-200 rounded-3xl p-5 shadow-sm space-y-4 text-left">
         <div className="border-b border-slate-150 pb-3">
-          <span className="text-[9px] font-black text-indigo-600 uppercase tracking-wider block">Quadro Generale d'Istituto</span>
-          <h3 className="text-sm font-black text-slate-800 uppercase tracking-wide">Programmazione Annuale d'Istituto per Classi</h3>
+          <span className="text-[9px] font-black text-indigo-600 uppercase tracking-wider block">Quadro generale personale</span>
+          <h3 className="text-sm font-black text-slate-800 uppercase tracking-wide">Programmazione annuale locale per classi</h3>
           <p className="text-[11px] text-slate-500 font-medium">
             Visualizza la linea temporale dei moduli registrati per la tua classe in {getDisciplineLabel(discipline, order)} ({getRoleLabel(role)}).
           </p>

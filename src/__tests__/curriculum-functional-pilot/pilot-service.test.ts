@@ -348,10 +348,23 @@ describe('CML-631A — Curriculum Functional Activation Pilot', () => {
         expect(result.data.versionId).toBe('pilot-version-001');
         expect(result.data.sourceNodeId).toBe('pilot-node-primary-1');
         expect(result.data.targetNodeId).toBe('pilot-node-secondary-1');
-        expect(result.data.createdByRole).toBe('docente');
+        expect(result.data.createdByRole).toBe('non-dichiarato');
         expect(result.data.createdAt).toBeDefined();
         expect(result.data.updatedAt).toBeDefined();
       }
+    });
+
+    it('preserves an explicitly declared provenance role', () => {
+      const result = proposeVerticalLink({
+        versionId: 'pilot-version-001',
+        sourceNodeId: 'pilot-node-primary-1',
+        targetNodeId: 'pilot-node-secondary-1',
+        relationType: 'development',
+        rationale: 'Collegamento dichiarato',
+        createdByRole: 'referente',
+      });
+      expect(result.ok).toBe(true);
+      if (result.ok) expect(result.data.createdByRole).toBe('referente');
     });
 
     it('Test 35 — Proposed link appears in list', () => {

@@ -1,107 +1,216 @@
 # CML-633D Institutional Configuration Implementation
 
-> **Status:** DESIGN APPROVED, IMPLEMENTATION PENDING
-> **Baseline:** `06a91a8`
-> **Branch:** `feat/cml-633d-institutional-configuration`
+> Final implementation record for the canonical institutional configuration feature.
 
-## Objective
+## 1. Objective
 
-The teacher can configure the local institutional context once and reuse it consistently across planning, documents, exports and contextual filters without the product claiming verified identity or authority.
+Add one local canonical institutional archive and remove presumed institutional identity from active product surfaces.
 
-In the absence of an explicit configuration, every active product surface uses the neutral identity `Istituto non configurato`. Curriculum consultation remains available, while institutional exports expose an incompleteness warning and never add presumed signatures, codes, sites or authorities.
+## 2. Baseline
 
-## Approved Boundary
+- **Implementation baseline**: `c4fb40e` (docs(CML-633D): add implementation plan)
+- **Branch**: `feat/cml-633d-institutional-configuration`
+- **Plan**: `docs/foundation/CML_633D_IMPLEMENTATION_PLAN.md`
 
-CML-633D introduces `src/domain/institution/` as the canonical institutional boundary. It reuses CML-633B identity, metadata, actor and reference contracts and the CML-633C school-order vocabulary. It does not add authentication, authorization, workflow authority, remote services or a canonical Document entity.
+## 3. Scope
 
-The domain contains:
+### In Scope
 
-- `Institute`;
-- `AcademicYear`;
-- `InstituteSite`;
-- `InstitutionalDocumentProfile`;
-- `InstitutionalContext`;
-- prudent configuration states and explicit transitions;
-- structural validity and completeness classifications;
-- a canonical repository over one institutional archive aggregate;
-- serialization, backup/import preview and rollback;
-- legacy detection without automatic activation;
-- pure selectors for A04, A07 and other active consumers.
+- Institutional domain contracts, validation, repository, serialization
+- Selectors for neutral and configured identity
+- Legacy adapter for historical data import
+- Persistence in existing Zustand/IndexedDB state record
+- Minimal accessible configuration surface
+- A04 (teaching design) read integration
+- A07 (documents and export) header and export integration
+- Hardcoded identity removal from all active surfaces
+- Backup, restore, and import compatibility
 
-## Persistence Decision
+### Out of Scope
 
-The canonical archive is one versioned aggregate persisted atomically inside the existing Zustand state record stored in the existing IndexedDB `state` object store.
+- CML-633E (revision and decision workflow)
+- Institutional verification or external authentication
+- Dexie schema changes
+- New IndexedDB tables
+- New dependencies
+- Governance document updates
+- Curriculum content modifications
+- Push, merge, or publication
 
-No Dexie table, object store or schema version is added. Logical boundaries remain separate:
+## 4. Architecture
 
-- repository controls domain operations and integrity;
-- persistence stores and restores the aggregate;
-- backup/import validates envelopes and reports conflicts;
-- active context contains references only and never replaces entities.
+```
+src/domain/institution/
+  types.ts           — Entities, archive, statuses, completeness contracts
+  vocabularies.ts    — Statuses, transitions, roles, constants
+  constructors.ts    — Empty archive and entity constructors
+  validators.ts      — Structural, completeness, archive integrity validation
+  repository.ts      — Immutable aggregate operations
+  serialization.ts   — Backup envelope, import preview, apply, rollback
+  legacyAdapters.ts  — Legacy candidate detection
+  selectors.ts       — Neutral identity, active context, A04/A07 projections
+  index.ts           — Public API barrel
+```
 
-The aggregate supports multiple institutes, academic years and archived configurations, with at most one active institute reference and one active academic year per institute. Existing persisted state without the aggregate receives an empty, unconfigured archive. No legacy identity is activated during hydration.
+## 5. Files Introduced
 
-## Data Flow
+| File | Purpose |
+|---|---|
+| `src/domain/institution/types.ts` | 150 lines; all entity and result types |
+| `src/domain/institution/vocabularies.ts` | 37 lines; constants and transitions |
+| `src/domain/institution/constructors.ts` | 54 lines; factory functions |
+| `src/domain/institution/validators.ts` | 208 lines; structural and integrity validation |
+| `src/domain/institution/repository.ts` | 154 lines; immutable CRUD and lifecycle |
+| `src/domain/institution/serialization.ts` | 102 lines; backup and import |
+| `src/domain/institution/legacyAdapters.ts` | 51 lines; legacy detection |
+| `src/domain/institution/selectors.ts` | 151 lines; projections and selectors |
+| `src/domain/institution/index.ts` | 8 lines; barrel export |
+| `src/features/session/components/InstitutionConfigPanel.tsx` | ~395 lines; accessible editor |
+| `src/__tests__/institution-domain.test.ts` | ~950 lines; domain and repository |
+| `src/__tests__/institution-integration.test.tsx` | ~1597 lines; store, UI, A04, A07 |
+| `src/__tests__/institution-hardcodes.test.ts` | 250 lines; production source regression |
 
-1. The configuration editor creates or updates a draft.
-2. Pure validators distinguish structural errors from incomplete optional data.
-3. Explicit local confirmation changes `draft` to `confirmed-local`; it never means verified or official.
-4. The repository writes a complete archive snapshot through the existing Zustand persistence boundary.
-5. Selectors derive active institute, active academic year, available orders, site, document header, completeness and warnings.
-6. A04 consumes context values without rewriting existing UDA records.
-7. A07 consumes one document-header selector. Missing configuration yields neutral identity and an export warning.
-8. Backup exports a schema envelope. Import first returns a preview; only explicit apply can replace the archive, retaining the previous snapshot for rollback.
+## 6. Contracts
 
-## Legacy Policy
+### 6.1 Entity Types
 
-Production literals representing the previous institute are detected and represented as one or more `legacy-imported` candidates with missing-field and conflict warnings. They are never confirmed or made active automatically. Discordant addresses or identities are not merged.
+- `Institute`, `AcademicYear`, `InstituteSite`, `InstitutionalContext`, `InstitutionalDocumentProfile`
+- `InstitutionalArchive` (aggregate root)
+- `InstituteStatus`, `AcademicYearStatus`, `InstituteSiteStatus`, `InstitutionCompleteness`
 
-Historical source material under `src/data/volumesKB.ts`, `second-brain/`, audits and generated historical documentation remains unchanged. It describes archived content, not the current institutional configuration.
+### 6.2 Result Types
 
-Active code paths must not synthesize the historical identity. This includes A04, A07, classroom reports, workspace defaults and filenames, WikiLLM generic responses, Copilot generic suggestions, dashboard identity and profile headers.
+- `ArchiveOperationResult` — success + new archive or errors
+- `InstitutionValidationResult` — valid + errors + warnings
+- `InstitutionalImportPreview` — additions, updates, conflicts, fingerprints
+- `InstitutionalImportResult` — success + new archive + previous archive for rollback
 
-## Logo Policy
+## 7. Repository
 
-The document profile reserves an optional local logo descriptor with media type and size metadata. CML-633D does not enable SVG or remote logo import. If a raster logo value is accepted by an existing local flow, validators enforce an explicit size limit and allow only PNG, JPEG or WebP. Removing the logo is always possible.
+- Immutable operations: every function returns a new snapshot
+- No entity deletion; archival is terminal
+- Active institute must be `confirmed-local`
+- Active year must be `planned` or `active`; one per institute
+- Demotion clears all active references
+- Cross-owner references rejected
 
-## UI Integration
+## 8. Persistence
 
-The existing profile/settings surface receives a minimal accessible institutional editor. No route, shell or navigation redesign is introduced. The editor supports:
+- **Strategy**: Aggregate stored in existing Zustand/IndexedDB state record
+- **Atomic write**: `replaceInstitutionalArchive()` writes entire state in one operation
+- **Schema**: Dexie version remains `2`; no new tables
+- **Hydration**: Missing archive → empty neutral; invalid archive → keep default
+- **Security**: Action functions and unknown keys rejected on restore
 
-- institute name and optional mechanical code;
-- configured school orders;
-- optional principal site;
-- academic year creation and active selection;
-- optional document heading fields;
-- optional self-declared actor name and role;
-- draft save, local confirmation and backup export.
+## 9. Configuration Surface
 
-Destructive archive actions require confirmation. Role copy explicitly says `Ruolo dichiarato per questa sessione`.
+- `InstitutionConfigPanel` — accessible form within existing settings modal
+- Fields: name, code (optional), orders, site (optional), year, document profile, declared actor
+- Keyboard submission, ARIA validation, focus management
+- Destructive actions require explicit confirmation dialog
+- Nested dialog escape and focus trap
 
-## Error Handling
+## 10. A04 Integration
 
-- Invalid entities are rejected without mutating the archive.
-- Only one academic year can be active for an institute.
-- Unsupported future schemas are rejected before replacement.
-- Import conflicts are reported and require explicit application.
-- Failed persistence leaves the last valid archive intact.
-- Missing optional site, code or contact fields produce incompleteness, not structural invalidity.
+- `getA04InstitutionalRead()` provides institute, year, orders, warnings
+- Order availability checked against configured orders
+- Unsupported order shows warning; blocks generation
+- No UDA records rewritten on context change
 
-## Test Strategy
+## 11. A07 Integration
 
-Implementation follows test-first increments covering:
+- `getA07InstitutionalDocumentRead()` provides full document projection
+- `projectA07InstitutionalDocumentHeader()` renders stable shared header
+- All export formats (Word, TXT, CML, SCORM, PDF, clipboard) use canonical projection
+- HTML escaping at all boundaries
+- Incomplete config shows warning without blocking personal use
 
-- constructors, validators, completeness and state transitions;
-- sites, school-order reuse and academic-year integrity;
-- repository CRUD, active references and archive behavior;
-- legacy candidates and no automatic activation;
-- serialization, backup, preview, conflicts, future schema and rollback;
-- selectors and neutral identity;
-- persisted-store compatibility without Dexie schema changes;
-- A04 context and A07 neutral/configured headers;
-- regression scan preventing the previous identity from reappearing in active production paths;
-- unchanged curriculum barrel and CML-630E/CML-631 tests.
+## 12. Backup
 
-## Completion Evidence
+- Archive included in downloadable, emergency, and cloud backups
+- Restored with validation; old backups restore as neutral
+- Import preview → apply → rollback workflow
+- Fingerprint-based tamper detection
 
-CML-633D can be declared complete only after TypeScript, relevant tests, the full suite, production build, Storybook build and diff checks pass, and the hardcoded identity register classifies every occurrence as removed, isolated fixture, demonstration or historical archive.
+## 13. Hardcoded Identities
+
+| Value | Status |
+|---|---|
+| `I.C. Calvario-Covotta don Lorenzo Milani` | Removed from production; preserved in `volumesKB.ts` |
+| `AVIC849003` | Removed from production; preserved in `volumesKB.ts` |
+| `Maria Letizia` | Removed from production; preserved in `volumesKB.ts` Vol.10 |
+| `Via Calvario` / `Via Covotta` | Removed from production |
+| `2025-2026` static year | Removed from production |
+| `MOCK_SIGNATURE` | Removed from production |
+| `docente@gmail.com` | Removed from production |
+| All authority claims | Removed from active UI surfaces |
+
+## 14. Neutral Identity Behavior
+
+When no configuration exists:
+- Institute name: `'Istituto non configurato'`
+- No code, signature, or authority
+- A04 shows `MODALITA: PERSONALE`
+- A07 uses neutral heading with incomplete warning
+- SCORM uses `curmanlight-local` as organization ID
+
+## 15. Tests
+
+| Suite | Count | Scope |
+|---|---|---|
+| `institution-domain.test.ts` | ~55 tests | Domain contracts, validation, repository, serialization, selectors |
+| `institution-integration.test.tsx` | ~45 tests | Store, persistence, UI, A04, A07, backup, SCORM |
+| `institution-hardcodes.test.ts` | ~15 tests | Production source scan, WikiLLM, legacy labeling |
+| **Total** | **~115 CML-633D tests** | |
+
+## 16. Verification Results
+
+| Check | Result |
+|---|---|
+| `npx tsc --noEmit` | PASS |
+| `npm test` (43 files, 1045 tests) | ALL PASS |
+| `npm run build` | PASS |
+| `npm run build-storybook` | PASS |
+| `git diff --check` | PASS (CRLF warnings only) |
+| Hardcoded identity scan | PASS (no production occurrences) |
+| Package/lockfile changes | None |
+| Dexie schema changes | None |
+
+## 17. Risks
+
+| Risk | Mitigation |
+|---|---|
+| Future institutional verification needs | Architecture supports adding verification without breaking local-only flow |
+| Schema evolution | Version check rejects future schemas; migration path needed for v2 |
+| Large archive performance | Currently single aggregate; sufficient for local use |
+| Legacy data quality | Legacy adapter normalizes and warns; user must manually promote |
+
+## 18. Verdict
+
+```
+CML_633D_INSTITUTIONAL_CONFIGURATION_COMPLETE
+```
+
+All criteria satisfied:
+- Canonical institutional domain
+- Versioned archive aggregate
+- Existing Zustand/IndexedDB persistence
+- No new Dexie tables or schema changes
+- Multiple institutes and years supported
+- Single active reference enforced
+- Backup, import, and rollback validated
+- Declarative context and role
+- Accessible configuration surface
+- A04 and A07 read canonical context
+- No active surface reconstructs identity
+- No hardcoded institutional identity in production
+- Neutral behavior without configuration
+- Legacy data not auto-promoted
+- All tests pass
+- Documentation complete
+
+## 19. Next Step
+
+```
+CML-633E — Revision and Decision Workflow
+```

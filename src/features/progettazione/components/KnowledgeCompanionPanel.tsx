@@ -2,9 +2,8 @@ import { BookOpen, ChevronDown, ChevronUp, X } from 'lucide-react';
 import type { KnowledgeReference } from '../hooks/useKnowledgeCompanion';
 
 const CATEGORY_STYLES: Record<string, { bg: string; text: string; label: string }> = {
-  'Curricolo': { bg: 'bg-emerald-50', text: 'text-emerald-700', label: 'Curricolo' },
-  'Fonte normativa': { bg: 'bg-violet-50', text: 'text-violet-700', label: 'Fonte normativa' },
-  'Approfondimento': { bg: 'bg-cyan-50', text: 'text-cyan-700', label: 'Approfondimento' },
+  'Archivio storico': { bg: 'bg-violet-50', text: 'text-violet-700', label: 'Archivio storico non verificato' },
+  'Approfondimento archivio': { bg: 'bg-cyan-50', text: 'text-cyan-700', label: 'Approfondimento storico' },
 };
 
 function CategoryBadge({ category }: { category: string }) {
@@ -36,7 +35,7 @@ function MainRefCard({ knowledgeRef: r, onOpen }: RefCardProps) {
         className="text-[10px] font-bold text-indigo-600 hover:text-indigo-800 flex items-center gap-1 transition"
       >
         <BookOpen className="w-3 h-3" />
-        Apri riferimento
+        Apri fonte archiviata
       </button>
     </div>
   );
@@ -56,7 +55,7 @@ function AdditionalRefCard({ knowledgeRef: r, onOpen }: RefCardProps) {
         className="text-[10px] font-bold text-indigo-600 hover:text-indigo-800 flex items-center gap-1 transition"
       >
         <BookOpen className="w-3 h-3" />
-        Apri riferimento
+        Apri fonte archiviata
       </button>
     </div>
   );
@@ -141,7 +140,7 @@ export function KnowledgeCompanionPanel({
       </div>
 
       <div className="px-4 py-2 border-t border-slate-100 bg-slate-50/50">
-        <p className="text-[9px] text-slate-400 italic">Puoi continuare anche senza consultare i riferimenti.</p>
+        <p className="text-[9px] text-slate-400 italic">Fonti storiche, dipendenti dall'archivio e non verificate. Puoi continuare senza consultarle.</p>
       </div>
     </div>
   );

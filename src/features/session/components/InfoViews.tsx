@@ -15,7 +15,7 @@ export function InfoViews({ activeTab, activeGeneralSubtab, setActiveGeneralSubt
      {activeTab === 'fonti' && (
       <div className="space-y-6 fade-in text-left">
        <div className="border-b border-slate-100 pb-3 flex justify-between items-center text-xs font-bold shadow-sm">
-        <div>Fonti e Sezioni Generali d'Istituto</div>
+         <div>Fonti e sezioni generali disponibili</div>
         <div className="bg-slate-100 p-0.5 rounded-xl flex space-x-1 border border-slate-200">
          <button onClick={() => setActiveGeneralSubtab('premessa')} className={`px-2.5 py-1 rounded-lg transition ${activeGeneralSubtab === 'premessa' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500'}`}>1. Premessa & Profilo</button>
          <button onClick={() => setActiveGeneralSubtab('riforma')} className={`px-2.5 py-1 rounded-lg transition ${activeGeneralSubtab === 'riforma' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500'}`}>2. Riforma IN 2025</button>
@@ -37,7 +37,7 @@ export function InfoViews({ activeTab, activeGeneralSubtab, setActiveGeneralSubt
         <div className="space-y-4 fade-in text-xs leading-relaxed font-medium">
          <div className="bg-slate-50 p-4 border rounded-xl space-y-2">
           <h3 className="font-extrabold text-slate-800 text-xs flex items-center space-x-1.5"><Sparkles className="w-4 h-4 text-amber-500" /> <span>2.1 La Svolta delle Nuove Indicazioni Nazionali 2025</span></h3>
-          <p className="text-slate-600">Le Nuove Indicazioni 2025 ricalibrano l'asse didattico su pilastri innovativi: la scrittura a mano continua in corsivo, l'Educazione Economico-Finanziaria, Assicurativa e Previdenziale obbligatoria, lo studio etico ed algoritmico dell'Intelligenza Artificiale, e l'ecologia d'istituto (sostenibilità ed Agenda 2030).</p>
+          <p className="text-slate-600">Le Nuove Indicazioni 2025 propongono temi quali scrittura in corsivo, educazione economico-finanziaria, studio dell'intelligenza artificiale e sostenibilità. Verifica sempre le fonti normative applicabili.</p>
          </div>
         </div>
        )}
@@ -45,7 +45,7 @@ export function InfoViews({ activeTab, activeGeneralSubtab, setActiveGeneralSubt
        {activeGeneralSubtab === 'obiettivi' && (
         <div className="bg-slate-50 p-4 border rounded-xl space-y-2 fade-in text-xs leading-relaxed font-medium">
          <h3 className="font-extrabold text-slate-800 text-xs flex items-center space-x-1.5"><Layers className="w-4 h-4 text-emerald-500" /> <span>3.1 Declinazione degli Obiettivi per Competenze</span></h3>
-         <p className="text-slate-500 font-semibold">I docenti d'inizio anno scelgono e raccordano le evidenze d'istituto basandosi sulle competenze mirate europee.</p>
+         <p className="text-slate-500 font-semibold">La vista consente di scegliere e collegare evidenze locali alle competenze europee; il collegamento non è validato.</p>
         </div>
        )}
 
@@ -81,7 +81,7 @@ export function InfoViews({ activeTab, activeGeneralSubtab, setActiveGeneralSubt
          <HelpCircle className="w-5 h-5 text-indigo-600 animate-pulse" />
          <span>Guida Utente e Manuale d'Uso della Piattaforma</span>
         </h1>
-        <p className="text-[11px] text-slate-500 font-medium">Il manuale d'uso operativo completo per supportare i docenti dell'I.C. don Lorenzo Milani nella programmazione, l'allineamento dei curricoli e l'esportazione dei faldoni.</p>
+         <p className="text-[11px] text-slate-500 font-medium">Manuale operativo per la programmazione, l'allineamento dei curricoli e l'esportazione dei documenti.</p>
        </div>
 
        {/* GUIDA UTENTE SECTIONS */}
@@ -91,15 +91,15 @@ export function InfoViews({ activeTab, activeGeneralSubtab, setActiveGeneralSubt
         <div className="bg-slate-50 p-5 rounded-2xl border border-slate-200 space-y-3 shadow-sm">
          <h3 className="font-extrabold text-indigo-950 text-xs flex items-center space-x-2.5">
           <span className="bg-indigo-600 text-white h-5 w-5 rounded-full flex items-center justify-center text-[10px] font-mono font-black">1</span>
-          <span className="uppercase tracking-wide text-[11px]">Configurazione Profilo ed Onboarding Docente</span>
+          <span className="uppercase tracking-wide text-[11px]">Profilo personale e contesto di lavoro</span>
          </h3>
          <p className="text-[11px] text-slate-600 font-semibold leading-relaxed">
-          Al primo avvio dell'applicazione, verrai guidato nel percorso di onboarding per profilare il tuo insegnamento. Questo passaggio è cruciale per attivare la coerenza automatica d'Istituto:
+           Al primo avvio puoi dichiarare un contesto personale di consultazione. Le scelte non sono autenticate e non attribuiscono ruoli o autorità:
          </p>
          <ul className="list-disc pl-4 space-y-2 text-[10px] text-slate-500 font-bold leading-relaxed">
-          <li><strong>Scelta del Ruolo</strong>: Imposta il tuo ruolo nella scuola (es. Insegnante, Referente per il Curricolo, Coordinatore di Dipartimento, Dirigente).</li>
-          <li><strong>Grado di Scuola e Cattedra</strong>: Scegli l'ordine (Infanzia, Primaria, Secondaria). Se insegni sul sostegno scolastico, seleziona <em>Sostegno (Inclusione PEI)</em>. Il sistema disattiverà automaticamente la scelta obbligatoria della singola materia disciplinare, permettendoti di operare trasversalmente su tutti i Campi e discipline d'Istituto.</li>
-          <li><strong>Mie Classi e Sezioni Custom</strong>: Associa le tue classi. Se la tua scuola ha sezioni aggiuntive (es. Sezione Rossa, Verde o Coccinelle all'Infanzia; Sezione D, E, F alla Secondaria), inseriscile cliccando sul pulsante <em> Aggiungi Sezione</em> per espandere istantaneamente le tabelle del software.</li>
+           <li><strong>Ruolo dichiarato</strong>: è un'etichetta personale non verificata.</li>
+           <li><strong>Ordine di consultazione</strong>: seleziona l'ordine utile alla sessione senza configurare l'offerta della scuola.</li>
+           <li><strong>Classi e sezioni</strong>: aggiungi solo combinazioni utili al lavoro locale.</li>
          </ul>
         </div>
 
@@ -107,13 +107,13 @@ export function InfoViews({ activeTab, activeGeneralSubtab, setActiveGeneralSubt
         <div className="bg-slate-50 p-5 rounded-2xl border border-slate-200 space-y-3 shadow-sm">
          <h3 className="font-extrabold text-indigo-950 text-xs flex items-center space-x-2.5">
           <span className="bg-indigo-600 text-white h-5 w-5 rounded-full flex items-center justify-center text-[10px] font-mono font-black">2</span>
-          <span className="uppercase tracking-wide text-[11px]">Consultazione Curricolo Verticale d'Istituto</span>
+          <span className="uppercase tracking-wide text-[11px]">Consultazione dei contenuti curriculari locali</span>
          </h3>
          <p className="text-[11px] text-slate-600 font-semibold leading-relaxed">
-          Nel tab <strong>"Consulta Curricolo"</strong>, i docenti possono esaminare ed esplorare la diacronia didattica d'Istituto dai 3 ai 14 anni d'età d'Istituto:
+           Nel tab <strong>"Consulta Curricolo"</strong> puoi esplorare i contenuti disponibili. La vista non ne verifica completezza o adozione:
          </p>
          <ul className="list-disc pl-4 space-y-2 text-[10px] text-slate-500 font-bold leading-relaxed">
-          <li><strong>Mappe di Senso e Albero Disciplinare</strong>: Esplora l'albero verticale dei traguardi d'Istituto e gli obiettivi di apprendimento classe per classe della tua materia attiva.</li>
+           <li><strong>Mappe di senso e albero disciplinare</strong>: esplora traguardi e obiettivi disponibili per la selezione corrente.</li>
           <li><strong>Filtro Termini Rapido</strong>: Digita parole chiave (es. <em>corsivo</em> o <em>Blender</em>) per estrarre istantaneamente gli obiettivi e traguardi associati.</li>
           <li><strong>Traduzione Olistica per l'Infanzia</strong>: Se selezioni l'Infanzia come ordine, il sistema traduce all'istante le materie nei relativi 5 Campi di Esperienza ministeriali (es. <em>Italiano</em> diventa <em> I discorsi e le parole</em>), prevenendo errori terminologici.</li>
          </ul>
@@ -123,15 +123,15 @@ export function InfoViews({ activeTab, activeGeneralSubtab, setActiveGeneralSubt
         <div className="bg-slate-50 p-5 rounded-2xl border border-slate-200 space-y-3 shadow-sm">
          <h3 className="font-extrabold text-indigo-950 text-xs flex items-center space-x-2.5">
           <span className="bg-indigo-600 text-white h-5 w-5 rounded-full flex items-center justify-center text-[10px] font-mono font-black">3</span>
-          <span className="uppercase tracking-wide text-[11px]">Revisione dei Gap dei Dipartimenti (Allineamento 2012 2025)</span>
+          <span className="uppercase tracking-wide text-[11px]">Confronto locale dei testi 2012-2025</span>
          </h3>
          <p className="text-[11px] text-slate-600 font-semibold leading-relaxed">
-          I coordinatori e i membri dei dipartimenti disciplinari utilizzano il tab <strong>"Revisione (Gap 2025)"</strong> per deliberare sulle riforme nazionali:
+           Il tab <strong>"Revisione (Gap 2025)"</strong> registra scelte personali di lavoro prive di valore deliberativo:
          </p>
          <ul className="list-disc pl-4 space-y-2 text-[10px] text-slate-500 font-bold leading-relaxed">
           <li><strong>Carousel Monoscheda</strong>: Esamina ciascun gap ordinamentale (DM 254/2012 vs DM 221/2025) focalizzandoti su una singola scheda comparativa alla volta per azzerare l'affaticamento visivo.</li>
-          <li><strong>Votazione</strong>: Esprimi il voto collegiale premendo: <em> Accetta 2025</em>, <em> Mantieni 2012</em> o <em> Personalizza</em> (scrivendo a mano il testo specifico d'Istituto).</li>
-          <li><strong>Salvataggio e Invio</strong>: Scarica la proposta in formato interoperabile `.cml` da inviare al Referente per unire ed aggregare i dati.</li>
+           <li><strong>Scelta locale</strong>: usa il testo 2025, mantieni il testo 2012 o scrivi una proposta personale.</li>
+           <li><strong>Esportazione tecnica</strong>: scarica un file `.cml` locale; l'esportazione non costituisce invio o approvazione.</li>
          </ul>
         </div>
 
@@ -142,13 +142,13 @@ export function InfoViews({ activeTab, activeGeneralSubtab, setActiveGeneralSubt
           <span className="uppercase tracking-wide text-[11px]">Progettazione Guidata Unità di Apprendimento (UDA)</span>
          </h3>
          <p className="text-[11px] text-slate-600 font-semibold leading-relaxed">
-          L'area di progettazione permette di stendere un'UDA ministeriale ad-hoc d'Istituto in pochissimi minuti grazie al Wizard a 5 passi:
+           L'area di progettazione consente di preparare una bozza UDA locale tramite un wizard a cinque passi:
          </p>
          <ul className="list-disc pl-4 space-y-2 text-[10px] text-slate-500 font-bold leading-relaxed">
-          <li><strong>Dati Introduttivi (Step 1)</strong>: Inserisci il Titolo UDA, il monte ore, il quadrimestre di svolgimento d'Istituto ed indica i docenti e le discipline compresenti per la co-progettazione interdisciplinare.</li>
-          <li><strong>Traguardi &amp; Obiettivi (Step 2)</strong>: Seleziona i traguardi d'Istituto pre-caricati coerenti con il tuo ordine e la materia attiva.</li>
+           <li><strong>Dati introduttivi (Step 1)</strong>: inserisci titolo, monte ore, periodo e discipline coinvolte nella bozza personale.</li>
+           <li><strong>Traguardi &amp; Obiettivi (Step 2)</strong>: seleziona i contenuti disponibili nella copia locale non validata.</li>
           <li><strong>Evidenze d'Inclusione (Step 3)</strong>: Associa le evidenze di comportamento osservabili per la certificazione delle competenze.</li>
-          <li><strong>Inclusione e Compito (Step 4)</strong>: Inserisci il prodotto finale atteso. Sotto le note BES/DSA, clicca sui pulsanti rapidi (es. *Font EasyReading*, *Sintesi Vocale*, *Mappe Concettuali*, *Bilinguismo Arbëreshë* per Plesso Greci) per pre-compilare all'istante le misure compensative d'Istituto.</li>
+           <li><strong>Inclusione e Compito (Step 4)</strong>: Inserisci il prodotto finale atteso. Sotto le note BES/DSA, usa i pulsanti rapidi per font ad alta leggibilità, sintesi vocale, mappe concettuali e altre misure definite nel contesto locale.</li>
           <li><strong>Salva in Archivio (Step 5)</strong>: Verifica il codice sorgente, copia il tracciato, ed aggiungi l'UDA nella tua biblioteca locale del browser.</li>
          </ul>
         </div>
@@ -160,11 +160,11 @@ export function InfoViews({ activeTab, activeGeneralSubtab, setActiveGeneralSubt
           <span className="uppercase tracking-wide text-[11px]">Esportazione File, PDF, ODF e Tracciato Registro Elettronico</span>
          </h3>
          <p className="text-[11px] text-slate-600 font-semibold leading-relaxed">
-          Nel tab <strong>"Esportazione File"</strong>, puoi generare tutta la documentazione di rito per la segreteria o il registro d'Istituto:
+           Nel tab <strong>"Esportazione File"</strong> puoi generare copie tecniche locali, da verificare prima dell'uso:
          </p>
          <ul className="list-disc pl-4 space-y-2 text-[10px] text-slate-500 font-bold leading-relaxed">
-          <li><strong>Faldoni d'Istituto</strong>: Genera in tempo reale la programmazione annuale divisa per quadrimestri o la relazione di classe intermedia/finale.</li>
-          <li><strong>ODF (.odt) per LibreOffice</strong>: Esporta l'intero curricolo allineato in formato aperto ODF, in conformità con le direttive del CAD per la PA.</li>
+           <li><strong>Documenti di lavoro</strong>: genera bozze di programmazione o relazione di classe.</li>
+           <li><strong>ODF (.odt)</strong>: esporta una copia in formato aperto; l'app non certifica conformità CAD o PA.</li>
           <li><strong>Stampa e Salva in PDF</strong>: Esporta ed impagina i tuoi documenti in formato PDF pulito esente da pulsanti web.</li>
           <li><strong>Copia per Registro (Argo/ClasseViva)</strong>: Nel pannello dei dettagli UDA, clicca sul tasto smeraldo per copiare un tracciato di testo tabulato, pronto per essere incollato direttamente sui registri elettronici DidUp o Spaggiari.</li>
          </ul>

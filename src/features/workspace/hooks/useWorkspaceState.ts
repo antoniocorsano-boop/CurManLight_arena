@@ -3,12 +3,12 @@ import { safeLocalStorageGetItem } from '../../../lib/consolidatedStorage';
 
 export function useWorkspaceState() {
  const [cloudAccountType, setCloudAccountType] = useState<'scolastica' | 'personale'>(() => {
-  return safeLocalStorageGetItem('curman_cloudAccountType', 'scolastica') as 'scolastica' | 'personale';
+  return safeLocalStorageGetItem('curman_cloudAccountType', 'personale') as 'scolastica' | 'personale';
  });
  const [showCloudAccountModal, setShowCloudAccountModal] = useState(false);
- const [personalUserEmail, setPersonalUserEmail] = useState(() => safeLocalStorageGetItem('curman_personalUserEmail', 'docente@gmail.com'));
+ const [personalUserEmail, setPersonalUserEmail] = useState(() => safeLocalStorageGetItem('curman_personalUserEmail', ''));
  const [isWorkspaceLoggedIn, setIsWorkspaceLoggedIn] = useState(() => safeLocalStorageGetItem('curman_isWorkspaceLoggedIn', 'false') === 'true');
- const [workspaceUserEmail, setWorkspaceUserEmail] = useState(() => safeLocalStorageGetItem('curman_workspaceUserEmail', 'docente@icdonmilani.edu.it'));
+ const [workspaceUserEmail, setWorkspaceUserEmail] = useState(() => safeLocalStorageGetItem('curman_workspaceUserEmail', ''));
  const [isSyncingWorkspace, setIsSyncingWorkspace] = useState(false);
  const [workspaceAccessToken, setWorkspaceAccessToken] = useState(() => safeLocalStorageGetItem('curman_workspaceAccessToken', ''));
  const [workspaceTokenExpiry, setWorkspaceTokenExpiry] = useState(() => {
@@ -17,7 +17,7 @@ export function useWorkspaceState() {
  const [isWorkspaceSyncLocked, setIsWorkspaceSyncLocked] = useState(false);
  const [isFileProtocol, setIsFileProtocol] = useState(false);
  const [workspaceClientId, setWorkspaceClientId] = useState(() => {
-  return safeLocalStorageGetItem('curman_workspaceClientId', '312849003-milani.apps.googleusercontent.com');
+   return safeLocalStorageGetItem('curman_workspaceClientId', import.meta.env.VITE_GOOGLE_CLIENT_ID ?? '');
  });
 
  return {

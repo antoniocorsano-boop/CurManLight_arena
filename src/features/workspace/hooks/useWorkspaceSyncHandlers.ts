@@ -1,7 +1,9 @@
 import type React from 'react';
-import type { DecisionStatus, SchoolOrder, UdaModel, UserRole, UserState } from '../../../types/curriculum';
+import type { DecisionStatus, SchoolOrder, UdaModel, UserRole } from '../../../types/curriculum';
 import type { CurriculumMap } from '../../session';
 import { safeLocalStorageRemoveItem, safeLocalStorageSetItem } from '../../../lib/consolidatedStorage';
+import type { RestoreBackupResult } from '../../../store/useCurriculumStore';
+import type { InstitutionalArchive } from '../../../domain/institution';
 
 type WorkspaceStateRef = React.MutableRefObject<{
  savedUda: UdaModel[];
@@ -30,6 +32,7 @@ type WindowWithSaveFilePicker = Window & {
 type UseWorkspaceSyncHandlersArgs = {
  isWorkspaceLoggedIn: boolean;
  workspaceAccessToken: string;
+ workspaceClientId?: string;
  cloudAccountType: 'scolastica' | 'personale';
  schoolYear: string;
  localCurriculum: CurriculumMap;
@@ -39,8 +42,9 @@ type UseWorkspaceSyncHandlersArgs = {
  role: UserRole;
  discipline: string;
  order: SchoolOrder;
+ institutionalArchive: InstitutionalArchive;
  stateRef: WorkspaceStateRef;
- restoreBackupState: (newState: Partial<UserState>) => void;
+ restoreBackupState: (newState: unknown) => RestoreBackupResult;
  setIsSyncingWorkspace: (value: boolean) => void;
  setCloudAccountType: (value: 'scolastica' | 'personale') => void;
  setShowCloudAccountModal: (value: boolean) => void;
@@ -54,6 +58,7 @@ type UseWorkspaceSyncHandlersArgs = {
 export function useWorkspaceSyncHandlers({
  isWorkspaceLoggedIn,
  workspaceAccessToken,
+ workspaceClientId,
  cloudAccountType,
  schoolYear,
  localCurriculum,
@@ -63,6 +68,7 @@ export function useWorkspaceSyncHandlers({
  role,
  discipline,
  order,
+ institutionalArchive,
  stateRef,
  restoreBackupState,
  setIsSyncingWorkspace,
@@ -80,11 +86,16 @@ export function useWorkspaceSyncHandlers({
   setCloudAccountType(type);
   safeLocalStorageSetItem('curman_cloudAccountType', type);
   
-  const label = type === 'scolastica' ? "Scolastica d'Istituto" : "Personale";
+  const label = type === 'scolastica' ? "dichiarata scolastica (non verificata)" : "personale";
   showToast(`Reindirizzamento al portale Google per l'Utenza ${label}...`, true);
   
   setTimeout(() => {
-   const clientId = "312849003-milani.apps.googleusercontent.com"; // Client ID d'Istituto registrato su Google Cloud
+   const clientId = workspaceClientId || import.meta.env.VITE_GOOGLE_CLIENT_ID;
+   if (!clientId) {
+    setIsSyncingWorkspace(false);
+    showToast('Configura il client Google OAuth per collegare Drive.', false);
+    return;
+   }
    const redirectUri = window.location.origin + window.location.pathname;
    const scope = "https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/userinfo.email";
    const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=token&scope=${encodeURIComponent(scope)}`;
@@ -95,11 +106,11 @@ export function useWorkspaceSyncHandlers({
 
  const handleWorkspaceSync = async () => {
   if (!isWorkspaceLoggedIn || !workspaceAccessToken) {
-   showToast(" Accedi prima a Google Workspace d'Istituto!", false);
+    showToast("Accedi prima a una sessione Google Drive.", false);
    return;
   }
   setIsSyncingWorkspace(true);
-  showToast(`Sincronizzazione in corso sul tuo Drive ${cloudAccountType === "scolastica" ? "d'Istituto" : "Personale"}...`);
+   showToast(`Copia JSON in corso sul Drive dell'account ${cloudAccountType === "scolastica" ? "dichiarato scolastico, non verificato" : "personale"}...`);
 
   try {
    const stateToBackup = {
@@ -110,12 +121,13 @@ export function useWorkspaceSyncHandlers({
     schoolYear,
     role,
     discipline,
-    order,
+     order,
+     institutionalArchive,
     lastUpdated: Date.now()
    };
 
    const fileContent = JSON.stringify(stateToBackup, null, 2);
-   const fileName = `CurManLight_CopiaSicurezza_Milani_${schoolYear}.json`;
+    const fileName = `curmanlight_copia_sicurezza_${schoolYear || 'sessione'}.json`;
 
    // 1. Search for existing file on Google Drive to update
    const searchRes = await fetch(`https://www.googleapis.com/drive/v3/files?q=name='${fileName}' and trashed=false&fields=files(id)`, {
@@ -142,7 +154,7 @@ export function useWorkspaceSyncHandlers({
        
        if (cloudTimestamp > localTimestamp) {
          const confirmMerge = confirm(
-           "Conflitto d'Archiviazione d'Istituto:\n\n" +
+            "Conflitto tra copie JSON:\n\n" +
            "La copia di sicurezza presente sul Cloud risulta piÃƒÂ¹ recente di quella locale.\n\n" +
            "Desideri forzare la sovrascrittura perdendo le modifiche Cloud presenti?"
          );
@@ -200,21 +212,21 @@ export function useWorkspaceSyncHandlers({
 
    if (uploadRes && uploadRes.ok) {
     localStorage.setItem('curman_lastUpdatedTime', String(stateToBackup.lastUpdated));
-    showToast(` Copia di Sicurezza sincronizzata con successo su Google Drive (${cloudAccountType === "scolastica" ? "Scolastico" : "Personale"})!`, true);
+     showToast("Copia JSON caricata su Google Drive per l'account selezionato.", true);
    } else {
     throw new Error("Errore durante il caricamento");
    }
   } catch (err) {
    console.warn("Errore Sincronizzazione Google:", err);
-   showToast(" Connessione scaduta. Clicca su Connetti per rinfrescare il Token d'Istituto.", false);
+    showToast("Sessione Google scaduta. Riconnetti l'account per ottenere un nuovo token.", false);
    
    // Fallback simulated backup file generation for local offline use
    setTimeout(() => {
-    const blob = new Blob([JSON.stringify({ localCurriculum, savedUda, decisions, customTexts }, null, 2)], { type: 'application/json' });
+     const blob = new Blob([JSON.stringify({ localCurriculum, savedUda, decisions, customTexts, institutionalArchive }, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `CopiaSicurezza_Locale_Milani.json`;
+     link.download = 'curmanlight_copia_sicurezza_locale.json';
     link.click();
     showToast("Sincronizzazione di emergenza: Copia scaricata in locale.", true);
    }, 1500);
@@ -233,11 +245,12 @@ export function useWorkspaceSyncHandlers({
     schoolYear,
     role,
     discipline,
-    order
+     order,
+     institutionalArchive
    };
 
    const fileContent = JSON.stringify(stateToBackup, null, 2);
-   const fileName = `CurManLight_CopiaSicurezza_Milani_${schoolYear}.json`;
+    const fileName = `curmanlight_copia_sicurezza_${schoolYear || 'sessione'}.json`;
 
    // Desktop: File System Access API
    if ('showSaveFilePicker' in window) {
@@ -247,7 +260,7 @@ export function useWorkspaceSyncHandlers({
      const handle = await filePickerWindow.showSaveFilePicker?.({
       suggestedName: fileName,
       types: [{
-         description: "File di Configurazione d'Istituto",
+         description: "File JSON CurManLight",
        accept: { 'application/json': ['.json'] }
       }]
      });
@@ -255,7 +268,7 @@ export function useWorkspaceSyncHandlers({
      const writable = await handle.createWritable();
      await writable.write(fileContent);
      await writable.close();
-     showToast("Copia di sicurezza salvata con successo nella cartella Google Drive locale!", true);
+      showToast("File JSON scritto nella destinazione scelta dall'utente.", true);
      setShowCloudAccountModal(false);
      return;
     } catch (err: unknown) {
@@ -274,10 +287,10 @@ export function useWorkspaceSyncHandlers({
      showToast("Apertura condivisione d'aula... Seleziona 'Google Drive' o 'Salva in Files'.");
      await navigator.share({
       files: [file],
-      title: "Copia di Sicurezza d'Istituto - CurManLight",
+       title: "Copia JSON CurManLight",
       text: "File JSON per il salvataggio diretto nell'app locale di Google Drive."
      });
-     showToast("File inviato all'applicazione Google Drive del dispositivo!", true);
+      showToast("Pannello di condivisione chiuso. Destinazione e salvataggio non verificati.", false);
      setShowCloudAccountModal(false);
      return;
     }
@@ -302,17 +315,17 @@ export function useWorkspaceSyncHandlers({
   if (confirm("Sei sicuro di voler scollegare l'account Workspace? Le prossime modifiche saranno salvate solo localmente.")) {
    setIsWorkspaceLoggedIn(false);
    setWorkspaceAccessToken('');
-   setWorkspaceUserEmail('docente@icdonmilani.edu.it');
+    setWorkspaceUserEmail('');
    safeLocalStorageRemoveItem('curman_workspaceAccessToken');
    safeLocalStorageSetItem('curman_isWorkspaceLoggedIn', 'false');
-   safeLocalStorageSetItem('curman_workspaceUserEmail', 'docente@icdonmilani.edu.it');
-   showToast("Account Workspace d'Istituto scollegato con successo.");
+    safeLocalStorageRemoveItem('curman_workspaceUserEmail');
+    showToast("Sessione Google scollegata localmente.");
   }
  };
 
  const handleWorkspaceAutoPull = async (token: string) => {
   try {
-   const fileName = `CurManLight_CopiaSicurezza_Milani_${schoolYear}.json`;
+    const fileName = `curmanlight_copia_sicurezza_${schoolYear || 'sessione'}.json`;
    const searchRes = await fetch(`https://www.googleapis.com/drive/v3/files?q=name='${fileName}' and trashed=false&fields=files(id)`, {
     headers: { Authorization: `Bearer ${token}` }
    });
@@ -330,15 +343,19 @@ export function useWorkspaceSyncHandlers({
      const remoteUdaCount = remoteState.savedUda?.length || 0;
      const localUdaCount = stateRef.current.savedUda?.length || 0;
      
-     const confirmMessage = ` Sincronizzazione Cloud d'Istituto: Rilevata copia di sicurezza nel tuo Google Drive!\n\n` +
+     const confirmMessage = `Rilevata una copia JSON nel Google Drive dell'account selezionato.\n\n` +
                  `Confronto Side-by-Side delle versioni:\n` +
-                 `Ã¢â‚¬Â¢ Versione Cloud d'Istituto: contiene ${remoteUdaCount} UDA salvate.\n` +
+                 `Ã¢â‚¬Â¢ Copia Drive: contiene ${remoteUdaCount} UDA salvate.\n` +
                  `Ã¢â‚¬Â¢ Versione Locale di questo PC: contiene ${localUdaCount} UDA in memoria.\n\n` +
                  `Desideri allineare e ripristinare la versione Cloud piÃƒÂ¹ recente per sincronizzare il tuo lavoro su questo computer?`;
 
      if (confirm(confirmMessage)) {
-      restoreBackupState(remoteState);
-      showToast("Configurazione d'Istituto ripristinata e sincronizzata con successo!", true);
+       const result = restoreBackupState(remoteState);
+       if (result.success) {
+         showToast("Copia Drive validata e ripristinata localmente.", true);
+       } else {
+        showToast(`Copia cloud non ripristinata: ${result.message}`, false);
+       }
      } else {
       setIsWorkspaceSyncLocked(true);
       showToast(" Sincronizzazione cloud disattivata in questa sessione per proteggere il tuo faldone remoto.", false);

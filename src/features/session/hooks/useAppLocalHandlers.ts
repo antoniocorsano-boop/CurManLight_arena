@@ -24,7 +24,7 @@ export function useAppLocalHandlers({
 
  const handleNext = useCallback(() => {
   if (wizardStep === 1 && !progTitle.trim()) {
-   showToast("Inserire un titolo per l'UDA d'Istituto prima di procedere!", false);
+   showToast("Inserisci un titolo per la bozza UDA locale prima di procedere.", false);
    return;
   }
   if (wizardStep < 5) {
@@ -47,7 +47,7 @@ export function useAppLocalHandlers({
    console.error('Purge failed:', e);
   }
 
-  showToast("Tutti i dati locali d'Istituto sono stati cancellati con successo!");
+  showToast("I dati locali dell'app sono stati cancellati.");
   setTimeout(() => {
    window.location.reload();
   }, 1000);

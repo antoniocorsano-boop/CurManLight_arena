@@ -43,7 +43,7 @@ describe('CML-610 — Empty states operational clarity', () => {
         />
       );
       expect(screen.getByText('Nessuna variazione da mostrare')).toBeInTheDocument();
-      expect(screen.getByText(/Tutte le schede per questa categoria/)).toBeInTheDocument();
+      expect(screen.getByText(/Non ci sono schede corrispondenti/)).toBeInTheDocument();
     });
 
     it('does not show empty state when proposals exist in list mode', () => {

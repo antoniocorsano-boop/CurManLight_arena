@@ -2,7 +2,7 @@ export type SchoolOrder = 'infanzia' | 'primaria' | 'secondaria';
 
 export type DecisionStatus = 'approved' | 'rejected' | 'custom';
 
-export type UserRole = 'insegnante' | 'dipartimento' | 'referente' | 'dirigente' | 'collegio' | 'amministratore';
+export type UserRole = 'non-dichiarato' | 'insegnante' | 'dipartimento' | 'referente' | 'dirigente' | 'collegio' | 'amministratore';
 
 export interface Proposal {
   id: string;

@@ -85,7 +85,7 @@ export function AgentSetupModal({
      <div role="dialog" aria-modal="true" className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[170] flex items-center justify-center p-4">
       <div className="bg-white border max-w-lg w-full rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] fade-in">
        <div className="bg-gradient-to-r from-indigo-700 to-primary-700 text-white px-5 py-4 flex justify-between items-center shrink-0">
-        <span className="font-black uppercase tracking-wider text-[11px]">Configurazione Connettore LLM Locale d'Istituto</span>
+        <span className="font-black uppercase tracking-wider text-[11px]">Configurazione personale del connettore LLM</span>
         <button onClick={() => setShowAgentSetupModal(false)} className="text-slate-300 hover:text-white transition">
          <X className="w-5 h-5" />
         </button>
@@ -94,13 +94,13 @@ export function AgentSetupModal({
        <div className="p-4 md:p-6 space-y-4 text-xs leading-relaxed text-slate-700 text-left overflow-y-auto flex-1">
 
         <div className="bg-slate-50 border p-3.5 rounded-xl space-y-1">
-         <span className="text-[9px] font-black text-indigo-600 uppercase block tracking-wider">Rilevatore Hardware d'Istituto:</span>
+         <span className="text-[9px] font-black text-indigo-600 uppercase block tracking-wider">Rilevamento locale del dispositivo:</span>
          <p className="font-bold text-slate-800">
           Strumento Rilevato: <span className="uppercase text-indigo-700">{detectedDeviceType === 'mobile' ? 'Dispositivo Mobile (Tablet / Smartphone)' : 'Postazione Fissa (Desktop / PC / Mac)'}</span>
          </p>
          <p className="text-[10px] text-slate-500 font-medium">
           {detectedDeviceType === 'mobile'
-            ? "Consigliato: Collegamento a Server d'Istituto (Ollama LAN) per non consumare banda e spazio sul dispositivo mobile d'aula."
+            ? "Possibile opzione: endpoint Ollama configurato dall'utente. Disponibilità, identità e protezione non sono verificate."
             : "Consigliato: Browser WebGPU (Local) o Connessione Ollama locale su localhost."
           }
          </p>
@@ -117,7 +117,7 @@ export function AgentSetupModal({
           onClick={() => setLocalAgentType('ollama')}
           className={`px-3 py-1.5 rounded-lg transition ${localAgentType === 'ollama' ? 'bg-white text-indigo-950 shadow-sm border' : 'text-slate-500 hover:text-slate-800'}`}
          >
-          Server d'Istituto / Personale (Ollama)
+          Endpoint Ollama locale o remoto
          </button>
          <button
           onClick={() => setLocalAgentType('none')}
@@ -130,7 +130,7 @@ export function AgentSetupModal({
         {localAgentType === 'webgpu' && (
          <div className="space-y-3 fade-in">
           <p className="font-semibold text-slate-500 text-[11px]">
-           L'assistente locale viene eseguito offline tramite WebGPU. Seleziona un modello gratuito d'Istituto:
+           Se supportato dal browser, il modello può essere eseguito localmente tramite WebGPU. La configurazione resta personale e non verificata:
           </p>
 
           {localAgentStatus === 'downloading' ? (
@@ -576,12 +576,12 @@ export function AgentSetupModal({
         {localAgentType === 'ollama' && (
          <div className="space-y-3.5 fade-in">
           <p className="font-semibold text-slate-500 text-[11px]">
-           Connetti la piattaforma ad un'istanza locale o remota di Ollama/Llama.cpp in esecuzione nella LAN d'Istituto o sul tuo computer personale (localhost).
+           Inserisci un endpoint Ollama/Llama.cpp locale o remoto scelto dall'utente. L'app non ne verifica identità o affidabilità.
           </p>
 
           <div className="bg-slate-50 border p-4 rounded-xl space-y-3">
            <div className="space-y-1">
-            <label className="text-[9px] font-black text-slate-400 uppercase tracking-wider block">Indirizzo API del Server d'Istituto (con CORS abilitato):</label>
+            <label className="text-[9px] font-black text-slate-400 uppercase tracking-wider block">Indirizzo API dell'endpoint configurato:</label>
             <input
              type="text"
              value={ollamaServerUrl}
@@ -612,7 +612,7 @@ export function AgentSetupModal({
 
            {ollamaStatus === 'connected' && (
             <p className="text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-100 p-2.5 rounded-lg text-center">
-             Connessione stabilita con il Server Ollama! Il co-pilota IA d'Istituto utilizzerà il modello '{ollamaModelName}' in esecuzione sul server.
+             Endpoint Ollama raggiungibile. Il modello dichiarato è '{ollamaModelName}'; identità e comportamento restano non verificati.
             </p>
            )}
 
@@ -628,7 +628,7 @@ export function AgentSetupModal({
         {localAgentType === 'none' && (
          <div className="space-y-3.5 fade-in text-center p-5 border border-dashed rounded-xl bg-slate-50/50">
           <p className="font-semibold text-slate-500 text-[11px]">
-           Nessun connettore locale o server attivo. L'applicazione utilizzerà unicamente la Banca Dati baseline ministeriale standard d'Istituto d'emergenza (funzionamento offline 0 MB).
+           Nessun connettore attivo. Restano disponibili soltanto risposte locali basate sulle fonti incluse, non verificate.
           </p>
           <button
            onClick={() => {
@@ -655,7 +655,7 @@ export function AgentSetupModal({
         'gemini-nano': {
           title: "Ermes (Chrome Gemini Nano)",
           spec: "API Integrata, Gratuito, 0 MB Download",
-          desc: "Sfrutta l'IA integrata nativamente nel tuo telefono o tablet tramite 'window.ai'. Non richiede alcun download di file e non consuma spazio d'archiviazione sul dispositivo. L'elaborazione avviene offline sul coprocessore neurale integrato nel tuo hardware d'Istituto.",
+          desc: "Prova l'API locale 'window.ai' quando disponibile. Supporto, esecuzione e trattamento dei dati dipendono dal browser e non sono verificati dall'app.",
           icon: (
             <svg className="w-8 h-8 text-indigo-500 shrink-0" viewBox="0 0 24 24" fill="currentColor">
               <path d="M12 2c-.3 0-.6.2-.7.5L9.5 8.3l-5.8 1.8c-.3.1-.5.4-.5.7s.2.6.5.7l5.8 1.8 1.8 5.8c.1.3.4.5.7.5s.6-.2.7-.5l1.8-5.8 5.8-1.8c.3-.1.5-.4.5-.7s-.2-.6-.5-.7l-5.8-1.8-1.8-5.8c-.1-.3-.4-.5-.7-.5z" />
@@ -689,7 +689,7 @@ export function AgentSetupModal({
         'llama-1b': {
           title: "Platone (Llama-3.2-1B-Instruct)",
           spec: "Modello Leggero, Gratuito, ~1.2 GB",
-          desc: "Sviluppato da Meta, questo modello offre un'eccellente comprensione sintattica e fluidità linguistica in italiano. Ottimo compromesso d'uso per tablet di ultima generazione (RAM >= 8 GB) e computer portatili d'Istituto.",
+          desc: "Modello di Meta per dispositivi con risorse adeguate. Prestazioni e qualità devono essere verificate dall'utente.",
           icon: (
             <svg className="w-8 h-8 text-teal-600 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
               <path d="M4 12c0-3.3 2.7-6 6-6s6 6 10 6 4-2.7 4-6" />
@@ -710,7 +710,7 @@ export function AgentSetupModal({
         'qwen-1.5b': {
           title: "Cicerone (Qwen-2.5-1.5B-Instruct)",
           spec: "Multilingue Ottimizzato, Gratuito, ~1.1 GB",
-          desc: "Versione del modello Qwen ideale per compiti di scrittura formale, mappatura delle competenze ed elaborazione didattica. Ottima comprensione della grammatica italiana e dei nessi disciplinari d'Istituto.",
+          desc: "Modello Qwen utilizzabile per prove locali di scrittura e mappatura. Qualità e adeguatezza non sono verificate.",
           icon: (
             <svg className="w-8 h-8 text-purple-600 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="M17.5 19A5.5 5.5 0 0 0 18 8.02a1 1 0 0 0-.82-.7A7 7 0 0 0 3.5 11.5a1 1 0 0 0 .58.91 5.5 5.5 0 0 0 2.5 10" />
@@ -732,7 +732,7 @@ export function AgentSetupModal({
         'llama-3b': {
           title: "Leonardo (Llama-3.2-3B-Instruct)",
           spec: "Modello Completo, Gratuito, ~3.2 GB",
-          desc: "Il modello a pesi completi consigliato per postazioni PC fisse d'Istituto. Brilla per flessibilità, precisione sintattica, pianificazione e simulazione dei percorsi degli Agenti Umani Virtuali offline.",
+          desc: "Modello più pesante per dispositivi con risorse elevate. Prestazioni, precisione e adeguatezza non sono garantite.",
           icon: (
             <svg className="w-8 h-8 text-teal-600 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
               <path d="M4 12c0-3.3 2.7-6 6-6s6 6 10 6 4-2.7 4-6" />

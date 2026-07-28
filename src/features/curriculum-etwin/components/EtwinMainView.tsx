@@ -73,7 +73,7 @@ export function EtwinMainView() {
         {/* Header */}
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-gray-900 mb-2">
-            Curricolo Verticale d'Istituto — Prototipo e-Twin
+              Prototipo e-Twin su dati locali non verificati
           </h1>
           <p className="text-sm text-gray-600">
             CML-630C — Validazione sperimentale del modello di dominio

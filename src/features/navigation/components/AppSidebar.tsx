@@ -94,7 +94,7 @@ export function AppSidebar({
             activeTab === 'fonti' ? 'bg-indigo-50 text-indigo-700 font-bold' : 'text-slate-500 hover:text-slate-800'
           }`}
          >
-          <span>Fonti d'Istituto</span>
+          <span>Fonti locali</span>
          </div>
 
          <div
@@ -143,7 +143,7 @@ export function AppSidebar({
             activeTab === 'progetta-annuale' && activeProgTab === 'uda' ? 'bg-indigo-50 text-indigo-700 font-bold' : 'text-slate-500 hover:text-slate-800'
           }`}
          >
-          <span>Archivio UDA d'Istituto</span>
+          <span>Archivio locale</span>
          </div>
 
          <div
@@ -219,14 +219,14 @@ export function AppSidebar({
       </div>
 
       {/* 5. SEZIONE COMUNE: SUPPORTO & CERTIFICAZIONE */}
-      <p className="px-3 text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1.5 mt-3 pt-1 border-t border-slate-100 text-left">Supporto & Certificazioni</p>
+      <p className="px-3 text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1.5 mt-3 pt-1 border-t border-slate-100 text-left">Supporto e checklist non certificate</p>
       
       <button onClick={() => handleTabSwitch('certificazione-pa')} className={`w-full flex items-center justify-between px-3.5 py-2 rounded-xl text-xs font-semibold transition ${activeTab === 'certificazione-pa' ? 'bg-primary-50 text-primary-600 border border-primary-100 shadow-sm' : 'text-slate-600 hover:bg-slate-50'}`}>
-       <span className="flex items-center space-x-2.5"><ShieldCheck className="w-4 h-4 text-emerald-600" /> <span className="font-extrabold text-indigo-950">Certificazione PA (AgID)</span></span>
+       <span className="flex items-center space-x-2.5"><ShieldCheck className="w-4 h-4 text-emerald-600" /> <span className="font-extrabold text-indigo-950">Checklist accessibilità e conformità (non certificata)</span></span>
       </button>
       
       <button onClick={() => handleTabSwitch('second-brain')} className={`w-full flex items-center justify-between px-3.5 py-2 rounded-xl text-xs font-semibold transition ${activeTab === 'second-brain' ? 'bg-primary-50 text-primary-600 border border-primary-100 shadow-sm' : 'text-slate-600 hover:bg-slate-50'}`}>
-       <span className="flex items-center space-x-2.5"><Sparkles className="w-4 h-4 text-indigo-500" /> <span className="font-extrabold text-indigo-950">WikiLLM & Brain d'Istituto</span></span>
+       <span className="flex items-center space-x-2.5"><Sparkles className="w-4 h-4 text-indigo-500" /> <span className="font-extrabold text-indigo-950">WikiLLM e archivio locale</span></span>
       </button>
       
       <button onClick={() => handleTabSwitch('guida')} className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition ${activeTab === 'guida' ? 'bg-primary-50 text-primary-600 border border-primary-100 shadow-sm' : 'text-slate-600 hover:bg-slate-50'}`}>

@@ -12,7 +12,6 @@ interface UseOnboardingProfileArgs {
 }
 
 export const useOnboardingProfile = ({
-  order,
   setRole,
   setDiscipline,
   setOrder,
@@ -24,59 +23,43 @@ export const useOnboardingProfile = ({
   });
   const [, setAssignedClasses] = useState<string[]>(() => {
     const saved = safeLocalStorageGetItem('curman_assignedClasses', '');
-    return saved ? saved.split(',') : ['1', '2'];
+    return saved ? saved.split(',') : [];
   });
   const [assignedCombinations, setAssignedCombinations] = useState<string[]>(() => {
     const saved = safeLocalStorageGetItem('curman_assignedCombinations', '');
     if (saved) return saved.split(',');
-    return order === 'infanzia' ? ['Sezione A'] : (order === 'primaria' ? ['1^A', '2^A'] : ['1^A', '2^A', '2^B']);
+    return [];
   });
   const [availableSections, setAvailableSections] = useState<string[]>(() => {
     const saved = safeLocalStorageGetItem('curman_availableSections', '');
     if (saved) return saved.split(',');
-    return order === 'infanzia' ? ['Rossa', 'Verde', 'Blu'] : ['A', 'B', 'C'];
+    return [];
   });
   const [newSectionInput, setNewSectionInput] = useState<string>('');
 
-  const [onboardingRole, setOnboardingRoleLocal] = useState<UserRole>('insegnante');
+  const [onboardingRole, setOnboardingRoleLocal] = useState<UserRole>('non-dichiarato');
   const [onboardingDisc, setOnboardingDiscLocal] = useState('italiano');
   const [onboardingOrd, setOnboardingOrdLocal] = useState<SchoolOrder>('secondaria');
   const [onboardingStep, setOnboardingStep] = useState<number>(1);
-  const [onboardingAssignedClasses, setOnboardingAssignedClasses] = useState<string[]>(['1', '2']);
+  const [onboardingAssignedClasses, setOnboardingAssignedClasses] = useState<string[]>([]);
   const [onboardingTeacherType] = useState<'comune' | 'specialista'>('comune');
   const [, setIsSostegno] = useState(() => safeLocalStorageGetItem('curman_isSostegno', 'false') === 'true');
   const [onboardingIsSostegno, setOnboardingIsSostegno] = useState(() => safeLocalStorageGetItem('curman_isSostegno', 'false') === 'true');
-  const [onboardingCombinations, setOnboardingCombinations] = useState<string[]>(() => {
-    return ['1^A', '2^A'];
-  });
+  const [onboardingCombinations, setOnboardingCombinations] = useState<string[]>([]);
 
   const handleSetOnboardingOrdLocal = (ord: SchoolOrder) => {
     setOnboardingOrdLocal(ord);
-    if (ord === 'infanzia') {
-      setOnboardingAssignedClasses(['Fascia Unica 3-5 anni']);
-      setOnboardingCombinations(['Rossa']);
-      setAvailableSections(['Rossa', 'Verde', 'Blu']);
-      safeLocalStorageSetItem('curman_availableSections', 'Rossa,Verde,Blu');
-    } else if (ord === 'primaria') {
-      setOnboardingAssignedClasses(['1', '2']);
-      setOnboardingCombinations(['1^A', '2^A']);
-      setAvailableSections(['A', 'B', 'C']);
-      safeLocalStorageSetItem('curman_availableSections', 'A,B,C');
-    } else {
-      setOnboardingAssignedClasses(['1', '2']);
-      setOnboardingCombinations(['1^A', '2^A', '2^B']);
-      setAvailableSections(['A', 'B', 'C']);
-      safeLocalStorageSetItem('curman_availableSections', 'A,B,C');
-    }
+    setOnboardingAssignedClasses([]);
+    setOnboardingCombinations([]);
+    setAvailableSections([]);
+    safeLocalStorageSetItem('curman_availableSections', '');
   };
 
   const handleToggleOnboardingCombination = (combo: string) => {
     const list = [...onboardingCombinations];
     const idx = list.indexOf(combo);
     if (idx > -1) {
-      if (list.length > 1) {
-        list.splice(idx, 1);
-      }
+      list.splice(idx, 1);
     } else {
       list.push(combo);
     }
@@ -87,14 +70,14 @@ export const useOnboardingProfile = ({
     if (!newSectionInput.trim()) return;
     const cleanSec = newSectionInput.toUpperCase().trim();
     if (availableSections.includes(cleanSec)) {
-      showToast("Questa sezione d'Istituto è già presente in elenco!", false);
+      showToast("Questa sezione locale è già presente in elenco.", false);
       return;
     }
     const updated = [...availableSections, cleanSec];
     setAvailableSections(updated);
     safeLocalStorageSetItem('curman_availableSections', updated.join(','));
     setNewSectionInput('');
-    showToast(`Sezione '${cleanSec}' aggiunta all'elenco d'Istituto!`, true);
+    showToast(`Sezione '${cleanSec}' aggiunta al contesto personale.`);
   };
 
   const saveOnboardingProfile = () => {
@@ -118,7 +101,7 @@ export const useOnboardingProfile = ({
     setAssignedCombinations(onboardingCombinations);
     safeLocalStorageSetItem('curman_assignedCombinations', onboardingCombinations.join(','));
     setShowOnboardingModal(false);
-    showToast("Profilo utente d'Istituto configurato con successo!");
+    showToast('Profilo personale locale salvato. Il ruolo dichiarato non è autenticato.');
   };
 
   return {

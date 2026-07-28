@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { volumesKB, getVolumeTitle } from '../../../data/volumesKB';
 
-export type ReferenceCategory = 'Curricolo' | 'Fonte normativa' | 'Approfondimento';
+export type ReferenceCategory = 'Archivio storico' | 'Approfondimento archivio';
 
 export interface KnowledgeReference {
   volumeId: string;
@@ -20,28 +20,28 @@ interface StepReferences {
 const STEP_REFS: Record<number, (discipline: string, order: string) => StepReferences> = {
   2: (_discipline, order) => ({
     intro: order === 'infanzia'
-      ? 'Riferimenti per la coerenza degli obiettivi con il curricolo dell\'Infanzia. La consultazione è facoltativa.'
-      : 'Riferimenti per la coerenza dei traguardi con disciplina e ordine scolastico. La consultazione è facoltativa.',
+      ? 'Archivio storico non verificato su obiettivi per l\'Infanzia; consultazione facoltativa.'
+      : 'Archivio storico non verificato sui traguardi; materiale dipendente dalle fonti e facoltativo.',
     references: [
       {
         volumeId: 'vol4',
-        category: 'Curricolo',
+        category: 'Archivio storico',
         title: getVolumeTitle('vol4'),
-        excerpt: 'Il curricolo fondativo dell\'Istituto definisce gli obiettivi verticali e le competenze attese per ciascuna disciplina, dalla scuola dell\'Infanzia alla Secondaria di I Grado.',
-        relevance: 'Può aiutarti a verificare la coerenza dei traguardi selezionati con il percorso verticale.',
+        excerpt: 'Fonte storica archiviata relativa a una precedente proposta curricolare verticale.',
+        relevance: 'Consultazione non verificata: non descrive il curricolo attivo o l\'autorità corrente.',
         main: true,
       },
       {
         volumeId: 'vol8',
-        category: 'Curricolo',
+        category: 'Archivio storico',
         title: getVolumeTitle('vol8'),
-        excerpt: 'Mappatura completa e verticale delle 14 discipline d\'Istituto con traguardi, obiettivi e nuclei fondanti per ogni ordine e livello.',
-        relevance: 'Dettaglio specifico della disciplina selezionata con tutti gli obiettivi per classe.',
+        excerpt: 'Mappatura storica archiviata di discipline, traguardi e obiettivi.',
+        relevance: 'Fonte dipendente dall\'archivio, non verificata e non rappresentativa della configurazione corrente.',
         main: false,
       },
       {
         volumeId: 'vol6',
-        category: 'Approfondimento',
+        category: 'Approfondimento archivio',
         title: 'Traguardo di Competenza',
         excerpt: 'Il traguardo descrive la competenza attesa alla fine del ciclo scolastico. Si distingue dall\'obiettivo di apprendimento, che è più specifico e misurabile. Il traguardo è un punto di riferimento stabile, mentre gli obiettivi si adattano al contesto della classe.',
         relevance: 'Approfondisci se vuoi capire la differenza tra traguardo e obiettivo.',
@@ -51,19 +51,19 @@ const STEP_REFS: Record<number, (discipline: string, order: string) => StepRefer
   }),
 
   3: () => ({
-    intro: 'Le evidenze collegano le attività osservabili ai traguardi di competenza. La consultazione è facoltativa.',
+    intro: 'Materiale storico archiviato e non verificato sulle evidenze. Consultazione facoltativa.',
     references: [
       {
         volumeId: 'vol3',
-        category: 'Fonte normativa',
-        title: 'DM 14/2024 — Evidenze di Certificazione',
-        excerpt: 'Le evidenze comportamentali, ai sensi del DM 14/2024, sono osservabili e misurabili. Collegate ai traguardi di competenza, documentano il processo di certificazione delle competenze alla fine del primo ciclo d\'istruzione.',
-        relevance: 'La fonte normativa spiega cosa sono le evidenze e come si collegano ai traguardi.',
+        category: 'Archivio storico',
+        title: 'Archivio storico — Evidenze e certificazione',
+        excerpt: 'Sintesi storica archiviata relativa alle evidenze comportamentali e alla certificazione.',
+        relevance: 'Non è una fonte normativa verificata: consulta il testo ufficiale applicabile.',
         main: true,
       },
       {
         volumeId: 'vol6',
-        category: 'Approfondimento',
+        category: 'Approfondimento archivio',
         title: 'Evidenza Comportamentale',
         excerpt: 'Comportamento osservabile che dimostra il raggiungimento di un traguardo. Si distingue dall\'obiettivo di apprendimento per la sua natura integrativa: non misura un singolo task, ma la manifestazione concreta di una competenza matura.',
         relevance: 'Approfondisci se vuoi capire la differenza tra evidenza e obiettivo.',
@@ -73,11 +73,11 @@ const STEP_REFS: Record<number, (discipline: string, order: string) => StepRefer
   }),
 
   4: () => ({
-    intro: 'Riferimenti per compito di realtà e note di inclusione. La consultazione è facoltativa.',
+    intro: 'Materiale storico archiviato e non verificato per compiti di realtà e inclusione.',
     references: [
       {
         volumeId: 'vol6',
-        category: 'Approfondimento',
+        category: 'Approfondimento archivio',
         title: 'Compito di Realtà',
         excerpt: 'Prodotto o servizio reale che l\'alunno produce utilizzando le competenze sviluppate nell\'Unità Didattica di Apprendimento. Caratteristiche: autenticità, complessità, contestualizzazione. Il compito di realtà si distingue dalla prova tradizionale perché richiede l\'integrazione di più competenze in un contesto significativo.',
         relevance: 'Può aiutarti a formulare un compito di realtà coerente con l\'UDA.',
@@ -85,15 +85,15 @@ const STEP_REFS: Record<number, (discipline: string, order: string) => StepRefer
       },
       {
         volumeId: 'vol3',
-        category: 'Fonte normativa',
-        title: 'PEI / PDP / UDL — Quadro Normativo Inclusione',
+        category: 'Archivio storico',
+        title: 'Archivio storico — PEI / PDP / UDL',
         excerpt: 'PEI (D.M. 182/2020): Piano Educativo Individualizzato per alunni con disabilità. PDP (L. 170/2010): Piano Didattico Personalizzato per disturbi specifici dell\'apprendimento. UDL: Universal Design for Learning — progettazione universale per l\'apprendimento con strumenti compensativi e misure dispensative.',
-        relevance: 'Riferimento normativo per le note di inclusione BES/DSA.',
+        relevance: 'Sintesi archiviata non verificata; consulta le fonti ufficiali applicabili.',
         main: false,
       },
       {
         volumeId: 'vol19',
-        category: 'Approfondimento',
+        category: 'Approfondimento archivio',
         title: 'Ambiente Classe e Apprendimento Cooperativo',
         excerpt: 'Jigsaw, Peer Tutoring, Learning Station: metodologie per l\'inclusione attiva. Ogni studente contribuisce con un ruolo definito alla costruzione collettiva del sapere. Il lavoro cooperativo favorisce l\'integrazione e sviluppa competenze sociali insieme a quelle disciplinari.',
         relevance: 'Metodologie utili per la progettazione inclusiva della tua UDA.',
@@ -128,7 +128,7 @@ export function useKnowledgeCompanion(
   const overlayContent = overlayVolumeId
     ? {
         id: overlayVolumeId,
-        title: getVolumeTitle(overlayVolumeId),
+        title: `Archivio storico non verificato: ${getVolumeTitle(overlayVolumeId)}`,
         html: volumesKB[overlayVolumeId]?.html ?? '<p>Contenuto non disponibile.</p>',
       }
     : null;

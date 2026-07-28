@@ -1,6 +1,7 @@
 import type { UserRole } from '../types/curriculum';
 
 export const roleLabels: Record<UserRole, string> = {
+ 'non-dichiarato': 'Ruolo non dichiarato (non autenticato)',
  insegnante: 'Insegnante / Docente',
  dipartimento: 'Coordinatore Dipartimento',
  referente: 'Referente per il Curricolo',

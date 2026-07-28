@@ -12,7 +12,7 @@ export function CopilotPanel() {
       <div className="flex items-center justify-between px-4 py-3 bg-slate-900 text-white rounded-t-xl">
         <div className="flex items-center gap-2">
           <Bot size={18} />
-          <span className="font-bold text-sm">Co-pilota d'Istituto</span>
+          <span className="font-bold text-sm">Assistente locale non verificato</span>
         </div>
         <button onClick={() => setCopilotChatOpen(false)} className="text-slate-400 hover:text-white">
           <X size={18} />

@@ -13,8 +13,8 @@ export function Sidebar({ collapsed }: SidebarProps) {
     { id: 'curricolo', label: 'Consulta Curricolo', icon: GitBranch, section: 'Consulta Curricolo' },
     { id: 'progetta-annuale', label: 'Progettazione UDA', icon: Calendar, section: 'Progettazione UDA' },
     { id: 'processo', label: 'Spazio d\'Aula e Classe', icon: GraduationCap, section: 'Spazio d\'Aula' },
-    { id: 'certificazione-pa', label: 'Certificazione PA', icon: Award, section: 'Supporto & Certificazioni' },
-    { id: 'second-brain', label: 'WikiLLM & Brain', icon: LibraryBig, section: 'Supporto & Certificazioni' },
+    { id: 'certificazione-pa', label: 'Checklist accessibilità (non certificata)', icon: Award, section: 'Supporto & Checklist' },
+    { id: 'second-brain', label: 'WikiLLM e archivio locale', icon: LibraryBig, section: 'Supporto e checklist' },
   ];
 
   if (collapsed) return null;

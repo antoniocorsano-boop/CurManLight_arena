@@ -204,6 +204,8 @@ export function AppViewsLayer(props: AppViewsLayerProps) {
     setTemplateChatInput,
     templateChatHistory,
     handleSendTemplateInstruction,
+    resetTemplateState,
+    institutionalProfile,
     handleDownloadWordDefinitivo,
     handleDownloadWordDocx,
     handleDownloadODF,
@@ -482,6 +484,8 @@ export function AppViewsLayer(props: AppViewsLayerProps) {
        setTemplateChatInput={setTemplateChatInput}
        templateChatHistory={templateChatHistory}
        handleSendTemplateInstruction={handleSendTemplateInstruction}
+       resetTemplateState={resetTemplateState}
+       institutionalProfile={institutionalProfile}
        handleDownloadWordDefinitivo={handleDownloadWordDefinitivo}
        handleDownloadWordDocx={handleDownloadWordDocx}
        handleDownloadODF={handleDownloadODF}

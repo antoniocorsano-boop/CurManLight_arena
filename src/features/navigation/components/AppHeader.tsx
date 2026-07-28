@@ -78,7 +78,7 @@ export function AppHeader({
              ? 'bg-indigo-600 border-indigo-500 text-white hover:bg-indigo-700' 
              : 'bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700 hover:text-white'
          }`}
-         title="Apri Assistente Co-pilota Contestuale d'Istituto"
+         title="Apri assistente contestuale locale"
        >
         <Sparkles className="w-4 h-4 text-indigo-400" />
         <span className="hidden lg:inline font-bold">Co-pilota Chat</span>
@@ -94,7 +94,7 @@ export function AppHeader({
                  : 'bg-indigo-500/15 text-indigo-400 border-indigo-500/30 hover:bg-indigo-500/25')
              : 'bg-slate-800 text-slate-400 border-slate-700 hover:bg-slate-700 hover:text-slate-300'
          }`}
-         title="Stato del Connettore LLM Locale d'Istituto (Clicca per configurare)"
+         title="Stato del connettore LLM locale (clicca per configurare)"
        >
          <span className={`h-1.5 w-1.5 rounded-full ${
            localAgentStatus === 'installed'
@@ -120,7 +120,7 @@ export function AppHeader({
        <button 
         onClick={() => setShowSaveModal(true)} 
         className="p-2 bg-slate-800 hover:bg-slate-700 hover:text-white text-slate-300 rounded-xl border border-slate-700 transition focus:outline-none flex items-center space-x-1"
-        title="Salvataggio della sessione d'Istituto"
+        title="Salvataggio della sessione locale"
        >
         <Save className="w-4 h-4" />
         <span className="sr-only">Salvataggio</span>
@@ -131,19 +131,19 @@ export function AppHeader({
         <button 
          onClick={() => setRoleDropdownOpen(!roleDropdownOpen)} 
          className="h-9 w-9 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-white flex items-center justify-center font-black text-xs border border-indigo-400 shrink-0 shadow-md focus:outline-none"
-         title="Menu d'Istituto dell'Utente"
+          title="Menu della sessione locale"
         >
-         {isWorkspaceLoggedIn ? "ML" : "DS"}
+          {isWorkspaceLoggedIn ? "CL" : "U"}
         </button>
         
         {roleDropdownOpen && (
          <div className="absolute right-0 mt-2 w-56 bg-slate-800 border border-slate-700 rounded-xl shadow-xl py-1 z-[180] text-xs text-left divide-y divide-slate-700">
           <div className="px-4 py-2.5 text-slate-400 font-medium">
            <p className="font-extrabold text-slate-100 truncate">
-            {isWorkspaceLoggedIn ? `Prof.ssa M. Letizia (${cloudAccountType === 'scolastica' ? "Scolastico" : "Personale"})` : "Utente Scolastico"}
+              {isWorkspaceLoggedIn ? `Account dichiarato ${cloudAccountType === 'scolastica' ? "scolastico" : "personale"} (non verificato)` : "Sessione locale"}
            </p>
            <p className="text-[9px] truncate mt-0.5">
-            {isWorkspaceLoggedIn ? workspaceUserEmail : "Accesso Locale Privilegiato"}
+             {isWorkspaceLoggedIn ? (workspaceUserEmail || 'Identità account non disponibile') : "Nessun accesso privilegiato"}
            </p>
           </div>
           <div className="py-1">
@@ -155,18 +155,18 @@ export function AppHeader({
             <span>Sincronizza Drive</span>
            </button>
            <button 
-            onClick={() => { showToast("Classroom: Lezione SCORM pubblicata sul flusso della classe!", true); setRoleDropdownOpen(false); }} 
+             onClick={() => { showToast("Pubblicazione SCORM non disponibile: integrazione Classroom non configurata.", false); setRoleDropdownOpen(false); }}
             className="w-full text-left px-4 py-2 hover:bg-slate-700 text-slate-200 flex items-center space-x-2 font-bold"
            >
             <Building className="w-3.5 h-3.5" />
-            <span>Condividi Classroom</span>
+             <span>Pubblicazione SCORM non disponibile</span>
            </button>
            <button 
-            onClick={() => { showToast("Classroom: Anagrafica alunni importata e cifrata localmente!", true); setRoleDropdownOpen(false); }} 
+             onClick={() => { showToast("Importazione studenti non disponibile: integrazione Classroom non configurata.", false); setRoleDropdownOpen(false); }}
             className="w-full text-left px-4 py-2 hover:bg-slate-700 text-slate-200 flex items-center space-x-2 font-bold"
            >
             <DownloadCloud className="w-3.5 h-3.5" />
-            <span>Importa Alunni Cifrati</span>
+             <span>Importazione studenti non disponibile</span>
            </button>
           </div>
           <div className="py-1">
@@ -175,7 +175,7 @@ export function AppHeader({
             className="w-full text-left px-4 py-2 hover:bg-slate-700 text-rose-400 flex items-center space-x-2 font-bold"
            >
             <ShieldAlert className="w-3.5 h-3.5" />
-            <span>Azzera Memoria d'Istituto</span>
+            <span>Azzera dati locali</span>
            </button>
            {isWorkspaceLoggedIn ? (
             <button 

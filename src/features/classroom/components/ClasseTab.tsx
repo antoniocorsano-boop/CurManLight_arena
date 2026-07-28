@@ -1,5 +1,7 @@
 import type { AppViewsLayerProps, ClassTheme, ClassroomFeedback, ClassroomLayout, CooperativeMethod } from '../../session';
 import { Printer, X, FileText } from 'lucide-react';
+import { getA07InstitutionalDocumentRead, projectA07InstitutionalDocumentHeader } from '../../../domain/institution';
+import { useCurriculumStore } from '../../../store/useCurriculumStore';
 
 export type ClasseTabProps = Pick<AppViewsLayerProps,
   | 'classeSubTab'
@@ -77,8 +79,6 @@ export function ClasseTab({
   setClassroomStudents,
   showAiSimulatedResponse,
   setShowAiSimulatedResponse,
-  isClassroomLoading,
-  setIsClassroomLoading,
   classroomStudentFeedback,
   setClassroomStudentFeedback,
   selectedStudentForFeedback,
@@ -131,16 +131,20 @@ export function ClasseTab({
   activeTaughtUdaId,
   order,
 }: ClasseTabProps) {
+  const institutionalArchive = useCurriculumStore(state => state.institutionalArchive);
+  const institutionalProfile = getA07InstitutionalDocumentRead(institutionalArchive);
+  const institutionalHeader = projectA07InstitutionalDocumentHeader(institutionalProfile);
+  const selectedClassLabel = selectedClassCombination || 'Classe non selezionata';
   return (
     <div className="space-y-6 fade-in text-left">
       <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 transition duration-200">
        <div className="space-y-1">
         <span className="text-[9px] font-black text-indigo-600 uppercase tracking-wider block">Ambito Registro d'Aula e Studenti</span>
         <h2 className="text-sm font-black text-slate-800 uppercase tracking-wide">
-         Ambiente & Esiti Classe — {selectedClassCombination}
+         Ambiente & Esiti Classe — {selectedClassLabel}
         </h2>
         <p className="text-xs text-slate-600 font-semibold leading-relaxed max-w-2xl">
-         Tracciamento didattico qualitativo di {classroomStudents.length} studenti per la classe {selectedClassCombination}. Generazione di report qualitativi conformi al D.M. 14/2024 (100% offline e GDPR protetto).
+         Tracciamento didattico qualitativo di {classroomStudents.length} studenti per: {selectedClassLabel}. I dati inseriti sono conservati nell'archivio locale del browser.
         </p>
        </div>
        <div className="flex items-center space-x-2 shrink-0">
@@ -157,7 +161,7 @@ export function ClasseTab({
          ))}
         </select>
         <span className="px-2.5 py-1 bg-indigo-50 text-indigo-800 border border-indigo-150 rounded text-[9px] font-black uppercase tracking-wider shrink-0">
-         Registro Classe Safe
+          Registro classe locale
         </span>
        </div>
       </div>
@@ -201,16 +205,16 @@ export function ClasseTab({
      <div className="border border-indigo-100 bg-indigo-50/10 p-5 rounded-2xl space-y-4 text-left">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b pb-2">
        <div className="space-y-1">
-        <span className="px-2 py-0.5 bg-indigo-100 text-indigo-800 rounded text-[8px] font-black uppercase tracking-wider">Misure di Sicurezza d'Istituto (v4.0)</span>
+         <span className="px-2 py-0.5 bg-indigo-100 text-indigo-800 rounded text-[8px] font-black uppercase tracking-wider">Gestione dati locali</span>
         <h4 className="text-xs font-black text-indigo-950 uppercase tracking-wider flex items-center space-x-1.5">
-         <span></span> <span>Registro Studenti Cifrato a Zero-Conoscenza (GDPR Secure)</span>
+          <span></span> <span>Registro studenti nell'archivio locale</span>
         </h4>
        </div>
-       <span className="bg-emerald-100 text-emerald-800 text-[8px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full">AES-GCM Attivo</span>
+        <span className="bg-slate-100 text-slate-700 text-[8px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full">Dati locali</span>
       </div>
       
       <p className="text-[10px] text-slate-500 leading-relaxed font-semibold">
-       Tutti i dati sensibili degli studenti (nomi, cognomi, PEI, PDP, livelli d'esito) vengono cifrati localmente nel browser tramite chiave simmetrica **AES-GCM a 256 bit**. Nessun server esterno, e **nessun motore di Intelligenza Artificiale (WikiLLM o Copilota d'Istituto) può mai leggere questi dati in chiaro**. L'I.A. riceve unicamente token anonimi mascherati, mentre solo il docente titolare in possesso della chiave locale li vede decifrati sullo schermo.
+        I dati inseriti nel registro sono conservati come dati locali del browser e non sono cifrati dall'applicazione. Evita di inserire informazioni cliniche o altri dati non necessari. Le funzioni dimostrative non trasmettono il contenuto del registro a servizi esterni.
       </p>
 
       {classroomStudents.length > 0 ? (
@@ -220,23 +224,23 @@ export function ClasseTab({
           <thead className="bg-slate-50 text-slate-400 text-[8px] uppercase tracking-wider border-b">
            <tr>
             <th className="p-3">Nome Alunno (In Chiaro per il Docente)</th>
-            <th className="p-3">Stato di Sicurezza d'Istituto</th>
-            <th className="p-3">Visto dall'I.A. / Logs (Anonymized Token)</th>
-            <th className="p-3">Diagnosi Sensibile (Cifrata)</th>
-            <th className="p-3">Stato I.A.</th>
+             <th className="p-3">Stato archiviazione</th>
+             <th className="p-3">Pseudonimo locale</th>
+             <th className="p-3">Informazioni locali</th>
+             <th className="p-3">Trasmissione esterna</th>
            </tr>
           </thead>
           <tbody className="divide-y text-slate-700 font-bold">
            {classroomStudents.map((st) => (
             <tr key={st.id} className="hover:bg-slate-50">
              <td className="p-3 text-slate-900">{st.name}</td>
-             <td className="p-3 text-emerald-600"> Cifrato AES-GCM (Locale)</td>
+              <td className="p-3 text-slate-600"> Archivio locale del browser</td>
              <td className="p-3 font-mono text-[9px] text-slate-500">{st.token}</td>
              <td className="p-3 italic text-slate-500">
               <span className="text-slate-900 font-bold block">{st.diagnosis}</span>
-              <span className="text-[8px] text-indigo-600 block">Cifrato in DB: "U2FsdGVkX19..." ({st.maskedDiagnosis})</span>
+               <span className="text-[8px] text-slate-500 block">Profilo locale: {st.maskedDiagnosis}</span>
              </td>
-             <td className="p-3"><span className="bg-indigo-100 text-indigo-800 text-[8px] px-1.5 py-0.5 rounded font-black uppercase">Blindato</span></td>
+              <td className="p-3"><span className="bg-slate-100 text-slate-700 text-[8px] px-1.5 py-0.5 rounded font-black uppercase">Non trasmesso</span></td>
             </tr>
            ))}
           </tbody>
@@ -244,18 +248,14 @@ export function ClasseTab({
         </div>
 
         <div className="flex flex-col sm:flex-row gap-2">
-         <button 
-          onClick={() => {
-           setIsClassroomLoading(true);
-           setTimeout(() => {
+          <button
+           onClick={() => {
             setShowAiSimulatedResponse(true);
-            setIsClassroomLoading(false);
-            showToast("Interrogazione completata in modo anonimo!", true);
-           }, 1200);
-          }}
+            showToast("Anteprima di dimostrazione locale generata con regole locali; nessun servizio IA è stato contattato.", false);
+           }}
           className="bg-indigo-600 hover:bg-indigo-700 text-white font-black text-[10px] uppercase tracking-wider px-4 py-2.5 rounded-xl transition shadow-md flex items-center justify-center space-x-1.5"
          >
-          <span> Interroga I.A. per Adattamento UDA</span>
+           <span>Genera anteprima locale basata su regole</span>
          </button>
          <button 
           onClick={() => {
@@ -271,69 +271,40 @@ export function ClasseTab({
         {showAiSimulatedResponse && (
          <div className="bg-slate-900 text-slate-200 p-4 rounded-xl space-y-2 text-[10px] font-semibold leading-relaxed fade-in text-left font-mono border border-slate-800">
           <p className="text-indigo-400 font-black flex items-center space-x-1.5">
-           <span></span> <span>WikiLLM d'Istituto (Log di Tracciamento Anonimizzato):</span>
+            <span></span> <span>Anteprima dimostrativa locale (regole statiche)</span>
           </p>
           <p className="text-slate-400">
-           [STATO COMPILAZIONE] Rilevata richiesta per <strong>{classroomStudents.length} studenti</strong>.
+            Elaborazione locale di esempio per <strong>{classroomStudents.length} profili presenti</strong>. Nessun servizio esterno è stato contattato.
           </p>
           <div className="pl-4 border-l border-slate-700 text-slate-300 italic space-y-1">
-           <p>"Ricevuto input di co-progettazione d'Istituto."</p>
-           <p>"Mappatura dei parametri: <span className="text-amber-400">st_A_id Profilo_Inclusione_Tipo_1</span>, <span className="text-amber-400">st_B_id Profilo_Compensativo_Tipo_2</span>."</p>
-           <p>"I nomi reali 'MARIO ROSSI' e 'LUCA BIANCHI' non sono stati trasmessi né analizzati nel motore linguistico. I dati sensibili rimangono protetti in locale."</p>
-           <p className="text-emerald-400 font-bold">"Risoluzione: Suggerisco di inserire fogli speciali per il corsivo (Profilo_Compensativo_Tipo_2) e favorire la cooperazione d'area (Profilo_Inclusione_Tipo_1)."</p>
+            <p>"Questa anteprima usa esclusivamente una regola dimostrativa predefinita."</p>
+            <p className="text-emerald-400 font-bold">"Suggerimento generale: verificare accessibilità dei materiali, tempi e modalità cooperative in base alle osservazioni del docente."</p>
           </div>
          </div>
         )}
        </div>
       ) : (
-       <div className="flex flex-col sm:flex-row gap-3 w-full">
-        <button 
-         onClick={() => {
-          setIsClassroomLoading(true);
-          setTimeout(() => {
-           setClassroomStudents([
-            { id: '1', name: 'Mario Rossi', token: 'Studente_A', diagnosis: 'PEI - Disabilità Relazionale', maskedDiagnosis: 'Profilo_Inclusione_Tipo_1', osiLevel: 'Avanzato' },
-            { id: '2', name: 'Luca Bianchi', token: 'Studente_B', diagnosis: 'PDP - Disgrafia Lieve', maskedDiagnosis: 'Profilo_Compensativo_Tipo_2', osiLevel: 'Intermedio' },
-            { id: '3', name: 'Sofia Romano', token: 'Studente_C', diagnosis: 'Profilo Comune / Disciplinare', maskedDiagnosis: 'Nessuno', osiLevel: 'Avanzato' }
-           ]);
-           setIsClassroomLoading(false);
-           showToast("Elenco studenti importato da Google Classroom e cifrato AES-GCM localmente!", true);
-          }, 1200);
-         }}
-         disabled={isClassroomLoading}
-         className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-black text-[10px] uppercase tracking-wider py-2.5 px-4 rounded-xl transition shadow-md shadow-indigo-600/10"
-        >
-         {isClassroomLoading ? " Connessione a Google Classroom in corso..." : " Importa Anagrafica Classe Cifrata da Google Classroom"}
-        </button>
-
-        <label className="flex-1 bg-white hover:bg-slate-50 border border-slate-200 hover:border-slate-300 text-slate-700 font-black text-[10px] uppercase tracking-wider py-2.5 px-4 rounded-xl transition shadow-sm text-center cursor-pointer flex items-center justify-center">
-         <span>★ Carica CSV Registro d'Istituto (Bypass)</span>
-         <input 
-          type="file" 
-          accept=".csv" 
-          className="hidden" 
-          onChange={(e) => {
-           const file = e.target.files?.[0];
-           if (file) {
-            const reader = new FileReader();
-            reader.onload = () => {
-             try {
-              setClassroomStudents([
-               { id: '101', name: 'Enzo Ferrari', token: 'Studente_CSV_1', diagnosis: 'Profilo Comune', maskedDiagnosis: 'Nessuno', osiLevel: 'Avanzato' },
-               { id: '102', name: 'Maria Montessori', token: 'Studente_CSV_2', diagnosis: 'PDP - Dislessia', maskedDiagnosis: 'Profilo_Compensativo_Tipo_1', osiLevel: 'Intermedio' },
-               { id: '103', name: 'Rita Levi', token: 'Studente_CSV_3', diagnosis: 'PEI - Disabilità Motoria', maskedDiagnosis: 'Profilo_Inclusione_Tipo_2', osiLevel: 'Base' }
-              ]);
-              showToast("Bypass completato: Registro Studenti d'Istituto caricato da CSV locale!", true);
-             } catch(err) {
-              showToast("Errore durante la lettura del file CSV del registro.", false);
-             }
-            };
-            reader.readAsText(file);
-           }
-          }} 
-         />
-        </label>
-       </div>
+        <div className="space-y-3 w-full">
+         <p className="text-[10px] text-slate-600 bg-amber-50 border border-amber-200 rounded-xl p-3 font-semibold">
+          Modalità demo locale: nessun dato studente viene creato o importato. Le integrazioni richiedono una configurazione esterna non disponibile in questa versione.
+         </p>
+         <div className="flex flex-col sm:flex-row gap-3">
+          <button
+           type="button"
+           onClick={() => showToast('Google Classroom non disponibile nella demo locale.', false)}
+           className="flex-1 bg-slate-100 text-slate-600 font-black text-[10px] uppercase tracking-wider py-2.5 px-4 rounded-xl border border-slate-200"
+          >
+           Google Classroom non disponibile
+          </button>
+          <button
+           type="button"
+           onClick={() => showToast('Importazione CSV non disponibile nella demo locale.', false)}
+           className="flex-1 bg-slate-100 text-slate-600 font-black text-[10px] uppercase tracking-wider py-2.5 px-4 rounded-xl border border-slate-200"
+          >
+           Importazione CSV non disponibile
+          </button>
+         </div>
+        </div>
       )}
      </div>
 
@@ -510,8 +481,8 @@ export function ClasseTab({
                className="text-[9px] border rounded bg-white text-slate-600 px-1 py-0.5 font-bold focus:ring-1 focus:ring-indigo-500 max-w-[180px] outline-none"
                value=""
               >
-               <option value=""> Descrittore Standard d'Istituto...</option>
-               <option value="Mostra spiccata autonomia, originalità e fluidità nello svolgimento del compito di realtà d'Istituto."> Livello Avanzato: Autonomia e precisione</option>
+                <option value="">Descrittore locale...</option>
+                <option value="Mostra spiccata autonomia, originalità e fluidità nello svolgimento del compito di realtà.">Livello Avanzato: Autonomia e precisione</option>
                <option value="Svolge compiti complessi in modo autonomo, dimostrando buona precisione metodologica d'aula."> Livello Intermedio: Risoluzione autonoma</option>
                <option value="Svolge compiti semplici in situazioni note, richiedendo un orientamento o stimolo parziale."> Livello Base: Situazioni note guidate</option>
                <option value="Esegue compiti semplici in situazioni note solo se guidato ed affiancato da un supporto didattico continuo."> Livello Iniziale: Con supporto continuo</option>
@@ -534,7 +505,7 @@ export function ClasseTab({
              />
              {/\b(104|dsa|bes|pei|pdp|disabilit[aà]|clinica)\b/i.test(selectedStudentForFeedback.obs) && (
               <p className="text-[9px] text-rose-600 font-extrabold leading-relaxed mt-1">
-                Regolamento d'Istituto (GDPR): Evita di inserire acronimi clinici o riferimenti a diagnosi (DSA, BES, 104) per proteggere la privacy del minore.
+                 Avvertenza sui dati locali: evita di inserire diagnosi, sigle cliniche o informazioni personali non necessarie.
               </p>
              )}
             </div>
@@ -562,15 +533,14 @@ export function ClasseTab({
             <div className="bg-white border border-slate-200 shadow-xl p-8 max-w-xl mx-auto space-y-6 text-xs text-slate-800 relative leading-relaxed">
              
              <div className="text-center border-b pb-4 space-y-1">
-              <span className="font-extrabold uppercase tracking-widest text-[9px] text-slate-400 block">Ministero dell'Istruzione e del Merito</span>
-              <strong className="font-bold text-[11px] block uppercase leading-tight text-slate-800">Ufficio Scolastico Regionale per la Campania</strong>
-              <strong className="font-bold text-[10px] block uppercase leading-tight text-slate-600">Istituto Comprensivo Calvario-Covotta "don Lorenzo Milani"</strong>
-              <p className="text-[8px] text-slate-400 font-medium">Via Calvario, Ariano Irpino (AV) - Cod. Mecc. AVIC849003</p>
+               {institutionalHeader.primaryHeading && <span className="font-extrabold uppercase tracking-widest text-[9px] text-slate-400 block">{institutionalHeader.primaryHeading}</span>}
+               <strong className="font-bold text-[11px] block uppercase leading-tight text-slate-800">{institutionalHeader.displayName}</strong>
+               {institutionalHeader.secondaryLines.map(line => <p key={line} className="text-[8px] text-slate-400 font-medium">{line}</p>)}
              </div>
 
              <div className="text-center space-y-1">
               <h3 className="text-sm font-black uppercase text-indigo-950 tracking-wider">Rapporto di Copertura e Comprensione d'Aula</h3>
-              <p className="text-[9px] font-bold text-slate-500">Plesso Scolastico d'Istituto | Classe-Sezione: {selectedClassCombination} | a.s. 2025-2026</p>
+               <p className="text-[9px] font-bold text-slate-500">{selectedClassLabel}{institutionalProfile.academicYearLabel ? ` | a.s. ${institutionalProfile.academicYearLabel}` : ''}</p>
              </div>
 
              <div className="bg-slate-50 p-3 border rounded-xl space-y-1 text-[10px]">
@@ -585,7 +555,7 @@ export function ClasseTab({
                <table className="w-full text-[9px] text-left font-semibold">
                 <thead className="bg-slate-50 border-b">
                  <tr>
-                  <th className="p-2">Studente (Themed/Cifrato)</th>
+                  <th className="p-2">Pseudonimo locale</th>
                   <th className="p-2">Livello Comprensione</th>
                   <th className="p-2">Motivazione</th>
                  </tr>
@@ -626,7 +596,7 @@ export function ClasseTab({
              </div>
 
              <div className="space-y-1 pt-2">
-              <span className="text-[9px] font-black text-slate-400 uppercase tracking-wider block">3. Annotazioni di Consolidamento d'Istituto:</span>
+               <span className="text-[9px] font-black text-slate-400 uppercase tracking-wider block">3. Annotazioni locali di consolidamento:</span>
               <div className="bg-slate-50 p-3 border rounded-xl space-y-1 text-[9px] italic text-slate-600 font-medium">
                {classroomStudentFeedback.map((st) => (
                 <p key={st.id}>- {getThemedStudentName(st.id).split(' ')[0]}: "{st.obs}"</p>
@@ -634,17 +604,11 @@ export function ClasseTab({
               </div>
              </div>
 
-             <div className="pt-10 flex justify-between text-[9px] leading-relaxed text-slate-600">
-              <div className="text-center">
-               <p className="font-bold">Il Docente Coordinatore</p>
-               <p className="h-6" />
-               <p className="border-t border-dashed w-32 mx-auto pt-1 font-medium">Firma autografa</p>
-              </div>
-              <div className="text-center">
-               <p className="font-bold">Il Dirigente Scolastico</p>
-               <p className="h-6" />
-               <p className="border-t border-dashed w-32 mx-auto pt-1 font-medium">Firma autografa</p>
-              </div>
+              <div className="pt-10 text-[9px] leading-relaxed text-slate-600">
+               <div className="text-center">
+                <p className="font-bold">{institutionalHeader.declaredRoleLine ?? 'Responsabile della compilazione'}</p>
+                <p className="text-slate-400">Report didattico personale</p>
+               </div>
              </div>
 
             </div>
@@ -652,7 +616,7 @@ export function ClasseTab({
 
            <div className="bg-slate-50 px-6 py-3.5 border-t flex justify-between shrink-0">
             <button onClick={() => setShowClassroomReport(false)} className="px-4 py-2 border rounded-xl font-bold text-xs bg-white text-slate-700 hover:bg-slate-50 transition">Chiudi</button>
-            <button onClick={() => window.print()} className="bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs px-5 py-2.5 rounded-xl transition flex items-center space-x-1.5 shadow-md shadow-indigo-600/10"><Printer className="w-4 h-4" /> <span>Stampa Report d'Istituto</span></button>
+             <button onClick={() => window.print()} className="bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs px-5 py-2.5 rounded-xl transition flex items-center space-x-1.5 shadow-md shadow-indigo-600/10"><Printer className="w-4 h-4" /> <span>Stampa Report</span></button>
            </div>
           </div>
          </div>
@@ -662,7 +626,7 @@ export function ClasseTab({
      <div className={classeSubTab === 'strumenti' ? 'space-y-6 block' : 'hidden'}>
      <div className="bg-white border rounded-2xl p-4 shadow-sm grid grid-cols-1 md:grid-cols-3 gap-4 text-xs font-semibold text-slate-700">
       <div className="space-y-1">
-       <label className="text-[9px] font-black text-slate-400 uppercase tracking-wider block">1. Seleziona la tua Classe Attiva d'Istituto:</label>
+        <label className="text-[9px] font-black text-slate-400 uppercase tracking-wider block">1. Seleziona una classe del contesto personale:</label>
        <select 
         value={selectedClassCombination} 
         onChange={(e) => {
@@ -683,7 +647,7 @@ export function ClasseTab({
         value={activeClassTheme} 
         onChange={(e) => {
          setActiveClassTheme(e.target.value as ClassTheme);
-         showToast(`Configurato Tema d'Istituto: ${e.target.value.toUpperCase()}`);
+          showToast(`Tema locale selezionato: ${e.target.value.toUpperCase()}`);
          setCooperativeGroups(null);
         }} 
         className="w-full border rounded-xl p-2 bg-slate-50 font-bold outline-none text-indigo-700 focus:ring-1 focus:ring-indigo-500"
@@ -706,7 +670,7 @@ export function ClasseTab({
        >
         <option value="frontale"> Lezione Frontale Tradizionale (Banchi in File)</option>
         <option value="isole"> Didattica Laboratoriale (Isole di Lavoro)</option>
-        <option value="circle"> Cerchio d'Ascolto (Circle Time d'Istituto)</option>
+         <option value="circle">Cerchio d'ascolto (Circle Time)</option>
        </select>
       </div>
      </div>
@@ -779,7 +743,7 @@ export function ClasseTab({
            }
            setExclusionsList([...exclusionsList, { s1: exclusionInputS1, s2: exclusionInputS2 }]);
            setCooperativeGroups(null);
-           showToast("Vincolo relazionale aggiunto d'Istituto!");
+            showToast("Vincolo relazionale aggiunto localmente.");
           }} 
           className="bg-slate-800 hover:bg-slate-700 text-white px-2.5 py-1 rounded font-black text-[10px] uppercase"
          >
@@ -873,12 +837,12 @@ export function ClasseTab({
       </div>
 
       <div className="lg:col-span-8 bg-white border border-slate-200 p-5 rounded-2xl space-y-4">
-       <span className="text-[9px] font-black text-slate-400 uppercase tracking-wider block">Cronoprogramma delle Attività d'Istituto (Diagramma di Gantt)</span>
+       <span className="text-[9px] font-black text-slate-400 uppercase tracking-wider block">Cronoprogramma locale delle attività (Diagramma di Gantt)</span>
        
        <div className="overflow-x-auto">
         <div className="min-w-[500px] border rounded-xl overflow-hidden shadow-inner">
          <div className="grid grid-cols-12 bg-slate-50 border-b text-[8px] font-black uppercase tracking-wider text-slate-400 text-center py-2 divide-x">
-          <div className="col-span-2">UDA d'Istituto</div>
+          <div className="col-span-2">UDA locale</div>
           <div>Set</div>
           <div>Ott</div>
           <div>Nov</div>
@@ -1027,7 +991,7 @@ export function ClasseTab({
         <div className="bg-white border rounded-2xl p-5 shadow-sm space-y-4">
          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b pb-2">
           <div className="space-y-1">
-           <span className="text-[9px] font-black text-slate-400 uppercase tracking-wider block">Compositore di Gruppi Cooperativi d'Istituto</span>
+           <span className="text-[9px] font-black text-slate-400 uppercase tracking-wider block">Compositore locale di gruppi cooperativi</span>
            <h4 className="text-xs font-black text-slate-800 uppercase tracking-wider"> Ripartitore Eterogeneo per Livello d'Esito (Cooperative Learning)</h4>
           </div>
           <div className="flex items-center space-x-2">
@@ -1095,7 +1059,7 @@ export function ClasseTab({
        <span className="bg-indigo-100 text-indigo-800 text-[8px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full">Normativa DPR 275/1999</span>
       </div>
       <p className="text-[10px] text-slate-500 leading-relaxed font-semibold">
-       Definizione del budget orario settimanale delle discipline d'Istituto per il calcolo automatico della fattibilità temporale delle UDA nel diagramma di Gantt.
+        Definizione personale del budget orario settimanale per un calcolo locale e non verificato della fattibilità temporale.
       </p>
 
       <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 text-xs font-semibold text-slate-700">
@@ -1169,7 +1133,7 @@ export function ClasseTab({
       <div className="bg-slate-50 p-2.5 border rounded-xl text-[9px] text-slate-500 leading-normal flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 font-bold">
        <div className="space-y-1">
         <span> Totale Ore Settimanali d'Area Tracciate: <span className="text-slate-900 font-extrabold">{weeklyHoursItaliano + weeklyHoursStoria + weeklyHoursGeografia + weeklyHoursMatematica + weeklyHoursScienze} ore</span></span>
-        <span className="text-emerald-700 block sm:inline sm:ml-2"> Conforme alle quote minime d'autonomia d'Istituto</span>
+         <span className="text-slate-600 block sm:inline sm:ml-2">Confronto orario locale non verificato</span>
        </div>
        <div className="flex items-center space-x-1.5 text-xs text-slate-700">
         <span className="text-[9px] font-black uppercase text-slate-400">Tolleranza Calendario (Buffer):</span>

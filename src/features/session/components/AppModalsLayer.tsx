@@ -47,6 +47,7 @@ export function AppModalsLayer(props: AppModalsLayerProps) {
     getModelRecommendation,
     agentIntervalRefs,
     showToast,
+    institutionalProfile,
     showMicPermissionGuide,
     setShowMicPermissionGuide,
     gemFieldActive,
@@ -248,7 +249,8 @@ export function AppModalsLayer(props: AppModalsLayerProps) {
     setSelectedUda={setSelectedUda}
     handleDownloadScormManifest={handleDownloadScormManifest}
     copyUdaForRegister={copyUdaForRegister}
-    copyUdaTextLocal={copyUdaTextLocal}
+     copyUdaTextLocal={copyUdaTextLocal}
+     institutionalProfile={institutionalProfile}
    />
 
    {/* MODAL: OUTCOMES RECORDING */}
@@ -310,6 +312,7 @@ export function AppModalsLayer(props: AppModalsLayerProps) {
     handlePrintDocumentPdf={(title, text) => { if (title && text) handlePrintDocumentPdf(title, text); }}
     copyText={copyText}
     showToast={showToast}
+    institutionalProfile={institutionalProfile}
    />
    {/* MODAL: WIKI FULL TEXT READER */}
    <WikiReaderModal

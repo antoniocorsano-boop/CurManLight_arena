@@ -238,7 +238,7 @@ export function useClassroomSocialHandlers({
     const matchEv = (curData.evidenze || []).filter((e: string) => e.toLowerCase().includes(topic.toLowerCase()));
 
     const suggestedTraguardi = matchTrag.length > 0 ? matchTrag.slice(0, 3) :
-                 (curData.traguardi.length > 0 ? curData.traguardi.slice(0, 2) : [`L'alunno padroneggia le conoscenze relative a "${topic}" raccordandole con le tutele d'Istituto.`]);
+                 (curData.traguardi.length > 0 ? curData.traguardi.slice(0, 2) : [`L'alunno descrive le conoscenze relative a "${topic}" in un'attività locale da verificare.`]);
     const suggestedObiettivi = matchObj.length > 0 ? matchObj.slice(0, 3) :
                  (curData.obiettivi.length > 0 ? curData.obiettivi.slice(0, 2) : [`Analizzare ed esporre le dinamiche e strutture inerenti a "${topic}".`]);
     const suggestedEvidenze = matchEv.length > 0 ? matchEv.slice(0, 3) :
@@ -257,7 +257,7 @@ export function useClassroomSocialHandlers({
      obiettivi: suggestedObiettivi,
      evidenze: suggestedEvidenze,
      realTask: `Realizzazione di una presentazione multimediale ed attivita' pratica su "${topic}".`,
-     notes: "Proposta elaborata con il Co-pilota d'Istituto scansionando i 460 elementi del Curricolo Verticale."
+     notes: "Proposta locale generata da regole sui contenuti disponibili; non verificata."
     });
     showToast(" Nessuna UDA copre l'argomento. Generata proposta d'iniezione!");
    }
@@ -289,7 +289,7 @@ export function useClassroomSocialHandlers({
   setActiveTaughtUdaId(newUda.id);
   setClassroomTopicAnalysisResult(null);
   setClassroomTopicInput("");
-  showToast(" UDA iniettata con successo nel diagramma di Gantt e nel piano d'Istituto!");
+   showToast("Bozza UDA aggiunta localmente al diagramma di lavoro.");
  };
 
  const handleShareUdaToSocial = (udaId: string) => {
@@ -321,7 +321,7 @@ export function useClassroomSocialHandlers({
   };
 
   updateSocialUdas([newSharedUda, ...socialUdas]);
-  showToast("UDA condivisa con successo sulla bacheca d'Istituto!");
+   showToast("Copia UDA aggiunta alla bacheca locale.");
  };
 
  const handleReuseUda = (sharedUda: SocialUda) => {
@@ -368,7 +368,7 @@ export function useClassroomSocialHandlers({
   }
 
   if (containsInclusiveSensitiveTerms(text)) {
-   showToast(" Regolamento d'Istituto (GDPR): Evita di inserire riferimenti a diagnosi cliniche (DSA, BES, 104) nelle annotazioni.", false);
+    showToast("Avvertenza sui dati locali: evita diagnosi, sigle cliniche e informazioni personali nelle annotazioni.", false);
    return;
   }
 

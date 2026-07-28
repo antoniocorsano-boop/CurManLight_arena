@@ -4,6 +4,12 @@ import { UserState, DecisionStatus, UdaModel, SchoolOrder, UserRole, DocumentExp
 import { curriculumKB } from '../data/curriculumKB';
 import type Dexie from 'dexie';
 import { createCurriculumDatabase } from '../domain/curriculum/persistence/backend';
+import {
+  cloneInstitutionalValue,
+  createEmptyInstitutionalArchive,
+  validateArchiveIntegrity,
+  type InstitutionalArchive,
+} from '../domain/institution';
 
 const getCurriculumKB = () => {
   if (typeof window !== 'undefined') {
@@ -68,7 +74,47 @@ const indexedDBStorage = {
   }
 };
 
-interface StoreActions extends UserState {
+type CurriculumStoreState = UserState & {
+  institutionalArchive: InstitutionalArchive;
+};
+
+export type RestoreBackupResult =
+  | { success: true }
+  | { success: false; error: 'invalid-backup' | 'invalid-institutional-archive'; message: string };
+
+const USER_STATE_KEYS: readonly (keyof UserState)[] = [
+  'role',
+  'discipline',
+  'order',
+  'schoolYear',
+  'decisions',
+  'customTexts',
+  'savedUda',
+  'activeRevisionFilter',
+  'selectedTraguardi',
+  'selectedObiettivi',
+  'selectedEvidenze',
+  'activeProgTab',
+  'activeCurricoloView',
+  'activeProcessoTab',
+  'activeGeneralSubtab',
+  'documentExportHistory',
+];
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function sanitizeUserState(value: unknown): Partial<UserState> {
+  if (!isRecord(value)) return {};
+  const sanitized: Record<string, unknown> = {};
+  for (const key of USER_STATE_KEYS) {
+    if (Object.prototype.hasOwnProperty.call(value, key)) sanitized[key] = value[key];
+  }
+  return sanitized as Partial<UserState>;
+}
+
+interface StoreActions extends CurriculumStoreState {
   setRole: (role: UserRole) => void;
   setDiscipline: (discipline: string) => void;
   setOrder: (order: SchoolOrder) => void;
@@ -88,7 +134,8 @@ interface StoreActions extends UserState {
   setActiveProcessoTab: (tab: UserState['activeProcessoTab']) => void;
   setActiveGeneralSubtab: (subtab: UserState['activeGeneralSubtab']) => void;
   resetAll: () => void;
-  restoreBackupState: (newState: Partial<UserState>) => void;
+  restoreBackupState: (newState: unknown) => RestoreBackupResult;
+  replaceInstitutionalArchive: (archive: InstitutionalArchive) => void;
   addDocumentExportEvent: (event: DocumentExportEvent) => void;
   clearDocumentExportHistory: () => void;
 }
@@ -96,25 +143,24 @@ interface StoreActions extends UserState {
 export const useCurriculumStore = create<StoreActions>()(
   persist(
     (set) => ({
-      role: 'insegnante',
+      role: 'non-dichiarato',
       discipline: 'italiano',
+      // Personal consultation choice only; institutional availability comes from A04/A07.
       order: 'secondaria',
-      schoolYear: '2025-2026',
+      schoolYear: '',
       decisions: {},
       customTexts: {},
       savedUda: [],
       activeRevisionFilter: 'all',
-      selectedTraguardi: [0, 1],
-      selectedObiettivi: [0, 1],
-      selectedEvidenze: [
-        "Riconosce e analizza la struttura sintattica di una frase complessa indicandone i gradi",
-        "Redige un saggio breve o testo argomentativo strutturato in paragrafi formali"
-      ],
+      selectedTraguardi: [],
+      selectedObiettivi: [],
+      selectedEvidenze: [],
       activeProgTab: 'annuale',
       activeCurricoloView: 'albero',
       activeProcessoTab: 'flusso',
       activeGeneralSubtab: 'premessa',
       documentExportHistory: [],
+      institutionalArchive: createEmptyInstitutionalArchive(),
 
       setRole: (role) => set({ role }),
       setDiscipline: (discipline) => set((state) => {
@@ -190,7 +236,24 @@ export const useCurriculumStore = create<StoreActions>()(
       setActiveGeneralSubtab: (activeGeneralSubtab) => set({ activeGeneralSubtab }),
       
       resetAll: () => set({ decisions: {}, customTexts: {}, savedUda: [], selectedTraguardi: [], selectedObiettivi: [], selectedEvidenze: [], documentExportHistory: [] }),
-      restoreBackupState: (newState) => set((state) => ({ ...state, ...newState })),
+      restoreBackupState: (newState) => {
+        if (!isRecord(newState)) {
+          return { success: false, error: 'invalid-backup', message: 'La copia di sicurezza non contiene uno stato valido.' };
+        }
+        const hasArchive = Object.prototype.hasOwnProperty.call(newState, 'institutionalArchive');
+        if (hasArchive && !validateArchiveIntegrity(newState.institutionalArchive).valid) {
+          return { success: false, error: 'invalid-institutional-archive', message: 'Archivio istituzionale non valido o con versione non supportata.' };
+        }
+        const institutionalArchive = hasArchive
+          ? cloneInstitutionalValue(newState.institutionalArchive as InstitutionalArchive)
+          : createEmptyInstitutionalArchive();
+        set({ ...sanitizeUserState(newState), institutionalArchive });
+        return { success: true };
+      },
+      replaceInstitutionalArchive: (institutionalArchive) => {
+        if (!validateArchiveIntegrity(institutionalArchive).valid) return;
+        set({ institutionalArchive: cloneInstitutionalValue(institutionalArchive) });
+      },
       addDocumentExportEvent: (event) =>
         set((state) => {
           const history = [event, ...state.documentExportHistory].slice(0, 5);
@@ -200,7 +263,14 @@ export const useCurriculumStore = create<StoreActions>()(
     }),
     {
       name: 'curmanlight-react-db-state-v1.4.0',
-      storage: createJSONStorage(() => indexedDBStorage)
+      storage: createJSONStorage(() => indexedDBStorage),
+      merge: (persistedState, currentState) => {
+        const persisted = isRecord(persistedState) ? persistedState : {};
+        const institutionalArchive = validateArchiveIntegrity(persisted.institutionalArchive).valid
+          ? cloneInstitutionalValue(persisted.institutionalArchive as InstitutionalArchive)
+          : createEmptyInstitutionalArchive();
+        return { ...currentState, ...sanitizeUserState(persisted), institutionalArchive };
+      }
     }
   )
 );

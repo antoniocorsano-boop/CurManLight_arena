@@ -197,6 +197,8 @@ function createMockContext(overrides: Partial<AppContextValue> = {}): AppContext
   setTemplateChatInput: vi.fn(),
   templateChatHistory: [],
   handleSendTemplateInstruction: vi.fn(),
+  resetTemplateState: vi.fn(),
+  institutionalProfile: { configured: false, instituteName: 'Istituto non configurato', organizationId: 'curmanlight-local' },
   handleDownloadWordDefinitivo: vi.fn(),
   handleDownloadWordDocx: vi.fn(),
   handleDownloadODF: vi.fn(),

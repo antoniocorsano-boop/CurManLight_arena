@@ -2,6 +2,7 @@ import type { ChangeEvent, Dispatch, MutableRefObject, SetStateAction } from 're
 import type { AppTab } from '../../navigation';
 import type { SchoolOrder, UdaModel, UserRole } from '../../../types/curriculum';
 import type { CurriculumMap, SocialUda, ToastHandler } from './appViewContracts';
+import type { A07InstitutionalDocumentRead } from '../../../domain/institution';
 
 export type DetectedDeviceType = 'mobile' | 'desktop';
 export type LocalAgentType = 'webgpu' | 'ollama' | 'none';
@@ -35,6 +36,7 @@ export interface AppModalsLayerProps {
   getModelRecommendation: (model: string) => boolean;
   agentIntervalRefs: MutableRefObject<number[]>;
   showToast: ToastHandler;
+  institutionalProfile: A07InstitutionalDocumentRead;
   showMicPermissionGuide: boolean;
   setShowMicPermissionGuide: (value: boolean) => void;
   gemFieldActive: string | null;

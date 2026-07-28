@@ -111,71 +111,70 @@ export const findBestVolumeMatch = (
 // ─── Response generation ────────────────────────────────────────────────────
 
 const CUSTOM_DOC_RESPONSE = (doc: WikiCustomDoc) =>
- `[WikiLLM d'Istituto - Analisi del Documento Caricato: ${doc.title}]\n\n` +
- `Ho scansionato la KB d'Istituto ed ho individuato informazioni pertinenti ` +
+ `[WikiLLM - Analisi del Documento Caricato: ${doc.title}]\n\n` +
+ `Ho scansionato la base documentale locale e individuato informazioni pertinenti ` +
  `all'interno del documento "${doc.title}" (${doc.subtitle}):\n\n` +
  `"${doc.content.slice(0, 500)}${doc.content.length > 500 ? '...' : ''}"\n\n` +
- `In conformità alle disposizioni organizzative caricate, l'Agente consiglia ` +
- `di integrare queste linee d'indirizzo all'interno del PTOF e delle ` +
- `programmazioni verticali dei dipartimenti.`;
+ `Fonte caricata localmente e non verificata. Valuta il contenuto prima di usarlo ` +
+ `nella progettazione personale; il caricamento non attribuisce autorità istituzionale.`;
 
 const SEMANTIC_SEARCH_RESPONSE = (match: BestVolumeMatch, getVolumeTitle: (id: string) => string) =>
- `[WikiLLM d'Istituto - Analisi Semantica Real-time del Volume: ${getVolumeTitle(match.bestVolId)}]\n\n` +
- `Ho scansionato l'intera Banca Dati d'Istituto ed ho individuato corrispondenze ` +
+ `[WikiLLM - Analisi della fonte storica archiviata: ${getVolumeTitle(match.bestVolId)}]\n\n` +
+ `Questa risposta cita una fonte storica archiviata, non un'autorità istituzionale attiva. Ho individuato corrispondenze ` +
  `ad alta densità nel volume "${getVolumeTitle(match.bestVolId)}":\n\n` +
  `"${match.matchedParagraph}"\n\n` +
- `L'Agente consiglia l'inserimento di questa specifica progettazione in un'Unità ` +
- `di Apprendimento (UDA) d'Istituto.`;
+ `Usa il contenuto come riferimento storico da verificare prima di inserirlo nella progettazione personale.`;
 
 const FALLBACK_RESPONSE = (query: string, disc: string, ord: string) =>
- `La tua richiesta riguardante "${query}" è stata elaborata con successo ` +
- `dall'archivio semantico di CurManLight. In conformità con le linee guida ` +
- `d'Istituto (Codice Meccanografico AVIC849003) ed il Profilo dello Studente ` +
- `raccordato alle raccomandazioni UE, la disciplina ${disc.toUpperCase()} per ` +
+ `La richiesta "${query}" è stata elaborata con successo come risposta locale non verificata. I riferimenti disponibili ` +
+ `per la disciplina ${disc.toUpperCase()} e per ` +
  `l'ordine ${ord.toUpperCase()} integra questi riferimenti per promuovere un ` +
  `apprendimento continuo, basato su prove e raccordato con compiti autentici e ` +
  `livelli di padronanza chiari. L'agente consiglia l'inserimento di questa ` +
- `specifica progettazione in un'Unità di Apprendimento (UDA) d'Istituto.`;
+ `specifica progettazione personale in un'Unità di Apprendimento (UDA).`;
 
 const KWL_RESPONSES: [string[], string][] = [
+ [['green cross corner'],
+  "[WikiLLM - Fonte storica archiviata: progetto Green Cross Corner]\\n\\nIl progetto Green Cross Corner è citato esclusivamente come iniziativa storica conservata nell'archivio. Non prova che il progetto sia attivo o adottato dalla scuola corrente."],
  [['roadmap', 'percentuali', 'allucinazione', 'volume 13', 'metric'],
-  "[WikiLLM d'Istituto - Analisi del Volume 13: Audit Metrico d'Istituto]\\n\\nIn conformità al Volume 13 dell'Indagine Critica sulle percentuali e la Roadmap Reale d'Istituto (v2.0), si attesta che:\\n\\n1. **Falsa Completezza del Curricolo:** Il curricolo standard di default copre appena il **5.8%** dei 1200 obiettivi previsti dal PTOF d'Istituto. Per raggiungere il **100%**, i dipartimenti devono utilizzare il modulo di importazione CSV o il Co-pilota IA d'Istituto.\\n\\n2. **Raccordo Milestones % della Roadmap v2.0:**\\n  - **Fase 1 (Settembre 2026 - Completamento 35%):** Rilascio della Sincronizzazione Cloud automatica Google Drive / OneDrive d'Istituto per prevenire al 100% la perdita accidentale di dati.\\n  - **Fase 2 (Ottobre 2026 - Completamento 55%):** Importazione CSV massiva dei fogli Excel dei dipartimenti nel PTOF Hub, raggiungendo il 100% della densità curricolare d'Istituto coincidente con l'approvazione del PTOF da parte del Collegio dei Docenti.\\n  - **Fase 3 (Novembre 2026 - Completamento 75%):** Rilascio del Copilota IA d'Istituto tramite Gateway API leggero per supportare i docenti nella stesura delle UDA del secondo trimestre.\\n  - **Fase 4 (Gennaio 2027 - Completamento 85%):** Allineamento al bilinguismo storico del Plesso Greci con traduzioni in lingua Arbëreshë dei nuclei di Storia ed Italiano (Legge 482/1999).\\n  - **Fase 5 (Marzo 2027 - Completamento 95%):** Integrazione della libreria WebLLM (WASM) per l'esecuzione di modelli offline su computer d'aula moderni, raccordato alla conformità AgID via validatore MAUVE++.\\n  - **Fase 6 (Maggio 2027 - Completamento 100%):** Consegna dell'opera e verifica di un punteggio medio di usabilità d'Istituto **SUS Score > 85/100**.\\n\\nQuesto raccordo rigido e metrico assicura la totale trasparenza e la soppressione di allucinazioni di comodo nel sistema."],
+  "[WikiLLM - Fonte storica archiviata: Volume 13]\\n\\nIl Volume 13 riporta una precedente analisi metrica, incluso il valore storico del 5.8%. Il contenuto è conservato per consultazione e non descrive l'autorità, la configurazione o la roadmap attiva della scuola corrente."],
 
  [['social', 'condiv', 'like', 'lessons learned', 'volume 14', 'bacheca'],
-  "[WikiLLM d'Istituto - Analisi del Volume 14: Audit di Conformità UDA Social d'Istituto]\\n\\nIn conformità al Volume 14 del Second Brain, si attesta che il modulo 'Bacheca Social delle UDA Condivise d'Istituto' segue rigorose linee d'indirizzo legali, etiche e tecnologiche d'Istituto:\\n\\n1. **Tutela della Privacy (ex Art. 9 GDPR):** È tassativamente vietato inserire nomi, iniziali, sigle o riferimenti indiretti a disabilità, DSA o BES all'interno delle annotazioni e delle riflessioni sulle lezioni apprese (lessons learned). Tutte le annotazioni devono riguardare unicamente la metodologia e la didattica d'aula in forma interamente anonima d'Istituto.\\n\\n2. **Decostruzione della Like-Economy:** L'indice dei preferiti ('Mi Piace') funge esclusivamente da indicatore cooperativo d'utilità metodologica e predisposizione al riuso da parte dei colleghi, sradicato da logiche di popolarità o giudizio formale del docente d'area.\\n\\n3. **Principio del Riuso (Art. 68-69 CAD):** Il pulsante 'Riusa ed Importa' compie una duplicazione istantanea dell'UDA condivisa all'interno del proprio archivio personale del docente, raccordandola con lo store reattivo ed il database locale IndexedDB d'Istituto.\\n\\n4. **Architettura di Sincronizzazione:** Per tutelare il funzionamento offline-first, l'allineamento dei file condivisi della bacheca avviene tramite Sincronizzazione asincrona con la cartella condivisa di Google Drive / OneDrive d'Istituto."],
+  "[WikiLLM - Fonte storica archiviata: Volume 14]\\n\\nIl Volume 14 conserva una precedente analisi della condivisione UDA. La salvaguardia storica richiama l'Articolo 9 GDPR: prevenire l'inserimento o la diffusione di dati sensibili dei minori, inclusi riferimenti sanitari o indiretti, nelle annotazioni condivise. Questo richiamo non è una regola vigente della scuola corrente: verifica sempre le policy locali."],
 
  [['classe', 'banchi', 'gruppi', 'cooperative', 'seating', 'volume 19'],
-  "[WikiLLM d'Istituto - Analisi del Volume 19: Ambiente Classe Tematico e Apprendimento Cooperativo]\\n\\nIn conformità al Volume 19 del Second Brain d'Istituto, si attesta che il modulo 'Ambiente Classe' integra avanzate capacità spaziali e di partizione cooperativa:\\n\\n1. **De-personalizzazione Protettiva:** Gli studenti vengono rappresentati graficamente tramite pseudonimi culturali illustri (Scientists, Classico, Miti) e avatar per garantire l'anonimato assoluto davanti alla LIM d'aula scolastica, tutelando la privacy dei minori.\\n\\n2. **Seating Chart Spaziale:** Il docente può riorganizzare la disposizione fisica dei banchi simulando tre diversi asset: Lezione Frontale (File tradizionali), Isole di Lavoro (Cooperative) o Cerchio d'Ascolto (Circle Time).\\n\\n3. **Algoritmo di Apprendimento Cooperativo:** Il sistema analizza i livelli di competenza reali degli studenti (D.M. 14/2024 unificato) per ripartirli in modo eterogeneo e bilanciato in gruppi Jigsaw (con ruoli specifici come Scriba, Portavoce, Timekeeper) o coppie di Peer Tutoring (Tutor/Tutee)."],
+  "[WikiLLM - Fonte storica archiviata: Volume 19]\\n\\nIl Volume 19 descrive una precedente proposta per pseudonimi, disposizione dei banchi e gruppi cooperativi. È un riferimento storico da adattare al contesto della classe, non una configurazione o disposizione attiva della scuola corrente."],
 
  [['dm 14/2024', 'certificazione', 'evidenze', '14/2024'],
-  "La certificazione delle competenze secondo il D.M. n. 14 del 30 gennaio 2024 introduce i nuovi modelli nazionali unificati per la Scuola Primaria e la Scuola Secondaria di Primo Grado. I descrittori sono raccordati direttamente con le 8 Competenze Chiave Europee (Raccomandazione 2018). Il nostro sistema CurManLight mappa i 4 livelli ministeriali (A - Avanzato, B - Intermedio, C - Base, D - Iniziale) collegando ciascun traguardo disciplinare a specifiche evidenze osservabili. Questo assicura che la valutazione del consiglio di classe sia ancorata a dati curricolari d'istituto solidi ed oggettivi."],
+  "La certificazione delle competenze secondo il D.M. n. 14 del 30 gennaio 2024 introduce i modelli nazionali per la Scuola Primaria e la Scuola Secondaria di Primo Grado, raccordati alle 8 Competenze Chiave Europee. CurManLight può rappresentare i 4 livelli ministeriali e collegarli alle evidenze inserite localmente. I dati restano non verificati e la valutazione compete al consiglio di classe."],
 
  [['dm 183/2024', 'educazione civica', 'nuclei', 'civica'],
-  "Le nuove Linee Guida (D.M. 183/2024) stabiliscono la suddivisione rigida dell'insegnamento dell'Educazione Civica in 3 macro-aree: 1) Costituzione (legalità, educazione finanziaria, cultura del risparmio), 2) Sviluppo Sostenibile (educazione alla salute, transizione ecologica), 3) Cittadinanza Digitale (rischi digitali, intelligenza artificiale, bullismo). CurManLight recepisce questa tripartizione collegando i traguardi trasversali di classe alle ore annuali previste (minimo 33 ore annue). Gli Agenti di conformità verificano che le UDA interdisciplinari coprano equilibratamente i 3 assi con compiti di realtà autentici."],
+  "Le Linee Guida del D.M. 183/2024 sono un riferimento normativo per Costituzione, Sviluppo Sostenibile e Cittadinanza Digitale. CurManLight può registrare collegamenti e ore inseriti localmente, ma non verifica copertura, conformità o adozione da parte della scuola."],
 
  [['latino', 'lel'],
   "La riforma del D.M. 221/2025 valorizza il patrimonio linguistico storico attraverso l'introduzione sperimentale di elementi di Latino (LEL - Lingua e Elementi di Latino) a partire dalla Classe Seconda della scuola secondaria di primo grado. L'approccio stabilito nel curricolo non è grammaticale o mnemonico, ma focalizzato sul confronto interlinguistico (diacronia linguistica) con l'italiano per potenziare la competenza lessicale, la logica formale e la consapevolezza culturale dell'alunno."],
 
  [['tecnologia', 'coding', 'ia', 'tecnologiche'],
-  "La riforma delle Nuove Indicazioni Nazionali 2025 (D.M. 221/2025) per la Tecnologia introduce due grandi pilastri operativi: 1) Lo studio etico ed algoritmico dell'Intelligenza Artificiale (I.A.), istruendo gli alunni a comprendere l'affidabilità dei dati, l'impatto sociale e i bias algoritmici (in allineamento con il DigComp 2.2); 2) Il potenziamento della progettazione e della prototipazione tridimensionale (disegno tecnico 3D e CAD) e del coding, raccordati al nostro modulo d'eccellenza regionale 'Il Fabl@b delle idee' (Scuola Viva Campania) della sede Covotta. Si integra inoltre lo studio della scienza dei materiali e della transizione energetica per la rigenerazione sostenibile."],
+  "La riforma delle Nuove Indicazioni Nazionali 2025 (D.M. 221/2025) per la Tecnologia valorizza lo studio etico e algoritmico dell'Intelligenza Artificiale, la progettazione tridimensionale, il CAD e il coding. Le attività possono essere raccordate ai laboratori e ai progetti disponibili nel contesto locale."],
 
  [['scienze', 'scienza', 'esperiment'],
-  "Nel D.M. 221/2025, le Scienze acquisiscono una forte dimensione sperimentale incentrata sul metodo galileiano e sull'apprendimento basato sulla ricerca (Inquiry-Based Science Education - IBSE). Gli alunni vengono stimolati ad analizzare i fatti e i dati della realtà per formulare ipotesi e valutarne la coerenza scientifica. Si rafforza inoltre il raccordo trasversale con lo Sviluppo Sostenibile dell'Educazione Civica (D.M. 183/2024) attraverso il progetto 'Green Cross Corner' per lo studio della biodiversità, della tutela ambientale e dell'educazione alla salute e corretti stili di vita."],
+  "Nel D.M. 221/2025, le Scienze acquisiscono una forte dimensione sperimentale incentrata sul metodo galileiano e sull'apprendimento basato sulla ricerca (Inquiry-Based Science Education - IBSE). Gli alunni analizzano fatti e dati della realtà per formulare ipotesi e valutarne la coerenza scientifica. Le attività su biodiversità, tutela ambientale e salute vanno raccordate alle risorse disponibili nel contesto locale."],
 
  [['storia', 'storico'],
-  "La disciplina della Storia con le Nuove Indicazioni 2025 (D.M. 221/2025) focalizza lo studio della secondaria a partire dal Basso Medioevo e dalla crisi dell'Impero Romano fino alla contemporaneità. La grande novità risiede nella richiesta di sviluppare un'alfabetizzazione critica mediatica d'istituto: gli studenti devono imparare ad analizzare e verificare l'attendibilità delle fonti (cartacee e digitali), riconoscendo attivamente i fenomeni di disinformazione, manipolazione storica e fake news presenti sul web e nei social media, raccordando il pensiero critico storico con la cittadinanza digitale."],
+  "La disciplina della Storia nelle Nuove Indicazioni 2025 (D.M. 221/2025), dal Basso Medioevo alla contemporaneità, valorizza l'analisi critica delle fonti cartacee e digitali, il riconoscimento della disinformazione e il raccordo con la cittadinanza digitale. È un riferimento generale da adattare alla progettazione locale non verificata."],
 
  [['geografia', 'territorio', 'mappa'],
-  "La Geografia nel D.M. 221/2025 supera la diamesione descrittiva ed enciclopedica per concentrarsi sulla geografia dei sistemi e sul rapporto uomo-ambiente. Introduce l'uso di tecnologie digitali applicate, come i sistemi di telerilevamento cartografico, GIS e mappe satellitari, per analizzare le trasformazioni territoriali. Si raccorda strettamente con la transizione ecologica d'istituto (Agenda 2030) e con l'integrazione interculturale (Plesso Greci), studiando le migrazioni, i flussi antropici e lo sviluppo sostenibile del territorio locale e globale."],
+  "La Geografia nel D.M. 221/2025 si concentra sulla geografia dei sistemi e sul rapporto uomo-ambiente. Introduce telerilevamento, GIS e mappe satellitari per analizzare trasformazioni territoriali, migrazioni, flussi antropici e sviluppo sostenibile nel contesto locale e globale."],
 
  [['verticale', 'diacronico', 'allineamento', 'continuità'],
-  "L'allineamento verticale d'istituto assicura la continuità educativa tra la Scuola dell'Infanzia (Mappe di senso e campi d'esperienza), la Scuola Primaria (inizio consolidamento e saperi di base) e la Scuola Secondaria di Primo Grado (rigore critico e connessioni disciplinari). CurManLight garantisce questa verticalizzazione strutturando le 14 materie in un continuum evolutivo, in modo che ogni obiettivo della scuola media poggi sulle fondamenta gettate nella primaria."],
+  "La continuità verticale è un riferimento pedagogico tra Infanzia, Primaria e Secondaria. CurManLight può rappresentare collegamenti inseriti localmente, ma l'allineamento effettivo dipende dai contenuti configurati e resta non verificato."],
 
  [['delibera', 'collegio', 'approvazione', 'deliberazione'],
-  "La delibera consiliare d'Istituto per l'adozione del Curricolo Verticale v1.5.3 e del sistema CurManLight (formalizzata nel Volume 10) costituisce l'atto formale sovrano del Collegio dei Docenti. Esso sancisce l'adozione obbligatoria della piattaforma per la programmazione annuale a decorrere dall'a.s. 2026/2027, approva lo Schema di Transizione Graduale (con l'Infanzia a regime e la Primaria/Secondaria graduale a partire dalle classi prime), e autorizza il Dirigente Scolastico ad inviare la Dichiarazione di Accessibilità AgID annuale, allegando stabilmente l'intero pacchetto formativo al PTOF d'Istituto."],
+  "Il Volume 10 è una fonte storica archiviata relativa a una precedente proposta di delibera. Non costituisce un atto vigente né prova l'adozione di CurManLight; ogni scuola deve fare riferimento alle proprie deliberazioni configurate e verificabili."],
 ];
 
 const KWL_KEYWORDS: [string[], string][] = [
+ [['green cross corner'], 'greenCrossHistorical'],
  [['roadmap', 'percentuali', 'allucinazione', 'volume 13', 'metric'], 'volume13'],
  [['social', 'condiv', 'like', 'lessons learned', 'volume 14', 'bacheca'], 'volume14'],
  [['classe', 'banchi', 'gruppi', 'cooperative', 'seating', 'volume 19'], 'volume19'],
@@ -232,14 +231,14 @@ export const generateWikiResponse = (p: WikiResponseParams): string => {
 
 const DISCIPLINE_RESPONSES: Record<string, string> = {
  latino: "La riforma del D.M. 221/2025 valorizza il patrimonio linguistico storico attraverso l'introduzione sperimentale di elementi di Latino (LEL - Lingua e Elementi di Latino) a partire dalla Classe Seconda della scuola secondaria di primo grado. L'approccio stabilito nel curricolo non è grammaticale o mnemonico, ma focalizzato sul confronto interlinguistico (diacronia linguistica) con l'italiano per potenziare la competenza lessicale, la logica formale e la consapevolezza culturale dell'alunno.",
- tecnologia: "La riforma delle Nuove Indicazioni Nazionali 2025 (D.M. 221/2025) per la Tecnologia introduce due grandi pilastri operativi: 1) Lo studio etico ed algoritmico dell'Intelligenza Artificiale (I.A.), istruendo gli alunni a comprendere l'affidabilità dei dati, l'impatto sociale e i bias algoritmici (in allineamento con il DigComp 2.2); 2) Il potenziamento della progettazione e della prototipazione tridimensionale (disegno tecnico 3D e CAD) e del coding, raccordati al nostro modulo d'eccellenza regionale 'Il Fabl@b delle idee' (Scuola Viva Campania) della sede Covotta. Si integra inoltre lo studio della scienza dei materiali e della transizione energetica per la rigenerazione sostenibile.",
- scienze: "Nel D.M. 221/2025, le Scienze acquisiscono una forte dimensione sperimentale incentrata sul metodo galileiano e sull'apprendimento basato sulla ricerca (Inquiry-Based Science Education - IBSE). Gli alunni vengono stimolati ad analizzare i fatti e i dati della realtà per formulare ipotesi e valutarne la coerenza scientifica. Si rafforza inoltre il raccordo trasversale con lo Sviluppo Sostenibile dell'Educazione Civica (D.M. 183/2024) attraverso il progetto 'Green Cross Corner' per lo studio della biodiversità, della tutela ambientale e dell'educazione alla salute e corretti stili di vita.",
- storia: "La disciplina della Storia con le Nuove Indicazioni 2025 (D.M. 221/2025) focalizza lo studio della secondaria a partire dal Basso Medioevo e dalla crisi dell'Impero Romano fino alla contemporaneità. La grande novità risiede nella richiesta di sviluppare un'alfabetizzazione critica mediatica d'istituto: gli studenti devono imparare ad analizzare e verificare l'attendibilità delle fonti (cartacee e digitali), riconoscendo attivamente i fenomeni di disinformazione, manipolazione storica e fake news presenti sul web e nei social media, raccordando il pensiero critico storico con la cittadinanza digitale.",
- geografia: "La Geografia nel D.M. 221/2025 supera la diamesione descrittiva ed enciclopedica per concentrarsi sulla geografia dei sistemi e sul rapporto uomo-ambiente. Introduce l'uso di tecnologie digitali applicate, come i sistemi di telerilevamento cartografico, GIS e mappe satellitari, per analizzare le trasformazioni territoriali. Si raccorda strettamente con la transizione ecologica d'istituto (Agenda 2030) e con l'integrazione interculturale (Plesso Greci), studiando le migrazioni, i flussi antropici e lo sviluppo sostenibile del territorio locale e globale.",
+ tecnologia: "La riforma delle Nuove Indicazioni Nazionali 2025 (D.M. 221/2025) per la Tecnologia valorizza lo studio etico e algoritmico dell'Intelligenza Artificiale, la progettazione tridimensionale, il CAD e il coding, raccordandoli ai laboratori disponibili nel contesto locale.",
+ scienze: "Nel D.M. 221/2025, le Scienze acquisiscono una forte dimensione sperimentale incentrata sul metodo galileiano e sull'apprendimento basato sulla ricerca (Inquiry-Based Science Education - IBSE). Gli alunni analizzano fatti e dati della realtà per formulare ipotesi e valutarne la coerenza scientifica. Le attività su biodiversità, tutela ambientale e salute vanno raccordate alle risorse disponibili nel contesto locale.",
+ storia: "La disciplina della Storia nelle Nuove Indicazioni 2025 (D.M. 221/2025), dal Basso Medioevo alla contemporaneità, valorizza l'analisi critica delle fonti cartacee e digitali, il riconoscimento della disinformazione e il raccordo con la cittadinanza digitale. È un riferimento generale da adattare alla progettazione locale non verificata.",
+ geografia: "La Geografia nel D.M. 221/2025 si concentra sulla geografia dei sistemi e sul rapporto uomo-ambiente. Integra telerilevamento, GIS e mappe satellitari per analizzare le trasformazioni territoriali e lo sviluppo sostenibile nel contesto locale e globale.",
 };
 
 const VERTICAL_RESPONSE =
- "L'allineamento verticale d'istituto assicura la continuità educativa tra la Scuola dell'Infanzia (Mappe di senso e campi d'esperienza), la Scuola Primaria (inizio consolidamento e saperi di base) e la Scuola Secondaria di Primo Grado (rigore critico e connessioni disciplinari). CurManLight garantisce questa verticalizzazione strutturando le 14 materie in un continuum evolutivo, in modo che ogni obiettivo della scuola media poggi sulle fondamenta gettate nella primaria.";
+ "La continuità verticale è un riferimento pedagogico tra Infanzia, Primaria e Secondaria. CurManLight può rappresentare collegamenti inseriti localmente, ma l'allineamento effettivo dipende dai contenuti configurati e resta non verificato.";
 
 const generateDisciplineResponse = (q: string): string | null => {
  // Check vertical keywords first (not discipline-specific)

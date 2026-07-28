@@ -1,24 +1,39 @@
 import type { UdaModel } from '../../../types/curriculum';
+import { projectA07InstitutionalDocumentHeader, type A07InstitutionalDocumentRead } from '../../../domain/institution';
 import { LocalZipPacker } from '../../../lib/localZipPacker';
+import { escapeHtml } from '../../../lib/escapeHtml';
+
+const escapeHtmlWithBreaks = (value: string): string => escapeHtml(value).replace(/\r?\n/g, '<br>');
+const escapeXml = (value: string): string => escapeHtml(value);
 
 type UseUdaPackageHandlersArgs = {
  savedUda: UdaModel[];
  targetClass: string;
  targetSection: string;
  showToast: (msg: string, success?: boolean) => void;
+ institutionalProfile: A07InstitutionalDocumentRead;
 };
 
 export function useUdaPackageHandlers({
  savedUda,
  targetClass,
  targetSection,
- showToast
+ showToast,
+ institutionalProfile
 }: UseUdaPackageHandlersArgs) {
+ const notifyA07Result = (message: string, success = true) => {
+  showToast(institutionalProfile.warning ? `${institutionalProfile.warning} ${message}` : message, institutionalProfile.warning ? false : success);
+ };
+ const projection = projectA07InstitutionalDocumentHeader(institutionalProfile);
+ const identityLines = [projection.primaryHeading, projection.displayName, ...projection.secondaryLines, projection.declaredRoleLine]
+  .filter((line): line is string => Boolean(line));
+ const identityText = identityLines.join('\n');
+ const identityHtml = identityLines.map(line => `<div>${escapeHtml(line)}</div>`).join('');
  const copyUdaTextLocal = (id: string) => {
   const u = savedUda.find(item => item.id === id);
   if (!u) return;
 
-  let text = `UNITA' DI APPRENDIMENTO (UDA): ${u.title.toUpperCase()}\n`;
+  let text = `${identityText}\n\nUNITA' DI APPRENDIMENTO (UDA): ${u.title.toUpperCase()}\n`;
   text += `Discipline correlate: ${u.discipline.toUpperCase()} (${u.order.toUpperCase()})\n`;
   text += `Periodo di svolgimento: ${u.period} (Monte ore: ${u.hours} ore)\n\n`;
   
@@ -36,19 +51,20 @@ export function useUdaPackageHandlers({
 
   text += `4. COMPITO DI REALTA' / PRODOTTO ATTESO:\n${u.realTask}\n\n`;
   text += `5. NOTE METODOLOGICHE:\n${u.notes}\n`;
+  if (projection.footer) text += `\n${projection.footer}\n`;
 
   navigator.clipboard.writeText(text).then(() => {
-   showToast("Testo completo dell'UDA copiato negli appunti!");
+    notifyA07Result("Testo completo dell'UDA copiato negli appunti!");
   }).catch(err => {
    console.error("Errore nella copia:", err);
-   showToast("Errore durante la copia dell'UDA negli appunti.", false);
+    notifyA07Result("Errore durante la copia dell'UDA negli appunti.", false);
   });
  };
 
  const copyUdaForRegister = (id: string) => {
   const u = savedUda.find(item => item.id === id);
   if (!u) return;
-  let text = `*** TRACCIATO INTEROPERABILE DI CO-PROGETTAZIONE UDA D'ISTITUTO ***\n`;
+  let text = `${identityText}\n\n*** TRACCIATO LOCALE DI CO-PROGETTAZIONE UDA ***\n`;
   text += `MODULO: ${u.title.toUpperCase()}\n`;
   text += `DISCIPLINA: ${u.discipline.toUpperCase()} (${u.order.toUpperCase()})\n`;
   text += `PERIODO / ORE: ${u.period} - Ore previste: ${u.hours}\n`;
@@ -59,12 +75,13 @@ export function useUdaPackageHandlers({
   u.obiettivi.forEach((o) => { text += `- ${o}\n`; });
   text += `\nCOMPITO DI REALTÃƒâ‚¬ / PRODOTTO ATTESO:\n"${u.realTask}"\n\n`;
   text += `MISURE METODOLOGICHE & INCLUSIONE (PEI/PDP/DSA):\n"${u.notes}"\n`;
-  text += `\nGenerato automaticamente da CurManLight d'Istituto (AVIC849003)`;
+  text += `\nGenerato localmente con CurManLight`;
+  if (projection.footer) text += `\n${projection.footer}`;
   
   navigator.clipboard.writeText(text).then(() => {
-   showToast("Tracciato per Registro Elettronico (Argo/ClasseViva) copiato!", true);
+    notifyA07Result("Tracciato per Registro Elettronico (Argo/ClasseViva) copiato!", true);
   }).catch(() => {
-   showToast("Errore durante la copia del tracciato d'Istituto.", false);
+    notifyA07Result("Errore durante la copia del tracciato locale.", false);
   });
  };
 
@@ -73,7 +90,7 @@ export function useUdaPackageHandlers({
   if (!u) return;
 
   let xml = `<?xml version="1.0" encoding="UTF-8"?>\n`;
-  xml += `<manifest identifier="UDA-${u.id}" version="1.1"\n`;
+   xml += `<manifest identifier="UDA-${escapeXml(u.id)}" version="1.1"\n`;
   xml += `     xmlns="http://www.imsproject.org/xsd/imscp_rootv1p1p2"\n`;
   xml += `     xmlns:adlcp="http://www.adlnet.org/Adlcp_v1p2"\n`;
   xml += `     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"\n`;
@@ -84,45 +101,41 @@ export function useUdaPackageHandlers({
   xml += `  <schemaversion>1.2</schemaversion>\n`;
   xml += `  <lom xmlns="http://ltsc.ieee.org/xsd/LOM">\n`;
   xml += `   <general>\n`;
-  xml += `    <title><string language="it">${u.title}</string></title>\n`;
-  xml += `    <description><string language="it">Progettazione Curricolare d'Istituto - UDA</string></description>\n`;
-  xml += `    <keyword><string language="it">PTOF</string></keyword>\n`;
+   xml += `    <title><string language="it">${escapeXml(u.title)}</string></title>\n`;
+  xml += `    <description><string language="it">Progettazione curricolare locale - UDA</string></description>\n`;
   xml += `    <keyword><string language="it">CURRICOLO</string></keyword>\n`;
   xml += `    <keyword><string language="it">UDA</string></keyword>\n`;
-  xml += `    <identifier>UDA-${u.id}</identifier>\n`;
+   xml += `    <identifier>UDA-${escapeXml(u.id)}</identifier>\n`;
   xml += `    <language>it</language>\n`;
   xml += `   </general>\n`;
   xml += `   <lifecycle>\n`;
-  xml += `    <version><string language="it">v1.0.0 (${u.status})</string></version>\n`;
-  xml += `    <contribute>\n`;
-  xml += `     <role><source>LOMv1.0</source><value>author</value></role>\n`;
-  xml += `     <entity>BEGIN:VCARD\\nFN:Docente d'Istituto\\nEND:VCARD</entity>\n`;
-  xml += `     <date><dateTime>${u.createdAt}</dateTime></date>\n`;
-  xml += `    </contribute>\n`;
+   xml += `    <version><string language="it">v1.0.0 (${escapeXml(String(u.status))})</string></version>\n`;
   xml += `   </lifecycle>\n`;
   xml += `   <technical>\n`;
   xml += `    <format>application/zip</format>\n`;
-  xml += `    <location>scorm_package_${u.id}.zip</location>\n`;
+   xml += `    <location>scorm_package_${escapeXml(u.id)}.zip</location>\n`;
   xml += `   </technical>\n`;
-  xml += `   <agidMetadata>\n`;
-  xml += `    <destinatario>I.C. don Lorenzo Milani (AVIC849003)</destinatario>\n`;
+  xml += `   <localMetadata>\n`;
+   if (projection.primaryHeading) xml += `    <primaryHeading>${escapeXml(projection.primaryHeading)}</primaryHeading>\n`;
+   xml += `    <displayName>${escapeXml(projection.displayName)}</displayName>\n`;
+   projection.secondaryLines.forEach(line => { xml += `    <secondaryLine>${escapeXml(line)}</secondaryLine>\n`; });
+   if (projection.footer) xml += `    <footer>${escapeXml(projection.footer)}</footer>\n`;
+   if (projection.declaredRoleLine) xml += `    <declaredRole>${escapeXml(projection.declaredRoleLine)}</declaredRole>\n`;
   xml += `    <tipoDocumento>UDA (UnitÃƒÂ  di Apprendimento)</tipoDocumento>\n`;
-  xml += `    <chiaveLettura>PTOF / CURRICOLO / UDA</chiaveLettura>\n`;
-  xml += `    <sigilloDigitale>MOCK_SIGNATURE_DON_MILANI_v2.0</sigilloDigitale>\n`;
-  xml += `    <documentoPrimario>CURRICOLO_VERTICALE_MILANI_v1.6.0</documentoPrimario>\n`;
-  xml += `   </agidMetadata>\n`;
+  xml += `    <chiaveLettura>CURRICOLO / UDA</chiaveLettura>\n`;
+  xml += `   </localMetadata>\n`;
   xml += `  </lom>\n`;
   xml += ` </metadata>\n`;
-  xml += ` <organizations default="IC-MILANI-ORG">\n`;
-  xml += `  <organization identifier="IC-MILANI-ORG">\n`;
-  xml += `   <title>${u.title}</title>\n`;
-  xml += `   <item identifier="ITEM-${u.id}" identifierref="RES-${u.id}">\n`;
-  xml += `    <title>${u.title}</title>\n`;
+   xml += ` <organizations default="${escapeXml(institutionalProfile.organizationId)}">\n`;
+   xml += `  <organization identifier="${escapeXml(institutionalProfile.organizationId)}">\n`;
+   xml += `   <title>${escapeXml(u.title)}</title>\n`;
+   xml += `   <item identifier="ITEM-${escapeXml(u.id)}" identifierref="RES-${escapeXml(u.id)}">\n`;
+   xml += `    <title>${escapeXml(u.title)}</title>\n`;
   xml += `   </item>\n`;
   xml += `  </organization>\n`;
   xml += ` </organizations>\n`;
   xml += ` <resources>\n`;
-  xml += `  <resource identifier="RES-${u.id}" type="webcontent" adlcp:scormtype="sco" href="uda_content.html">\n`;
+   xml += `  <resource identifier="RES-${escapeXml(u.id)}" type="webcontent" adlcp:scormtype="sco" href="uda_content.html">\n`;
   xml += `   <file href="uda_content.html"/>\n`;
   xml += `  </resource>\n`;
   xml += ` </resources>\n`;
@@ -132,7 +145,7 @@ export function useUdaPackageHandlers({
 <html lang="it">
 <head>
  <meta charset="UTF-8">
- <title>${u.title}</title>
+ <title>${escapeHtml(u.title)}</title>
  <style>
   body { font-family: sans-serif; padding: 30px; background: #f8fafc; color: #1e293b; max-width: 800px; margin: 0 auto; }
   h1 { color: #1e1b4b; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; }
@@ -167,17 +180,17 @@ export function useUdaPackageHandlers({
     scormAPI.LMSInitialize("");
     scormAPI.LMSSetValue("cmi.core.lesson_status", "incomplete");
     scormAPI.LMSCommit("");
-    console.log("[SCORM API d'Istituto] Lezione SCORM 1.2 inizializzata!");
+    console.log("[SCORM locale] Attività inizializzata.");
    } else {
-    console.log("[SCORM API d'Istituto] Nessun LMS (Moodle/ClassroomViva) rilevato. Esecuzione in locale.");
+    console.log("[SCORM locale] Nessuna piattaforma collegata. Esecuzione locale.");
    }
   }
 
   function submitQuiz() {
    var elapsedSeconds = (Date.now() - startTime) / 1000;
-   // Impone una soglia di lettura di almeno 180 secondi (3 minuti) per scopi di certificazione d'Istituto
+   // Uses a local reading threshold for this self-assessment.
    if (elapsedSeconds < 180) {
-    alert(" Attenzione: Tempo di consultazione dell'UDA insufficiente per la validazione della competenza! Dedica almeno 3 minuti alla lettura della lezione prima di inviare.");
+    alert("Tempo di consultazione breve. Dedica almeno 3 minuti alla lettura prima di registrare l'autovalutazione.");
     return;
    }
 
@@ -197,9 +210,9 @@ export function useUdaPackageHandlers({
     scormAPI.LMSSetValue("cmi.core.score.raw", score.toString());
     scormAPI.LMSSetValue("cmi.core.lesson_status", "completed");
     scormAPI.LMSCommit("");
-    alert(" Risultati inviati con successo all'LMS d'Istituto! Punteggio ottenuto: " + score + "%");
+    alert("Risultato inviato all'ambiente SCORM. Punteggio: " + score + "%");
    } else {
-    alert(" Risultati salvati in locale! Punteggio ottenuto: " + score + "% (Esecuzione offline senza LMS)");
+    alert("Risultato disponibile localmente. Punteggio: " + score + "%");
    }
    
    document.getElementById('quiz-result').innerHTML = "<strong>Stato invio:</strong> Autovalutazione completata. Risultato registrato: <strong>" + score + "%</strong>.";
@@ -210,7 +223,7 @@ export function useUdaPackageHandlers({
     scormAPI.LMSSetValue("cmi.core.exit", "suspend");
     scormAPI.LMSCommit("");
     scormAPI.LMSFinish("");
-    console.log("[SCORM API d'Istituto] Sessione SCORM terminata correttamente.");
+    console.log("[SCORM locale] Sessione terminata.");
    }
   }
 
@@ -219,37 +232,38 @@ export function useUdaPackageHandlers({
  </script>
 </head>
 <body>
- <h1>${u.title}</h1>
- <div class="meta">Disciplina: ${u.discipline.toUpperCase()} | Grado: ${u.order.toUpperCase()} | Ore: ${u.hours} ore</div>
+ <div class="meta">${identityHtml}</div>
+ <h1>${escapeHtml(u.title)}</h1>
+  <div class="meta">Disciplina: ${escapeHtml(u.discipline.toUpperCase())} | Grado: ${escapeHtml(u.order.toUpperCase())} | Ore: ${escapeHtml(String(u.hours))} ore</div>
  
  <div class="section">
-  <h2>Traguardi d'Istituto</h2>
-  <ul>${u.traguardi.map(t => `<li>${t}</li>`).join('')}</ul>
+  <h2>Traguardi</h2>
+   <ul>${u.traguardi.map(t => `<li>${escapeHtmlWithBreaks(t)}</li>`).join('')}</ul>
  </div>
  
  <div class="section">
   <h2>Obiettivi di Apprendimento</h2>
-  <ul>${u.obiettivi.map(ob => `<li>${ob}</li>`).join('')}</ul>
+   <ul>${u.obiettivi.map(ob => `<li>${escapeHtmlWithBreaks(ob)}</li>`).join('')}</ul>
  </div>
  
  <div class="section">
   <h2>Evidenze di Competenza (D.M. 14/2024)</h2>
-  <ul>${u.evidenze.map(ev => `<li>${ev}</li>`).join('')}</ul>
+   <ul>${u.evidenze.map(ev => `<li>${escapeHtmlWithBreaks(ev)}</li>`).join('')}</ul>
  </div>
  
  <div class="section">
-  <h2>Compito di RealtÃƒÂ  d'Istituto</h2>
-  <p><em>"${u.realTask}"</em></p>
+  <h2>Compito di RealtÃƒÂ </h2>
+   <p><em>"${escapeHtmlWithBreaks(u.realTask)}"</em></p>
  </div>
  
  <div class="section">
   <h2>Note didattiche d'aula</h2>
-  <p>${u.notes || 'Nessuna nota aggiuntiva.'}</p>
+   <p>${escapeHtmlWithBreaks(u.notes || 'Nessuna nota aggiuntiva.')}</p>
  </div>
 
  <div class="section" style="border: 2px solid #cbd5e1; background-color: #f8fafc;">
-  <h2> Questionario di Autovalutazione d'Istituto</h2>
-  <p style="font-size: 11px; font-weight: bold; color: #64748b;">Completa le domande qui sotto per confermare la comprensione della lezione ed inviare l'esito all'LMS d'Istituto:</p>
+  <h2>Autovalutazione locale</h2>
+  <p style="font-size: 11px; font-weight: bold; color: #64748b;">Completa le domande per registrare un esito locale o inviarlo all'ambiente SCORM collegato:</p>
   
   <div style="margin-top: 15px;">
    <div style="margin-bottom: 15px;">
@@ -259,18 +273,19 @@ export function useUdaPackageHandlers({
    </div>
    
    <div style="margin-bottom: 15px;">
-    <p><strong>2. In conformitÃƒÂ  con le direttive del PTOF d'Istituto, come vengono valutati gli esiti?</strong></p>
+    <p><strong>2. Come vengono descritti gli esiti in questa attivitÃƒÂ ?</strong></p>
     <label style="display: block; margin-top: 5px; cursor: pointer;"><input type="radio" name="q2" value="correct"> Tramite i 4 livelli nazionali (Avanzato, Intermedio, Base, Iniziale)</label>
     <label style="display: block; margin-top: 5px; cursor: pointer;"><input type="radio" name="q2" value="wrong"> Tramite un solo giudizio numerico fisso non modificabile</label>
    </div>
   </div>
   
   <button onclick="submitQuiz()" style="margin-top: 10px; background-color: #4f46e5; color: white; border: none; padding: 10px 20px; font-weight: bold; border-radius: 8px; cursor: pointer; transition: background-color 0.2s;">
-   Invia Autovalutazione all'LMS d'Istituto
+   Registra autovalutazione
   </button>
   
   <p id="quiz-result" style="margin-top: 15px; color: #1e1b4b; font-weight: bold;"></p>
  </div>
+ ${projection.footer ? `<footer>${escapeHtml(projection.footer)}</footer>` : ''}
 </body>
 </html>`;
 
@@ -284,7 +299,7 @@ export function useUdaPackageHandlers({
   link.href = URL.createObjectURL(zipBlob);
   link.download = `scorm_package_${u.id}.zip`;
   link.click();
-  showToast("Pacchetto SCORM (.zip) d'Istituto autoinstallante scaricato con successo!", true);
+  notifyA07Result("Pacchetto SCORM locale scaricato con successo!", true);
  };
 
 

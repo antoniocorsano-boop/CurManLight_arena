@@ -33,6 +33,7 @@ export function SocialTab({
   setShowOutcomesModal,
   handleAddAnnotation,
 }: SocialTabProps) {
+  const selectedClassLabel = selectedClassCombination || 'Classe non selezionata';
   return (
     <div className="space-y-6 fade-in text-left">
                    {/* Dynamic Contextual Header Panel */}
@@ -40,10 +41,10 @@ export function SocialTab({
            <div className="space-y-1">
             <span className="text-[9px] font-black text-indigo-600 uppercase tracking-wider block">Ambito Registro d'Aula e Studenti</span>
             <h2 className="text-sm font-black text-slate-800 uppercase tracking-wide">
-             Ambiente & Esiti Classe — {selectedClassCombination}
+              Ambiente & Esiti Classe — {selectedClassLabel}
             </h2>
             <p className="text-xs text-slate-600 font-semibold leading-relaxed max-w-2xl">
-             Tracciamento didattico qualitativo di {classroomStudents.length} studenti per la classe {selectedClassCombination}. Generazione di report qualitativi conformi al D.M. 14/2024 (100% offline e GDPR protetto).
+               Tracciamento didattico qualitativo di {classroomStudents.length} studenti per: {selectedClassLabel}. I dati inseriti restano nell'archivio locale del browser.
             </p>
            </div>
            <div className="flex items-center space-x-2 shrink-0">
@@ -54,13 +55,14 @@ export function SocialTab({
               showToast(`Caricato Registro Classe: ${e.target.value}`, true);
              }} 
              className="border border-indigo-200 rounded-xl px-2.5 py-1 bg-white text-[10px] font-black uppercase tracking-wider outline-none text-indigo-950 shadow-sm cursor-pointer"
-            >
-             {assignedCombinations.map(combo => (
+             >
+              {assignedCombinations.length === 0 && <option value="">Classe non selezionata</option>}
+              {assignedCombinations.map(combo => (
               <option key={combo} value={combo}>Sezione: {combo}</option>
              ))}
             </select>
             <span className="px-2.5 py-1 bg-indigo-50 text-indigo-800 border border-indigo-150 rounded text-[9px] font-black uppercase tracking-wider shrink-0">
-             Registro Classe Safe
+             Registro classe locale
             </span>
            </div>
           </div>
@@ -68,21 +70,25 @@ export function SocialTab({
           {socialUdas.map(u => {
            const annotText = newAnnotationInputs[u.id] || "";
            
-           // Calculate OSI Dynamically based on outcomes, self-eval and reuse
-           const selfEvalScore = (u.selfEvaluation || 4) * 10; // Max 50
-           const advancedScore = (u.studentOutcomes?.avanzato || 50) * 0.5; // Max 50
-           const intermediateScore = (u.studentOutcomes?.intermedio || 30) * 0.3; // Max 30
-           const reuseScore = (u.reusedCount || 5) * 1.5; // Max 20
-           const calculatedOsi = Math.min(100, Math.max(10, Math.round(selfEvalScore + advancedScore + intermediateScore + reuseScore)));
+            const hasCompleteMetrics = u.selfEvaluation !== undefined && u.studentOutcomes !== undefined && u.reusedCount !== undefined;
+            const calculatedOsi = hasCompleteMetrics
+             ? Math.min(100, Math.round(
+               u.selfEvaluation! * 10
+               + u.studentOutcomes!.avanzato * 0.5
+               + u.studentOutcomes!.intermedio * 0.3
+               + u.reusedCount! * 1.5,
+              ))
+             : null;
+            const provenanceLabel = /dimostrativ/i.test(u.author) ? 'Contenuto dimostrativo' : 'Non verificato';
 
-           let osiBadgeColor = "bg-slate-100 text-slate-700 border-slate-200";
-           let osiStatusLabel = "In Corso di Consolidamento";
-           if (calculatedOsi >= 85) {
-            osiBadgeColor = "bg-emerald-50 border-emerald-200 text-emerald-800";
-            osiStatusLabel = " Eccellenza d'Istituto (Consigliata per il Riuso)";
-           } else if (calculatedOsi >= 65) {
-            osiBadgeColor = "bg-indigo-50 border-indigo-200 text-indigo-800";
-            osiStatusLabel = " Alto Impatto Didattico";
+            let osiBadgeColor = "bg-slate-100 text-slate-700 border-slate-200";
+            let osiStatusLabel = calculatedOsi === null ? 'Dati insufficienti' : 'Calcolo locale non verificato';
+            if (calculatedOsi !== null && calculatedOsi >= 85) {
+             osiBadgeColor = "bg-emerald-50 border-emerald-200 text-emerald-800";
+             osiStatusLabel = "Indice locale elevato, non verificato";
+            } else if (calculatedOsi !== null && calculatedOsi >= 65) {
+             osiBadgeColor = "bg-indigo-50 border-indigo-200 text-indigo-800";
+             osiStatusLabel = "Indice locale intermedio, non verificato";
            }
 
            return (
@@ -93,11 +99,13 @@ export function SocialTab({
               <div className="space-y-1.5 flex-1 text-left">
                <div className="flex flex-wrap items-center gap-1.5 font-bold">
                 <span className="px-2 py-0.5 bg-indigo-100 text-indigo-800 text-[8px] rounded uppercase tracking-wider">{u.discipline.toUpperCase()} · {u.order.toUpperCase()}</span>
-                <span className="text-slate-400 text-[10px]">Autore: <span className="text-slate-600 font-black">{u.author}</span></span>
+                 <span className="text-slate-400 text-[10px]">Autore: <span className="text-slate-600 font-black">{u.author}</span></span>
+                 <span className="text-slate-500 text-[9px]">{provenanceLabel}</span>
                </div>
                <h4 className="font-extrabold text-sm text-slate-800 leading-snug">{u.title}</h4>
                <div className={`inline-flex items-center space-x-1.5 border rounded-lg px-2.5 py-1 text-[10px] font-black uppercase ${osiBadgeColor}`}>
-                <span>Indice d'Esito (OSI): {calculatedOsi}%</span>
+                 <span>Indice d'Esito (OSI):</span>
+                 <span>{calculatedOsi === null ? 'Non disponibile' : `${calculatedOsi}%`}</span>
                 <span>·</span>
                 <span>{osiStatusLabel}</span>
                </div>
@@ -143,7 +151,7 @@ export function SocialTab({
              <div className="grid grid-cols-1 md:grid-cols-2 gap-5 text-slate-600 font-semibold leading-relaxed">
               <div className="space-y-3.5">
                <div>
-                <strong className="text-slate-400 uppercase text-[8px] tracking-wider block mb-1">Traguardi d'Istituto Associati:</strong>
+                 <strong className="text-slate-400 uppercase text-[8px] tracking-wider block mb-1">Traguardi associati:</strong>
                 <ul className="list-disc pl-4 space-y-1">
                  {u.traguardi.map((t: string, i: number) => <li key={i}>{t}</li>)}
                 </ul>
@@ -159,19 +167,19 @@ export function SocialTab({
                 <div className="grid grid-cols-4 gap-2 text-center mt-1 text-[10px]">
                  <div className="bg-emerald-50 p-1.5 border border-emerald-100 rounded-lg">
                   <div className="font-bold text-emerald-800">Avanzato</div>
-                  <div className="font-extrabold text-slate-800 text-xs">{u.studentOutcomes?.avanzato || 50}%</div>
+                   <div className="font-extrabold text-slate-800 text-xs">{u.studentOutcomes?.avanzato === undefined ? 'Non disponibile' : `${u.studentOutcomes.avanzato}%`}</div>
                  </div>
                  <div className="bg-blue-50 p-1.5 border border-blue-100 rounded-lg">
                   <div className="font-bold text-blue-800">Intermedio</div>
-                  <div className="font-extrabold text-slate-800 text-xs">{u.studentOutcomes?.intermedio || 30}%</div>
+                   <div className="font-extrabold text-slate-800 text-xs">{u.studentOutcomes?.intermedio === undefined ? 'Non disponibile' : `${u.studentOutcomes.intermedio}%`}</div>
                  </div>
                  <div className="bg-amber-50 p-1.5 border border-amber-100 rounded-lg">
                   <div className="font-bold text-amber-800">Base</div>
-                  <div className="font-extrabold text-slate-800 text-xs">{u.studentOutcomes?.base || 15}%</div>
+                   <div className="font-extrabold text-slate-800 text-xs">{u.studentOutcomes?.base === undefined ? 'Non disponibile' : `${u.studentOutcomes.base}%`}</div>
                  </div>
                  <div className="bg-rose-50 p-1.5 border border-rose-100 rounded-lg">
                   <div className="font-bold text-rose-800">Iniziale</div>
-                  <div className="font-extrabold text-slate-800 text-xs">{u.studentOutcomes?.iniziale || 5}%</div>
+                   <div className="font-extrabold text-slate-800 text-xs">{u.studentOutcomes?.iniziale === undefined ? 'Non disponibile' : `${u.studentOutcomes.iniziale}%`}</div>
                  </div>
                 </div>
                </div>
@@ -179,30 +187,30 @@ export function SocialTab({
               
               <div className="space-y-2 bg-slate-50 p-4 border rounded-xl flex flex-col justify-between">
                <div className="space-y-2">
-                <p><strong>Compito di Realtà d'Istituto:</strong> <span className="text-slate-700 italic font-bold">"{u.realTask}"</span></p>
+                 <p><strong>Compito di realtà:</strong> <span className="text-slate-700 italic font-bold">"{u.realTask}"</span></p>
                 <p><strong>Ore totali:</strong> {u.hours} ore | <strong>Periodo d'aula:</strong> {u.period}</p>
                 <p><strong>Dettagli didattici:</strong> {u.notes}</p>
                </div>
                <div className="pt-2 border-t flex justify-between items-center text-[10px]">
                 <span className="text-slate-400">Punteggio Autovalutazione Docente:</span>
-                <span className="text-amber-500 font-extrabold text-xs">{"★".repeat(u.selfEvaluation || 4)}{"☆".repeat(5 - (u.selfEvaluation || 4))}</span>
+                 <span className="text-amber-500 font-extrabold text-xs">{u.selfEvaluation === undefined ? 'Non disponibile' : `${u.selfEvaluation}/5`}</span>
                </div>
                <div className="text-[10px] text-slate-400 font-medium">
-                 Questa UDA è stata **clonata e riutilizzata {u.reusedCount || 5} volte** da altri docenti del plesso.
+                  {u.reusedCount === undefined ? 'Riutilizzi registrati localmente: Non disponibile' : `Riutilizzi registrati localmente: ${u.reusedCount}`}
                </div>
               </div>
              </div>
 
              {/* Annotations / Comments Section (Lessons Learned) */}
              <div className="border-t border-slate-150 pt-4 space-y-3">
-              <span className="text-[9px] font-black text-slate-400 uppercase tracking-wider block"> Annotazioni d'Istituto per Lessons Learned & Miglioramento:</span>
+               <span className="text-[9px] font-black text-slate-400 uppercase tracking-wider block">Annotazioni locali per lessons learned e miglioramento:</span>
               
               <div className="space-y-2 max-h-[200px] overflow-y-auto pr-1">
                {u.annotations && u.annotations.length > 0 ? u.annotations.map((ann: SocialUda['annotations'][number], i: number) => (
                 <div key={i} className="bg-slate-50 p-2.5 border rounded-xl space-y-1">
                  <div className="flex justify-between items-center text-[9px] font-bold text-slate-400">
                   <span> Collega: <span className="text-slate-600">{ann.author}</span></span>
-                  <span>Approvato d'Istituto</span>
+                   <span>{provenanceLabel}</span>
                  </div>
                  <p className="text-slate-700 font-medium italic">"{ann.text}"</p>
                 </div>

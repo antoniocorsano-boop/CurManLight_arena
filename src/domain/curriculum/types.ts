@@ -16,6 +16,7 @@ export type NationalFramework = 'IN2012' | 'IN2025';
 export type SchoolLevel = SchoolOrder;
 
 export type InstitutionalRole =
+  | 'non-dichiarato'
   | 'docente'
   | 'dipartimento'
   | 'referente'

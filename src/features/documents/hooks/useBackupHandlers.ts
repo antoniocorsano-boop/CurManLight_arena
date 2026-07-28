@@ -1,12 +1,19 @@
 import type React from 'react';
 import type { DecisionStatus, UdaModel, UserState } from '../../../types/curriculum';
 import { useCurriculumStore } from '../../../store/useCurriculumStore';
+import type { RestoreBackupResult } from '../../../store/useCurriculumStore';
+import {
+ validateArchiveIntegrity,
+ type InstitutionalArchive,
+} from '../../../domain/institution';
+
+type BackupState = Partial<UserState> & { institutionalArchive?: InstitutionalArchive };
 
 type UseBackupHandlersArgs = {
  schoolYear: string;
  setDecision: (id: string, status: DecisionStatus) => void;
  setCustomText: (id: string, text: string) => void;
- restoreBackupState: (newState: Partial<UserState>) => void;
+ restoreBackupState: (newState: unknown) => RestoreBackupResult;
  setShowSaveModal: (value: boolean) => void;
  showToast: (msg: string, success?: boolean) => void;
 };
@@ -59,7 +66,7 @@ export function useBackupHandlers({
   link.href = URL.createObjectURL(blob);
   link.download = `curmanlight_copia_sicurezza_completa_${schoolYear}.json`;
   link.click();
-  showToast("Copia di sicurezza d'Istituto scaricata con successo!");
+   showToast("Copia JSON locale scaricata.");
   setShowSaveModal(false);
  };
 
@@ -70,7 +77,7 @@ export function useBackupHandlers({
   const reader = new FileReader();
   reader.onload = (e) => {
    try {
-    const restoredState = JSON.parse(e.target?.result as string) as Partial<UserState>;
+    const restoredState = JSON.parse(e.target?.result as string) as BackupState;
     
     // Strict structural schema validation check
     const restoredSavedUda = restoredState.savedUda;
@@ -85,8 +92,16 @@ export function useBackupHandlers({
      });
 
      if (isValidUdaStructure) {
-      restoreBackupState(restoredState);
-      showToast("Configurazione d'Istituto ripristinata con successo!");
+      if (restoredState.institutionalArchive !== undefined && !validateArchiveIntegrity(restoredState.institutionalArchive).valid) {
+       showToast("Archivio istituzionale non valido o con versione non supportata.", false);
+       return;
+      }
+      const result = restoreBackupState(restoredState);
+      if (!result.success) {
+       showToast(result.message, false);
+       return;
+      }
+     showToast("Copia JSON validata e applicata localmente.");
       setShowSaveModal(false);
      } else {
       showToast("Struttura dei dati didattici non conforme nel file di configurazione.", false);

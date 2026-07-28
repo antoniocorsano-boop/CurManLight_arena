@@ -18,11 +18,12 @@ import { useProgettazioneAssistiveHandlers, useUdaProgrammingHandlers } from './
 import { useSessionAutoSave, useWorkspaceState, useWorkspaceSyncHandlers } from './features/workspace';
 import { copyText } from './lib/clipboard';
 import { getRoleLabel } from './lib/roleLabels';
+import { getA07InstitutionalDocumentRead } from './domain/institution';
 
 export default function App() {
  // Store actions and state
  const {
-  role, discipline, order, schoolYear, decisions, customTexts, savedUda,
+  role, discipline, order, schoolYear, decisions, customTexts, savedUda, institutionalArchive,
   selectedTraguardi, selectedObiettivi, selectedEvidenze,
   activeProgTab, activeCurricoloView, activeProcessoTab, activeGeneralSubtab,
   setRole, setDiscipline, setOrder, setDecision, setCustomText,
@@ -30,6 +31,7 @@ export default function App() {
   setActiveProgTab, setActiveCurricoloView, setActiveProcessoTab, setActiveGeneralSubtab,
   resetAll, restoreBackupState
  } = useCurriculumStore();
+ const institutionalProfile = getA07InstitutionalDocumentRead(institutionalArchive);
 
  const {
   localCurriculum,
@@ -328,6 +330,7 @@ export default function App() {
   role,
   discipline,
   order,
+  institutionalArchive,
   isWorkspaceLoggedIn,
   workspaceAccessToken,
   isWorkspaceSyncLocked,
@@ -548,7 +551,8 @@ export default function App() {
   savedUda,
   targetClass,
   targetSection,
-  showToast
+  showToast,
+  institutionalProfile
  });
  const {
   getThemedStudentName,
@@ -606,6 +610,7 @@ export default function App() {
  } = useWorkspaceSyncHandlers({
   isWorkspaceLoggedIn,
   workspaceAccessToken,
+  workspaceClientId,
   cloudAccountType,
   schoolYear,
   localCurriculum,
@@ -615,6 +620,7 @@ export default function App() {
   role,
   discipline,
   order,
+  institutionalArchive,
   stateRef,
   restoreBackupState,
   setIsSyncingWorkspace,
@@ -695,7 +701,8 @@ export default function App() {
   showToast,
   getDisciplineLabel,
   setGeneratedDocTitle,
-  setGeneratedDocText
+  setGeneratedDocText,
+  institutionalProfile
  });
 
  const {
@@ -715,8 +722,9 @@ export default function App() {
   templateChatInput,
   setTemplateChatInput,
   templateChatHistory,
-  handleSendTemplateInstruction
- } = useTemplateEngine({ showToast });
+  handleSendTemplateInstruction,
+  resetTemplateState
+ } = useTemplateEngine({ showToast, institutionalProfile });
 
  const {
   handleImportMergeCml,
@@ -917,6 +925,8 @@ export default function App() {
   setTemplateChatInput,
   templateChatHistory,
   handleSendTemplateInstruction,
+  resetTemplateState,
+  institutionalProfile,
   handleDownloadWordDefinitivo: () => { handleDownloadWordDefinitivo(); recordExport({ documentType: 'curricolo', format: 'DOC', label: `Curricolo Verticale ${schoolYear}`, sourceKind: 'curriculum', discipline, order, sourceSignature: computeCurrentCurriculumSignature(), sourceView: 'esportazioni' }); },
   handleDownloadWordDocx: () => { handleDownloadWordDocx(); recordExport({ documentType: 'curricolo', format: 'DOCX', label: `Curricolo Verticale ${schoolYear}`, sourceKind: 'curriculum', discipline, order, sourceSignature: computeCurrentCurriculumSignature(), sourceView: 'esportazioni' }); },
   handleDownloadODF: () => { handleDownloadODF(); recordExport({ documentType: 'curricolo', format: 'ODF', label: `Curricolo Verticale ${schoolYear}`, sourceKind: 'curriculum', discipline, order, sourceSignature: computeCurrentCurriculumSignature(), sourceView: 'esportazioni' }); },
@@ -993,6 +1003,7 @@ export default function App() {
   getModelRecommendation,
   agentIntervalRefs,
   showToast,
+  institutionalProfile,
   showMicPermissionGuide,
   setShowMicPermissionGuide,
   gemFieldActive,

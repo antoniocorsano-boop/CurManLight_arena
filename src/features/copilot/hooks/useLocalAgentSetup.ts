@@ -56,10 +56,10 @@ export const useLocalAgentSetup = ({ showToast }: UseLocalAgentSetupArgs) => {
         safeLocalStorageSetItem('curman_localAgentSize', 'full');
         safeLocalStorageSetItem('curman_ollamaServerUrl', ollamaServerUrl);
         safeLocalStorageSetItem('curman_ollamaModelName', ollamaModelName);
-        showToast("Connessione stabilita con il Server Ollama d'Istituto!");
+        showToast("Connessione tecnica stabilita con l'endpoint Ollama configurato. Identità e affidabilità non verificate.");
       } else {
         setOllamaStatus('error');
-        showToast("Il Server d'Istituto è online, ma ha risposto con errore.");
+        showToast("L'endpoint Ollama ha risposto con errore; configurazione non verificata.");
       }
     } catch (e) {
       setOllamaStatus('error');

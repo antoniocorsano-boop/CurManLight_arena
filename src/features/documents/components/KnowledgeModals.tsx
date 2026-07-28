@@ -33,7 +33,7 @@ export function WikiReaderModal({
         <div className="bg-slate-900 text-white px-6 py-4 flex justify-between items-center shrink-0">
           <div className="flex items-center space-x-2">
             <span className="text-xl"></span>
-            <h3 className="text-sm font-black text-slate-100 uppercase tracking-wider">Lettore Documentale d'Istituto - Second Brain</h3>
+            <h3 className="text-sm font-black text-slate-100 uppercase tracking-wider">Lettore di fonti locali e archiviate</h3>
           </div>
           <button onClick={() => setShowWikiReaderModal(false)} className="text-slate-400 hover:text-white transition"><X className="w-5 h-5" /></button>
         </div>
@@ -115,7 +115,7 @@ export function AddKbDocumentModal({
       <div className="bg-white border border-slate-200 max-w-lg w-full rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] md:max-h-[85vh] h-auto fade-in text-left font-medium text-xs text-slate-700">
         <div className="bg-gradient-to-r from-indigo-600 to-indigo-800 text-white px-6 py-4 flex justify-between items-center shrink-0">
           <span className="flex items-center space-x-2 font-black uppercase tracking-wider text-xs">
-            <span></span> <span>Aggiungi Documento a KB d'Istituto</span>
+            <span></span> <span>Aggiungi documento alla base locale</span>
           </span>
           <button onClick={() => setShowAddKbModal(false)} className="text-slate-400 hover:text-white"><X className="w-5 h-5" /></button>
         </div>
@@ -124,7 +124,7 @@ export function AddKbDocumentModal({
           <div className="space-y-1.5 p-4 bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl flex flex-col items-center justify-center text-center">
             <span className="text-xl"></span>
             <div>
-              <strong className="text-[10px] text-slate-700 font-extrabold block">Caricamento rapido File d'Istituto</strong>
+              <strong className="text-[10px] text-slate-700 font-extrabold block">Caricamento rapido di un file locale</strong>
               <span className="text-[8px] text-slate-400 block font-semibold leading-relaxed">Seleziona un file di testo (.txt o .md) per estrarne il contenuto all'istante in modo offline.</span>
             </div>
             <input
@@ -184,7 +184,7 @@ export function AddKbDocumentModal({
               onChange={(e) => setNewKbDocContent(e.target.value)}
               rows={8}
               className="w-full border border-slate-200 rounded-xl p-2.5 bg-slate-50 focus:bg-white text-xs font-semibold focus:ring-1 focus:ring-indigo-500 outline-none leading-relaxed"
-              placeholder="Incolla o scrivi qui il testo completo del documento scolastico da aggiungere alla base di conoscenza d'Istituto..."
+              placeholder="Incolla o scrivi il testo da aggiungere alla base locale non verificata..."
             />
           </div>
 

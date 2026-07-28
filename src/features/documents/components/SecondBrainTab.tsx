@@ -1,4 +1,4 @@
-import { Sparkles, ShieldCheck, ServerCog, Code, X, Copy, Search, Library, BookOpen } from 'lucide-react';
+import { Sparkles, ServerCog, Code, X, Copy, Search, Library, BookOpen } from 'lucide-react';
 import { useState } from 'react';
 import { useCurriculumStore } from '../../../store/useCurriculumStore';
 import { getVolumeTitle, getVolumeFullHtml, getVolumePlainTxt } from '../../../data/volumesKB';
@@ -56,7 +56,7 @@ const VOLUMES = [
   { id: 'vol6', file: '06_REPERTORIO_CONCETTI.md', label: 'Repertorio Concettuale' },
   { id: 'vol7', file: '07_TRANSIZIONE_IN2025.md', label: 'Transizione Graduale' },
   { id: 'vol8', file: '08_DETTAGLIO_CURRICOLO.md', label: 'Dettaglio 14 Discipline' },
-  { id: 'vol9', file: '09_REPORT_CERTIFICAZIONE.md', label: 'Certificazione PA e AgID' },
+    { id: 'vol9', file: '09_REPORT_CERTIFICAZIONE.md', label: 'Archivio storico: accessibilità e AgID' },
   { id: 'vol10', file: '10_PROPOSTA_DELIBERA.md', label: 'Delibera Collegio Docenti' },
   { id: 'vol11', file: '11_STATO_SVILUPPO.md', label: 'Stato Sviluppo e Percentuali' },
   { id: 'vol12', file: '12_PIANO_COMPLETAMENTO.md', label: 'Piano di Completamento ed Opera' },
@@ -68,7 +68,6 @@ export default function SecondBrainTab({
   selectedBrainDoc,
   setSelectedBrainDoc,
   customKbDocs,
-  setCustomKbDocs,
   setShowAddKbModal,
   isSpeaking,
   isWikiDyslexiaFont,
@@ -82,8 +81,6 @@ export default function SecondBrainTab({
   triggerWikiLLMQuery,
   handleToggleSpeech,
   handleDeleteCustomKbDoc,
-  isSyncingWorkspace,
-  setIsSyncingWorkspace,
   showToast,
   graphNodes,
   selectedNodeId,
@@ -119,8 +116,8 @@ export default function SecondBrainTab({
           <h1 class="text-lg font-black text-indigo-950 uppercase border-b pb-2">${escapeHtml(doc.title)}</h1>
           <p class="text-xs font-bold text-slate-500">${escapeHtml(doc.subtitle)}</p>
           <div class="bg-amber-50/20 border border-amber-100 rounded-xl p-4 space-y-2">
-            <strong class="text-xs text-amber-900 block font-black"> Documento Caricato d'Istituto:</strong>
-            <p class="text-slate-700 leading-relaxed font-semibold">Questo faldone è stato caricato localmente per potenziare il Second Brain e indicizzarlo nel WikiLLM d'Istituto.</p>
+            <strong class="text-xs text-amber-900 block font-black">Documento locale caricato:</strong>
+            <p class="text-slate-700 leading-relaxed font-semibold">Il testo è disponibile localmente e resta una fonte non verificata.</p>
           </div>
           <div class="text-slate-700 leading-relaxed text-xs whitespace-pre-wrap font-semibold">${escapeHtml(doc.content)}</div>
         </div>
@@ -137,26 +134,18 @@ export default function SecondBrainTab({
     return getVolumePlainTxt(id);
   };
 
-  const safeLocalStorageSetItem = (key: string, value: string): void => {
-    try {
-      localStorage.setItem(key, value);
-    } catch {
-      // storage full or unavailable
-    }
-  };
-
   return (
     <div className="space-y-6 fade-in text-left">
       <div className="border-b border-slate-100 pb-3 flex flex-col md:flex-row justify-between items-start md:items-center gap-2">
         <div>
           <h1 className="text-base font-black text-slate-800 flex items-center space-x-2">
             <Sparkles className="w-5 h-5 text-indigo-600 animate-pulse" />
-            <span>WikiLLM d'Istituto & Second Brain</span>
+            <span>WikiLLM locale e archivio Second Brain</span>
           </h1>
-          <p className="text-[11px] text-slate-500 font-medium">La fonte certa di conoscenza pedagogica e ordinamentale d'Istituto raccordata ad agenti di convalida.</p>
+          <p className="text-[11px] text-slate-500 font-medium">Consultazione di fonti locali e archiviate: contenuti dipendenti dalla fonte, incerti e non verificati.</p>
         </div>
         <div className="flex items-center space-x-1.5 text-[9px] font-black uppercase tracking-wider bg-indigo-50 border border-indigo-100 text-indigo-700 px-2.5 py-1 rounded-full shadow-sm">
-          <ShieldCheck className="w-3.5 h-3.5" /> <span>Raccordo Certificato</span>
+          <Library className="w-3.5 h-3.5" /> <span>Archivio non verificato</span>
         </div>
       </div>
 
@@ -190,7 +179,7 @@ export default function SecondBrainTab({
               : 'text-slate-500 hover:text-slate-800'
           }`}
         >
-          Glossario d'Istituto
+          Glossario locale
         </button>
       </div>
 
@@ -203,7 +192,7 @@ export default function SecondBrainTab({
               <div className="bg-slate-50 border-b border-slate-200 px-4 py-3 flex items-center justify-between shrink-0">
                 <div className="flex items-center space-x-2">
                   <ServerCog className="w-4 h-4 text-slate-500" />
-                  <span className="text-xs font-black text-slate-700 uppercase tracking-wider">Biblioteca d'Istituto</span>
+                  <span className="text-xs font-black text-slate-700 uppercase tracking-wider">Biblioteca locale e archivio storico</span>
                 </div>
               </div>
               <div className="p-4 flex-1 overflow-y-auto space-y-2.5 text-xs font-medium text-slate-600">
@@ -246,30 +235,10 @@ export default function SecondBrainTab({
                   </button>
 
                   <button
-                    onClick={() => {
-                      setIsSyncingWorkspace(true);
-                      showToast("Connessione alla cartella 'CurManLight_KB_Personale'...", true);
-                      setTimeout(() => {
-                        const newDocs = [
-                          { id: 'drive-doc-1', title: 'Linee_Guida_Inclusione_2026.docx', subtitle: 'Sincronizzato da Drive Personale', content: "In conformità al Regolamento scolastico, la progettazione d'Istituto per l'inclusione degli studenti con BES ed ex legge 104 deve fondarsi su criteri metodologici flessibili, escludendo misurazioni standardizzate ed impiegando mappe compensative ed ausili digitali forniti nell'aula." },
-                          { id: 'drive-doc-2', title: 'PTOF_Sintesi_Dipartimento_Lettere.pdf', subtitle: 'Sincronizzato da Drive Personale', content: "Il dipartimento di Lettere della secondaria stabilisce di valorizzare la diacronia linguistica attraverso lo studio degli elementi della lingua latina (LEL) raccordati con lo studio dell'italiano a partire dalle classi seconde, focalizzandoli sul potenziamento lessicale." }
-                        ];
-
-                        setCustomKbDocs(prev => {
-                          const filtered = prev.filter(d => d.id !== 'drive-doc-1' && d.id !== 'drive-doc-2');
-                          const updated = [...filtered, ...newDocs];
-                          safeLocalStorageSetItem('curman_customKbDocs', JSON.stringify(updated));
-                          return updated;
-                        });
-
-                        setIsSyncingWorkspace(false);
-                        showToast("Sincronizzazione completata: 2 documenti d'Istituto estratti ed indicizzati localmente!", true);
-                      }, 1500);
-                    }}
-                    disabled={isSyncingWorkspace}
+                    onClick={() => showToast('Sincronizzazione Drive KB non disponibile. Nessun file esterno è stato letto o aggiunto.', false)}
                     className="p-2.5 rounded-xl border border-dashed border-emerald-300 bg-emerald-50/30 text-emerald-700 hover:bg-emerald-50/60 font-black transition flex items-center justify-center space-x-1 text-[10px] text-center"
                   >
-                    <span>★ Sincronizza Drive KB Personale</span>
+                    <span>Drive KB non disponibile</span>
                   </button>
                 </div>
               </div>
@@ -367,7 +336,7 @@ export default function SecondBrainTab({
                         <span className="text-3xl animate-bounce"></span>
                         <div className="space-y-1 max-w-sm">
                           <strong className="text-slate-700 font-extrabold block text-xs">Pronto ad assisterti sul volume attivo</strong>
-                          <p className="text-[10px] font-bold text-slate-400">Poni una domanda libera al Co-pilota o usa una delle domande frequenti sotto per analizzare il testo d'Istituto.</p>
+                          <p className="text-[10px] font-bold text-slate-400">Poni una domanda o usa un esempio per analizzare le fonti locali non verificate.</p>
                         </div>
                       </div>
                     ) : (
@@ -388,7 +357,7 @@ export default function SecondBrainTab({
 
                           </div>
                           <div className="bg-white border border-slate-200 rounded-2xl rounded-tl-none px-4 py-3.5 max-w-[85%] shadow-sm space-y-2">
-                            <span className="px-1.5 py-0.5 bg-emerald-100 text-emerald-800 text-[8px] font-black uppercase rounded tracking-wider">Risposta Certificata</span>
+                            <span className="px-1.5 py-0.5 bg-slate-100 text-slate-700 text-[8px] font-black uppercase rounded tracking-wider">Risposta locale non verificata</span>
                             {wikiLoading ? (
                               <div className="flex items-center space-x-2 py-2 text-slate-400 font-bold text-[11px]">
                                 <span className="animate-spin text-sm"></span>
@@ -399,7 +368,7 @@ export default function SecondBrainTab({
                                 <p className="text-[11px] font-bold leading-relaxed">{wikiResponse}</p>
                                 <hr className="border-slate-100" />
                                 <div className="text-[9px] text-slate-400 flex items-center space-x-1 font-bold">
-                                  <span>Fonte certa:</span>
+                                  <span>Fonte dichiarata, da verificare:</span>
                                   <span className="text-slate-500 uppercase tracking-wide bg-slate-50 px-1.5 py-0.2 border rounded">documentazione_fondativa.md</span>
                                 </div>
                               </div>
@@ -443,7 +412,7 @@ export default function SecondBrainTab({
                   <Code className="w-4 h-4 text-indigo-600" />
                   <span>Mappa Strutturata dei Componenti dell'Ecosistema (Graphify)</span>
                 </h3>
-                <p className="text-[10px] text-slate-400 font-medium">Directory ordinata e interconnessa di tutti i nodi e le relazioni del codice. Clicca su ciascun componente per esaminarne i dettagli e le dipendenze in modo protetto.</p>
+                <p className="text-[10px] text-slate-400 font-medium">Mappa locale in sola lettura dei nodi e delle relazioni dichiarate nel codice.</p>
               </div>
               <span className="text-[8px] bg-slate-100 text-slate-500 border px-2 py-0.5 rounded font-bold uppercase tracking-wider">Touch-Safe &amp; Accessibile</span>
             </div>
@@ -454,7 +423,7 @@ export default function SecondBrainTab({
 
                 {/* Moduli Codice */}
                 <div className="space-y-2 text-left">
-                  <span className="text-[9px] font-black text-indigo-800 bg-indigo-50 border border-indigo-200 px-2.5 py-1 rounded-md uppercase tracking-wider inline-block">★ Moduli Codice Sorgente d'Istituto (.tsx / .ts)</span>
+                  <span className="text-[9px] font-black text-indigo-800 bg-indigo-50 border border-indigo-200 px-2.5 py-1 rounded-md uppercase tracking-wider inline-block">Moduli del codice sorgente locale (.tsx / .ts)</span>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     {graphNodes.filter((n: GraphNode) => n.category === 'codice').map((node: GraphNode) => {
                       const isSelected = selectedNodeId === node.id;
@@ -575,9 +544,9 @@ export default function SecondBrainTab({
             <div className="border-b border-slate-200 pb-2.5">
               <h3 className="text-xs font-black text-slate-800 uppercase tracking-wider flex items-center space-x-2">
                 <ServerCog className="w-4 h-4 text-indigo-600 animate-pulse" />
-                <span>Architettura d'Orchestrazione Agentica &amp; Organo di Controllo d'Istituto</span>
+                <span>Architettura locale di consultazione e controllo</span>
               </h3>
-              <p className="text-[10px] text-slate-400 font-bold">Il framework di coerenza e controllo automatico che garantisce l'assenza di errori e l'allineamento normativo del Curricolo d'Istituto.</p>
+              <p className="text-[10px] text-slate-400 font-bold">Strumenti locali di consultazione: risultati dipendenti dalle fonti, non verificati e soggetti a errore.</p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -586,7 +555,7 @@ export default function SecondBrainTab({
                   <span className="p-1.5 bg-indigo-50 text-indigo-700 rounded-lg font-bold"></span>
                   <strong className="text-slate-800 text-[11px] uppercase tracking-wide font-black">1. Orchestrazione Semantica</strong>
                 </div>
-                <p className="text-[10px] text-slate-500 leading-relaxed font-bold">I dati inseriti dai docenti vengono analizzati e raccordati istante per istante ai documenti ministeriali, garantendo l'allineamento orizzontale e verticale tra le discipline.</p>
+                <p className="text-[10px] text-slate-500 leading-relaxed font-bold">Il sistema confronta testo locale e fonti disponibili. Le corrispondenze sono indicative, dipendono dalle fonti e non certificano allineamento.</p>
                 <div className="flex flex-wrap gap-1 pt-1">
                   <span className="text-[8px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded font-bold">Raccordo Diacronico</span>
                   <span className="text-[8px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded font-bold">Coerenza Evidenze</span>
@@ -596,9 +565,9 @@ export default function SecondBrainTab({
               <div className="bg-white p-4 border border-slate-200 rounded-xl space-y-2 text-xs">
                 <div className="flex items-center space-x-2">
                   <span className="p-1.5 bg-emerald-50 text-emerald-700 rounded-lg font-bold"></span>
-                  <strong className="text-slate-800 text-[11px] uppercase tracking-wide font-black">2. Allineamento Normativo</strong>
+                  <strong className="text-slate-800 text-[11px] uppercase tracking-wide font-black">2. Consultazione normativa</strong>
                 </div>
-                <p className="text-[10px] text-slate-500 leading-relaxed font-bold">Controllo incrociato istantaneo rispetto alle direttive D.M. 221/2025 (Indicazioni Nazionali), D.M. 183/2024 (Linee Guida Educazione Civica) e D.M. 14/2024 (Certificazione Competenze).</p>
+                <p className="text-[10px] text-slate-500 leading-relaxed font-bold">Riferimenti alle fonti D.M. 221/2025, D.M. 183/2024 e D.M. 14/2024. Presenza e interpretazione devono essere verificate dall'utente.</p>
                 <div className="flex flex-wrap gap-1 pt-1">
                   <span className="text-[8px] bg-emerald-50 text-emerald-700 px-1.5 py-0.5 rounded font-bold">DM 221/2025</span>
                   <span className="text-[8px] bg-emerald-50 text-emerald-700 px-1.5 py-0.5 rounded font-bold">DM 183/2024</span>
@@ -608,10 +577,10 @@ export default function SecondBrainTab({
               <div className="bg-white p-4 border-2 border-primary-500 rounded-xl space-y-2 text-xs">
                 <div className="flex items-center space-x-2">
                   <span className="p-1.5 bg-primary-50 text-primary-700 rounded-lg font-bold"></span>
-                  <strong className="text-slate-800 text-[11px] uppercase tracking-wide font-black">3. Organo di Controllo Umano</strong>
+                  <strong className="text-slate-800 text-[11px] uppercase tracking-wide font-black">3. Revisione umana</strong>
                 </div>
-                <p className="text-[10px] text-slate-600 leading-relaxed font-bold">Il Dirigente Scolastico e il Collegio dei Docenti mantengono l'autorità decisionale ultima (Human-in-the-Loop), convalidando formalmente le proposte d'allineamento d'istituto.</p>
-                <div className="text-[8px] bg-primary-100 text-primary-800 px-2 py-0.5 rounded font-black uppercase text-center tracking-wider font-black">Validazione Collegiale Finale</div>
+                <p className="text-[10px] text-slate-600 leading-relaxed font-bold">Ogni risultato richiede revisione umana esterna all'app. La visualizzazione non autentica ruoli e non produce validazioni formali.</p>
+                <div className="text-[8px] bg-primary-100 text-primary-800 px-2 py-0.5 rounded font-black uppercase text-center tracking-wider font-black">Contenuto non verificato</div>
               </div>
             </div>
           </div>
@@ -625,9 +594,9 @@ export default function SecondBrainTab({
               <div className="space-y-0.5">
                 <h3 className="text-xs font-black text-indigo-950 uppercase tracking-wider flex items-center space-x-2">
                   <Library className="w-4 h-4 text-indigo-600" />
-                  <span>Glossario dei Termini d'Istituto</span>
+                  <span>Glossario locale</span>
                 </h3>
-                <p className="text-[10px] text-slate-400 font-bold">Il dizionario pedagogico ufficiale, popolato in tempo reale dall'Agente Pedagogico d'Istituto per chiarire il linguaggio ministeriale.</p>
+                <p className="text-[10px] text-slate-400 font-bold">Raccolta locale dipendente dalle fonti caricate, non ufficiale e non verificata.</p>
               </div>
               <div className="relative shrink-0 w-full sm:w-64">
                 <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5" />
@@ -665,8 +634,8 @@ export default function SecondBrainTab({
 
               {/* Right Column: AI Agent Interface */}
               <div className="p-4 border border-indigo-100 bg-indigo-50/10 rounded-xl space-y-3.5">
-                <span className="text-[9px] font-black text-indigo-600 uppercase tracking-wider block"> Agente Pedagogico del Glossario</span>
-                <p className="text-[10px] text-slate-500 leading-relaxed">Scegli un termine pedagogico strategico o digita un termine libero. L'Agente analizzerà la normativa d'Istituto per integrarlo nel Glossario ufficiale:</p>
+                <span className="text-[9px] font-black text-indigo-600 uppercase tracking-wider block">Assistente locale del glossario</span>
+                <p className="text-[10px] text-slate-500 leading-relaxed">Scegli o inserisci un termine. La definizione proposta dipende dalle fonti disponibili, può contenere errori e resta non verificata:</p>
 
                 <div className="space-y-2 text-left">
                   <div className="space-y-1">
@@ -674,7 +643,7 @@ export default function SecondBrainTab({
                     <select value={selectedGlossaryTerm} onChange={(e) => { setSelectedGlossaryTerm(e.target.value); setCustomGlossaryTerm(e.target.value); }} className="w-full px-2.5 py-1.5 bg-white text-slate-700 border border-slate-200 rounded-lg text-xs font-semibold focus:ring-1 focus:ring-primary-500">
                       <option value="LEL"> LEL (Lingua ed Elementi di Latino)</option>
                       <option value="Cittadinanza Digitale"> Cittadinanza Digitale & I.A.</option>
-                      <option value="Curricolo Verticale"> Curricolo Verticale d'Istituto</option>
+                      <option value="Curricolo Verticale">Curricolo verticale</option>
                       <option value="Didattica Orientativa"> Didattica Orientativa (Linee Guida 2022)</option>
                       <option value="PEI"> PEI (Legge 104 su base ICF)</option>
                       <option value="PDP"> PDP (DSA & BES Legge 170)</option>

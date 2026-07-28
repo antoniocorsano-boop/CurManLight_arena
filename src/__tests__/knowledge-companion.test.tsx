@@ -56,19 +56,19 @@ describe('useKnowledgeCompanion', () => {
   it('returns correct main reference at step 2 (vol4)', () => {
     render(<TestHook wizardStep={2} discipline="italiano" order="primaria" />);
     expect(screen.getByTestId('main-volume').textContent).toBe('vol4');
-    expect(screen.getByTestId('main-category').textContent).toBe('Curricolo');
+    expect(screen.getByTestId('main-category').textContent).toBe('Archivio storico');
   });
 
   it('returns correct main reference at step 3 (vol3)', () => {
     render(<TestHook wizardStep={3} discipline="scienze" order="secondaria" />);
     expect(screen.getByTestId('main-volume').textContent).toBe('vol3');
-    expect(screen.getByTestId('main-category').textContent).toBe('Fonte normativa');
+    expect(screen.getByTestId('main-category').textContent).toBe('Archivio storico');
   });
 
   it('returns correct main reference at step 4 (vol6)', () => {
     render(<TestHook wizardStep={4} discipline="italiano" order="secondaria" />);
     expect(screen.getByTestId('main-volume').textContent).toBe('vol6');
-    expect(screen.getByTestId('main-category').textContent).toBe('Approfondimento');
+    expect(screen.getByTestId('main-category').textContent).toBe('Approfondimento archivio');
   });
 
   it('returns 2 additional references at step 2', () => {
@@ -141,7 +141,7 @@ describe('useKnowledgeCompanion', () => {
 function mockRef(overrides = {}) {
   return {
     volumeId: 'vol4',
-    category: 'Curricolo' as const,
+    category: 'Archivio storico' as const,
     title: 'Curricolo Fondativo',
     excerpt: 'Test excerpt',
     relevance: 'Test relevance',
@@ -184,7 +184,7 @@ describe('KnowledgeCompanionPanel', () => {
 
   it('renders category badge', () => {
     render(<KnowledgeCompanionPanel {...defaultProps} />);
-    expect(screen.getByText('Curricolo')).toBeTruthy();
+    expect(screen.getByText('Archivio storico non verificato')).toBeTruthy();
   });
 
   it('shows expand button when additional refs exist', () => {
@@ -229,13 +229,13 @@ describe('KnowledgeCompanionPanel', () => {
   it('calls onOpenVolume', () => {
     const onOpen = vi.fn();
     render(<KnowledgeCompanionPanel {...defaultProps} onOpenVolume={onOpen} />);
-    fireEvent.click(screen.getByText('Apri riferimento'));
+    fireEvent.click(screen.getByText('Apri fonte archiviata'));
     expect(onOpen).toHaveBeenCalledWith('vol4');
   });
 
   it('shows optionality hint', () => {
     render(<KnowledgeCompanionPanel {...defaultProps} />);
-    expect(screen.getByText('Puoi continuare anche senza consultare i riferimenti.')).toBeTruthy();
+    expect(screen.getByText(/Fonti storiche, dipendenti dall'archivio e non verificate/)).toBeTruthy();
   });
 
   it('does not use prescriptive language', () => {

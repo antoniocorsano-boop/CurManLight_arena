@@ -191,7 +191,8 @@ export function proposeVerticalLink(input: {
     relationType: input.relationType,
     rationale: input.rationale.trim(),
     status: 'draft',
-    createdByRole: (input.createdByRole as 'docente') || 'docente',
+    createdByRole: (['docente', 'dipartimento', 'referente', 'collegio', 'dirigente', 'amministratore'] as const)
+      .find(role => role === input.createdByRole) ?? 'non-dichiarato',
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   };

@@ -70,7 +70,7 @@ export function useCopilotInteractionHandlers({
 }: UseCopilotInteractionHandlersArgs) {
   const [copilotChatInput, setCopilotChatInput] = useState("");
   const [copilotChatHistory, setCopilotChatHistory] = useState<CopilotMessage[]>([
-    { sender: 'assistant', text: "Benvenuto nello spazio di assistenza. Sono il Co-pilota IA d'Istituto. Seleziona uno dei suggerimenti contestuali qui sotto o poni una domanda metodologica sulla programmazione attiva." }
+    { sender: 'assistant', text: "Benvenuto nello spazio di assistenza locale. I suggerimenti sono generici e non verificati: valuta sempre il contesto e le fonti disponibili." }
   ]);
   const [isCopilotResponding, setIsCopilotResponding] = useState(false);
   const [isVoiceListening, setIsVoiceListening] = useState(false);
@@ -89,7 +89,7 @@ export function useCopilotInteractionHandlers({
    setCopilotChatHistory(prev => [
      ...prev,
      { sender: 'user', text: query },
-     { sender: 'assistant', text: "ATTENZIONE (Regolamento GDPR d'Istituto): Per proteggere l'anonimato del minore, ÃƒÂ¨ severamente vietato immettere riferimenti clinici, sigle sanitarie o sigle di inclusione (104, PEI, PDP, DSA, BES) nella chat. Formula il quesito in chiave puramente metodologica.", isError: true }
+      { sender: 'assistant', text: "Avvertenza sui dati: non inserire riferimenti clinici, sigle sanitarie o altri dati personali nella chat. Formula il quesito in chiave puramente metodologica.", isError: true }
    ]);
    setCopilotChatInput("");
    return;
@@ -109,36 +109,36 @@ export function useCopilotInteractionHandlers({
    // Contextual responses based on the query and active tab
    if (activeTab === 'dashboard') {
      if (q.includes("priorit") || q.includes("pdm") || q.includes("obiettivo")) {
-       responseText = "In conformitÃƒÂ  al PdM (Piano di Miglioramento) d'Istituto, le nostre prioritÃƒÂ  triennali vertono sulla riduzione del divario nelle competenze di base e sull'inclusione metodologica tramite aule attrezzate PNRR. Consigliamo di progettare UDA interdisciplinari che includano almeno il 15% di ore di educazione alla cittadinanza o diacronia linguistica.";
+        responseText = "Suggerimento locale non verificato: definisci le priorità a partire dal piano o dai dati che hai effettivamente a disposizione. Senza una fonte esplicita non posso inferire obiettivi, percentuali o requisiti della scuola.";
      } else {
-       responseText = "Il Co-pilota consiglia di consultare i faldoni d'indagine d'Istituto. Puoi navigare al Curricolo o attivare lo Spazio Classe per allineare l'anagrafica d'aula in forma protetta d'Istituto.";
+        responseText = "Puoi consultare le fonti caricate e le viste locali disponibili. Questo è uno spunto non verificato e non implica che dati o contenuti siano protetti o approvati.";
      }
    } else if (activeTab === 'curricolo' || activeTab === 'revisione') {
      if (q.includes("diacronia") || q.includes("verticale") || q.includes("raccordo")) {
-       responseText = "La diacronia verticale d'Istituto (D.M. 221/2025) connette i nuclei fondanti della scuola dell'infanzia, primaria e secondaria. Ad esempio, per Italiano, il traguardo della letto-scrittura viene raccordato progressivamente per prevenire salti cognitivi all'ingresso della classe prima della secondaria di primo grado.";
+        responseText = "Spunto metodologico non verificato: confronta i nuclei disponibili nei diversi ordini e descrivi esplicitamente i passaggi di continuità. La vista corrente non certifica l'allineamento locale.";
      } else if (q.includes("scadenz") || q.includes("linee guida") || q.includes("221")) {
-       responseText = "Le linee guida del D.M. 221/2025 impongono un allineamento rigoroso alle competenze chiave europee. Nel nostro Istituto, l'applicazione ÃƒÂ¨ graduale: le nuove indicazioni sono obbligatorie da settembre 2026 unicamente per le Classi Prime (1^), salvaguardando il piano di studi previgente per i cicli giÃƒÂ  avviati.";
+        responseText = "Suggerimento non verificato: consulta il testo normativo e la configurazione locale prima di definire scadenze o applicabilità. La vista corrente non permette di inferire date di avvio o classi coinvolte.";
      } else {
-       responseText = "Dall'esame del Curricolo d'Istituto, per questa disciplina sono presenti traguardi verticali raccordati alle competenze trasversali. Puoi votare le proposte di gap 2025 per l'allineamento ordinamentale nel tab 'Revisione'.";
+        responseText = "Puoi esaminare i traguardi visibili per la disciplina selezionata e registrare scelte locali di lavoro. Lo spunto non verifica completezza, autorità o adozione del curricolo.";
      }
    } else if (activeTab === 'progetta-annuale') {
      if (q.includes("compito") || q.includes("realt") || q.includes("prodotto")) {
        responseText = "Per la materia attiva, il Co-pilota suggerisce un compito di realtÃƒÂ  cooperativo che si concluda con un prodotto concreto (es. un opuscolo digitale, un plastico o un breve video esplicativo). Questo stimola lo sviluppo di competenze reali e l'interconnessione con l'Educazione Civica.";
      } else if (q.includes("inclusione") || q.includes("compensativ") || q.includes("strument")) {
-       responseText = "In caso di bisogni educativi speciali d'aula, il protocollo d'Istituto raccomanda l'uso di font ad alta leggibilitÃƒÂ  (EasyReading), tabelle compensative e sintesi vocale. Nel compilatore UDA (Step 4), puoi premere i tasti rapidi inclusione d'Istituto per inserire automaticamente queste misure nel faldone d'aula.";
+        responseText = "Spunto metodologico non verificato: valuta font leggibili, mappe, sintesi vocale e tempi adeguati solo in base alle esigenze osservate e alle indicazioni effettivamente disponibili.";
      } else {
-       responseText = "Ho analizzato l'UDA in corso di redazione. Assicurati che i traguardi d'apprendimento d'Istituto selezionati nello Step 2 siano raccordati con le evidenze di comportamento osservabili dello Step 3.";
+        responseText = "Confronta i traguardi selezionati con evidenze osservabili. È un suggerimento locale non verificato, basato soltanto sui campi correnti.";
      }
    } else if (activeProgTab === 'classe' || activeProgTab === 'classe-home') {
      if (q.includes("jigsaw") || q.includes("cooperativ")) {
-       responseText = "Il metodo cooperative Jigsaw d'Istituto si articola in tre fasi: 1. Formazione dei gruppi base; 2. Studio dell'argomento specifico nei gruppi di esperti (co-progettazione); 3. Rientro nei gruppi base per l'insegnamento reciproco. Questo approccio ÃƒÂ¨ raccomandato per minimizzare le asimmetrie relazionali d'aula.";
+        responseText = "Spunto locale non verificato: il Jigsaw può articolarsi in gruppi base, gruppi di esperti e restituzione reciproca. Adattalo alla classe senza considerarlo un protocollo obbligatorio.";
      } else if (q.includes("banchi") || q.includes("disposiz") || q.includes("isole")) {
-       responseText = "Per favorire la didattica laboratoriale d'aula, si raccomanda la disposizione dei banchi a 'Isole' (4-6 banchi uniti) o a 'Cerchio'. La disposizione frontale standard ÃƒÂ¨ sconsigliata per i lavori cooperativi poichÃƒÂ© innalza il carico cognitivo dell'insegnante.";
+        responseText = "Possibile spunto locale: valuta isole, cerchio o disposizione frontale in base all'attività, agli spazi e alle necessità osservate. La scelta non è verificata dal sistema.";
      } else {
-       responseText = "La disposizione dei banchi corrente favorisce le dinamiche cooperative. Puoi rimescolare gli pseudonimi degli studenti d'aula (Scientists o Classico) o definire i vincoli relazionali morbidi dal pannello d'aula.";
+        responseText = "La vista permette di provare disposizioni e pseudonimi locali. Il sistema non verifica che una configurazione favorisca specifici risultati didattici.";
      }
    } else {
-     responseText = "Sono attivo in modalitÃƒÂ  contestuale. Seleziona uno dei suggerimenti rapidi per ricevere spunti e chiarimenti legati alla vista corrente d'Istituto.";
+      responseText = "Sono disponibile per spunti generici e non verificati basati sulla vista corrente e sugli input espliciti.";
    }
 
    setCopilotChatHistory(prev => [...prev, { sender: 'assistant', text: responseText }]);
@@ -169,7 +169,7 @@ export function useCopilotInteractionHandlers({
   setGemFieldActive(fieldId);
   setIsGemGenerating(true);
   setGemSuggestedText("");
-  showToast("Co-pilota IA: Analisi del contesto d'Istituto e generazione...");
+  showToast("Generazione di un suggerimento locale non verificato...");
 
   setTimeout(() => {
    let suggestion = "";
@@ -183,7 +183,7 @@ export function useCopilotInteractionHandlers({
         ? "La geometria delle forme nel disegno d'aula cooperativo"
         : "Statistica d'aula: analisi dei consumi ed economia verde";
     } else if (discipline === 'storia') {
-      suggestion = "Il Novecento ad Ariano Irpino ed il raccordo delle memorie";
+       suggestion = "Il Novecento nel territorio locale e il raccordo delle memorie";
     } else {
       suggestion = `Percorso diacronico integrato per la disciplina di ${getDisciplineLabel(discipline).toUpperCase()}`;
     }
@@ -191,19 +191,17 @@ export function useCopilotInteractionHandlers({
     if (discipline === 'italiano') {
       suggestion = "Realizzazione di un diario di bordo digitale in cui la classe descrive a puntate, curando la sintassi e l'esposizione, una vicenda storica raccordata alle fonti d'area.";
     } else if (discipline === 'matematica') {
-      suggestion = "Sviluppo di un foglio di calcolo per simulare la contabilitÃƒÂ  di un'impresa cooperativa scolastica d'Istituto raccordata ad un bilancio ecologico.";
+      suggestion = "Sviluppo di un foglio di calcolo per simulare la contabilità di un'impresa cooperativa scolastica e un bilancio ecologico.";
     } else if (discipline === 'storia') {
-      suggestion = "Creazione di un archivio digitale delle memorie locali d'Istituto tramite interviste registrate e schedate dagli alunni sul Novecento ad Ariano Irpino.";
+       suggestion = "Creazione di un archivio digitale delle memorie locali tramite interviste registrate e schedate dagli alunni sul Novecento nel proprio territorio.";
     } else if (discipline === 'scienze') {
       suggestion = "Mappatura della biodiversitÃƒÂ  del giardino scolastico tramite la creazione di schede botaniche con QR-Code autogestite dalla classe.";
     } else {
-      suggestion = `Sviluppo di un prototipo cooperativo o presentazione critica d'aula focalizzata sui nuclei fondanti d'Istituto per la disciplina di ${getDisciplineLabel(discipline).toUpperCase()}.`;
+      suggestion = `Sviluppo di un prototipo cooperativo o presentazione critica basata sui nuclei selezionati per ${getDisciplineLabel(discipline).toUpperCase()}.`;
     }
    } else if (fieldId === 'uda-inclusion') {
-    suggestion = "Misure d'Istituto: Organizzazione dei banchi a isole per favorire il tutoraggio tra pari (Peer Tutoring). Fornitura di mappe concettuali semplificate e schemi visivi strutturati. Utilizzo del Font EasyReading ad alta leggibilitÃƒÂ  e pianificazione dei tempi di prova incrementati del 30% per prove scritte.";
-    if (order === 'primaria') {
-      suggestion += " Integrazione di laboratori bilingui cooperativi per gli alunni del Plesso Greci.";
-    }
+    suggestion = "Spunti non verificati da valutare nel contesto reale: organizzazione dei banchi, tutoraggio tra pari, mappe concettuali, schemi visivi, font leggibili e tempi definiti dal docente.";
+     if (order === 'primaria') suggestion += " Possibile integrazione di laboratori linguistici cooperativi coerenti con il contesto locale.";
    } else if (fieldId === 'student-observation') {
     suggestion = "L'alunno dimostra eccellente collaborazione nelle fasi di Jigsaw d'aula. Espone con chiarezza logica, mostrando parziale autonomia nell'auto-correzione metodologica. Si consiglia di continuare a stimolare l'esposizione orale raccordata.";
    }
@@ -245,7 +243,7 @@ export function useCopilotInteractionHandlers({
 
   if (isMobile && (modelId === 'llama-1b' || modelId === 'deepseek-1.5b' || modelId === 'gemma-2b' || modelId === 'phi-3' || modelId === 'llama-3b')) {
    return confirm(
-     `Attenzione d'Istituto (Memory Guard):\n\n` +
+      `Avvertenza locale sulla memoria del dispositivo:\n\n` +
      `Il saggio '${modelName}' richiede un elevato impegno di memoria RAM d'aula.\n\n` +
      `Sui dispositivi mobili (tablet/smartphone) con meno di 8 GB di RAM, questo potrebbe causare rallentamenti o l'arresto anomalo del browser.\n\n` +
      `Consigliamo invece l'uso del saggio 'Ermes' o 'Socrate'. Desideri procedere comunque col caricamento?`

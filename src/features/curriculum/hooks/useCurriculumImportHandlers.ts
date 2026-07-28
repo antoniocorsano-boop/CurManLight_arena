@@ -37,7 +37,7 @@ export function useCurriculumImportHandlers({
   setGeneratedKbOutput(null);
   setTimeout(() => {
    const topic = importTopicInput.trim();
-   const newTraguardo = `L'alunno padroneggia le conoscenze essenziali e i nuclei fondanti di "${topic}", applicandoli in contesti scolastici reali d'Istituto.`;
+   const newTraguardo = `L'alunno utilizza le conoscenze essenziali relative a "${topic}" in attività scolastiche da definire e verificare localmente.`;
    const newObiettivo1 = `Esplorare, definire e schematizzare i concetti chiave relativi a "${topic}" nell'anno di riferimento.`;
    const newObiettivo2 = `Analizzare in modo critico i dati e le connessioni logiche riguardanti "${topic}", elaborando semplici relazioni orali o scritti.`;
    const newEvidenza = `Espone in modo autonomo, elabora una sintesi visiva o risponde a domande complesse su "${topic}".`;
@@ -48,7 +48,7 @@ export function useCurriculumImportHandlers({
     evidenze: [newEvidenza]
    });
    setIsGeneratingKb(false);
-   showToast(" Generazione completata dal Co-pilota d'Istituto!");
+   showToast("Bozza generata localmente. Contenuto non verificato.");
   }, 1200);
  };
 
@@ -74,7 +74,7 @@ export function useCurriculumImportHandlers({
   updateLocalCurriculum(updatedKB);
   setGeneratedKbOutput(null);
   setImportTopicInput("");
-  showToast(" Integrazione avvenuta nel database curricolare!");
+   showToast("Contenuto aggiunto alla copia curricolare personale. Nessuna configurazione canonica è stata modificata.");
  };
 
  const handleCSVUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -181,12 +181,12 @@ export function useCurriculumImportHandlers({
     
     if (count > 0) {
      updateLocalCurriculum(updatedKB);
-     let feedback = ` Caricamento completato con successo: integrati +${count} elementi curricolari d'Istituto.`;
+     let feedback = `Importazione locale completata: aggiunti ${count} elementi alla copia personale, non confermati né validati.`;
      if (errorsList.length > 0) {
       feedback += `\n\n Rilevate ${errorsList.length} incongruenze scartate nel file:\n` + errorsList.join('\n');
      }
      setCsvUploadFeedback(feedback);
-     showToast(`Importazione completata: +${count} elementi.`, true);
+     showToast(`Importazione locale: aggiunti ${count} elementi non validati.`, true);
     } else {
      setCsvUploadFeedback(` Caricamento fallito. Nessun dato valido importato.\n\nErrori rilevati:\n` + (errorsList.length > 0 ? errorsList.join('\n') : "File vuoto o privo di dati formattati correttamente."));
      showToast("Importazione fallita. Controlla il faldone.", false);
@@ -200,12 +200,12 @@ export function useCurriculumImportHandlers({
  };
 
  const handleResetCurriculumToBaseline = () => {
-  if (confirm("Sei sicuro di voler ripristinare il curricolo al baseline nazionale di default? Questo eliminerÃƒÂ  tutte le personalizzazioni, gli obiettivi generati con IA e i file importati.")) {
+  if (confirm("Ripristinare la copia curricolare personale al baseline incluso? Le personalizzazioni e le importazioni locali verranno rimosse; la configurazione istituzionale canonica non sarà modificata.")) {
    setLocalCurriculum(curriculumKB);
    localStorage.removeItem('curmanlight-custom-curriculum-v2');
    setGeneratedKbOutput(null);
    setCsvUploadFeedback(null);
-   showToast("Curricolo d'Istituto ripristinato al baseline nazionale.");
+   showToast("Copia curricolare personale ripristinata al baseline incluso; configurazione canonica invariata.");
   }
  };
 

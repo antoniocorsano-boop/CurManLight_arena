@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import { X, Code, Copy, Users } from 'lucide-react';
 import type { UdaModel } from '../../../types/curriculum';
 import type { SocialUda } from '../../session';
+import type { A07InstitutionalDocumentRead } from '../../../domain/institution';
 
 export interface UdaDetailModalProps {
   selectedUda: UdaModel | null;
@@ -9,6 +10,7 @@ export interface UdaDetailModalProps {
   handleDownloadScormManifest: (id: string) => void;
   copyUdaForRegister: (id: string) => void;
   copyUdaTextLocal: (id: string) => void;
+  institutionalProfile: A07InstitutionalDocumentRead;
 }
 
 export function UdaDetailModal({
@@ -17,6 +19,7 @@ export function UdaDetailModal({
   handleDownloadScormManifest,
   copyUdaForRegister,
   copyUdaTextLocal,
+  institutionalProfile,
 }: UdaDetailModalProps) {
   const closeButtonRef = useRef<HTMLButtonElement>(null);
 
@@ -51,7 +54,8 @@ export function UdaDetailModal({
        </div>
        <button ref={closeButtonRef} onClick={() => setSelectedUda(null)} aria-label="Chiudi dettaglio UDA" className="text-slate-400 hover:text-white transition"><X className="w-5 h-5" /></button>
       </div>
-      <div className="p-6 overflow-y-auto space-y-6 text-xs text-slate-700 flex-1 leading-relaxed">
+       <div className="p-6 overflow-y-auto space-y-6 text-xs text-slate-700 flex-1 leading-relaxed">
+        {institutionalProfile.warning && <div role="status" className="border border-amber-300 bg-amber-50 text-amber-900 rounded-lg px-3 py-2 font-semibold">{institutionalProfile.warning} Puoi comunque usare le esportazioni personali o dimostrative.</div>}
        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 bg-slate-50 p-4 border rounded-xl font-semibold">
         <div><span className="text-[10px] text-slate-400 uppercase tracking-wider block"> Codice Identificativo</span><span className="text-xs text-slate-800 font-mono">{selectedUda.id}</span></div>
         <div><span className="text-[10px] text-slate-400 uppercase tracking-wider block"> Monte Ore Previsto</span><span className="text-xs text-slate-800">{selectedUda.hours} Ore</span></div>
@@ -64,7 +68,7 @@ export function UdaDetailModal({
        </div>
        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="space-y-2">
-         <span className="text-[10px] font-black text-indigo-500 uppercase block"> Traguardi d'Istituto</span>
+         <span className="text-[10px] font-black text-indigo-500 uppercase block"> Traguardi</span>
          <div className="bg-indigo-50/20 border border-indigo-100 p-3 rounded-xl">
           <ul className="space-y-1">{selectedUda.traguardi.map((t: string, i: number) => <li key={i}> {t}</li>)}</ul>
          </div>
@@ -97,7 +101,7 @@ export function UdaDetailModal({
        <hr className="border-slate-200" />
        <div className="text-[10px] text-slate-400 flex justify-between items-center bg-slate-50 p-2 rounded-lg font-bold">
         <span>Legenda Campi:</span>
-        <span> = Dato curricolare d'istituto</span>
+         <span> = Dato curricolare locale</span>
         <span> = Esempio didattico personalizzabile</span>
        </div>
        
@@ -164,7 +168,7 @@ export function OutcomesModal({
       
       <div className="p-6 overflow-y-auto space-y-4 text-xs text-slate-700 flex-1 leading-relaxed">
        <div className="space-y-1 text-left">
-        <p className="text-[10px] text-slate-400 uppercase font-black">UDA d'Istituto Selezionata:</p>
+        <p className="text-[10px] text-slate-400 uppercase font-black">UDA locale selezionata:</p>
         <h4 className="font-extrabold text-sm text-slate-800 leading-snug">{selectedUdaForOutcomes.title}</h4>
         <p className="text-slate-500 font-semibold">Autore: {selectedUdaForOutcomes.author} | Disciplina: {selectedUdaForOutcomes.discipline.toUpperCase()}</p>
        </div>
@@ -237,13 +241,14 @@ export function OutcomesModal({
        </div>
 
        <div className="space-y-1 text-left">
-        <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider block">Riflessioni Critiche ed Annotazioni d'Istituto (Lessons Learned):</label>
+        <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider block">Riflessioni e annotazioni locali:</label>
+        <p className="text-[9px] text-amber-700 font-semibold">Non inserire nomi o altri dati personali. L'app non garantisce anonimizzazione automatica.</p>
         <textarea 
          value={criticalReflectionsInput} 
          onChange={(e) => setCriticalReflectionsInput(e.target.value)} 
          className="w-full border rounded-lg p-2 text-xs font-semibold placeholder-slate-400 outline-none bg-slate-50" 
          rows={3} 
-         placeholder="Inserisci commenti, lezioni apprese e consigli metodologici in forma interamente anonima (es. 'I sussidi LIM hanno accelerato l'apprendimento...')." 
+         placeholder="Inserisci solo osservazioni metodologiche prive di dati personali."
         />
        </div>
       </div>

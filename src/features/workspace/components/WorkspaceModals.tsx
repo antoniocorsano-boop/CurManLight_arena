@@ -30,9 +30,9 @@ export const MicPermissionGuideModal: React.FC<MicPermissionGuideModalProps> = (
 
       <div className="p-6 space-y-4 text-xs leading-relaxed text-slate-700 text-left">
        <div className="bg-rose-50 border border-rose-100 p-3.5 rounded-xl space-y-1">
-        <span className="text-[9px] font-black text-rose-700 uppercase block tracking-wider">Stato Rilevato d'Istituto:</span>
+        <span className="text-[9px] font-black text-rose-700 uppercase block tracking-wider">Stato locale rilevato:</span>
         <p className="font-bold text-slate-800 leading-normal">
-         L'accesso al microfono è stato <span className="text-rose-700 uppercase">Bloccato o Negato</span> dalle impostazioni di sicurezza del browser o del dispositivo mobile d'aula.
+         L'accesso al microfono è stato <span className="text-rose-700 uppercase">bloccato o negato</span> dalle impostazioni del browser o del dispositivo.
         </p>
        </div>
 
@@ -44,7 +44,7 @@ export const MicPermissionGuideModal: React.FC<MicPermissionGuideModalProps> = (
          <p className="text-[10px] text-slate-500 leading-normal">
           1. Clicca sull'icona del <strong>Lucchetto</strong> o delle <strong>Impostazioni del sito</strong> situata a sinistra della barra degli indirizzi in alto (accanto all'URL).<br />
           2. Trova la voce <strong>Microfono</strong> e seleziona <strong>Consenti (Allow)</strong> dal menù a tendina.<br />
-          3. Ricarica la pagina per rendere attiva la dettatura vocale d'Istituto.
+          3. Ricarica la pagina e verifica localmente la dettatura vocale.
          </p>
         </div>
 
@@ -101,7 +101,7 @@ export const GemmaSuggestionModal: React.FC<GemmaSuggestionModalProps> = ({
           <path d="M13 3l3 6L6 22" />
           <path d="M2 9h20" />
         </svg>
-        <span>Gemma Co-pilota d'Istituto</span>
+          <span>Assistente locale non verificato</span>
        </span>
        <button onClick={() => { setGemFieldActive(null); setGemSuggestedText(""); }} className="text-slate-200 hover:text-white transition cursor-pointer">
         <X className="w-5 h-5" />
@@ -189,7 +189,7 @@ export const CloudAccountModal: React.FC<CloudAccountModalProps> = ({
         <span className="text-[9px] font-black text-indigo-600 uppercase block tracking-wider border-b pb-1">Anagrafica Utenze di Sicurezza:</span>
         
         <div className="space-y-1">
-         <label className="text-[8px] font-black text-slate-400 uppercase tracking-wider block">Email Istituzionale Scolastica (@icdonmilani.edu.it):</label>
+          <label className="text-[8px] font-black text-slate-400 uppercase tracking-wider block">Email scolastica:</label>
          <input
           type="email"
           value={workspaceUserEmail}
@@ -198,7 +198,7 @@ export const CloudAccountModal: React.FC<CloudAccountModalProps> = ({
             safeLocalStorageSetItem('curman_workspaceUserEmail', e.target.value.trim());
           }}
           className="w-full border rounded-xl px-2.5 py-1.5 font-bold bg-white text-xs outline-none focus:ring-1 focus:ring-indigo-500 font-mono"
-          placeholder="Es. m.letizia@icdonmilani.edu.it"
+           placeholder="Es. docente@scuola.edu.it"
          />
         </div>
 
@@ -212,7 +212,7 @@ export const CloudAccountModal: React.FC<CloudAccountModalProps> = ({
             safeLocalStorageSetItem('curman_personalUserEmail', e.target.value.trim());
           }}
           className="w-full border rounded-xl px-2.5 py-1.5 font-bold bg-white text-xs outline-none focus:ring-1 focus:ring-indigo-500 font-mono"
-          placeholder="Es. maria.letizia@gmail.com"
+           placeholder="Inserisci un'email personale"
          />
         </div>
        </div>
@@ -230,10 +230,10 @@ export const CloudAccountModal: React.FC<CloudAccountModalProps> = ({
          className="w-full text-left p-3 border hover:border-indigo-300 rounded-xl hover:bg-indigo-50/10 transition block bg-white shadow-sm cursor-pointer"
         >
          <strong className="text-slate-800 text-[10px] block flex items-center space-x-1.5">
-           <span>Utenza Scolastica (Prioritaria via OAuth2)</span>
+            <span>Account dichiarato scolastico (non verificato)</span>
          </strong>
          <span className="text-[9.5px] text-slate-500 leading-normal block mt-1">
-           Allineamento centrale cifrato d'Istituto su Drive scolastico associato all'email <strong>{workspaceUserEmail}</strong>.
+             Copia JSON sull'account Google selezionato. L'indirizzo <strong>{workspaceUserEmail || 'non disponibile'}</strong> non prova appartenenza a una scuola e il file non viene cifrato dall'applicazione.
          </span>
         </button>
 
@@ -263,13 +263,13 @@ export const CloudAccountModal: React.FC<CloudAccountModalProps> = ({
            <span>Connettore Locale (Senza OAuth2 - Offline First)</span>
          </strong>
          <span className="text-[9.5px] text-emerald-950/75 leading-normal block mt-1">
-           <strong>Consigliato per massima privacy:</strong> Dialoga direttamente con l'App locale di Google Drive del tuo PC fissa d'aula o del tablet (via Cartella Condivisa o Condivisione Nativa), bypassando l'autenticazione online OAuth2.
+            <strong>Salvataggio manuale:</strong> prova ad aprire il selettore file o il pannello di condivisione del dispositivo. Destinazione, disponibilità e protezione non sono verificate dall'app.
          </span>
         </button>
        </div>
 
        <div className="bg-slate-50 border p-3 rounded-xl text-[9.5px] text-slate-500 leading-normal">
-        <strong>Allineamento di Fallback:</strong> Se non possiedi ancora le credenziali scolastiche d'area o se riscontri errori di rete, usa il connettore locale: l'applicazione eseguirà comunque il salvataggio tramite l'applicazione Google Drive nativa del tuo dispositivo.
+         <strong>Alternativa locale:</strong> puoi tentare un download JSON o usare il pannello di condivisione, se supportato. Il completamento del salvataggio non è garantito.
        </div>
       </div>
      </div>

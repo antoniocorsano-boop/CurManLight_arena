@@ -88,14 +88,14 @@ export function CurriculumTab({
       {/* Dynamic Contextual Header Panel */}
       <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 transition duration-200">
         <div className="space-y-1">
-          <span className="text-[9px] font-black text-indigo-600 uppercase tracking-wider block">Ambito di Raccordo d'Istituto</span>
+          <span className="text-[9px] font-black text-indigo-600 uppercase tracking-wider block">Area locale di consultazione</span>
           <h2 className="text-sm font-black text-slate-800 uppercase tracking-wide">
             {getDisciplineLabel(discipline, order).toUpperCase()} — {order === 'infanzia' ? "Campo d'Esperienza" : "Materia Curricolare"}
           </h2>
           <p className="text-xs text-slate-600 font-semibold leading-relaxed max-w-2xl">
             {(() => {
               if (activeCurricoloView === 'popolamento') {
-                return "Manutenzione e ampliamento della Banca Dati d'Istituto tramite Co-pilota IA o caricamento di fogli Excel/CSV.";
+                return "Gestione della copia curricolare locale tramite assistente o caricamento CSV.";
               }
               if (order === 'infanzia') {
                 return `Consulta il curricolo di ${getDisciplineLabel(discipline, order).toUpperCase()} strutturato sui 5 Campi di Esperienza per la Scuola dell'Infanzia.`;
@@ -130,10 +130,10 @@ export function CurriculumTab({
       {activeCurricoloView === 'home' && (
         <div className="space-y-6 fade-in text-left">
           <div className="bg-slate-50 border rounded-2xl p-5 space-y-2 text-left">
-            <span className="text-[9px] font-black text-indigo-600 uppercase tracking-wider block">Ambito di Navigazione d'Istituto</span>
+            <span className="text-[9px] font-black text-indigo-600 uppercase tracking-wider block">Navigazione dei contenuti locali</span>
             <h3 className="text-sm font-black text-slate-800 uppercase tracking-wide">Consulta Curricolo: Home d'Area</h3>
             <p className="text-xs text-slate-500 font-medium leading-relaxed">
-              Benvenuto nell'area di consultazione e allineamento del curricolo d'Istituto. Seleziona una delle azioni essenziali qui sotto per procedere:
+              Consulta la baseline legacy CML-633C non verificata e le modifiche locali. I contenuti non attestano configurazione o adozione da parte di una scuola:
             </p>
           </div>
 
@@ -144,7 +144,7 @@ export function CurriculumTab({
             >
               <span className="text-[10px] font-black text-indigo-600 uppercase tracking-wider block">Azione 1</span>
               <h4 className="text-xs font-bold text-slate-800 uppercase">Vista Strutturata (Albero)</h4>
-              <p className="text-[11px] text-slate-500 font-semibold leading-normal">Consulta i traguardi d'Istituto e gli obiettivi d'apprendimento verticali raccordati alle 14 discipline.</p>
+              <p className="text-[11px] text-slate-500 font-semibold leading-normal">Consulta traguardi e obiettivi disponibili nella copia locale non validata.</p>
             </button>
 
             <button
@@ -153,7 +153,7 @@ export function CurriculumTab({
             >
               <span className="text-[10px] font-black text-indigo-600 uppercase tracking-wider block">Azione 2</span>
               <h4 className="text-xs font-bold text-slate-800 uppercase">Raccordo Diacronico (Mappa)</h4>
-              <p className="text-[11px] text-slate-500 font-semibold leading-normal">Visualizza lo sviluppo continuo dell'allineamento 2012-2025 e lo stato delle delibere dei dipartimenti.</p>
+              <p className="text-[11px] text-slate-500 font-semibold leading-normal">Confronta i testi 2012-2025 e consulta le scelte locali di lavoro, prive di valore deliberativo.</p>
             </button>
 
             <button
@@ -162,7 +162,7 @@ export function CurriculumTab({
             >
               <span className="text-[10px] font-black text-indigo-600 uppercase tracking-wider block">Azione 3</span>
               <h4 className="text-xs font-bold text-slate-800 uppercase">Integrazione & Popolamento</h4>
-              <p className="text-[11px] text-slate-500 font-semibold leading-normal">Estendi il curricolo utilizzando il co-pilota IA d'Istituto o caricando i fogli Excel/CSV.</p>
+              <p className="text-[11px] text-slate-500 font-semibold leading-normal">Modifica la copia locale con assistenza non verificata o caricando file CSV.</p>
             </button>
           </div>
         </div>
@@ -294,7 +294,7 @@ function AlberoView({ localCurriculum, discipline, order, setDiscipline, showOnl
               </button>
             </div>
             <div className="space-y-1">
-              <span className="text-[9px] font-black text-slate-400 uppercase tracking-wider block">Discipline attive d'Istituto</span>
+              <span className="text-[9px] font-black text-slate-400 uppercase tracking-wider block">Discipline disponibili localmente</span>
               <p className="text-[10px] text-slate-500 font-medium">Seleziona una materia per consultarne i contenuti verticali e i traguardi.</p>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-1.5">
@@ -324,13 +324,13 @@ function AlberoView({ localCurriculum, discipline, order, setDiscipline, showOnl
                     {getDisciplineLabel(disc, order)} — {orderLabelsForMap[order]?.split(" (")[0].toUpperCase()}
                   </h3>
                   <span className="px-2 py-0.5 bg-emerald-50 text-emerald-800 border border-emerald-100 rounded text-[9px] font-bold uppercase tracking-wider">
-                    Mappa Validata
+                    Mappa locale non validata
                   </span>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2 bg-slate-50/30 p-4 border border-slate-150 rounded-xl">
                     <span className="text-[9px] font-black text-indigo-950 uppercase tracking-wider block border-b pb-1">
-                      Traguardi di Competenza d'Istituto:
+                      Traguardi disponibili nella copia locale:
                     </span>
                     <div className="space-y-2 max-h-[240px] overflow-y-auto pr-1 text-slate-700 font-semibold leading-relaxed">
                       {localCurriculum[disc]?.[order]?.traguardi?.map((t: string, idx: number) => (
@@ -360,10 +360,10 @@ function AlberoView({ localCurriculum, discipline, order, setDiscipline, showOnl
                         <path d="M13 3l3 6L6 22" />
                         <path d="M2 9h20" />
                       </svg>
-                      <span>Studio e Comprensione del Curricolo d'Istituto</span>
+                      <span>Studio della copia curricolare locale</span>
                     </strong>
                     <p className="text-[9.5px] text-slate-500 font-semibold leading-relaxed">
-                      Interroga l'I.A. locale d'Istituto per analizzare i nessi interdisciplinari per la materia {getDisciplineLabel(disc, order).toUpperCase()}.
+                      Richiedi uno spunto locale non verificato sui nessi interdisciplinari per {getDisciplineLabel(disc, order).toUpperCase()}.
                     </p>
                   </div>
                 </div>
@@ -433,7 +433,7 @@ function MappaView({
                   : 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50'
               }`}
             >
-              {showOnlyProfileProcesso ? `★ Solo la mia materia (${getDisciplineLabel(discipline, order).toUpperCase()})` : "Tutte le Discipline d'Istituto"}
+              {showOnlyProfileProcesso ? `★ Solo la mia materia (${getDisciplineLabel(discipline, order).toUpperCase()})` : "Tutte le discipline disponibili"}
             </button>
           </div>
           {!showOnlyProfileProcesso && (
@@ -474,7 +474,7 @@ function MappaView({
                   <div className="space-y-3 fade-in">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs leading-relaxed">
                       <div className="space-y-1 text-left">
-                        <span className="text-slate-400 uppercase text-[9px] font-black block">Traguardi d'Istituto</span>
+                        <span className="text-slate-400 uppercase text-[9px] font-black block">Traguardi locali non validati</span>
                         {data.traguardi.map((t: string, idx: number) => <p key={idx} className="text-slate-700 font-semibold">- {t}</p>)}
                       </div>
                       <div className="space-y-1 text-left">
@@ -486,23 +486,23 @@ function MappaView({
                     {data.proposals && data.proposals.length > 0 && (
                       <div className="border-t border-slate-100 pt-3 mt-1 space-y-2 text-[10px]">
                         <span className="text-slate-400 uppercase text-[8px] font-black block">
-                          Adeguamenti e voti dipartimentali (D.M. 221/2025):
+                          Proposte e scelte locali (D.M. 221/2025):
                         </span>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                           {data.proposals.map((p: Proposal) => {
                             const dec = decisions[p.id];
                             let txt = p.newText;
-                            let voteStr = "Da Votare";
+                            let choiceLabel = "Nessuna scelta";
                             let colorClasses = "bg-slate-100 text-slate-600 border-slate-200";
                             if (dec === 'approved') {
-                              voteStr = "Approvato 2025";
+                              choiceLabel = "Usa testo proposto 2025";
                               colorClasses = "bg-emerald-50 text-emerald-800 border-emerald-150";
                             } else if (dec === 'rejected') {
-                              voteStr = "Conservato 2012";
+                              choiceLabel = "Mantieni testo 2012";
                               colorClasses = "bg-rose-50 text-rose-800 border-rose-150";
                               txt = p.oldText;
                             } else if (dec === 'custom') {
-                              voteStr = "Personalizzato";
+                              choiceLabel = "Testo personalizzato";
                               colorClasses = "bg-amber-50 text-amber-800 border-amber-150";
                               txt = customTexts[p.id] || p.newText;
                             }
@@ -511,7 +511,7 @@ function MappaView({
                                 <div className="flex justify-between items-center font-bold text-[9px]">
                                   <span className="text-slate-400">{p.id.toUpperCase()}</span>
                                   <span className={`px-1.5 py-0.2 rounded border uppercase tracking-wider ${colorClasses}`}>
-                                    {voteStr}
+                                    {choiceLabel}
                                   </span>
                                 </div>
                                 <p className="text-slate-700 font-semibold italic">"{txt}"</p>
@@ -577,7 +577,7 @@ function PopolamentoView({
             <div className="border border-indigo-100 bg-indigo-50/10 p-5 rounded-2xl space-y-4">
               <div className="space-y-1">
                 <span className="px-2 py-0.5 bg-indigo-100 text-indigo-800 rounded text-[8px] font-black uppercase tracking-wider">Metodo A (Consigliato)</span>
-                <h4 className="text-xs font-black text-indigo-950 uppercase tracking-wider">CO-PILOTA D'ISTITUTO PER LA GENERAZIONE ASSISTITA</h4>
+                  <h4 className="text-xs font-black text-indigo-950 uppercase tracking-wider">Assistente locale per la generazione non verificata</h4>
               </div>
               <div className="bg-white border rounded-xl p-3 flex justify-between items-center text-[10px] shadow-sm">
                 <div className="space-y-0.5">
@@ -640,7 +640,7 @@ function PopolamentoView({
               </div>
               <div className="bg-white border-2 border-dashed border-slate-300 rounded-xl p-6 text-center space-y-3">
                 <div className="space-y-1">
-                  <p className="text-[11px] font-bold text-slate-700">Seleziona il file d'Istituto (.csv)</p>
+                  <p className="text-[11px] font-bold text-slate-700">Seleziona un file CSV locale</p>
                   <p className="text-[9px] text-slate-400">Dimensione massima consentita: 10 MB</p>
                 </div>
                 <input type="file" accept=".csv" onChange={handleCSVUpload} className="mx-auto block text-[10px] text-slate-500 cursor-pointer" />
@@ -657,21 +657,21 @@ storia,secondaria,traguardo,Padroneggia la comprensione critica</pre>
           {/* Reset block */}
           <div className="border border-rose-100 bg-rose-50/10 p-5 rounded-2xl text-left space-y-3">
             <h4 className="text-xs font-black text-rose-950 uppercase tracking-wider">Ripristino al Baseline di default</h4>
-            <button onClick={handleResetCurriculumToBaseline} className="bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-700 font-black text-[10px] uppercase tracking-wider px-4 py-2.5 rounded-xl transition">Ripristina baseline curricolare d'Istituto</button>
+            <button onClick={handleResetCurriculumToBaseline} className="bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-700 font-black text-[10px] uppercase tracking-wider px-4 py-2.5 rounded-xl transition">Ripristina baseline curricolare locale</button>
           </div>
         </div>
       ) : (
         /* Real Users: Compact Tabbed Console */
         <div className="space-y-4">
           <div className="flex space-x-1 bg-slate-100 p-1 border rounded-xl w-fit text-[10px] font-black uppercase shadow-sm">
-            <button onClick={() => setPopolamentoTab('copilot')} className={`px-3 py-1.5 rounded-lg transition ${popolamentoTab === 'copilot' ? 'bg-white text-indigo-950 shadow-sm border' : 'text-slate-500 hover:text-slate-800'}`}>★ Co-pilota d'Istituto (IA)</button>
+            <button onClick={() => setPopolamentoTab('copilot')} className={`px-3 py-1.5 rounded-lg transition ${popolamentoTab === 'copilot' ? 'bg-white text-indigo-950 shadow-sm border' : 'text-slate-500 hover:text-slate-800'}`}>Assistente locale</button>
             <button onClick={() => setPopolamentoTab('csv')} className={`px-3 py-1.5 rounded-lg transition ${popolamentoTab === 'csv' ? 'bg-white text-indigo-950 shadow-sm border' : 'text-slate-500 hover:text-slate-800'}`}>☆ Importatore CSV</button>
             <button onClick={() => setPopolamentoTab('security')} className={`px-3 py-1.5 rounded-lg transition ${popolamentoTab === 'security' ? 'bg-white text-indigo-950 shadow-sm border' : 'text-slate-500 hover:text-slate-800'}`}>★ Zona di Sicurezza</button>
           </div>
 
           {popolamentoTab === 'copilot' && (
             <div className="border border-indigo-150 bg-indigo-50/10 p-5 rounded-2xl space-y-4 fade-in">
-              <h4 className="text-xs font-black text-indigo-950 uppercase tracking-wider">Co-pilota d'Istituto per la Generazione Assistita</h4>
+              <h4 className="text-xs font-black text-indigo-950 uppercase tracking-wider">Assistente locale per la generazione non verificata</h4>
               <div className="bg-white border rounded-xl p-3 flex justify-between items-center text-[10px] shadow-sm">
                 <div className="space-y-0.5">
                   <span className="text-[8px] font-black text-slate-400 uppercase tracking-wider block">Stato Assistente Locale:</span>
@@ -736,7 +736,7 @@ storia,secondaria,traguardo,Padroneggia la comprensione critica</pre>
               <h4 className="text-xs font-black text-slate-800 uppercase tracking-wider">Importatore Massivo da Excel / CSV</h4>
               <div className="bg-white border-2 border-dashed border-slate-300 rounded-xl p-6 text-center space-y-3">
                 <div className="space-y-1">
-                  <p className="text-[11px] font-bold text-slate-700">Seleziona il file d'Istituto (.csv)</p>
+                  <p className="text-[11px] font-bold text-slate-700">Seleziona un file CSV locale</p>
                   <p className="text-[9px] text-slate-400">Dimensione massima consentita: 10 MB</p>
                 </div>
                 <input type="file" accept=".csv" onChange={handleCSVUpload} className="mx-auto block text-[10px] text-slate-500 cursor-pointer" />
@@ -747,7 +747,7 @@ storia,secondaria,traguardo,Padroneggia la comprensione critica</pre>
           {popolamentoTab === 'security' && (
             <div className="border border-rose-100 bg-rose-50/10 p-5 rounded-2xl text-left space-y-3 fade-in">
               <h4 className="text-xs font-black text-rose-950 uppercase tracking-wider">Ripristino al Baseline di default</h4>
-              <button onClick={handleResetCurriculumToBaseline} className="bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-700 font-black text-[10px] uppercase tracking-wider px-4 py-2.5 rounded-xl transition">Ripristina baseline curricolare d'Istituto</button>
+              <button onClick={handleResetCurriculumToBaseline} className="bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-700 font-black text-[10px] uppercase tracking-wider px-4 py-2.5 rounded-xl transition">Ripristina baseline curricolare locale</button>
             </div>
           )}
         </div>

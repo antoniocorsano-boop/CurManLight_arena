@@ -42,7 +42,7 @@ export function CopilotChatSidebar({
       <div className="bg-slate-900 text-white px-4 py-3 flex justify-between items-center shrink-0 border-b border-slate-800">
        <span className="font-black uppercase tracking-wider text-[9px] flex items-center space-x-1.5">
         <Sparkles className="w-3.5 h-3.5 text-indigo-400 animate-pulse" />
-        <span>Co-pilota d'Istituto</span>
+        <span>Assistente locale non verificato</span>
        </span>
        <button onClick={() => setIsCopilotChatOpen(false)} className="text-slate-400 hover:text-white transition cursor-pointer">
         <X className="w-4 h-4" />
@@ -53,7 +53,7 @@ export function CopilotChatSidebar({
        {copilotChatHistory.map((msg, idx) => (
         <div key={idx} className={`flex flex-col space-y-0.5 ${msg.sender === 'user' ? 'items-end' : 'items-start'}`}>
          <span className="text-[8px] font-black text-slate-400 uppercase tracking-wider">
-          {msg.sender === 'user' ? 'Docente' : "Co-pilota IA d'Istituto"}
+          {msg.sender === 'user' ? 'Utente locale' : 'Assistente locale'}
          </span>
          <div className="flex items-end space-x-1.5 max-w-[95%]">
           <div className={`p-2 rounded-xl border text-justify font-semibold leading-normal ${
@@ -95,7 +95,7 @@ export function CopilotChatSidebar({
        ))}
        {isCopilotResponding && (
         <div className="flex flex-col space-y-0.5 items-start">
-         <span className="text-[8px] font-black text-slate-400 uppercase tracking-wider">Co-pilota IA d'Istituto</span>
+         <span className="text-[8px] font-black text-slate-400 uppercase tracking-wider">Assistente locale non verificato</span>
          <div className="p-2.5 rounded-xl border bg-indigo-50/20 border-indigo-100/30 text-slate-500 rounded-tl-none italic animate-pulse">
           Elaborazione spunti d'aula in corso...
          </div>
@@ -142,7 +142,7 @@ export function CopilotChatSidebar({
              ? 'bg-rose-100 border-rose-300 text-rose-600 animate-pulse'
              : 'bg-slate-50 border-slate-200 text-slate-500 hover:bg-slate-100 hover:text-indigo-600'
          }`}
-         title="Dettatura vocale d'Istituto (Parla)"
+         title="Dettatura vocale locale"
         >
          <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
            <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z" />

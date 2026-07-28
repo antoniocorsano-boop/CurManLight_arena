@@ -52,7 +52,7 @@ export class CurmanlightV2Engine {
 
     return {
       disciplineName: disc.toUpperCase(),
-      nucleiFondanti: levelData.nucleiFondanti || ["Curricolo Generale d'Istituto"],
+       nucleiFondanti: levelData.nucleiFondanti || ["Contenuto curricolare locale non verificato"],
       traguardi: levelData.traguardi || [],
       obiettivi: levelData.obiettivi || [],
       raccordiCorrelati: raccordi
@@ -98,7 +98,7 @@ export class CurmanlightV2Engine {
       message = "Copertura parziale d'area. Raccordi di riforma votati, ma si rende necessaria la stesura di almeno un modulo UDA.";
     } else {
       status = 'RED';
-      message = "Attenzione! Area scoperta d'Istituto. Richiede esame urgente del dipartimento disciplinare.";
+      message = "Area senza dati nella simulazione locale. Valuta manualmente se richiede integrazione.";
     }
 
     return { nodeId, status, percentage: Math.round(percentage), message };
@@ -132,7 +132,7 @@ export class CurmanlightV2Engine {
     }
 
     // Seleziona automaticamente il primo traguardo di ciascuna materia come "ponte"
-    const pTraguardo = pData.traguardi?.[0] || "Traguardo primario d'Istituto.";
+  const pTraguardo = pData.traguardi?.[0] || "Traguardo locale non verificato.";
     const sTraguardo = sData.traguardi?.[0] || "Traguardo secondario di raccordo.";
 
     const selectedTraguardi = [pTraguardo, sTraguardo];
@@ -156,14 +156,14 @@ export class CurmanlightV2Engine {
       traguardi: selectedTraguardi,
       obiettivi: selectedObiettivi,
       evidenze: selectedEvidenze,
-      realTask: `Progettazione e realizzazione di un elaborato/progetto concreto che fonda le competenze di ${pDisc.toUpperCase()} con quelle di ${sDisc.toUpperCase()} (es. Laboratorio laboratoriale d'Istituto).`,
-      notes: "Misure d'inclusione facilitate d'Istituto: uso di testi ingranditi (EasyReading), sintetizzatore vocale offline d'aula ed organizzazione a piccoli gruppi (Cooperative Learning).",
+    realTask: `Bozza locale di un elaborato che collega ${pDisc.toUpperCase()} e ${sDisc.toUpperCase()}; contenuto da verificare.`,
+    notes: "Possibili supporti locali da valutare: testi ingranditi, sintesi vocale e piccoli gruppi.",
       createdAt: new Date().toLocaleDateString('it-IT'),
       coAuthors: `Docente di ${sDisc.toUpperCase()}`,
       interdisciplinaryFocus: `Incrocio epistemologico strutturato basato sui nuclei fondanti: '${pData.nucleiFondanti?.[0]}' e '${sData.nucleiFondanti?.[0]}'.`
     };
 
-    const explanation = `🤖 [WikiLLM d'Istituto]: Ho analizzato la tua richiesta ed ho auto-progettato un'UDA Interdisciplinare perfetta! Ho rilevato una splendida connessione semantica tra i nuclei fondanti di ${primaryDisc.toUpperCase()} ('${pData.nucleiFondanti?.[0]}') e ${secondaryDisc.toUpperCase()} ('${sData.nucleiFondanti?.[0]}'), raccordandoli con i traguardi ministeriali D.M. 221/2025.`;
+  const explanation = `Simulazione locale non verificata: possibile collegamento tra i nuclei di ${primaryDisc.toUpperCase()} ('${pData.nucleiFondanti?.[0]}') e ${secondaryDisc.toUpperCase()} ('${sData.nucleiFondanti?.[0]}'). Verifica fonti e adeguatezza prima dell'uso.`;
 
     return { success: true, suggestedUda, explanation };
   }

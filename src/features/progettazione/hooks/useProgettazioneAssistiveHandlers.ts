@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { SchoolOrder, UdaModel } from '../../../types/curriculum';
 import type { CurriculumMap } from '../../session';
 import { safeLocalStorageGetItem, safeLocalStorageSetItem } from '../../../lib/consolidatedStorage';
-import { sanitizeInclusiveSensitiveTerms } from '../../../lib/gdprFilter';
+import { sanitizeInclusiveSensitiveTerms as reduceSensitiveTerms } from '../../../lib/gdprFilter';
 
 interface UseProgettazioneAssistiveHandlersArgs {
   savedUda: UdaModel[];
@@ -95,8 +95,8 @@ export const useProgettazioneAssistiveHandlers = ({
       const sorted = Object.entries(freq).sort((a, b) => b[1] - a[1]);
       return sorted.length > 0 ? sorted[0][0] : '';
     };
-    const prefillNotes = sanitizeInclusiveSensitiveTerms(mostCommon(recent.map(u => u.notes)));
-    const prefillTask = sanitizeInclusiveSensitiveTerms(mostCommon(recent.map(u => u.realTask)));
+    const prefillNotes = reduceSensitiveTerms(mostCommon(recent.map(u => u.notes)));
+    const prefillTask = reduceSensitiveTerms(mostCommon(recent.map(u => u.realTask)));
     const fields: string[] = [];
     if (prefillNotes && !progNotes.trim()) {
       setProgNotes(prefillNotes);
@@ -108,7 +108,7 @@ export const useProgettazioneAssistiveHandlers = ({
     }
     if (fields.length > 0) {
       setAnticipatedFields(fields);
-      showToast("Bozza assistita d'Istituto: campi ricorrenti pre-compilati dallo storico (verifica e conferma).", true);
+      showToast("Bozza personale precompilata da dati locali ricorrenti; verifica manualmente ogni campo.", true);
     }
   };
 
@@ -132,12 +132,12 @@ export const useProgettazioneAssistiveHandlers = ({
       title: `${uda.title.replace(/\s*\((Clonata|Importata|Target:[^)]*)\)/g, '')} (Clonata)${titleSuffix}`,
       status: 'bozza',
       traguardi: realignedTraguardi,
-      realTask: sanitizeInclusiveSensitiveTerms(uda.realTask || ''),
-      notes: sanitizeInclusiveSensitiveTerms(uda.notes || ''),
+      realTask: reduceSensitiveTerms(uda.realTask || ''),
+      notes: reduceSensitiveTerms(uda.notes || ''),
       createdAt: new Date().toLocaleDateString('it-IT')
     };
     addUda(cloned);
-    showToast(`UDA clonata e ri-allineata sulla classe target ${order === 'infanzia' ? 'Fascia Unica' : `${targetClass}^${targetSection}`} con filtro GDPR applicato!`, true);
+    showToast(`UDA clonata per ${order === 'infanzia' ? 'Fascia Unica' : `${targetClass}^${targetSection}`}. Applicata una riduzione limitata dei termini sensibili: verifica manualmente il testo.`, true);
   };
 
   return {

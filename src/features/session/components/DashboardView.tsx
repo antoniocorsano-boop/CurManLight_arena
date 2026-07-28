@@ -193,11 +193,9 @@ export function DashboardView({
            <strong className="text-xs text-slate-800 font-extrabold block">Votazione dei Gap Ordinamentali</strong>
            <div className="flex justify-between items-center text-xs">
             <span className="text-slate-500 font-bold">Raccordi esaminati:</span>
-            <span className="text-amber-600 font-black">46 / 46 (100% completati)</span>
+             <span className="text-slate-500 font-black">Non disponibile</span>
            </div>
-           <div className="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden">
-            <div className="bg-amber-500 h-full w-full" />
-           </div>
+            <p className="text-[9px] text-slate-400">Decisioni locali registrate: {Object.keys(decisions).length}</p>
           </div>
 
           <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-2.5 text-left">
@@ -224,15 +222,13 @@ export function DashboardView({
         {role === 'referente' && (
          <>
           <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-2.5 text-left">
-           <span className="text-[8px] font-black text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md uppercase tracking-wider block w-fit"> Consenso d'Istituto</span>
+            <span className="text-[8px] font-black text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md uppercase tracking-wider block w-fit">Riepilogo locale non verificato</span>
            <strong className="text-xs text-slate-800 font-extrabold block">Tasso di Adeguamento Generale</strong>
            <div className="flex justify-between items-center text-xs">
             <span className="text-slate-500 font-bold">Adesione Linee Guida 2025:</span>
-            <span className="text-indigo-600 font-black">94.5% (ELEVATO)</span>
+             <span className="text-slate-500 font-black">Non disponibile</span>
            </div>
-           <div className="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden">
-            <div className="bg-indigo-600 h-full w-[94.5%]" />
-           </div>
+            <p className="text-[9px] text-slate-400">Richiede dati dipartimentali importati e verificati.</p>
           </div>
 
           <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-2.5 text-left">
@@ -245,11 +241,11 @@ export function DashboardView({
           </div>
 
           <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-2.5 text-left">
-           <span className="text-[8px] font-black text-amber-600 bg-amber-50 px-2 py-0.5 rounded-md uppercase tracking-wider block w-fit"> Copertura PTOF d'Istituto</span>
+            <span className="text-[8px] font-black text-amber-600 bg-amber-50 px-2 py-0.5 rounded-md uppercase tracking-wider block w-fit">Confronto locale delle competenze</span>
            <strong className="text-xs text-slate-800 font-extrabold block">Allineamento 8 Competenze Europee</strong>
            <div className="space-y-1 text-[10px] text-slate-500 font-semibold leading-relaxed">
-            <div>Competenze coperte: <span className="text-slate-800 font-extrabold">8 / 8 Assi d'Istituto</span></div>
-            <p className="text-[9px] font-normal leading-normal">Tutti i raccordi ed UDA sono allineati ai livelli europei di certificazione.</p>
+             <div>Competenze coperte: <span className="text-slate-800 font-extrabold">Non disponibile</span></div>
+             <p className="text-[9px] font-normal leading-normal">La copertura richiede dati curriculari configurati e verificati.</p>
            </div>
           </div>
          </>
@@ -259,30 +255,30 @@ export function DashboardView({
         {(role === 'dirigente' || role === 'collegio') && (
          <>
           <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-2.5 text-left">
-           <span className="text-[8px] font-black text-rose-600 bg-rose-50 px-2 py-0.5 rounded-md uppercase tracking-wider block w-fit"> Certificazioni PA d'Istituto</span>
+            <span className="text-[8px] font-black text-rose-600 bg-rose-50 px-2 py-0.5 rounded-md uppercase tracking-wider block w-fit">Riferimenti tecnici non verificati</span>
            <strong className="text-xs text-slate-800 font-extrabold block">Standard Tecnologici &amp; Conformità</strong>
            <div className="space-y-1 text-[10px] text-slate-600 font-bold leading-normal">
-            <div>Accessibilità AgID: <span className="text-emerald-600 font-semibold">Conforme (WCAG 2.1)</span></div>
-            <div> GDPR Privacy: <span className="text-emerald-600 font-semibold">Conforme (100% Browser)</span></div>
-            <div>Avanzamento Plessi: <span className="text-slate-800">Greci / Covotta (OK)</span></div>
+             <div>Verifica WCAG/AgID: <span className="text-slate-600 font-semibold">Non disponibile</span></div>
+             <div>Verifica GDPR: <span className="text-slate-600 font-semibold">Non disponibile</span></div>
+             <div>Configurazione sedi: <span className="text-slate-800">Verifica nelle impostazioni</span></div>
            </div>
           </div>
 
           <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-2.5 text-left">
-           <span className="text-[8px] font-black text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md uppercase tracking-wider block w-fit"> Delibera Consiliare d'Istituto</span>
-           <strong className="text-xs text-slate-800 font-extrabold block">Dispositivo di Adozione del Curricolo</strong>
+            <span className="text-[8px] font-black text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md uppercase tracking-wider block w-fit">Bozza locale non verificata</span>
+            <strong className="text-xs text-slate-800 font-extrabold block">Materiale di consultazione</strong>
            <div className="space-y-2 text-xs font-semibold text-slate-600 leading-normal">
-            <p className="text-[9px] font-normal leading-normal text-slate-400">Esamina ed adotta la proposta formale deliberata dal Collegio d'Istituto.</p>
-            <button onClick={() => { setSelectedBrainDoc('vol10'); setWikiWorkspaceTab('read'); handleTabSwitch('second-brain'); }} className="w-full py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-lg text-[9px] tracking-wider uppercase transition">Leggi Bozza Delibera</button>
+             <p className="text-[9px] font-normal leading-normal text-slate-400">Consulta una fonte archiviata. La vista non registra approvazioni, adozioni o deliberazioni formali.</p>
+             <button onClick={() => { setSelectedBrainDoc('vol10'); setWikiWorkspaceTab('read'); handleTabSwitch('second-brain'); }} className="w-full py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-lg text-[9px] tracking-wider uppercase transition">Consulta fonte archiviata</button>
            </div>
           </div>
 
           <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-2.5 text-left">
-           <span className="text-[8px] font-black text-amber-600 bg-amber-50 px-2 py-0.5 rounded-md uppercase tracking-wider block w-fit"> Dichiarazione Accessibilità AgID</span>
-           <strong className="text-xs text-slate-800 font-extrabold block">Esportazione Dichiarazione .TXT</strong>
+            <span className="text-[8px] font-black text-amber-600 bg-amber-50 px-2 py-0.5 rounded-md uppercase tracking-wider block w-fit">Checklist informativa AgID</span>
+            <strong className="text-xs text-slate-800 font-extrabold block">Verifica esterna necessaria</strong>
            <div className="space-y-2 text-xs font-semibold text-slate-600 leading-normal">
-            <p className="text-[9px] font-normal leading-normal text-slate-400">Scarica il report pre-compilato pronto per essere inviato telematicamente ad AgID.</p>
-            <button onClick={() => handleTabSwitch('certificazione-pa')} className="w-full py-1.5 bg-amber-600 hover:bg-amber-500 text-white font-bold rounded-lg text-[9px] tracking-wider uppercase transition">Scarica Dichiarazione</button>
+             <p className="text-[9px] font-normal leading-normal text-slate-400">Elenco locale non verificato. Il ruolo dichiarato nell'app non attribuisce autorità e non abilita invii telematici.</p>
+             <button onClick={() => handleTabSwitch('certificazione-pa')} className="w-full py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-800 font-bold rounded-lg text-[9px] tracking-wider uppercase transition">Consulta checklist locale</button>
            </div>
           </div>
          </>
@@ -292,11 +288,11 @@ export function DashboardView({
         {role === 'amministratore' && (
          <>
           <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-2.5 text-left">
-           <span className="text-[8px] font-black text-purple-600 bg-purple-50 px-2 py-0.5 rounded-md uppercase tracking-wider block w-fit"> Stato Database d'Istituto</span>
+            <span className="text-[8px] font-black text-purple-600 bg-purple-50 px-2 py-0.5 rounded-md uppercase tracking-wider block w-fit">Stato archivio browser</span>
            <strong className="text-xs text-slate-800 font-extrabold block">IndexedDB (Dexie.js) &amp; Memory</strong>
            <div className="space-y-1.5 text-xs font-semibold text-slate-600 leading-normal">
-            <div>Stato: <span className="text-emerald-600 font-semibold">Attivo e Cifrato</span></div>
-            <span className="text-[8px] text-slate-400 block font-normal leading-tight">Storage Guard attivo con deviazione in RAM per la compatibilità delle sandbox.</span>
+             <div>Persistenza browser: <span className="text-slate-600 font-semibold">Stato non verificato</span></div>
+             <span className="text-[8px] text-slate-400 block font-normal leading-tight">L'app salva JSON locale quando il browser lo consente; non dichiara cifratura.</span>
            </div>
           </div>
 
@@ -304,17 +300,17 @@ export function DashboardView({
            <span className="text-[8px] font-black text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md uppercase tracking-wider block w-fit"> Stato PWA &amp; Caching</span>
            <strong className="text-xs text-slate-800 font-extrabold block">Service Worker &amp; Aggiornamenti</strong>
            <div className="space-y-1 text-[10px] text-slate-500 font-bold leading-normal">
-            <div>Service Worker: <span className="text-emerald-600 font-semibold">Attivo d'Istituto (v1.5.3)</span></div>
-            <div>Cache SW: <span className="text-indigo-600 font-black">Attiva e protetta</span></div>
-            <p className="text-[8px] font-normal leading-normal mt-1">Sradicamento automatico di vecchie cache attivo all'avvio dell'applicazione.</p>
+             <div>Service Worker: <span className="text-slate-600 font-semibold">Stato non disponibile</span></div>
+             <div>Cache SW: <span className="text-slate-600 font-black">Stato non verificato</span></div>
+             <p className="text-[8px] font-normal leading-normal mt-1">Questa vista non verifica registrazione, aggiornamento o protezione della cache.</p>
            </div>
           </div>
 
           <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-2.5 text-left">
-           <span className="text-[8px] font-black text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md uppercase tracking-wider block w-fit"> Copia Sicurezza d'Istituto</span>
+            <span className="text-[8px] font-black text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md uppercase tracking-wider block w-fit">Copia JSON locale</span>
            <strong className="text-xs text-slate-800 font-extrabold block">Salvataggio &amp; Reset Completo</strong>
            <div className="space-y-2 text-xs font-semibold text-slate-600 leading-normal">
-            <p className="text-[9px] font-normal leading-normal text-slate-400">Gestisci i file di copia di sicurezza d'Istituto o ripristina lo stato iniziale dell'applicazione.</p>
+             <p className="text-[9px] font-normal leading-normal text-slate-400">Gestisci copie JSON locali o ripristina lo stato iniziale dell'applicazione.</p>
             <button onClick={() => setShowSaveModal(true)} className="w-full py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-lg text-[9px] tracking-wider uppercase transition">Gestione File</button>
            </div>
           </div>
@@ -353,7 +349,7 @@ export function DashboardView({
           </div>
           <div className="space-y-1">
            <h4 className="text-xs font-black text-slate-800 uppercase tracking-wide">Progettazione</h4>
-           <p className="text-[11px] text-slate-500 leading-relaxed font-medium">Wizard a 5 passi per redigere bozze d'UDA d'Istituto con SCORM zip packer locale, de-gergonizzato d'area e pronto all'uso.</p>
+            <p className="text-[11px] text-slate-500 leading-relaxed font-medium">Wizard a cinque passi per redigere bozze UDA personali con strumenti di esportazione locale.</p>
           </div>
          </div>
          <div className="pt-3 border-t flex space-x-1.5">
@@ -371,7 +367,7 @@ export function DashboardView({
           </div>
           <div className="space-y-1">
            <h4 className="text-xs font-black text-slate-800 uppercase tracking-wide">Classe</h4>
-           <p className="text-[11px] text-slate-500 leading-relaxed font-medium">Visualizzazione spaziale dei banchi, anagrafica tematica d'anonimato (Scientists, Classico) e compositore gruppi Jigsaw.</p>
+            <p className="text-[11px] text-slate-500 leading-relaxed font-medium">Visualizzazione locale con pseudonimi tematici e compositore gruppi Jigsaw. L'app non garantisce anonimizzazione automatica.</p>
           </div>
          </div>
          <div className="pt-3 border-t flex space-x-1.5">
@@ -384,7 +380,7 @@ export function DashboardView({
 
        {/* Informativa Privacy Semplificata (Azione UX) */}
        <div className="pt-6 border-t border-slate-150 text-center text-[10px] text-slate-400 font-bold leading-normal">
-        <span> Informativa Privacy: Tutti i dati sono memorizzati esclusivamente in locale sul tuo browser in conformità al GDPR d'Istituto.</span>
+         <span>I dati applicativi sono salvati localmente quando il browser lo consente. Conformità e sicurezza non sono verificate da questa vista.</span>
        </div>
       </div>
      )}

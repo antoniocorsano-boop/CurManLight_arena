@@ -33,16 +33,17 @@ interface CurriculumState extends Pick<UserState,
 export const useCurriculumStore = create<CurriculumState>()(
   persist(
     (set) => ({
-      role: 'insegnante',
+      role: 'non-dichiarato',
       discipline: 'italiano',
+      // Personal consultation choice only; this shadow store does not configure an institute.
       order: 'secondaria',
-      schoolYear: '2025-2026',
+      schoolYear: '',
       decisions: {},
       customTexts: {},
       savedUda: [],
       activeRevisionFilter: 'all',
-      selectedTraguardi: [0, 1],
-      selectedObiettivi: [0, 1],
+      selectedTraguardi: [],
+      selectedObiettivi: [],
       selectedEvidenze: [],
       activeProgTab: 'annuale',
       activeCurricoloView: 'albero',

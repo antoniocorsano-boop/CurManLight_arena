@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { createDefaultClassroomStudentFeedback } from '../data/defaultClassroomStudents';
 import { createDefaultSocialUdas } from '../../social';
 import type { ClassTheme, ClassroomLayout, ClassroomStudent, ClassroomTopicAnalysisResult, CooperativeGroup, CooperativeMethod, SocialUda } from '../../session';
 
@@ -51,7 +50,7 @@ export function useClassroomSocialState() {
  const [exclusionInputS2, setExclusionInputS2] = useState('st2');
  const [isAulaConfigOpen, setIsAulaConfigOpen] = useState(true);
 
- const [selectedClassCombination, setSelectedClassCombination] = useState('1^A');
+  const [selectedClassCombination, setSelectedClassCombination] = useState('');
  const [activeClassTheme, setActiveClassTheme] = useState<ClassTheme>(() => {
   return (localStorage.getItem('curman_activeClassTheme') as ClassTheme | null) || 'scientists';
  });
@@ -72,7 +71,7 @@ export function useClassroomSocialState() {
     return JSON.parse(saved);
    } catch {}
   }
-  return createDefaultClassroomStudentFeedback() as ClassroomFeedback[];
+  return [];
  });
  const [selectedStudentForFeedback, setSelectedStudentForFeedback] = useState<ClassroomFeedback | null>(null);
 
@@ -84,17 +83,18 @@ export function useClassroomSocialState() {
 
  const [showOutcomesModal, setShowOutcomesModal] = useState(false);
  const [selectedUdaForOutcomes, setSelectedUdaForOutcomes] = useState<SocialUda | null>(null);
- const [selfEvaluationStars, setSelfEvaluationStars] = useState(5);
- const [outcomesAvanzato, setOutcomesAvanzato] = useState(50);
- const [outcomesIntermedio, setOutcomesIntermedio] = useState(35);
- const [outcomesBase, setOutcomesBase] = useState(10);
- const [outcomesIniziale, setOutcomesIniziale] = useState(5);
+ const [selfEvaluationStars, setSelfEvaluationStars] = useState(0);
+ const [outcomesAvanzato, setOutcomesAvanzato] = useState(0);
+ const [outcomesIntermedio, setOutcomesIntermedio] = useState(0);
+ const [outcomesBase, setOutcomesBase] = useState(0);
+ const [outcomesIniziale, setOutcomesIniziale] = useState(0);
  const [criticalReflectionsInput, setCriticalReflectionsInput] = useState('');
 
  useEffect(() => {
   localStorage.setItem('curman_classroomStudentFeedback', JSON.stringify(classroomStudentFeedback));
+  if (classroomStudentFeedback.length === 0) return;
 
-  const totalCount = classroomStudentFeedback.length || 1;
+  const totalCount = classroomStudentFeedback.length;
   const avanzatoCount = classroomStudentFeedback.filter((s) => s.level === 'avanzato').length;
   const intermedioCount = classroomStudentFeedback.filter((s) => s.level === 'intermedio').length;
   const baseCount = classroomStudentFeedback.filter((s) => s.level === 'base').length;
@@ -111,7 +111,7 @@ export function useClassroomSocialState() {
    return (0.60 * compitoScore) + (0.40 * levelScore);
   });
   const averageWeightedScore = studentWeightedScores.reduce((sum, val) => sum + val, 0) / totalCount;
-  const averageStars = Math.max(1, Math.min(5, Math.round(averageWeightedScore / 20)));
+  const averageStars = Math.max(0, Math.min(5, Math.round(averageWeightedScore / 20)));
 
   setSocialUdas((currentSocialUdas) => {
    const updatedSocial = currentSocialUdas.map((u) => {
