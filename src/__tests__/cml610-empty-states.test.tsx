@@ -9,16 +9,19 @@ vi.mock('../store/useCurriculumStore', () => ({
       decisions: {},
       customTexts: {},
       activeRevisionFilter: 'all',
+      revisionArchive: { proposals: [], versions: [], decisions: [], effects: [], events: [] },
       setActiveRevisionFilter: vi.fn(),
       setDecision: vi.fn(),
       resetDecision: vi.fn(),
       setCustomText: vi.fn(),
+      replaceRevisionArchive: vi.fn(),
     }),
     {
       getState: () => ({
         decisions: {},
         customTexts: {},
         activeRevisionFilter: 'all',
+        revisionArchive: { proposals: [], versions: [], decisions: [], effects: [], events: [] },
       }),
     }
   ),
