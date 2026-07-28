@@ -1,5 +1,6 @@
 export { default as SecondBrainTab } from './SecondBrainTab';
 export { EsportazioniTab } from './EsportazioniTab';
+export { CanonicalDocumentTab } from './CanonicalDocumentTab';
 export { AddKbDocumentModal, WikiReaderModal } from './KnowledgeModals';
 
 export type { SecondBrainTabProps } from './SecondBrainTab';

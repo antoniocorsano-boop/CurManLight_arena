@@ -3,6 +3,7 @@ import { FileText, Code, Printer, ShieldAlert, Sparkles } from 'lucide-react';
 import { useCurriculumStore } from '../../../store/useCurriculumStore';
 import type { AppViewsLayerProps, TemplateJsonState, TemplateSection } from '../../session';
 import { DocumentExportHistory } from './DocumentExportHistory';
+import { CanonicalDocumentTab } from './CanonicalDocumentTab';
 import { UiButton } from '../../../ui/components/UiButton';
 import { UiPanel } from '../../../ui/components/UiPanel';
 import { UiSectionHeader } from '../../../ui/components/UiSectionHeader';
@@ -425,6 +426,15 @@ export function EsportazioniTab(props: EsportazioniTabProps) {
           </div>
         </div>
       )}
+
+      {/* Canonical Documents */}
+      <UiPanel variant="subtle">
+        <UiSectionHeader
+          title="Documenti strutturati"
+          description="Documenti canonici con versioni, stato e snapshot istituzionale."
+        />
+        <CanonicalDocumentTab />
+      </UiPanel>
 
       {/* Reset Confirm Dialog */}
       <UiConfirmDialog

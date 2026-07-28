@@ -10,6 +10,11 @@ import {
   validateArchiveIntegrity,
   type InstitutionalArchive,
 } from '../domain/institution';
+import {
+  createEmptyDocumentArchive,
+  validateArchiveIntegrity as validateDocumentArchiveIntegrity,
+  type DocumentArchive,
+} from '../domain/documents';
 
 const getCurriculumKB = () => {
   if (typeof window !== 'undefined') {
@@ -76,6 +81,7 @@ const indexedDBStorage = {
 
 type CurriculumStoreState = UserState & {
   institutionalArchive: InstitutionalArchive;
+  documentArchive: DocumentArchive;
 };
 
 export type RestoreBackupResult =
@@ -136,6 +142,7 @@ interface StoreActions extends CurriculumStoreState {
   resetAll: () => void;
   restoreBackupState: (newState: unknown) => RestoreBackupResult;
   replaceInstitutionalArchive: (archive: InstitutionalArchive) => void;
+  replaceDocumentArchive: (archive: DocumentArchive) => void;
   addDocumentExportEvent: (event: DocumentExportEvent) => void;
   clearDocumentExportHistory: () => void;
 }
@@ -161,6 +168,7 @@ export const useCurriculumStore = create<StoreActions>()(
       activeGeneralSubtab: 'premessa',
       documentExportHistory: [],
       institutionalArchive: createEmptyInstitutionalArchive(),
+      documentArchive: createEmptyDocumentArchive(),
 
       setRole: (role) => set({ role }),
       setDiscipline: (discipline) => set((state) => {
@@ -254,6 +262,10 @@ export const useCurriculumStore = create<StoreActions>()(
         if (!validateArchiveIntegrity(institutionalArchive).valid) return;
         set({ institutionalArchive: cloneInstitutionalValue(institutionalArchive) });
       },
+      replaceDocumentArchive: (documentArchive) => {
+        if (!validateDocumentArchiveIntegrity(documentArchive).valid) return;
+        set({ documentArchive });
+      },
       addDocumentExportEvent: (event) =>
         set((state) => {
           const history = [event, ...state.documentExportHistory].slice(0, 5);
@@ -269,7 +281,11 @@ export const useCurriculumStore = create<StoreActions>()(
         const institutionalArchive = validateArchiveIntegrity(persisted.institutionalArchive).valid
           ? cloneInstitutionalValue(persisted.institutionalArchive as InstitutionalArchive)
           : createEmptyInstitutionalArchive();
-        return { ...currentState, ...sanitizeUserState(persisted), institutionalArchive };
+        const documentArchive = persisted.documentArchive &&
+          validateDocumentArchiveIntegrity(persisted.documentArchive as DocumentArchive).valid
+          ? (persisted.documentArchive as DocumentArchive)
+          : createEmptyDocumentArchive();
+        return { ...currentState, ...sanitizeUserState(persisted), institutionalArchive, documentArchive };
       }
     }
   )
