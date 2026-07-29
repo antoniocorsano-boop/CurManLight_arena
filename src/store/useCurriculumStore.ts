@@ -15,6 +15,18 @@ import {
   validateArchiveIntegrity as validateDocumentArchiveIntegrity,
   type DocumentArchive,
 } from '../domain/documents';
+import {
+  createEmptyRevisionStore,
+  cloneRevisionArchiveStore,
+  verifyArchiveIntegrity as verifyRevisionArchiveIntegrity,
+  type RevisionArchive,
+} from '../domain/revision';
+import {
+  createEmptyDesignStore,
+  cloneDesignArchive,
+  verifyDesignIntegrity,
+  type DesignArchive,
+} from '../domain/design';
 
 const getCurriculumKB = () => {
   if (typeof window !== 'undefined') {
@@ -82,6 +94,8 @@ const indexedDBStorage = {
 type CurriculumStoreState = UserState & {
   institutionalArchive: InstitutionalArchive;
   documentArchive: DocumentArchive;
+  revisionArchive: RevisionArchive;
+  designArchive: DesignArchive;
 };
 
 export type RestoreBackupResult =
@@ -143,6 +157,8 @@ interface StoreActions extends CurriculumStoreState {
   restoreBackupState: (newState: unknown) => RestoreBackupResult;
   replaceInstitutionalArchive: (archive: InstitutionalArchive) => void;
   replaceDocumentArchive: (archive: DocumentArchive) => void;
+  replaceRevisionArchive: (archive: RevisionArchive) => void;
+  replaceDesignArchive: (archive: DesignArchive) => void;
   addDocumentExportEvent: (event: DocumentExportEvent) => void;
   clearDocumentExportHistory: () => void;
 }
@@ -169,6 +185,8 @@ export const useCurriculumStore = create<StoreActions>()(
       documentExportHistory: [],
       institutionalArchive: createEmptyInstitutionalArchive(),
       documentArchive: createEmptyDocumentArchive(),
+      revisionArchive: createEmptyRevisionStore(),
+      designArchive: createEmptyDesignStore(),
 
       setRole: (role) => set({ role }),
       setDiscipline: (discipline) => set((state) => {
@@ -255,7 +273,11 @@ export const useCurriculumStore = create<StoreActions>()(
         const institutionalArchive = hasArchive
           ? cloneInstitutionalValue(newState.institutionalArchive as InstitutionalArchive)
           : createEmptyInstitutionalArchive();
-        set({ ...sanitizeUserState(newState), institutionalArchive });
+        const hasRevision = Object.prototype.hasOwnProperty.call(newState, 'revisionArchive');
+        const revisionArchive = hasRevision && verifyRevisionArchiveIntegrity(newState.revisionArchive as RevisionArchive)
+          ? cloneRevisionArchiveStore(newState.revisionArchive as RevisionArchive)
+          : createEmptyRevisionStore();
+        set({ ...sanitizeUserState(newState), institutionalArchive, revisionArchive });
         return { success: true };
       },
       replaceInstitutionalArchive: (institutionalArchive) => {
@@ -265,6 +287,14 @@ export const useCurriculumStore = create<StoreActions>()(
       replaceDocumentArchive: (documentArchive) => {
         if (!validateDocumentArchiveIntegrity(documentArchive).valid) return;
         set({ documentArchive });
+      },
+      replaceRevisionArchive: (revisionArchive) => {
+        if (!verifyRevisionArchiveIntegrity(revisionArchive)) return;
+        set({ revisionArchive: cloneRevisionArchiveStore(revisionArchive) });
+      },
+      replaceDesignArchive: (designArchive) => {
+        if (!verifyDesignIntegrity(designArchive)) return;
+        set({ designArchive: cloneDesignArchive(designArchive) });
       },
       addDocumentExportEvent: (event) =>
         set((state) => {
@@ -285,7 +315,15 @@ export const useCurriculumStore = create<StoreActions>()(
           validateDocumentArchiveIntegrity(persisted.documentArchive as DocumentArchive).valid
           ? (persisted.documentArchive as DocumentArchive)
           : createEmptyDocumentArchive();
-        return { ...currentState, ...sanitizeUserState(persisted), institutionalArchive, documentArchive };
+        const revisionArchive = persisted.revisionArchive &&
+          verifyRevisionArchiveIntegrity(persisted.revisionArchive as RevisionArchive)
+          ? cloneRevisionArchiveStore(persisted.revisionArchive as RevisionArchive)
+          : createEmptyRevisionStore();
+        const designArchive = persisted.designArchive &&
+          verifyDesignIntegrity(persisted.designArchive as DesignArchive)
+          ? cloneDesignArchive(persisted.designArchive as DesignArchive)
+          : createEmptyDesignStore();
+        return { ...currentState, ...sanitizeUserState(persisted), institutionalArchive, documentArchive, revisionArchive, designArchive };
       }
     }
   )
