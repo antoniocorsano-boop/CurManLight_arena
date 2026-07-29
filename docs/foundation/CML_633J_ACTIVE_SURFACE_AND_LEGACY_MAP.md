@@ -9,7 +9,7 @@
 - **blocked-removal**: Cannot be removed due to dependencies or risk.
 - **future-extension**: Potential future use, currently inactive.
 
-## Active Surfaces (canonical-active)
+## Active Surfaces — Features Directory (canonical-active)
 
 | Surface | Path | Classification |
 |---------|------|----------------|
@@ -21,50 +21,61 @@
 | navigation | src/features/navigation | canonical-active |
 | processo | src/features/processo | canonical-active |
 | social | src/features/social | canonical-active |
-| classroom | src/features/classroom | legacy-read-only |
-| curriculum-etwin | src/features/curriculum-etwin | legacy-read-only |
-| curriculum-functional-pilot | src/features/curriculum-functional-pilot | legacy-read-only |
-| copilot | src/features/copilot | legacy-read-only |
 | workspace (feature) | src/features/workspace | canonical-active |
-| curriculum (domain) | src/domain/curriculum | canonical-active |
-| design (domain) | src/domain/design | canonical-active |
-| documents (domain) | src/domain/documents | canonical-active |
-| institution (domain) | src/domain/institution | canonical-active |
-| revision (domain) | src/domain/revision | canonical-active |
-| transfer (domain) | src/domain/transfer | canonical-active |
-| guided-workflow (state) | store:useCurriculumStore.guidedWorkflowState | canonical-active |
 
-## Legacy Surfaces (legacy-read-only)
+## Legacy Surfaces — Features Directory (legacy-read-only)
+
+| Surface | Path | Classification | Justification |
+|---------|------|----------------|---------------|
+| classroom | src/features/classroom | legacy-read-only | Pre-CML-633 surface; not part of the canonical teacher workflow |
+| copilot | src/features/copilot | legacy-read-only | AI assistant surface; not part of core workflow; no new AI provider introduced |
+| curriculum-etwin | src/features/curriculum-etwin | legacy-read-only | eTwin integration surface; read-only access only |
+| curriculum-functional-pilot | src/features/curriculum-functional-pilot | legacy-read-only | Experimental pilot; read-only access only |
+
+Note: surfaces that existed at the 1ffb4b0 baseline (graphs, knowledge, onboarding, tep, voice) do not exist at 4952b9b and have been removed from this map.
+
+## Domain Layers (canonical-active)
+
+| Domain | Path | Classification | Persistence |
+|--------|------|----------------|-------------|
+| curriculum | src/domain/curriculum | canonical-active | Zustand persist middleware; single Dexie `state` table via `createCurriculumDatabase()` |
+| design | src/domain/design | canonical-active | Zustand persist middleware; single Dexie `state` table |
+| documents | src/domain/documents | canonical-active | Zustand persist middleware; single Dexie `state` table |
+| institution | src/domain/institution | canonical-active | Zustand persist middleware; single Dexie `state` table |
+| revision | src/domain/revision | canonical-active | Zustand persist middleware; single Dexie `state` table |
+| transfer | src/domain/transfer | canonical-active | Zustand persist middleware; single Dexie `state` table |
+| guided-workflow (state) | store:useCurriculumStore.guidedWorkflowState | canonical-active | Zustand persist middleware; no new Dexie tables or schema changes |
+
+## Shared Infrastructure (canonical-active)
 
 | Surface | Path | Classification |
 |---------|------|----------------|
-| classroom | src/features/classroom | legacy-read-only |
-| copilot | src/features/copilot | legacy-read-only |
-| curriculum-etwin | src/features/curriculum-etwin | legacy-read-only |
-| curriculum-functional-pilot | src/features/curriculum-functional-pilot | legacy-read-only |
-
-Note: All legacy surfaces are read-only; they may still be referenced by existing documentation or archived data but are not part of the active canonical workflow.
+| shared components | src/components | canonical-active |
+| shared hooks | src/hooks | canonical-active |
 
 ## Migration Adapters
 
-| Adapter | Source | Target | Status |
-|---------|--------|--------|--------|
-| curriculum-persistence-legacy | legacy curriculum data → canonical curriculum | canonical-active | Implemented |
-| document-legacy | legacy document structures → canonical document archive | canonical-active | Implemented |
-| institution-legacy | legacy institutional data → canonical institutional archive | canonical-active | Implemented |
-| transfer-legacy | legacy transfer contracts → canonical transfer domain | canonical-active | Implemented |
+| Adapter | Source | Target | Status | Notes |
+|---------|--------|--------|--------|-------|
+| curriculum-persistence-legacy | `src/domain/curriculum/persistence/legacyAdapters.ts` → curriculum canonical | canonical-active | ✅ Verified at 4952b9b | Maps legacy curriculum objects to canonical `EntityReference`; validates integrity before migration; no data loss. |
+| document-legacy | `src/domain/documents/legacyAdapters.ts` → document archive | canonical-active | ✅ Verified at 4952b9b | Maps legacy document structures to canonical archive; validates `documentIntegrity`; preserves original document ID. |
+| institution-legacy | `src/domain/institution/legacyAdapters.ts` → institution archive | canonical-active | ✅ Verified at 4952b9b | Handles `institutionalArchive` migration; validates integrity; falls back to `createEmptyInstitutionalArchive` if integrity check fails. |
+| transfer-legacy | `src/domain/transfer/legacyAdapters.ts` → transfer domain | canonical-active | ✅ Verified at 4952b9b | Maps legacy transfer contracts to canonical transfer domain; validates integrity; rollback supported. |
+| workflow-state-seeding | incomplete session state → guided-workflow | canonical-active | ✅ Verified at 4952b9b | Uses existing session/zustand state to seed `GuidedTeacherWorkflowState`; incomplete sessions start at `context` step with proper warnings. |
 
-## Deprecated (deprecated)
+## Deprecated
 
 - None currently marked as deprecated; legacy surfaces are classified as `legacy-read-only`.
 
-## Blocked Removal (blocked-removal)
+## Blocked Removal
 
 - None identified; all legacy surfaces are either read-only or have clear usage constraints.
 
 ## Future Extension (future-extension)
 
-- Potential AI-driven recommendation surfaces (future deployment, not yet implemented).
+- AI-driven recommendation surfaces (future deployment, not yet implemented; see CML-634A)
+- Workspace roles and permissions (see CML-635B)
+- Shared institutional repository and synchronization (see CML-635C)
 
 ## Dead Code (dead-code)
 
@@ -73,6 +84,5 @@ Note: All legacy surfaces are read-only; they may still be referenced by existin
 ## Additional Notes
 
 - The guided-workflow feature is a canonical-active surface that integrates multiple existing domains without creating a new parallel domain.
-- The store (useCurriculumStore) is the single source of truth; no new storage mechanisms are introduced.
-- Surfaces previously present at the 1ffb4b0 baseline (workspace domain, tep feature, voice feature, knowledge feature) that do not exist at 4952b9b have been verified and are absent from this map.
-- The workspace surface exists at 4952b9b and is classified as canonical-active.
+- The store (useCurriculumStore) is the single source of truth; all persistence uses Zustand persist middleware with a single Dexie `state` table; no new Dexie tables, schemas, or storage mechanisms are introduced.
+- Surfaces that existed at the 1ffb4b0 baseline (graphs, knowledge, onboarding, tep, voice) do not exist at 4952b9b and are excluded from this map.
