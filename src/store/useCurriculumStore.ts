@@ -142,6 +142,7 @@ interface StoreActions extends CurriculumStoreState {
   setOrder: (order: SchoolOrder) => void;
   setSchoolYear: (year: string) => void;
   setDecision: (id: string, status: DecisionStatus) => void;
+  setCustomText: (id: string, text: string) => void;
   resetDecision: (id: string) => void;
   addUda: (uda: UdaModel) => void;
   deleteUda: (id: string) => void;
@@ -221,6 +222,8 @@ export const useCurriculumStore = create<StoreActions>()(
       setSchoolYear: (schoolYear) => set({ schoolYear }),
       setDecision: (id, status) =>
         set((state) => ({ decisions: { ...state.decisions, [id]: status } })),
+      setCustomText: (id, text) =>
+        set((state) => ({ customTexts: { ...state.customTexts, [id]: text } })),
       resetDecision: (id) =>
         set((state) => {
           const decisions = { ...state.decisions };

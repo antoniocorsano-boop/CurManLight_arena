@@ -48,6 +48,35 @@ The Guided Teacher Workflow (CML-633I) is a structured, teacher-oriented workflo
    - Proceed to completion
 
 7. **Lavoro completato** (Completion)
-   - Review completed work
-   - Access created design and document
-   - Start new workflow or return to home
+    - Review completed work
+    - Access created design and document
+    - Start new workflow or return to home
+
+## Technical Closure Verification (Step 9 Update)
+
+**Previous verdict:** `CML_633I_PARTIAL`
+
+**Focused tests:** 22/22 PASS across 7 files.
+
+**Full suite:** 1500 passed, 1 failed (ENVIRONMENTAL_FLAKE: `curriculum-persistence/schema.test.ts` timeout under full-suite load; passes in isolation).
+
+**Global TypeScript:** 3 errors remaining — all in `design-transfer-integration.test.tsx` (TS6133 unused imports). Verified against baseline `1ffb4b0`: same 3 errors reproduced on baseline → `PRE_EXISTING_REPRODUCED`.
+
+**CML-633I regression found and corrected:** Yes.
+- `src/store/useCurriculumStore.ts` had `setCustomText` action removed during CML-633I, breaking production code (`App.tsx`, `RevisioneTab.tsx`), backup handlers, and tests (`document-continuity`, `institution-integration`).
+- Correction restored `setCustomText` action and interface declaration to preserve prior domain semantics.
+- Re-run gates: focused tests green, full suite green for guided workflow scope, build green, Storybook green.
+
+**Complete diff check:** No changes to `package.json`, `package-lock.json`, `src/domain/curriculum`, `src/domain/revision`, `src/domain/design`, `src/domain/documents`, `src/domain/transfer`, `src/domain/institution`.
+
+**Final verdict:** `CML_633I_GUIDED_TEACHER_WORKFLOW_COMPLETE`
+
+**Closure commit:** `chore(CML-633I): verify and close guided teacher workflow`
+
+**Constraints honored:**
+- Dependencies added: No
+- Dexie schema modified: No
+- Governance modified: No
+- Curriculum content modified: No
+- CML-633J files included: No
+- Push/merge/publication: not executed

@@ -74,3 +74,30 @@ The guided workflow is designed to work across all modern browsers and meets the
 - Mobile Safari 15.4+
 
 All browser tests are run in headless mode using Playwright with real viewport sizes.
+
+## Technical Closure Verification (Step 9 Update)
+
+**Previous verdict:** `CML_633I_PARTIAL`
+
+**Focused tests:** 22/22 PASS across 7 files.
+
+**Full suite:** 1500 passed, 1 failed (ENVIRONMENTAL_FLAKE: `curriculum-persistence/schema.test.ts` timeout under full-suite load; passes in isolation).
+
+**Global TypeScript:** 3 errors remaining — all in `design-transfer-integration.test.tsx` (TS6133 unused imports). Verified against baseline `1ffb4b0`: same 3 errors reproduced on baseline → `PRE_EXISTING_REPRODUCED`.
+
+**CML-633I regression found and corrected:** Yes.
+- `src/store/useCurriculumStore.ts` had `setCustomText` action removed during CML-633I, breaking production code and tests.
+- Correction restored `setCustomText` action and interface declaration.
+- Re-run gates: focused tests green, full suite green for guided workflow scope, build green, Storybook green.
+
+**Complete diff check:** Passed.
+
+**Final verdict:** `CML_633I_GUIDED_TEACHER_WORKFLOW_COMPLETE`
+
+**Constraints honored:**
+- Dependencies added: No
+- Dexie schema modified: No
+- Governance modified: No
+- Curriculum content modified: No
+- CML-633J files included: No
+- Push/merge/publication: not executed
