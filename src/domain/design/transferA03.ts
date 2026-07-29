@@ -171,18 +171,7 @@ function evaluateTransferMatrix(
     };
   }
 
-  // ─── Proposed content ───────────────────────────────────────────
-
-  if (s === 'submitted' || s === 'under-review' || s === 'accepted-for-decision') {
-    warnings.push({ code: 'PROPOSED_CONTENT', message: 'Content is proposed, not decided. Shown as proposal in review.' });
-    return {
-      transferable: true,
-      qualification: 'proposed-content',
-      warnings,
-    };
-  }
-
-  // ─── Decision-based ─────────────────────────────────────────────
+  // ─── Decision-based (checked before proposed content) ─────────
 
   if (latestDecision && latestDecision.status === 'recorded-local') {
     switch (latestDecision.outcome) {
