@@ -8,7 +8,9 @@ CML-634A introduces an architectural boundary and functional contract through wh
 
 - **Previous commit**: `1f74421` (CML-633J closure)
 - **Branch**: `feat/cml-634a-optional-ai-provider-boundary`
-- **Verdict**: `CML_634A_OPTIONAL_AI_PROVIDER_BOUNDARY_COMPLETE_LOCAL`
+- **Verdict**: `CML_634A_IMPLEMENTATION_TESTED_AND_BUILD_VERIFIED`
+- **Formal closure**: blocked by the non-zero global TypeScript check
+- **CML-634B**: suspended until CML-634A formal closure
 
 ## Scope
 
@@ -117,7 +119,7 @@ CML-634A establishes the boundary. CML-634B will implement:
 
 ## Test Coverage
 
-8 tests covering:
+14 tests covering:
 1. Null provider response behavior
 2. Provider identification
 3. Registry initialization
@@ -126,6 +128,37 @@ CML-634A establishes the boundary. CML-634B will implement:
 6. Capability checking
 7. Null provider capabilities
 8. Integration flow
+9. Disabled-provider execution behavior
+10. Cancellation behavior
+11. Response provenance
+12. Absence of external network calls
+13. Absence of canonical archive writes
+14. Product operation without an AI provider
+
+## Verification Status
+
+Verification rerun after replacing the non-portable `global` reference in the
+CML-634A test with `globalThis`:
+
+| Check | Result |
+|-------|--------|
+| `npx tsc --noEmit` | Exit code 2: three pre-existing unused-symbol errors in `src/__tests__/design-transfer-integration.test.tsx` |
+| `npm test -- src/__tests__/cml-634a-ai-provider-boundary.test.ts` | Passed: 14/14 tests |
+| `npm run build` | Passed |
+| `npm run build-storybook` | Passed; the missing `*.mdx` stories warning is non-blocking |
+| `git diff --check 1f74421..HEAD` | Passed |
+
+The global TypeScript check terminates with three pre-existing and unchanged
+errors. The only TypeScript error introduced by CML-634A was corrected. The
+comparison with base commit `1f74421` shows no change to
+`src/__tests__/design-transfer-integration.test.tsx`, so no new TypeScript
+regression in that file is attributable to CML-634A.
+
+```text
+CML_634A_IMPLEMENTATION_TESTED_AND_BUILD_VERIFIED
+FORMAL_CLOSURE_BLOCKED_BY_PREEXISTING_GLOBAL_TYPESCRIPT_ERRORS
+CML_634B_REMAINS_SUSPENDED
+```
 
 ## Next Steps
 
