@@ -27,6 +27,7 @@ import {
   verifyDesignIntegrity,
   type DesignArchive,
 } from '../domain/design';
+import { GuidedTeacherWorkflowState } from '../features/guided-workflow/types';
 
 const getCurriculumKB = () => {
   if (typeof window !== 'undefined') {
@@ -96,6 +97,7 @@ type CurriculumStoreState = UserState & {
   documentArchive: DocumentArchive;
   revisionArchive: RevisionArchive;
   designArchive: DesignArchive;
+  guidedWorkflowState: GuidedTeacherWorkflowState | undefined;
 };
 
 export type RestoreBackupResult =
@@ -140,7 +142,6 @@ interface StoreActions extends CurriculumStoreState {
   setOrder: (order: SchoolOrder) => void;
   setSchoolYear: (year: string) => void;
   setDecision: (id: string, status: DecisionStatus) => void;
-  setCustomText: (id: string, text: string) => void;
   resetDecision: (id: string) => void;
   addUda: (uda: UdaModel) => void;
   deleteUda: (id: string) => void;
@@ -161,6 +162,9 @@ interface StoreActions extends CurriculumStoreState {
   replaceDesignArchive: (archive: DesignArchive) => void;
   addDocumentExportEvent: (event: DocumentExportEvent) => void;
   clearDocumentExportHistory: () => void;
+  // Guided workflow actions
+  setGuidedWorkflowState: (state: GuidedTeacherWorkflowState) => void;
+  resetGuidedWorkflowState: () => void;
 }
 
 export const useCurriculumStore = create<StoreActions>()(
@@ -187,6 +191,7 @@ export const useCurriculumStore = create<StoreActions>()(
       documentArchive: createEmptyDocumentArchive(),
       revisionArchive: createEmptyRevisionStore(),
       designArchive: createEmptyDesignStore(),
+      guidedWorkflowState: undefined,
 
       setRole: (role) => set({ role }),
       setDiscipline: (discipline) => set((state) => {
@@ -216,8 +221,6 @@ export const useCurriculumStore = create<StoreActions>()(
       setSchoolYear: (schoolYear) => set({ schoolYear }),
       setDecision: (id, status) =>
         set((state) => ({ decisions: { ...state.decisions, [id]: status } })),
-      setCustomText: (id, text) =>
-        set((state) => ({ customTexts: { ...state.customTexts, [id]: text } })),
       resetDecision: (id) =>
         set((state) => {
           const decisions = { ...state.decisions };
@@ -301,7 +304,10 @@ export const useCurriculumStore = create<StoreActions>()(
           const history = [event, ...state.documentExportHistory].slice(0, 5);
           return { documentExportHistory: history };
         }),
-      clearDocumentExportHistory: () => set({ documentExportHistory: [] })
+      clearDocumentExportHistory: () => set({ documentExportHistory: [] }),
+      // Guided workflow actions
+      setGuidedWorkflowState: (state) => set({ guidedWorkflowState: state }),
+      resetGuidedWorkflowState: () => set({ guidedWorkflowState: undefined }),
     }),
     {
       name: 'curmanlight-react-db-state-v1.4.0',
@@ -323,7 +329,8 @@ export const useCurriculumStore = create<StoreActions>()(
           verifyDesignIntegrity(persisted.designArchive as DesignArchive)
           ? cloneDesignArchive(persisted.designArchive as DesignArchive)
           : createEmptyDesignStore();
-        return { ...currentState, ...sanitizeUserState(persisted), institutionalArchive, documentArchive, revisionArchive, designArchive };
+        const guidedWorkflowState = (persisted.guidedWorkflowState ?? undefined) as GuidedTeacherWorkflowState | undefined;
+        return { ...currentState, ...sanitizeUserState(persisted), institutionalArchive, documentArchive, revisionArchive, designArchive, guidedWorkflowState };
       }
     }
   )
