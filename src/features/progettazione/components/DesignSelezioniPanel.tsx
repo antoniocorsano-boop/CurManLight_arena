@@ -1,7 +1,6 @@
-import React from 'react';
-import { Layers, FileText, AlertTriangle, ChevronDown, Clock } from 'lucide-react';
+import { Layers, AlertTriangle, ChevronDown, Clock } from 'lucide-react';
 import { useCurriculumStore } from '../../../store/useCurriculumStore';
-import { listSelectionsForDesign, compareSelectionWithSource } from '../../../domain/design/archive';
+import { listSelectionsForDesign } from '../../../domain/design/archive';
 import { DESIGN_QUALIFICATION_LABELS } from '../../../domain/design/types';
 import type { DesignCurriculumSelection } from '../../../domain/design/types';
 

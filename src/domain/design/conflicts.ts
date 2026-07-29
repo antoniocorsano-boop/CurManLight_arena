@@ -8,7 +8,6 @@
 import type {
   DesignArchive,
   DesignCurriculumSelection,
-  DesignTransferResult,
   DesignTransferWarning,
   DesignTransferError,
 } from './types';
