@@ -1,0 +1,1 @@
+export const DESIGN_ARCHIVE_SCHEMA_VERSION = 1;
