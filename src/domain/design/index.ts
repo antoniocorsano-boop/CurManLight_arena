@@ -7,3 +7,4 @@ export * from './transferA02';
 export * from './transferA03';
 export * from './conflicts';
 export * from './udaAdapter';
+export * from './traceabilityA07';
