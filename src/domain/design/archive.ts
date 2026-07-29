@@ -5,13 +5,11 @@
  * All operations return new archives — no mutation.
  */
 
-import type { EntityReference } from '../curriculum/identity/types';
 import type {
   DesignArchive,
   DesignCurriculumSelection,
   DesignArchiveOperationResult,
   DesignSelectionOperationResult,
-  DesignTransferError,
 } from './types';
 import { createEmptyDesignArchive, cloneDesignArchive } from './constructors';
 import {

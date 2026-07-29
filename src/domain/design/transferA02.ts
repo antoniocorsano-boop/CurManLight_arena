@@ -6,18 +6,19 @@
  */
 
 import type { EntityReference, EntityId, EntityType } from '../curriculum/identity/types';
-import { createEntityReference, generateEntityId, createMetadata } from '../curriculum/identity';
+import { createEntityReference } from '../curriculum/identity';
 import type { DesignArchive, DesignTransferResult, DesignTransferWarning } from './types';
 import type { A02ToA04Payload } from '../transfer/areaContracts';
-import { createDesignCurriculumSelection, cloneDesignArchive } from './constructors';
+import { createDesignCurriculumSelection } from './constructors';
 import { validateDesignCurriculumSelection } from './validators';
 import { computeStructuralFootprint } from '../transfer/signatures';
 
 export function executeA02ToA04Transfer(
-  payload: A02ToA04Payload,
-  archive: DesignArchive,
+  _payload: A02ToA04Payload,
+  _archive: DesignArchive,
   designRef: EntityReference,
 ): DesignTransferResult {
+  const payload = _payload;
   const warnings: DesignTransferWarning[] = [];
   const createdSelections: unknown[] = [];
 
@@ -41,8 +42,6 @@ export function executeA02ToA04Transfer(
   for (const w of payload.legacyWarnings) {
     warnings.push({ code: 'A02_LEGACY_WARNING', message: w });
   }
-
-  const results: DesignTransferResult[] = [];
 
   for (const nodeRef of payload.nodeRefs) {
     const snapshot = payload.explicitSnapshots[nodeRef.entityId] ?? '';

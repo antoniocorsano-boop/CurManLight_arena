@@ -6,8 +6,7 @@
  * Creates immutable snapshots — source changes do not affect the design.
  */
 
-import type { EntityReference, EntityId, EntityType } from '../curriculum/identity/types';
-import { createEntityReference } from '../curriculum/identity';
+import type { EntityReference, EntityType } from '../curriculum/identity/types';
 import type {
   DesignArchive,
   DesignTransferResult,
@@ -23,7 +22,7 @@ import { computeStructuralFootprint } from '../transfer/signatures';
 
 export function executeA03ToA04Transfer(
   proposalRefs: EntityReference[],
-  archive: DesignArchive,
+  _archive: DesignArchive,
   revisionArchive: RevisionArchive,
   designRef: EntityReference,
 ): DesignTransferResult {
@@ -71,10 +70,6 @@ export function executeA03ToA04Transfer(
     entityType: 'revision-proposal' as EntityType,
     snapshotLabel: proposal.targetNodeRef.snapshotLabel,
   };
-
-  const decisionRef = matrixResult.decision
-    ? { id: matrixResult.decision.id, entityType: 'decision' as EntityType }
-    : undefined;
 
   const structuralFootprint = String(computeStructuralFootprint({
     entityId: proposal.id,

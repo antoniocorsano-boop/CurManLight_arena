@@ -5,7 +5,6 @@
 import { isValidEntityId } from '../curriculum/identity';
 import type {
   DesignArchive,
-  DesignCurriculumSelection,
   DesignTransferError,
 } from './types';
 import {
@@ -65,8 +64,6 @@ export function validateInternalDesignReferences(
   archive: DesignArchive,
 ): { valid: boolean; errors: DesignTransferError[] } {
   const errors: DesignTransferError[] = [];
-  const selIds = new Set(archive.selections.map(s => s.id));
-
   for (const s of archive.selections) {
     if (!s.designRef || typeof s.designRef.id !== 'string') {
       errors.push(error('MISSING_DESIGN_REF', `Selection ${s.id} missing designRef`, 'designRef'));
