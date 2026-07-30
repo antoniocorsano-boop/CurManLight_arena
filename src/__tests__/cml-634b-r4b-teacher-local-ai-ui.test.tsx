@@ -101,9 +101,9 @@ describe('CML-634B-R4B — Teacher Local AI Interface UI', () => {
       expect(screen.getByText(/non viene salvata/)).toBeInTheDocument();
     });
 
-    it('mostra campo modello', () => {
+    it('mostra selettore modello con pulsante di scoperta', () => {
       render(<CopilotChatSidebar {...createProps()} />);
-      expect(screen.getByLabelText('Modello')).toBeInTheDocument();
+      expect(screen.getByText('Controlla modelli disponibili')).toBeInTheDocument();
     });
 
     it('associa label a endpoint via htmlFor', () => {
@@ -118,19 +118,31 @@ describe('CML-634B-R4B — Teacher Local AI Interface UI', () => {
       expect(button).toBeDisabled();
     });
 
-    it('abilita pulsante dopo aver inserito modello', async () => {
+    it('abilita pulsante dopo aver selezionato un modello', async () => {
+      vi.spyOn(globalThis, 'fetch').mockResolvedValue({ ok: true, json: () => Promise.resolve({ models: [{ name: 'llama3.2', model: 'llama3.2' }] }) } as unknown as Response);
+
       render(<CopilotChatSidebar {...createProps()} />);
-      const modelInput = screen.getByLabelText('Modello');
-      fireEvent.change(modelInput, { target: { value: 'llama3.2' } });
+      fireEvent.click(screen.getByText('Controlla modelli disponibili'));
+
+      await waitFor(() => {
+        expect(screen.getByRole('option', { name: /llama3.2/ })).toBeInTheDocument();
+      });
+      fireEvent.click(screen.getByRole('option', { name: /llama3.2/ }));
       await waitFor(() => {
         expect(screen.getByText('Usa questa configurazione')).not.toBeDisabled();
       });
     });
 
     it('passa a stato ready e mostra composizione', async () => {
+      vi.spyOn(globalThis, 'fetch').mockResolvedValue({ ok: true, json: () => Promise.resolve({ models: [{ name: 'llama3.2', model: 'llama3.2' }] }) } as unknown as Response);
+
       render(<CopilotChatSidebar {...createProps()} />);
-      const modelInput = screen.getByLabelText('Modello');
-      fireEvent.change(modelInput, { target: { value: 'llama3.2' } });
+      fireEvent.click(screen.getByText('Controlla modelli disponibili'));
+
+      await waitFor(() => {
+        expect(screen.getByRole('option', { name: /llama3.2/ })).toBeInTheDocument();
+      });
+      fireEvent.click(screen.getByRole('option', { name: /llama3.2/ }));
       await waitFor(() => {
         expect(screen.getByText('Usa questa configurazione')).not.toBeDisabled();
       });
@@ -153,9 +165,9 @@ describe('CML-634B-R4B — Teacher Local AI Interface UI', () => {
       });
     });
 
-    it('mostra avviso modello vuoto', () => {
+    it('mostra pulsante disabilitato quando modello vuoto', () => {
       render(<CopilotChatSidebar {...createProps()} />);
-      expect(screen.getByText('Inserisci un modello per procedere.')).toBeInTheDocument();
+      expect(screen.getByText('Usa questa configurazione')).toBeDisabled();
     });
   });
 

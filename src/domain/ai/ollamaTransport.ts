@@ -1,4 +1,5 @@
 import type { AiRequest } from './types';
+import { validateLocalEndpoint } from './endpointUtils';
 
 export interface OllamaTransportConfiguration {
   endpoint: string;
@@ -15,8 +16,6 @@ export interface OllamaTransportResult<T = unknown> {
   error?: string;
 }
 
-const LOCAL_ENDPOINT_PATTERN = /^http:\/\/(localhost|127\.0\.0\.1|\[::1\])(:\d+)?\/?$/;
-
 export class OllamaTransport {
   private readonly endpoint: string;
   private readonly model: string;
@@ -29,9 +28,7 @@ export class OllamaTransport {
   }
 
   private validateEndpoint(endpoint: string): void {
-    if (!LOCAL_ENDPOINT_PATTERN.test(endpoint)) {
-      throw new Error('Invalid endpoint');
-    }
+    validateLocalEndpoint(endpoint);
   }
 
   async send<T = unknown>(

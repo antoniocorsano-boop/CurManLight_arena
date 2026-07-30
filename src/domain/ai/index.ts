@@ -5,3 +5,4 @@ export * from './executionService';
 export * from './ollamaTransport';
 export * from './localOllamaProvider';
 export * from './requestPreview';
+export * from './ollamaModelDiscovery';

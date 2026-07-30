@@ -1,4 +1,5 @@
 import { useLocalAiSessionStore } from '../localAiSessionStore';
+import { LocalAiModelSelector } from './LocalAiModelSelector';
 
 export function LocalAiConfiguration() {
   const {
@@ -16,8 +17,8 @@ export function LocalAiConfiguration() {
     invalidateConsent();
   };
 
-  const handleModelChange = (value: string) => {
-    setModel(value);
+  const handleModelSelect = (model: string) => {
+    setModel(model);
     invalidateConsent();
   };
 
@@ -60,28 +61,12 @@ export function LocalAiConfiguration() {
         />
       </div>
 
-      <div className="space-y-1">
-        <label
-          htmlFor="ai-model"
-          className="text-[9px] font-black text-slate-400 uppercase tracking-wider block"
-        >
-          Modello
-        </label>
-        <input
-          id="ai-model"
-          type="text"
-          value={configuration.model}
-          onChange={(e) => handleModelChange(e.target.value)}
-          className="w-full border rounded-xl p-2 font-bold bg-white text-xs outline-none focus:ring-1 focus:ring-indigo-500 font-mono"
-          placeholder="Es. llama3.2 o phi3"
-          disabled={configurationStatus === 'disabled'}
-        />
-        {modelEmpty && configurationStatus !== 'disabled' && (
-          <p className="text-[9px] text-rose-500 font-bold mt-0.5">
-            Inserisci un modello per procedere.
-          </p>
-        )}
-      </div>
+      <LocalAiModelSelector
+        endpoint={configuration.endpoint}
+        selectedModel={configuration.model}
+        onModelSelect={handleModelSelect}
+        disabled={configurationStatus === 'disabled'}
+      />
 
       {configurationStatus !== 'disabled' && (
         <button
