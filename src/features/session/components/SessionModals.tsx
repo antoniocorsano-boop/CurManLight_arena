@@ -90,6 +90,19 @@ export function OnboardingModal({
   getRoleLabel,
   getDisciplineLabel,
 }: OnboardingModalProps) {
+  const allGrades = onboardingOrd === 'primaria' ? ['1', '2', '3', '4', '5'] : ['1', '2', '3'];
+  const [selectedGrades, setSelectedGrades] = useState<string[]>(allGrades);
+
+  const toggleGrade = (grade: string) => {
+    setSelectedGrades(prev =>
+      prev.includes(grade) ? prev.filter(g => g !== grade) : [...prev, grade]
+    );
+  };
+
+  useEffect(() => {
+    setSelectedGrades(allGrades);
+  }, [onboardingOrd]);
+
   if (!showOnboardingModal) return null;
   return (
     <div role="dialog" aria-modal="true" className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[160] flex items-center justify-center p-4">
@@ -329,25 +342,38 @@ export function OnboardingModal({
             </button>
            </div>
           </div>
-         ) : (
-          <div className="space-y-2 border border-slate-200 p-4 bg-slate-50 rounded-2xl font-bold">
-           <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider block mb-2">Combinazioni classe-sezione del contesto personale:</label>
-           <div className="grid grid-cols-3 gap-2 max-h-[160px] overflow-y-auto p-1 bg-white border border-slate-200 rounded-xl shadow-inner">
-            {(onboardingOrd === 'primaria' ? ['1', '2', '3', '4', '5'] : ['1', '2', '3']).flatMap(cl => 
-             availableSections.map(sec => {
-              const combo = `${cl}^${sec}`;
-              return (
-               <button key={combo} onClick={() => handleToggleOnboardingCombination(combo)} className={`p-2.5 rounded-xl text-center font-black text-[10px] transition border ${
-                onboardingCombinations.includes(combo) 
-                 ? 'bg-indigo-600 border-indigo-600 text-white shadow-sm' 
-                 : 'bg-slate-50 border-slate-150 text-slate-700 hover:bg-slate-100'
-               }`}>
-                {cl}^{sec}
-               </button>
-              );
-             })
-            )}
-           </div>
+          ) : (
+           <div className="space-y-2 border border-slate-200 p-4 bg-slate-50 rounded-2xl font-bold">
+            <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider block mb-2">Combinazioni classe-sezione del contesto personale:</label>
+            <div className="flex flex-wrap gap-1.5 mb-2">
+              {allGrades.map(g => (
+                <label key={g} className="flex items-center space-x-1 bg-white border border-slate-200 px-2 py-1 rounded-lg text-[10px] font-bold cursor-pointer hover:bg-slate-50">
+                  <input
+                    type="checkbox"
+                    checked={selectedGrades.includes(g)}
+                    onChange={() => toggleGrade(g)}
+                    className="w-3 h-3 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                  />
+                  <span>{g}ª</span>
+                </label>
+              ))}
+            </div>
+            <div className="grid grid-cols-3 gap-2 max-h-[160px] overflow-y-auto p-1 bg-white border border-slate-200 rounded-xl shadow-inner">
+             {selectedGrades.flatMap(cl => 
+              availableSections.map(sec => {
+               const combo = `${cl}^${sec}`;
+               return (
+                <button key={combo} onClick={() => handleToggleOnboardingCombination(combo)} className={`p-2.5 rounded-xl text-center font-black text-[10px] transition border ${
+                 onboardingCombinations.includes(combo) 
+                  ? 'bg-indigo-600 border-indigo-600 text-white shadow-sm' 
+                  : 'bg-slate-50 border-slate-150 text-slate-700 hover:bg-slate-100'
+                }`}>
+                 {cl}^{sec}
+                </button>
+               );
+              })
+             )}
+            </div>
 
            {onboardingCombinations.length > 0 && (
             <div className="space-y-1.5 pt-2 text-left">

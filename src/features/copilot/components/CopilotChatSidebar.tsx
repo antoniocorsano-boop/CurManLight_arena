@@ -46,6 +46,7 @@ export function CopilotChatSidebar({
   const executionServiceRef = useRef<LocalAiExecutionService | null>(null);
   const previewRef = useRef<HTMLDivElement>(null);
   const responseRef = useRef<HTMLDivElement>(null);
+  const draftTextareaRef = useRef<HTMLTextAreaElement>(null);
 
   const {
     configuration,
@@ -151,7 +152,7 @@ export function CopilotChatSidebar({
           provider_not_found: 'Il provider configurato non è disponibile.',
         };
 
-        setErrorMessage(messages[res.status] || 'Errore durante la richiesta.');
+        setErrorMessage(res.error?.message || messages[res.status] || 'Errore durante la richiesta.');
       }
 
       setConsentGiven(false);
@@ -254,6 +255,7 @@ export function CopilotChatSidebar({
             </div>
 
             <textarea
+              ref={draftTextareaRef}
               value={draftText}
               onChange={(e) => {
                 handleDraftTextChange(e.target.value);
@@ -406,7 +408,21 @@ export function CopilotChatSidebar({
           return chips.map((c, i) => (
             <button
               key={i}
-              onClick={() => handleSelectCopilotChip(c)}
+              onClick={() => {
+                if (isAiConfigured) {
+                  setDraftText(c);
+                  if (preview || executionStatus === 'preview') {
+                    invalidateConsent();
+                  }
+                  setPreview(null);
+                  setResponse(null);
+                  setErrorMessage(null);
+                  setExecutionStatus('idle');
+                  setTimeout(() => draftTextareaRef.current?.focus(), 0);
+                } else {
+                  handleSelectCopilotChip(c);
+                }
+              }}
               disabled={_isCopilotResponding}
               className="text-[9px] font-bold bg-white hover:bg-indigo-50 hover:text-indigo-700 border hover:border-indigo-200 px-2 py-1 rounded-lg transition text-slate-600 text-left cursor-pointer truncate max-w-full"
             >

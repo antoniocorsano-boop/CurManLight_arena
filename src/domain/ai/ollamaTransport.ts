@@ -71,7 +71,16 @@ export class OllamaTransport {
       clearTimeout(timeoutId);
 
       if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        let errorDetail = response.statusText;
+        try {
+          const errorBody = await response.json() as Record<string, unknown>;
+          if (typeof errorBody?.error === 'string') {
+            errorDetail = errorBody.error;
+          }
+        } catch {
+          // body non JSON, usa statusText
+        }
+        throw new Error(`HTTP ${response.status}: ${errorDetail}`);
       }
 
       const data = (await response.json()) as Record<string, unknown>;

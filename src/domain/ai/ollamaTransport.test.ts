@@ -171,6 +171,72 @@ describe('OllamaTransport', () => {
     await expect(transport.send(baseRequest)).rejects.toThrow('Unexpected token');
   });
 
+  it('includes Ollama error body on HTTP 404', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
+      ok: false,
+      status: 404,
+      statusText: 'Not Found',
+      json: () => Promise.resolve({ error: "model 'llama3.2' not found" }),
+    }));
+
+    const transport = new OllamaTransport({
+      endpoint: 'http://localhost:11434',
+      model: 'llama3.2',
+    });
+
+    await expect(transport.send(baseRequest)).rejects.toThrow(
+      "HTTP 404: model 'llama3.2' not found"
+    );
+  });
+
+  it('falls back to statusText when error body has no error field', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
+      ok: false,
+      status: 400,
+      statusText: 'Bad Request',
+      json: () => Promise.resolve({}),
+    }));
+
+    const transport = new OllamaTransport({
+      endpoint: 'http://localhost:11434',
+      model: 'llama3.2',
+    });
+
+    await expect(transport.send(baseRequest)).rejects.toThrow('HTTP 400: Bad Request');
+  });
+
+  it('falls back to statusText when error body is not JSON', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
+      ok: false,
+      status: 500,
+      statusText: 'Internal Server Error',
+      json: () => Promise.reject(new SyntaxError('Unexpected token')),
+    }));
+
+    const transport = new OllamaTransport({
+      endpoint: 'http://localhost:11434',
+      model: 'llama3.2',
+    });
+
+    await expect(transport.send(baseRequest)).rejects.toThrow('HTTP 500: Internal Server Error');
+  });
+
+  it('includes Ollama error body on HTTP 500', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
+      ok: false,
+      status: 500,
+      statusText: 'Internal Server Error',
+      json: () => Promise.resolve({ error: 'failed to load model' }),
+    }));
+
+    const transport = new OllamaTransport({
+      endpoint: 'http://localhost:11434',
+      model: 'llama3.2',
+    });
+
+    await expect(transport.send(baseRequest)).rejects.toThrow('HTTP 500: failed to load model');
+  });
+
   it('throws error when response lacks response field', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
       ok: true,
