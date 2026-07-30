@@ -108,14 +108,14 @@ describe('createRequestPreview', () => {
     expect(preview.model).toBe('llama3');
   });
 
-  it('uses default model when provider has no model', () => {
+  it('uses empty string for model when provider has no model', () => {
     const configWithoutModel: AiProviderConfiguration = {
       ...previewConfig,
       model: undefined,
     };
 
     const request: AiRequest = {
-      requestId: 'test-default-model',
+      requestId: 'test-empty-model',
       providerId: 'local-ollama',
       capability: 'textGeneration',
       prompt: 'Test',
@@ -124,6 +124,78 @@ describe('createRequestPreview', () => {
 
     const preview = createRequestPreview(configWithoutModel, request);
 
-    expect(preview.model).toBe('default');
+    expect(preview.model).toBe('');
+  });
+
+  it('does not fallback to default model when model is empty string', () => {
+    const configWithEmptyModel: AiProviderConfiguration = {
+      ...previewConfig,
+      model: '',
+    };
+
+    const request: AiRequest = {
+      requestId: 'test-empty-model-string',
+      providerId: 'local-ollama',
+      capability: 'textGeneration',
+      prompt: 'Test',
+      timestamp: Date.now(),
+    };
+
+    const preview = createRequestPreview(configWithEmptyModel, request);
+
+    expect(preview.model).toBe('');
+  });
+
+  it('preserves configured model without modification', () => {
+    const configWithModel: AiProviderConfiguration = {
+      ...previewConfig,
+      model: 'mistral-7b',
+    };
+
+    const request: AiRequest = {
+      requestId: 'test-preserved-model',
+      providerId: 'local-ollama',
+      capability: 'textGeneration',
+      prompt: 'Test',
+      timestamp: Date.now(),
+    };
+
+    const preview = createRequestPreview(configWithModel, request);
+
+    expect(preview.model).toBe('mistral-7b');
+  });
+
+  it('preserves endpoint without modification', () => {
+    const configWithEndpoint: AiProviderConfiguration = {
+      ...previewConfig,
+      endpoint: 'http://localhost:11434',
+    };
+
+    const request: AiRequest = {
+      requestId: 'test-preserved-endpoint',
+      providerId: 'local-ollama',
+      capability: 'textGeneration',
+      prompt: 'Test',
+      timestamp: Date.now(),
+    };
+
+    const preview = createRequestPreview(configWithEndpoint, request);
+
+    expect(preview.endpoint).toBe('http://localhost:11434');
+  });
+
+  it('outgoingText matches request prompt exactly', () => {
+    const request: AiRequest = {
+      requestId: 'test-prompt-parity',
+      providerId: 'local-ollama',
+      capability: 'textGeneration',
+      prompt: 'Exact prompt text.',
+      timestamp: Date.now(),
+    };
+
+    const preview = createRequestPreview(previewConfig, request);
+
+    expect(preview.outgoingText).toBe('Exact prompt text.');
+    expect(preview.outgoingText).toBe(request.prompt);
   });
 });

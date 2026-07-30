@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi, afterEach } from 'vitest';
 import { AiProviderRegistryImpl } from '../domain/ai/registry';
 import { AiExecutionServiceImpl } from '../domain/ai/executionService';
 import { createNullProviderResponse, isNullProvider } from '../domain/ai/nullAdapter';
@@ -266,9 +266,27 @@ describe('CML-634B-R2 — Local Ollama Provider Integration', () => {
       expect(fetchMock).not.toHaveBeenCalled();
     });
 
-    it('does not persist endpoint or model', () => {
+    it('does not persist endpoint or model', async () => {
+      const localStorageSpy = vi.spyOn(Storage.prototype, 'setItem');
+      const sessionStorageSpy = vi.spyOn(Storage.prototype, 'setItem');
+      const indexedDbOpenSpy = typeof indexedDB !== 'undefined' ? vi.spyOn(indexedDB, 'open') : null;
+
+      const fetchMock = vi.fn().mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve({ response: 'ok' }),
+      });
+      vi.stubGlobal('fetch', fetchMock);
+
       const provider = new LocalOllamaProvider(localConfig);
-      expect(typeof provider).toBe('object');
+      const response = await provider.execute(baseRequest, { consentGiven: true });
+
+      expect(response.status).toBe('success');
+      expect(localStorageSpy).not.toHaveBeenCalled();
+      expect(sessionStorageSpy).not.toHaveBeenCalled();
+      if (indexedDbOpenSpy) {
+        expect(indexedDbOpenSpy).not.toHaveBeenCalled();
+      }
+      expect(fetchMock).toHaveBeenCalled();
     });
 
     it('does not modify prompt automatically', async () => {
@@ -319,4 +337,9 @@ describe('CML-634B-R2 — Local Ollama Provider Integration', () => {
       expect(preview.endpoint).toBe('http://localhost:11434');
     });
   });
+});
+
+afterEach(() => {
+  vi.unstubAllGlobals();
+  vi.restoreAllMocks();
 });

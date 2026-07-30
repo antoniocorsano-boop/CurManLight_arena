@@ -15,7 +15,7 @@ export function createRequestPreview(
   request: AiRequest,
 ): RequestPreview {
   const endpoint = provider.endpoint?.trim() || 'http://localhost:11434';
-  const model = provider.model?.trim() || 'default';
+  const model = provider.model?.trim() || '';
   const contextIncluded = request.context !== undefined && Object.keys(request.context).length > 0;
 
   return {

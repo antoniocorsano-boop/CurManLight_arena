@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi, afterEach } from 'vitest';
 import { LocalOllamaProvider } from './localOllamaProvider';
 import { createRequestPreview } from './requestPreview';
 import type { AiProviderConfiguration, AiRequest } from './types';
@@ -154,6 +154,11 @@ describe('LocalOllamaProvider', () => {
     expect(response.status).toBe('invalid_request');
     expect(response.error?.code).toBe('invalid_request');
   });
+});
+
+afterEach(() => {
+  vi.unstubAllGlobals();
+  vi.restoreAllMocks();
 });
 
 describe('RequestPreview', () => {
