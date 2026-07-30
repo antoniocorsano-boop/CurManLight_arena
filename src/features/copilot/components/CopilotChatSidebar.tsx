@@ -120,27 +120,25 @@ export function CopilotChatSidebar({
     const text = preview?.outgoingText || draftText.trim();
     if (!text) return;
 
+    const service = getService();
+    service.configure(configuration.endpoint, configuration.model);
+
+    const requestId = service.createRequestId();
+    setActiveRequestId(requestId);
     setExecutionStatus('running');
     setErrorMessage(null);
     setResponse(null);
 
-    const service = getService();
-    service.configure(configuration.endpoint, configuration.model);
-
-    const executePromise = service.execute(text);
+    const executePromise = service.execute(text, requestId);
 
     executePromise.then((res: AiResponse<string>) => {
       if (res.status === 'success') {
         setResponse(res);
         setExecutionStatus('success');
-        setActiveRequestId(res.requestId);
       } else if (res.status === 'cancelled') {
         setExecutionStatus('cancelled');
-        setActiveRequestId(res.requestId);
-        setConsentGiven(false);
       } else {
         setExecutionStatus('error');
-        setActiveRequestId(res.requestId);
 
         const messages: Record<string, string> = {
           provider_not_configured: 'Configura endpoint e modello prima di procedere.',
@@ -154,12 +152,15 @@ export function CopilotChatSidebar({
         };
 
         setErrorMessage(messages[res.status] || 'Errore durante la richiesta.');
-        setConsentGiven(false);
       }
+
+      setConsentGiven(false);
+      setActiveRequestId(null);
     }).catch(() => {
       setExecutionStatus('error');
       setErrorMessage('Errore durante la richiesta al modello locale.');
       setConsentGiven(false);
+      setActiveRequestId(null);
     });
   };
 

@@ -34,9 +34,13 @@ export class LocalAiExecutionService {
     this.registry.register(provider);
   }
 
-  async execute(prompt: string): Promise<AiResponse<string>> {
+  createRequestId(): string {
+    return `local-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+  }
+
+  async execute(prompt: string, requestId?: string): Promise<AiResponse<string>> {
     const request: AiRequest = {
-      requestId: `local-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
+      requestId: requestId || this.createRequestId(),
       providerId: 'local-ollama',
       capability: 'textGeneration',
       prompt,
