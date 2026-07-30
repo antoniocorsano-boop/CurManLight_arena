@@ -6,6 +6,7 @@ import { LocalOllamaProvider } from './localOllamaProvider';
 export class AiExecutionServiceImpl implements AiExecutionService {
   private registry: AiProviderRegistry;
   private pendingRequests: Map<string, AiRequest> = new Map();
+  private abortControllers: Map<string, AbortController> = new Map();
 
   constructor(registry: AiProviderRegistry) {
     this.registry = registry;
@@ -13,6 +14,9 @@ export class AiExecutionServiceImpl implements AiExecutionService {
 
   async execute<T = unknown>(request: AiRequest): Promise<AiResponse<T>> {
     this.pendingRequests.set(request.requestId, request);
+
+    const controller = new AbortController();
+    this.abortControllers.set(request.requestId, controller);
 
     try {
       const provider = this.registry.resolveProvider(request);
@@ -23,7 +27,10 @@ export class AiExecutionServiceImpl implements AiExecutionService {
 
       if (provider.kind === 'local' && provider.endpoint && provider.model) {
         const localProvider = new LocalOllamaProvider(provider);
-        const response = await localProvider.execute(request, { consentGiven: request.consentGiven });
+        const response = await localProvider.execute(request, {
+          consentGiven: request.consentGiven,
+          signal: controller.signal,
+        });
         return response as AiResponse<T>;
       }
 
@@ -38,15 +45,19 @@ export class AiExecutionServiceImpl implements AiExecutionService {
       return createNullProviderResponse<T>(request);
     } finally {
       this.pendingRequests.delete(request.requestId);
+      this.abortControllers.delete(request.requestId);
     }
   }
 
   cancel(requestId: string): boolean {
-    const exists = this.pendingRequests.has(requestId);
-    if (exists) {
-      this.pendingRequests.delete(requestId);
+    const controller = this.abortControllers.get(requestId);
+
+    if (!controller) {
+      return false;
     }
-    return exists;
+
+    controller.abort();
+    return true;
   }
 
   getStatus(requestId: string): AiExecutionStatus | undefined {

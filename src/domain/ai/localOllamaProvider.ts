@@ -54,7 +54,7 @@ export class LocalOllamaProvider {
     return true;
   }
 
-  async execute(request: AiRequest, options?: { consentGiven?: boolean }): Promise<AiResponse> {
+  async execute(request: AiRequest, options?: { consentGiven?: boolean; signal?: AbortSignal }): Promise<AiResponse> {
     if (!options?.consentGiven) {
       return {
         requestId: request.requestId,
@@ -82,7 +82,7 @@ export class LocalOllamaProvider {
     }
 
     try {
-      const result = await this.transport.send(request);
+      const result = await this.transport.send(request, { signal: options?.signal });
 
       if (result.status !== 'success' || result.result === undefined) {
         return {
