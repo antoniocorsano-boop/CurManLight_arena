@@ -1,6 +1,7 @@
 import type { AiRequest, AiResponse, AiExecutionStatus, AiProviderRegistry, AiExecutionService } from './types';
 import { NULL_PROVIDER_ID } from './types';
 import { createNullProviderResponse, isValidProviderForRequest } from './nullAdapter';
+import { LocalOllamaProvider } from './localOllamaProvider';
 
 export class AiExecutionServiceImpl implements AiExecutionService {
   private registry: AiProviderRegistry;
@@ -18,6 +19,12 @@ export class AiExecutionServiceImpl implements AiExecutionService {
 
       if (provider.id === NULL_PROVIDER_ID) {
         return createNullProviderResponse<T>(request);
+      }
+
+      if (provider.kind === 'local' && provider.endpoint && provider.model) {
+        const localProvider = new LocalOllamaProvider(provider);
+        const response = await localProvider.execute(request, { consentGiven: request.consentGiven });
+        return response as AiResponse<T>;
       }
 
       if (provider.status !== 'available') {

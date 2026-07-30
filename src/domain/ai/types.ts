@@ -20,6 +20,8 @@ export interface AiProviderConfiguration {
   label: string;
   description: string;
   requiresConsent: boolean;
+  endpoint?: string;
+  model?: string;
 }
 
 export interface AiRequest {
@@ -28,6 +30,7 @@ export interface AiRequest {
   capability: keyof AiProviderCapabilities;
   prompt: string;
   context?: Record<string, unknown>;
+  consentGiven?: boolean;
   timestamp: number;
 }
 
