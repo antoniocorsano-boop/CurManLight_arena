@@ -1,5 +1,7 @@
 ﻿# Session State
 
+> Nota storica: snapshot precedente la sanificazione finale del repository; rami e worktree CML-637B qui indicati come conservati sono stati integrati/rimossi/ripuliti nella PR #16.
+
 - Session: 20260731_214634
 - Repo: C:/Users/anton/CurManLight_arena
 - Branch (main worktree): fix/cml-637b-test-suite-stabilization
@@ -48,6 +50,6 @@ CML-637B CHIUSO, MERGIATO e PULITO (`CML_637B_CLEANUP_COMPLETED_SAFE`). Merge `0
 - Nessun blocco. CML-637B chiuso, mergiato (PR #15, `026542c`) e ripulito. Pendenze deliberate: worktree principale sporca (da classificare prima di chiudere `fix/cml-637b-test-suite-stabilization`); ramo matrice `62a8f9a` conservato (non antenato); oggetti fsck unreachable non rimossi. Opzionali: cleanup ramo storico `fix/cml-637b`, avvio `CML_TEST_SUITE_PERFORMANCE`.
 
 ## Evidence
-- Log 4 check per cella: `C:\Users\anton\AppData\Local\Temp\opencode\cml637b-matrix\cellX-*.txt`.
-- Misurazioni workflow: `fast-run*.txt`, `fast8-run*.txt`, `profile-unit.txt`, `profile-fast*.txt`, `sb-run.txt` (stessa dir).
+- Log 4 check per cella: log di evidenza generati nella directory scratch locale, non versionati nel repository (file `cellX-*.txt`).
+- Misurazioni workflow: `fast-run*.txt`, `fast8-run*.txt`, `profile-unit.txt`, `profile-fast*.txt`, `sb-run.txt` (stessa directory scratch locale, non versionati).
 - Piano: `docs/superpowers/plans/2026-07-31-cml-637b-dependency-compatibility-matrix.md` (gitignored, add -f usato).

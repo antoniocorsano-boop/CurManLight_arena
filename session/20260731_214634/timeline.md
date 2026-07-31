@@ -1,5 +1,7 @@
 ﻿# Timeline
 
+> Nota storica: cronologia precedente la sanificazione finale del repository; rami e worktree CML-637B citati come attivi/conservati sono stati poi integrati/rimossi/ripuliti nella PR #16.
+
 ## 2026-07-31 21:46:34 +02:00
 - Session created.
 - Goal: CML-637B - confirm Vite esbuild/oxc warning root cause and document dependency debt verdict

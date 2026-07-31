@@ -11,7 +11,7 @@ coverage/
 
 storybook-static/
 report/cml-*-screenshots/
-report/cml-*-pilot-initialization-refresh/
+report/cml-631g-pilot-initialization-refresh/*.png
 scripts/cml611-screenshots.mjs
 docs/superpowers/
 test-results/

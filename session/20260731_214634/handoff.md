@@ -1,5 +1,7 @@
 ﻿# Handoff
 
+> Nota storica: questo documento fotografa lo stato precedente alla sanificazione finale del repository. I rami e le worktree CML-637B qui indicati come presenti o conservati sono stati successivamente integrati, rimossi o ripuliti nell'ambito della PR #16.
+
 ## Resume From Here
 Session $SessionName active. CML-637B **CHIUSO, MERGIATO e PULITO** (`CML_637B_CLOSED_LOCAL`, `CML_637B_CLEANUP_COMPLETED_SAFE`) — leggi session_state.md per dettagli e percorsi evidenza.
 
@@ -15,7 +17,7 @@ Session $SessionName active. CML-637B **CHIUSO, MERGIATO e PULITO** (`CML_637B_C
 - Scratch matrice: `C:/Users/anton/CurManLight_arena_matrix` (`62a8f9a`, ramo `docs/cml-637b-dependency-compatibility-matrix`) — conservata (non antenato).
 - Worktree residue non CML-637B: `_dc`, `_revision-repair`, `_ui-system`, `_merge_review` (su ramo locale `main` a `c00ba6b`), `CurManLight_cml634b`, `.kilo/worktrees/fork-time`.
 - `docs/superpowers/` è gitignored → `git add -f`/`git checkout <commit> -- <path>` per il piano.
-- Log evidenza: `C:\Users\anton\AppData\Local\Temp\opencode\cml637b-matrix\`.
+- Log di evidenza generati nella directory scratch locale, non versionati nel repository.
 
 ## Result
 Verdetti: `CML_637B_SINGLE_VITE_CONFIGURATION_STABILIZED_LOCAL`, `CML_637B_FAST_TEST_WORKFLOW_READY_LOCAL`, `CML_637B_CLOSED_LOCAL`, **`CML_637B_CLEANUP_COMPLETED_SAFE`**
