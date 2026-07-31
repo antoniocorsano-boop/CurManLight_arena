@@ -85,11 +85,30 @@ export default defineConfig({
         setupFiles: ['./src/__tests__/setup.ts'],
         css: false,
         include: ['src/__tests__/**/*.test.{ts,tsx}', 'src/domain/**/*.test.ts', 'src/features/**/*.test.tsx'],
+        exclude: ['**/node_modules/**', '**/.git/**', 'src/__tests__/**/*.browser.test.{ts,tsx}'],
+        // On Windows, the process-based worker pool produced intermittent startup
+        // timeouts. Two thread workers provide stable unit-test execution while
+        // keeping file-level parallelism enabled.
         pool: 'threads',
         maxWorkers: 2,
         fileParallelism: true,
         sequence: {
           groupOrder: 1
+        }
+      }
+    }, {
+      extends: true,
+      test: {
+        name: 'indexeddb-browser',
+        include: ['src/__tests__/**/*.browser.test.{ts,tsx}'],
+        testTimeout: 10_000,
+        browser: {
+          enabled: true,
+          headless: true,
+          provider: playwright({}),
+          instances: [{
+            browser: 'chromium'
+          }]
         }
       }
     }, {
