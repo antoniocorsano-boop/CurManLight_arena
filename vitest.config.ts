@@ -84,7 +84,13 @@ export default defineConfig({
         environment: 'jsdom',
         setupFiles: ['./src/__tests__/setup.ts'],
         css: false,
-        include: ['src/__tests__/**/*.test.{ts,tsx}', 'src/domain/**/*.test.ts', 'src/features/**/*.test.tsx']
+        include: ['src/__tests__/**/*.test.{ts,tsx}', 'src/domain/**/*.test.ts', 'src/features/**/*.test.tsx'],
+        pool: 'threads',
+        maxWorkers: 2,
+        fileParallelism: true,
+        sequence: {
+          groupOrder: 1
+        }
       }
     }, {
       extends: true,
@@ -103,6 +109,9 @@ export default defineConfig({
           instances: [{
             browser: 'chromium'
           }]
+        },
+        sequence: {
+          groupOrder: 2
         }
       }
     }]

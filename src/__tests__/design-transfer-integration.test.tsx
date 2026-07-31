@@ -1,9 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { DesignSelezioniPanel } from '../features/progettazione/components/DesignSelezioniPanel';
-import { createDesignCurriculumSelection } from '../domain/design/constructors';
-import { addSelection, createEmptyDesignStore } from '../domain/design/archive';
-import type { EntityReference, EntityId } from '../domain/curriculum/identity/types';
+import { createEmptyDesignStore } from '../domain/design/archive';
 
 vi.mock('../store/useCurriculumStore', () => ({
   useCurriculumStore: () => ({
@@ -11,10 +9,6 @@ vi.mock('../store/useCurriculumStore', () => ({
     savedUda: [],
   }),
 }));
-
-function makeRef(id: string, entityType = 'curriculum-node'): EntityReference {
-  return { id: id as EntityId, entityType: entityType as never };
-}
 
 describe('DesignSelezioniPanel', () => {
   it('shows empty state when no selections', () => {

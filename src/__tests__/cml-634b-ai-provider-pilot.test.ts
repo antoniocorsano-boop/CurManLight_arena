@@ -168,7 +168,8 @@ describe('CML-634B â€” AI Provider Pilot Behavior (7 Preventive Gates)', ()
       await transport.send(baseRequest);
 
       const fetchCall = vi.mocked(fetch).mock.calls[0];
-      const body = JSON.parse(fetchCall[1].body as string);
+      expect(fetchCall).toBeDefined();
+      const body = JSON.parse((fetchCall[1] as { body: string }).body);
       expect(body).not.toHaveProperty('apiKey');
       expect(body).not.toHaveProperty('token');
       expect(body).not.toHaveProperty('credentials');
