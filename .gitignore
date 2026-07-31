@@ -11,5 +11,9 @@ coverage/
 
 storybook-static/
 report/cml-*-screenshots/
+report/cml-*-pilot-initialization-refresh/
 scripts/cml611-screenshots.mjs
 docs/superpowers/
+test-results/
+.playwright-mcp/
+.ecosystem-audit/
