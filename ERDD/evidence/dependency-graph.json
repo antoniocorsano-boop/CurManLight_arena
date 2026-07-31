@@ -1,0 +1,24 @@
+{
+  "schemaVersion": "1.0",
+  "nodes": ["C01","C02","C03","C04","C05","C07","C08","C09","C10","C11","C12","C14","C15","C16","C17","C18","C19","M01","M02"],
+  "edges": [
+    {"from":"C01","to":"C04","evidence":"RepositoryIntelligenceEngine imports intelligenceTypes"},
+    {"from":"C03","to":"C02","evidence":"LocalRepoScanner instantiates RepoAnalysisEngine"},
+    {"from":"C02","to":"C04","evidence":"Repository discovery supplies repository paths to live analysis"},
+    {"from":"C03","to":"C04","evidence":"RepositoryIntelligenceEngine constructor receives RepoAnalysisEngine"},
+    {"from":"C05","to":"C04","evidence":"Analyzer snapshots are loaded through AnalysisSnapshotLoader"},
+    {"from":"C07","to":"C06","evidence":"ComponentCatalogEngine connects ComponentScanner and CatalogStore"},
+    {"from":"C08","to":"C09","evidence":"React Flow mapper imports OperatingGraphProjection"},
+    {"from":"C09","to":"C11","evidence":"OperatingGraphReactFlowView calls mapProjectionToReactFlow"},
+    {"from":"C10","to":"C11","evidence":"OperatingGraphReactFlowView calls applyOperatingGraphElkLayout"},
+    {"from":"C15","to":"C16","evidence":"graphStore imports KG contracts"},
+    {"from":"C15","to":"C17","evidence":"tenantGraph imports KG contracts"},
+    {"from":"C16","to":"C17","evidence":"tenant graph repeats the graph-store contract with tenant isolation"},
+    {"from":"C18","to":"M01","evidence":"code search is a candidate capability exposed by a future MCP server"},
+    {"from":"C04","to":"M01","evidence":"repository state is a candidate resource exposed by a future MCP server"},
+    {"from":"C05","to":"M02","evidence":"existing unexported AST functions are the implementation evidence for the missing reusable API"},
+    {"from":"M02","to":"C04","evidence":"a reusable AST fact provider can replace the live engine regex parser; this is a dependency gap, not current code"}
+  ],
+  "topologicalOrderExisting": ["C01","C03","C02","C05","C07","C08","C09","C10","C11","C12","C14","C15","C16","C17","C18","C19","C04"],
+  "cycleCheck": "passed"
+}
