@@ -35,7 +35,7 @@ function serializeCjsValue(val: unknown): string {
   return JSON.stringify(val);
 }
 
-function cjsEsmBridge(): Plugin {
+export function cjsEsmBridge(): Plugin {
   const resolved = new Map<string, string>();
 
   return {
