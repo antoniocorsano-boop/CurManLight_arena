@@ -1,0 +1,25 @@
+{
+  "schemaVersion": "1.0",
+  "generatedAt": "2026-07-28",
+  "method": "Full git history; commit counts follow renames. recent90 is relative to audit date.",
+  "entries": [
+    {"component":"C02","first":"2026-03-25","last":"2026-03-29","commits":2,"recent90":0,"tests":true,"consumerCount":6},
+    {"component":"C03","first":"2026-03-25","last":"2026-03-30","commits":3,"recent90":0,"tests":true,"consumerCount":7},
+    {"component":"C05","first":"2026-04-04","last":"2026-04-04","commits":1,"recent90":0,"tests":false,"consumerCount":2},
+    {"component":"C06","first":"2026-03-31","last":"2026-04-01","commits":3,"recent90":0,"tests":false,"consumerCount":1},
+    {"component":"C07","first":"2026-03-31","last":"2026-04-04","commits":3,"recent90":0,"tests":"indirect","consumerCount":1},
+    {"component":"C08","first":"2026-05-25","last":"2026-05-26","commits":2,"recent90":2,"tests":true,"consumerCount":4},
+    {"component":"C09","first":"2026-05-26","last":"2026-05-26","commits":2,"recent90":2,"tests":true,"consumerCount":1},
+    {"component":"C10","first":"2026-05-26","last":"2026-05-26","commits":1,"recent90":1,"tests":true,"consumerCount":1},
+    {"component":"C11","first":"2026-05-26","last":"2026-05-26","commits":5,"recent90":5,"tests":true,"consumerCount":2},
+    {"component":"C12","first":"2026-05-09","last":"2026-07-07","commits":4,"recent90":4,"tests":true,"consumerCount":1},
+    {"component":"C13","first":"2026-03-27","last":"2026-03-27","commits":1,"recent90":0,"tests":true,"consumerCount":0},
+    {"component":"C14","first":"2026-04-15","last":"2026-04-15","commits":1,"recent90":0,"tests":false,"consumerCount":0},
+    {"component":"C15","first":"2026-03-18","last":"2026-03-18","commits":1,"recent90":0,"tests":false,"consumerCount":6},
+    {"component":"C16","first":"2026-03-18","last":"2026-03-18","commits":1,"recent90":0,"tests":false,"consumerCount":5},
+    {"component":"C17","first":"2026-03-18","last":"2026-03-18","commits":1,"recent90":0,"tests":false,"consumerCount":1},
+    {"component":"C18","first":"2025-03-25","last":"2025-07-01","commits":11,"recent90":0,"tests":false,"consumerCount":1},
+    {"component":"C19","first":"2025-03-27","last":"2025-07-01","commits":10,"recent90":0,"tests":false,"consumerCount":2}
+  ],
+  "interpretation": "Low recent churn is evidence of inactivity, not proof of correctness. Stability is strongest where inactivity is combined with tests and multiple consumers."
+}
