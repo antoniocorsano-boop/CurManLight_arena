@@ -8,8 +8,10 @@
  *  4. Auto-Drafting di Unità di Apprendimento (UDA) Interdisciplinari
  */
 
-import { curriculumKB } from '../data/curriculumKB';
+import { getCurriculumBaseline } from '../lib';
 import { SchoolOrder, UdaModel } from '../types/curriculum';
+
+const curriculumKB = getCurriculumBaseline();
 
 // Stato Termico del Nodo
 export type HeatStatus = 'GREEN' | 'YELLOW' | 'RED';

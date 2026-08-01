@@ -2,7 +2,7 @@ import { useState } from 'react';
 import type React from 'react';
 import type { SchoolOrder } from '../../../types/curriculum';
 import type { CurriculumMap, GeneratedKnowledgeOutput } from '../../session';
-import { curriculumKB } from '../../../data/curriculumKB';
+import { getCurriculumBaseline } from '../../../lib';
 
 type UseCurriculumImportHandlersArgs = {
  localCurriculum: CurriculumMap;
@@ -199,15 +199,15 @@ export function useCurriculumImportHandlers({
   reader.readAsText(file);
  };
 
- const handleResetCurriculumToBaseline = () => {
+const handleResetCurriculumToBaseline = () => {
   if (confirm("Ripristinare la copia curricolare personale al baseline incluso? Le personalizzazioni e le importazioni locali verranno rimosse; la configurazione istituzionale canonica non sarà modificata.")) {
-   setLocalCurriculum(curriculumKB);
-   localStorage.removeItem('curmanlight-custom-curriculum-v2');
-   setGeneratedKbOutput(null);
-   setCsvUploadFeedback(null);
-   showToast("Copia curricolare personale ripristinata al baseline incluso; configurazione canonica invariata.");
+    setLocalCurriculum(getCurriculumBaseline());
+    localStorage.removeItem('curmanlight-custom-curriculum-v2');
+    setGeneratedKbOutput(null);
+    setCsvUploadFeedback(null);
+    showToast("Copia curricolare personale ripristinata al baseline incluso; configurazione canonica invariata.");
   }
- };
+};
 
 
  return {
