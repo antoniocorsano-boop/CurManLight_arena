@@ -555,15 +555,15 @@ function ProgettazioneAnnualeView({
   const academicYear = parseSchoolYear(schoolYear);
   const startYear = academicYear?.startYear ?? 0;
   const targetClassNum = parseInt(targetClass, 10);
-  
+
   // Transition logic per CML-630F curriculumTransitionResolver:
   // - Pre-transition (startYear < 2026): all grades IN2012
   // - Transition year (startYear === 2026): infanzia & class 1 → IN2025; class 2-5 → IN2012
   // - Post-transition (startYear > 2026): all grades IN2025
   const isPreTransition = startYear > 0 && startYear < 2026;
   const isTransitionYear = startYear === 2026;
-  
-  const showsLegacyCurriculum = isPreTransition 
+
+  const showsLegacyCurriculum = isPreTransition
     || (isTransitionYear && targetClassNum > 1 && order !== 'infanzia');
 
   const kc = useKnowledgeCompanion(wizardStep, discipline, order);

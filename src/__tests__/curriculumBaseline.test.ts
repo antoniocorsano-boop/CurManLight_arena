@@ -43,7 +43,7 @@ describe('curriculumBaseline', () => {
     it('modifications to returned object do not affect cached baseline', () => {
       const baseline1 = getCurriculumBaseline();
       baseline1.italiano.primaria.traguardi.push('TEST MODIFICATION');
-      
+
       const baseline2 = getCurriculumBaseline();
       expect(baseline2.italiano.primaria.traguardi).not.toContain('TEST MODIFICATION');
     });
@@ -58,10 +58,10 @@ describe('curriculumBaseline', () => {
           secondaria: { traguardi: [], obiettivi: [], evidenze: [], proposals: [] },
         },
       };
-      
+
       setCurriculumBaseline(customBaseline);
       const baseline = getCurriculumBaseline();
-      
+
       expect(baseline.italiano.infanzia.traguardi).toEqual(['custom']);
     });
 
@@ -73,11 +73,11 @@ describe('curriculumBaseline', () => {
           secondaria: { traguardi: [], obiettivi: [], evidenze: [], proposals: [] },
         },
       };
-      
+
       setCurriculumBaseline(customBaseline);
       const baseline1 = getCurriculumBaseline();
       const baseline2 = getCurriculumBaseline();
-      
+
       expect(baseline1).not.toBe(baseline2);
       expect(baseline1).toEqual(baseline2);
     });
@@ -90,11 +90,11 @@ describe('curriculumBaseline', () => {
           secondaria: { traguardi: [], obiettivi: [], evidenze: [], proposals: [] },
         },
       };
-      
+
       setCurriculumBaseline(customBaseline);
       const baseline1 = getCurriculumBaseline();
       baseline1.italiano.infanzia.traguardi.push('MODIFIED');
-      
+
       const baseline2 = getCurriculumBaseline();
       expect(baseline2.italiano.infanzia.traguardi).not.toContain('MODIFIED');
     });
@@ -109,10 +109,10 @@ describe('curriculumBaseline', () => {
           secondaria: { traguardi: [], obiettivi: [], evidenze: [], proposals: [] },
         },
       };
-      
+
       setCurriculumBaseline(customBaseline);
       resetCurriculumBaseline();
-      
+
       const baseline = getCurriculumBaseline();
       expect(baseline.italiano.infanzia.traguardi).not.toEqual(['custom']);
       expect(baseline.italiano.infanzia.traguardi.length).toBeGreaterThan(0);
