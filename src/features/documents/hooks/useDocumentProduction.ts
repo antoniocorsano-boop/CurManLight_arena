@@ -3,7 +3,10 @@ import { useCurriculumStore } from '../../../store/useCurriculumStore';
 import { getA07InstitutionalDocumentRead } from '../../../domain/institution';
 import {
   produceCanonicalDocumentFromUda,
+  produceCanonicalDocumentFromProposal,
+  produceCanonicalDocumentFromDecision,
   type DocumentProductionResult,
+  type RevisionToDocumentResult,
 } from '../services/documentProduction';
 
 export type CreateDocumentFromUdaResult =
@@ -15,6 +18,7 @@ export function useDocumentProduction() {
   const replaceDocumentArchive = useCurriculumStore((s) => s.replaceDocumentArchive);
   const savedUda = useCurriculumStore((s) => s.savedUda);
   const institutionalArchive = useCurriculumStore((s) => s.institutionalArchive);
+  const revisionArchive = useCurriculumStore((s) => s.revisionArchive);
 
   const createDocumentFromUda = useCallback(
     (udaId: string): CreateDocumentFromUdaResult => {
@@ -35,5 +39,27 @@ export function useDocumentProduction() {
     [savedUda, institutionalArchive, documentArchive, replaceDocumentArchive],
   );
 
-  return { createDocumentFromUda, documentArchive };
+  const createDocumentFromProposal = useCallback(
+    (proposalId: string): RevisionToDocumentResult => {
+      const result = produceCanonicalDocumentFromProposal(proposalId, revisionArchive, documentArchive);
+      if (result.status === 'created') {
+        replaceDocumentArchive(result.archive);
+      }
+      return result;
+    },
+    [revisionArchive, documentArchive, replaceDocumentArchive],
+  );
+
+  const createDocumentFromDecision = useCallback(
+    (decisionId: string): RevisionToDocumentResult => {
+      const result = produceCanonicalDocumentFromDecision(decisionId, revisionArchive, documentArchive);
+      if (result.status === 'created') {
+        replaceDocumentArchive(result.archive);
+      }
+      return result;
+    },
+    [revisionArchive, documentArchive, replaceDocumentArchive],
+  );
+
+  return { createDocumentFromUda, createDocumentFromProposal, createDocumentFromDecision, documentArchive };
 }
