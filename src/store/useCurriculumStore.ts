@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { UserState, DecisionStatus, UdaModel, SchoolOrder, UserRole, DocumentExportEvent } from '../types/curriculum';
-import { curriculumKB } from '../data/curriculumKB';
+import { getCurriculumBaseline } from '../lib';
 import type Dexie from 'dexie';
 import { createCurriculumDatabase } from '../domain/curriculum/persistence/backend';
 import {
@@ -29,7 +29,7 @@ import {
 } from '../domain/design';
 import { GuidedTeacherWorkflowState } from '../features/guided-workflow/types';
 
-const getCurriculumKB = () => {
+const getCurriculumBaselineData = () => {
   if (typeof window !== 'undefined') {
     const saved = localStorage.getItem('curmanlight-custom-curriculum-v2');
     if (saved) {
@@ -40,7 +40,7 @@ const getCurriculumKB = () => {
       }
     }
   }
-  return curriculumKB;
+  return getCurriculumBaseline();
 };
 
 // Configure Dexie for Local IndexedDB storage bypassing localStorage limits!
@@ -196,7 +196,7 @@ export const useCurriculumStore = create<StoreActions>()(
 
       setRole: (role) => set({ role }),
       setDiscipline: (discipline) => set((state) => {
-        const data = getCurriculumKB()[discipline]?.[state.order] || { traguardi: [], obiettivi: [], evidenze: [] };
+        const data = getCurriculumBaselineData()[discipline]?.[state.order] || { traguardi: [], obiettivi: [], evidenze: [] };
         const selTrag = data.traguardi?.length > 0 ? [0] : [];
         const selObj = data.obiettivi?.length > 0 ? [0] : [];
         const selEv = data.evidenze?.length > 0 ? [data.evidenze[0]] : [];
@@ -208,7 +208,7 @@ export const useCurriculumStore = create<StoreActions>()(
         };
       }),
       setOrder: (order) => set((state) => {
-        const data = getCurriculumKB()[state.discipline]?.[order] || { traguardi: [], obiettivi: [], evidenze: [] };
+        const data = getCurriculumBaselineData()[state.discipline]?.[order] || { traguardi: [], obiettivi: [], evidenze: [] };
         const selTrag = data.traguardi?.length > 0 ? [0] : [];
         const selObj = data.obiettivi?.length > 0 ? [0] : [];
         const selEv = data.evidenze?.length > 0 ? [data.evidenze[0]] : [];

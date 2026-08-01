@@ -9,3 +9,5 @@ export { generateScormManifest } from './scormGenerator';
 export { testOllamaConnection, generateWithOllama } from './ollamaClient';
 export { googleAuth, exchangeCode, uploadToDrive, downloadFromDrive, listFiles } from './googleDrive';
 export { parseCsv, importCsvToCurriculum } from './csvParser';
+export { parseSchoolYear } from './academicYear';
+export { getCurriculumBaseline } from './curriculumBaseline';

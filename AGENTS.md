@@ -82,8 +82,9 @@ See `docs/PROJECT_BASELINE.md` for current state.
 | CML-630B — Institute Curriculum Version and Segment Model | COMPLETE_REMOTE | `5c34dc8` | `main` |
 | CML-630C — Curriculum e-Twin Domain Validation Prototype | COMPLETE_REMOTE | `635fd6a` | `main` |
 | CML-630D — Vertical Curriculum Link Domain Decision | COMPLETE_REMOTE | `7e6b2eb` | `main` |
-| CML-630E — Production Domain Integration | COMPLETE_LOCAL | `pending` | `feat/cml-630e-productive-curriculum-domain` |
-| CML-630F2 — Legacy Compatibility | PENDING | — | — |
+| CML-630E1 — Productive Domain Contracts | COMPLETE_REMOTE | `a331dcf` | `main` |
+| CML-630E2 — Persistence & Legacy Compatibility | COMPLETE_REMOTE | `1041fb5` | `main` |
+| CML-630F2 — Legacy Compatibility (extended) | COMPLETE_LOCAL | `pending` | `feat/cml-630f2-legacy-compatibility-extended` |
 | CML-631A — Curriculum Domain Functional Activation Pilot | COMPLETE_REMOTE | `f6a9e81` | `main` |
 | CML-631B — Curriculum Functional Pilot Evaluation | COMPLETE_REMOTE | `301cf01` | `main` |
 | CML-631C — Curriculum Pilot Usability Corrections | COMPLETE_REMOTE | `e1c5124` | `main` |
@@ -105,24 +106,34 @@ CML_630E_REQUIRED_FOR_IMPLEMENTATION
 
 ### CML-630E Status
 
-**CML-630E1 — Productive Domain Contracts:** COMPLETE_LOCAL
-- 5 entity types defined in `src/domain/curriculum/`
-- 13 validation functions
-- 55 tests
-- TypeScript, test, build, Storybook: all green
+**CML-630E1 — Productive Domain Contracts:** COMPLETE_REMOTE (merged `a331dcf` → `main`)
+- 5 entity types defined in `src/domain/curriculum/` (version, segment, node, verticalLink, types)
+- 13 validation functions in `validation.ts`
+- 55 domain tests in `src/__tests__/curriculum-domain/`
+- Public barrel export in `src/domain/curriculum/index.ts`
+- No dependencies on store, IndexedDB, UI, or e-twin
+- TypeScript, test, build: all green
 
-**CML-630E2 — Persistence Plan:** COMPLETE_LOCAL
-- Documented in `docs/CML_630E2_PERSISTENCE_AND_LEGACY_COMPATIBILITY_PLAN.md`
-- Not yet implemented
-
-### CML-630E2 Requirements
-
-**Title:** Legacy Compatibility
-**Objective:** Implement adapters between legacy domain and new productive domain
-
-**Scope:**
-- Implement persistence for new entities
-- Migrate legacy data (curriculumKB → CurriculumSegment)
-- Add adapters for schoolYear → AcademicYear
+**CML-630E2 — Persistence & Legacy Compatibility:** COMPLETE_REMOTE (merged `1041fb5` → `main`)
+- Persistence layer in `src/domain/curriculum/persistence/` (schema, repositories, migration, backup, rollback, legacyAdapters)
+- Legacy adapters: `curriculumKB` → `CurriculumSegment` in `legacyAdapters.ts` and `adapters.ts`
+- School year string (`"2026-2027"`) → `AcademicYear` (`{startYear, endYear}`) via `curriculumTransitionResolver.ts`
+- 4 test files in `src/__tests__/curriculum-persistence/` + integration tests
 - No breaking changes to existing functionality
+
+### CML-630F2 Status (Complete)
+
+**CML-630F2 — Legacy Compatibility (extended):** COMPLETE_LOCAL (pending — rev. correttiva PR #18)
+- Migration coverage validated: legacy adapters cover traguardi, obiettivi, evidenze, nucleiFondanti, proposals
+- AcademicYear utilities added in `src/lib/academicYear.ts` (parseSchoolYear, createAcademicYear, isValidAcademicYear); single `formatAcademicYear` (slash, canonica) in `curriculumTransitionResolver.ts`
+- ProgettazioneTab uses the canonical resolver via `src/lib/curriculumTransitionUi.ts` (`resolveShownFrameworkForCurriculum` → `resolveNationalFramework`)
+- Single curriculumBaseline entry point in `src/lib/curriculumBaseline.ts` replaces direct curriculumKB imports
+- Direct curriculumKB imports deprecated in:
+  - `useLocalCurriculum.ts`
+  - `useCurriculumImportHandlers.ts`
+  - `useCurriculumStore.ts`
+  - `curmanlight_v2_core_simulator.ts`
+- Legacy data paths audited: only curriculumBaseline.ts and test files import curriculumKB directly
+- No breaking changes to existing functionality
+- TypeScript, test:fast, build: all green
 

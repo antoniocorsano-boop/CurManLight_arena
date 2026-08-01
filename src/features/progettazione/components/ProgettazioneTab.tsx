@@ -8,6 +8,7 @@ import { CertificazioneTab } from './CertificazioneTab';
 import { KnowledgeCompanionPanel, VolumeReaderOverlay } from './KnowledgeCompanionPanel';
 import { useKnowledgeCompanion } from '../hooks/useKnowledgeCompanion';
 import { UiEmptyState } from '../../../ui/components/UiEmptyState';
+import { resolveShownFrameworkForCurriculum } from '../../../lib/curriculumTransitionUi';
 import type { SchoolOrder, UdaModel } from '../../../types/curriculum';
 import type { AppViewsLayerProps, CurriculumMap, LibrarySorting, ProgStatus, ProgettazioneMode } from '../../session';
 
@@ -551,6 +552,10 @@ function ProgettazioneAnnualeView({
 }: ProgettazioneAnnualeViewProps) {
   const { discipline, order, schoolYear, selectedTraguardi, selectedObiettivi, selectedEvidenze, savedUda, toggleTraguardoSelection, toggleObiettivoSelection, toggleEvidenceSelection } = useCurriculumStore();
 
+  const shownFramework = resolveShownFrameworkForCurriculum({ schoolYear, order, targetClass });
+
+  const showsLegacyCurriculum = shownFramework === 'IN2012';
+
   const kc = useKnowledgeCompanion(wizardStep, discipline, order);
 
   return (
@@ -602,11 +607,11 @@ function ProgettazioneAnnualeView({
             </div>
 
             <div className={`p-2.5 rounded-xl border text-[10px] leading-tight font-bold ${
-              schoolYear === '2026-2027' && targetClass !== '1' && order !== 'infanzia'
+              showsLegacyCurriculum
                 ? 'bg-amber-50 border-amber-200 text-amber-900'
                 : 'bg-emerald-50 border-emerald-200 text-emerald-900'
             }`}>
-              {schoolYear === '2026-2027' && targetClass !== '1' && order !== 'infanzia' ? (
+              {showsLegacyCurriculum ? (
                 <div className="space-y-0.5">
                   <div className="font-extrabold text-amber-800">CURRICOLO 2012 (PREVIGENTE)</div>
                   <p className="text-[9px] text-slate-500 font-medium">La Classe {targetClass}^ concluderà il ciclo mantenendo il vecchio standard.</p>
