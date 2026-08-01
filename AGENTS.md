@@ -84,7 +84,7 @@ See `docs/PROJECT_BASELINE.md` for current state.
 | CML-630D — Vertical Curriculum Link Domain Decision | COMPLETE_REMOTE | `7e6b2eb` | `main` |
 | CML-630E1 — Productive Domain Contracts | COMPLETE_REMOTE | `a331dcf` | `main` |
 | CML-630E2 — Persistence & Legacy Compatibility | COMPLETE_REMOTE | `1041fb5` | `main` |
-| CML-630F2 — Legacy Compatibility (extended) | PENDING | — | — |
+| CML-630F2 — Legacy Compatibility (extended) | COMPLETE_LOCAL | `f96f3df` | `feat/cml-630f2-legacy-compatibility-extended` |
 | CML-631A — Curriculum Domain Functional Activation Pilot | COMPLETE_REMOTE | `f6a9e81` | `main` |
 | CML-631B — Curriculum Functional Pilot Evaluation | COMPLETE_REMOTE | `301cf01` | `main` |
 | CML-631C — Curriculum Pilot Usability Corrections | COMPLETE_REMOTE | `e1c5124` | `main` |
@@ -121,14 +121,19 @@ CML_630E_REQUIRED_FOR_IMPLEMENTATION
 - 4 test files in `src/__tests__/curriculum-persistence/` + integration tests
 - No breaking changes to existing functionality
 
-### CML-630F2 Requirements (Next)
+### CML-630F2 Status (Complete)
 
-**Title:** Legacy Compatibility (extended)
-**Objective:** Complete remaining legacy integration gaps
-
-**Scope:**
-- Validate full curriculumKB → CurriculumSegment migration coverage
-- Ensure all UI entry points use AcademicYear consistently (replace schoolYear string)
-- Deprecate legacy curriculumKB imports in favor of persistent domain
-- Audit and close any remaining legacy data paths
+**CML-630F2 — Legacy Compatibility (extended):** COMPLETE_LOCAL (commit `f96f3df`)
+- Migration coverage validated: legacy adapters cover traguardi, obiettivi, evidenze, nucleiFondanti, proposals
+- AcademicYear utilities added in `src/lib/academicYear.ts` (parseSchoolYear, formatAcademicYear, createAcademicYear, isValidAcademicYear)
+- ProgettazioneTab updated to use parseSchoolYear for transition logic
+- Single curriculumBaseline entry point in `src/lib/curriculumBaseline.ts` replaces direct curriculumKB imports
+- Direct curriculumKB imports deprecated in:
+  - `useLocalCurriculum.ts`
+  - `useCurriculumImportHandlers.ts`
+  - `useCurriculumStore.ts`
+  - `curmanlight_v2_core_simulator.ts`
+- Legacy data paths audited: only curriculumBaseline.ts and test files import curriculumKB directly
+- No breaking changes to existing functionality
+- TypeScript, test:fast, build: all green
 
