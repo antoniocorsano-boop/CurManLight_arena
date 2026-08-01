@@ -18,6 +18,20 @@ export type {
   DocumentFilter,
 } from './types';
 
+export type {
+  PreviewIdentity,
+  PreviewState,
+  TeachingDesignMetadata,
+} from './preview';
+
+export type {
+  ExportBlockCode,
+  ExportError,
+  ExportabilityResult,
+  ExportabilityContext,
+  InstitutionalMetadata,
+} from './exportValidator';
+
 export {
   DOCUMENT_ARCHIVE_SCHEMA_VERSION,
   VALID_DOCUMENT_TYPES,
@@ -92,8 +106,31 @@ export {
   renderSection,
   renderDocumentContent,
   renderSnapshotHeader,
+  renderVersionMetadata,
+  renderProvenance,
   renderDocument,
 } from './rendering';
+
+export {
+  computeContentFingerprint,
+  computeMetadataFingerprint,
+  computeTemplateId,
+  computePreviewKey,
+  serializePreviewKey,
+  isPreviewStale,
+  extractTeachingDesignMetadata,
+  getAuthorDisplay,
+  getRoleDisplay,
+} from './preview';
+
+export {
+  validateExportability,
+  checkExportability,
+  resolveInstitutionalMetadata,
+  isTemplateResolvable,
+  isContentRenderable,
+  getExportPayload,
+} from './exportValidator';
 
 export {
   validateExportFormat,

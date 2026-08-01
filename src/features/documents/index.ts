@@ -1,6 +1,8 @@
 export { AddKbDocumentModal, EsportazioniTab, SecondBrainTab, WikiReaderModal } from './components';
 export { DocumentExportHistory } from './components/DocumentExportHistory';
 export type { EsportazioniTabProps, SecondBrainTabProps } from './components';
+export { printCanonicalDocument } from './services/canonicalDocumentPrint';
+export type { PrintResult, PrintOptions } from './services/canonicalDocumentPrint';
 export { useBackupHandlers } from './hooks/useBackupHandlers';
 export { useDocumentExportHandlers } from './hooks/useDocumentExportHandlers';
 export { useDocumentContinuity } from './hooks/useDocumentContinuity';

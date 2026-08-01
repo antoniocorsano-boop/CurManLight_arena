@@ -5,6 +5,7 @@ import type {
   DocumentVersion,
   InstitutionalSnapshot,
 } from './types';
+import type { EntityReference } from '../curriculum/identity';
 
 function escapeHtml(text: string): string {
   return text
@@ -105,9 +106,33 @@ export function renderSnapshotHeader(snapshot: InstitutionalSnapshot): string {
   return lines.join('\n');
 }
 
+export function renderVersionMetadata(version: DocumentVersion): string {
+  const author = version.author;
+  const authorLabel = author?.displayName || author?.role || 'Non disponibile';
+
+  const parts: string[] = [];
+  parts.push(`<p class="doc-version">Versione: ${escapeHtml(String(version.versionNumber))}</p>`);
+  const formattedDate = new Date(version.createdAt).toLocaleDateString('it-IT', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  });
+  parts.push(`<p class="doc-date">Data: ${escapeHtml(formattedDate)}</p>`);
+  parts.push(`<p class="doc-author">Autore/Ruolo: ${escapeHtml(authorLabel)}</p>`);
+
+  return parts.join('\n');
+}
+
+export function renderProvenance(refs: EntityReference[]): string {
+  if (refs.length === 0) return '';
+  const items = refs.map(r => `<li>${escapeHtml(r.snapshotLabel ?? r.id)} (${r.entityType})</li>`).join('\n');
+  return `<div class="doc-provenance">\n<p class="provenance-label">Provenienza:</p>\n<ul class="provenance-list">\n${items}\n</ul>\n</div>`;
+}
+
 export interface RenderOptions {
   title?: string;
   includeHeader?: boolean;
+  includeVersionInfo?: boolean;
   css?: string;
 }
 
@@ -121,6 +146,9 @@ export function renderDocument(
   const header = options?.includeHeader !== false
     ? renderSnapshotHeader(version.institutionalSnapshot)
     : '';
+  const includeVersion = options?.includeVersionInfo !== false;
+  const versionInfo = includeVersion ? renderVersionMetadata(version) : '';
+  const provenance = includeVersion ? renderProvenance(document.sourceRefs) : '';
 
   return `<!DOCTYPE html>
 <html lang="it">
@@ -135,6 +163,8 @@ ${css ? `<style>${css}</style>` : ''}
 ${header ? `<header>\n${header}\n</header>` : ''}
 <h1>${title}</h1>
 ${renderDocumentContent(version.content)}
+${versionInfo ? `<footer class="doc-version-info">\n${versionInfo}\n</footer>` : ''}
+${provenance ? `<div class="doc-provenance">\n${provenance}\n</div>` : ''}
 </article>
 </body>
 </html>`;
