@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { FileText, Code, Printer, ShieldAlert, Sparkles } from 'lucide-react';
 import { useCurriculumStore } from '../../../store/useCurriculumStore';
 import type { AppViewsLayerProps, TemplateJsonState, TemplateSection } from '../../session';
+import { executeA04ToA07DocumentTransfer } from '../../../domain/documents/contracts';
 import { DocumentExportHistory } from './DocumentExportHistory';
 import { CanonicalDocumentTab } from './CanonicalDocumentTab';
 import { UiButton } from '../../../ui/components/UiButton';
@@ -55,8 +56,11 @@ export type EsportazioniTabProps = Pick<AppViewsLayerProps,
 >;
 
 export function EsportazioniTab(props: EsportazioniTabProps) {
-  const { discipline, order } = useCurriculumStore();
+  const { discipline, order, savedUda, documentArchive, replaceDocumentArchive } = useCurriculumStore();
   const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const [selectedCanonicalUdaId, setSelectedCanonicalUdaId] = useState('');
+  const [canonicalMessage, setCanonicalMessage] = useState<string | null>(null);
+  const [selectedCanonicalDocumentId, setSelectedCanonicalDocumentId] = useState<string | null>(null);
   const {
     esportazioniTab,
     setEsportazioniTab,
@@ -92,6 +96,71 @@ export function EsportazioniTab(props: EsportazioniTabProps) {
   } = props;
   const institutionalProjection = projectA07InstitutionalDocumentHeader(institutionalProfile);
   const bilingualSiteLabel = institutionalProfile.siteName || 'Sede non configurata';
+
+  function handleCreateCanonicalDocument() {
+    if (!selectedCanonicalUdaId) {
+      setCanonicalMessage('Seleziona una progettazione prima di creare il documento.');
+      return;
+    }
+
+    const selectedUda = savedUda.find((item) => item.id === selectedCanonicalUdaId);
+    if (!selectedUda) {
+      setCanonicalMessage('La progettazione selezionata non è più disponibile.');
+      return;
+    }
+
+    const existingTitle = `Progettazione: ${selectedUda.id}`;
+    const latestArchive = useCurriculumStore.getState().documentArchive;
+    if (latestArchive.documents.some((doc) => doc.title === existingTitle)) {
+      setCanonicalMessage('Documento già presente');
+      return;
+    }
+
+    const institutionalContext = {
+      instituteName: institutionalProfile.instituteName || 'Istituto non configurato',
+      ...(institutionalProfile.mechanicalCode ? { mechanicalCode: institutionalProfile.mechanicalCode } : {}),
+      ...(institutionalProfile.siteName ? { siteName: institutionalProfile.siteName } : {}),
+      ...(institutionalProfile.academicYearLabel ? { academicYearLabel: institutionalProfile.academicYearLabel } : {}),
+      ...(institutionalProfile.declaredRole ? { declaredRole: institutionalProfile.declaredRole } : {}),
+      ...(institutionalProfile.configured !== undefined ? { configured: institutionalProfile.configured } : {}),
+    };
+
+    const result = executeA04ToA07DocumentTransfer({
+      designId: selectedUda.id,
+      curriculumRefs: [selectedUda.id],
+      sources: [selectedUda.title, selectedUda.realTask ?? ''].filter(Boolean),
+      institutionalContext,
+      teachingStructure: {
+        title: selectedUda.title,
+        discipline: selectedUda.discipline,
+        order: selectedUda.order,
+        period: selectedUda.period,
+        hours: selectedUda.hours,
+        status: selectedUda.status,
+        realTask: selectedUda.realTask,
+        notes: selectedUda.notes,
+        traguardi: selectedUda.traguardi ?? [],
+        obiettivi: selectedUda.obiettivi ?? [],
+        evidenze: selectedUda.evidenze ?? [],
+      },
+      assistedContentOrigin: 'teacher',
+      versionOrSnapshot: 'v1',
+      warnings: [],
+      metadata: { sessionTimestamp: new Date().toISOString() },
+    }, documentArchive);
+
+    if (result.status === 'completed') {
+      replaceDocumentArchive(result.archive);
+      setCanonicalMessage(`Documento creato per ${selectedUda.title}`);
+      const createdDoc = result.archive.documents.find((doc) => doc.title === `Progettazione: ${selectedUda.id}`);
+      if (createdDoc) {
+        setSelectedCanonicalDocumentId(createdDoc.id);
+      }
+      return;
+    }
+
+    setCanonicalMessage(result.errors[0]?.message ?? 'Impossibile creare il documento.');
+  }
 
   return (
     <div className="space-y-6 fade-in text-left">
@@ -433,7 +502,48 @@ export function EsportazioniTab(props: EsportazioniTabProps) {
           title="Documenti strutturati"
           description="Documenti canonici con versioni, stato e snapshot istituzionale."
         />
-        <CanonicalDocumentTab />
+        <div className="space-y-3 rounded-ui-panel border border-ui-border bg-ui-surface-subtle p-4">
+          <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
+            <div>
+              <label htmlFor="canonical-uda-select" className="text-[13px] font-semibold text-ui-text">
+                Seleziona progettazione
+              </label>
+              <p className="text-[12px] text-ui-text-secondary">Trasforma una UDA salvata in un documento strutturato A07.</p>
+            </div>
+            <button
+              type="button"
+              onClick={handleCreateCanonicalDocument}
+              className="inline-flex items-center justify-center rounded-ui-control bg-ui-action px-3 py-2 text-[13px] font-semibold text-white transition hover:bg-ui-action-hover"
+            >
+              Crea documento
+            </button>
+          </div>
+          <select
+            id="canonical-uda-select"
+            aria-label="Seleziona progettazione"
+            value={selectedCanonicalUdaId}
+            onChange={(event) => setSelectedCanonicalUdaId(event.target.value)}
+            className="w-full rounded-ui-control border border-ui-border bg-ui-surface px-3 py-2 text-[13px] text-ui-text focus:outline-none focus:ring-2 focus:ring-ui-focus"
+          >
+            <option value="">Seleziona una progettazione…</option>
+            {savedUda.map((uda) => (
+              <option key={uda.id} value={uda.id}>
+                {uda.title}
+              </option>
+            ))}
+          </select>
+          {canonicalMessage && (
+            <div className="rounded-ui-control border border-ui-border bg-ui-surface px-3 py-2 text-[13px] text-ui-text-secondary">
+              {canonicalMessage}
+            </div>
+          )}
+          {savedUda.length === 0 && (
+            <div className="rounded-ui-control border border-dashed border-ui-border px-3 py-2 text-[13px] text-ui-text-secondary">
+              Non sono ancora presenti documenti creati dalle progettazioni.
+            </div>
+          )}
+        </div>
+        <CanonicalDocumentTab selectedDocumentId={selectedCanonicalDocumentId} onSelectionChange={setSelectedCanonicalDocumentId} />
       </UiPanel>
 
       {/* Reset Confirm Dialog */}

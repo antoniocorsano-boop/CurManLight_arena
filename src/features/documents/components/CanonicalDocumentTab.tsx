@@ -1,12 +1,17 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useCurriculumStore } from '../../../store/useCurriculumStore';
 import { getDocumentList, getCurrentVersionForDocument, archiveDocument, duplicateDocument, renderDocument, serializeDocumentArchive } from '../../../domain/documents';
 import type { DocumentEntity, ExportFormat } from '../../../domain/documents';
 import { DOCUMENT_TYPE_LABELS, DOCUMENT_STATUS_LABELS } from '../../../domain/documents';
 
-export function CanonicalDocumentTab() {
+export interface CanonicalDocumentTabProps {
+  selectedDocumentId?: string | null;
+  onSelectionChange?: (id: string | null) => void;
+}
+
+export function CanonicalDocumentTab({ selectedDocumentId, onSelectionChange }: CanonicalDocumentTabProps) {
   const { documentArchive, replaceDocumentArchive } = useCurriculumStore();
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(selectedDocumentId ?? null);
   const [message, setMessage] = useState<string | null>(null);
 
   const docs = getDocumentList(documentArchive);
@@ -66,8 +71,16 @@ export function CanonicalDocumentTab() {
   }
 
   function handleSelect(doc: DocumentEntity) {
-    setSelectedId(selectedId === doc.id ? null : doc.id);
+    const nextId = selectedId === doc.id ? null : doc.id;
+    setSelectedId(nextId);
+    onSelectionChange?.(nextId);
   }
+
+  useEffect(() => {
+    if (selectedDocumentId !== undefined) {
+      setSelectedId(selectedDocumentId ?? null);
+    }
+  }, [selectedDocumentId]);
 
   const selectedDoc = selectedId ? docs.find(d => d.id === selectedId) : null;
   const selectedVersion = selectedDoc ? getCurrentVersionForDocument(documentArchive, selectedDoc) : null;
@@ -82,7 +95,7 @@ export function CanonicalDocumentTab() {
 
       {docs.length === 0 ? (
         <div className="text-ui-text-secondary text-sm py-8 text-center">
-          Nessun documento presente. Crea un documento dal trasferimento A04.
+          Nessun documento canonico presente. Crea il primo documento dalla sezione Progettazioni.
         </div>
       ) : (
         <div className="space-y-2">
@@ -120,7 +133,8 @@ export function CanonicalDocumentTab() {
                   <div className="px-4 pb-3 pt-1 border-t border-ui-border space-y-3">
                     {selectedVersion && (
                       <div className="text-sm text-ui-text-secondary space-y-1">
-                        <p><strong>Versione:</strong> {selectedVersion.versionNumber}</p>
+                        <p><strong>Origine:</strong> {doc.metadata.origin}</p>
+                        <p><strong>Versione corrente:</strong> {selectedVersion.versionNumber}</p>
                         <p><strong>Creato:</strong> {new Date(selectedVersion.createdAt).toLocaleDateString('it-IT')}</p>
                         {selectedVersion.reason && <p><strong>Motivo:</strong> {selectedVersion.reason}</p>}
                         <p><strong>Istituto:</strong> {selectedVersion.institutionalSnapshot.instituteName}</p>
