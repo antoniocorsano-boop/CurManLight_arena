@@ -553,7 +553,18 @@ function ProgettazioneAnnualeView({
   const { discipline, order, schoolYear, selectedTraguardi, selectedObiettivi, selectedEvidenze, savedUda, toggleTraguardoSelection, toggleObiettivoSelection, toggleEvidenceSelection } = useCurriculumStore();
 
   const academicYear = parseSchoolYear(schoolYear);
-  const isPreTransition = academicYear && academicYear.startYear < 2026;
+  const startYear = academicYear?.startYear ?? 0;
+  const targetClassNum = parseInt(targetClass, 10);
+  
+  // Transition logic per CML-630F curriculumTransitionResolver:
+  // - Pre-transition (startYear < 2026): all grades IN2012
+  // - Transition year (startYear === 2026): infanzia & class 1 → IN2025; class 2-5 → IN2012
+  // - Post-transition (startYear > 2026): all grades IN2025
+  const isPreTransition = startYear > 0 && startYear < 2026;
+  const isTransitionYear = startYear === 2026;
+  
+  const showsLegacyCurriculum = isPreTransition 
+    || (isTransitionYear && targetClassNum > 1 && order !== 'infanzia');
 
   const kc = useKnowledgeCompanion(wizardStep, discipline, order);
 
@@ -606,11 +617,11 @@ function ProgettazioneAnnualeView({
             </div>
 
             <div className={`p-2.5 rounded-xl border text-[10px] leading-tight font-bold ${
-              isPreTransition && targetClass !== '1' && order !== 'infanzia'
+              showsLegacyCurriculum
                 ? 'bg-amber-50 border-amber-200 text-amber-900'
                 : 'bg-emerald-50 border-emerald-200 text-emerald-900'
             }`}>
-              {isPreTransition && targetClass !== '1' && order !== 'infanzia' ? (
+              {showsLegacyCurriculum ? (
                 <div className="space-y-0.5">
                   <div className="font-extrabold text-amber-800">CURRICOLO 2012 (PREVIGENTE)</div>
                   <p className="text-[9px] text-slate-500 font-medium">La Classe {targetClass}^ concluderà il ciclo mantenendo il vecchio standard.</p>

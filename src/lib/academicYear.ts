@@ -1,7 +1,6 @@
-export interface AcademicYear {
-  startYear: number;
-  endYear: number;
-}
+import type { AcademicYear as CanonicalAcademicYear } from '../types/curriculumTransition';
+
+export type AcademicYear = CanonicalAcademicYear;
 
 export interface InstitutionalAcademicYear {
   id: string;
