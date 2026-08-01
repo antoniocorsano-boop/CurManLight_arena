@@ -84,7 +84,7 @@ See `docs/PROJECT_BASELINE.md` for current state.
 | CML-630D — Vertical Curriculum Link Domain Decision | COMPLETE_REMOTE | `7e6b2eb` | `main` |
 | CML-630E1 — Productive Domain Contracts | COMPLETE_REMOTE | `a331dcf` | `main` |
 | CML-630E2 — Persistence & Legacy Compatibility | COMPLETE_REMOTE | `1041fb5` | `main` |
-| CML-630F2 — Legacy Compatibility (extended) | COMPLETE_LOCAL | `f96f3df` | `feat/cml-630f2-legacy-compatibility-extended` |
+| CML-630F2 — Legacy Compatibility (extended) | COMPLETE_LOCAL | `pending` | `feat/cml-630f2-legacy-compatibility-extended` |
 | CML-631A — Curriculum Domain Functional Activation Pilot | COMPLETE_REMOTE | `f6a9e81` | `main` |
 | CML-631B — Curriculum Functional Pilot Evaluation | COMPLETE_REMOTE | `301cf01` | `main` |
 | CML-631C — Curriculum Pilot Usability Corrections | COMPLETE_REMOTE | `e1c5124` | `main` |
@@ -123,10 +123,10 @@ CML_630E_REQUIRED_FOR_IMPLEMENTATION
 
 ### CML-630F2 Status (Complete)
 
-**CML-630F2 — Legacy Compatibility (extended):** COMPLETE_LOCAL (commit `f96f3df`)
+**CML-630F2 — Legacy Compatibility (extended):** COMPLETE_LOCAL (pending — rev. correttiva PR #18)
 - Migration coverage validated: legacy adapters cover traguardi, obiettivi, evidenze, nucleiFondanti, proposals
-- AcademicYear utilities added in `src/lib/academicYear.ts` (parseSchoolYear, formatAcademicYear, createAcademicYear, isValidAcademicYear)
-- ProgettazioneTab updated to use parseSchoolYear for transition logic
+- AcademicYear utilities added in `src/lib/academicYear.ts` (parseSchoolYear, createAcademicYear, isValidAcademicYear); single `formatAcademicYear` (slash, canonica) in `curriculumTransitionResolver.ts`
+- ProgettazioneTab uses the canonical resolver via `src/lib/curriculumTransitionUi.ts` (`resolveShownFrameworkForCurriculum` → `resolveNationalFramework`)
 - Single curriculumBaseline entry point in `src/lib/curriculumBaseline.ts` replaces direct curriculumKB imports
 - Direct curriculumKB imports deprecated in:
   - `useLocalCurriculum.ts`

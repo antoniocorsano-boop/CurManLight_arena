@@ -2,14 +2,6 @@ import type { AcademicYear as CanonicalAcademicYear } from '../types/curriculumT
 
 export type AcademicYear = CanonicalAcademicYear;
 
-export interface InstitutionalAcademicYear {
-  id: string;
-  label: string;
-  startsOn: string;
-  endsOn: string;
-  status: 'planned' | 'active' | 'closed' | 'archived' | 'legacy';
-}
-
 export function parseSchoolYear(schoolYear: string): AcademicYear | null {
   if (!schoolYear) return null;
   const match = schoolYear.match(/^(\d{4})-(\d{4})$/);
@@ -18,10 +10,6 @@ export function parseSchoolYear(schoolYear: string): AcademicYear | null {
   const endYear = parseInt(match[2], 10);
   if (endYear !== startYear + 1) return null;
   return { startYear, endYear };
-}
-
-export function formatAcademicYear(year: AcademicYear): string {
-  return `${year.startYear}-${year.endYear}`;
 }
 
 export function formatInstitutionalAcademicYear(year: AcademicYear): string {

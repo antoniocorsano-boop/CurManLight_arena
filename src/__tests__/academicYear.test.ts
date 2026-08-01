@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
   parseSchoolYear,
-  formatAcademicYear,
   formatInstitutionalAcademicYear,
   createAcademicYear,
   isValidAcademicYear,
@@ -31,13 +30,6 @@ describe('academicYear utilities', () => {
       expect(parseSchoolYear('2026-2028')).toBeNull();
       expect(parseSchoolYear('2026-2025')).toBeNull();
       expect(parseSchoolYear('2026-2026')).toBeNull();
-    });
-  });
-
-  describe('formatAcademicYear', () => {
-    it('formats AcademicYear as YYYY-YYYY+1', () => {
-      expect(formatAcademicYear({ startYear: 2026, endYear: 2027 })).toBe('2026-2027');
-      expect(formatAcademicYear({ startYear: 2025, endYear: 2026 })).toBe('2025-2026');
     });
   });
 

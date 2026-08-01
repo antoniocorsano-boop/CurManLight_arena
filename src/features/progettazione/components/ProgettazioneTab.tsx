@@ -8,7 +8,7 @@ import { CertificazioneTab } from './CertificazioneTab';
 import { KnowledgeCompanionPanel, VolumeReaderOverlay } from './KnowledgeCompanionPanel';
 import { useKnowledgeCompanion } from '../hooks/useKnowledgeCompanion';
 import { UiEmptyState } from '../../../ui/components/UiEmptyState';
-import { parseSchoolYear } from '../../../lib';
+import { resolveShownFrameworkForCurriculum } from '../../../lib/curriculumTransitionUi';
 import type { SchoolOrder, UdaModel } from '../../../types/curriculum';
 import type { AppViewsLayerProps, CurriculumMap, LibrarySorting, ProgStatus, ProgettazioneMode } from '../../session';
 
@@ -552,19 +552,9 @@ function ProgettazioneAnnualeView({
 }: ProgettazioneAnnualeViewProps) {
   const { discipline, order, schoolYear, selectedTraguardi, selectedObiettivi, selectedEvidenze, savedUda, toggleTraguardoSelection, toggleObiettivoSelection, toggleEvidenceSelection } = useCurriculumStore();
 
-  const academicYear = parseSchoolYear(schoolYear);
-  const startYear = academicYear?.startYear ?? 0;
-  const targetClassNum = parseInt(targetClass, 10);
+  const shownFramework = resolveShownFrameworkForCurriculum({ schoolYear, order, targetClass });
 
-  // Transition logic per CML-630F curriculumTransitionResolver:
-  // - Pre-transition (startYear < 2026): all grades IN2012
-  // - Transition year (startYear === 2026): infanzia & class 1 → IN2025; class 2-5 → IN2012
-  // - Post-transition (startYear > 2026): all grades IN2025
-  const isPreTransition = startYear > 0 && startYear < 2026;
-  const isTransitionYear = startYear === 2026;
-
-  const showsLegacyCurriculum = isPreTransition
-    || (isTransitionYear && targetClassNum > 1 && order !== 'infanzia');
+  const showsLegacyCurriculum = shownFramework === 'IN2012';
 
   const kc = useKnowledgeCompanion(wizardStep, discipline, order);
 
