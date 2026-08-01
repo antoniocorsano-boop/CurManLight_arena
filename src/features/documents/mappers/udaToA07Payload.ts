@@ -58,6 +58,14 @@ function curriculumRefsFrom(uda: UdaModel): string[] {
   return refs.filter((r): r is string => typeof r === 'string' && r.trim() !== '');
 }
 
+function pickDefined<T extends Record<string, unknown>>(record: T): T {
+  const out: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(record)) {
+    if (value !== undefined) out[key] = value;
+  }
+  return out as T;
+}
+
 export function buildA04ToA07PayloadFromUda(
   uda: UdaModel,
   institutionalRead: A07InstitutionalDocumentRead,
@@ -77,15 +85,15 @@ export function buildA04ToA07PayloadFromUda(
     designId: `uda-${uda.id}`,
     curriculumRefs: curriculumRefsFrom(uda),
     sources: [uda.id],
-    institutionalContext: {
+    institutionalContext: pickDefined({
       instituteName: institutionalRead.instituteName,
       mechanicalCode: institutionalRead.mechanicalCode,
       siteName: institutionalRead.siteName,
       academicYearLabel: institutionalRead.academicYearLabel,
       declaredRole: institutionalRead.declaredRole,
       configured: institutionalRead.configured,
-    },
-    teachingStructure: {
+    }),
+    teachingStructure: pickDefined({
       id: uda.id,
       title: uda.title,
       discipline: uda.discipline,
@@ -98,7 +106,7 @@ export function buildA04ToA07PayloadFromUda(
       evidenze: [...(Array.isArray(uda.evidenze) ? uda.evidenze : [])],
       realTask: uda.realTask,
       notes: uda.notes,
-    },
+    }),
     assistedContentOrigin: 'teacher',
     versionOrSnapshot: uda.updatedAt ?? uda.createdAt,
     warnings,
