@@ -1,6 +1,7 @@
 import type { UdaModel } from '../../../types/curriculum';
 import type { A07InstitutionalDocumentRead } from '../../../domain/institution';
 import type { A04ToA07Payload } from '../../../domain/transfer/areaContracts';
+import type { ValidationError } from '../../../domain/transfer/validators';
 import type {
   DocumentArchive,
   DocumentEntity,
@@ -25,11 +26,10 @@ import {
 import {
   buildA04ToA07PayloadFromUda,
   validateUdaForDocumentMapping,
-  type UdaMappingProblem,
 } from '../mappers/udaToA07Payload';
 
 export type DocumentProductionResult =
-  | { status: 'mapping-invalid'; errors: UdaMappingProblem[] }
+  | { status: 'mapping-invalid'; errors: readonly ValidationError[] }
   | { status: 'transfer-failed'; errors: DocumentError[] }
   | { status: 'archive-invalid'; errors: DocumentError[] }
   | { status: 'already-exists'; document: DocumentEntity; version: DocumentVersion }

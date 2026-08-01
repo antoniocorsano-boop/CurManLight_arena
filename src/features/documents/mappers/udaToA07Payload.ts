@@ -1,24 +1,13 @@
 import type { UdaModel } from '../../../types/curriculum';
 import type { A04ToA07Payload } from '../../../domain/transfer/areaContracts';
 import type { A07InstitutionalDocumentRead } from '../../../domain/institution';
-
-export type UdaMappingErrorCode =
-  | 'MISSING_ID'
-  | 'MISSING_TITLE'
-  | 'MISSING_DISCIPLINE'
-  | 'MISSING_ORDER';
-
-export interface UdaMappingProblem {
-  code: UdaMappingErrorCode;
-  message: string;
-  field?: string;
-}
+import type { ValidationError, ValidationResult } from '../../../domain/transfer/validators';
 
 export class UdaMappingError extends Error {
-  readonly code: UdaMappingErrorCode;
-  readonly field?: string;
+  readonly code: string;
+  readonly field: string;
 
-  constructor(problem: UdaMappingProblem) {
+  constructor(problem: ValidationError) {
     super(problem.message);
     this.name = 'UdaMappingError';
     this.code = problem.code;
@@ -26,15 +15,11 @@ export class UdaMappingError extends Error {
   }
 }
 
-export type UdaMappingValidation =
-  | { valid: true }
-  | { valid: false; errors: UdaMappingProblem[] };
-
-export function validateUdaForDocumentMapping(uda: UdaModel): UdaMappingValidation {
-  const errors: UdaMappingProblem[] = [];
+export function validateUdaForDocumentMapping(uda: UdaModel): ValidationResult {
+  const errors: ValidationError[] = [];
 
   if (!uda.id || uda.id.trim() === '') {
-    errors.push({ code: 'MISSING_ID', message: 'La progettazione non ha un identificativo.', field: 'id' });
+    errors.push({ code: 'REFERENCE_MISSING', message: 'La progettazione non ha un identificativo.', field: 'id' });
   }
   if (!uda.title || uda.title.trim() === '') {
     errors.push({ code: 'MISSING_TITLE', message: 'La progettazione non ha un titolo.', field: 'title' });
@@ -46,7 +31,9 @@ export function validateUdaForDocumentMapping(uda: UdaModel): UdaMappingValidati
     errors.push({ code: 'MISSING_ORDER', message: 'La progettazione non ha un ordine scolastico.', field: 'order' });
   }
 
-  return errors.length > 0 ? { valid: false, errors } : { valid: true };
+  return errors.length > 0
+    ? { valid: false, errors, warnings: [] }
+    : { valid: true, errors: [], warnings: [] };
 }
 
 function curriculumRefsFrom(uda: UdaModel): string[] {

@@ -139,7 +139,7 @@ describe('CML-638B mapper A04→A07', () => {
     const validation = validateUdaForDocumentMapping({ ...fullUda, id: '' });
     expect(validation.valid).toBe(false);
     if (validation.valid) return;
-    expect(validation.errors.some(e => e.code === 'MISSING_ID')).toBe(true);
+    expect(validation.errors.some(e => e.code === 'REFERENCE_MISSING')).toBe(true);
   });
 
   it('rejects a UDA without title', () => {
