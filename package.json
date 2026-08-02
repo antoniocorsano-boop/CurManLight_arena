@@ -13,7 +13,7 @@
     "test:persistence": "vitest run --config vitest.persistence.config.ts",
     "test:ui": "vitest run --config vitest.ui.config.ts",
     "verify:fast": "npm run typecheck && npm run test:fast",
-    "verify:documents": "npm run typecheck && npm run test:documents",
+    "verify:documents": "npm run typecheck && npm run test:fast && npm run test:documents && npm run build",
     "verify:storybook": "npm run build-storybook",
     "test": "vitest run",
     "test:fast": "vitest run --config vitest.fast.config.ts",
@@ -26,7 +26,12 @@
     "memory:status": "powershell -ExecutionPolicy Bypass -File scripts/agent-memory.ps1 status",
     "memory:handoff": "powershell -ExecutionPolicy Bypass -File scripts/agent-memory.ps1 handoff",
     "storybook": "storybook dev -p 6006",
-    "build-storybook": "storybook build"
+    "build-storybook": "storybook build",
+    "test:ui:smoke": "vitest run --config vitest.ui-smoke.config.ts",
+    "test:ui:documents": "vitest run --config vitest.ui-documents.config.ts",
+    "test:ui:workflow": "vitest run --config vitest.ui-workflow.config.ts",
+    "test:ui:extended": "vitest run --config vitest.ui-extended.config.ts",
+    "typecheck:full": "tsc --noEmit"
   },
   "dependencies": {
     "@playwright/test": "^1.61.1",
