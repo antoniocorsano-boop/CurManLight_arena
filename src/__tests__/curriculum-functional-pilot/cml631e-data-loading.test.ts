@@ -18,7 +18,7 @@ describe('CML-631E — Data Loading Fix', () => {
   it('A1.1 — loads nodes from all segments after refreshData fix', () => {
     const segments = listPilotSegments('pilot-version-001');
     expect(segments.ok).toBe(true);
-    if (!segments.ok) return;
+    expect(segments.ok).toBe(true); if (!segments.ok) { throw new Error('Expected operation to succeed'); }
     expect(segments.data.length).toBe(2);
 
     const primaryNodes = listPilotNodes('pilot-segment-math-primary-5');

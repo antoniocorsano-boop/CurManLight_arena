@@ -29,7 +29,7 @@ describe('Integration: A07 reads canonical archive', () => {
         createSectionParagraph('Contenuto della progettazione'),
       ],
     }, snapshot);
-    if (!created.success) return;
+    expect(created.success).toBe(true); if (!created.success) { throw new Error('Expected operation to succeed'); }
 
     // Read through selectors
     const doc = getDocument(created.archive, created.document.id);
@@ -57,7 +57,7 @@ describe('Integration: A07 reads canonical archive', () => {
     }, {
       sections: [createSectionParagraph('Obiettivi annuali')],
     }, snapshot);
-    if (!created.success) return;
+    expect(created.success).toBe(true); if (!created.success) { throw new Error('Expected operation to succeed'); }
 
     const html = renderDocument(created.document, created.version);
     expect(html).toContain('Piano Annuale');
@@ -77,7 +77,7 @@ describe('Integration: archive integrity', () => {
     }, {
       sections: [createSectionParagraph('Testo')],
     }, snapshot);
-    if (!created.success) return;
+    expect(created.success).toBe(true); if (!created.success) { throw new Error('Expected operation to succeed'); }
 
     // Validate the resulting archive
     const validationA = validateArchiveIntegrity(created.archive);
@@ -101,7 +101,7 @@ describe('Integration: export payload', () => {
     }, {
       sections: [createSectionParagraph('Da esportare')],
     }, snapshot);
-    if (!created.success) return;
+    expect(created.success).toBe(true); if (!created.success) { throw new Error('Expected operation to succeed'); }
 
     const payload = getDocumentExportPayload(created.archive, created.document.id, 'html');
     expect(payload).toBeDefined();
@@ -121,7 +121,7 @@ describe('Integration: CML-633E compatibility', () => {
     }, {
       sections: [createSectionParagraph('Test')],
     }, snapshot);
-    if (!created.success) return;
+    expect(created.success).toBe(true); if (!created.success) { throw new Error('Expected operation to succeed'); }
 
     // EntityId is a branded string - verify it behaves as string
     expect(typeof created.document.id).toBe('string');
@@ -137,7 +137,7 @@ describe('Integration: CML-633E compatibility', () => {
     }, {
       sections: [createSectionParagraph('Test')],
     }, snapshot);
-    if (!created.success) return;
+    expect(created.success).toBe(true); if (!created.success) { throw new Error('Expected operation to succeed'); }
 
     expect(created.document.metadata.createdAt).toBeTruthy();
     expect(created.document.metadata.origin).toBe('teacher');
@@ -157,7 +157,7 @@ describe('Integration: CML-631 compatibility', () => {
     }, {
       sections: [createSectionParagraph('A07 content')],
     }, snapshot);
-    if (!created.success) return;
+    expect(created.success).toBe(true); if (!created.success) { throw new Error('Expected operation to succeed'); }
 
     // The archive is a flat document archive, separate from institutional archive
     expect(created.archive.schemaVersion).toBe(1);

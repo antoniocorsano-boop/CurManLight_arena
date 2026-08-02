@@ -1,7 +1,7 @@
 /// <reference types="vitest" />
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
-import { cjsEsmBridge } from './vitest.config';
+import { cjsEsmBridge } from './vitest.shared';
 
 // CML-637B fast test workflow: a curated, deterministic subset of the unit
 // suite for daily development (target < 30s). Excludes browser tests,
@@ -12,8 +12,7 @@ export default defineConfig({
   test: {
     name: 'fast',
     globals: true,
-    environment: 'jsdom',
-    setupFiles: ['./src/__tests__/setup.ts'],
+    environment: 'node',
     css: false,
     include: [
       'src/domain/ai/executionService.test.ts',

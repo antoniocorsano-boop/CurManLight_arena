@@ -80,7 +80,7 @@ describe('A03→A04 transfer matrix', () => {
     const da = createEmptyDesignStore();
     const result = executeA03ToA04Transfer([{ id: proposalId as EntityId, entityType: 'revision-proposal' as never }], da, ra, makeRef('design-1'));
     expect(result.ok).toBe(true);
-    if (!result.ok) return;
+    expect(result.ok).toBe(true); if (!result.ok) { throw new Error('Expected operation to succeed'); }
     expect(result.selection.qualification).toBe('proposed-content');
   });
 
@@ -89,7 +89,7 @@ describe('A03→A04 transfer matrix', () => {
     const da = createEmptyDesignStore();
     const result = executeA03ToA04Transfer([{ id: proposalId as EntityId, entityType: 'revision-proposal' as never }], da, ra, makeRef('design-1'));
     expect(result.ok).toBe(true);
-    if (!result.ok) return;
+    expect(result.ok).toBe(true); if (!result.ok) { throw new Error('Expected operation to succeed'); }
     expect(result.selection.qualification).toBe('proposed-content');
   });
 
@@ -98,7 +98,7 @@ describe('A03→A04 transfer matrix', () => {
     const da = createEmptyDesignStore();
     const result = executeA03ToA04Transfer([{ id: proposalId as EntityId, entityType: 'revision-proposal' as never }], da, ra, makeRef('design-1'));
     expect(result.ok).toBe(true);
-    if (!result.ok) return;
+    expect(result.ok).toBe(true); if (!result.ok) { throw new Error('Expected operation to succeed'); }
     expect(result.selection.qualification).toBe('proposed-content');
   });
 
@@ -142,7 +142,7 @@ describe('A03→A04 transfer matrix', () => {
     const da = createEmptyDesignStore();
     const result = executeA03ToA04Transfer([{ id: proposalId as EntityId, entityType: 'revision-proposal' as never }], da, finalRA, makeRef('design-1'));
     expect(result.ok).toBe(true);
-    if (!result.ok) return;
+    expect(result.ok).toBe(true); if (!result.ok) { throw new Error('Expected operation to succeed'); }
     expect(result.selection.qualification).toBe('planned-institute-content');
   });
 
@@ -201,7 +201,7 @@ describe('A03→A04 transfer matrix', () => {
     const da = createEmptyDesignStore();
     const result = executeA03ToA04Transfer([{ id: proposalId as EntityId, entityType: 'revision-proposal' as never }], da, finalRA, makeRef('design-1'));
     expect(result.ok).toBe(true);
-    if (!result.ok) return;
+    expect(result.ok).toBe(true); if (!result.ok) { throw new Error('Expected operation to succeed'); }
     expect(result.selection.qualification).toBe('proposed-content');
   });
 
@@ -223,7 +223,7 @@ describe('A03→A04 transfer matrix', () => {
     const da = createEmptyDesignStore();
     const result = executeA03ToA04Transfer([{ id: r.proposal.id as EntityId, entityType: 'revision-proposal' as never }], da, legacyRA, makeRef('design-1'));
     expect(result.ok).toBe(true);
-    if (!result.ok) return;
+    expect(result.ok).toBe(true); if (!result.ok) { throw new Error('Expected operation to succeed'); }
     expect(result.selection.qualification).toBe('legacy-content');
     expect(result.warnings.length).toBeGreaterThan(0);
   });

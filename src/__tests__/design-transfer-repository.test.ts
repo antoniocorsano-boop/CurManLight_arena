@@ -36,7 +36,7 @@ describe('repository operations', () => {
     const s = makeSelection();
     const r = addSelection(a, s);
     expect(r.success).toBe(true);
-    if (!r.success) return;
+    expect(r.success).toBe(true); if (!r.success) { throw new Error('Expected operation to succeed'); }
     expect(getSelection(r.archive, s.id)).toBeDefined();
   });
 
@@ -66,7 +66,7 @@ describe('repository operations', () => {
     if (!r.success) throw new Error('fail');
     const rep = replaceSelectionSnapshot(r.archive, s.id, 'new');
     expect(rep.success).toBe(true);
-    if (!rep.success) return;
+    expect(rep.success).toBe(true); if (!rep.success) { throw new Error('Expected operation to succeed'); }
     expect(rep.selection?.selectedTextSnapshot).toBe('new');
   });
 
@@ -77,7 +77,7 @@ describe('repository operations', () => {
     if (!r.success) throw new Error('fail');
     const rem = removeSelectionLogically(r.archive, s.id);
     expect(rem.success).toBe(true);
-    if (!rem.success) return;
+    expect(rem.success).toBe(true); if (!rem.success) { throw new Error('Expected operation to succeed'); }
     expect(rem.archive.selections.length).toBe(0);
   });
 
@@ -128,7 +128,7 @@ describe('repository operations', () => {
     });
     const result = addSelectionWithConflictResolution(r.archive, s2, 'replace-snapshot');
     expect(result.success).toBe(true);
-    if (!result.success) return;
+    expect(result.success).toBe(true); if (!result.success) { throw new Error('Expected operation to succeed'); }
     expect(result.selection?.selectedTextSnapshot).toBe('new');
   });
 
@@ -150,7 +150,7 @@ describe('repository operations', () => {
     if (!r.success) throw new Error('fail');
     const result = markSourceStatusChanged(r.archive, s.id, 'decision-revoked');
     expect(result.success).toBe(true);
-    if (!result.success) return;
+    expect(result.success).toBe(true); if (!result.success) { throw new Error('Expected operation to succeed'); }
     expect(result.selection?.warnings.some(w => w.code.includes('REVOKED'))).toBe(true);
     expect(result.selection?.comparisonState).toBe('source-updated');
   });
@@ -162,7 +162,7 @@ describe('repository operations', () => {
     if (!r.success) throw new Error('fail');
     const result = markSourceStatusChanged(r.archive, s.id, 'source-unavailable');
     expect(result.success).toBe(true);
-    if (!result.success) return;
+    expect(result.success).toBe(true); if (!result.success) { throw new Error('Expected operation to succeed'); }
     expect(result.selection?.comparisonState).toBe('source-unavailable');
   });
 

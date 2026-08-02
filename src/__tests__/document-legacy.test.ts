@@ -16,7 +16,7 @@ describe('adaptLegacyUdaHtml', () => {
     });
 
     expect(result.ok).toBe(true);
-    if (!result.ok) return;
+    expect(result.ok).toBe(true); if (!result.ok) { throw new Error('Expected operation to succeed'); }
     expect(result.document.status).toBe('draft');
     expect(result.document.metadata.origin).toBe('legacy');
     expect(result.version.versionNumber).toBe(1);
@@ -25,21 +25,21 @@ describe('adaptLegacyUdaHtml', () => {
   it('returns warnings for missing title', () => {
     const result = adaptLegacyUdaHtml('<html></html>');
     expect(result.ok).toBe(true);
-    if (!result.ok) return;
+    expect(result.ok).toBe(true); if (!result.ok) { throw new Error('Expected operation to succeed'); }
     expect(result.warnings.some(w => w.code === 'MISSING_TITLE')).toBe(true);
   });
 
   it('returns warnings for missing date', () => {
     const result = adaptLegacyUdaHtml('<html></html>', { title: 'Test' });
     expect(result.ok).toBe(true);
-    if (!result.ok) return;
+    expect(result.ok).toBe(true); if (!result.ok) { throw new Error('Expected operation to succeed'); }
     expect(result.warnings.some(w => w.code === 'MISSING_DATE')).toBe(true);
   });
 
   it('returns warnings for missing author', () => {
     const result = adaptLegacyUdaHtml('<html></html>', { title: 'Test', date: '2024-01-01' });
     expect(result.ok).toBe(true);
-    if (!result.ok) return;
+    expect(result.ok).toBe(true); if (!result.ok) { throw new Error('Expected operation to succeed'); }
     expect(result.warnings.some(w => w.code === 'MISSING_AUTHOR')).toBe(true);
   });
 
@@ -51,7 +51,7 @@ describe('adaptLegacyUdaHtml', () => {
   it('never promotes to approved', () => {
     const result = adaptLegacyUdaHtml('<html></html>', { title: 'Test' });
     expect(result.ok).toBe(true);
-    if (!result.ok) return;
+    expect(result.ok).toBe(true); if (!result.ok) { throw new Error('Expected operation to succeed'); }
     expect(result.document.status).not.toBe('completed');
     expect(result.document.status).not.toBe('shared-locally');
   });
@@ -59,7 +59,7 @@ describe('adaptLegacyUdaHtml', () => {
   it('never invents author', () => {
     const result = adaptLegacyUdaHtml('<html></html>', { title: 'Test' });
     expect(result.ok).toBe(true);
-    if (!result.ok) return;
+    expect(result.ok).toBe(true); if (!result.ok) { throw new Error('Expected operation to succeed'); }
     if (result.version.author) {
       expect(result.version.author.displayName).not.toBe('');
     }
@@ -70,14 +70,14 @@ describe('adaptLegacyExportEvent', () => {
   it('imports export event as legacy document', () => {
     const result = adaptLegacyExportEvent({ title: 'Export 2024', date: '2024-06-01', format: 'html' });
     expect(result.ok).toBe(true);
-    if (!result.ok) return;
+    expect(result.ok).toBe(true); if (!result.ok) { throw new Error('Expected operation to succeed'); }
     expect(result.document.metadata.origin).toBe('legacy');
   });
 
   it('returns warnings for missing fields', () => {
     const result = adaptLegacyExportEvent({});
     expect(result.ok).toBe(true);
-    if (!result.ok) return;
+    expect(result.ok).toBe(true); if (!result.ok) { throw new Error('Expected operation to succeed'); }
     expect(result.warnings.length).toBeGreaterThan(0);
   });
 
@@ -97,14 +97,14 @@ describe('adaptLegacyHtmlDocument', () => {
     });
 
     expect(result.ok).toBe(true);
-    if (!result.ok) return;
+    expect(result.ok).toBe(true); if (!result.ok) { throw new Error('Expected operation to succeed'); }
     expect(result.document.title).toBe('Documento Importato');
   });
 
   it('registers missing fields as warnings', () => {
     const result = adaptLegacyHtmlDocument('<html></html>', { title: 'Solo titolo' });
     expect(result.ok).toBe(true);
-    if (!result.ok) return;
+    expect(result.ok).toBe(true); if (!result.ok) { throw new Error('Expected operation to succeed'); }
     expect(result.warnings.length).toBeGreaterThanOrEqual(2);
   });
 });

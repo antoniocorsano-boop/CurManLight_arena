@@ -121,7 +121,7 @@ describe('archive repository', () => {
     });
     const r = addSelection(a, s);
     expect(r.success).toBe(true);
-    if (!r.success) return;
+    expect(r.success).toBe(true); if (!r.success) { throw new Error('Expected operation to succeed'); }
     expect(r.archive.selections.length).toBe(1);
     expect(getSelection(r.archive, s.id)).toBeDefined();
   });
@@ -154,7 +154,7 @@ describe('archive repository', () => {
     if (!r.success) throw new Error('fail');
     const rep = replaceSelectionSnapshot(r.archive, s.id, 'new');
     expect(rep.success).toBe(true);
-    if (!rep.success) return;
+    expect(rep.success).toBe(true); if (!rep.success) { throw new Error('Expected operation to succeed'); }
     expect(rep.selection?.selectedTextSnapshot).toBe('new');
   });
 
@@ -168,7 +168,7 @@ describe('archive repository', () => {
     if (!r.success) throw new Error('fail');
     const rem = removeSelectionLogically(r.archive, s.id);
     expect(rem.success).toBe(true);
-    if (!rem.success) return;
+    expect(rem.success).toBe(true); if (!rem.success) { throw new Error('Expected operation to succeed'); }
     expect(rem.archive.selections.length).toBe(0);
   });
 

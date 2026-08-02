@@ -2,46 +2,18 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { CanonicalDocumentTab } from '../features/documents/components/CanonicalDocumentTab';
 import { useCurriculumStore } from '../store/useCurriculumStore';
-import {
-  createEmptyDocumentArchive,
-  createDocumentInArchive,
-  createInstitutionalSnapshot,
-  createSectionHeading,
-  createSectionParagraph,
-  createSectionTeachingDesign,
-} from '../domain/documents';
+import { createEmptyDocumentArchive } from '../domain/documents';
 import type { DocumentArchive, DocumentEntity } from '../domain/documents';
 import { createEmptyInstitutionalArchive } from '../domain/institution';
 import { createEmptyRevisionArchive } from '../domain/revision';
-import { createSelfDeclaredActor, generateEntityId } from '../domain/curriculum/identity';
-
-const TEST_TITLE = 'Progettazione: UDA-001';
+import { createTeachingDesignFixture } from './fixtures/documents';
 
 function makeDocument(archive: DocumentArchive, opts: { withActor?: boolean } = {}): {
   archive: DocumentArchive;
   doc: DocumentEntity;
 } {
-  const snapshot = createInstitutionalSnapshot('Liceo Classico', {
-    configured: true,
-    academicYearLabel: '2026-2027',
-    ...(opts.withActor ? { declaredRole: 'docente' } : {}),
-  });
-  const created = createDocumentInArchive(archive, {
-    documentType: 'teaching-design',
-    title: TEST_TITLE,
-    ...(opts.withActor ? { author: createSelfDeclaredActor('Docente Test', 'docente') } : {}),
-    sourceRefs: [{ id: generateEntityId(), entityType: 'source', snapshotLabel: 'UDA 1' }],
-  }, {
-    sections: [
-      createSectionHeading(1, TEST_TITLE),
-      createSectionParagraph('Contenuto della progettazione didattica'),
-      createSectionTeachingDesign({ discipline: 'italiano', order: 'secondaria', class: '3A' }, 'Struttura progetto'),
-    ],
-  }, snapshot);
-  if (!created.success) {
-    throw new Error(`Fixture failed: ${created.errors.map(e => e.message).join('; ')}`);
-  }
-  return { archive: created.archive, doc: created.document };
+  const fixture = createTeachingDesignFixture(archive, { withActor: opts.withActor, withSourceRef: true });
+  return { archive: fixture.archive, doc: fixture.document };
 }
 
 function resetStore(archive?: DocumentArchive) {
