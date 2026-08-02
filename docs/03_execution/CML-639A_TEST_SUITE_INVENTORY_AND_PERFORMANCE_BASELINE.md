@@ -19,8 +19,8 @@ Sono stati analizzati gli script, le configurazioni, i setup condivisi, i file d
 
 Misure eseguite:
 
-- `npm run test:fast`: exit 0, 8 file e 273 test passati; durata Vitest 30,29 s, tempo parete 44,73 s.
-- Esecuzione individuale dei medesimi 8 file: tutti exit 0, da 11,20 s a 14,97 s.
+- `npm run test:fast`: exit 0, 8 file e 273 test passati; durata interna Vitest 30,29 s, tempo parete 44,73 s.
+- Esecuzione individuale dei medesimi 8 file: tutti exit 0, da 11,20 s a 14,97 s; somma dei tempi parete individuali 112,37 s.
 - `npx vitest list --project unit --json`: non completato entro 120 s; nessun conteggio viene inventato.
 - La suite completa precedente (`npm test`) aveva superato 364 s senza riepilogo; in questa sessione la raccolta completa ha nuovamente superato il timeout operativo senza summary.
 - `npm run build-storybook`: già riprodotto con `spawn EPERM` in `Building manager..`; non viene classificato come PASS.
@@ -196,6 +196,21 @@ La durata reale dei file non rapidi è `NOT_MEASURED_ENVIRONMENT_BLOCKED`; la gr
 | 19 | `etwin-domain.test.ts` | 35 | unit | entità e relazioni |
 | 20 | `cml-634b-ai-provider-pilot.test.ts` | 32 | integration | mock provider e timer |
 
+### 5.3 Baseline temporale corretta
+
+| Indicatore | Valore | Interpretazione |
+|---|---:|---|
+| test:fast — tempo interno Vitest | 30,29 s | durata riportata dal runner |
+| test:fast — tempo reale/wall clock | 44,73 s | durata percepita del comando |
+| Sovraccosto esterno | 14,44 s | differenza tra wall clock e report Vitest |
+| 8 file fast eseguiti singolarmente | 112,37 s complessivi | costo di bootstrap ripetuto; range 11,20–14,97 s |
+| Suite completa | >364 s, non conclusa | timeout senza riepilogo finale |
+| Storybook | non concluso | spawn EPERM in Building manager.. |
+| Ciclo completo pre-commit | non determinato | superiore alla sola suite fast; non misurato come comando unico |
+
+La sola suite rapida richiede circa 45 secondi reali; la regressione completa supera sei minuti senza concludersi. I 30,29 s sono il tempo interno Vitest e non la durata rappresentativa del sistema di test.
+
+Prima di spostare o riscrivere test, CML-639B deve diagnosticare bootstrap, trasformazione, worker e teardown. Ridurre soltanto i 273 casi potrebbe produrre un guadagno modesto se il costo fisso di avvio resta invariato.
 ## 6. Cause della lentezza
 
 | Causa | Evidenza | File coinvolti | Impatto | Intervento futuro |
@@ -281,7 +296,7 @@ Include esattamente:
 7. `src/__tests__/revision-domain.test.ts`
 8. `src/__tests__/identity.test.ts`
 
-Risultato misurato: 273 test passati. La suite è vicina al budget dichiarato di 30 s nel tempo interno Vitest (30,29 s), ma supera il budget nel tempo parete (44,73 s). Il dato mostra che il numero dei test non è il principale costo: l’ambiente JSDOM/setup pesa 44,06 s e l’esecuzione dei test 1,43 s.
+Risultato misurato: 273 test passati. La suite non rispetta un budget reale di 30 s: il tempo parete è 44,73 s. Il tempo interno Vitest è 30,29 s; se gli otto file venissero avviati separatamente, il costo osservato sarebbe 112,37 s. Il dato mostra che il numero dei test non è il principale costo: l’ambiente JSDOM/setup pesa 44,06 s e l’esecuzione dei test 1,43 s.
 
 | File | Deve restare | Deve uscire | Motivo | Suite alternativa |
 |---|---:|---:|---|---|
@@ -323,11 +338,12 @@ Storybook deve restare T5/pipeline separata, non un gate del ciclo locale ordina
 
 | Livello | Scopo | Contenuto | Frequenza | Budget |
 |---|---|---|---|---:|
-| T0 static | errori sintattici e tipi | `tsc --noEmit`, diff check | ogni modifica | < 10 s |
-| T1 related | rischio direttamente toccato | file/domain correlati | ogni modifica | < 15 s |
-| T2 fast | contratti essenziali | suite rapida curata | ogni commit locale | < 30 s |
-| T3 area | regressione di un’area | documents, curriculum, persistence, workflow separati | prima del commit/PR | < 120 s |
-| T4 full | regressione repository | tutti i progetti unit, senza browser aggregato | PR/notturna | separata dal commit locale |
+| T0 static | errori sintattici e tipi | tsc --noEmit, diff check | ogni modifica | ≤ 10 s reali |
+| T1 related | rischio direttamente toccato | file/domain correlati | ogni modifica | 10–15 s reali |
+| T2 fast | contratti essenziali | suite rapida curata e realmente ottimizzata | ogni commit locale | ≤ 20 s reali |
+| T0 + T1 + T2 | ciclo locale completo | static + related + fast | prima del commit | ≤ 30 s reali |
+| T3 area | regressione area | documents, curriculum, persistence, workflow separati | prima del commit/PR | 60–90 s |
+| T4 full | regressione repository | tutti i progetti unit, senza browser aggregato | PR/notturna | ≤ 180 s in ambiente dedicato |
 | T5 browser/storybook | contratti reali browser e storie | IndexedDB Chromium, Storybook | PR/notturna | pipeline separata |
 
 ## 14. Script futuri proposti
@@ -390,9 +406,14 @@ Ogni passo deve mantenere uno script precedente funzionante e produrre un confro
 
 ## 18. Conclusioni
 
-La lentezza non è spiegata dal solo numero di test. La misura più informativa è `test:fast`: 273 test eseguiti in 30,29 s nel runner, con 44,06 s di ambiente e 1,43 s di test effettivi. Il problema architetturale principale è l’aggregazione di unit, browser e Storybook nello stesso modello di esecuzione, aggravata da JSDOM per ogni file, montaggi React, persistence simulata, timer reali e alcuni guard clause che possono produrre falsi positivi.
+## 18.1 Interpretazione operativa
 
-La suite rapida è pronta come base di design, ma non è ancora sotto 20 s nel tempo parete. La suite completa e Storybook restano misurazioni bloccate dall’ambiente e devono essere separate prima di usarle come gate.
+La baseline operativa è il tempo reale percepito: la sola suite rapida richiede circa 45 secondi; la regressione completa supera 364 secondi senza concludersi. Il ciclo completo pre-commit non è stato misurato come comando unico e non deve essere rappresentato dai soli 30,29 secondi interni Vitest.
+
+
+La lentezza non è spiegata dal solo numero di test. La misura operativa è: 273 test in 44,73 s reali (30,29 s interni Vitest), con 14,44 s di sovraccosto esterno e 112,37 s se gli otto file vengono avviati singolarmente. Il problema principale è l aggregazione di unit, browser e Storybook, aggravata da JSDOM, montaggi React, persistence simulata, timer reali e teardown.
+
+La suite rapida è una base di design ma non è ancora sotto il budget reale di 20 s. Prima di spostare o riscrivere test, CML-639B deve diagnosticare bootstrap, trasformazione, worker e teardown. La suite completa e Storybook restano bloccate e devono essere separate prima di usarle come gate.
 
 ## 19. Verdetto
 
@@ -414,14 +435,14 @@ CML_639A_FAST_TEST_MODEL_READY_FOR_DESIGN_WITH_LIMITATIONS
 | Test misurati | 8 file fast individualmente + batch fast |
 | Test non misurati | unit non-fast, browser, Storybook; `NOT_MEASURED_ENVIRONMENT_BLOCKED` |
 | File più lento | `ollamaModelDiscovery.test.ts` tra i file misurati: 14,97 s |
-| Durata `test:fast` | 30,29 s Vitest; 44,73 s wall clock |
+| Durata test:fast | 30,29 s Vitest; 44,73 s wall clock; 112,37 s somma degli avvii singoli |
 | Cause principali | startup JSDOM, isolamento/worker, UI/persistence, suite multi-progetto, processi figli |
 | Falsi positivi trovati | guardie `success/ok` con `return`, concentrate in repository/transfer/integration |
 | Duplicazioni principali | dominio↔integrazione↔UI su documents, transfer, persistence e identity |
 | Modello T0–T5 | proposto; T4 e T5 separati |
 | Script proposti | typecheck, related, fast, area, full unit-only, verify |
 | Documento creato | `docs/03_execution/CML-639A_TEST_SUITE_INVENTORY_AND_PERFORMANCE_BASELINE.md` |
-| Commit creato | da eseguire dopo verifica del documento |
+| Commit creato | `dc90833b6cdda1872e20c0f74d834cdcbec33c54` per il baseline; correzione temporale in questo aggiornamento |
 | HEAD finale | invariato al momento della redazione |
 | Modifiche prodotto | Nessuna |
 | Verdetto | inventario completo; misure parzialmente bloccate; modello fast pronto al design |
