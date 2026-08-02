@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Printer } from 'lucide-react';
 import { useCurriculumStore } from '../../../store/useCurriculumStore';
 import {
@@ -12,14 +12,23 @@ import {
   computePreviewKey,
   serializePreviewKey,
   isPreviewStale,
+  transitionDocumentStatus,
+  applyDocumentActorContext,
+  createDocumentRevision,
   DOCUMENT_TYPE_LABELS,
   DOCUMENT_STATUS_LABELS,
+  DOCUMENT_STATUS_TRANSITIONS,
 } from '../../../domain/documents';
 import type {
   DocumentEntity,
+  DocumentStatus,
   PreviewState,
   ExportabilityResult,
+  ParagraphSection,
 } from '../../../domain/documents';
+import { DECLARED_INSTITUTIONAL_ROLES, getCurrentInstitutionalContext } from '../../../domain/institution';
+import { createSelfDeclaredActor } from '../../../domain/curriculum/identity';
+import type { InstitutionalRole } from '../../../domain/curriculum/types';
 import { printCanonicalDocument } from '../services/canonicalDocumentPrint';
 
 export interface CanonicalDocumentTabProps {
@@ -40,6 +49,21 @@ h1 { color: #1e3a8a; text-align: center; font-size: 14pt; margin: 20px 0; }
 .provenance-list { font-size: 8pt; color: #475569; margin: 2px 0 0 0; }
 `;
 
+interface Notice {
+  kind: 'success' | 'error';
+  text: string;
+}
+
+const INSTITUTIONAL_ROLE_LABELS: Record<InstitutionalRole, string> = {
+  'non-dichiarato': 'Ruolo non dichiarato',
+  docente: 'Docente',
+  dipartimento: 'Dipartimento',
+  referente: 'Referente per il curricolo',
+  collegio: 'Collegio dei docenti',
+  dirigente: 'Dirigente scolastico',
+  amministratore: 'Amministratore',
+};
+
 function formatDate(iso: string): string {
   try {
     return new Date(iso).toLocaleDateString('it-IT', {
@@ -53,20 +77,33 @@ function formatDate(iso: string): string {
 }
 
 export function CanonicalDocumentTab({ selectedDocumentId, onSelectionChange }: CanonicalDocumentTabProps) {
-  const { documentArchive, replaceDocumentArchive } = useCurriculumStore();
+  const { documentArchive, institutionalArchive, replaceDocumentArchive } = useCurriculumStore();
   const [selectedId, setSelectedId] = useState<string | null>(selectedDocumentId ?? null);
   const [selectedVersionId, setSelectedVersionId] = useState<string | null>(null);
   const [previewState, setPreviewState] = useState<PreviewState | null>(null);
-  const [message, setMessage] = useState<string | null>(null);
+  const [notice, setNotice] = useState<Notice | null>(null);
+  const [paragraphDrafts, setParagraphDrafts] = useState<Record<string, string[]>>({});
+  const [revisionReason, setRevisionReason] = useState('');
+  const [actorName, setActorName] = useState('');
+  const [actorRole, setActorRole] = useState<InstitutionalRole | ''>('');
+  const noticeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const docs = getDocumentList(documentArchive);
   const activeDocs = docs.filter(d => d.status !== 'archived');
   const archivedDocs = docs.filter(d => d.status === 'archived');
 
-  function showMessage(msg: string) {
-    setMessage(msg);
-    setTimeout(() => setMessage(null), 5000);
+  function showNotice(kind: Notice['kind'], text: string) {
+    if (noticeTimerRef.current) clearTimeout(noticeTimerRef.current);
+    setNotice({ kind, text });
+    noticeTimerRef.current = setTimeout(() => {
+      setNotice(null);
+      noticeTimerRef.current = null;
+    }, 6000);
   }
+
+  useEffect(() => () => {
+    if (noticeTimerRef.current) clearTimeout(noticeTimerRef.current);
+  }, []);
 
   useEffect(() => {
     if (selectedDocumentId !== undefined) {
@@ -103,16 +140,39 @@ export function CanonicalDocumentTab({ selectedDocumentId, onSelectionChange }: 
         })
       : null;
 
+  useEffect(() => {
+    if (!selectedDoc || !selectedVersionObj) return;
+    const paragraphs = selectedVersionObj.content.sections.filter(s => s.type === 'paragraph');
+    setParagraphDrafts(prev => ({
+      ...prev,
+      [selectedDoc.id]: paragraphs.map(p => (p as ParagraphSection).text),
+    }));
+    setRevisionReason('');
+    const declaredActor = getCurrentInstitutionalContext(institutionalArchive)?.declaredActor;
+    if (declaredActor) {
+      setActorName(declaredActor.displayName);
+      setActorRole(declaredActor.role);
+    } else {
+      setActorName('');
+      setActorRole('');
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedId, effectiveVersionId]);
+
   function handleGeneratePreview() {
     if (!selectedDoc || !selectedVersionObj) return;
-    const key = serializePreviewKey(computePreviewKey(selectedDoc, selectedVersionObj));
-    const html = renderDocument(selectedDoc, selectedVersionObj, { css: PREVIEW_CSS });
-    setPreviewState({
-      key,
-      html,
-      renderedAt: new Date().toISOString(),
-      versionNumber: selectedVersionObj.versionNumber,
-    });
+    try {
+      const key = serializePreviewKey(computePreviewKey(selectedDoc, selectedVersionObj));
+      const html = renderDocument(selectedDoc, selectedVersionObj, { css: PREVIEW_CSS });
+      setPreviewState({
+        key,
+        html,
+        renderedAt: new Date().toISOString(),
+        versionNumber: selectedVersionObj.versionNumber,
+      });
+    } catch {
+      showNotice('error', 'Impossibile generare l\'anteprima del documento.');
+    }
   }
 
   function handlePrint() {
@@ -128,19 +188,19 @@ export function CanonicalDocumentTab({ selectedDocumentId, onSelectionChange }: 
 
     if (!printExportability.exportable) {
       const blockingMessages = printExportability.blockingErrors.map(e => e.message).join('; ') ?? 'Validazione non superata.';
-      showMessage(blockingMessages);
+      showNotice('error', blockingMessages);
       return;
     }
 
     if (isArchived) {
-      showMessage("Il documento è archiviato. Puoi consultarlo, ma non esportarlo. Seleziona o crea una versione attiva.");
+      showNotice('error', 'Il documento è archiviato. Puoi consultarlo, ma non esportarlo. Seleziona o crea una versione attiva.');
       return;
     }
 
     const printResult = printCanonicalDocument(previewState.html, {
       title: selectedDoc.title,
     });
-    showMessage(printResult.success ? printResult.message : printResult.message);
+    showNotice(printResult.success ? 'success' : 'error', printResult.message);
   }
 
   function handleDownloadJson() {
@@ -151,7 +211,18 @@ export function CanonicalDocumentTab({ selectedDocumentId, onSelectionChange }: 
     a.download = 'archivio-documenti-canonico.json';
     a.click();
     URL.revokeObjectURL(url);
-    showMessage('Archivio documenti esportato in formato JSON.');
+    showNotice('success', 'Archivio documenti esportato in formato JSON.');
+  }
+
+  function handleTransition(doc: DocumentEntity, nextStatus: DocumentStatus) {
+    const result = transitionDocumentStatus(documentArchive, doc.id, nextStatus);
+    if (result.success) {
+      replaceDocumentArchive(result.archive);
+      setPreviewState(null);
+      showNotice('success', `Stato documento aggiornato: ${DOCUMENT_STATUS_LABELS[nextStatus] ?? nextStatus}. Genera nuovamente l'anteprima.`);
+    } else {
+      showNotice('error', result.errors.map(e => e.message).join('; '));
+    }
   }
 
   function handleArchive(doc: DocumentEntity) {
@@ -159,15 +230,80 @@ export function CanonicalDocumentTab({ selectedDocumentId, onSelectionChange }: 
     if (result.success) {
       replaceDocumentArchive(result.archive);
       if (selectedId === doc.id) setSelectedId(null);
-      showMessage('Documento archiviato');
+      showNotice('success', 'Documento archiviato.');
+      return;
     }
+    const hasInvalidTransition = result.errors.some(e => e.code === 'INVALID_TRANSITION');
+    if (hasInvalidTransition) {
+      showNotice(
+        'error',
+        `Impossibile archiviare: il documento è in stato "${DOCUMENT_STATUS_LABELS[doc.status] ?? doc.status}". ` +
+          'Portalo prima a "Completato" con il comando di stato qui sopra, poi ripeti "Archivia".',
+      );
+      return;
+    }
+    showNotice('error', result.errors.map(e => e.message).join('; '));
   }
 
   function handleDuplicate(doc: DocumentEntity) {
     const result = duplicateDocument(documentArchive, doc.id);
     if (result.success) {
       replaceDocumentArchive(result.archive);
-      showMessage('Documento duplicato');
+      showNotice('success', 'Documento duplicato.');
+    } else {
+      showNotice('error', result.errors.map(e => e.message).join('; '));
+    }
+  }
+
+  function handleApplyActor(doc: DocumentEntity) {
+    const name = actorName.trim();
+    const role = actorRole;
+    if (!name || !role) {
+      showNotice('error', 'Inserisci sia il nome sia il ruolo prima di applicare autore e ruolo.');
+      return;
+    }
+    const actor = createSelfDeclaredActor(name, role);
+    const result = applyDocumentActorContext(documentArchive, doc.id, actor);
+    if (result.success) {
+      replaceDocumentArchive(result.archive);
+      setSelectedVersionId(result.version.id);
+      setPreviewState(null);
+      showNotice('success', `Autore e ruolo associati al documento (versione ${result.version.versionNumber}). Genera nuovamente l'anteprima per sbloccare la stampa.`);
+    } else {
+      showNotice('error', result.errors.map(e => e.message).join('; '));
+    }
+  }
+
+  function handleCreateRevision(doc: DocumentEntity) {
+    const baseVersion = documentArchive.versions.find(v => v.id === doc.currentVersionRef);
+    if (!baseVersion) {
+      showNotice('error', 'Nessuna versione corrente disponibile per la modifica.');
+      return;
+    }
+    const drafts = paragraphDrafts[doc.id] ?? [];
+    let paragraphIndex = 0;
+    const sections = baseVersion.content.sections.map(section => {
+      if (section.type === 'paragraph') {
+        const next = drafts[paragraphIndex];
+        paragraphIndex += 1;
+        if (next !== undefined && next !== section.text) {
+          return { ...section, text: next };
+        }
+      }
+      return section;
+    });
+
+    const result = createDocumentRevision(documentArchive, doc.id, { sections }, {
+      reason: revisionReason.trim(),
+    });
+    if (result.success) {
+      replaceDocumentArchive(result.archive);
+      setSelectedVersionId(result.version.id);
+      setPreviewState(null);
+      setRevisionReason('');
+      showNotice('success', `Nuova versione creata: v${result.version.versionNumber}. La versione precedente resta disponibile nel selettore.`);
+    } else {
+      showNotice('error', result.errors.map(e => e.message).join('; '));
     }
   }
 
@@ -189,6 +325,16 @@ export function CanonicalDocumentTab({ selectedDocumentId, onSelectionChange }: 
     const version = versionId
       ? (documentArchive.versions.find(v => v.id === versionId) ?? null)
       : null;
+    const paragraphs = version
+      ? version.content.sections.filter(s => s.type === 'paragraph') as ParagraphSection[]
+      : [];
+    const drafts = paragraphDrafts[doc.id];
+    const hasRevisionChanges = Boolean(
+      paragraphs.length > 0 &&
+      drafts &&
+      paragraphs.some((p, i) => (drafts[i] ?? p.text) !== p.text),
+    );
+    const needsActor = !archived && (!version?.author || !version?.institutionalSnapshot?.declaredRole);
 
     return (
       <div
@@ -217,6 +363,12 @@ export function CanonicalDocumentTab({ selectedDocumentId, onSelectionChange }: 
                 <>
                   <span>·</span>
                   <span>v{version.versionNumber}</span>
+                </>
+              )}
+              {version?.author?.displayName && (
+                <>
+                  <span>·</span>
+                  <span>Autore: {version.author.displayName}</span>
                 </>
               )}
             </div>
@@ -274,6 +426,117 @@ export function CanonicalDocumentTab({ selectedDocumentId, onSelectionChange }: 
                     </option>
                   ))}
                 </select>
+              </div>
+            )}
+
+            {!archived && (
+              <div className="border border-ui-border rounded-ui-control p-3 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-semibold text-ui-text-muted">Stato documento</span>
+                  <span className="text-xs font-medium text-ui-text-secondary">
+                    {DOCUMENT_STATUS_LABELS[doc.status] ?? doc.status}
+                  </span>
+                </div>
+                {DOCUMENT_STATUS_TRANSITIONS[doc.status].length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {DOCUMENT_STATUS_TRANSITIONS[doc.status].filter(s => s !== 'archived').map(nextStatus => (
+                      <button
+                        key={nextStatus}
+                        onClick={() => handleTransition(doc, nextStatus)}
+                        className="px-3 py-1.5 text-xs font-medium bg-ui-surface border border-ui-border rounded-ui-control hover:bg-ui-surface-hover transition"
+                      >
+                        Passa a {DOCUMENT_STATUS_LABELS[nextStatus] ?? nextStatus}
+                      </button>
+                    ))}
+                  </div>
+                )}
+                <p className="text-[11px] text-ui-text-muted">
+                  Percorso: Bozza → In lavorazione → Completato → Archiviato. "Archivia" è attivo solo da "Completato".
+                </p>
+              </div>
+            )}
+
+            {needsActor && (
+              <div className="border border-amber-200 bg-amber-50 rounded-ui-control p-3 space-y-2">
+                <p className="text-xs font-semibold text-amber-900">Associa autore e ruolo a questo documento</p>
+                <p className="text-xs text-amber-800">
+                  Il documento è stato creato senza attore dichiarato. Imposta qui nome e ruolo per sbloccare
+                  anteprima e stampa, oppure configura prima l'attore nel pannello Istituzione.
+                </p>
+                <div className="grid gap-2 sm:grid-cols-2">
+                  <label className="block text-xs font-medium text-amber-900">
+                    Nome
+                    <input
+                      value={actorName}
+                      onChange={(e) => setActorName(e.target.value)}
+                      aria-label="Nome autore da associare"
+                      className="mt-1 w-full text-xs border border-amber-300 rounded-ui-control px-2 py-1 bg-white text-ui-text focus:outline-none focus:ring-1 focus:ring-ui-focus"
+                    />
+                  </label>
+                  <label className="block text-xs font-medium text-amber-900">
+                    Ruolo
+                    <select
+                      value={actorRole}
+                      onChange={(e) => setActorRole(e.target.value as InstitutionalRole | '')}
+                      aria-label="Ruolo da associare"
+                      className="mt-1 w-full text-xs border border-amber-300 rounded-ui-control px-2 py-1 bg-white text-ui-text focus:outline-none focus:ring-1 focus:ring-ui-focus"
+                    >
+                      <option value="">Seleziona un ruolo</option>
+                      {DECLARED_INSTITUTIONAL_ROLES.map(role => (
+                        <option key={role} value={role}>{INSTITUTIONAL_ROLE_LABELS[role]}</option>
+                      ))}
+                    </select>
+                  </label>
+                </div>
+                <button
+                  onClick={() => handleApplyActor(doc)}
+                  disabled={!actorName.trim() || !actorRole.trim()}
+                  className="px-3 py-1.5 text-xs font-medium bg-amber-600 text-white rounded-ui-control hover:bg-amber-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Applica autore e ruolo
+                </button>
+              </div>
+            )}
+
+            {!archived && paragraphs.length > 0 && (
+              <div className="border border-ui-border rounded-ui-control p-3 space-y-2">
+                <p className="text-xs font-semibold text-ui-text-muted">Crea una nuova versione</p>
+                <p className="text-xs text-ui-text-secondary">
+                  Modifica il contenuto dei paragrafi e salva una nuova versione. La versione precedente resta disponibile.
+                </p>
+                {paragraphs.map((p, i) => (
+                  <label key={i} className="block text-xs font-medium text-ui-text-secondary">
+                    Testo paragrafo {i + 1}
+                    <textarea
+                      value={drafts?.[i] ?? p.text}
+                      onChange={(e) => {
+                        const next = [...(drafts ?? paragraphs.map(pg => pg.text))];
+                        next[i] = e.target.value;
+                        setParagraphDrafts(prev => ({ ...prev, [doc.id]: next }));
+                      }}
+                      rows={2}
+                      aria-label={`Testo paragrafo ${i + 1}`}
+                      className="mt-1 w-full text-xs border border-ui-border rounded-ui-control px-2 py-1 bg-ui-surface text-ui-text focus:outline-none focus:ring-1 focus:ring-ui-focus"
+                    />
+                  </label>
+                ))}
+                <label className="block text-xs font-medium text-ui-text-secondary">
+                  Motivo della nuova versione
+                  <input
+                    value={revisionReason}
+                    onChange={(e) => setRevisionReason(e.target.value)}
+                    aria-label="Motivo della nuova versione"
+                    placeholder="Es. Corretto il compito di realtà"
+                    className="mt-1 w-full text-xs border border-ui-border rounded-ui-control px-2 py-1 bg-ui-surface text-ui-text focus:outline-none focus:ring-1 focus:ring-ui-focus"
+                  />
+                </label>
+                <button
+                  onClick={() => handleCreateRevision(doc)}
+                  disabled={!hasRevisionChanges || !revisionReason.trim()}
+                  className="px-3 py-1.5 text-xs font-medium bg-ui-action text-white rounded-ui-control hover:bg-ui-action-hover transition disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Crea nuova versione
+                </button>
               </div>
             )}
 
@@ -395,9 +658,17 @@ export function CanonicalDocumentTab({ selectedDocumentId, onSelectionChange }: 
 
   return (
     <div className="space-y-4">
-      {message && (
-        <div className="bg-blue-50 border border-blue-200 text-blue-800 px-4 py-2 rounded text-sm">
-          {message}
+      {notice && (
+        <div
+          role={notice.kind === 'error' ? 'alert' : 'status'}
+          aria-live="polite"
+          className={`px-4 py-2 rounded text-sm ${
+            notice.kind === 'error'
+              ? 'bg-red-50 border border-red-200 text-red-800'
+              : 'bg-emerald-50 border border-emerald-200 text-emerald-800'
+          }`}
+        >
+          {notice.text}
         </div>
       )}
 

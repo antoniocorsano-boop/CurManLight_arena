@@ -5,6 +5,7 @@ export type {
   DocumentVersion,
   DocumentContent,
   DocumentSection,
+  ParagraphSection,
   DocumentArchive,
   InstitutionalSnapshot,
   ExportFormat,
@@ -91,10 +92,14 @@ export {
   archiveDocument,
   supersedeDocument,
   duplicateDocument,
+  applyDocumentActorContext,
+  createDocumentRevision,
   verifyIntegrity,
   addVersion,
   updateDocument,
 } from './repository';
+
+export type { DocumentRevisionInput } from './repository';
 
 export {
   serializeDocumentArchive,

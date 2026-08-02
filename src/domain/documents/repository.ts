@@ -1,4 +1,5 @@
-import type { EntityId } from '../curriculum/identity';
+import { touchMetadata } from '../curriculum/identity';
+import type { ActorReference, EntityId, EntityReference } from '../curriculum/identity';
 import { cloneDocumentArchive, createDocument, createInitialVersion } from './constructors';
 import type { CreateDocumentInput } from './constructors';
 import type {
@@ -10,7 +11,7 @@ import type {
   InstitutionalSnapshot,
 } from './types';
 import { validateArchiveIntegrity, validateDocument, validateVersion, validateContent } from './validators';
-import { listVersions, addVersionToArchive } from './versioning';
+import { listVersions, addVersionToArchive, createVersion, setCurrentVersion as versioningSetCurrentVersion } from './versioning';
 import { canTransitionDocumentStatus } from './vocabularies';
 
 function error(code: string, message: string, field?: string): DocumentError {
@@ -221,6 +222,129 @@ export function duplicateDocument(
   };
 
   return createDocumentInArchive(archive, input, sourceVersion.content, snapshot, now);
+}
+
+export function applyDocumentActorContext(
+  archive: DocumentArchive,
+  documentId: string,
+  actor: ActorReference,
+  now = new Date().toISOString(),
+):
+  | { success: true; document: DocumentEntity; version: DocumentVersion; archive: DocumentArchive }
+  | { success: false; errors: DocumentError[] } {
+  const doc = archive.documents.find(d => d.id === documentId);
+  if (!doc) {
+    return { success: false, errors: [error('DOCUMENT_NOT_FOUND', `Document ${documentId} not found`)] };
+  }
+
+  if (doc.status === 'archived') {
+    return {
+      success: false,
+      errors: [error('DOCUMENT_ARCHIVED', 'Un documento archiviato non può essere modificato.', 'status')],
+    };
+  }
+
+  const current = getCurrentVersion(archive, doc);
+  if (!current) {
+    return { success: false, errors: [error('NO_CURRENT_VERSION', `Document ${documentId} has no current version`)] };
+  }
+
+  const snapshot: InstitutionalSnapshot = {
+    instituteName: current.institutionalSnapshot.instituteName,
+    configured: current.institutionalSnapshot.configured,
+    mechanicalCode: current.institutionalSnapshot.mechanicalCode,
+    siteName: current.institutionalSnapshot.siteName,
+    academicYearLabel: current.institutionalSnapshot.academicYearLabel,
+    declaredRole: actor.role,
+  };
+
+  const created = createVersion(archive, doc, current.content, {
+    author: actor,
+    reason: 'Contesto autore/ruolo applicato al documento',
+    sourceRefs: current.sourceRefs,
+    institutionalSnapshot: snapshot,
+  }, now);
+
+  const setCurrent = versioningSetCurrentVersion(created.archive, doc.id, created.version.id);
+  if (Array.isArray(setCurrent)) {
+    return { success: false, errors: setCurrent };
+  }
+
+  const updatedDoc: DocumentEntity = {
+    ...setCurrent.document,
+    author: actor,
+    metadata: touchMetadata(setCurrent.document.metadata, actor, now),
+  };
+  const next = updateDocument(setCurrent.archive, updatedDoc);
+
+  return { success: true, document: updatedDoc, version: created.version, archive: next };
+}
+
+export interface DocumentRevisionInput {
+  author?: ActorReference;
+  reason?: string;
+  sourceRefs?: EntityReference[];
+}
+
+export function createDocumentRevision(
+  archive: DocumentArchive,
+  documentId: string,
+  content: DocumentContent,
+  input: DocumentRevisionInput = {},
+  now = new Date().toISOString(),
+):
+  | { success: true; document: DocumentEntity; version: DocumentVersion; archive: DocumentArchive }
+  | { success: false; errors: DocumentError[] } {
+  const doc = archive.documents.find(d => d.id === documentId);
+  if (!doc) {
+    return { success: false, errors: [error('DOCUMENT_NOT_FOUND', `Document ${documentId} not found`)] };
+  }
+
+  if (doc.status === 'archived') {
+    return {
+      success: false,
+      errors: [error('DOCUMENT_ARCHIVED', 'Un documento archiviato non può essere modificato.', 'status')],
+    };
+  }
+
+  const contentValidation = validateContent(content);
+  if (!contentValidation.valid) {
+    return { success: false, errors: contentValidation.errors };
+  }
+
+  const current = getCurrentVersion(archive, doc);
+  if (!current) {
+    return { success: false, errors: [error('NO_CURRENT_VERSION', `Document ${documentId} has no current version`)] };
+  }
+
+  const snapshot: InstitutionalSnapshot = {
+    instituteName: current.institutionalSnapshot.instituteName,
+    configured: current.institutionalSnapshot.configured,
+    mechanicalCode: current.institutionalSnapshot.mechanicalCode,
+    siteName: current.institutionalSnapshot.siteName,
+    academicYearLabel: current.institutionalSnapshot.academicYearLabel,
+    declaredRole: current.institutionalSnapshot.declaredRole,
+  };
+
+  const created = createVersion(archive, doc, content, {
+    author: input.author ?? current.author,
+    reason: input.reason,
+    sourceRefs: input.sourceRefs ?? current.sourceRefs,
+    institutionalSnapshot: snapshot,
+  }, now);
+
+  const setCurrent = versioningSetCurrentVersion(created.archive, doc.id, created.version.id);
+  if (Array.isArray(setCurrent)) {
+    return { success: false, errors: setCurrent };
+  }
+
+  const updatedDoc: DocumentEntity = {
+    ...setCurrent.document,
+    metadata: touchMetadata(setCurrent.document.metadata, input.author ?? setCurrent.document.metadata.updatedBy, now),
+  };
+  const next = updateDocument(setCurrent.archive, updatedDoc);
+
+  return { success: true, document: updatedDoc, version: created.version, archive: next };
 }
 
 export function verifyIntegrity(
