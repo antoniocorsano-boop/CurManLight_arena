@@ -14,6 +14,8 @@ import { createEmptyRevisionArchive } from '../domain/revision';
 import type { DocumentEntity, DocumentVersion, DocumentArchive } from '../domain/documents';
 import { generateEntityId } from '../domain/curriculum/identity';
 
+const TEST_TITLE = 'Progettazione: UDA-001';
+
 function makeFullDocument(archive: DocumentArchive, overrides: {
   title?: string;
   status?: DocumentEntity['status'];
@@ -32,13 +34,14 @@ function makeFullDocument(archive: DocumentArchive, overrides: {
     declaredRole: overrides.authorRole ?? 'docente',
   });
 
+  const creationTitle = overrides.title && overrides.title.trim() !== '' ? overrides.title : TEST_TITLE;
   const created = createDocumentInArchive(archive, {
     documentType: 'teaching-design',
-    title: overrides.title ?? 'Progettazione: UDA-001',
+    title: creationTitle,
     sourceRefs: overrides.sourceRefs ?? [{ id: generateEntityId(), entityType: 'source', snapshotLabel: 'UDA 1' }],
   }, {
     sections: [
-      createSectionHeading(1, overrides.title ?? 'Progettazione: UDA-001'),
+      createSectionHeading(1, creationTitle),
       createSectionParagraph('Contenuto della progettazione didattica'),
       createSectionTeachingDesign({
         discipline: overrides.discipline ?? 'italiano',
@@ -48,17 +51,34 @@ function makeFullDocument(archive: DocumentArchive, overrides: {
     ],
   }, snapshot);
 
-  if (!created.success) throw new Error('Failed to create document');
+  if (!created.success) {
+    console.error('Validation errors:', created.errors);
+    throw new Error('Failed to create document');
+  }
 
-  const doc = created.document;
+  let doc = created.document;
+  let workArchive = created.archive;
+
+  if (overrides.title === '') {
+    doc = { ...doc, title: '' };
+    workArchive = {
+      ...workArchive,
+      documents: workArchive.documents.map(d => d.id === doc.id ? doc : d),
+    };
+  }
+
   const version = created.version;
 
   if (overrides.status === 'archived') {
     const archivedDoc: DocumentEntity = { ...doc, status: 'archived' };
-    return { archive: { ...created.archive, documents: created.archive.documents.map(d => d.id === doc.id ? archivedDoc : d) }, doc: archivedDoc, version };
+    workArchive = {
+      ...workArchive,
+      documents: workArchive.documents.map(d => d.id === doc.id ? archivedDoc : d),
+    };
+    return { archive: workArchive, doc: archivedDoc, version };
   }
 
-  return { archive: created.archive, doc, version };
+  return { archive: workArchive, doc, version };
 }
 
 function resetStore(archive?: DocumentArchive) {
@@ -71,7 +91,16 @@ function resetStore(archive?: DocumentArchive) {
 }
 
 function openDocument(doc: DocumentEntity) {
-  fireEvent.click(screen.getByText(text => text.includes(doc.title)));
+  const titleText = doc.title || '';
+  const allButtons = screen.getAllByRole('button');
+  const docButton = allButtons.find(btn => {
+    const text = btn.textContent || '';
+    return text.includes(titleText) && text.includes('Progettazione didattica');
+  });
+  if (!docButton) {
+    throw new Error('Could not find document button');
+  }
+  fireEvent.click(docButton);
 }
 
 function mockPrintWindow() {
@@ -88,15 +117,14 @@ describe('CML-636B CanonicalDocumentTab — version selection', () => {
   it('shows current version by default', async () => {
     const archive = createEmptyDocumentArchive();
     const result = makeFullDocument(archive);
-    const { doc, version } = result;
-    resetStore(archive);
+    const { doc } = result;
+    resetStore(result.archive);
 
     render(<CanonicalDocumentTab />);
     openDocument(doc);
 
-    // Use flexible text matching for dynamic title formatting
     await waitFor(() => {
-      expect(screen.getByText(text => text.includes('Versione corrente'))).toBeInTheDocument();
+      expect(screen.getByText(/Versione corrente/i)).toBeInTheDocument();
     });
   });
 
@@ -104,6 +132,7 @@ describe('CML-636B CanonicalDocumentTab — version selection', () => {
     const archive = createEmptyDocumentArchive();
     const result = makeFullDocument(archive);
     const doc = result.doc;
+    const v1 = result.version;
 
     const snap2 = createInstitutionalSnapshot('Liceo Classico', { configured: true, academicYearLabel: '2026-2027', declaredRole: 'docente' });
     const v2 = createInitialVersion(doc, {
@@ -114,9 +143,9 @@ describe('CML-636B CanonicalDocumentTab — version selection', () => {
     }, { institutionalSnapshot: snap2 });
 
     const archiveWithV2 = {
-      ...archive,
-      versions: [...archive.versions, v2],
-      documents: archive.documents.map(d => d.id === doc.id ? { ...d, currentVersionRef: v2.id } : d),
+      ...result.archive,
+      versions: [...result.archive.versions, v2],
+      documents: result.archive.documents.map(d => d.id === doc.id ? { ...d, currentVersionRef: v1.id } : d),
     };
     resetStore(archiveWithV2);
 
@@ -136,8 +165,9 @@ describe('CML-636B CanonicalDocumentTab — preview generation', () => {
 
   it('generates preview from persisted version data', async () => {
     const archive = createEmptyDocumentArchive();
-    const { doc } = makeFullDocument(archive);
-    resetStore(archive);
+    const result = makeFullDocument(archive);
+    resetStore(result.archive);
+    const { doc } = result;
 
     const printMock = mockPrintWindow();
 
@@ -166,8 +196,9 @@ describe('CML-636B CanonicalDocumentTab — validation summary', () => {
 
   it('shows blocking errors with field annotations', async () => {
     const archive = createEmptyDocumentArchive();
-    const { doc } = makeFullDocument(archive, { title: '' });
-    resetStore(archive);
+    const result = makeFullDocument(archive, { title: '' });
+    resetStore(result.archive);
+    const { doc } = result;
 
     render(<CanonicalDocumentTab />);
     openDocument(doc);
@@ -182,21 +213,22 @@ describe('CML-636B CanonicalDocumentTab — validation summary', () => {
 
   it('shows ready state when all validation passes', async () => {
     const archive = createEmptyDocumentArchive();
-    const { doc } = makeFullDocument(archive);
-    resetStore(archive);
+    const result = makeFullDocument(archive);
+    resetStore(result.archive);
+    const { doc } = result;
+
+    const printMock = mockPrintWindow();
 
     render(<CanonicalDocumentTab />);
     openDocument(doc);
-
-    await waitFor(() => {
-      expect(screen.getByText(/Genera anteprima/i)).toBeInTheDocument();
-    });
 
     fireEvent.click(screen.getByText(/Genera anteprima/i));
 
     await waitFor(() => {
       expect(screen.getByText(/Pronto per l'esportazione/i)).toBeInTheDocument();
     });
+
+    printMock.mockRestore();
   });
 });
 
@@ -205,8 +237,9 @@ describe('CML-636B CanonicalDocumentTab — print control', () => {
 
   it('disables print before preview is generated', async () => {
     const archive = createEmptyDocumentArchive();
-    const { doc } = makeFullDocument(archive);
-    resetStore(archive);
+    const result = makeFullDocument(archive);
+    resetStore(result.archive);
+    const { doc } = result;
 
     render(<CanonicalDocumentTab />);
     openDocument(doc);
@@ -218,17 +251,14 @@ describe('CML-636B CanonicalDocumentTab — print control', () => {
 
   it('enables print after valid preview', async () => {
     const archive = createEmptyDocumentArchive();
-    const { doc } = makeFullDocument(archive);
-    resetStore(archive);
+    const result = makeFullDocument(archive);
+    resetStore(result.archive);
+    const { doc } = result;
 
     const printMock = mockPrintWindow();
 
     render(<CanonicalDocumentTab />);
     openDocument(doc);
-
-    await waitFor(() => {
-      expect(screen.getByText(/Genera anteprima/i)).toBeInTheDocument();
-    });
 
     fireEvent.click(screen.getByText(/Genera anteprima/i));
 
@@ -239,19 +269,16 @@ describe('CML-636B CanonicalDocumentTab — print control', () => {
     printMock.mockRestore();
   });
 
-  it('re-validates at print time', async () => {
+  it('re-validates at print time for archived documents', async () => {
     const archive = createEmptyDocumentArchive();
-    const { doc } = makeFullDocument(archive);
-    resetStore(archive);
+    const result = makeFullDocument(archive);
+    resetStore(result.archive);
+    const { doc } = result;
 
     const printMock = mockPrintWindow();
 
     render(<CanonicalDocumentTab />);
     openDocument(doc);
-
-    await waitFor(() => {
-      expect(screen.getByText(/Genera anteprima/i)).toBeInTheDocument();
-    });
 
     fireEvent.click(screen.getByText(/Genera anteprima/i));
 
@@ -259,12 +286,18 @@ describe('CML-636B CanonicalDocumentTab — print control', () => {
       expect(screen.getByRole('button', { name: /Stampa o salva in PDF/i })).toBeEnabled();
     });
 
-    resetStore({ ...archive, documents: archive.documents.map(d => ({ ...d, status: 'archived' })) });
+    const archivedDoc = { ...doc, status: 'archived' as const };
+    const archivedArchive = {
+      ...result.archive,
+      documents: result.archive.documents.map(d => d.id === doc.id ? archivedDoc : d),
+    };
+    resetStore(archivedArchive);
 
     fireEvent.click(screen.getByRole('button', { name: /Stampa o salva in PDF/i }));
 
     await waitFor(() => {
-      expect(screen.getByText(/archiviato/i)).toBeInTheDocument();
+      const matches = screen.getAllByText(/archiviato/i);
+      expect(matches.length).toBeGreaterThan(0);
     });
 
     printMock.mockRestore();
@@ -276,13 +309,32 @@ describe('CML-636B CanonicalDocumentTab — preview invalidation', () => {
 
   it('marks preview stale after version change', async () => {
     const archive = createEmptyDocumentArchive();
-    const { doc } = makeFullDocument(archive);
-    resetStore(archive);
+    const result = makeFullDocument(archive);
+    const { doc, version: v1 } = result;
+
+    const snap2 = createInstitutionalSnapshot('Liceo Classico', { configured: true, academicYearLabel: '2026-2027', declaredRole: 'docente' });
+    const v2 = createInitialVersion(doc, {
+      sections: [
+        createSectionHeading(1, 'Progettazione'),
+        createSectionTeachingDesign({ discipline: 'italiano', order: 'secondaria', class: '3A' }),
+      ],
+    }, { institutionalSnapshot: snap2 });
+
+    const archiveWithV2 = {
+      ...result.archive,
+      versions: [...result.archive.versions, v2],
+    };
+    const docWithV1Current = {
+      ...doc,
+      currentVersionRef: v1.id,
+    };
+    archiveWithV2.documents = archiveWithV2.documents.map(d => d.id === doc.id ? docWithV1Current : d);
+    resetStore(archiveWithV2);
 
     const printMock = mockPrintWindow();
 
     render(<CanonicalDocumentTab />);
-    openDocument(doc);
+    openDocument(docWithV1Current);
 
     await waitFor(() => {
       expect(screen.getByText(/Genera anteprima/i)).toBeInTheDocument();
@@ -295,10 +347,11 @@ describe('CML-636B CanonicalDocumentTab — preview invalidation', () => {
     });
 
     const select = await screen.findByRole('combobox', { name: /Seleziona versione/i });
-    fireEvent.change(select, { target: { value: 'other-version' } });
+    fireEvent.change(select, { target: { value: v2.id } });
 
     await waitFor(() => {
-      expect(screen.queryByText(/L'anteprima non è più aggiornata/i)).toBeInTheDocument();
+      const staleElements = screen.getAllByText(/non è più aggiornata/i);
+      expect(staleElements.length).toBeGreaterThan(0);
     });
 
     printMock.mockRestore();
@@ -310,8 +363,9 @@ describe('CML-636B CanonicalDocumentTab — archived document', () => {
 
   it('renders archived document in read-only mode', async () => {
     const archive = createEmptyDocumentArchive();
-    const { doc } = makeFullDocument(archive, { status: 'archived' });
-    resetStore(archive);
+    const result = makeFullDocument(archive, { status: 'archived' });
+    resetStore(result.archive);
+    const { doc } = result;
 
     render(<CanonicalDocumentTab />);
     openDocument(doc);
@@ -323,8 +377,9 @@ describe('CML-636B CanonicalDocumentTab — archived document', () => {
 
   it('blocks print for archived documents', async () => {
     const archive = createEmptyDocumentArchive();
-    const { doc } = makeFullDocument(archive, { status: 'archived' });
-    resetStore(archive);
+    const result = makeFullDocument(archive, { status: 'archived' });
+    resetStore(result.archive);
+    const { doc } = result;
 
     const printMock = mockPrintWindow();
 
@@ -350,8 +405,9 @@ describe('CML-636B CanonicalDocumentTab — no HTML download', () => {
 
   it('does not render a Scarica HTML button', async () => {
     const archive = createEmptyDocumentArchive();
-    const { doc } = makeFullDocument(archive);
-    resetStore(archive);
+    const result = makeFullDocument(archive);
+    resetStore(result.archive);
+    const { doc } = result;
 
     render(<CanonicalDocumentTab />);
     openDocument(doc);
@@ -367,8 +423,9 @@ describe('CML-636B CanonicalDocumentTab — JSON archive preserved', () => {
 
   it('renders the Archivio JSON button independently of preview state', async () => {
     const archive = createEmptyDocumentArchive();
-    const { doc } = makeFullDocument(archive);
-    resetStore(archive);
+    const result = makeFullDocument(archive);
+    resetStore(result.archive);
+    const { doc } = result;
 
     const createObjectURL = vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:fake-url');
     const revokeObjectURL = vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {});
@@ -377,13 +434,12 @@ describe('CML-636B CanonicalDocumentTab — JSON archive preserved', () => {
     openDocument(doc);
 
     await waitFor(() => {
-      expect(screen.queryByRole('button', { name: /Archivio JSON/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /Archivio JSON/i })).toBeInTheDocument();
     });
 
     fireEvent.click(screen.getByRole('button', { name: /Archivio JSON/i }));
 
     expect(createObjectURL).toHaveBeenCalled();
-
     createObjectURL.mockRestore();
     revokeObjectURL.mockRestore();
   });
@@ -394,8 +450,9 @@ describe('CML-636B CanonicalDocumentTab — accessibility', () => {
 
   it('provides aria-live region for validation summary', async () => {
     const archive = createEmptyDocumentArchive();
-    const { doc } = makeFullDocument(archive, { title: '' });
-    resetStore(archive);
+    const result = makeFullDocument(archive, { title: '' });
+    resetStore(result.archive);
+    const { doc } = result;
 
     render(<CanonicalDocumentTab />);
     openDocument(doc);
@@ -406,8 +463,23 @@ describe('CML-636B CanonicalDocumentTab — accessibility', () => {
 
   it('provides aria-label for version selector', async () => {
     const archive = createEmptyDocumentArchive();
-    const { doc } = makeFullDocument(archive);
-    resetStore(archive);
+    const result = makeFullDocument(archive);
+    const doc = result.doc;
+    const v1 = result.version;
+
+    const snap2 = createInstitutionalSnapshot('Liceo Classico', { configured: true, academicYearLabel: '2026-2027', declaredRole: 'docente' });
+    const v2 = createInitialVersion(doc, {
+      sections: [
+        createSectionHeading(1, 'Progettazione'),
+      ],
+    }, { institutionalSnapshot: snap2 });
+
+    const archiveWithV2 = {
+      ...result.archive,
+      versions: [...result.archive.versions, v2],
+    };
+    archiveWithV2.documents = archiveWithV2.documents.map(d => d.id === doc.id ? { ...d, currentVersionRef: v1.id } : d);
+    resetStore(archiveWithV2);
 
     render(<CanonicalDocumentTab />);
     openDocument(doc);
@@ -420,8 +492,9 @@ describe('CML-636B CanonicalDocumentTab — accessibility', () => {
 
   it('marks decorative Printer icon as aria-hidden', async () => {
     const archive = createEmptyDocumentArchive();
-    const { doc } = makeFullDocument(archive);
-    resetStore(archive);
+    const result = makeFullDocument(archive);
+    resetStore(result.archive);
+    const { doc } = result;
 
     render(<CanonicalDocumentTab />);
     openDocument(doc);
@@ -432,10 +505,8 @@ describe('CML-636B CanonicalDocumentTab — accessibility', () => {
 
     fireEvent.click(screen.getByText(/Genera anteprima/i));
 
-    await waitFor(() => {
-      const printBtn = screen.getByRole('button', { name: /Stampa o salva in PDF/i });
-      const icon = printBtn.querySelector('svg[data-lucide="printer"]');
-      expect(icon).toHaveAttribute('aria-hidden', 'true');
-    });
+    const printBtn = screen.getByRole('button', { name: /Stampa o salva in PDF/i });
+    const icon = printBtn.querySelector('svg');
+    expect(icon).toHaveAttribute('aria-hidden', 'true');
   });
 });

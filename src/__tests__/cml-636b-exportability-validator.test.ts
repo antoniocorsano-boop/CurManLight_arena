@@ -7,7 +7,7 @@ import { createSectionParagraph } from '../domain/documents';
 import { createSectionTeachingDesign } from '../domain/documents';
 import { validateExportability, checkExportability, resolveInstitutionalMetadata, isContentRenderable, serializePreviewKey, computePreviewKey } from '../domain/documents';
 import type { DocumentArchive, DocumentEntity, DocumentVersion, PreviewState, ExportabilityContext } from '../domain/documents';
-import { generateEntityId, createMetadata, type EntityId } from '../domain/curriculum/identity';
+import { generateEntityId, type EntityId } from '../domain/curriculum/identity';
 
 function makeValidArchive(): { archive: DocumentArchive; doc: DocumentEntity; version: DocumentVersion } {
   const archive = createEmptyDocumentArchive();

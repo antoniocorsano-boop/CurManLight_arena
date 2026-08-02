@@ -3,7 +3,7 @@ import { renderHook, act } from '@testing-library/react';
 import { createJSONStorage } from 'zustand/middleware';
 import { useCurriculumStore } from '../store/useCurriculumStore';
 import { createEmptyDocumentArchive } from '../domain/documents';
-import { createEmptyInstitutionalArchive } from '../domain/institution';
+import { createEmptyInstitutionalArchive, createInstituteDraft, createAcademicYear, createInstituteSite, createInstitutionalContext, addInstitute, confirmInstitute, setActiveInstitute, addAcademicYear, setActiveAcademicYear, addInstituteSite, setInstitutionalContext } from '../domain/institution';
 import { createEmptyRevisionArchive } from '../domain/revision';
 import { useDocumentProduction } from '../features/documents/hooks/useDocumentProduction';
 import { executeA04ToA07DocumentTransfer } from '../domain/documents/contracts';
@@ -39,6 +39,27 @@ class MemoryStorage {
   getItem = (name: string): string | null => this.values.get(name) ?? null;
   setItem = (name: string, value: string): void => { this.values.set(name, value); };
   removeItem = (name: string): void => { this.values.delete(name); };
+}
+
+function createTestInstitutionalArchive() {
+  const NOW = '2026-08-01T00:00:00.000Z';
+  const institute = createInstituteDraft({ name: 'Istituto Test', schoolOrders: ['secondaria'] }, NOW);
+  let archive = addInstitute(createEmptyInstitutionalArchive(NOW), institute).archive!;
+  archive = confirmInstitute(archive, institute.id, NOW).archive!;
+  archive = setActiveInstitute(archive, institute.id, NOW).archive!;
+  const year = createAcademicYear({ instituteRef: { id: institute.id, entityType: 'institute' }, label: '2026/2027', startsOn: '2026-09-01', endsOn: '2027-08-31', status: 'planned' }, NOW);
+  archive = addAcademicYear(archive, year).archive!;
+  archive = setActiveAcademicYear(archive, institute.id, year.id, NOW).archive!;
+  const site = createInstituteSite({ instituteRef: { id: institute.id, entityType: 'institute' }, name: 'Sede principale', isMain: true }, NOW);
+  archive = addInstituteSite(archive, site).archive!;
+  const context = createInstitutionalContext({
+    instituteRef: { id: institute.id, entityType: 'institute' },
+    academicYearRef: { id: year.id, entityType: 'academic-year' },
+    siteRef: { id: site.id, entityType: 'institute-site' },
+    declaredActor: { displayName: 'Marco Rossi', role: 'docente', assertion: 'self-declared' },
+  }, NOW);
+  archive = setInstitutionalContext(archive, context).archive!;
+  return archive;
 }
 
 function resetStore() {
@@ -163,10 +184,20 @@ describe('CML-636B — Rehydration and currentVersionRef resolution', () => {
 });
 
 describe('CML-636B — Validation and preview from persisted data', () => {
-  it('renders preview from persisted DocumentVersion (not synthetic)', async () => {
-    const storage = new MemoryStorage();
-    await resetPersistence(storage);
+  let storage: MemoryStorage;
 
+  beforeEach(async () => {
+    storage = new MemoryStorage();
+    await resetPersistence(storage);
+    useCurriculumStore.setState({
+      savedUda: [udaTest],
+      documentArchive: createEmptyDocumentArchive(),
+      institutionalArchive: createTestInstitutionalArchive(),
+      revisionArchive: createEmptyRevisionArchive(),
+    });
+  });
+
+  it('renders preview from persisted DocumentVersion (not synthetic)', async () => {
     createFromUda('uda-integrazione-1');
     await waitForPersistedArchive(storage, 1);
 

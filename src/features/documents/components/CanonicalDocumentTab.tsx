@@ -173,7 +173,6 @@ export function CanonicalDocumentTab({ selectedDocumentId, onSelectionChange }: 
 
   function handleVersionChange(versionId: string) {
     setSelectedVersionId(versionId);
-    setPreviewState(null);
   }
 
   function handleSelect(doc: DocumentEntity) {
@@ -404,7 +403,7 @@ export function CanonicalDocumentTab({ selectedDocumentId, onSelectionChange }: 
 
       {docs.length === 0 ? (
         <div className="text-ui-text-secondary text-sm py-8 text-center">
-          Non sono ancora presenti documenti creati dalle progettazioni.
+          Nessun documento canonico ancora presente.
         </div>
       ) : (
         <div className="space-y-2">
