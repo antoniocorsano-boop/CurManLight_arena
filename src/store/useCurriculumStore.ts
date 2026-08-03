@@ -9,6 +9,9 @@ import {
   createEmptyInstitutionalArchive,
   validateArchiveIntegrity,
   type InstitutionalArchive,
+  deserializeWorkspaceIdentity,
+  serializeWorkspaceIdentity,
+  type WorkspaceIdentity,
 } from '../domain/institution';
 import {
   createEmptyDocumentArchive,
@@ -93,12 +96,28 @@ const indexedDBStorage = {
 };
 
 type CurriculumStoreState = UserState & {
+  workspaceIdentity?: WorkspaceIdentity;
   institutionalArchive: InstitutionalArchive;
   documentArchive: DocumentArchive;
   revisionArchive: RevisionArchive;
   designArchive: DesignArchive;
   guidedWorkflowState: GuidedTeacherWorkflowState | undefined;
 };
+
+export function serializePersistedWorkspaceIdentity(identity: WorkspaceIdentity | undefined): string | undefined {
+  return identity ? serializeWorkspaceIdentity(identity) : undefined;
+}
+
+export function deserializePersistedWorkspaceIdentity(value: unknown): WorkspaceIdentity | undefined {
+  if (typeof value !== 'string') return undefined;
+  const result = deserializeWorkspaceIdentity(value);
+  return result.success ? result.data : undefined;
+}
+
+export function hydratePersistedWorkspaceIdentity(value: unknown): WorkspaceIdentity | undefined {
+  if (!isRecord(value)) return undefined;
+  return deserializePersistedWorkspaceIdentity(value.workspaceIdentitySerialized);
+}
 
 export type RestoreBackupResult =
   | { success: true }
@@ -157,6 +176,8 @@ interface StoreActions extends CurriculumStoreState {
   setActiveGeneralSubtab: (subtab: UserState['activeGeneralSubtab']) => void;
   resetAll: () => void;
   restoreBackupState: (newState: unknown) => RestoreBackupResult;
+  setWorkspaceIdentity: (identity: WorkspaceIdentity) => void;
+  resetWorkspaceIdentity: () => void;
   replaceInstitutionalArchive: (archive: InstitutionalArchive) => void;
   replaceDocumentArchive: (archive: DocumentArchive) => void;
   replaceRevisionArchive: (archive: RevisionArchive) => void;
@@ -188,6 +209,7 @@ export const useCurriculumStore = create<StoreActions>()(
       activeProcessoTab: 'flusso',
       activeGeneralSubtab: 'premessa',
       documentExportHistory: [],
+      workspaceIdentity: undefined,
       institutionalArchive: createEmptyInstitutionalArchive(),
       documentArchive: createEmptyDocumentArchive(),
       revisionArchive: createEmptyRevisionStore(),
@@ -220,6 +242,12 @@ export const useCurriculumStore = create<StoreActions>()(
         };
       }),
       setSchoolYear: (schoolYear) => set({ schoolYear }),
+      setWorkspaceIdentity: (identity) => {
+        const serialized = serializePersistedWorkspaceIdentity(identity);
+        const restored = deserializePersistedWorkspaceIdentity(serialized);
+        if (restored) set({ workspaceIdentity: restored });
+      },
+      resetWorkspaceIdentity: () => set({ workspaceIdentity: undefined }),
       setDecision: (id, status) =>
         set((state) => ({ decisions: { ...state.decisions, [id]: status } })),
       setCustomText: (id, text) =>
@@ -315,8 +343,13 @@ export const useCurriculumStore = create<StoreActions>()(
     {
       name: 'curmanlight-react-db-state-v1.4.0',
       storage: createJSONStorage(() => indexedDBStorage),
+      partialize: (state) => {
+        const { workspaceIdentity, ...stateWithoutWorkspaceIdentity } = state;
+        return { ...stateWithoutWorkspaceIdentity, workspaceIdentitySerialized: serializePersistedWorkspaceIdentity(workspaceIdentity) };
+      },
       merge: (persistedState, currentState) => {
         const persisted = isRecord(persistedState) ? persistedState : {};
+        const workspaceIdentity = hydratePersistedWorkspaceIdentity(persisted);
         const institutionalArchive = validateArchiveIntegrity(persisted.institutionalArchive).valid
           ? cloneInstitutionalValue(persisted.institutionalArchive as InstitutionalArchive)
           : createEmptyInstitutionalArchive();
@@ -333,7 +366,7 @@ export const useCurriculumStore = create<StoreActions>()(
           ? cloneDesignArchive(persisted.designArchive as DesignArchive)
           : createEmptyDesignStore();
         const guidedWorkflowState = (persisted.guidedWorkflowState ?? undefined) as GuidedTeacherWorkflowState | undefined;
-        return { ...currentState, ...sanitizeUserState(persisted), institutionalArchive, documentArchive, revisionArchive, designArchive, guidedWorkflowState };
+        return { ...currentState, ...sanitizeUserState(persisted), workspaceIdentity, institutionalArchive, documentArchive, revisionArchive, designArchive, guidedWorkflowState };
       }
     }
   )
