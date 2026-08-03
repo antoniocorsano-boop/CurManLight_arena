@@ -12,14 +12,16 @@ import {
 import { getLatestProposalVersion, findDecisionsByProposal, getEventsByProposal } from '../../../domain/revision';
 import type { RevisionProposal } from '../../../domain/revision';
 import { transitionProposalStatus } from '../../../domain/revision/repository';
-import { addProposal } from '../../../domain/revision/repository';
 import { createEntityReference } from '../../../domain/curriculum/identity';
 import type { EntityId } from '../../../domain/curriculum/identity/types';
+import { useWorkspaceCapabilities } from '../../session/hooks/useWorkspaceCapabilities';
+import { addRevisionProposalVersion, createRevisionProposal } from '../../../domain/revision/commands';
 
 // ─── Canonical Proposal Actions (no double-write) ────────────────────────
 
 function useCanonicalRevisionActions() {
   const { revisionArchive, replaceRevisionArchive } = useCurriculumStore();
+  const { resolution, can } = useWorkspaceCapabilities();
 
   const transitionProposal = (proposalId: string, newStatus: RevisionProposal['status'], rationale?: string) => {
     const prev = revisionArchive;
@@ -30,29 +32,56 @@ function useCanonicalRevisionActions() {
     return result;
   };
 
-  const createDraft = (targetLabel: string, currentText: string) => {
-    const result = addProposal(revisionArchive, {
-      targetNodeRef: createEntityReference(`node-${Date.now()}` as never, 'curriculum-node' as never, targetLabel),
+  const createDraft = (targetLabel: string, currentText: string, proposedText: string, rationale: string) => {
+    const result = createRevisionProposal(resolution, revisionArchive, {
+      targetNodeRef: createEntityReference(('node-' + Date.now()) as never, 'curriculum-node' as never, targetLabel),
       curriculumVersionRef: createEntityReference('cv-current' as never, 'curriculum-version' as never),
       currentTextSnapshot: currentText,
-      proposedText: currentText,
-      rationale: '',
+      proposedText,
+      rationale,
     });
-    if (result.success) {
-      replaceRevisionArchive(result.archive);
+    if (result.ok) {
+      replaceRevisionArchive(result.value.archive);
     }
     return result;
   };
 
-  return { transitionProposal, createDraft };
+  const addVersion = (proposalId: string, currentTextSnapshot: string, proposedText: string, changeNote: string) => {
+    const result = addRevisionProposalVersion(resolution, revisionArchive, proposalId as EntityId, {
+      currentTextSnapshot,
+      proposedText,
+      changeNote,
+    });
+    if (result.ok) {
+      replaceRevisionArchive(result.value.archive);
+    }
+    return result;
+  };
+
+  return { transitionProposal, createDraft, addVersion, canCreate: can('proposal.create') };
 }
 
 // ─── Canonical Proposals Section ─────────────────────────────────────────
 
 function CanonicalProposalsSection() {
   const { revisionArchive } = useCurriculumStore();
-  const { transitionProposal } = useCanonicalRevisionActions();
+  const { transitionProposal, createDraft, addVersion, canCreate } = useCanonicalRevisionActions();
   const proposals = revisionArchive.proposals.filter(p => p.status !== 'legacy');
+  const { resolution } = useWorkspaceCapabilities();
+  const capabilityMessage = resolution.status === 'neutral'
+    ? 'Seleziona un ruolo operativo per creare o versionare una proposta.'
+    : resolution.status === 'unknown'
+      ? 'Il ruolo attivo non è riconosciuto; la creazione e il versionamento sono disabilitati.'
+      : 'Il ruolo attivo non dispone della capacità per creare o versionare proposte locali.';
+
+  const [draftLabel, setDraftLabel] = React.useState('');
+  const [draftCurrentText, setDraftCurrentText] = React.useState('');
+  const [draftProposedText, setDraftProposedText] = React.useState('');
+  const [draftRationale, setDraftRationale] = React.useState('');
+  const [feedback, setFeedback] = React.useState<string | undefined>();
+  const [versionTarget, setVersionTarget] = React.useState<string | undefined>();
+  const [versionProposedText, setVersionProposedText] = React.useState('');
+  const [versionChangeNote, setVersionChangeNote] = React.useState('');
 
   if (proposals.length === 0) {
     return (
@@ -67,6 +96,25 @@ function CanonicalProposalsSection() {
           title="Nessuna proposta canonica"
           description="Le proposte di revisione create con il nuovo modello appariranno qui. Le valutazioni personali precedenti sono nella sezione sottostante."
         />
+        <form onSubmit={event => {
+          event.preventDefault();
+          const result = createDraft(draftLabel, draftCurrentText, draftProposedText, draftRationale);
+          if (result.ok) {
+            setDraftLabel(''); setDraftCurrentText(''); setDraftProposedText(''); setDraftRationale('');
+            setFeedback('Bozza locale salvata.');
+          } else {
+            setFeedback(result.reason === 'CAPABILITY_NOT_GRANTED' ? capabilityMessage : 'La bozza non può essere salvata.');
+          }
+        }} className='rounded-xl border border-indigo-100 bg-indigo-50/40 p-4 space-y-2' aria-labelledby='create-proposal-heading'>
+          <h3 id='create-proposal-heading' className='text-xs font-extrabold text-indigo-950'>Crea una bozza locale</h3>
+          <input value={draftLabel} onChange={event => setDraftLabel(event.target.value)} placeholder='Nodo o ambito' aria-label='Nodo o ambito' required disabled={!canCreate} className='w-full rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-xs' />
+          <textarea value={draftCurrentText} onChange={event => setDraftCurrentText(event.target.value)} placeholder='Testo vigente' aria-label='Testo vigente' required disabled={!canCreate} className='w-full rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-xs' />
+          <textarea value={draftProposedText} onChange={event => setDraftProposedText(event.target.value)} placeholder='Testo proposto' aria-label='Testo proposto' required disabled={!canCreate} className='w-full rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-xs' />
+          <textarea value={draftRationale} onChange={event => setDraftRationale(event.target.value)} placeholder='Motivazione locale' aria-label='Motivazione locale' disabled={!canCreate} className='w-full rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-xs' />
+          <p id='proposal-create-help' className='text-[10px] text-slate-500'>{canCreate ? 'La proposta resta una bozza locale e non avvia la revisione.' : capabilityMessage}</p>
+          <button type='submit' disabled={!canCreate} aria-describedby='proposal-create-help' className='px-3 py-1.5 rounded-lg bg-indigo-600 text-white text-xs font-bold disabled:cursor-not-allowed disabled:bg-slate-300'>Crea bozza locale</button>
+          {feedback && <p role='status' className='text-[10px] text-indigo-700'>{feedback}</p>}
+        </form>
       </div>
     );
   }
@@ -78,6 +126,25 @@ function CanonicalProposalsSection() {
         <span>Proposte strutturate</span>
         <span className="text-[10px] font-normal text-slate-500">— Registro locale, non protocollo ufficiale</span>
       </h2>
+      <form onSubmit={event => {
+        event.preventDefault();
+        const result = createDraft(draftLabel, draftCurrentText, draftProposedText, draftRationale);
+        if (result.ok) {
+          setDraftLabel(''); setDraftCurrentText(''); setDraftProposedText(''); setDraftRationale('');
+          setFeedback('Bozza locale salvata.');
+        } else {
+          setFeedback(result.reason === 'CAPABILITY_NOT_GRANTED' ? capabilityMessage : 'La bozza non può essere salvata.');
+        }
+      }} className='rounded-xl border border-indigo-100 bg-indigo-50/40 p-3 space-y-2' aria-labelledby='create-another-proposal-heading'>
+        <h3 id='create-another-proposal-heading' className='text-xs font-extrabold text-indigo-950'>Crea un'altra bozza locale</h3>
+        <div className='grid grid-cols-1 md:grid-cols-3 gap-2'>
+          <input value={draftLabel} onChange={event => setDraftLabel(event.target.value)} placeholder='Nodo o ambito' aria-label='Nodo o ambito' required disabled={!canCreate} className='rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-xs' />
+          <input value={draftCurrentText} onChange={event => setDraftCurrentText(event.target.value)} placeholder='Testo vigente' aria-label='Testo vigente' required disabled={!canCreate} className='rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-xs' />
+          <input value={draftProposedText} onChange={event => setDraftProposedText(event.target.value)} placeholder='Testo proposto' aria-label='Testo proposto' required disabled={!canCreate} className='rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-xs' />
+        </div>
+        <p className='text-[10px] text-slate-500'>{canCreate ? 'La proposta resta una bozza locale e non avvia la revisione.' : capabilityMessage}</p>
+        <button type='submit' disabled={!canCreate} className='px-3 py-1.5 rounded-lg bg-indigo-600 text-white text-xs font-bold disabled:cursor-not-allowed disabled:bg-slate-300'>Crea bozza locale</button>
+      </form>
 
       {proposals.map(proposal => {
         const version = getLatestProposalVersion(revisionArchive, proposal);
@@ -152,6 +219,22 @@ function CanonicalProposalsSection() {
               </details>
             )}
 
+            {(proposal.status === 'draft' || proposal.status === 'changes-requested') && (
+              <>
+                <button type='button' disabled={!canCreate} aria-describedby={'proposal-version-help-' + proposal.id} onClick={() => { setVersionTarget(proposal.id); setVersionProposedText(version?.proposedText ?? proposal.proposedText); setVersionChangeNote(''); }} className='px-2.5 py-1 bg-white border border-indigo-200 hover:bg-indigo-50 text-indigo-700 font-bold rounded text-xs transition disabled:cursor-not-allowed disabled:opacity-50'>Nuova versione locale</button>
+                {!canCreate && <span id={'proposal-version-help-' + proposal.id} className='sr-only'>{capabilityMessage}</span>}
+                {versionTarget === proposal.id && <form onSubmit={event => {
+                  event.preventDefault();
+                  const result = addVersion(proposal.id, proposal.currentTextSnapshot, versionProposedText, versionChangeNote);
+                  if (result.ok) { setVersionTarget(undefined); setVersionProposedText(''); setVersionChangeNote(''); setFeedback('Nuova versione locale salvata.'); }
+                  else setFeedback(result.reason === 'CAPABILITY_NOT_GRANTED' ? capabilityMessage : 'La proposta non è modificabile nello stato corrente.');
+                }} className='basis-full grid grid-cols-1 md:grid-cols-3 gap-2 pt-2' aria-label='Crea nuova versione locale'>
+                  <textarea value={versionProposedText} onChange={event => setVersionProposedText(event.target.value)} aria-label='Testo proposto della nuova versione' required className='rounded-lg border border-slate-200 px-2 py-1.5 text-xs' />
+                  <input value={versionChangeNote} onChange={event => setVersionChangeNote(event.target.value)} aria-label='Nota della modifica' placeholder='Nota modifica' className='rounded-lg border border-slate-200 px-2 py-1.5 text-xs' />
+                  <span className='flex gap-1'><button type='submit' className='px-2.5 py-1.5 rounded-lg bg-indigo-600 text-white text-xs font-bold'>Salva</button><button type='button' onClick={() => setVersionTarget(undefined)} className='px-2.5 py-1.5 rounded-lg border border-slate-200 text-xs font-bold'>Annulla</button></span>
+                </form>}
+              </>
+            )}
             {/* State-aware actions */}
             <div className="bg-slate-50 border-t border-slate-100 px-4 py-2 flex flex-wrap gap-1.5">
               {proposal.status === 'draft' && (

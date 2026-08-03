@@ -27,6 +27,7 @@ export function addProposal(
 ): RevisionProposalCreationResult {
   const proposal = createProposal(proposalInput, now);
   const version = createInitialProposalVersion(proposal, proposalInput, now);
+  proposal.currentVersionRef = version.id;
 
   const pv = validateProposal(proposal);
   if (!pv.valid) return { success: false, errors: pv.errors };
