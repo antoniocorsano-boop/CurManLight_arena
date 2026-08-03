@@ -48,6 +48,9 @@ export function AppModalsLayer(props: AppModalsLayerProps) {
     agentIntervalRefs,
     showToast,
     institutionalProfile,
+    teacherProfile,
+    saveTeacherProfile,
+    resetTeacherProfile,
     showMicPermissionGuide,
     setShowMicPermissionGuide,
     gemFieldActive,
@@ -71,6 +74,8 @@ export function AppModalsLayer(props: AppModalsLayerProps) {
     setOnboardingRoleLocal,
     onboardingStep,
     setOnboardingStep,
+    onboardingAssignedClasses,
+    setOnboardingAssignedClasses,
     onboardingOrd,
     handleSetOnboardingOrdLocal,
     onboardingIsSostegno,
@@ -217,6 +222,8 @@ export function AppModalsLayer(props: AppModalsLayerProps) {
     setOnboardingRoleLocal={setOnboardingRoleLocal}
     onboardingStep={onboardingStep}
     setOnboardingStep={setOnboardingStep}
+    onboardingAssignedClasses={onboardingAssignedClasses}
+    setOnboardingAssignedClasses={setOnboardingAssignedClasses}
     onboardingOrd={onboardingOrd}
     handleSetOnboardingOrdLocal={handleSetOnboardingOrdLocal}
     onboardingIsSostegno={onboardingIsSostegno}
@@ -296,6 +303,11 @@ export function AppModalsLayer(props: AppModalsLayerProps) {
     handleRestoreFromLocalEmergencyStorage={handleRestoreFromLocalEmergencyStorage}
     setShowMottoModal={setShowMottoModal}
     triggerPwaInstall={triggerPwaInstall}
+    teacherProfile={teacherProfile}
+    saveTeacherProfile={saveTeacherProfile}
+    resetTeacherProfile={resetTeacherProfile}
+    localCurriculum={localCurriculum}
+    getDisciplineLabel={getDisciplineLabel}
    />
    {/* MODAL: GUIDED TOUR & TEST RESULTS */}
    <TourModal

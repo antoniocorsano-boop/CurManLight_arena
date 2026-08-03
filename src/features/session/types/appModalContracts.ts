@@ -37,6 +37,9 @@ export interface AppModalsLayerProps {
   agentIntervalRefs: MutableRefObject<number[]>;
   showToast: ToastHandler;
   institutionalProfile: A07InstitutionalDocumentRead;
+  teacherProfile: import('../hooks/useOnboardingProfile').TeacherProfileDraft;
+  saveTeacherProfile: (profile: import('../hooks/useOnboardingProfile').TeacherProfileDraft) => void;
+  resetTeacherProfile: () => void;
   showMicPermissionGuide: boolean;
   setShowMicPermissionGuide: (value: boolean) => void;
   gemFieldActive: string | null;
@@ -59,6 +62,8 @@ export interface AppModalsLayerProps {
   onboardingRole: UserRole;
   setOnboardingRoleLocal: (value: UserRole) => void;
   onboardingStep: number;
+  onboardingAssignedClasses: string[];
+  setOnboardingAssignedClasses: (value: string[]) => void;
   setOnboardingStep: Dispatch<SetStateAction<number>>;
   onboardingOrd: SchoolOrder;
   handleSetOnboardingOrdLocal: (order: SchoolOrder) => void;

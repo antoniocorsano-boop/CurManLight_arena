@@ -282,6 +282,11 @@ function SaveSettingsModalHarness() {
         handleRestoreFromLocalEmergencyStorage={noop}
         setShowMottoModal={noop}
         triggerPwaInstall={noop}
+        teacherProfile={{ teacherType: 'comune', isSostegno: false, order: 'secondaria', discipline: 'italiano', assignedClasses: [], availableSections: [], assignedCombinations: [] }}
+        saveTeacherProfile={noop}
+        resetTeacherProfile={noop}
+        localCurriculum={a04Curriculum}
+        getDisciplineLabel={(discipline) => discipline}
       />
     </>
   );

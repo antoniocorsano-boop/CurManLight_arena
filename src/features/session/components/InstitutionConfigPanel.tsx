@@ -19,6 +19,10 @@ import {
   updateInstitute,
   updateInstituteSite,
   type ArchiveOperationResult,
+  createWorkspaceIdentity,
+  WORKSPACE_OPERATING_MODES,
+  type DeclaredRole,
+  type WorkspaceOperatingMode,
 } from '../../../domain/institution';
 import type { InstitutionalRole } from '../../../domain/curriculum/types';
 import { useCurriculumStore } from '../../../store/useCurriculumStore';
@@ -53,6 +57,9 @@ interface InstitutionConfigPanelProps {
 
 export function InstitutionConfigPanel({ onExportBackup, onExportError }: InstitutionConfigPanelProps) {
   const archive = useCurriculumStore(state => state.institutionalArchive);
+  const workspaceIdentity = useCurriculumStore(state => state.workspaceIdentity);
+  const setWorkspaceIdentity = useCurriculumStore(state => state.setWorkspaceIdentity);
+  const resetWorkspaceIdentity = useCurriculumStore(state => state.resetWorkspaceIdentity);
   const replaceInstitutionalArchive = useCurriculumStore(state => state.replaceInstitutionalArchive);
   const activeInstitute = archive.institutes.find(item => item.id === archive.activeInstituteRef?.id);
   const institute = activeInstitute ?? archive.institutes.find(item => !['archived', 'legacy-imported'].includes(item.status));
@@ -78,6 +85,13 @@ export function InstitutionConfigPanel({ onExportBackup, onExportError }: Instit
   const [showArchiveConfirm, setShowArchiveConfirm] = useState(false);
   const [selectedYearId, setSelectedYearId] = useState('');
   const [institutionDirty, setInstitutionDirty] = useState(false);
+  const [workspaceInstituteId, setWorkspaceInstituteId] = useState('');
+  const [workspaceYearId, setWorkspaceYearId] = useState('');
+  const [workspaceSiteId, setWorkspaceSiteId] = useState('');
+  const [workspaceMode, setWorkspaceMode] = useState<WorkspaceOperatingMode>('personal-local');
+  const [workspaceActorName, setWorkspaceActorName] = useState('');
+  const [workspaceRole, setWorkspaceRole] = useState<DeclaredRole | ''>('');
+  const [workspaceMessage, setWorkspaceMessage] = useState('');
   const year = instituteYears.find(item => item.id === selectedYearId)
     ?? instituteYears.find(item => item.id === institute?.activeAcademicYearRef?.id)
     ?? instituteYears[0];
@@ -87,6 +101,25 @@ export function InstitutionConfigPanel({ onExportBackup, onExportError }: Instit
   const yearLabelRef = useRef<HTMLInputElement>(null);
   const actorNameRef = useRef<HTMLInputElement>(null);
   const actorRoleRef = useRef<HTMLSelectElement>(null);
+  const workspaceInstitute = archive.institutes.find(item => item.id === workspaceInstituteId);
+  const workspaceYears = archive.academicYears.filter(item => item.instituteRef.id === workspaceInstituteId && item.status !== 'archived');
+  const workspaceSites = archive.sites.filter(item => item.instituteRef.id === workspaceInstituteId && item.status !== 'archived');
+  const workspaceYear = workspaceYears.find(item => item.id === workspaceYearId);
+
+  useEffect(() => {
+    setWorkspaceInstituteId(workspaceIdentity?.institutionRef.id ?? archive.activeInstituteRef?.id ?? institute?.id ?? '');
+    setWorkspaceYearId(workspaceIdentity?.academicYearRef.id ?? institute?.activeAcademicYearRef?.id ?? instituteYears.find(item => item.status === 'active')?.id ?? instituteYears[0]?.id ?? '');
+    setWorkspaceSiteId(workspaceIdentity?.activeSiteRef?.id ?? site?.id ?? '');
+    setWorkspaceMode(workspaceIdentity?.operatingMode ?? 'personal-local');
+    setWorkspaceActorName(workspaceIdentity?.declaredActor?.displayName ?? '');
+    setWorkspaceRole(workspaceIdentity?.declaredRole ?? '');
+    setWorkspaceMessage('');
+  }, [workspaceIdentity?.metadata.updatedAt, archive.activeInstituteRef?.id, institute?.id, institute?.activeAcademicYearRef?.id, site?.id, instituteYears.map(item => item.id).join('|')]);
+
+  useEffect(() => {
+    if (!workspaceYears.some(item => item.id === workspaceYearId)) setWorkspaceYearId(workspaceYears.find(item => item.status === 'active')?.id ?? workspaceYears[0]?.id ?? '');
+    if (!workspaceSites.some(item => item.id === workspaceSiteId)) setWorkspaceSiteId(workspaceSites[0]?.id ?? '');
+  }, [workspaceInstituteId, workspaceYears.map(item => item.id).join('|'), workspaceSites.map(item => item.id).join('|'), workspaceYearId, workspaceSiteId]);
 
   useEffect(() => {
     setName(institute?.name ?? '');
@@ -299,6 +332,27 @@ export function InstitutionConfigPanel({ onExportBackup, onExportError }: Instit
         ? 'Stato: confermato localmente, contesto non attivo'
         : 'Stato: bozza';
 
+  const saveWorkspaceConfiguration = () => {
+    if (!workspaceInstitute || !workspaceYear) { setWorkspaceMessage('Seleziona istituto e anno prima di salvare.'); return; }
+    if ((workspaceActorName.trim() && !workspaceRole) || (!workspaceActorName.trim() && workspaceRole)) { setWorkspaceMessage('Completa nome e ruolo oppure lascia entrambi vuoti.'); return; }
+    const declaredActor = workspaceActorName.trim() && workspaceRole ? { displayName: workspaceActorName.trim(), role: workspaceRole, assertion: 'self-declared' as const } : undefined;
+    try {
+      setWorkspaceIdentity(createWorkspaceIdentity({
+        institutionRef: instituteReference(workspaceInstitute),
+        academicYearRef: { id: workspaceYear.id, entityType: 'academic-year', snapshotLabel: workspaceYear.label },
+        ...(workspaceSites.find(item => item.id === workspaceSiteId) ? { activeSiteRef: { id: workspaceSites.find(item => item.id === workspaceSiteId)!.id, entityType: 'institute-site' as const, snapshotLabel: workspaceSites.find(item => item.id === workspaceSiteId)!.name } } : {}),
+        ...(declaredActor ? { declaredActor } : {}),
+        ...(workspaceRole ? { declaredRole: workspaceRole } : {}),
+        operatingMode: workspaceMode,
+      }));
+      setWorkspaceMessage('Identità ambiente salvata.');
+    } catch { setWorkspaceMessage('Impossibile validare identità ambiente.'); }
+  };
+
+  const clearWorkspaceConfiguration = () => {
+    resetWorkspaceIdentity();
+    setWorkspaceMessage('Identità ambiente ripristinata allo stato neutro.');
+  };
   return (
     <section aria-labelledby="institution-config-title" className="space-y-4 rounded-xl border border-slate-200 bg-white p-4">
       <div className="space-y-1">
@@ -308,6 +362,23 @@ export function InstitutionConfigPanel({ onExportBackup, onExportError }: Instit
         {institute && <p className="text-xs text-slate-600">Ordini configurati: {institute.schoolOrders.join(', ') || 'nessuno'}</p>}
       </div>
 
+      <section aria-labelledby="workspace-identity-title" className="space-y-3 rounded-lg border border-indigo-200 bg-indigo-50/40 p-3">
+        <div>
+          <h3 id="workspace-identity-title" className="text-sm font-black text-slate-900">Identità dell’ambiente di lavoro</h3>
+          <p className="text-xs text-slate-600">Contesto locale del docente: istituto, sede, anno, modalità e ruolo dichiarato. Il salvataggio è separato dal profilo personale.</p>
+          <p role="status" className="text-xs font-bold text-indigo-800">Stato: {workspaceIdentity ? 'configurato localmente' : 'neutro'}</p>
+        </div>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <label className="space-y-1 text-xs font-bold text-slate-700"><span>Istituto</span><select value={workspaceInstituteId} onChange={event => setWorkspaceInstituteId(event.target.value)} className={fieldClass}><option value="">Seleziona istituto</option>{archive.institutes.filter(item => item.status !== 'archived').map(item => <option key={item.id} value={item.id}>{item.name || 'Istituto senza nome'}</option>)}</select></label>
+          <label className="space-y-1 text-xs font-bold text-slate-700"><span>Anno scolastico</span><select value={workspaceYearId} onChange={event => setWorkspaceYearId(event.target.value)} className={fieldClass}><option value="">Seleziona anno</option>{workspaceYears.map(item => <option key={item.id} value={item.id}>{item.label}</option>)}</select></label>
+          <label className="space-y-1 text-xs font-bold text-slate-700"><span>Sede attiva (facoltativa)</span><select value={workspaceSiteId} onChange={event => setWorkspaceSiteId(event.target.value)} className={fieldClass}><option value="">Nessuna sede specifica</option>{workspaceSites.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}</select></label>
+          <label className="space-y-1 text-xs font-bold text-slate-700"><span>Modalità operativa</span><select value={workspaceMode} onChange={event => setWorkspaceMode(event.target.value as WorkspaceOperatingMode)} className={fieldClass}>{WORKSPACE_OPERATING_MODES.map(mode => <option key={mode} value={mode}>{mode === 'personal-local' ? 'Personale locale' : mode === 'institutional-local' ? 'Istituzionale locale' : 'Consultazione pubblica'}</option>)}</select></label>
+          <label className="space-y-1 text-xs font-bold text-slate-700"><span>Nome dichiarato (facoltativo)</span><input value={workspaceActorName} onChange={event => setWorkspaceActorName(event.target.value)} className={fieldClass} placeholder="Nome del docente" /></label>
+          <label className="space-y-1 text-xs font-bold text-slate-700"><span>Ruolo dichiarato (facoltativo)</span><select value={workspaceRole} onChange={event => setWorkspaceRole(event.target.value as DeclaredRole | '')} className={fieldClass}><option value="">Nessun ruolo dichiarato</option>{DECLARED_INSTITUTIONAL_ROLES.map(role => <option key={role} value={role}>{ROLE_LABELS[role]}</option>)}</select></label>
+        </div>
+        {workspaceMessage && <p role="status" className="text-xs font-bold text-indigo-800">{workspaceMessage}</p>}
+        <div className="flex flex-wrap gap-2"><button type="button" onClick={saveWorkspaceConfiguration} className={`${buttonClass} border-indigo-700 bg-indigo-700 text-white hover:bg-indigo-600`}>Salva identità ambiente</button><button type="button" onClick={clearWorkspaceConfiguration} disabled={!workspaceIdentity} className={`${buttonClass} border-slate-400 text-slate-800 hover:bg-white`}>Ripristina identità</button></div>
+      </section>
       <form onSubmit={saveDraft} noValidate className="space-y-4">
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div className="space-y-1 text-xs font-bold text-slate-700">

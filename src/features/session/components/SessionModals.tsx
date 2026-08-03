@@ -1,9 +1,12 @@
 import { X, Award, Sliders, Save, DownloadCloud, RotateCcw, Smartphone, UserCog, Check, ChevronLeft, ChevronRight, FileText, Printer, Copy } from 'lucide-react';
+import { safeLocalStorageSetItem } from '../../../lib/consolidatedStorage';
 import { useEffect, useRef, useState } from 'react';
 import { UiConfirmDialog } from '../../../ui/components/UiConfirmDialog';
 import type { SchoolOrder, UserRole } from '../../../types/curriculum';
 import type { CurriculumMap } from '../types/appViewContracts';
 import { InstitutionConfigPanel } from './InstitutionConfigPanel';
+import { TeacherProfileConfigPanel } from './TeacherProfileConfigPanel';
+import type { TeacherProfileDraft } from '../hooks/useOnboardingProfile';
 import { projectA07InstitutionalDocumentHeader, type A07InstitutionalDocumentRead } from '../../../domain/institution';
 
 interface MottoModalProps {
@@ -40,6 +43,8 @@ interface OnboardingModalProps {
   setOnboardingRoleLocal: (v: UserRole) => void;
   onboardingStep: number;
   setOnboardingStep: React.Dispatch<React.SetStateAction<number>>;
+  onboardingAssignedClasses: string[];
+  setOnboardingAssignedClasses: (value: string[]) => void;
   onboardingOrd: SchoolOrder;
   handleSetOnboardingOrdLocal: (ord: SchoolOrder) => void;
   onboardingIsSostegno: boolean;
@@ -69,6 +74,8 @@ export function OnboardingModal({
   setOnboardingRoleLocal,
   onboardingStep,
   setOnboardingStep,
+  onboardingAssignedClasses,
+  setOnboardingAssignedClasses,
   onboardingOrd,
   handleSetOnboardingOrdLocal,
   onboardingIsSostegno,
@@ -84,7 +91,6 @@ export function OnboardingModal({
   newSectionInput,
   setNewSectionInput,
   handleAddSectionLocal,
-  safeLocalStorageSetItem,
   showToast,
   saveOnboardingProfile,
   getRoleLabel,
@@ -206,6 +212,18 @@ export function OnboardingModal({
 
        {onboardingStep === 4 && (
         <div className="fade-in space-y-3">
+         <label className="block p-3 bg-white border border-slate-200 rounded-2xl text-left space-y-1.5">
+          <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider">Classi assegnate personali</span>
+          <span className="text-[9px] text-slate-500 font-normal block">Indica le classi che ritrovi più spesso nel tuo lavoro.</span>
+          <input
+           aria-label="Classi assegnate personali"
+           type="text"
+           value={onboardingAssignedClasses.join(', ')}
+           onChange={(e) => setOnboardingAssignedClasses([...new Set(e.target.value.split(',').map(value => value.trim()).filter(Boolean))])}
+           className="w-full border border-slate-200 rounded-xl p-2 text-xs font-bold outline-none focus:ring-1 focus:ring-indigo-500"
+           placeholder="Es. 1A, 2B, 3C"
+          />
+         </label>
          
          <div className="p-3 bg-indigo-50/50 border border-indigo-150 rounded-2xl space-y-2 text-xs">
            <label className="text-[10px] font-black text-indigo-950 uppercase tracking-wider block">Sezioni del contesto di lavoro personale</label>
@@ -241,7 +259,6 @@ export function OnboardingModal({
                  const updated = [...availableSections];
                  updated[idx] = newSec;
                  setAvailableSections(updated);
-                 safeLocalStorageSetItem('curman_availableSections', updated.join(','));
                 }
                }}
                className="w-12 border-none bg-transparent outline-none p-0 text-indigo-900 font-extrabold text-center uppercase focus:ring-0"
@@ -252,7 +269,6 @@ export function OnboardingModal({
                 onClick={() => {
                  const updated = availableSections.filter((_, sIdx) => sIdx !== idx);
                  setAvailableSections(updated);
-                 safeLocalStorageSetItem('curman_availableSections', updated.join(','));
                  
                  const filteredCombos = onboardingCombinations.filter(combo => {
                   const comboSec = combo.split('^')[1];
@@ -277,7 +293,6 @@ export function OnboardingModal({
             onClick={() => {
              const defaults = onboardingOrd === 'infanzia' ? ['Rossa', 'Verde', 'Blu'] : ['A', 'B', 'C'];
              setAvailableSections(defaults);
-             safeLocalStorageSetItem('curman_availableSections', defaults.join(','));
              
              const filteredCombos = onboardingCombinations.filter(combo => {
               const comboSec = combo.split('^')[1];
@@ -482,6 +497,11 @@ interface SaveSettingsModalProps {
   handleRestoreFromLocalEmergencyStorage: () => void;
   setShowMottoModal: (v: boolean) => void;
   triggerPwaInstall: () => void;
+  teacherProfile: TeacherProfileDraft;
+  saveTeacherProfile: (profile: TeacherProfileDraft) => void;
+  resetTeacherProfile: () => void;
+  localCurriculum: CurriculumMap;
+  getDisciplineLabel: (discipline: string, order?: SchoolOrder) => string;
 }
 
 export function SaveSettingsModal({
@@ -497,7 +517,6 @@ export function SaveSettingsModal({
   isWorkspaceLoggedIn,
   workspaceClientId,
   setWorkspaceClientId,
-  safeLocalStorageSetItem,
   showToast,
   isSyncingWorkspace,
   handleWorkspaceSync,
@@ -507,6 +526,11 @@ export function SaveSettingsModal({
   handleRestoreFromLocalEmergencyStorage,
   setShowMottoModal,
   triggerPwaInstall,
+  teacherProfile,
+  saveTeacherProfile,
+  resetTeacherProfile,
+  localCurriculum,
+  getDisciplineLabel,
 }: SaveSettingsModalProps) {
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const dialogRef = useRef<HTMLDivElement>(null);
@@ -579,6 +603,7 @@ export function SaveSettingsModal({
       </div>
 
       <div className="p-5 space-y-4 text-xs leading-relaxed text-slate-700 text-left overflow-y-auto flex-1">
+       <TeacherProfileConfigPanel profile={teacherProfile} localCurriculum={localCurriculum} getDisciplineLabel={getDisciplineLabel} onSave={saveTeacherProfile} onReset={resetTeacherProfile} />
        <InstitutionConfigPanel onExportBackup={handleDownloadBackup} onExportError={message => showToast(message, false)} />
         <p className="text-[11px] text-slate-500 font-semibold">Decisioni, bozze e UDA sono salvate come dati locali del browser. L'applicazione non verifica cifratura, protezione del dispositivo o disponibilità futura dei dati.</p>
 
