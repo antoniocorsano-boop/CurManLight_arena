@@ -734,6 +734,7 @@ export default function App() {
 
  const {
   handleImportMergeCml,
+  canConsolidate,
   handleDownloadBackup,
   handleRestoreBackup
  } = useBackupHandlers({
@@ -913,6 +914,7 @@ export default function App() {
   activeProcessoTab,
   setActiveProcessoTab,
   handleImportMergeCml,
+  canConsolidate,
   progressPercent,
   totalDecisions,
   approvedCount,

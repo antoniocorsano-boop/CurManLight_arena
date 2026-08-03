@@ -186,6 +186,7 @@ export function AppViewsLayer(props: AppViewsLayerProps) {
     activeProcessoTab,
     setActiveProcessoTab,
     handleImportMergeCml,
+    canConsolidate,
     progressPercent,
     totalDecisions,
     approvedCount,
@@ -459,6 +460,7 @@ export function AppViewsLayer(props: AppViewsLayerProps) {
        currentDisciplineDecided={currentDisciplineDecided}
        currentDisciplineProps={currentDisciplineProps}
        handleImportMergeCml={handleImportMergeCml}
+       canConsolidate={canConsolidate ?? false}
        progressPercent={progressPercent}
        totalDecisions={totalDecisions}
        approvedCount={approvedCount}

@@ -13,6 +13,7 @@ export interface ProcessoTabProps {
   currentDisciplineDecided: number;
   currentDisciplineProps: Proposal[];
   handleImportMergeCml: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  canConsolidate?: boolean;
   progressPercent: number;
   totalDecisions: number;
   approvedCount: number;
@@ -31,6 +32,7 @@ export function ProcessoTab(props: ProcessoTabProps) {
     currentDisciplineDecided,
     currentDisciplineProps,
     handleImportMergeCml,
+    canConsolidate = false,
     progressPercent,
     totalDecisions,
     approvedCount,
@@ -107,10 +109,11 @@ export function ProcessoTab(props: ProcessoTabProps) {
           <div className="bg-slate-50 border p-4 rounded-xl space-y-3">
            <span className="bg-amber-100 text-amber-800 text-[9px] font-bold px-2 py-0.5 rounded uppercase">Azioni di Dipartimento / Referente</span>
            <h4 className="font-extrabold text-slate-800 text-xs">Unione dei File di Lavoro</h4>
-           <label className="w-full flex flex-col items-center justify-center border border-dashed border-slate-300 rounded-lg p-4 bg-white cursor-pointer hover:bg-slate-100 transition shadow-sm">
+           <label htmlFor="processo-cml-import" className={`w-full flex flex-col items-center justify-center border border-dashed border-slate-300 rounded-lg p-4 bg-white transition shadow-sm ${canConsolidate ? 'cursor-pointer hover:bg-slate-100' : 'cursor-not-allowed opacity-60'}`}>
             <Save className="w-5 h-5 text-slate-400 mb-1" />
             <span className="font-semibold text-slate-700">Carica file di proposta (.cml)</span>
-            <input type="file" onChange={handleImportMergeCml} className="hidden" accept=".cml" />
+            <input id="processo-cml-import" type="file" onChange={handleImportMergeCml} disabled={!canConsolidate} aria-describedby={!canConsolidate ? 'processo-consolidation-capability-note' : undefined} className="hidden" accept=".cml" />
+            {!canConsolidate && <span id="processo-consolidation-capability-note" className="mt-1 text-amber-700" role="status">Questa funzione non è disponibile per il ruolo dichiarato.</span>}
            </label>
           </div>
 

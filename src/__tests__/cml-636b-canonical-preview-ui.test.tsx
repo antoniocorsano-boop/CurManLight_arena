@@ -9,7 +9,8 @@ import { createSectionHeading } from '../domain/documents';
 import { createSectionParagraph } from '../domain/documents';
 import { createSectionTeachingDesign } from '../domain/documents';
 import { createInitialVersion } from '../domain/documents';
-import { createEmptyInstitutionalArchive } from '../domain/institution';
+import { createEmptyInstitutionalArchive, createWorkspaceIdentity } from '../domain/institution';
+import type { EntityId } from '../domain/curriculum/identity';
 import { createEmptyRevisionArchive } from '../domain/revision';
 import type { DocumentEntity, DocumentVersion, DocumentArchive } from '../domain/documents';
 import { generateEntityId } from '../domain/curriculum/identity';
@@ -86,6 +87,7 @@ function resetStore(archive?: DocumentArchive) {
     savedUda: [],
     documentArchive: archive ?? createEmptyDocumentArchive(),
     institutionalArchive: createEmptyInstitutionalArchive(),
+    workspaceIdentity: createWorkspaceIdentity({ institutionRef: { id: 'b636b001' as EntityId, entityType: 'institute', snapshotLabel: 'Istituto locale' }, academicYearRef: { id: 'b636b002' as EntityId, entityType: 'academic-year', snapshotLabel: '2026/2027' }, declaredRole: 'docente', operatingMode: 'personal-local' }),
     revisionArchive: createEmptyRevisionArchive(),
   });
 }

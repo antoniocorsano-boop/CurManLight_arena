@@ -28,6 +28,8 @@ import type { InstitutionalRole } from '../../../domain/curriculum/types';
 import { useCurriculumStore } from '../../../store/useCurriculumStore';
 import type { SchoolOrder } from '../../../types/curriculum';
 import { UiConfirmDialog } from '../../../ui/components/UiConfirmDialog';
+import { useWorkspaceCapabilities } from '../hooks/useWorkspaceCapabilities';
+import { configureWorkspace, resetWorkspaceConfiguration } from '../services/workspaceConfiguration';
 
 const ORDER_LABELS: Record<SchoolOrder, string> = {
   infanzia: "Scuola dell'Infanzia",
@@ -60,6 +62,7 @@ export function InstitutionConfigPanel({ onExportBackup, onExportError }: Instit
   const workspaceIdentity = useCurriculumStore(state => state.workspaceIdentity);
   const setWorkspaceIdentity = useCurriculumStore(state => state.setWorkspaceIdentity);
   const resetWorkspaceIdentity = useCurriculumStore(state => state.resetWorkspaceIdentity);
+  const workspaceCapabilities = useWorkspaceCapabilities();
   const replaceInstitutionalArchive = useCurriculumStore(state => state.replaceInstitutionalArchive);
   const activeInstitute = archive.institutes.find(item => item.id === archive.activeInstituteRef?.id);
   const institute = activeInstitute ?? archive.institutes.find(item => !['archived', 'legacy-imported'].includes(item.status));
@@ -337,20 +340,26 @@ export function InstitutionConfigPanel({ onExportBackup, onExportError }: Instit
     if ((workspaceActorName.trim() && !workspaceRole) || (!workspaceActorName.trim() && workspaceRole)) { setWorkspaceMessage('Completa nome e ruolo oppure lascia entrambi vuoti.'); return; }
     const declaredActor = workspaceActorName.trim() && workspaceRole ? { displayName: workspaceActorName.trim(), role: workspaceRole, assertion: 'self-declared' as const } : undefined;
     try {
-      setWorkspaceIdentity(createWorkspaceIdentity({
+      const nextIdentity = createWorkspaceIdentity({
         institutionRef: instituteReference(workspaceInstitute),
         academicYearRef: { id: workspaceYear.id, entityType: 'academic-year', snapshotLabel: workspaceYear.label },
         ...(workspaceSites.find(item => item.id === workspaceSiteId) ? { activeSiteRef: { id: workspaceSites.find(item => item.id === workspaceSiteId)!.id, entityType: 'institute-site' as const, snapshotLabel: workspaceSites.find(item => item.id === workspaceSiteId)!.name } } : {}),
         ...(declaredActor ? { declaredActor } : {}),
         ...(workspaceRole ? { declaredRole: workspaceRole } : {}),
         operatingMode: workspaceMode,
-      }));
-      setWorkspaceMessage('Identità ambiente salvata.');
+      });
+      const result = configureWorkspace(workspaceCapabilities.resolution, nextIdentity, { currentIdentity: workspaceIdentity }, { setWorkspaceIdentity, resetWorkspaceIdentity });
+      if (!result.ok) {
+        setWorkspaceMessage(result.reason === 'CAPABILITY_NOT_GRANTED' ? 'Questa funzione non è disponibile per il ruolo dichiarato.' : 'Impossibile validare identità ambiente.');
+        return;
+      }
+      setWorkspaceMessage(result.value.mode === 'BOOTSTRAP_LOCAL' ? 'BOOTSTRAP_LOCAL: inizializzazione locale; il ruolo resta autodichiarato.' : 'Identità ambiente salvata.');
     } catch { setWorkspaceMessage('Impossibile validare identità ambiente.'); }
   };
 
   const clearWorkspaceConfiguration = () => {
-    resetWorkspaceIdentity();
+    const result = resetWorkspaceConfiguration(workspaceCapabilities.resolution, { currentIdentity: workspaceIdentity }, { setWorkspaceIdentity, resetWorkspaceIdentity });
+    if (!result.ok) { setWorkspaceMessage('Questa funzione non è disponibile per il ruolo dichiarato.'); return; }
     setWorkspaceMessage('Identità ambiente ripristinata allo stato neutro.');
   };
   return (
@@ -373,11 +382,11 @@ export function InstitutionConfigPanel({ onExportBackup, onExportError }: Instit
           <label className="space-y-1 text-xs font-bold text-slate-700"><span>Anno scolastico</span><select value={workspaceYearId} onChange={event => setWorkspaceYearId(event.target.value)} className={fieldClass}><option value="">Seleziona anno</option>{workspaceYears.map(item => <option key={item.id} value={item.id}>{item.label}</option>)}</select></label>
           <label className="space-y-1 text-xs font-bold text-slate-700"><span>Sede attiva (facoltativa)</span><select value={workspaceSiteId} onChange={event => setWorkspaceSiteId(event.target.value)} className={fieldClass}><option value="">Nessuna sede specifica</option>{workspaceSites.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}</select></label>
           <label className="space-y-1 text-xs font-bold text-slate-700"><span>Modalità operativa</span><select value={workspaceMode} onChange={event => setWorkspaceMode(event.target.value as WorkspaceOperatingMode)} className={fieldClass}>{WORKSPACE_OPERATING_MODES.map(mode => <option key={mode} value={mode}>{mode === 'personal-local' ? 'Personale locale' : mode === 'institutional-local' ? 'Istituzionale locale' : 'Consultazione pubblica'}</option>)}</select></label>
-          <label className="space-y-1 text-xs font-bold text-slate-700"><span>Nome dichiarato (facoltativo)</span><input value={workspaceActorName} onChange={event => setWorkspaceActorName(event.target.value)} className={fieldClass} placeholder="Nome del docente" /></label>
-          <label className="space-y-1 text-xs font-bold text-slate-700"><span>Ruolo dichiarato (facoltativo)</span><select value={workspaceRole} onChange={event => setWorkspaceRole(event.target.value as DeclaredRole | '')} className={fieldClass}><option value="">Nessun ruolo dichiarato</option>{DECLARED_INSTITUTIONAL_ROLES.map(role => <option key={role} value={role}>{ROLE_LABELS[role]}</option>)}</select></label>
+          <label className="space-y-1 text-xs font-bold text-slate-700"><span>Nome dichiarato per il workspace (facoltativo)</span><input value={workspaceActorName} onChange={event => setWorkspaceActorName(event.target.value)} className={fieldClass} placeholder="Nome del docente" /></label>
+          <label className="space-y-1 text-xs font-bold text-slate-700"><span>Ruolo dichiarato per il workspace (facoltativo)</span><select value={workspaceRole} onChange={event => setWorkspaceRole(event.target.value as DeclaredRole | '')} className={fieldClass}><option value="">Nessun ruolo dichiarato</option>{DECLARED_INSTITUTIONAL_ROLES.map(role => <option key={role} value={role}>{ROLE_LABELS[role]}</option>)}</select></label>
         </div>
         {workspaceMessage && <p role="status" className="text-xs font-bold text-indigo-800">{workspaceMessage}</p>}
-        <div className="flex flex-wrap gap-2"><button type="button" onClick={saveWorkspaceConfiguration} className={`${buttonClass} border-indigo-700 bg-indigo-700 text-white hover:bg-indigo-600`}>Salva identità ambiente</button><button type="button" onClick={clearWorkspaceConfiguration} disabled={!workspaceIdentity} className={`${buttonClass} border-slate-400 text-slate-800 hover:bg-white`}>Ripristina identità</button></div>
+        <p id="workspace-capability-help" className="text-xs font-bold text-amber-800">{!workspaceIdentity ? "Prima configurazione locale: inizializzazione senza ruolo verificato." : !workspaceCapabilities.can("workspace.configure") ? "Questa funzione non è disponibile per il ruolo dichiarato." : ""}</p><div className="flex flex-wrap gap-2"><button type="button" onClick={saveWorkspaceConfiguration} disabled={Boolean(workspaceIdentity) && !workspaceCapabilities.can("workspace.configure")} aria-describedby="workspace-capability-help" className={`${buttonClass} border-indigo-700 bg-indigo-700 text-white hover:bg-indigo-600`}>Salva identità ambiente</button><button type="button" onClick={clearWorkspaceConfiguration} disabled={!workspaceIdentity || !workspaceCapabilities.can("workspace.configure")} aria-describedby="workspace-capability-help" className={`${buttonClass} border-slate-400 text-slate-800 hover:bg-white`}>Ripristina identità</button></div>
       </section>
       <form onSubmit={saveDraft} noValidate className="space-y-4">
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">

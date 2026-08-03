@@ -6,6 +6,8 @@ import {
  validateArchiveIntegrity,
  type InstitutionalArchive,
 } from '../../../domain/institution';
+import { useWorkspaceCapabilities } from '../../session/hooks/useWorkspaceCapabilities';
+import { executeDepartmentConsolidation, parseCmlImport } from '../services/departmentConsolidation';
 
 type BackupState = Partial<UserState> & { institutionalArchive?: InstitutionalArchive };
 
@@ -26,6 +28,7 @@ export function useBackupHandlers({
  setShowSaveModal,
  showToast
 }: UseBackupHandlersArgs) {
+ const workspaceCapabilities = useWorkspaceCapabilities();
  // CML file merger
  const handleImportMergeCml = (event: React.ChangeEvent<HTMLInputElement>) => {
   const file = event.target.files?.[0];
@@ -33,27 +36,17 @@ export function useBackupHandlers({
 
   const reader = new FileReader();
   reader.onload = (e) => {
-   try {
-    const imported = JSON.parse(e.target?.result as string);
-    if (imported.format !== "CML-LIGHT-EXPORT") {
-     showToast("Formato file non valido. Caricare un file .cml valido!", false);
-     return;
-    }
-
-    let mergedCount = 0;
-    Object.keys(imported.decisions).forEach(id => {
-     setDecision(id, imported.decisions[id]);
-     mergedCount++;
-    });
-
-    Object.keys(imported.customTexts).forEach(id => {
-     setCustomText(id, imported.customTexts[id]);
-    });
-
-    showToast(`Sintesi completata! Importate ed unite ${mergedCount} decisioni da file .cml.`);
-   } catch(err) {
-    showToast("Errore di decodifica del file di lavoro", false);
+   const parsed = parseCmlImport(e.target?.result as string);
+   if ('ok' in parsed) {
+    showToast(parsed.message, false);
+    return;
    }
+   const result = executeDepartmentConsolidation(workspaceCapabilities.resolution, parsed, { setDecision, setCustomText });
+   if (!result.ok) {
+    showToast(result.reason === 'CAPABILITY_NOT_GRANTED' ? 'Funzione non disponibile per il ruolo dichiarato.' : result.message, false);
+    return;
+   }
+   showToast(`Sintesi completata! Importate ed unite ${result.value.mergedDecisions} decisioni e ${result.value.mergedCustomTexts} testi da file .cml.`);
   };
   reader.readAsText(file);
  };
@@ -119,6 +112,7 @@ export function useBackupHandlers({
 
  return {
   handleImportMergeCml,
+  canConsolidate: workspaceCapabilities.can('department.consolidate'),
   handleDownloadBackup,
   handleRestoreBackup
  };

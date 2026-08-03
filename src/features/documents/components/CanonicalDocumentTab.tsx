@@ -30,6 +30,8 @@ import { DECLARED_INSTITUTIONAL_ROLES, getCurrentInstitutionalContext } from '..
 import { createSelfDeclaredActor } from '../../../domain/curriculum/identity';
 import type { InstitutionalRole } from '../../../domain/curriculum/types';
 import { printCanonicalDocument } from '../services/canonicalDocumentPrint';
+import { executeCanonicalExport } from '../services/protectedCanonicalDocumentExport';
+import { useWorkspaceCapabilities } from '../../session/hooks/useWorkspaceCapabilities';
 
 export interface CanonicalDocumentTabProps {
   selectedDocumentId?: string | null;
@@ -78,6 +80,7 @@ function formatDate(iso: string): string {
 
 export function CanonicalDocumentTab({ selectedDocumentId, onSelectionChange }: CanonicalDocumentTabProps) {
   const { documentArchive, institutionalArchive, replaceDocumentArchive } = useCurriculumStore();
+  const workspaceCapabilities = useWorkspaceCapabilities();
   const [selectedId, setSelectedId] = useState<string | null>(selectedDocumentId ?? null);
   const [selectedVersionId, setSelectedVersionId] = useState<string | null>(null);
   const [previewState, setPreviewState] = useState<PreviewState | null>(null);
@@ -128,6 +131,8 @@ export function CanonicalDocumentTab({ selectedDocumentId, onSelectionChange }: 
   const previewStale = selectedDoc && selectedVersionObj
     ? isPreviewStale(previewState, selectedDoc, selectedVersionObj)
     : false;
+
+  const canExportCanonical = workspaceCapabilities.can('document.export');
 
   const exportability: ExportabilityResult | null =
     selectedDoc && selectedVersionObj
@@ -197,21 +202,47 @@ export function CanonicalDocumentTab({ selectedDocumentId, onSelectionChange }: 
       return;
     }
 
-    const printResult = printCanonicalDocument(previewState.html, {
-      title: selectedDoc.title,
-    });
-    showNotice(printResult.success ? 'success' : 'error', printResult.message);
+    const result = executeCanonicalExport(
+      workspaceCapabilities.resolution,
+      {
+        kind: 'print',
+        run: () => printCanonicalDocument(previewState.html, { title: selectedDoc.title }),
+      },
+      printExportability,
+    );
+    if (result.ok) {
+      showNotice('success', typeof result.value === 'object' && result.value && 'message' in result.value ? result.value.message : 'Esportazione completata.');
+    } else if (result.reason === 'CAPABILITY_NOT_GRANTED') {
+      showNotice('error', 'Il ruolo dichiarato non dispone della capacità di esportare il documento canonico.');
+    } else if (result.reason === 'DOCUMENT_NOT_EXPORTABLE') {
+      showNotice('error', result.errors.map(error => error.message).join('; '));
+    } else {
+      showNotice('error', result.message);
+    }
   }
 
   function handleDownloadJson() {
-    const blob = new Blob([serializeDocumentArchive(documentArchive)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'archivio-documenti-canonico.json';
-    a.click();
-    URL.revokeObjectURL(url);
-    showNotice('success', 'Archivio documenti esportato in formato JSON.');
+    const result = executeCanonicalExport(workspaceCapabilities.resolution, {
+      kind: 'download-json',
+      run: () => {
+        const blob = new Blob([serializeDocumentArchive(documentArchive)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'archivio-documenti-canonico.json';
+        a.click();
+        URL.revokeObjectURL(url);
+      },
+    });
+    if (result.ok) {
+      showNotice('success', 'Archivio documenti esportato in formato JSON.');
+    } else if (result.reason === 'CAPABILITY_NOT_GRANTED') {
+      showNotice('error', 'Il ruolo dichiarato non dispone della capacità di esportare il documento canonico.');
+    } else if ('message' in result) {
+      showNotice('error', result.message);
+    } else {
+      showNotice('error', result.errors.map(error => error.message).join('; '));
+    }
   }
 
   function handleTransition(doc: DocumentEntity, nextStatus: DocumentStatus) {
@@ -619,7 +650,8 @@ export function CanonicalDocumentTab({ selectedDocumentId, onSelectionChange }: 
             <div className="flex flex-wrap gap-2">
                <button
                 onClick={handlePrint}
-                disabled={!exportability?.exportable || isArchived}
+                disabled={!exportability?.exportable || isArchived || !canExportCanonical}
+                aria-describedby={!canExportCanonical ? 'canonical-export-capability-note' : undefined}
                 className="px-3 py-1.5 text-xs font-medium bg-ui-action text-white rounded-ui-control hover:bg-ui-action-hover transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
               >
                 <Printer className="w-3.5 h-3.5" aria-hidden="true" />
@@ -628,11 +660,16 @@ export function CanonicalDocumentTab({ selectedDocumentId, onSelectionChange }: 
 
               <button
                 onClick={handleDownloadJson}
+                disabled={!canExportCanonical}
+                aria-describedby={!canExportCanonical ? 'canonical-export-capability-note' : undefined}
                 className="px-3 py-1.5 text-xs font-medium bg-ui-surface border border-ui-border rounded-ui-control hover:bg-ui-surface-hover transition"
               >
                 Archivio JSON
               </button>
 
+              {!canExportCanonical && (
+                <span id="canonical-export-capability-note" className="text-xs text-amber-700" role="status">Esportazione canonica non disponibile per il ruolo dichiarato.</span>
+              )}
               {!isArchived && (
                 <>
                   <button

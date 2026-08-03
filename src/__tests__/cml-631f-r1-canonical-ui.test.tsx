@@ -4,7 +4,8 @@ import { CanonicalDocumentTab } from '../features/documents/components/Canonical
 import { useCurriculumStore } from '../store/useCurriculumStore';
 import { createEmptyDocumentArchive } from '../domain/documents';
 import type { DocumentArchive, DocumentEntity } from '../domain/documents';
-import { createEmptyInstitutionalArchive } from '../domain/institution';
+import { createEmptyInstitutionalArchive, createWorkspaceIdentity } from '../domain/institution';
+import type { EntityId } from '../domain/curriculum/identity';
 import { createEmptyRevisionArchive } from '../domain/revision';
 import { createTeachingDesignFixture } from './fixtures/documents';
 
@@ -21,6 +22,7 @@ function resetStore(archive?: DocumentArchive) {
     savedUda: [],
     documentArchive: archive ?? createEmptyDocumentArchive(),
     institutionalArchive: createEmptyInstitutionalArchive(),
+    workspaceIdentity: createWorkspaceIdentity({ institutionRef: { id: 'b631f001' as EntityId, entityType: 'institute', snapshotLabel: 'Istituto locale' }, academicYearRef: { id: 'b631f002' as EntityId, entityType: 'academic-year', snapshotLabel: '2026/2027' }, declaredRole: 'docente', operatingMode: 'personal-local' }),
     revisionArchive: createEmptyRevisionArchive(),
   });
 }

@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -12,7 +12,9 @@ import { useDocumentExportHandlers } from '../features/documents';
 import { useBackupHandlers } from '../features/documents';
 import type { CurriculumMap } from '../features/session';
 import type { DecisionStatus, SchoolOrder, UdaModel, UserRole, UserState } from '../types/curriculum';
-import { createEmptyInstitutionalArchive } from '../domain/institution';
+import { createEmptyInstitutionalArchive, createWorkspaceIdentity } from '../domain/institution';
+import type { EntityId } from '../domain/curriculum/identity';
+import { useCurriculumStore } from '../store/useCurriculumStore';
 
 const showToast = vi.fn<(msg: string, success?: boolean) => void>();
 
@@ -88,7 +90,18 @@ function NavigationExportImportHarness({
  onDecision: (id: string, status: DecisionStatus) => void;
  onCustomText: (id: string, text: string) => void;
 }) {
- const [activeProgTab, setActiveProgTab] = useState<UserState['activeProgTab']>('home');
+ const [activeProgTab, setActiveProgTab] = useState<UserState['activeProgTab']>('home'); const workspaceIdentity = useCurriculumStore((state) => state.workspaceIdentity);
+ const setWorkspaceIdentity = useCurriculumStore((state) => state.setWorkspaceIdentity);
+ useEffect(() => {
+  if (!workspaceIdentity) {
+   setWorkspaceIdentity(createWorkspaceIdentity({
+    institutionRef: { id: 'c635d001' as EntityId, entityType: 'institute', snapshotLabel: 'Istituto locale' },
+    academicYearRef: { id: 'c635d002' as EntityId, entityType: 'academic-year', snapshotLabel: '2026/2027' },
+    declaredRole: 'dipartimento',
+    operatingMode: 'personal-local'
+   }));
+  }
+ }, [setWorkspaceIdentity, workspaceIdentity]);
  const navigation = useAppNavigation({
   secondBrainTab: 'brain',
   activeGeneralSubtab: 'premessa',

@@ -322,6 +322,7 @@ export interface AppViewsLayerProps {
   activeProcessoTab: ActiveProcessoTab;
   setActiveProcessoTab: (tab: ActiveProcessoTab) => void;
   handleImportMergeCml: (event: ChangeEvent<HTMLInputElement>) => void;
+  canConsolidate?: boolean;
   progressPercent: number;
   totalDecisions: number;
   approvedCount: number;
