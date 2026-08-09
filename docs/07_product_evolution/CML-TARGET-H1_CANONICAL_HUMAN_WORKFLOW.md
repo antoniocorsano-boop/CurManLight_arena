@@ -1,8 +1,8 @@
 # CML-TARGET-H1 — Canonical Human Workflow
 
-**Stato:** specifica funzionale pronta per approvazione
+**Stato:** correzione H1-R1 pronta per approvazione
 **Baseline:** P1.2 congelata, commit `9f2ac12`  
-**Prerequisiti:** H0 e H0.1 approvati
+**Prerequisiti:** H0 e H0.1 approvati; H1 precedente da correggere
 **Scope:** comportamento umano, senza modifiche al runtime
 
 ## 1. Obiettivo
@@ -58,7 +58,9 @@ Le aree dell'applicazione sono superfici dello stesso lavoro, non il punto di pa
 7. La decisione curricolare è un atto umano autorizzato, non un esito automatico.
 8. Dati e relazioni non disponibili non devono essere inventati.
 9. Il docente deve poter riprendere una bozza o un documento senza ricostruire il percorso.
-10. H1 non autorizza codice, nuove capability, modifiche alla shell o al routing.
+10. La revisione del curricolo d'istituto è normalmente chiusa e non è una funzione ordinaria sempre disponibile.
+11. B3B gestisce proposte solo all'interno di una revisione formalmente aperta.
+12. H1 non autorizza codice, nuove capability, modifiche alla shell o al routing.
 
 ## 3. Traduzione professionale
 
@@ -77,7 +79,80 @@ La macchina a stati protegge il significato del lavoro, ma non è il linguaggio 
 
 La versione ammessa alla decisione deve possedere una verifica tecnica pertinente e non obsoleta, quando tale verifica è richiesta. Dopo una richiesta di modifica e una nuova versione la verifica può quindi essere rieseguita.
 
-## 4. Modello di orientamento
+## 4. Processo istituzionale di revisione del curricolo
+
+La revisione del curricolo d'istituto è normalmente **chiusa**. Il curricolo vigente
+è disponibile per consultazione e uso didattico ordinario. La revisione viene aperta
+solo quando esiste una motivazione istituzionale esplicita, per esempio nuove
+Indicazioni o modifiche normative, cambiamenti ordinamentali, scelte strategiche,
+esiti di monitoraggio o valutazione, oppure decisioni degli organi della scuola.
+
+Il processo non viene aperto autonomamente dal referente. Il referente opera su
+mandato esplicito del dirigente scolastico, nell'ambito del processo che conduce
+alla deliberazione o decisione del Collegio dei docenti. Mandato, attivazione e
+decisione sono concetti distinti:
+
+- il **mandato** stabilisce perché, con quale perimetro e con quale autorizzazione
+  la revisione può essere riaperta;
+- l'**attivazione** abilita e prepara operativamente il processo in CurManLight;
+- la **decisione** è assunta dagli organi o soggetti previsti dal processo, non dal
+  referente in quanto tale.
+
+L'oggetto umano che contiene il percorso è il **Processo/Campagna di Revisione del
+Curricolo d'Istituto**. Esso raccoglie mandato, motivazione, perimetro, materiali,
+partecipanti, fasi, responsabilità e stato.
+
+```text
+revisione chiusa
+  → mandato e motivazione istituzionale
+  → preparazione del processo
+  → revisione aperta e in preparazione
+  → consultazione e lavoro dei docenti
+  → elaborazione delle strutture intermedie
+  → sintesi del referente
+  → verifica tecnica, quando richiesta
+  → decisione curricolare
+  → applicazione → nuova versione → entrata in vigore
+  → chiusura della revisione
+```
+
+B3B è subordinato a questo oggetto: gestisce la proposta di modifica fino al
+confine della decisione **dentro una revisione aperta**. Non apre la revisione,
+non sostituisce le strutture intermedie, non rappresenta la decisione collegiale
+e non rende vigente una modifica.
+
+### Apertura e preparazione
+
+Il referente, con il mandato ricevuto, deve essere guidato a definire almeno:
+
+1. motivazione della revisione;
+2. mandato e contesto, inclusi atti e riferimenti di partenza;
+3. perimetro: intero curricolo, ordini, discipline, aree o segmenti;
+4. materiali di riferimento;
+5. partecipanti e articolazioni professionali;
+6. fasi, scadenze e responsabilità;
+7. materiali che i docenti devono conoscere;
+8. avvio formale del lavoro.
+
+### Partecipazione multilivello
+
+Il processo rende esplicita la progressione professionale:
+
+1. **Docenti:** conoscono motivazione e materiali, consultano il vigente e
+   formulano osservazioni o proposte pertinenti al proprio lavoro.
+2. **Strutture intermedie:** dipartimento, intersezione, interclasse o altra
+   articolazione configurata esaminano, confrontano, aggregano, modificano e
+   selezionano le proposte, producendo una sintesi di livello successivo.
+3. **Referente:** verifica completezza, coordina, evidenzia convergenze e
+   conflitti e prepara il dossier complessivo per la fase decisionale.
+4. **Organo decisionale:** riceve vigente, motivazioni, proposte, esiti
+   intermedi, verifiche e sintesi e assume la decisione curricolare prevista.
+5. **Applicazione:** solo dopo la decisione si producono la nuova versione e la
+   sua entrata in vigore.
+
+Il referente è orchestratore del processo, non proprietario del curricolo.
+
+## 5. Modello di orientamento
 
 Ogni momento del lavoro deve rispondere a cinque domande:
 
@@ -89,7 +164,7 @@ Ogni momento del lavoro deve rispondere a cinque domande:
 | Cosa posso fare adesso? | Una sola azione primaria riconoscibile |
 | Dove vado dopo? | Passaggio naturale coerente con il lavoro |
 
-## 5. Casi d'uso didattici canonici
+## 6. Casi d'uso didattici canonici
 
 ### H1 — «Devo lavorare sulla 2A»
 
@@ -151,7 +226,7 @@ Documenti rappresenta oggetti professionali e versioni, non formati di export.
 
 Il collegamento alla classe offre continuità e consultazione; non crea archivi duplicati.
 
-## 6. Decisioni strutturali derivate
+## 7. Decisioni strutturali derivate
 
 ### Classe come contenitore operativo
 
@@ -177,7 +252,7 @@ La classe è il principale contesto operativo quando il lavoro è riferito a un 
 - ricostruire manualmente dalla classe quali lavori e documenti le appartengono;
 - mostrare dati o relazioni non realmente disponibili.
 
-## 7. Continuità minima
+## 8. Continuità minima
 
 ```text
 classe → curricolo → progettazione → documento → classe
@@ -187,7 +262,7 @@ Home → lavoro corrente → punto salvato → risultato collegato
 
 Se un collegamento non esiste, il sistema mostra l'assenza e offre il passo possibile più vicino senza simulare una relazione.
 
-## 8. Fuori perimetro H1
+## 9. Fuori perimetro H1
 
 - modifiche a codice, store, componenti, shell o routing;
 - completamento dei workflow curriculari, documentali o di classe;
@@ -196,7 +271,7 @@ Se un collegamento non esiste, il sistema mostra l'assenza e offre il passo poss
 - visual polish o scelta dei componenti UI;
 - piano d'implementazione P1.3.
 
-## 9. Criteri di approvazione
+## 10. Criteri di approvazione
 
 Un docente deve poter leggere H1 e riconoscere, per ciascun percorso e caso d'uso:
 
@@ -206,16 +281,19 @@ Un docente deve poter leggere H1 e riconoscere, per ciascun percorso e caso d'us
 4. il risultato ottenuto;
 5. il passo successivo naturale;
 6. il significato professionale dell'area coinvolta;
-7. i dati che non devono essere inventati.
+7. i dati che non devono essere inventati;
+8. se il processo di revisione è chiuso oppure aperto con quale mandato e perimetro;
+9. quale ruolo esercita: docente, articolazione intermedia, referente o organo decisionale.
 
 La validazione non consiste ancora nel verificare schermate: consiste nell'approvare il modello umano e le superfici che dovranno renderlo visibile.
 
-## 10. Esito
+## 11. Esito
 
 ```text
-CML_TARGET_H1_CANONICAL_HUMAN_WORKFLOW_READY_FOR_APPROVAL
+CML_TARGET_H1_REQUIRES_CORRECTION_H1_R1
+CML_TARGET_H1_R1_CANONICAL_HUMAN_WORKFLOW_READY_FOR_APPROVAL
 NO_RUNTIME_CHANGE_AUTHORIZED
 P1_3_NOT_DEFINED
 ```
 
-Solo dopo l'approvazione esplicita di H1 potrà essere definita la successiva slice d'implementazione.
+Solo dopo l'approvazione esplicita di H1-R1 potrà essere definita la successiva slice d'implementazione.
