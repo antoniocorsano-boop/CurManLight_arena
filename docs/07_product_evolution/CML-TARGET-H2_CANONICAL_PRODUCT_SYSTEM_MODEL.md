@@ -397,10 +397,45 @@ Ordine concettuale consigliato:
 4. definire il task e la sua superficie senza introdurre dati fittizi;
 5. implementare e verificare contro la matrice e gli acceptance criteria.
 
-## Verdetto
+## 21. H2-R1 — Review di consistenza
+
+H2 supera la review di consistenza documentale:
+
+| Controllo | Esito |
+|---|---|
+| quattro cicli del prodotto | presente |
+| uso ordinario e revisione straordinaria | separati |
+| mandato dirigente → attivazione referente | esplicito |
+| docenti → strutture intermedie → referente → decisione | esplicito |
+| verifica tecnica ≠ decisione | invariato |
+| decisione ≠ entrata in vigore | invariato |
+| feedback UDA anonimo | invariato |
+| miglioramento ≠ valutazione del personale | invariato |
+| dashboard docente e dashboard di sistema | separate per ruolo |
+| UDA condivise | adozione, copia, genealogia, valutazione post-uso |
+| reputazione UDA | professionale, non social-engagement |
+| grafo curricolare | vista canonica non decorativa |
+| IA | assistiva, mai decisoria |
+| capability, provenienza e versionamento | obbligatori |
+| mockup | tracciabile a bisogno, caso d'uso, dominio e stato |
+| gap baseline → target | classificati |
+| agenti | non autorizzati a inventare requisiti mancanti |
+
+Non emergono contraddizioni tra i quattro cicli. Il ciclo didattico è ordinario;
+la revisione curricolare è straordinaria e normalmente chiusa. La verifica
+tecnica non approva, la decisione non rende automaticamente vigente e il
+feedback anonimo non valuta il personale.
+
+H2 è quindi il contratto di sistema da cui devono discendere H2V, la roadmap e
+i task degli agenti. Ogni implementazione futura deve poter indicare il requisito
+H2, la vista H2V, il caso d'uso, il gap e la capability corrispondenti.
+
+## 22. Verdetto
 
 ```text
-CML_TARGET_H2_CANONICAL_PRODUCT_SYSTEM_MODEL_READY_FOR_APPROVAL
+CML_TARGET_H2_CANONICAL_PRODUCT_SYSTEM_MODEL_APPROVED
+CML_TARGET_H2_PRODUCT_NORTH_STAR_FROZEN
+CML_TARGET_H2_AGENT_IMPLEMENTATION_CONTRACT_ESTABLISHED
 H1_R1_REMAINS_THE_HUMAN_WORKFLOW_SOURCE
 P1_3_NOT_DEFINED
 NO_RUNTIME_CHANGE_AUTHORIZED
