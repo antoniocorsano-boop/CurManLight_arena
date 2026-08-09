@@ -32,3 +32,6 @@
 
 ## 2026-08-09 22:44:50 +02:00
 - P1.3-R0 reconnaissance completata nel worktree dedicato; report e piano committati come 05c2ed5; nessun runtime change.
+
+## 2026-08-09 22:49:59 +02:00
+- P1.3-A implementation green: focused read-model tests pass; running type/domain/fast/build gates.

@@ -199,5 +199,12 @@ export {
 export {
   createA11SourceReadModel,
   createA02CurriculumReadModel,
+  createCurriculumConsultationReadModel,
 } from './readModels';
-export type { A11SourceSummary, A02CurriculumQuery } from './readModels';
+export type {
+  A11SourceSummary,
+  A02CurriculumQuery,
+  CurriculumConsultationQuery,
+  CurriculumConsultationItem,
+  CurriculumConsultationReadModel,
+} from './readModels';
