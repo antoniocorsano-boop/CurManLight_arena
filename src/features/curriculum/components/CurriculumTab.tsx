@@ -6,6 +6,7 @@ import type { AppViewsLayerProps, CurriculumMap, GeneratedKnowledgeOutput, Popol
 import { PilotMainView } from '../../curriculum-functional-pilot';
 import { createCurriculumConsultationViewModel, type CurriculumConsultationViewModel } from './curriculumConsultationViewModel';
 import { CurriculumNodeDetail } from './CurriculumNodeDetail';
+import { CurriculumGraphView } from './CurriculumGraphView';
 
 const orderLabelsForMap: Record<string, string> = {
   infanzia: "Scuola dell'Infanzia (Mappe di Senso & Campi d'Esperienza)",
@@ -84,10 +85,16 @@ export function CurriculumTab({
   handleCSVUpload,
   handleResetCurriculumToBaseline,
 }: CurriculumTabProps) {
+  void expandedMapSections;
+  void setExpandedMapSections;
+  void showOnlyProfileProcesso;
+  void setShowOnlyProfileProcesso;
   const { activeCurricoloView, setActiveCurricoloView, discipline, order, setDiscipline, decisions, customTexts } = useCurriculumStore();
+  void decisions;
+  void customTexts;
   const [selectedNodeId, setSelectedNodeId] = useState<string | undefined>();
   const [detailOpen, setDetailOpen] = useState(false);
-  const [detailReturnView, setDetailReturnView] = useState<'home' | 'albero'>('home');
+  const [detailReturnView, setDetailReturnView] = useState<'home' | 'albero' | 'mappa'>('home');
   const consultation = useMemo(
     () => createCurriculumConsultationViewModel(localCurriculum, order, discipline, selectedNodeId),
     [localCurriculum, order, discipline, selectedNodeId],
@@ -103,7 +110,7 @@ export function CurriculumTab({
     }
   }, [consultation.items, selectedNodeId]);
 
-  const openNodeDetail = (nodeId: string, returnView: 'home' | 'albero') => {
+  const openNodeDetail = (nodeId: string, returnView: 'home' | 'albero' | 'mappa') => {
     setSelectedNodeId(nodeId);
     setDetailReturnView(returnView);
     setDetailOpen(true);
@@ -132,7 +139,7 @@ export function CurriculumTab({
         <div className="flex flex-wrap gap-1.5 border-t border-slate-100 pt-3" role="tablist" aria-label="Viste curricolo">
           <button type="button" role="tab" aria-selected={activeCurricoloView === 'home'} disabled={detailOpen} onClick={() => setActiveCurricoloView('home')} className={`rounded-lg border px-3 py-1.5 text-[10px] font-black transition ${activeCurricoloView === 'home' ? 'border-indigo-600 bg-indigo-600 text-white' : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'} ${detailOpen ? 'cursor-not-allowed opacity-50' : ''}`}>Lista / Vigente</button>
           <button type="button" role="tab" aria-selected={activeCurricoloView === 'albero'} disabled={detailOpen} onClick={() => setActiveCurricoloView('albero')} className={`rounded-lg border px-3 py-1.5 text-[10px] font-black transition ${activeCurricoloView === 'albero' ? 'border-indigo-600 bg-indigo-600 text-white' : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'} ${detailOpen ? 'cursor-not-allowed opacity-50' : ''}`}>Albero</button>
-          <button type="button" role="tab" aria-selected={false} disabled className="cursor-not-allowed rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-[10px] font-black text-slate-400">Mappa · P1.3-D</button>
+          <button type="button" role="tab" aria-selected={activeCurricoloView === 'mappa'} disabled={detailOpen} onClick={() => setActiveCurricoloView('mappa')} className={`rounded-lg border px-3 py-1.5 text-[10px] font-black transition ${activeCurricoloView === 'mappa' ? 'border-indigo-600 bg-indigo-600 text-white' : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'} ${detailOpen ? 'cursor-not-allowed opacity-50' : ''}`}>Grafo</button>
         </div>
       </div>
       {detailOpen && consultation.selectedNode ? (
@@ -178,12 +185,12 @@ export function CurriculumTab({
 
             <button
               type="button"
-              disabled
-              className="cursor-not-allowed bg-slate-50 border border-slate-200 p-5 rounded-2xl text-left space-y-2 opacity-70"
+              onClick={() => setActiveCurricoloView('mappa')}
+              className="bg-white border border-slate-200 hover:border-indigo-400 p-5 rounded-2xl shadow-sm hover:shadow-md transition text-left space-y-2"
             >
               <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider block">Azione 2 · P1.3-D</span>
               <h4 className="text-xs font-bold text-slate-700 uppercase">Raccordo Diacronico (Mappa)</h4>
-              <p className="text-[11px] text-slate-500 font-semibold leading-normal">La mappa sarà disponibile come proiezione del curricolo nella slice P1.3-D.</p>
+              <p className="text-[11px] text-slate-500 font-semibold leading-normal">Esplora le relazioni curricolari registrate nella proiezione canonica.</p>
             </button>
 
             <button
@@ -213,19 +220,15 @@ export function CurriculumTab({
         />
       )}
 
-      {/* VIEW B: MAPPA (Raccordo Diacronico) */}
-      {activeCurricoloView === 'mappa' && (
-        <MappaView
-          localCurriculum={localCurriculum}
-          discipline={discipline}
-          order={order}
-          setDiscipline={setDiscipline}
-          showOnlyProfileProcesso={showOnlyProfileProcesso}
-          setShowOnlyProfileProcesso={setShowOnlyProfileProcesso}
-          expandedMapSections={expandedMapSections}
-          setExpandedMapSections={setExpandedMapSections}
-          decisions={decisions}
-          customTexts={customTexts}
+      {!detailOpen && activeCurricoloView === 'mappa' && (
+        <CurriculumGraphView
+          items={consultation.items}
+          selectedNodeId={selectedNodeId}
+          version={consultation.version}
+          schoolOrder={consultation.schoolOrder}
+          disciplineCode={consultation.disciplineCode}
+          onSelectNode={setSelectedNodeId}
+          onOpenNodeDetail={openNodeDetail}
         />
       )}
 
@@ -639,6 +642,8 @@ function MappaView({
     </div>
   );
 }
+
+void MappaView;
 
 interface PopolamentoViewProps {
   discipline: string;
