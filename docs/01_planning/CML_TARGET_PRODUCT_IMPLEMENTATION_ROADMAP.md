@@ -2,7 +2,7 @@
 
 **Gate:** CML-631F-RB-D1R1
 **Status:** `APPROVED / CANONICAL`
-**Rule:** documentation only; the NOW increment is proposed, not implemented.
+**Rule:** P1.1 is the approved NOW increment; this document does not authorize P1.2 or P2.
 
 ## 1. Roadmap principles
 
@@ -92,17 +92,17 @@ New speculative capabilities, new institutional milestones, cloud/SCORM/remote i
 
 ## 6. Decision gate
 
-Before implementation, the user must approve or correct:
+The following target decisions are approved and recorded:
 
 - North Star and product boundaries;
 - canonical information architecture;
 - curriculum terminology and provenance/state rules;
 - canonical curriculum→UDA→document workflow;
 - target visual language;
-- 15 target-product criteria;
+- 17 target-product criteria;
 - macro sequence and P1.1 as NOW.
 
-Until that approval, implementation status remains `NON AUTORIZZATA`.
+P1.1 implementation remains limited to the visible shell/disclosure change; P1.2 and P2 remain unauthorized.
 
 ## 7. Change control
 

@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import type { ComponentProps } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { AppHeader } from '../features/navigation';
@@ -13,16 +13,12 @@ function props(overrides: Partial<ComponentProps<typeof AppHeader>> = {}): Compo
 }
 
 describe('CML-633D Task 10 AppHeader honesty', () => {
-  it('reports SCORM publication and student import as unavailable without success claims', () => {
+  it('keeps unavailable capabilities out of the primary profile surface', () => {
     const showToast = vi.fn();
     const handleWorkspaceSync = vi.fn();
     render(<AppHeader {...props({ showToast, handleWorkspaceSync })} />);
 
-    fireEvent.click(screen.getByRole('button', { name: /Pubblicazione SCORM non disponibile/i }));
-    fireEvent.click(screen.getByRole('button', { name: /Importazione studenti non disponibile/i }));
-
-    expect(showToast).toHaveBeenNthCalledWith(1, expect.stringMatching(/non disponibile|non configurata/i), false);
-    expect(showToast).toHaveBeenNthCalledWith(2, expect.stringMatching(/non disponibile|non configurata/i), false);
+    expect(screen.queryByRole('button', { name: /Pubblicazione SCORM|Importazione studenti/i })).not.toBeInTheDocument();
     expect(handleWorkspaceSync).not.toHaveBeenCalled();
   });
 });

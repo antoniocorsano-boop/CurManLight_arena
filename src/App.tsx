@@ -1225,6 +1225,7 @@ export default function App() {
      activeTab={activeTab}
      pendingCount={pendingCount}
      handleTabSwitch={(tab) => handleTabSwitch(tab as AppTab)}
+     setActiveProgTab={(tab) => setActiveProgTab(tab as any)}
    />  </div>
   </AppContext.Provider>
  );
