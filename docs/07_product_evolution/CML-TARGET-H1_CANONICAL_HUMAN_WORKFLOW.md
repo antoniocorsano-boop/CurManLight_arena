@@ -1,21 +1,43 @@
 # CML-TARGET-H1 — Canonical Human Workflow
 
-**Stato:** specifica funzionale proposta per revisione umana  
+**Stato:** specifica funzionale pronta per approvazione
 **Baseline:** P1.2 congelata, commit `9f2ac12`  
-**Scope:** comportamento del docente, senza modifiche al runtime  
-**Verdetto da assegnare dopo revisione:** `CML_TARGET_H1_CANONICAL_HUMAN_WORKFLOW_APPROVED`
+**Prerequisiti:** H0 e H0.1 approvati
+**Scope:** comportamento umano, senza modifiche al runtime
 
 ## 1. Obiettivo
 
-Il docente deve poter usare CurManLight dall'inizio alla fine senza conoscere la struttura tecnica dell'applicazione, i nomi dei componenti o la differenza tra viste legacy e domini interni.
+CurManLight deve poter essere usato da un docente dall'inizio alla fine senza conoscere l'architettura del programma. H1 definisce come le capacità approvate in H0.1 devono essere comprese e utilizzate dalle persone.
 
-Il modello umano di riferimento è:
+Il modello non è una sequenza unica. È composto da due percorsi canonici, collegati ma distinti.
+
+### Percorso didattico
 
 ```text
-contesto di lavoro → riferimento → lavoro didattico → risultato → ripresa
+contesto/classe → curricolo vigente → selezione dei riferimenti → progettazione → documento/risultato → ripresa del lavoro
 ```
 
-Le aree dell'applicazione non sono il punto di partenza del ragionamento. Sono superfici diverse dello stesso lavoro:
+Qui l'oggetto centrale è la **progettazione didattica**.
+
+### Percorso di evoluzione curricolare
+
+```text
+curricolo vigente → esigenza di modifica → proposta → revisione autorizzata → verifica tecnica della versione pertinente → decisione curricolare → applicazione della decisione → nuova versione → entrata in vigore
+```
+
+Qui l'oggetto centrale cambia nel tempo: **curricolo vigente → proposta/versione → decisione → nuova versione curricolare**.
+
+La revisione prevede ritorni e terminali alternativi:
+
+```text
+revisione → richiesta modifiche → nuova versione proposta → reinvio → nuova verifica tecnica, se necessaria
+
+terminali: ritirata | respinta | ammessa alla decisione
+```
+
+Applicazione della decisione, produzione della nuova versione ed entrata in vigore non sono sinonimi e non devono essere rappresentate come un generico “consolidamento”.
+
+Le aree dell'applicazione sono superfici dello stesso lavoro, non il punto di partenza del ragionamento:
 
 | Concetto umano | Superficie prevalente |
 |---|---|
@@ -25,206 +47,175 @@ Le aree dell'applicazione non sono il punto di partenza del ragionamento. Sono s
 | Risultato | Documenti |
 | Ripresa e orientamento | Home |
 
-Questa corrispondenza è funzionale, non una nuova architettura di navigazione.
-
 ## 2. Principi vincolanti
 
 1. Il docente parte da un bisogno professionale, non dal nome di una feature.
-2. Il contesto classe, quando disponibile, deve restare riconoscibile durante il lavoro.
-3. Ogni passaggio deve rendere espliciti contesto, oggetto corrente, stato e prossimo passo naturale.
-4. Curricolo, Progettazione e Documenti devono essere passaggi collegati, non pagine indipendenti.
-5. Una superficie di lettura non deve sembrare un comando di mutazione.
-6. Un dato non disponibile non deve essere inventato per completare l'interfaccia.
-7. Le azioni tecniche sono subordinate al lavoro professionale.
-8. Il docente deve poter riprendere una bozza o un documento senza ricostruire la sequenza precedente.
-9. Il flusso locale non implica autenticazione, approvazione istituzionale o collaborazione remota.
-10. La specifica non autorizza ancora codice, nuove capability o modifiche alla shell/routing.
+2. La classe resta riconoscibile durante il percorso didattico, quando disponibile.
+3. Ogni passaggio esplicita contesto, oggetto, stato e prossimo passo naturale.
+4. Curricolo, Progettazione e Documenti sono passaggi collegati, non pagine isolate.
+5. La consultazione non deve sembrare una mutazione.
+6. La verifica tecnica non è approvazione pedagogica o istituzionale.
+7. La decisione curricolare è un atto umano autorizzato, non un esito automatico.
+8. Dati e relazioni non disponibili non devono essere inventati.
+9. Il docente deve poter riprendere una bozza o un documento senza ricostruire il percorso.
+10. H1 non autorizza codice, nuove capability, modifiche alla shell o al routing.
 
-## 3. Modello di orientamento
+## 3. Traduzione professionale
 
-Ogni momento del lavoro deve poter rispondere a cinque domande:
+La macchina a stati protegge il significato del lavoro, ma non è il linguaggio principale dell'utente.
+
+| Momento | Domanda dell'utente | Risultato comprensibile |
+|---|---|---|
+| Curricolo vigente | «Qual è il riferimento che vale adesso?» | Riferimento corrente identificato e consultabile |
+| Proposta | «Che cosa voglio modificare e perché?» | Proposta/versione con motivazione riconoscibile |
+| Revisione | «Questa proposta può proseguire o deve essere corretta?» | Stato e azione successiva |
+| Verifica tecnica | «I dati della versione che stiamo valutando sono coerenti?» | “Nessun problema tecnico rilevato” oppure “Problemi da correggere” |
+| Decisione curricolare | «Quale decisione è stata assunta su questa versione?» | Esito umano autorizzato, con motivazione e provenienza |
+| Applicazione | «Come si traduce la decisione nel curricolo?» | Effetto atteso e nuova versione da produrre |
+| Nuova versione | «Quale versione ne deriva?» | Versione identificata e tracciabile |
+| Entrata in vigore | «Da quando questa è la versione da utilizzare?» | Riferimento vigente con decorrenza esplicita |
+
+La versione ammessa alla decisione deve possedere una verifica tecnica pertinente e non obsoleta, quando tale verifica è richiesta. Dopo una richiesta di modifica e una nuova versione la verifica può quindi essere rieseguita.
+
+## 4. Modello di orientamento
+
+Ogni momento del lavoro deve rispondere a cinque domande:
 
 | Domanda | Risposta attesa |
 |---|---|
-| Dove sono? | area professionale e contesto classe, se disponibile |
-| Su cosa sto lavorando? | curricolo, UDA, documento o attività corrente |
-| Qual è lo stato? | disponibile, bozza, in corso, pronto o non disponibile |
-| Cosa posso fare adesso? | una sola azione primaria riconoscibile |
-| Dove vado dopo? | passaggio naturale già coerente con il lavoro |
+| Dove sono? | Area professionale e classe, se disponibile |
+| Su cosa sto lavorando? | Curricolo, proposta, progettazione o documento corrente |
+| Qual è lo stato? | Disponibile, bozza, in corso, da correggere, pronto o vigente |
+| Cosa posso fare adesso? | Una sola azione primaria riconoscibile |
+| Dove vado dopo? | Passaggio naturale coerente con il lavoro |
 
-Il sistema non deve obbligare il docente a interpretare tab, wizard, export o moduli per rispondere a queste domande.
-
-## 4. Casi d'uso canonici
+## 5. Casi d'uso didattici canonici
 
 ### H1 — «Devo lavorare sulla 2A»
 
-**Bisogno:** entrare nel contesto corretto prima di scegliere un'attività.
+**Punto di partenza:** Home o riapertura del sistema.
+**Decisione:** selezionare o confermare la classe `2A`.
+**Azione:** aprire il contesto e vedere lavori e documenti collegati, quando disponibili.
+**Risultato:** `2A` è il contesto attivo e le azioni successive sono riferite a essa.
+**Passo successivo naturale:** consultare il curricolo pertinente o riprendere un lavoro aperto.
 
-| Passo | Comportamento umano atteso |
-|---|---|
-| Punto di partenza | Il docente apre CurManLight o riprende il lavoro dalla Home. |
-| Decisione | Seleziona o conferma la classe `2A`; se esistono più sezioni, sceglie quella corretta. |
-| Azione | Apre il contesto della classe e vede attività, UDA e documenti collegati quando disponibili. |
-| Risultato | Il contesto attivo è chiaramente `2A`; le azioni successive si riferiscono a quella classe. |
-| Passo successivo naturale | Consultare il curricolo pertinente oppure riprendere un lavoro aperto della classe. |
-
-**Regola:** la classe è un contesto di lavoro, non necessariamente un nuovo archivio duplicato. Se non esiste una classe selezionata, il sistema deve dichiararlo e consentire di proseguire solo con dati non dipendenti dalla classe.
+La classe è un contesto operativo, non un archivio duplicato dei domini.
 
 ### H2 — «Cosa devo insegnare?»
 
-**Bisogno:** individuare il riferimento curricolare pertinente senza leggere strutture tecniche.
+**Punto di partenza:** classe attiva o Home.
+**Decisione:** confermare disciplina e livello e scegliere il riferimento pertinente.
+**Azione:** consultare traguardi, obiettivi, evidenze e struttura verticale disponibili.
+**Risultato:** il docente comprende che cosa può insegnare e da quali riferimenti progettare.
+**Passo successivo naturale:** avviare una progettazione collegata.
 
-| Passo | Comportamento umano atteso |
-|---|---|
-| Punto di partenza | Il docente parte dalla classe attiva oppure dalla Home. |
-| Decisione | Conferma disciplina e livello scolastico; sceglie il riferimento curricolare pertinente. |
-| Azione | Consulta traguardi, obiettivi, evidenze e organizzazione verticale disponibili per quel contesto. |
-| Risultato | Capisce che cosa può insegnare e quali elementi può usare per progettare. |
-| Passo successivo naturale | Avvia una progettazione collegata al riferimento selezionato. |
-
-**Regola:** il Curricolo è una superficie di riferimento e comprensione. La presenza di importazione, popolamento o assistenza non deve sostituire la domanda professionale principale.
+Il Curricolo è una superficie di riferimento e comprensione.
 
 ### H3 — «Devo preparare la progettazione»
 
-**Bisogno:** trasformare un riferimento curricolare in un lavoro didattico concreto.
+**Punto di partenza:** Curricolo, classe o bozza aperta.
+**Decisione:** confermare classe/target e riferimento.
+**Azione:** costruire o riprendere l'UDA, con i dati didattici pertinenti.
+**Risultato:** esiste una progettazione riconoscibile, collegata al curricolo e con stato chiaro.
+**Passo successivo naturale:** salvare, continuare o aggiornare il documento risultante.
 
-| Passo | Comportamento umano atteso |
-|---|---|
-| Punto di partenza | Il docente arriva dal Curricolo, dalla classe o da una bozza già aperta. |
-| Decisione | Conferma disciplina, classe/target e riferimento da usare per la progettazione. |
-| Azione | Costruisce o riprende un'UDA: titolo, periodo, ore, compito, evidenze e note pertinenti. |
-| Risultato | Esiste una progettazione riconoscibile, collegata al curricolo e nello stato corretto. |
-| Passo successivo naturale | Salvare la bozza, continuare il lavoro o generare/aggiornare il documento risultante. |
-
-**Regola:** il wizard è una modalità di compilazione, non il modello mentale principale. Il docente deve riconoscere prima cosa sta progettando, per chi e a quale punto si trova.
+Il wizard è una modalità di compilazione, non il modello mentale principale.
 
 ### H4 — «Riprendo ciò che avevo iniziato»
 
-**Bisogno:** tornare al lavoro aperto senza cercare tra tutte le funzioni.
+**Punto di partenza:** Home o rientro nel sistema.
+**Decisione:** riconoscere il lavoro tramite titolo, classe, disciplina e stato.
+**Azione:** usare una sola azione primaria di ripresa.
+**Risultato:** il docente torna al punto salvato senza ripetere la selezione del percorso.
+**Passo successivo naturale:** continuare il lavoro o aprire il risultato collegato.
 
-| Passo | Comportamento umano atteso |
-|---|---|
-| Punto di partenza | Il docente apre la Home oppure rientra nel sistema. |
-| Decisione | Riconosce la scheda di lavoro corrente tramite titolo, classe, disciplina e stato. |
-| Azione | Preme una sola azione primaria di ripresa, per esempio continuare l'UDA o aprire il documento corrente. |
-| Risultato | Torna esattamente al lavoro aperto, senza dover ripetere la selezione del percorso. |
-| Passo successivo naturale | Continuare dal punto salvato oppure passare al risultato collegato. |
-
-**Regola:** lo stato del lavoro corrente ha priorità sulle attività storiche. Le attività recenti non devono rappresentare il wizard in corso come se fosse un documento già prodotto.
+Lo stato corrente ha priorità sulle attività storiche.
 
 ### H5 — «Voglio vedere il risultato»
 
-**Bisogno:** ottenere anteprima o documento senza cercare un'azione tecnica in un'altra area.
+**Punto di partenza:** progettazione corrente o Home.
+**Decisione:** vedere anteprima o documento collegato.
+**Azione:** aprire il risultato e, se disponibile, aggiornarlo, scaricarlo o stamparlo.
+**Risultato:** origine e stato/versione del documento sono comprensibili.
+**Passo successivo naturale:** correggere la progettazione oppure conservare/esportare il risultato.
 
-| Passo | Comportamento umano atteso |
-|---|---|
-| Punto di partenza | Il docente si trova nella progettazione corrente oppure nella Home. |
-| Decisione | Sceglie di vedere l'anteprima o il documento collegato alla progettazione. |
-| Azione | Apre l'anteprima; da lì può eseguire l'azione documentale disponibile, come aggiornare, scaricare o stampare. |
-| Risultato | Vede il risultato della progettazione e ne comprende origine e stato/versione. |
-| Passo successivo naturale | Tornare alla progettazione per correggere oppure conservare/esportare la versione corrente. |
-
-**Regola:** Documenti rappresenta oggetti professionali e loro versioni, non un contenitore di formati di export. L'export è un'azione contestuale sul documento, non l'identità della workspace.
+Documenti rappresenta oggetti professionali e versioni, non formati di export.
 
 ### H6 — «Cosa ho già predisposto per questa classe?»
 
-**Bisogno:** avere una vista affidabile del lavoro collegato a una classe.
+**Punto di partenza:** contesto della classe `2A`.
+**Decisione:** consultare il lavoro predisposto senza conoscere i nomi interni.
+**Azione:** vedere progettazioni, documenti, stato e ultima attività disponibile.
+**Risultato:** il docente distingue ciò che è in bozza, pronto, riprendibile o aggiornabile.
+**Passo successivo naturale:** aprire un lavoro, crearne uno dal curricolo o vedere il documento.
 
-| Passo | Comportamento umano atteso |
-|---|---|
-| Punto di partenza | Il docente apre la classe `2A`. |
-| Decisione | Sceglie di consultare il lavoro già predisposto, senza dover distinguere UDA, documenti o attività tecniche per nome interno. |
-| Azione | Consulta una lista o una sintesi di lavori collegati: progettazioni, documenti, stato e ultima attività disponibile. |
-| Risultato | Capisce cosa esiste già per la classe, cosa è in bozza e cosa può essere ripreso o aggiornato. |
-| Passo successivo naturale | Aprire un lavoro esistente, creare una nuova progettazione dal curricolo o vedere il documento collegato. |
+Il collegamento alla classe offre continuità e consultazione; non crea archivi duplicati.
 
-**Regola:** il collegamento alla classe è un asse di consultazione e continuità. Non autorizza a duplicare gli archivi dei domini né a introdurre automaticamente un nuovo modello persistente.
+## 6. Decisioni strutturali derivate
 
-## 5. Decisioni strutturali derivate
+### Classe come contenitore operativo
 
-Le decisioni sotto riportate sono conseguenze funzionali candidate, non ancora approvate per l'implementazione.
+La classe è il principale contesto operativo quando il lavoro è riferito a un gruppo reale. Non è il contenitore esclusivo e non assorbe il significato autonomo di Curricolo, Progettazione o Documenti.
 
-### 5.1 Classe come contenitore operativo principale
+### Ruoli autonomi
 
-**Raccomandazione:** sì, come contesto operativo principale quando il lavoro è riferito a una classe; no, come contenitore esclusivo di tutte le funzioni.
-
-La classe deve fornire l'ancoraggio umano per H1 e H6 e deve restare visibile durante H2, H3 e H5 quando il dato è disponibile. Non deve assorbire il significato autonomo di Curricolo, Progettazione o Documenti e non deve creare copie locali degli stessi oggetti.
-
-### 5.2 Ruolo autonomo delle aree
-
-| Area | Ruolo umano autonomo | Non deve diventare |
+| Area | Ruolo umano | Non deve diventare |
 |---|---|---|
-| Curricolo | capire il riferimento e decidere cosa usare | un menu di strumenti tecnici o un deposito di importazioni |
-| Progettazione | costruire e seguire il lavoro didattico | una sequenza di wizard senza contesto |
-| Documenti | vedere, versionare e ottenere il risultato professionale | una lista di formati da esportare |
-| Classe | orientare il lavoro riferito a un gruppo reale | un duplicato degli archivi curriculari/documentali |
-| Home | riprendere il lavoro e mostrare la prossima azione | un dashboard di metriche senza continuità |
+| Curricolo | capire il riferimento vigente e scegliere cosa usare | deposito di strumenti tecnici |
+| Progettazione | costruire e seguire il lavoro didattico | wizard senza contesto |
+| Documenti | vedere, versionare e ottenere il risultato | lista di export |
+| Classe | orientare il lavoro riferito a un gruppo | duplicato degli archivi |
+| Home | riprendere il lavoro e mostrare la prossima azione | dashboard senza continuità |
 
-### 5.3 Passaggi artificiali da eliminare
+### Passaggi artificiali da eliminare
 
-Sono candidati alla rimozione o al riassorbimento nel contesto, non alla cancellazione indiscriminata delle capability:
+- passare da Curricolo a Progettazione senza trasferire classe e riferimento;
+- entrare in Progettazione per capire che cosa si sta costruendo;
+- cercare un documento come export separato dal suo oggetto d'origine;
+- usare tab o wizard come unica spiegazione del lavoro;
+- riprendere un wizard dal menu invece che dallo stato corrente;
+- ricostruire manualmente dalla classe quali lavori e documenti le appartengono;
+- mostrare dati o relazioni non realmente disponibili.
 
-- passare da Curricolo a Progettazione senza trasferire disciplina, livello, classe e riferimento;
-- entrare in Progettazione per capire prima quale lavoro si sta costruendo;
-- cercare un documento come se fosse un export tecnico separato dal suo oggetto d'origine;
-- usare tab o modalità interne come unica spiegazione della pagina;
-- riprendere un wizard dal menu invece che dallo stato del lavoro corrente;
-- ricostruire dalla classe quali UDA e documenti le appartengono;
-- mostrare dati di classe, stato o origine non realmente disponibili;
-- esporre azioni di assistenza, importazione o configurazione prima dell'azione professionale primaria.
-
-## 6. Stato e continuità minimi
-
-Per ciascun oggetto collegabile al percorso devono essere distinguibili, quando realmente disponibili:
+## 7. Continuità minima
 
 ```text
-contesto personale → classe/target → oggetto di lavoro → stato → origine → prossima azione
-```
-
-La continuità minima richiesta è:
-
-```text
-Classe → Curricolo → Progettazione → Documenti → Classe
+classe → curricolo → progettazione → documento → classe
+curricolo vigente → proposta → revisione → decisione → nuova versione → vigente
 Home → lavoro corrente → punto salvato → risultato collegato
 ```
 
-Se un collegamento non esiste, il sistema deve mostrare l'assenza e offrire il passo possibile più vicino, senza simulare una relazione.
+Se un collegamento non esiste, il sistema mostra l'assenza e offre il passo possibile più vicino senza simulare una relazione.
 
-## 7. Fuori perimetro H1
+## 8. Fuori perimetro H1
 
 - modifiche a codice, store, componenti, shell o routing;
-- nuova IA o nuove macro-aree;
 - completamento dei workflow curriculari, documentali o di classe;
 - autenticazione, ruoli verificati, collaborazione remota o backend;
 - nuove capability o decisioni di governance;
-- visual polish, mockup pixel-perfect o scelta dei componenti UI;
-- piano d'implementazione P1.3;
-- correzione del debito tecnico non necessario a validare il modello umano.
+- visual polish o scelta dei componenti UI;
+- piano d'implementazione P1.3.
 
-## 8. Criteri di approvazione
+## 9. Criteri di approvazione
 
-La specifica può essere approvata solo se un docente può leggere ciascun caso H1–H6 e riconoscere:
+Un docente deve poter leggere H1 e riconoscere, per ciascun percorso e caso d'uso:
 
-1. da quale situazione reale parte;
-2. quale decisione deve prendere;
-3. quale azione esegue;
-4. quale risultato ottiene;
-5. quale passo successivo è naturale;
-6. quale area è responsabile del significato del lavoro;
-7. quali dati non devono essere inventati quando mancano.
+1. la situazione reale da cui parte;
+2. la decisione da prendere;
+3. l'azione da eseguire;
+4. il risultato ottenuto;
+5. il passo successivo naturale;
+6. il significato professionale dell'area coinvolta;
+7. i dati che non devono essere inventati.
 
-La validazione non consiste ancora nel verificare schermate. Consiste nell'approvare il percorso umano e le tre decisioni strutturali derivate.
+La validazione non consiste ancora nel verificare schermate: consiste nell'approvare il modello umano e le superfici che dovranno renderlo visibile.
 
-## 9. Esito proposto
-
-```text
-CML_TARGET_H1_CANONICAL_HUMAN_WORKFLOW_READY_FOR_REVIEW
-```
-
-Solo dopo approvazione esplicita della specifica potrà essere assegnato:
+## 10. Esito
 
 ```text
-CML_TARGET_H1_CANONICAL_HUMAN_WORKFLOW_APPROVED
+CML_TARGET_H1_CANONICAL_HUMAN_WORKFLOW_READY_FOR_APPROVAL
+NO_RUNTIME_CHANGE_AUTHORIZED
+P1_3_NOT_DEFINED
 ```
 
-e potrà essere definita la successiva slice d'implementazione.
+Solo dopo l'approvazione esplicita di H1 potrà essere definita la successiva slice d'implementazione.
