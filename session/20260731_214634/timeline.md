@@ -20,3 +20,6 @@
 
 ## 2026-08-09 21:57:15 +02:00
 - H1 ristrutturata sui due percorsi canonici; specifica pronta per approvazione; commit 61bed86; nessuna modifica runtime.
+
+## 2026-08-09 22:11:10 +02:00
+- H1-R1 definisce la revisione istituzionale normalmente chiusa, il mandato del dirigente e il processo/campagna; commit dd12876.
