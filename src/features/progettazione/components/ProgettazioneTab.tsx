@@ -1,6 +1,7 @@
 import { Save, Zap, Eye, Copy, Users, Search, RefreshCw, Filter } from 'lucide-react';
 import { useState } from 'react';
 import { useCurriculumStore } from '../../../store/useCurriculumStore';
+import { DesignSelezioniPanel } from './DesignSelezioniPanel';
 import { UiConfirmDialog } from '../../../ui/components/UiConfirmDialog';
 import { ClasseTab } from '../../classroom';
 import { SocialTab } from '../../social';
@@ -540,6 +541,10 @@ function ProgettazioneAnnualeView({
             <button onClick={() => setProgettazioneMode('wizard')} className={`px-3 py-1.5 rounded-lg transition ${progettazioneMode === 'wizard' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500'}`}>Procedura Guidata Wizard</button>
           </div>
         </div>
+      </div>
+
+      <div className="rounded-2xl border border-indigo-100 bg-indigo-50/40 p-4" data-testid="plan-curriculum-references">
+        <DesignSelezioniPanel />
       </div>
 
       {progettazioneMode === 'grid' ? (

@@ -315,6 +315,8 @@ export function AppViewsLayer(props: AppViewsLayerProps) {
         handleSaveGeneratedToKB={handleSaveGeneratedToKB}
         handleCSVUpload={handleCSVUpload}
         handleResetCurriculumToBaseline={handleResetCurriculumToBaseline}
+        handleTabSwitch={handleTabSwitch}
+        setActiveProgTab={setActiveProgTab}
        />
       </div>
      )}

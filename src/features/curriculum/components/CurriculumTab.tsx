@@ -7,6 +7,10 @@ import { PilotMainView } from '../../curriculum-functional-pilot';
 import { createCurriculumConsultationViewModel, type CurriculumConsultationViewModel } from './curriculumConsultationViewModel';
 import { CurriculumNodeDetail } from './CurriculumNodeDetail';
 import { CurriculumGraphView } from './CurriculumGraphView';
+import { executeA02ToA04Transfer } from '../../../domain/design/transferA02';
+import { addSelectionWithConflictResolution } from '../../../domain/design/conflicts';
+import { createEntityReference } from '../../../domain/curriculum/identity';
+import type { EntityId } from '../../../domain/curriculum/identity/types';
 
 const orderLabelsForMap: Record<string, string> = {
   infanzia: "Scuola dell'Infanzia (Mappe di Senso & Campi d'Esperienza)",
@@ -61,6 +65,8 @@ export type CurriculumTabProps = Pick<AppViewsLayerProps,
   | 'handleSaveGeneratedToKB'
   | 'handleCSVUpload'
   | 'handleResetCurriculumToBaseline'
+  | 'handleTabSwitch'
+  | 'setActiveProgTab'
 >;
 
 export function CurriculumTab({
@@ -84,6 +90,8 @@ export function CurriculumTab({
   handleSaveGeneratedToKB,
   handleCSVUpload,
   handleResetCurriculumToBaseline,
+  handleTabSwitch,
+  setActiveProgTab,
 }: CurriculumTabProps) {
   void expandedMapSections;
   void setExpandedMapSections;
@@ -121,6 +129,30 @@ export function CurriculumTab({
     setActiveCurricoloView(detailReturnView);
   };
 
+  const useNodeInPlanning = (item: CurriculumConsultationViewModel['selectedNode']) => {
+    if (!item) return { ok: false, message: 'Il riferimento curricolare non è disponibile.' };
+    const designRef = createEntityReference('current-teaching-design' as EntityId, 'teaching-design');
+    const transfer = executeA02ToA04Transfer({
+      nodeRefs: [{ entityId: item.nodeId, entityType: 'curriculum-node' }],
+      explicitSnapshots: { [item.nodeId]: item.node.text },
+      sources: item.sourceRefs.map(source => String(source.id)),
+      evidences: consultation.evidenceItems.map(evidence => evidence.nodeId),
+      curriculumVersionRef: String(item.curriculumVersionRef.id),
+      origin: item.provenance,
+      legacyWarnings: item.version.status === 'legacy' ? ['Fonte legacy non verificata'] : [],
+      metadata: { sessionTimestamp: new Date().toISOString() },
+    }, useCurriculumStore.getState().designArchive, designRef);
+    if (!transfer.ok) return { ok: false, message: transfer.error.message };
+
+    const archive = useCurriculumStore.getState().designArchive;
+    const committed = addSelectionWithConflictResolution(archive, transfer.selection, 'keep-existing');
+    if (!committed.success) return { ok: false, message: committed.errors[0]?.message ?? 'Il riferimento non è stato trasferito.' };
+    useCurriculumStore.getState().replaceDesignArchive(committed.archive);
+    handleTabSwitch('progetta-annuale');
+    setActiveProgTab('annuale');
+    return { ok: true };
+  };
+
   return (
     <div className="space-y-6 fade-in text-left">
       <div className="bg-white border border-slate-200 rounded-2xl p-5 space-y-4 shadow-sm" data-testid="curriculum-consultation-header">
@@ -143,7 +175,7 @@ export function CurriculumTab({
         </div>
       </div>
       {detailOpen && consultation.selectedNode ? (
-        <CurriculumNodeDetail item={consultation.selectedNode} evidenceItems={consultation.evidenceItems} onBack={closeNodeDetail} />
+        <CurriculumNodeDetail item={consultation.selectedNode} evidenceItems={consultation.evidenceItems} onBack={closeNodeDetail} onUseInPlanning={() => useNodeInPlanning(consultation.selectedNode)} />
       ) : activeCurricoloView === 'home' && (
         <div className="space-y-6 fade-in text-left">
           <div className="bg-slate-50 border rounded-2xl p-5 space-y-2 text-left">

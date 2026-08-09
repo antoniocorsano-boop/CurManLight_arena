@@ -61,4 +61,23 @@ describe('CURR-04 curriculum node detail', () => {
     expect(screen.getByText('Presenta il procedimento seguito')).toBeInTheDocument();
     expect(screen.getByText(/solo relazioni curricolari registrate/i)).toBeInTheDocument();
   });
+
+  it('exposes the active PLAN-02 transfer action when the existing contract is available', () => {
+    const consultation = createCurriculumConsultationViewModel(curriculum, 'secondaria', 'tecnologia');
+    const onUseInPlanning = vi.fn(() => ({ ok: true }));
+
+    render(
+      <CurriculumNodeDetail
+        item={consultation.items[1]}
+        evidenceItems={[]}
+        onBack={vi.fn()}
+        onUseInPlanning={onUseInPlanning}
+      />,
+    );
+
+    const transfer = screen.getByRole('button', { name: 'Usa nella progettazione' });
+    expect(transfer).toBeEnabled();
+    transfer.click();
+    expect(onUseInPlanning).toHaveBeenCalledTimes(1);
+  });
 });

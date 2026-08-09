@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { ArrowLeft, ArrowRight, ExternalLink } from 'lucide-react';
 import {
   LINK_TYPE_LABELS,
@@ -10,6 +11,7 @@ export interface CurriculumNodeDetailProps {
   item: CurriculumConsultationItem;
   evidenceItems: CurriculumConsultationItem[];
   onBack: () => void;
+  onUseInPlanning?: () => { ok: boolean; message?: string };
 }
 
 const NODE_DETAIL_LABELS: Record<string, string> = {
@@ -18,7 +20,8 @@ const NODE_DETAIL_LABELS: Record<string, string> = {
   evidenza: 'Evidenza osservabile',
 };
 
-export function CurriculumNodeDetail({ item, evidenceItems, onBack }: CurriculumNodeDetailProps) {
+export function CurriculumNodeDetail({ item, evidenceItems, onBack, onUseInPlanning }: CurriculumNodeDetailProps) {
+  const [transferError, setTransferError] = useState<string | undefined>();
   const nodeLabel = NODE_DETAIL_LABELS[item.node.nodeType] ?? NODE_TYPE_LABELS.get(item.node.nodeType) ?? 'Riferimento curricolare';
   const disciplineLabel = getDisciplineDefinition(item.disciplineCode)?.label ?? item.disciplineCode;
   const sourceRefs = item.sourceRefs;
@@ -113,11 +116,12 @@ export function CurriculumNodeDetail({ item, evidenceItems, onBack }: Curriculum
 
         <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-4">
           <p className="text-[10px] font-semibold text-slate-500">Versione e contesto saranno mantenuti quando la progettazione sarà disponibile.</p>
-          <button type="button" disabled title="Disponibile in P1.3-E" className="inline-flex cursor-not-allowed items-center gap-1.5 rounded-lg bg-slate-300 px-3 py-2 text-[10px] font-black text-slate-600">
+          <button type="button" disabled={!onUseInPlanning} onClick={() => { const result = onUseInPlanning?.(); if (result && !result.ok) setTransferError(result.message ?? 'Impossibile trasferire il riferimento nella progettazione.'); }} className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-[10px] font-black transition ${onUseInPlanning ? 'bg-indigo-600 text-white hover:bg-indigo-700' : 'cursor-not-allowed bg-slate-300 text-slate-600'}`}>
             Usa nella progettazione
             <ArrowRight className="h-3.5 w-3.5" />
           </button>
         </div>
+        {transferError && <p role="alert" className="mt-3 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-[10px] font-semibold text-rose-700">{transferError}</p>}
       </div>
     </section>
   );
