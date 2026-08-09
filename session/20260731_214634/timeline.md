@@ -23,3 +23,6 @@
 
 ## 2026-08-09 22:11:10 +02:00
 - H1-R1 definisce la revisione istituzionale normalmente chiusa, il mandato del dirigente e il processo/campagna; commit dd12876.
+
+## 2026-08-09 22:33:58 +02:00
+- H2 specifica madre del prodotto creata e committata come 160cb8f; P1.3 non definita; nessuna modifica runtime.
