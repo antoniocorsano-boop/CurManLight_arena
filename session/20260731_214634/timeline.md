@@ -38,3 +38,6 @@
 
 ## 2026-08-09 23:14:52 +02:00
 - P1.3-B implementation and browser verification complete; focused/domain/fast/typecheck/build gates green; isolated browser smoke confirmed CURR-01 to CURR-02 context preservation; ready for dedicated commit.
+
+## 2026-08-09 23:43:28 +02:00
+- P1.3-C implemented: canonical read-only CurriculumNodeDetail wired from CURR-01 and CURR-02; focused UI 2/2, curriculum 425/425, fast 273/273, typecheck/build green; browser smoke confirmed same node and context continuity; graph hook rebuild blocked by EPERM and produced no artifacts.

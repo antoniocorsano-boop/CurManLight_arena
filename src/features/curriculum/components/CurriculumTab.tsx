@@ -5,6 +5,7 @@ import type { DecisionStatus, Proposal, SchoolOrder } from '../../../types/curri
 import type { AppViewsLayerProps, CurriculumMap, GeneratedKnowledgeOutput, PopolamentoTab } from '../../session';
 import { PilotMainView } from '../../curriculum-functional-pilot';
 import { createCurriculumConsultationViewModel, type CurriculumConsultationViewModel } from './curriculumConsultationViewModel';
+import { CurriculumNodeDetail } from './CurriculumNodeDetail';
 
 const orderLabelsForMap: Record<string, string> = {
   infanzia: "Scuola dell'Infanzia (Mappe di Senso & Campi d'Esperienza)",
@@ -85,6 +86,8 @@ export function CurriculumTab({
 }: CurriculumTabProps) {
   const { activeCurricoloView, setActiveCurricoloView, discipline, order, setDiscipline, decisions, customTexts } = useCurriculumStore();
   const [selectedNodeId, setSelectedNodeId] = useState<string | undefined>();
+  const [detailOpen, setDetailOpen] = useState(false);
+  const [detailReturnView, setDetailReturnView] = useState<'home' | 'albero'>('home');
   const consultation = useMemo(
     () => createCurriculumConsultationViewModel(localCurriculum, order, discipline, selectedNodeId),
     [localCurriculum, order, discipline, selectedNodeId],
@@ -99,6 +102,17 @@ export function CurriculumTab({
       setSelectedNodeId(consultation.items[0].nodeId);
     }
   }, [consultation.items, selectedNodeId]);
+
+  const openNodeDetail = (nodeId: string, returnView: 'home' | 'albero') => {
+    setSelectedNodeId(nodeId);
+    setDetailReturnView(returnView);
+    setDetailOpen(true);
+  };
+
+  const closeNodeDetail = () => {
+    setDetailOpen(false);
+    setActiveCurricoloView(detailReturnView);
+  };
 
   return (
     <div className="space-y-6 fade-in text-left">
@@ -116,12 +130,14 @@ export function CurriculumTab({
           </span>
         </div>
         <div className="flex flex-wrap gap-1.5 border-t border-slate-100 pt-3" role="tablist" aria-label="Viste curricolo">
-          <button type="button" role="tab" aria-selected={activeCurricoloView === 'home'} onClick={() => setActiveCurricoloView('home')} className={`rounded-lg border px-3 py-1.5 text-[10px] font-black transition ${activeCurricoloView === 'home' ? 'border-indigo-600 bg-indigo-600 text-white' : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'}`}>Lista / Vigente</button>
-          <button type="button" role="tab" aria-selected={activeCurricoloView === 'albero'} onClick={() => setActiveCurricoloView('albero')} className={`rounded-lg border px-3 py-1.5 text-[10px] font-black transition ${activeCurricoloView === 'albero' ? 'border-indigo-600 bg-indigo-600 text-white' : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'}`}>Albero</button>
+          <button type="button" role="tab" aria-selected={activeCurricoloView === 'home'} disabled={detailOpen} onClick={() => setActiveCurricoloView('home')} className={`rounded-lg border px-3 py-1.5 text-[10px] font-black transition ${activeCurricoloView === 'home' ? 'border-indigo-600 bg-indigo-600 text-white' : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'} ${detailOpen ? 'cursor-not-allowed opacity-50' : ''}`}>Lista / Vigente</button>
+          <button type="button" role="tab" aria-selected={activeCurricoloView === 'albero'} disabled={detailOpen} onClick={() => setActiveCurricoloView('albero')} className={`rounded-lg border px-3 py-1.5 text-[10px] font-black transition ${activeCurricoloView === 'albero' ? 'border-indigo-600 bg-indigo-600 text-white' : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'} ${detailOpen ? 'cursor-not-allowed opacity-50' : ''}`}>Albero</button>
           <button type="button" role="tab" aria-selected={false} disabled className="cursor-not-allowed rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-[10px] font-black text-slate-400">Mappa · P1.3-D</button>
         </div>
       </div>
-      {activeCurricoloView === 'home' && (
+      {detailOpen && consultation.selectedNode ? (
+        <CurriculumNodeDetail item={consultation.selectedNode} evidenceItems={consultation.evidenceItems} onBack={closeNodeDetail} />
+      ) : activeCurricoloView === 'home' && (
         <div className="space-y-6 fade-in text-left">
           <div className="bg-slate-50 border rounded-2xl p-5 space-y-2 text-left">
             <span className="text-[9px] font-black text-indigo-600 uppercase tracking-wider block">Riferimento corrente</span>
@@ -141,7 +157,7 @@ export function CurriculumTab({
             </div>
             <div className="grid gap-2 md:grid-cols-2">
               {consultation.listItems.slice(0, 8).map(item => (
-                <button key={item.nodeId} type="button" onClick={() => { setSelectedNodeId(item.nodeId); setActiveCurricoloView('albero'); }} className={`rounded-xl border p-3 text-left transition ${consultation.selectedNode?.nodeId === item.nodeId ? 'border-indigo-400 bg-indigo-50/50' : 'border-slate-200 bg-white hover:border-indigo-300'}`}>
+                <button key={item.nodeId} type="button" onClick={() => openNodeDetail(item.nodeId, 'home')} className={`rounded-xl border p-3 text-left transition ${consultation.selectedNode?.nodeId === item.nodeId ? 'border-indigo-400 bg-indigo-50/50' : 'border-slate-200 bg-white hover:border-indigo-300'}`}>
                   <span className="mb-1 block text-[9px] font-black uppercase tracking-wider text-indigo-600">{item.node.nodeType}</span>
                   <span className="block text-xs font-bold leading-relaxed text-slate-800">{item.node.text}</span>
                 </button>
@@ -182,7 +198,7 @@ export function CurriculumTab({
         </div>
       )}
       {/* VIEW A: ALBERO */}
-      {activeCurricoloView === 'albero' && (
+      {!detailOpen && activeCurricoloView === 'albero' && (
         <AlberoView
           localCurriculum={localCurriculum}
           discipline={discipline}
@@ -193,6 +209,7 @@ export function CurriculumTab({
           setShowOnlyProfileCurriculum={setShowOnlyProfileCurriculum}
           selectedNodeId={selectedNodeId}
           setSelectedNodeId={setSelectedNodeId}
+          onOpenNodeDetail={openNodeDetail}
         />
       )}
 
@@ -253,9 +270,10 @@ interface AlberoViewProps {
   setShowOnlyProfileCurriculum: (v: boolean) => void;
   selectedNodeId: string | undefined;
   setSelectedNodeId: (id: string) => void;
+  onOpenNodeDetail: (id: string, returnView: 'home' | 'albero') => void;
 }
 
-function CanonicalAlberoView({ consultation, setDiscipline, showOnlyProfileCurriculum, setShowOnlyProfileCurriculum, selectedNodeId, setSelectedNodeId }: Pick<AlberoViewProps, 'consultation' | 'setDiscipline' | 'showOnlyProfileCurriculum' | 'setShowOnlyProfileCurriculum' | 'selectedNodeId' | 'setSelectedNodeId'>) {
+function CanonicalAlberoView({ consultation, setDiscipline, showOnlyProfileCurriculum, setShowOnlyProfileCurriculum, selectedNodeId, setSelectedNodeId, onOpenNodeDetail }: Pick<AlberoViewProps, 'consultation' | 'setDiscipline' | 'showOnlyProfileCurriculum' | 'setShowOnlyProfileCurriculum' | 'selectedNodeId' | 'setSelectedNodeId' | 'onOpenNodeDetail'>) {
   const activeLegacyKey = consultation.disciplineOptions.find(option => option.code === consultation.disciplineCode)?.legacyKey;
   const disciplineOptions = showOnlyProfileCurriculum
     ? consultation.disciplineOptions.filter(option => option.legacyKey === activeLegacyKey)
@@ -302,7 +320,7 @@ function CanonicalAlberoView({ consultation, setDiscipline, showOnlyProfileCurri
                   <span className="text-[9px] font-black text-slate-700 uppercase tracking-wider block border-b pb-1">{group.label}</span>
                   <div className="space-y-1.5 max-h-[220px] overflow-y-auto pr-1">
                     {group.items.map(item => (
-                      <button key={item.nodeId} type="button" onClick={() => setSelectedNodeId(item.nodeId)} className={`block w-full rounded-lg border p-2 text-left font-semibold leading-relaxed transition ${selectedNodeId === item.nodeId ? 'border-indigo-400 bg-indigo-50 text-indigo-950' : 'border-transparent bg-white text-slate-700 hover:border-slate-200'}`}>
+                      <button key={item.nodeId} type="button" onClick={() => { setSelectedNodeId(item.nodeId); onOpenNodeDetail(item.nodeId, 'albero'); }} className={`block w-full rounded-lg border p-2 text-left font-semibold leading-relaxed transition ${selectedNodeId === item.nodeId ? 'border-indigo-400 bg-indigo-50 text-indigo-950' : 'border-transparent bg-white text-slate-700 hover:border-slate-200'}`}>
                         {item.node.text}
                       </button>
                     ))}
@@ -322,8 +340,8 @@ function CanonicalAlberoView({ consultation, setDiscipline, showOnlyProfileCurri
   );
 }
 
-function AlberoView({ localCurriculum, discipline, order, consultation, setDiscipline, showOnlyProfileCurriculum, setShowOnlyProfileCurriculum, selectedNodeId, setSelectedNodeId }: AlberoViewProps) {
-  return <CanonicalAlberoView consultation={consultation} setDiscipline={setDiscipline} showOnlyProfileCurriculum={showOnlyProfileCurriculum} setShowOnlyProfileCurriculum={setShowOnlyProfileCurriculum} selectedNodeId={selectedNodeId} setSelectedNodeId={setSelectedNodeId} />;
+function AlberoView({ localCurriculum, discipline, order, consultation, setDiscipline, showOnlyProfileCurriculum, setShowOnlyProfileCurriculum, selectedNodeId, setSelectedNodeId, onOpenNodeDetail }: AlberoViewProps) {
+  return <CanonicalAlberoView consultation={consultation} setDiscipline={setDiscipline} showOnlyProfileCurriculum={showOnlyProfileCurriculum} setShowOnlyProfileCurriculum={setShowOnlyProfileCurriculum} selectedNodeId={selectedNodeId} setSelectedNodeId={setSelectedNodeId} onOpenNodeDetail={onOpenNodeDetail} />;
 
   // Legacy markup remains below as a compatibility reference until P1.3-B is fully reviewed.
   return (

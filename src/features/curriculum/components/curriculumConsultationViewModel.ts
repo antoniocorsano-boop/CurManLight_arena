@@ -26,6 +26,7 @@ export interface CurriculumConsultationViewModel {
   items: CurriculumConsultationItem[];
   listItems: CurriculumConsultationItem[];
   treeItems: CurriculumConsultationItem[];
+  evidenceItems: CurriculumConsultationItem[];
   selectedNode: CurriculumConsultationItem | undefined;
   disciplineOptions: CurriculumDisciplineOption[];
 }
@@ -40,6 +41,7 @@ export function createCurriculumConsultationViewModel(
   const model = createCurriculumConsultationReadModel(domain);
   const disciplineCode = resolveDisciplineCode(discipline);
   const items = model.query({ order, discipline: disciplineCode });
+  const evidenceItems = model.query({ order, discipline: disciplineCode, nodeType: 'evidenza' });
   const selectedNode = selectedNodeId
     ? items.find(item => item.nodeId === selectedNodeId)
     : items[0];
@@ -64,6 +66,7 @@ export function createCurriculumConsultationViewModel(
     items,
     listItems: items,
     treeItems: items,
+    evidenceItems,
     selectedNode,
     disciplineOptions,
   };
