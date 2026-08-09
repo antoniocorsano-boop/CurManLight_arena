@@ -747,6 +747,7 @@ export default function App() {
  });
  const appViewsLayerProps: AppViewsLayerProps = {
   activeTab,
+  activeProgTab,
   role,
   savedUda,
   decisions,

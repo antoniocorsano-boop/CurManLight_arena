@@ -155,6 +155,7 @@ export type LibrarySorting = 'recenti' | 'meno_recenti' | 'az' | 'disc_az';
 
 export interface AppViewsLayerProps {
   activeTab: AppTab;
+  activeProgTab?: ActiveProgTab;
   role: UserRole;
   savedUda: UdaModel[];
   decisions: Record<string, DecisionStatus>;

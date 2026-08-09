@@ -137,16 +137,6 @@ export function ClasseTab({
   const selectedClassLabel = selectedClassCombination || 'Classe non selezionata';
   return (
     <div className="space-y-6 fade-in text-left">
-      <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 transition duration-200">
-       <div className="space-y-1">
-        <span className="text-[9px] font-black text-indigo-600 uppercase tracking-wider block">Ambito Registro d'Aula e Studenti</span>
-        <h2 className="text-sm font-black text-slate-800 uppercase tracking-wide">
-         Ambiente & Esiti Classe — {selectedClassLabel}
-        </h2>
-        <p className="text-xs text-slate-600 font-semibold leading-relaxed max-w-2xl">
-         Tracciamento didattico qualitativo di {classroomStudents.length} studenti per: {selectedClassLabel}. I dati inseriti sono conservati nell'archivio locale del browser.
-        </p>
-       </div>
        <div className="flex items-center space-x-2 shrink-0">
         <select 
          value={selectedClassCombination} 
@@ -160,11 +150,10 @@ export function ClasseTab({
           <option key={combo} value={combo}>Sezione: {combo}</option>
          ))}
         </select>
-        <span className="px-2.5 py-1 bg-indigo-50 text-indigo-800 border border-indigo-150 rounded text-[9px] font-black uppercase tracking-wider shrink-0">
+       <span className="px-2.5 py-1 bg-indigo-50 text-indigo-800 border border-indigo-150 rounded text-[9px] font-black uppercase tracking-wider shrink-0">
           Registro classe locale
         </span>
        </div>
-      </div>
 
 
      <div className="bg-slate-100 p-1.5 rounded-2xl flex space-x-1.5 border border-slate-200 shadow-inner max-w-xl shrink-0">

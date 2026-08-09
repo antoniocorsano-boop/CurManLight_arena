@@ -12,12 +12,6 @@ import { resolveShownFrameworkForCurriculum } from '../../../lib/curriculumTrans
 import type { SchoolOrder, UdaModel } from '../../../types/curriculum';
 import type { AppViewsLayerProps, CurriculumMap, LibrarySorting, ProgStatus, ProgettazioneMode } from '../../session';
 
-const orderLabelsForMap: Record<string, string> = {
-  infanzia: "Scuola dell'Infanzia",
-  primaria: "Scuola Primaria",
-  secondaria: "Scuola Sec. di I Grado"
-};
-
 const getDisciplineLabel = (disc: string, _ord?: SchoolOrder) => {
   const labels: Record<string, string> = {
     italiano: "Italiano", matematica: "Matematica", scienze: "Scienze", tecnologia: "Tecnologia",
@@ -163,7 +157,7 @@ export type ProgettazioneTabProps = Pick<AppViewsLayerProps,
 >;
 
 export function ProgettazioneTab(props: ProgettazioneTabProps) {
-  const { activeProgTab, setActiveProgTab, discipline, order, selectedTraguardi, selectedObiettivi, savedUda } = useCurriculumStore();
+  const { activeProgTab, setActiveProgTab, discipline, order, selectedTraguardi, savedUda } = useCurriculumStore();
 
   const {
     localCurriculum,
@@ -227,54 +221,6 @@ export function ProgettazioneTab(props: ProgettazioneTabProps) {
 
   return (
     <div className="space-y-6 fade-in text-left">
-      {/* Dynamic Contextual Header Panel */}
-      <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4 transition duration-200">
-        <div className="space-y-1">
-          <span className="text-[9px] font-black text-indigo-600 uppercase tracking-wider block">Area di progettazione personale</span>
-          <h2 className="text-sm font-black text-slate-800 uppercase tracking-wide">
-            {activeProgTab === 'annuale'
-              ? "Compilatore Unità di Apprendimento"
-              : activeProgTab === 'uda'
-                ? "Archivio delle Unità Progettate"
-                : activeProgTab === 'certificazione'
-                  ? "Matrice locale delle competenze (non validata)"
-                  : activeProgTab === 'social'
-                    ? "Bacheca dei Riusi d'UDA"
-                    : "Registro & Spazio Classe"}
-          </h2>
-          <p className="text-xs text-slate-600 font-semibold leading-relaxed max-w-2xl">
-            {(() => {
-              if (activeProgTab === 'annuale') {
-                return `Compilazione assistita per ${getDisciplineLabel(discipline, order).toUpperCase()} (${order === 'infanzia' ? "Campo d'Esperienza" : "Classe " + targetClass + "^ " + orderLabelsForMap[order]?.split(" (")[0]}). Selezionati ${selectedTraguardi.length} traguardi e ${selectedObiettivi.length} obiettivi.`;
-              }
-              if (activeProgTab === 'uda') {
-                return `Gestione dell'archivio delle Unità di Apprendimento. Attualmente memorizzate ${savedUda.length} bozze su questo dispositivo d'aula.`;
-              }
-              if (activeProgTab === 'certificazione') {
-                return "Matrice locale non validata tra competenze europee ed evidenze selezionate.";
-              }
-              if (activeProgTab === 'social') {
-                return "Vista locale degli esiti, della co-progettazione e del riuso UDA.";
-              }
-              if (activeProgTab === 'classe') {
-                return "Ambiente di lavoro per il tracciamento didattico qualitativo degli studenti e la configurazione dei gruppi di studio.";
-              }
-              return "Area di progettazione personale e locale.";
-            })()}
-          </p>
-        </div>
-
-        {typeof navigator !== 'undefined' && navigator.webdriver && (
-          <div className="bg-slate-100 p-1 rounded-xl flex flex-wrap gap-1 border border-slate-200 shrink-0 text-[10px] sm:text-xs font-bold shadow-sm self-end sm:self-auto">
-            {(['annuale', 'uda', 'certificazione', 'social', 'classe'] as const).map(tab => (
-              <button key={tab} onClick={() => setActiveProgTab(tab)} className={`px-2.5 py-1 rounded-lg transition ${activeProgTab === tab ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500'}`}>
-                {tab === 'annuale' ? 'Progettatore' : tab === 'uda' ? 'Archivio UDA' : tab === 'certificazione' ? 'Matrice Competenze (DM 14/24)' : tab === 'social' ? 'Bacheca locale' : 'Registro & Ambiente Classe'}
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
-
       {/* Home View (default when activeProgTab is set externally) */}
       {!(activeProgTab === 'annuale' || activeProgTab === 'uda' || activeProgTab === 'certificazione' || activeProgTab === 'social' || activeProgTab === 'classe-home' || activeProgTab === 'classe') && (
         <div className="space-y-6 fade-in text-left">

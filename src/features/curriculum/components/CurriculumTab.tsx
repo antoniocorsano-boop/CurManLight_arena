@@ -85,48 +85,6 @@ export function CurriculumTab({
 
   return (
     <div className="space-y-6 fade-in text-left">
-      {/* Dynamic Contextual Header Panel */}
-      <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 transition duration-200">
-        <div className="space-y-1">
-          <span className="text-[9px] font-black text-indigo-600 uppercase tracking-wider block">Area locale di consultazione</span>
-          <h2 className="text-sm font-black text-slate-800 uppercase tracking-wide">
-            {getDisciplineLabel(discipline, order).toUpperCase()} — {order === 'infanzia' ? "Campo d'Esperienza" : "Materia Curricolare"}
-          </h2>
-          <p className="text-xs text-slate-600 font-semibold leading-relaxed max-w-2xl">
-            {(() => {
-              if (activeCurricoloView === 'popolamento') {
-                return "Gestione della copia curricolare locale tramite assistente o caricamento CSV.";
-              }
-              if (order === 'infanzia') {
-                return `Consulta il curricolo di ${getDisciplineLabel(discipline, order).toUpperCase()} strutturato sui 5 Campi di Esperienza per la Scuola dell'Infanzia.`;
-              }
-              if (discipline === 'italiano') {
-                return "Messa a fuoco delle competenze linguistiche e di comunicazione scritta e orale.";
-              }
-              return `Visualizzazione degli obiettivi verticali di ${getDisciplineLabel(discipline, order).toUpperCase()} per la Scuola ${order === 'primaria' ? 'Primaria' : 'Secondaria'}.`;
-            })()}
-          </p>
-        </div>
-
-        {typeof navigator !== 'undefined' && navigator.webdriver && (
-          <div className="bg-slate-100 p-1 rounded-xl flex space-x-1 border border-slate-200 shrink-0">
-            {(['albero', 'mappa', 'popolamento'] as const).map(view => (
-              <button
-                key={view}
-                onClick={() => setActiveCurricoloView(view)}
-                className={`px-3 py-1.5 rounded-lg font-black text-[10px] uppercase tracking-wider transition ${
-                  activeCurricoloView === view
-                    ? 'bg-white text-slate-900 shadow-sm border border-slate-200/50'
-                    : 'text-slate-500 hover:text-slate-800'
-                }`}
-              >
-                {view === 'albero' ? 'Vista ad Albero' : view === 'mappa' ? 'Mappa Verticale' : 'Gestione & Popolamento'}
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
-
       {activeCurricoloView === 'home' && (
         <div className="space-y-6 fade-in text-left">
           <div className="bg-slate-50 border rounded-2xl p-5 space-y-2 text-left">

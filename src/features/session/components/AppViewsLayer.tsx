@@ -4,6 +4,7 @@ import { ProcessoTab } from '../../processo';
 import { ProgettazioneTab } from '../../progettazione';
 import { DashboardView } from './DashboardView';
 import { InfoViews } from './InfoViews';
+import { WorkspaceHeader } from '../../workspace/components';
 import type { ActiveProgTab, AppViewsLayerProps } from '../types/appViewContracts';
 import type { AppTab } from '../../navigation';
 
@@ -19,6 +20,7 @@ const isActiveProgTab = (tab: string): tab is ActiveProgTab => (ACTIVE_PROG_TABS
 export function AppViewsLayer(props: AppViewsLayerProps) {
   const {
     activeTab,
+    activeProgTab = 'home',
     role,
     savedUda,
     decisions,
@@ -258,6 +260,9 @@ export function AppViewsLayer(props: AppViewsLayerProps) {
     initialEdges,
   } = props;
 
+  const workspaceContext = `${getDisciplineLabel(discipline, order)} · ${order === 'infanzia' ? "Scuola dell'Infanzia" : order === 'primaria' ? 'Scuola Primaria' : 'Scuola secondaria di I grado'}`;
+  const classContext = targetClass ? `${workspaceContext} · Classe ${targetClass}${targetSection ? ` · Sezione ${targetSection}` : ''}` : workspaceContext;
+
   return (
     <>
 {/* VIEW: DASHBOARD */}
@@ -281,28 +286,37 @@ export function AppViewsLayer(props: AppViewsLayerProps) {
        />
      {/* VIEW: CURRICOLO */}
      {activeTab === 'curricolo' && (
-      <CurriculumTab
-       localCurriculum={localCurriculum}
-       showOnlyProfileCurriculum={showOnlyProfileCurriculum}
-       setShowOnlyProfileCurriculum={setShowOnlyProfileCurriculum}
-       expandedMapSections={expandedMapSections}
-       setExpandedMapSections={setExpandedMapSections}
-       showOnlyProfileProcesso={showOnlyProfileProcesso}
-       setShowOnlyProfileProcesso={setShowOnlyProfileProcesso}
-       importTopicInput={importTopicInput}
-       setImportTopicInput={setImportTopicInput}
-       isGeneratingKB={isGeneratingKB}
-       generatedKBOuput={generatedKBOuput}
-       localAgentStatus={localAgentStatus}
-       localAgentSize={localAgentSize}
-       popolamentoTab={popolamentoTab}
-       setPopolamentoTab={setPopolamentoTab}
-       setShowAgentSetupModal={setShowAgentSetupModal}
-       handleAiGenerateCurriculum={handleAiGenerateCurriculum}
-       handleSaveGeneratedToKB={handleSaveGeneratedToKB}
-       handleCSVUpload={handleCSVUpload}
-       handleResetCurriculumToBaseline={handleResetCurriculumToBaseline}
-      />
+      <div className="space-y-6">
+       <WorkspaceHeader
+        identity="Curricolo"
+        context={workspaceContext}
+        workObject="Curricolo locale"
+        status={localCurriculum ? 'Disponibile per la consultazione' : undefined}
+        primaryAction={{ label: 'Apri progettazione', onClick: () => { handleTabSwitch('progetta-annuale'); setActiveProgTab('annuale'); } }}
+       />
+       <CurriculumTab
+        localCurriculum={localCurriculum}
+        showOnlyProfileCurriculum={showOnlyProfileCurriculum}
+        setShowOnlyProfileCurriculum={setShowOnlyProfileCurriculum}
+        expandedMapSections={expandedMapSections}
+        setExpandedMapSections={setExpandedMapSections}
+        showOnlyProfileProcesso={showOnlyProfileProcesso}
+        setShowOnlyProfileProcesso={setShowOnlyProfileProcesso}
+        importTopicInput={importTopicInput}
+        setImportTopicInput={setImportTopicInput}
+        isGeneratingKB={isGeneratingKB}
+        generatedKBOuput={generatedKBOuput}
+        localAgentStatus={localAgentStatus}
+        localAgentSize={localAgentSize}
+        popolamentoTab={popolamentoTab}
+        setPopolamentoTab={setPopolamentoTab}
+        setShowAgentSetupModal={setShowAgentSetupModal}
+        handleAiGenerateCurriculum={handleAiGenerateCurriculum}
+        handleSaveGeneratedToKB={handleSaveGeneratedToKB}
+        handleCSVUpload={handleCSVUpload}
+        handleResetCurriculumToBaseline={handleResetCurriculumToBaseline}
+       />
+      </div>
      )}
 
      {/* VIEW: REVISIONE */}
@@ -318,7 +332,17 @@ export function AppViewsLayer(props: AppViewsLayerProps) {
      )}
      {/* VIEW: AREA DI PROGETTAZIONE UNIFICATA */}
      {activeTab === 'progetta-annuale' && (
-      <ProgettazioneTab
+      <div className="space-y-6">
+       <WorkspaceHeader
+        identity={['classe', 'classe-home', 'social'].includes(activeProgTab) ? 'Classe' : 'Progettazione'}
+        context={classContext}
+        workObject={['classe', 'classe-home', 'social'].includes(activeProgTab) ? (selectedClassCombination ? `Attività della classe ${selectedClassCombination}` : undefined) : (progTitle || undefined)}
+        status={['classe', 'classe-home', 'social'].includes(activeProgTab) ? undefined : progStatus}
+        primaryAction={['classe', 'classe-home', 'social'].includes(activeProgTab)
+          ? { label: 'Torna a progettazione', onClick: () => setActiveProgTab('annuale') }
+          : { label: 'Apri documenti', onClick: () => handleTabSwitch('esportazioni') }}
+       />
+       <ProgettazioneTab
        localCurriculum={localCurriculum}
        savedUda={savedUda}
        targetClass={targetClass}
@@ -450,7 +474,8 @@ export function AppViewsLayer(props: AppViewsLayerProps) {
        setSelectedUdaForOutcomes={setSelectedUdaForOutcomes}
        setShowOutcomesModal={setShowOutcomesModal}
        handleAddAnnotation={handleAddAnnotation}
-      />
+       />
+      </div>
      )}
      {/* VIEW: PROCESSO & CONSENSO */}
      {activeTab === 'processo' && (
@@ -475,7 +500,15 @@ export function AppViewsLayer(props: AppViewsLayerProps) {
      )}
      {/* VIEW: ESPORTAZIONI */}
      {activeTab === 'esportazioni' && (
-      <EsportazioniTab
+      <div className="space-y-6">
+       <WorkspaceHeader
+        identity="Documenti"
+        context={workspaceContext}
+        workObject={documentExportHistory[0]?.sourceTitle || (documentExportHistory.length > 0 ? 'Documenti recenti' : undefined)}
+        status={documentExportHistory.length > 0 ? `${documentExportHistory.length} attività registrate` : undefined}
+        primaryAction={{ label: 'Apri progettazione', onClick: () => { handleTabSwitch('progetta-annuale'); setActiveProgTab('annuale'); } }}
+       />
+       <EsportazioniTab
        esportazioniTab={esportazioniTab}
        setEsportazioniTab={setEsportazioniTab}
        templateDocType={templateDocType}
@@ -507,7 +540,8 @@ export function AppViewsLayer(props: AppViewsLayerProps) {
         targetClass={targetClass}
        targetSection={targetSection}
        showToast={showToast}
-      />
+       />
+      </div>
      )}
      {/* VIEW: FONTI & SEZIONI GENERALI */}
      <InfoViews

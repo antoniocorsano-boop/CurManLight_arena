@@ -166,15 +166,7 @@ export function EsportazioniTab(props: EsportazioniTabProps) {
     <div className="space-y-6 fade-in text-left">
       {/* Header */}
       <UiPanel variant="subtle">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          <UiSectionHeader
-            title="Documenti ed esportazioni"
-            description={
-              esportazioniTab === 'standard'
-                ? "Generazione e download di documenti curricolari locali in formato aperto ODF o Microsoft Word (.docx)."
-                : "Formattazione locale del layout di stampa tramite comandi testuali. Il risultato non è certificato né verificato rispetto ad AgID."
-            }
-          />
+        <div className="flex justify-end">
           <div className="flex bg-ui-surface border border-ui-border p-1 rounded-ui-control shrink-0">
             <button
               onClick={() => setEsportazioniTab('standard')}
