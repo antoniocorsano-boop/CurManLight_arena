@@ -17,3 +17,6 @@
 
 ## 2026-08-09 21:46:32 +02:00
 - H0.1 document committed as 5690b4f; no runtime, UI, H1, or test changes.
+
+## 2026-08-09 21:57:15 +02:00
+- H1 ristrutturata sui due percorsi canonici; specifica pronta per approvazione; commit 61bed86; nessuna modifica runtime.
