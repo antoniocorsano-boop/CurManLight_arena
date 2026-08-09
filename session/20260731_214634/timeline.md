@@ -29,3 +29,6 @@
 
 ## 2026-08-09 22:40:29 +02:00
 - H2-R1 approvata, H2V congelata e P1.3 consultazione curricolo pronta per implementazione; commit 958aeee; runtime invariato.
+
+## 2026-08-09 22:44:50 +02:00
+- P1.3-R0 reconnaissance completata nel worktree dedicato; report e piano committati come 05c2ed5; nessun runtime change.
