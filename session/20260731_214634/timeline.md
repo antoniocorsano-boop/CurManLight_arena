@@ -35,3 +35,6 @@
 
 ## 2026-08-09 22:49:59 +02:00
 - P1.3-A implementation green: focused read-model tests pass; running type/domain/fast/build gates.
+
+## 2026-08-09 23:14:52 +02:00
+- P1.3-B implementation and browser verification complete; focused/domain/fast/typecheck/build gates green; isolated browser smoke confirmed CURR-01 to CURR-02 context preservation; ready for dedicated commit.

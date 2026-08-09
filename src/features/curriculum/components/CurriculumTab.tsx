@@ -1,8 +1,10 @@
 import { ChevronRight } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
 import { useCurriculumStore } from '../../../store/useCurriculumStore';
 import type { DecisionStatus, Proposal, SchoolOrder } from '../../../types/curriculum';
 import type { AppViewsLayerProps, CurriculumMap, GeneratedKnowledgeOutput, PopolamentoTab } from '../../session';
 import { PilotMainView } from '../../curriculum-functional-pilot';
+import { createCurriculumConsultationViewModel, type CurriculumConsultationViewModel } from './curriculumConsultationViewModel';
 
 const orderLabelsForMap: Record<string, string> = {
   infanzia: "Scuola dell'Infanzia (Mappe di Senso & Campi d'Esperienza)",
@@ -82,17 +84,70 @@ export function CurriculumTab({
   handleResetCurriculumToBaseline,
 }: CurriculumTabProps) {
   const { activeCurricoloView, setActiveCurricoloView, discipline, order, setDiscipline, decisions, customTexts } = useCurriculumStore();
+  const [selectedNodeId, setSelectedNodeId] = useState<string | undefined>();
+  const consultation = useMemo(
+    () => createCurriculumConsultationViewModel(localCurriculum, order, discipline, selectedNodeId),
+    [localCurriculum, order, discipline, selectedNodeId],
+  );
+
+  useEffect(() => {
+    if (!consultation.items.length) {
+      setSelectedNodeId(undefined);
+      return;
+    }
+    if (!selectedNodeId || !consultation.items.some(item => item.nodeId === selectedNodeId)) {
+      setSelectedNodeId(consultation.items[0].nodeId);
+    }
+  }, [consultation.items, selectedNodeId]);
 
   return (
     <div className="space-y-6 fade-in text-left">
+      <div className="bg-white border border-slate-200 rounded-2xl p-5 space-y-4 shadow-sm" data-testid="curriculum-consultation-header">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <span className="text-[9px] font-black text-indigo-600 uppercase tracking-wider block">Curricolo consultabile</span>
+            <h2 className="text-base font-black text-slate-900">Curricolo vigente</h2>
+            <p className="text-[11px] text-slate-500 font-semibold">
+              {orderLabelsForMap[order]?.split(' (')[0] ?? order} · {getDisciplineLabel(discipline, order)} · {consultation.version.title}
+            </p>
+          </div>
+          <span className="self-start rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-[9px] font-black uppercase tracking-wider text-amber-800">
+            {consultation.version.status === 'legacy' ? 'Fonte legacy non verificata' : consultation.version.status}
+          </span>
+        </div>
+        <div className="flex flex-wrap gap-1.5 border-t border-slate-100 pt-3" role="tablist" aria-label="Viste curricolo">
+          <button type="button" role="tab" aria-selected={activeCurricoloView === 'home'} onClick={() => setActiveCurricoloView('home')} className={`rounded-lg border px-3 py-1.5 text-[10px] font-black transition ${activeCurricoloView === 'home' ? 'border-indigo-600 bg-indigo-600 text-white' : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'}`}>Lista / Vigente</button>
+          <button type="button" role="tab" aria-selected={activeCurricoloView === 'albero'} onClick={() => setActiveCurricoloView('albero')} className={`rounded-lg border px-3 py-1.5 text-[10px] font-black transition ${activeCurricoloView === 'albero' ? 'border-indigo-600 bg-indigo-600 text-white' : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'}`}>Albero</button>
+          <button type="button" role="tab" aria-selected={false} disabled className="cursor-not-allowed rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-[10px] font-black text-slate-400">Mappa · P1.3-D</button>
+        </div>
+      </div>
       {activeCurricoloView === 'home' && (
         <div className="space-y-6 fade-in text-left">
           <div className="bg-slate-50 border rounded-2xl p-5 space-y-2 text-left">
-            <span className="text-[9px] font-black text-indigo-600 uppercase tracking-wider block">Navigazione dei contenuti locali</span>
-            <h3 className="text-sm font-black text-slate-800 uppercase tracking-wide">Consulta Curricolo: Home d'Area</h3>
+            <span className="text-[9px] font-black text-indigo-600 uppercase tracking-wider block">Riferimento corrente</span>
+            <h3 className="text-sm font-black text-slate-800 uppercase tracking-wide">Consulta il curricolo vigente</h3>
             <p className="text-xs text-slate-500 font-medium leading-relaxed">
-              Consulta la baseline legacy CML-633C non verificata e le modifiche locali. I contenuti non attestano configurazione o adozione da parte di una scuola:
+              La fonte disponibile è mostrata con il suo stato reale. Lista e albero usano la stessa proiezione curricolare.
             </p>
+          </div>
+
+          <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm" data-testid="curriculum-vigente-list">
+            <div className="mb-3 flex items-center justify-between border-b border-slate-100 pb-2">
+              <div>
+                <span className="text-[9px] font-black uppercase tracking-wider text-slate-400">{consultation.items.length} riferimenti disponibili</span>
+                <h3 className="text-sm font-black text-slate-800">Riferimenti del curricolo</h3>
+              </div>
+              <button type="button" onClick={() => setActiveCurricoloView('albero')} className="text-[10px] font-black text-indigo-700 hover:text-indigo-900">Apri albero</button>
+            </div>
+            <div className="grid gap-2 md:grid-cols-2">
+              {consultation.listItems.slice(0, 8).map(item => (
+                <button key={item.nodeId} type="button" onClick={() => { setSelectedNodeId(item.nodeId); setActiveCurricoloView('albero'); }} className={`rounded-xl border p-3 text-left transition ${consultation.selectedNode?.nodeId === item.nodeId ? 'border-indigo-400 bg-indigo-50/50' : 'border-slate-200 bg-white hover:border-indigo-300'}`}>
+                  <span className="mb-1 block text-[9px] font-black uppercase tracking-wider text-indigo-600">{item.node.nodeType}</span>
+                  <span className="block text-xs font-bold leading-relaxed text-slate-800">{item.node.text}</span>
+                </button>
+              ))}
+              {!consultation.items.length && <p className="text-xs font-semibold text-slate-500">Nessun riferimento disponibile per questo contesto.</p>}
+            </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
@@ -106,12 +161,13 @@ export function CurriculumTab({
             </button>
 
             <button
-              onClick={() => setActiveCurricoloView('mappa')}
-              className="bg-white border border-slate-200 hover:border-indigo-400 p-5 rounded-2xl shadow-sm hover:shadow-md transition text-left space-y-2"
+              type="button"
+              disabled
+              className="cursor-not-allowed bg-slate-50 border border-slate-200 p-5 rounded-2xl text-left space-y-2 opacity-70"
             >
-              <span className="text-[10px] font-black text-indigo-600 uppercase tracking-wider block">Azione 2</span>
-              <h4 className="text-xs font-bold text-slate-800 uppercase">Raccordo Diacronico (Mappa)</h4>
-              <p className="text-[11px] text-slate-500 font-semibold leading-normal">Confronta i testi 2012-2025 e consulta le scelte locali di lavoro, prive di valore deliberativo.</p>
+              <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider block">Azione 2 · P1.3-D</span>
+              <h4 className="text-xs font-bold text-slate-700 uppercase">Raccordo Diacronico (Mappa)</h4>
+              <p className="text-[11px] text-slate-500 font-semibold leading-normal">La mappa sarà disponibile come proiezione del curricolo nella slice P1.3-D.</p>
             </button>
 
             <button
@@ -131,9 +187,12 @@ export function CurriculumTab({
           localCurriculum={localCurriculum}
           discipline={discipline}
           order={order}
+          consultation={consultation}
           setDiscipline={setDiscipline}
           showOnlyProfileCurriculum={showOnlyProfileCurriculum}
           setShowOnlyProfileCurriculum={setShowOnlyProfileCurriculum}
+          selectedNodeId={selectedNodeId}
+          setSelectedNodeId={setSelectedNodeId}
         />
       )}
 
@@ -188,12 +247,85 @@ interface AlberoViewProps {
   localCurriculum: CurriculumMap;
   discipline: string;
   order: SchoolOrder;
+  consultation: CurriculumConsultationViewModel;
   setDiscipline: (d: string) => void;
   showOnlyProfileCurriculum: boolean;
   setShowOnlyProfileCurriculum: (v: boolean) => void;
+  selectedNodeId: string | undefined;
+  setSelectedNodeId: (id: string) => void;
 }
 
-function AlberoView({ localCurriculum, discipline, order, setDiscipline, showOnlyProfileCurriculum, setShowOnlyProfileCurriculum }: AlberoViewProps) {
+function CanonicalAlberoView({ consultation, setDiscipline, showOnlyProfileCurriculum, setShowOnlyProfileCurriculum, selectedNodeId, setSelectedNodeId }: Pick<AlberoViewProps, 'consultation' | 'setDiscipline' | 'showOnlyProfileCurriculum' | 'setShowOnlyProfileCurriculum' | 'selectedNodeId' | 'setSelectedNodeId'>) {
+  const activeLegacyKey = consultation.disciplineOptions.find(option => option.code === consultation.disciplineCode)?.legacyKey;
+  const disciplineOptions = showOnlyProfileCurriculum
+    ? consultation.disciplineOptions.filter(option => option.legacyKey === activeLegacyKey)
+    : consultation.disciplineOptions;
+  const groups = [
+    { key: 'traguardi', label: 'Traguardi', items: consultation.treeItems.filter(item => item.node.nodeType === 'traguardo') },
+    { key: 'obiettivi', label: 'Obiettivi', items: consultation.treeItems.filter(item => item.node.nodeType === 'obiettivo') },
+    { key: 'evidenze', label: 'Evidenze', items: consultation.treeItems.filter(item => item.node.nodeType === 'evidenza') },
+  ];
+
+  return (
+    <div id="curricolo-view-albero" className="space-y-4 fade-in" data-testid="curriculum-tree-view">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+        <div className="lg:col-span-4 bg-slate-50 border rounded-2xl p-4 space-y-3">
+          <div className="flex justify-between items-center bg-white border border-slate-150 p-2.5 rounded-xl">
+            <span className="text-[9px] font-black text-slate-400 uppercase tracking-wider block">Filtro profilo</span>
+            <button type="button" onClick={() => setShowOnlyProfileCurriculum(!showOnlyProfileCurriculum)} className={`px-2.5 py-1 rounded-lg text-[8px] font-black uppercase tracking-wider transition border ${showOnlyProfileCurriculum ? 'bg-indigo-50 border-indigo-150 text-indigo-700 shadow-sm' : 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50'}`}>
+              {showOnlyProfileCurriculum ? 'Mio profilo' : 'Tutto il curricolo'}
+            </button>
+          </div>
+          <div className="space-y-1">
+            <span className="text-[9px] font-black text-slate-400 uppercase tracking-wider block">Discipline disponibili</span>
+            <p className="text-[10px] text-slate-500 font-medium">La disciplina cambia la stessa proiezione usata dalla lista.</p>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-1.5">
+            {disciplineOptions.map(option => (
+              <button key={option.legacyKey} type="button" onClick={() => setDiscipline(option.legacyKey)} className={`p-2 rounded-xl text-left font-black text-xs transition flex items-center justify-between border ${option.legacyKey === activeLegacyKey ? 'bg-primary-600 text-white border-primary-600 shadow-sm' : 'bg-white hover:bg-slate-100 text-slate-700 border-slate-200'}`}>
+                <span className="truncate">{option.label}</span>
+                <ChevronRight className="w-3.5 h-3.5 opacity-60" />
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="lg:col-span-8 space-y-4">
+          <div className="border border-slate-200 rounded-2xl p-5 bg-white shadow-sm space-y-4 text-xs leading-relaxed text-slate-700">
+            <div className="flex justify-between items-center border-b pb-2">
+              <h3 className="font-black text-slate-800 uppercase text-xs">{activeLegacyKey ?? consultation.disciplineCode ?? 'Curricolo'} — {consultation.schoolOrder}</h3>
+              <span className="px-2 py-0.5 bg-amber-50 text-amber-800 border border-amber-200 rounded text-[9px] font-bold uppercase tracking-wider">Fonte {consultation.version.status}</span>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {groups.map(group => (
+                <div key={group.key} className="space-y-2 bg-slate-50/30 p-4 border border-slate-150 rounded-xl">
+                  <span className="text-[9px] font-black text-slate-700 uppercase tracking-wider block border-b pb-1">{group.label}</span>
+                  <div className="space-y-1.5 max-h-[220px] overflow-y-auto pr-1">
+                    {group.items.map(item => (
+                      <button key={item.nodeId} type="button" onClick={() => setSelectedNodeId(item.nodeId)} className={`block w-full rounded-lg border p-2 text-left font-semibold leading-relaxed transition ${selectedNodeId === item.nodeId ? 'border-indigo-400 bg-indigo-50 text-indigo-950' : 'border-transparent bg-white text-slate-700 hover:border-slate-200'}`}>
+                        {item.node.text}
+                      </button>
+                    ))}
+                    {!group.items.length && <p className="text-[10px] font-semibold text-slate-400">Nessun elemento disponibile.</p>}
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 text-[10px] font-semibold text-slate-600">
+              <span className="font-black uppercase tracking-wider text-slate-400">Contesto preservato</span>
+              <p className="mt-1">Versione: {consultation.version.title} · Ordine: {consultation.schoolOrder} · Nodo: {consultation.selectedNode?.nodeId ?? 'non selezionato'} · Provenienza: {consultation.selectedNode?.provenance ?? 'non disponibile'}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function AlberoView({ localCurriculum, discipline, order, consultation, setDiscipline, showOnlyProfileCurriculum, setShowOnlyProfileCurriculum, selectedNodeId, setSelectedNodeId }: AlberoViewProps) {
+  return <CanonicalAlberoView consultation={consultation} setDiscipline={setDiscipline} showOnlyProfileCurriculum={showOnlyProfileCurriculum} setShowOnlyProfileCurriculum={setShowOnlyProfileCurriculum} selectedNodeId={selectedNodeId} setSelectedNodeId={setSelectedNodeId} />;
+
+  // Legacy markup remains below as a compatibility reference until P1.3-B is fully reviewed.
   return (
     <div id="curricolo-view-albero" className="space-y-4 fade-in">
       {order === 'infanzia' ? (
