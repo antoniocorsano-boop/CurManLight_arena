@@ -6,7 +6,7 @@
 - Repo: C:/Users/anton/CurManLight_arena
 - Branch (main worktree): fix/cml-637b-test-suite-stabilization
 - Started: 2026-07-31 21:46:34 +02:00
-- Updated: 2026-07-31 23:05:00 +02:00
+- Updated: 2026-08-09 21:46:32 +02:00
 
 ## Goal
 CML-637B — confirm Vite esbuild/oxc warning root cause, document dependency debt verdict, execute the dependency compatibility matrix, and close CML-637B by adopting Cell C plus a fast test workflow.

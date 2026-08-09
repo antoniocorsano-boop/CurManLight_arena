@@ -14,3 +14,6 @@
 
 ## 2026-07-31 22:16:35 +02:00
 - Plan approved with CML_637B_DEPENDENCY_COMPATIBILITY_MATRIX_EXECUTION_APPROVED. Plan updated: cell B split into B1 (vite8+plugin-react 5.x) and B2 (vite8+plugin-react-oxc); full cell isolation protocol (restore package.json/lock/vitest.config.ts + rm node_modules + clean install + npm ls record); cell C uses explicit overrides (never manual lock edit) with diff/resolved version/vite count recorded; decision criteria ranked (4 checks green, zero warnings, no CJS->ESM regression, single vite major, minimal diff, no src changes). Executing Tasks 1-7 in scratch worktree CurManLight_arena_matrix.
+
+## 2026-08-09 21:46:32 +02:00
+- H0.1 document committed as 5690b4f; no runtime, UI, H1, or test changes.
