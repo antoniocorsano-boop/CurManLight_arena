@@ -2,7 +2,6 @@ import { useState } from 'react';
 import type { SchoolOrder } from '../../../types/curriculum';
 import type { ClassroomFeedback } from '../../session';
 import { containsInclusiveSensitiveTerms } from '../../../lib/gdprFilter';
-import { safeLocalStorageSetItem } from '../../../lib/consolidatedStorage';
 
 type CopilotMessage = { sender: 'user' | 'assistant'; text: string; isError?: boolean };
 type NavigatorWithDeviceMemory = Navigator & {
@@ -215,7 +214,6 @@ export function useCopilotInteractionHandlers({
  const handleAcceptGemSuggestion = (text: string, editMode: boolean) => {
   if (gemFieldActive === 'uda-title') {
    setProgTitle(text);
-   safeLocalStorageSetItem('curman_progTitle', text);
   } else if (gemFieldActive === 'uda-realtask') {
    setRealTaskInput(text);
   } else if (gemFieldActive === 'uda-inclusion') {

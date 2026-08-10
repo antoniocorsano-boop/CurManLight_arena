@@ -6,13 +6,14 @@ import PlanningCatalogue from '../../progettazione/components/PlanningCatalogue'
 import { DashboardView } from './DashboardView';
 import { InfoViews } from './InfoViews';
 import { WorkspaceHeader } from '../../workspace/components';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useCurriculumStore } from '../../../store/useCurriculumStore';
-import { createCanonicalPlanningWorkspace, buildPlanningCatalogue, materializeUdaFromPlanning, updatePlanningContent, updatePlanningContext, type DidacticPlanning } from '../../../domain/planning';
+import { buildPlanningCatalogue, createCanonicalPlanningWorkspace, materializeUdaFromPlanning, resolveCanonicalPlanningSources, updatePlanningContent, updatePlanningContext, type DidacticPlanning } from '../../../domain/planning';
 import type { EntityId } from '../../../domain/curriculum/identity/types';
 import { safeLocalStorageGetItem, safeLocalStorageSetItem } from '../../../lib/consolidatedStorage';
 import type { ActiveProgTab, AppViewsLayerProps } from '../types/appViewContracts';
 import type { AppTab } from '../../navigation';
+import { createLocalDidacticPlanningRepository } from '../../../lib/didacticPlanningRepository';
 
 export type { AppViewsLayerProps } from '../types/appViewContracts';
 
@@ -270,15 +271,33 @@ export function AppViewsLayer(props: AppViewsLayerProps) {
   const designArchive = useCurriculumStore(state => state.designArchive);
   const selectedObiettivi = useCurriculumStore(state => state.selectedObiettivi);
   const addUda = useCurriculumStore(state => state.addUda);
+  const planningRepository = useMemo(() => createLocalDidacticPlanningRepository(localStorage), []);
   const [planningId, setPlanningId] = useState<EntityId>(() => {
    const stored = safeLocalStorageGetItem('curman_canonical_planning_id', '');
    if (stored) return stored as EntityId;
-   const created = `planning-${Date.now()}` as EntityId;
-   safeLocalStorageSetItem('curman_canonical_planning_id', created);
-   return created;
+   return `planning-${Date.now()}` as EntityId;
   });
-  const canonicalPlanning: DidacticPlanning = useMemo(() => ({
-   ...createCanonicalPlanningWorkspace({
+  const [restoredPlanning, setRestoredPlanning] = useState<DidacticPlanning | undefined>();
+  const [hydratedPlanningId, setHydratedPlanningId] = useState<EntityId>();
+  const [persistedPlannings, setPersistedPlannings] = useState<DidacticPlanning[]>(() => planningRepository.list());
+
+  useEffect(() => {
+   safeLocalStorageSetItem('curman_canonical_planning_id', planningId);
+   const restored = planningRepository.get(planningId);
+   setRestoredPlanning(restored);
+   if (restored) {
+    setProgTitle(restored.content.title ?? '');
+    setProgPeriod(restored.content.period ?? '');
+    setProgHours(restored.content.hours ?? 0);
+    setProgNotes(restored.content.notes ?? '');
+    setTargetClass(restored.context.classLabel ?? '');
+    setRealTaskInput(restored.content.activities[0] ?? '');
+    if (restored.status === 'ready') setProgStatus('pronta per confronto');
+   }
+   setHydratedPlanningId(planningId);
+  }, [planningId, planningRepository]);
+  const canonicalPlanning: DidacticPlanning = useMemo(() => {
+   const current = createCanonicalPlanningWorkspace({
     id: planningId,
     draft: {
      title: progTitle,
@@ -293,9 +312,22 @@ export function AppViewsLayer(props: AppViewsLayerProps) {
     },
     curriculumSelections: designArchive.selections,
     status: progStatus === 'pronta per confronto' ? 'ready' : 'in_progress',
-   }),
-   reconstruction: 'partial',
-  }), [planningId, progTitle, discipline, order, targetClass, progPeriod, progHours, realTaskInput, progNotes, progStatus, selectedObiettivi, localCurriculum, designArchive.selections]);
+   });
+   return {
+    ...current,
+    createdAt: restoredPlanning?.createdAt ?? current.createdAt,
+    curriculumReferences: current.curriculumReferences.length > 0 ? current.curriculumReferences : (restoredPlanning?.curriculumReferences ?? []),
+    reconstruction: 'partial',
+   };
+  }, [planningId, progTitle, discipline, order, targetClass, progPeriod, progHours, realTaskInput, progNotes, progStatus, selectedObiettivi, localCurriculum, designArchive.selections, restoredPlanning]);
+  const persistCanonicalPlanning = () => {
+   planningRepository.save(canonicalPlanning);
+   setPersistedPlannings(planningRepository.list());
+  };
+  useEffect(() => {
+   if (hydratedPlanningId !== planningId) return;
+   persistCanonicalPlanning();
+  }, [canonicalPlanning, hydratedPlanningId, planningId]);
   const materializedUda = savedUda.find(uda => String(uda.sourcePlanningRef?.id) === String(canonicalPlanning.id));
   const handleMaterializeUda = () => {
    const result = materializeUdaFromPlanning(canonicalPlanning, savedUda);
@@ -308,11 +340,12 @@ export function AppViewsLayer(props: AppViewsLayerProps) {
     showToast(result.issues[0]?.message ?? 'La progettazione non è pronta per la materializzazione.');
    }
   };
-  const planningCatalogue = buildPlanningCatalogue({ plannings: [canonicalPlanning], udaArtifacts: savedUda });
+  const planningCatalogue = buildPlanningCatalogue({ plannings: resolveCanonicalPlanningSources([canonicalPlanning, ...persistedPlannings], []), udaArtifacts: savedUda });
   const startNewPlanning = () => {
    const nextId = `planning-${Date.now()}` as EntityId;
    safeLocalStorageSetItem('curman_canonical_planning_id', nextId);
    setPlanningId(nextId);
+   setHydratedPlanningId(undefined);
    setProgTitle('');
    setActiveProgTab('annuale');
   };

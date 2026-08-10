@@ -89,6 +89,12 @@ export interface PlanningCompatibilityResult {
   warnings: PlanningCompatibilityWarning[];
 }
 
+export interface DidacticPlanningRepository {
+  save(planning: DidacticPlanning): void;
+  get(id: EntityId): DidacticPlanning | undefined;
+  list(): DidacticPlanning[];
+}
+
 export interface PlanningCatalogueEntry {
   id: EntityId;
   title: string;
@@ -389,4 +395,23 @@ export function buildPlanningCatalogue(input: PlanningCatalogueInput): PlanningC
   return [...planningById.values()]
     .map(planning => catalogueEntryFromPlanning(planning, udaArtifacts))
     .sort((left, right) => right.updatedAt.localeCompare(left.updatedAt) || left.title.localeCompare(right.title));
+}
+
+export function resolveCanonicalPlanningSources(
+  canonicalPlannings: readonly DidacticPlanning[],
+  compatibilityResults: readonly PlanningCompatibilityResult[],
+): DidacticPlanning[] {
+  const canonicalIds = new Set<string>();
+  const result: DidacticPlanning[] = [];
+  for (const planning of canonicalPlannings) {
+    const id = String(planning.id);
+    if (canonicalIds.has(id)) continue;
+    canonicalIds.add(id);
+    result.push(planning);
+  }
+  for (const compatibility of compatibilityResults) {
+    if (!compatibility.planning || canonicalIds.has(String(compatibility.planning.id))) continue;
+    result.push(compatibility.planning);
+  }
+  return result;
 }

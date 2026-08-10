@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import type { SchoolOrder, UdaModel, UserState } from '../../../types/curriculum';
 import type { CurriculumMap } from '../../session';
-import { safeLocalStorageGetItem, safeLocalStorageSetItem } from '../../../lib/consolidatedStorage';
+import { safeLocalStorageGetItem } from '../../../lib/consolidatedStorage';
 import { getA04InstitutionalRead } from '../../../domain/institution';
 import { useCurriculumStore } from '../../../store/useCurriculumStore';
 
@@ -54,24 +54,7 @@ export const useUdaProgrammingHandlers = ({
   const [libSearchText, setLibSearchText] = useState('');
   const [libSorting, setLibSorting] = useState<'recenti' | 'meno_recenti' | 'az' | 'disc_az'>('recenti');
 
-  useEffect(() => {
-    safeLocalStorageSetItem('curman_progTitle', progTitle);
-    safeLocalStorageSetItem('curman_progPeriod', progPeriod);
-    safeLocalStorageSetItem('curman_progStatus', progStatus);
-    safeLocalStorageSetItem('curman_progHours', String(progHours));
-    safeLocalStorageSetItem('curman_progNotes', progNotes);
-    safeLocalStorageSetItem('curman_realTaskInput', realTaskInput);
-    safeLocalStorageSetItem('curman_progCoAuthors', progCoAuthors);
-  }, [progTitle, progPeriod, progStatus, progHours, progNotes, realTaskInput, progCoAuthors]);
-
   const saveProgDraft = () => {
-    safeLocalStorageSetItem('curman_progTitle', progTitle);
-    safeLocalStorageSetItem('curman_progPeriod', progPeriod);
-    safeLocalStorageSetItem('curman_progStatus', progStatus);
-    safeLocalStorageSetItem('curman_progHours', String(progHours));
-    safeLocalStorageSetItem('curman_progNotes', progNotes);
-    safeLocalStorageSetItem('curman_realTaskInput', realTaskInput);
-    safeLocalStorageSetItem('curman_progCoAuthors', progCoAuthors);
     showToast("Bozza della programmazione annuale salvata con successo!");
   };
 
