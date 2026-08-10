@@ -487,6 +487,7 @@ export default function App() {
  };
 
  const handleTabSwitch = (tab: AppTab) => {
+  if (tab === 'progetta-annuale') setActiveProgTab('home');
   navigate(tabToPath(tab));
   // Close mobile sidebar
   if (window.innerWidth < 768) {

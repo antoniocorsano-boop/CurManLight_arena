@@ -88,6 +88,24 @@ export interface PlanningCompatibilityResult {
   warnings: PlanningCompatibilityWarning[];
 }
 
+export interface PlanningCatalogueEntry {
+  id: EntityId;
+  title: string;
+  context: PlanningContext;
+  status: 'in_progress' | 'ready';
+  statusLabel: 'Da continuare' | 'Pronta';
+  updatedAt: string;
+  curriculumReferenceCount: number;
+  reconstruction?: PlanningReconstruction;
+  derivedArtifact?: { id: string; title: string };
+}
+
+export interface PlanningCatalogueInput {
+  plannings?: DidacticPlanning[];
+  compatibilityResults?: PlanningCompatibilityResult[];
+  udaArtifacts?: UdaModel[];
+}
+
 const emptyContent = (): PlanningContent => ({ objectives: [], activities: [], assessment: [], materials: [] });
 
 export function createDidacticPlanning(input: {
@@ -206,4 +224,42 @@ export function mapGuidedWorkflowStateToPlanning(_state: GuidedTeacherWorkflowSt
     unmappedFields: ['currentStep', 'completedSteps', 'selectedCurriculumRefs', 'selectedDesignRef', 'generatedDocumentRef'],
     warnings: [{ code: 'PRESENTATION_STATE_NOT_DOMAIN_SOURCE', message: 'Guided workflow state is presentation state and cannot establish a canonical Planning.' }],
   };
+}
+
+function catalogueEntryFromPlanning(planning: DidacticPlanning, udaArtifacts: UdaModel[]): PlanningCatalogueEntry {
+  const status = planning.status === 'ready' ? 'ready' : 'in_progress';
+  const derivedArtifactId = planning.derivedArtifactRef ? String(planning.derivedArtifactRef.id) : undefined;
+  const derivedArtifact = derivedArtifactId
+    ? udaArtifacts.find(artifact => artifact.id === derivedArtifactId)
+    : undefined;
+  return {
+    id: planning.id,
+    title: planning.content.title?.trim() || 'Progettazione senza titolo',
+    context: { ...planning.context },
+    status,
+    statusLabel: status === 'ready' ? 'Pronta' : 'Da continuare',
+    updatedAt: planning.updatedAt,
+    curriculumReferenceCount: planning.curriculumReferences.length,
+    reconstruction: planning.reconstruction,
+    derivedArtifact: derivedArtifact ? { id: derivedArtifact.id, title: derivedArtifact.title } : undefined,
+  };
+}
+
+export function buildPlanningCatalogue(input: PlanningCatalogueInput): PlanningCatalogueEntry[] {
+  const udaArtifacts = input.udaArtifacts ?? [];
+  const planningById = new Map<string, DidacticPlanning>();
+
+  for (const planning of input.plannings ?? []) planningById.set(String(planning.id), planning);
+  for (const result of input.compatibilityResults ?? []) {
+    if (!result.planning) continue;
+    const key = String(result.planning.id);
+    if (planningById.has(key)) continue;
+    planningById.set(key, result.sourceKind === 'legacy-draft' && !result.planning.reconstruction
+      ? { ...result.planning, reconstruction: 'partial' }
+      : result.planning);
+  }
+
+  return [...planningById.values()]
+    .map(planning => catalogueEntryFromPlanning(planning, udaArtifacts))
+    .sort((left, right) => right.updatedAt.localeCompare(left.updatedAt) || left.title.localeCompare(right.title));
 }

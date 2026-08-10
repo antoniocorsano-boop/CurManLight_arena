@@ -51,7 +51,7 @@ export function AppSidebar({
     }
     if (label === 'Progettazione') {
       handleTabSwitch(tab);
-      setActiveProgTab(typeof navigator !== 'undefined' && navigator.webdriver ? 'annuale' : 'home');
+      setActiveProgTab('home');
       return;
     }
     handleTabSwitch(tab);

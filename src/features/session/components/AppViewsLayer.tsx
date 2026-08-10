@@ -2,6 +2,8 @@ import { CurriculumTab, RevisioneTab } from '../../curriculum';
 import { EsportazioniTab, SecondBrainTab } from '../../documents';
 import { ProcessoTab } from '../../processo';
 import { ProgettazioneTab } from '../../progettazione';
+import PlanningCatalogue from '../../progettazione/components/PlanningCatalogue';
+import { buildPlanningCatalogue, mapLegacyDraftToPlanning } from '../../../domain/planning';
 import { DashboardView } from './DashboardView';
 import { InfoViews } from './InfoViews';
 import { WorkspaceHeader } from '../../workspace/components';
@@ -261,6 +263,18 @@ export function AppViewsLayer(props: AppViewsLayerProps) {
   } = props;
 
   const workspaceContext = `${getDisciplineLabel(discipline, order)} · ${order === 'infanzia' ? "Scuola dell'Infanzia" : order === 'primaria' ? 'Scuola Primaria' : 'Scuola secondaria di I grado'}`;
+  const planningCatalogue = buildPlanningCatalogue({
+   compatibilityResults: [mapLegacyDraftToPlanning({
+    title: progTitle,
+    discipline,
+    schoolOrder: order,
+    classLabel: targetClass,
+    period: progPeriod,
+    hours: progHours,
+    notes: progNotes,
+   })],
+   udaArtifacts: savedUda,
+  });
   const classContext = targetClass ? `${workspaceContext} · Classe ${targetClass}${targetSection ? ` · Sezione ${targetSection}` : ''}` : workspaceContext;
 
   return (
@@ -344,6 +358,18 @@ export function AppViewsLayer(props: AppViewsLayerProps) {
           ? { label: 'Torna a progettazione', onClick: () => setActiveProgTab('annuale') }
           : { label: 'Apri documenti', onClick: () => handleTabSwitch('esportazioni') }}
        />
+       {activeProgTab === 'home' ? (
+        <PlanningCatalogue
+         entries={planningCatalogue}
+         onContinue={(entry) => {
+          setProgTitle(entry.title === 'Progettazione senza titolo' ? '' : entry.title);
+          if (entry.context.classLabel) setTargetClass(entry.context.classLabel);
+          setActiveProgTab('annuale');
+         }}
+         onNew={() => { setProgTitle(''); setActiveProgTab('annuale'); }}
+         disciplineLabel={(value) => getDisciplineLabel(value, order)}
+        />
+       ) : (
        <ProgettazioneTab
        localCurriculum={localCurriculum}
        savedUda={savedUda}
@@ -477,6 +503,7 @@ export function AppViewsLayer(props: AppViewsLayerProps) {
        setShowOutcomesModal={setShowOutcomesModal}
        handleAddAnnotation={handleAddAnnotation}
        />
+       )}
       </div>
      )}
      {/* VIEW: PROCESSO & CONSENSO */}
