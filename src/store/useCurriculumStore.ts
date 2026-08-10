@@ -135,7 +135,6 @@ const USER_STATE_KEYS: readonly (keyof UserState)[] = [
   'selectedTraguardi',
   'selectedObiettivi',
   'selectedEvidenze',
-  'activeProgTab',
   'activeCurricoloView',
   'activeProcessoTab',
   'activeGeneralSubtab',
@@ -204,7 +203,7 @@ export const useCurriculumStore = create<StoreActions>()(
       selectedTraguardi: [],
       selectedObiettivi: [],
       selectedEvidenze: [],
-      activeProgTab: 'annuale',
+      activeProgTab: 'home',
       activeCurricoloView: 'albero',
       activeProcessoTab: 'flusso',
       activeGeneralSubtab: 'premessa',
@@ -344,7 +343,7 @@ export const useCurriculumStore = create<StoreActions>()(
       name: 'curmanlight-react-db-state-v1.4.0',
       storage: createJSONStorage(() => indexedDBStorage),
       partialize: (state) => {
-        const { workspaceIdentity, ...stateWithoutWorkspaceIdentity } = state;
+        const { workspaceIdentity, activeProgTab: _activeProgTab, ...stateWithoutWorkspaceIdentity } = state;
         return { ...stateWithoutWorkspaceIdentity, workspaceIdentitySerialized: serializePersistedWorkspaceIdentity(workspaceIdentity) };
       },
       merge: (persistedState, currentState) => {
