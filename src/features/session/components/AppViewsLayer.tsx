@@ -8,7 +8,7 @@ import { InfoViews } from './InfoViews';
 import { WorkspaceHeader } from '../../workspace/components';
 import { useMemo, useState } from 'react';
 import { useCurriculumStore } from '../../../store/useCurriculumStore';
-import { createCanonicalPlanningWorkspace, buildPlanningCatalogue, type DidacticPlanning } from '../../../domain/planning';
+import { createCanonicalPlanningWorkspace, buildPlanningCatalogue, updatePlanningContent, updatePlanningContext, type DidacticPlanning } from '../../../domain/planning';
 import type { EntityId } from '../../../domain/curriculum/identity/types';
 import { safeLocalStorageGetItem, safeLocalStorageSetItem } from '../../../lib/consolidatedStorage';
 import type { ActiveProgTab, AppViewsLayerProps } from '../types/appViewContracts';
@@ -299,6 +299,14 @@ export function AppViewsLayer(props: AppViewsLayerProps) {
    setProgTitle('');
    setActiveProgTab('annuale');
   };
+  const setCanonicalTitle = (value: string) => setProgTitle(updatePlanningContent(canonicalPlanning, { title: value }).content.title ?? '');
+  const setCanonicalPeriod = (value: string) => setProgPeriod(updatePlanningContent(canonicalPlanning, { period: value }).content.period ?? '');
+  const setCanonicalHours = (value: number) => setProgHours(updatePlanningContent(canonicalPlanning, { hours: value }).content.hours ?? 0);
+  const setCanonicalNotes = (value: string | ((current: string) => string)) => {
+   const resolved = typeof value === 'function' ? value(canonicalPlanning.content.notes ?? '') : value;
+   setProgNotes(updatePlanningContent(canonicalPlanning, { notes: resolved }).content.notes ?? '');
+  };
+  const setCanonicalClass = (value: string) => setTargetClass(updatePlanningContext(canonicalPlanning, { classLabel: value }).context.classLabel ?? '');
   const classContext = targetClass ? `${workspaceContext} · Classe ${targetClass}${targetSection ? ` · Sezione ${targetSection}` : ''}` : workspaceContext;
 
   return (
@@ -401,7 +409,7 @@ export function AppViewsLayer(props: AppViewsLayerProps) {
        localCurriculum={localCurriculum}
        savedUda={savedUda}
        targetClass={targetClass}
-       setTargetClass={setTargetClass}
+       setTargetClass={setCanonicalClass}
        targetSection={targetSection}
        setTargetSection={setTargetSection}
        assignedCombinations={assignedCombinations}
@@ -410,15 +418,15 @@ export function AppViewsLayer(props: AppViewsLayerProps) {
        wizardStep={wizardStep}
        setWizardStep={setWizardStep}
        progTitle={progTitle}
-       setProgTitle={setProgTitle}
+       setProgTitle={setCanonicalTitle}
        progPeriod={progPeriod}
-       setProgPeriod={setProgPeriod}
+       setProgPeriod={setCanonicalPeriod}
        progHours={progHours}
-       setProgHours={setProgHours}
+       setProgHours={setCanonicalHours}
        progStatus={progStatus}
        setProgStatus={setProgStatus}
        progNotes={progNotes}
-       setProgNotes={setProgNotes}
+       setProgNotes={setCanonicalNotes}
        realTaskInput={realTaskInput}
        setRealTaskInput={setRealTaskInput}
        progCoAuthors={progCoAuthors}
