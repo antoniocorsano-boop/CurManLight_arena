@@ -3,10 +3,14 @@ import { EsportazioniTab, SecondBrainTab } from '../../documents';
 import { ProcessoTab } from '../../processo';
 import { ProgettazioneTab } from '../../progettazione';
 import PlanningCatalogue from '../../progettazione/components/PlanningCatalogue';
-import { buildPlanningCatalogue, mapLegacyDraftToPlanning } from '../../../domain/planning';
 import { DashboardView } from './DashboardView';
 import { InfoViews } from './InfoViews';
 import { WorkspaceHeader } from '../../workspace/components';
+import { useMemo, useState } from 'react';
+import { useCurriculumStore } from '../../../store/useCurriculumStore';
+import { createCanonicalPlanningWorkspace, buildPlanningCatalogue, type DidacticPlanning } from '../../../domain/planning';
+import type { EntityId } from '../../../domain/curriculum/identity/types';
+import { safeLocalStorageGetItem, safeLocalStorageSetItem } from '../../../lib/consolidatedStorage';
 import type { ActiveProgTab, AppViewsLayerProps } from '../types/appViewContracts';
 import type { AppTab } from '../../navigation';
 
@@ -263,18 +267,38 @@ export function AppViewsLayer(props: AppViewsLayerProps) {
   } = props;
 
   const workspaceContext = `${getDisciplineLabel(discipline, order)} · ${order === 'infanzia' ? "Scuola dell'Infanzia" : order === 'primaria' ? 'Scuola Primaria' : 'Scuola secondaria di I grado'}`;
-  const planningCatalogue = buildPlanningCatalogue({
-   compatibilityResults: [mapLegacyDraftToPlanning({
-    title: progTitle,
-    discipline,
-    schoolOrder: order,
-    classLabel: targetClass,
-    period: progPeriod,
-    hours: progHours,
-    notes: progNotes,
-   })],
-   udaArtifacts: savedUda,
+  const designArchive = useCurriculumStore(state => state.designArchive);
+  const [planningId, setPlanningId] = useState<EntityId>(() => {
+   const stored = safeLocalStorageGetItem('curman_canonical_planning_id', '');
+   if (stored) return stored as EntityId;
+   const created = `planning-${Date.now()}` as EntityId;
+   safeLocalStorageSetItem('curman_canonical_planning_id', created);
+   return created;
   });
+  const canonicalPlanning: DidacticPlanning = useMemo(() => ({
+   ...createCanonicalPlanningWorkspace({
+    id: planningId,
+    draft: {
+     title: progTitle,
+     discipline,
+     schoolOrder: order,
+     classLabel: targetClass,
+     period: progPeriod,
+     hours: progHours,
+     notes: progNotes,
+    },
+    curriculumSelections: designArchive.selections,
+   }),
+   reconstruction: 'partial',
+  }), [planningId, progTitle, discipline, order, targetClass, progPeriod, progHours, progNotes, designArchive.selections]);
+  const planningCatalogue = buildPlanningCatalogue({ plannings: [canonicalPlanning], udaArtifacts: savedUda });
+  const startNewPlanning = () => {
+   const nextId = `planning-${Date.now()}` as EntityId;
+   safeLocalStorageSetItem('curman_canonical_planning_id', nextId);
+   setPlanningId(nextId);
+   setProgTitle('');
+   setActiveProgTab('annuale');
+  };
   const classContext = targetClass ? `${workspaceContext} · Classe ${targetClass}${targetSection ? ` · Sezione ${targetSection}` : ''}` : workspaceContext;
 
   return (
@@ -362,15 +386,18 @@ export function AppViewsLayer(props: AppViewsLayerProps) {
         <PlanningCatalogue
          entries={planningCatalogue}
          onContinue={(entry) => {
+          setPlanningId(entry.id);
+          safeLocalStorageSetItem('curman_canonical_planning_id', entry.id);
           setProgTitle(entry.title === 'Progettazione senza titolo' ? '' : entry.title);
           if (entry.context.classLabel) setTargetClass(entry.context.classLabel);
           setActiveProgTab('annuale');
          }}
-         onNew={() => { setProgTitle(''); setActiveProgTab('annuale'); }}
+         onNew={startNewPlanning}
          disciplineLabel={(value) => getDisciplineLabel(value, order)}
         />
        ) : (
        <ProgettazioneTab
+       canonicalPlanning={canonicalPlanning}
        localCurriculum={localCurriculum}
        savedUda={savedUda}
        targetClass={targetClass}

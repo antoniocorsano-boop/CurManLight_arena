@@ -106,6 +106,14 @@ export interface PlanningCatalogueInput {
   udaArtifacts?: UdaModel[];
 }
 
+export interface CanonicalPlanningWorkspaceInput {
+  id: EntityId;
+  draft: LegacyPlanningDraft;
+  curriculumSelections?: readonly DesignCurriculumSelection[];
+  status?: PlanningStatus;
+  now?: string;
+}
+
 const emptyContent = (): PlanningContent => ({ objectives: [], activities: [], assessment: [], materials: [] });
 
 export function createDidacticPlanning(input: {
@@ -135,8 +143,58 @@ export function createDidacticPlanning(input: {
   };
 }
 
+export function createCanonicalPlanningWorkspace(input: CanonicalPlanningWorkspaceInput): DidacticPlanning {
+  const mapped = mapLegacyDraftToPlanning(input.draft, input.now).planning;
+  if (!mapped) throw new Error('Unable to create canonical Planning from compatible draft');
+  return {
+    ...mapped,
+    id: input.id,
+    status: input.status ?? 'in_progress',
+    curriculumReferences: (input.curriculumSelections ?? []).map(curriculumReferenceFromSelection),
+  };
+}
+
 function clonePlanning(planning: DidacticPlanning): DidacticPlanning {
   return JSON.parse(JSON.stringify(planning)) as DidacticPlanning;
+}
+
+export function updatePlanningContent(
+  planning: DidacticPlanning,
+  patch: Partial<PlanningContent>,
+  updatedAt = new Date().toISOString(),
+): DidacticPlanning {
+  const next = clonePlanning(planning);
+  next.content = { ...next.content, ...patch };
+  next.updatedAt = updatedAt;
+  return next;
+}
+
+export function updatePlanningContext(
+  planning: DidacticPlanning,
+  patch: Partial<PlanningContext>,
+  updatedAt = new Date().toISOString(),
+): DidacticPlanning {
+  const next = clonePlanning(planning);
+  next.context = { ...next.context, ...patch };
+  next.updatedAt = updatedAt;
+  return next;
+}
+
+export function updatePlanningReferences(
+  planning: DidacticPlanning,
+  references: readonly CurriculumReference[],
+  updatedAt = new Date().toISOString(),
+): DidacticPlanning {
+  const next = clonePlanning(planning);
+  next.curriculumReferences = references.map(reference => ({
+    ...reference,
+    curriculumVersionRef: { ...reference.curriculumVersionRef },
+    provenance: { ...reference.provenance },
+    sourceRefs: reference.sourceRefs.map(ref => ({ ...ref })),
+    evidenceRefs: reference.evidenceRefs.map(ref => ({ ...ref })),
+  }));
+  next.updatedAt = updatedAt;
+  return next;
 }
 
 export function curriculumReferenceFromSelection(selection: DesignCurriculumSelection): CurriculumReference {

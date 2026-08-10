@@ -3,6 +3,7 @@ import { useCurriculumStore } from '../../../store/useCurriculumStore';
 import { listSelectionsForDesign } from '../../../domain/design/archive';
 import { DESIGN_QUALIFICATION_LABELS } from '../../../domain/design/types';
 import type { DesignCurriculumSelection } from '../../../domain/design/types';
+import type { DidacticPlanning } from '../../../domain/planning';
 
 function SourceStateLabel({ state }: { state?: string }) {
   if (!state) return null;
@@ -67,7 +68,7 @@ function SelectionCard({ selection }: { selection: DesignCurriculumSelection }) 
   );
 }
 
-export function DesignSelezioniPanel() {
+export function DesignSelezioniPanel({ planning }: { planning?: DidacticPlanning }) {
   const { designArchive, savedUda } = useCurriculumStore();
 
   // Use latest UDA as the design context
@@ -75,6 +76,30 @@ export function DesignSelezioniPanel() {
   const selections = latestUda
     ? listSelectionsForDesign(designArchive, latestUda.id)
     : designArchive.selections;
+
+  if (planning) {
+    return (
+      <div className="space-y-3" role="region" aria-label="Riferimenti curricolari">
+        <h3 className="text-sm font-extrabold text-slate-800 flex items-center space-x-2">
+          <Layers className="w-4 h-4 text-indigo-500" />
+          <span>Riferimenti curricolari</span>
+          <span className="text-[10px] font-normal text-slate-500">— {planning.curriculumReferences.length} riferimenti</span>
+        </h3>
+        {planning.curriculumReferences.length === 0 ? (
+          <p className="text-xs text-slate-400 italic">Nessun riferimento curricolare associato a questa progettazione.</p>
+        ) : (
+          <div className="space-y-2">
+            {planning.curriculumReferences.map(reference => (
+              <div key={`${reference.nodeId}:${String(reference.curriculumVersionRef.id)}`} className="bg-white border border-slate-200 rounded-lg p-3 text-left">
+                <p className="text-xs leading-relaxed font-semibold text-slate-700">{reference.snapshot}</p>
+                <p className="mt-2 text-[10px] font-semibold text-slate-400">Curricolo vigente · {reference.provenance.sourceArea === 'A02' ? 'consultazione' : 'revisione curricolare'}</p>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-3" role="region" aria-label="Selezioni curricolari">

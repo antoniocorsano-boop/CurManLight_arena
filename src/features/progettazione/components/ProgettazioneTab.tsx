@@ -11,6 +11,7 @@ import { useKnowledgeCompanion } from '../hooks/useKnowledgeCompanion';
 import { UiEmptyState } from '../../../ui/components/UiEmptyState';
 import { resolveShownFrameworkForCurriculum } from '../../../lib/curriculumTransitionUi';
 import type { SchoolOrder, UdaModel } from '../../../types/curriculum';
+import type { DidacticPlanning } from '../../../domain/planning';
 import type { AppViewsLayerProps, CurriculumMap, LibrarySorting, ProgStatus, ProgettazioneMode } from '../../session';
 
 const getDisciplineLabel = (disc: string, _ord?: SchoolOrder) => {
@@ -155,13 +156,14 @@ export type ProgettazioneTabProps = Pick<AppViewsLayerProps,
   | 'setSelectedUdaForOutcomes'
   | 'setShowOutcomesModal'
   | 'handleAddAnnotation'
->;
+> & { canonicalPlanning?: DidacticPlanning };
 
 export function ProgettazioneTab(props: ProgettazioneTabProps) {
   const { activeProgTab, setActiveProgTab, discipline, order, selectedTraguardi, savedUda } = useCurriculumStore();
 
   const {
     localCurriculum,
+    canonicalPlanning,
     targetClass,
     targetSection,
     assignedCombinations,
@@ -313,7 +315,8 @@ export function ProgettazioneTab(props: ProgettazioneTabProps) {
 
       {/* Annuale (Progettatore) View */}
       {activeProgTab === 'annuale' && (
-        <ProgettazioneAnnualeView
+          <ProgettazioneAnnualeView
+          canonicalPlanning={canonicalPlanning}
           localCurriculum={localCurriculum}
           targetClass={targetClass}
           targetSection={targetSection}
@@ -425,6 +428,7 @@ export function ProgettazioneTab(props: ProgettazioneTabProps) {
 
 /* ─── Annuale (Progettatore) View ─── */
 interface ProgettazioneAnnualeViewProps {
+  canonicalPlanning?: DidacticPlanning;
   localCurriculum: CurriculumMap;
   targetClass: string;
   targetSection: string;
@@ -465,6 +469,7 @@ interface ProgettazioneAnnualeViewProps {
 }
 
 function ProgettazioneAnnualeView({
+  canonicalPlanning,
   localCurriculum,
   targetClass,
   progettazioneMode,
@@ -544,7 +549,7 @@ function ProgettazioneAnnualeView({
       </div>
 
       <div className="rounded-2xl border border-indigo-100 bg-indigo-50/40 p-4" data-testid="plan-curriculum-references">
-        <DesignSelezioniPanel />
+        <DesignSelezioniPanel planning={canonicalPlanning} />
       </div>
 
       {progettazioneMode === 'grid' ? (
