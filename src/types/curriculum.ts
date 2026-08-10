@@ -1,5 +1,7 @@
 export type SchoolOrder = 'infanzia' | 'primaria' | 'secondaria';
 
+import type { CurriculumReference } from '../domain/planning';
+
 export type DecisionStatus = 'approved' | 'rejected' | 'custom';
 
 export type UserRole = 'non-dichiarato' | 'insegnante' | 'dipartimento' | 'referente' | 'dirigente' | 'collegio' | 'amministratore';
@@ -41,6 +43,12 @@ export interface UdaModel {
   notes: string;
   createdAt: string;
   updatedAt?: string;
+  /** Explicit provenance for UDA artifacts materialized from canonical Planning. */
+  sourcePlanningRef?: import('../domain/curriculum/identity/types').EntityReference;
+  curriculumReferences?: CurriculumReference[];
+  activities?: string[];
+  assessment?: string[];
+  materials?: string[];
 }
 
 export interface DocumentExportEvent {

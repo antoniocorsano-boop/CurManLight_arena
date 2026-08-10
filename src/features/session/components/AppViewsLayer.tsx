@@ -8,7 +8,7 @@ import { InfoViews } from './InfoViews';
 import { WorkspaceHeader } from '../../workspace/components';
 import { useMemo, useState } from 'react';
 import { useCurriculumStore } from '../../../store/useCurriculumStore';
-import { createCanonicalPlanningWorkspace, buildPlanningCatalogue, updatePlanningContent, updatePlanningContext, type DidacticPlanning } from '../../../domain/planning';
+import { createCanonicalPlanningWorkspace, buildPlanningCatalogue, materializeUdaFromPlanning, updatePlanningContent, updatePlanningContext, type DidacticPlanning } from '../../../domain/planning';
 import type { EntityId } from '../../../domain/curriculum/identity/types';
 import { safeLocalStorageGetItem, safeLocalStorageSetItem } from '../../../lib/consolidatedStorage';
 import type { ActiveProgTab, AppViewsLayerProps } from '../types/appViewContracts';
@@ -268,6 +268,8 @@ export function AppViewsLayer(props: AppViewsLayerProps) {
 
   const workspaceContext = `${getDisciplineLabel(discipline, order)} · ${order === 'infanzia' ? "Scuola dell'Infanzia" : order === 'primaria' ? 'Scuola Primaria' : 'Scuola secondaria di I grado'}`;
   const designArchive = useCurriculumStore(state => state.designArchive);
+  const selectedObiettivi = useCurriculumStore(state => state.selectedObiettivi);
+  const addUda = useCurriculumStore(state => state.addUda);
   const [planningId, setPlanningId] = useState<EntityId>(() => {
    const stored = safeLocalStorageGetItem('curman_canonical_planning_id', '');
    if (stored) return stored as EntityId;
@@ -285,12 +287,27 @@ export function AppViewsLayer(props: AppViewsLayerProps) {
      classLabel: targetClass,
      period: progPeriod,
      hours: progHours,
+     objectives: selectedObiettivi.map(index => localCurriculum[discipline]?.[order]?.obiettivi?.[index]).filter((value): value is string => Boolean(value)),
+     activities: realTaskInput.trim() ? [realTaskInput.trim()] : [],
      notes: progNotes,
     },
     curriculumSelections: designArchive.selections,
+    status: progStatus === 'pronta per confronto' ? 'ready' : 'in_progress',
    }),
    reconstruction: 'partial',
-  }), [planningId, progTitle, discipline, order, targetClass, progPeriod, progHours, progNotes, designArchive.selections]);
+  }), [planningId, progTitle, discipline, order, targetClass, progPeriod, progHours, realTaskInput, progNotes, progStatus, selectedObiettivi, localCurriculum, designArchive.selections]);
+  const materializedUda = savedUda.find(uda => String(uda.sourcePlanningRef?.id) === String(canonicalPlanning.id));
+  const handleMaterializeUda = () => {
+   const result = materializeUdaFromPlanning(canonicalPlanning, savedUda);
+   if (result.status === 'success') {
+    addUda(result.uda);
+    setActiveProgTab('uda');
+   } else if (result.status === 'already-materialized') {
+    setActiveProgTab('uda');
+   } else {
+    showToast(result.issues[0]?.message ?? 'La progettazione non è pronta per la materializzazione.');
+   }
+  };
   const planningCatalogue = buildPlanningCatalogue({ plannings: [canonicalPlanning], udaArtifacts: savedUda });
   const startNewPlanning = () => {
    const nextId = `planning-${Date.now()}` as EntityId;
@@ -406,6 +423,8 @@ export function AppViewsLayer(props: AppViewsLayerProps) {
        ) : (
        <ProgettazioneTab
        canonicalPlanning={canonicalPlanning}
+       materializedUda={materializedUda}
+       onMaterializeUda={handleMaterializeUda}
        localCurriculum={localCurriculum}
        savedUda={savedUda}
        targetClass={targetClass}

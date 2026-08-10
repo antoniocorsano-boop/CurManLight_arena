@@ -2,6 +2,7 @@ import { Save, Zap, Eye, Copy, Users, Search, RefreshCw, Filter } from 'lucide-r
 import { useState } from 'react';
 import { useCurriculumStore } from '../../../store/useCurriculumStore';
 import { DesignSelezioniPanel } from './DesignSelezioniPanel';
+import UdaArtifactView from './UdaArtifactView';
 import { UiConfirmDialog } from '../../../ui/components/UiConfirmDialog';
 import { ClasseTab } from '../../classroom';
 import { SocialTab } from '../../social';
@@ -156,7 +157,7 @@ export type ProgettazioneTabProps = Pick<AppViewsLayerProps,
   | 'setSelectedUdaForOutcomes'
   | 'setShowOutcomesModal'
   | 'handleAddAnnotation'
-> & { canonicalPlanning?: DidacticPlanning };
+> & { canonicalPlanning?: DidacticPlanning; materializedUda?: UdaModel; onMaterializeUda?: () => void };
 
 export function ProgettazioneTab(props: ProgettazioneTabProps) {
   const { activeProgTab, setActiveProgTab, discipline, order, selectedTraguardi, savedUda } = useCurriculumStore();
@@ -220,6 +221,8 @@ export function ProgettazioneTab(props: ProgettazioneTabProps) {
     libSorting,
     setLibSorting,
     setSelectedUda,
+    materializedUda,
+    onMaterializeUda,
   } = props;
 
   return (
@@ -315,6 +318,12 @@ export function ProgettazioneTab(props: ProgettazioneTabProps) {
 
       {/* Annuale (Progettatore) View */}
       {activeProgTab === 'annuale' && (
+          <>
+          {canonicalPlanning?.status === 'ready' && !materializedUda && onMaterializeUda && (
+            <button type="button" onClick={onMaterializeUda} className="rounded-xl bg-indigo-600 px-4 py-2 text-[10px] font-black uppercase tracking-wide text-white shadow-sm hover:bg-indigo-700">
+              Materializza UDA
+            </button>
+          )}
           <ProgettazioneAnnualeView
           canonicalPlanning={canonicalPlanning}
           localCurriculum={localCurriculum}
@@ -355,11 +364,12 @@ export function ProgettazioneTab(props: ProgettazioneTabProps) {
           handleBack={handleBack}
           handleNext={handleNext}
         />
+        </>
       )}
 
       {/* UDA Library View */}
       {activeProgTab === 'uda' && (
-        <ArchivioUdaView
+        materializedUda ? <UdaArtifactView uda={materializedUda} onBackToPlanning={() => setActiveProgTab('annuale')} /> : <ArchivioUdaView
           discipline={discipline}
           order={order}
           targetClass={targetClass}

@@ -1,3 +1,4 @@
+import { createEntityReference } from './curriculum/identity';
 import type { EntityId, EntityReference } from './curriculum/identity/types';
 import type { SchoolOrder, UdaModel } from '../types/curriculum';
 import type { DesignCurriculumSelection, DesignQualification } from './design/types';
@@ -114,6 +115,18 @@ export interface CanonicalPlanningWorkspaceInput {
   now?: string;
 }
 
+export interface MaterializationIssue {
+  code: string;
+  message: string;
+  field?: string;
+}
+
+export type MaterializationResult =
+  | { status: 'success'; uda: UdaModel }
+  | { status: 'already-materialized'; uda: UdaModel }
+  | { status: 'not-ready'; issues: MaterializationIssue[] }
+  | { status: 'validation-error'; issues: MaterializationIssue[] };
+
 const emptyContent = (): PlanningContent => ({ objectives: [], activities: [], assessment: [], materials: [] });
 
 export function createDidacticPlanning(input: {
@@ -167,6 +180,62 @@ export function updatePlanningContent(
   next.content = { ...next.content, ...patch };
   next.updatedAt = updatedAt;
   return next;
+}
+
+function materializationIssues(planning: DidacticPlanning): MaterializationIssue[] {
+  const issues: MaterializationIssue[] = [];
+  if (!planning.content.title?.trim()) issues.push({ code: 'TITLE_REQUIRED', field: 'title', message: 'A Planning title is required.' });
+  if (!planning.context.discipline?.trim()) issues.push({ code: 'DISCIPLINE_REQUIRED', field: 'discipline', message: 'A Planning discipline is required.' });
+  if (!planning.content.period?.trim()) issues.push({ code: 'PERIOD_REQUIRED', field: 'period', message: 'A Planning period is required.' });
+  if (!Number.isFinite(planning.content.hours) || (planning.content.hours ?? 0) <= 0) issues.push({ code: 'HOURS_REQUIRED', field: 'hours', message: 'Planning hours must be greater than zero.' });
+  if (!planning.content.objectives.some(value => value.trim())) issues.push({ code: 'OBJECTIVE_REQUIRED', field: 'objectives', message: 'At least one objective is required.' });
+  if (!planning.content.activities.some(value => value.trim())) issues.push({ code: 'ACTIVITY_REQUIRED', field: 'activities', message: 'At least one activity is required.' });
+  return issues;
+}
+
+export function materializeUdaFromPlanning(
+  planning: DidacticPlanning,
+  existingArtifacts: readonly UdaModel[] = [],
+): MaterializationResult {
+  const existing = existingArtifacts.find(artifact => String(artifact.sourcePlanningRef?.id) === String(planning.id));
+  if (existing) return { status: 'already-materialized', uda: existing };
+  if (planning.status !== 'ready') return {
+    status: 'not-ready',
+    issues: [{ code: 'PLANNING_NOT_READY', message: 'The Planning must be marked ready before explicit materialization.' }],
+  };
+  const issues = materializationIssues(planning);
+  if (issues.length > 0) return { status: 'validation-error', issues };
+
+  const udaId = `uda-${String(planning.id)}`;
+  const sourcePlanningRef = createEntityReference(planning.id, 'teaching-design', planning.content.title);
+  const uda: UdaModel = {
+    id: udaId,
+    title: planning.content.title!.trim(),
+    discipline: planning.context.discipline,
+    order: planning.context.schoolOrder,
+    period: planning.content.period!.trim(),
+    hours: planning.content.hours!,
+    status: 'bozza',
+    traguardi: [],
+    obiettivi: [...planning.content.objectives],
+    evidenze: [],
+    realTask: planning.content.activities.find(value => value.trim())!,
+    notes: planning.content.notes ?? planning.content.intentions ?? '',
+    createdAt: planning.updatedAt,
+    updatedAt: planning.updatedAt,
+    sourcePlanningRef,
+    curriculumReferences: planning.curriculumReferences.map(reference => ({
+      ...reference,
+      curriculumVersionRef: { ...reference.curriculumVersionRef },
+      provenance: { ...reference.provenance },
+      sourceRefs: reference.sourceRefs.map(ref => ({ ...ref })),
+      evidenceRefs: reference.evidenceRefs.map(ref => ({ ...ref })),
+    })),
+    activities: [...planning.content.activities],
+    assessment: [...planning.content.assessment],
+    materials: [...planning.content.materials],
+  };
+  return { status: 'success', uda };
 }
 
 export function updatePlanningContext(

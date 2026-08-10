@@ -41,3 +41,6 @@
 
 ## 2026-08-09 23:43:28 +02:00
 - P1.3-C implemented: canonical read-only CurriculumNodeDetail wired from CURR-01 and CURR-02; focused UI 2/2, curriculum 425/425, fast 273/273, typecheck/build green; browser smoke confirmed same node and context continuity; graph hook rebuild blocked by EPERM and produced no artifacts.
+
+## 2026-08-10 10:03:45 +02:00
+- P2.1-D implemented: pure Planning-to-UDA materialization, provenance-preserving UDA fields, duplicate control, PLAN-03 artifact view and explicit PLAN-02 action. Focused 26/26, test:fast 273/273, typecheck/build green. Graphify hook blocked by EPERM/timeout; temporary .graphify removed.
