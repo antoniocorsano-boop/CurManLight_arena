@@ -157,7 +157,7 @@ export type ProgettazioneTabProps = Pick<AppViewsLayerProps,
   | 'setSelectedUdaForOutcomes'
   | 'setShowOutcomesModal'
   | 'handleAddAnnotation'
-> & { canonicalPlanning?: DidacticPlanning; materializedUda?: UdaModel; onMaterializeUda?: () => void };
+> & { canonicalPlanning?: DidacticPlanning; materializedUda?: UdaModel; onMaterializeUda?: () => void; onSaveUda?: (uda: UdaModel) => void };
 
 export function ProgettazioneTab(props: ProgettazioneTabProps) {
   const { activeProgTab, setActiveProgTab, discipline, order, selectedTraguardi, savedUda } = useCurriculumStore();
@@ -324,6 +324,11 @@ export function ProgettazioneTab(props: ProgettazioneTabProps) {
               Materializza UDA
             </button>
           )}
+          {materializedUda && (
+            <button type="button" onClick={() => setActiveProgTab('uda')} className="rounded-xl border border-indigo-200 bg-white px-4 py-2 text-[10px] font-black uppercase tracking-wide text-indigo-700 shadow-sm hover:bg-indigo-50">
+              Apri UDA
+            </button>
+          )}
           <ProgettazioneAnnualeView
           canonicalPlanning={canonicalPlanning}
           localCurriculum={localCurriculum}
@@ -369,7 +374,7 @@ export function ProgettazioneTab(props: ProgettazioneTabProps) {
 
       {/* UDA Library View */}
       {activeProgTab === 'uda' && (
-        materializedUda ? <UdaArtifactView uda={materializedUda} onBackToPlanning={() => setActiveProgTab('annuale')} /> : <ArchivioUdaView
+        materializedUda ? <UdaArtifactView uda={materializedUda} onSave={props.onSaveUda} onBackToPlanning={() => setActiveProgTab('annuale')} /> : <ArchivioUdaView
           discipline={discipline}
           order={order}
           targetClass={targetClass}

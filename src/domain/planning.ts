@@ -205,6 +205,12 @@ export function materializeUdaFromPlanning(
 ): MaterializationResult {
   const existing = existingArtifacts.find(artifact => String(artifact.sourcePlanningRef?.id) === String(planning.id));
   if (existing) return { status: 'already-materialized', uda: existing };
+  const proposedId = `uda-${String(planning.id)}`;
+  const conflictingArtifact = existingArtifacts.find(artifact => String(artifact.id) === proposedId);
+  if (conflictingArtifact) return {
+    status: 'validation-error',
+    issues: [{ code: 'UDA_ID_COLLISION', message: `The deterministic UDA identity ${proposedId} is already owned by another Planning.` }],
+  };
   if (planning.status !== 'ready') return {
     status: 'not-ready',
     issues: [{ code: 'PLANNING_NOT_READY', message: 'The Planning must be marked ready before explicit materialization.' }],
@@ -212,7 +218,7 @@ export function materializeUdaFromPlanning(
   const issues = materializationIssues(planning);
   if (issues.length > 0) return { status: 'validation-error', issues };
 
-  const udaId = `uda-${String(planning.id)}`;
+  const udaId = proposedId;
   const sourcePlanningRef = createEntityReference(planning.id, 'teaching-design', planning.content.title);
   const uda: UdaModel = {
     id: udaId,
@@ -361,7 +367,7 @@ export function mapGuidedWorkflowStateToPlanning(_state: GuidedTeacherWorkflowSt
 
 function catalogueEntryFromPlanning(planning: DidacticPlanning, udaArtifacts: UdaModel[]): PlanningCatalogueEntry {
   const status = planning.status === 'ready' ? 'ready' : 'in_progress';
-  const derivedArtifactId = planning.derivedArtifactRef ? String(planning.derivedArtifactRef.id) : undefined;
+  const derivedArtifactId = planning.derivedArtifactRef ? String(planning.derivedArtifactRef.id) : udaArtifacts.find(artifact => String(artifact.sourcePlanningRef?.id) === String(planning.id))?.id;
   const derivedArtifact = derivedArtifactId
     ? udaArtifacts.find(artifact => artifact.id === derivedArtifactId)
     : undefined;

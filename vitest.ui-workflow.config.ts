@@ -15,6 +15,8 @@ const include = [
   'src/__tests__/design-transfer-integration.test.tsx',
   'src/__tests__/beta-b1-planning-continuity.test.ts',
   'src/__tests__/beta-b1-planning-continuity.test.tsx',
+  'src/__tests__/beta-b2-uda-authoring-continuity.test.tsx',
+  'src/__tests__/beta-b2-planning-to-uda-smoke.test.tsx',
   'src/__tests__/curriculum-functional-pilot/cml631g-pilot-init.test.tsx',
   'src/__tests__/social-task10.test.tsx',
 ];

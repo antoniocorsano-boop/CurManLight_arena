@@ -5,6 +5,7 @@ interface PlanningCatalogueProps {
   entries: PlanningCatalogueEntry[];
   onContinue: (entry: PlanningCatalogueEntry) => void;
   onNew: () => void;
+  onOpenArtifact?: (entry: PlanningCatalogueEntry) => void;
   disciplineLabel: (discipline: string) => string;
 }
 
@@ -19,9 +20,10 @@ function formatDate(value: string): string {
   return Number.isNaN(date.getTime()) ? 'Data non disponibile' : date.toLocaleDateString('it-IT');
 }
 
-function PlanningCard({ entry, onContinue, disciplineLabel }: {
+function PlanningCard({ entry, onContinue, onOpenArtifact, disciplineLabel }: {
   entry: PlanningCatalogueEntry;
   onContinue: (entry: PlanningCatalogueEntry) => void;
+  onOpenArtifact?: (entry: PlanningCatalogueEntry) => void;
   disciplineLabel: (discipline: string) => string;
 }) {
   return (
@@ -53,7 +55,7 @@ function PlanningCard({ entry, onContinue, disciplineLabel }: {
           Continua <ArrowRight className="h-3.5 w-3.5" />
         </button>
         {entry.derivedArtifact && (
-          <button type="button" aria-label={`Apri UDA ${entry.derivedArtifact.title}`} className="inline-flex items-center gap-2 rounded-xl border border-slate-200 px-3 py-2 text-xs font-black text-slate-700 transition hover:border-indigo-300 hover:text-indigo-700">
+          <button type="button" onClick={() => onOpenArtifact?.(entry)} aria-label={`Apri UDA ${entry.derivedArtifact.title}`} className="inline-flex items-center gap-2 rounded-xl border border-slate-200 px-3 py-2 text-xs font-black text-slate-700 transition hover:border-indigo-300 hover:text-indigo-700">
             <FileText className="h-3.5 w-3.5" /> Apri UDA
           </button>
         )}
@@ -62,7 +64,7 @@ function PlanningCard({ entry, onContinue, disciplineLabel }: {
   );
 }
 
-export default function PlanningCatalogue({ entries, onContinue, onNew, disciplineLabel }: PlanningCatalogueProps) {
+export default function PlanningCatalogue({ entries, onContinue, onNew, onOpenArtifact, disciplineLabel }: PlanningCatalogueProps) {
   const inProgress = entries.filter(entry => entry.status === 'in_progress');
   const ready = entries.filter(entry => entry.status === 'ready');
 
@@ -82,14 +84,14 @@ export default function PlanningCatalogue({ entries, onContinue, onNew, discipli
       {inProgress.length > 0 && (
         <div className="space-y-3">
           <h3 className="text-xs font-black uppercase tracking-[0.16em] text-slate-700">In corso</h3>
-          <div className="grid gap-4 lg:grid-cols-2">{inProgress.map(entry => <PlanningCard key={entry.id} entry={entry} onContinue={onContinue} disciplineLabel={disciplineLabel} />)}</div>
+          <div className="grid gap-4 lg:grid-cols-2">{inProgress.map(entry => <PlanningCard key={entry.id} entry={entry} onContinue={onContinue} onOpenArtifact={onOpenArtifact} disciplineLabel={disciplineLabel} />)}</div>
         </div>
       )}
 
       {ready.length > 0 && (
         <div className="space-y-3">
           <h3 className="text-xs font-black uppercase tracking-[0.16em] text-slate-700">Pronte / completate</h3>
-          <div className="grid gap-4 lg:grid-cols-2">{ready.map(entry => <PlanningCard key={entry.id} entry={entry} onContinue={onContinue} disciplineLabel={disciplineLabel} />)}</div>
+          <div className="grid gap-4 lg:grid-cols-2">{ready.map(entry => <PlanningCard key={entry.id} entry={entry} onContinue={onContinue} onOpenArtifact={onOpenArtifact} disciplineLabel={disciplineLabel} />)}</div>
         </div>
       )}
 

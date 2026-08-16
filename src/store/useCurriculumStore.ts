@@ -163,6 +163,7 @@ interface StoreActions extends CurriculumStoreState {
   setCustomText: (id: string, text: string) => void;
   resetDecision: (id: string) => void;
   addUda: (uda: UdaModel) => void;
+  updateUda: (uda: UdaModel) => boolean;
   deleteUda: (id: string) => void;
   clearUdaLibrary: () => void;
   setActiveRevisionFilter: (filter: UserState['activeRevisionFilter']) => void;
@@ -260,6 +261,14 @@ export const useCurriculumStore = create<StoreActions>()(
           return { decisions, customTexts };
         }),
       addUda: (uda) => set((state) => ({ savedUda: [...state.savedUda, uda] })),
+      updateUda: (uda) => {
+        let found = false;
+        set((state) => {
+          found = state.savedUda.some(existing => existing.id === uda.id);
+          return found ? { savedUda: state.savedUda.map(existing => existing.id === uda.id ? uda : existing) } : state;
+        });
+        return found;
+      },
       deleteUda: (id) => set((state) => ({ savedUda: state.savedUda.filter(u => u.id !== id) })),
       clearUdaLibrary: () => set({ savedUda: [] }),
       setActiveRevisionFilter: (activeRevisionFilter) => set({ activeRevisionFilter }),

@@ -14,6 +14,7 @@ import { safeLocalStorageGetItem, safeLocalStorageSetItem } from '../../../lib/c
 import type { ActiveProgTab, AppViewsLayerProps } from '../types/appViewContracts';
 import type { AppTab } from '../../navigation';
 import { createLocalDidacticPlanningRepository, saveDidacticPlanningSafely } from '../../../lib/didacticPlanningRepository';
+import type { UdaModel } from '../../../types/curriculum';
 
 export type { AppViewsLayerProps } from '../types/appViewContracts';
 
@@ -270,6 +271,7 @@ export function AppViewsLayer(props: AppViewsLayerProps) {
   const designArchive = useCurriculumStore(state => state.designArchive);
   const selectedObiettivi = useCurriculumStore(state => state.selectedObiettivi);
   const addUda = useCurriculumStore(state => state.addUda);
+  const updateUda = useCurriculumStore(state => state.updateUda);
   const planningRepository = useMemo(() => createLocalDidacticPlanningRepository(localStorage), []);
   const [planningId, setPlanningId] = useState<EntityId>(() => {
    const stored = safeLocalStorageGetItem('curman_canonical_planning_id', '');
@@ -366,6 +368,14 @@ export function AppViewsLayer(props: AppViewsLayerProps) {
     setActiveProgTab('uda');
    } else {
     showToast(result.issues[0]?.message ?? 'La progettazione non è pronta per la materializzazione.');
+   }
+  };
+  const handleSaveUda = (uda: UdaModel) => {
+   try {
+    const saved = updateUda(uda);
+    showToast(saved ? 'UDA salvata.' : 'Impossibile salvare la UDA: l\'UDA non è più presente nell\'archivio.', saved);
+   } catch (error) {
+    showToast(`Impossibile salvare la UDA: ${error instanceof Error ? error.message : 'errore di persistenza'}`, false);
    }
   };
   const planningCatalogue = buildPlanningCatalogue({ plannings: resolveCanonicalPlanningSources([canonicalPlanning, ...persistedPlannings], []), udaArtifacts: savedUda });
@@ -489,6 +499,7 @@ export function AppViewsLayer(props: AppViewsLayerProps) {
           setActiveProgTab('annuale');
          }}
          onNew={startNewPlanning}
+         onOpenArtifact={(entry) => { setPlanningId(entry.id); setActiveProgTab('uda'); }}
          disciplineLabel={(value) => getDisciplineLabel(value, order)}
         />
        ) : (
@@ -496,6 +507,7 @@ export function AppViewsLayer(props: AppViewsLayerProps) {
        canonicalPlanning={canonicalPlanning}
        materializedUda={materializedUda}
        onMaterializeUda={handleMaterializeUda}
+       onSaveUda={handleSaveUda}
        localCurriculum={localCurriculum}
        savedUda={savedUda}
        targetClass={targetClass}
