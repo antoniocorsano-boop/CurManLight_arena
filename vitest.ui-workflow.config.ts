@@ -18,6 +18,7 @@ const include = [
   'src/__tests__/beta-b2-uda-authoring-continuity.test.tsx',
   'src/__tests__/beta-b2-planning-to-uda-smoke.test.tsx',
   'src/__tests__/beta-b3-teacher-export-path.test.tsx',
+  'src/__tests__/beta-vertical-1-e2e.test.tsx',
   'src/__tests__/curriculum-functional-pilot/cml631g-pilot-init.test.tsx',
   'src/__tests__/social-task10.test.tsx',
 ];

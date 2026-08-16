@@ -282,7 +282,6 @@ export function AppViewsLayer(props: AppViewsLayerProps) {
   const [planningCreatedAt, setPlanningCreatedAt] = useState(() => new Date().toISOString());
   const [restoredPlanning, setRestoredPlanning] = useState<DidacticPlanning | undefined>();
   const [hydratedPlanningId, setHydratedPlanningId] = useState<EntityId>();
-  const [newPlanningArchiveTimestamp, setNewPlanningArchiveTimestamp] = useState<string>();
   const [persistedPlannings, setPersistedPlannings] = useState<DidacticPlanning[]>([]);
   const [planningRepositoryError, setPlanningRepositoryError] = useState<string>();
 
@@ -309,40 +308,37 @@ export function AppViewsLayer(props: AppViewsLayerProps) {
   }, [planningId, planningRepository]);
   const canonicalPlanning: DidacticPlanning = useMemo(() => {
     const restoredPlanningIsActive = restoredPlanning?.id === planningId && hydratedPlanningId === planningId;
-   const hasNewCurriculumSelection = newPlanningArchiveTimestamp !== undefined && designArchive.updatedAt !== newPlanningArchiveTimestamp;
-   const current = createCanonicalPlanningWorkspace({
-    id: planningId,
-    draft: {
-     title: progTitle,
-     discipline,
-     schoolOrder: order,
-     classLabel: targetClass,
-     period: progPeriod,
-     hours: progHours,
-     objectives: restoredPlanningIsActive
-      ? restoredPlanning.content.objectives
-      : selectedObiettivi.length > 0
-      ? selectedObiettivi.map(index => localCurriculum[discipline]?.[order]?.obiettivi?.[index]).filter((value): value is string => Boolean(value))
-      : (restoredPlanning?.id === planningId ? restoredPlanning.content.objectives : []),
-     activities: restoredPlanningIsActive
-      ? (realTaskInput === (restoredPlanning.content.activities[0] ?? '')
-       ? restoredPlanning.content.activities
-       : [realTaskInput.trim(), ...restoredPlanning.content.activities.slice(1)].filter(Boolean))
-      : (realTaskInput.trim() ? [realTaskInput.trim()] : []),
-     notes: progNotes,
-    },
-    curriculumSelections: restoredPlanningIsActive || (newPlanningArchiveTimestamp !== undefined && !hasNewCurriculumSelection)
-     ? []
-     : designArchive.selections,
-    status: progStatus === 'pronta per confronto' ? 'ready' : 'in_progress',
-   });
-    return {
-    ...current,
-    createdAt: restoredPlanningIsActive ? restoredPlanning.createdAt : planningCreatedAt,
-    curriculumReferences: restoredPlanningIsActive ? restoredPlanning.curriculumReferences : current.curriculumReferences,
-    reconstruction: 'partial',
-   };
-  }, [planningId, planningCreatedAt, progTitle, discipline, order, targetClass, progPeriod, progHours, realTaskInput, progNotes, progStatus, selectedObiettivi, localCurriculum, designArchive.selections, designArchive.updatedAt, restoredPlanning, hydratedPlanningId, newPlanningArchiveTimestamp]);
+    const current = createCanonicalPlanningWorkspace({
+     id: planningId,
+     draft: {
+      title: progTitle,
+      discipline,
+      schoolOrder: order,
+      classLabel: targetClass,
+      period: progPeriod,
+      hours: progHours,
+      objectives: restoredPlanningIsActive
+       ? restoredPlanning.content.objectives
+       : selectedObiettivi.length > 0
+       ? selectedObiettivi.map(index => localCurriculum[discipline]?.[order]?.obiettivi?.[index]).filter((value): value is string => Boolean(value))
+       : (restoredPlanning?.id === planningId ? restoredPlanning.content.objectives : []),
+      activities: restoredPlanningIsActive
+       ? (realTaskInput === (restoredPlanning.content.activities[0] ?? '')
+        ? restoredPlanning.content.activities
+        : [realTaskInput.trim(), ...restoredPlanning.content.activities.slice(1)].filter(Boolean))
+       : (realTaskInput.trim() ? [realTaskInput.trim()] : []),
+      notes: progNotes,
+     },
+     curriculumSelections: restoredPlanningIsActive ? [] : designArchive.selections,
+     status: progStatus === 'pronta per confronto' ? 'ready' : 'in_progress',
+    });
+     return {
+     ...current,
+     createdAt: restoredPlanningIsActive ? restoredPlanning.createdAt : planningCreatedAt,
+     curriculumReferences: restoredPlanningIsActive ? restoredPlanning.curriculumReferences : current.curriculumReferences,
+     reconstruction: 'partial',
+    };
+   }, [planningId, planningCreatedAt, progTitle, discipline, order, targetClass, progPeriod, progHours, realTaskInput, progNotes, progStatus, selectedObiettivi, localCurriculum, designArchive.selections, designArchive.updatedAt, restoredPlanning, hydratedPlanningId]);
   const persistCanonicalPlanning = () => {
    const result = saveDidacticPlanningSafely(planningRepository, canonicalPlanning);
    if (result.ok) setPersistedPlannings(planningRepository.list());
@@ -385,13 +381,12 @@ export function AppViewsLayer(props: AppViewsLayerProps) {
   };
   const planningCatalogue = buildPlanningCatalogue({ plannings: resolveCanonicalPlanningSources([canonicalPlanning, ...persistedPlannings], []), udaArtifacts: savedUda });
   const startNewPlanning = () => {
-   const nextId = `planning-${Date.now()}` as EntityId;
-   safeLocalStorageSetItem('curman_canonical_planning_id', nextId);
-   setPlanningId(nextId);
-   setPlanningCreatedAt(new Date().toISOString());
-   setHydratedPlanningId(undefined);
-   setNewPlanningArchiveTimestamp(useCurriculumStore.getState().designArchive.updatedAt);
-   setProgTitle('');
+    const nextId = `planning-${Date.now()}` as EntityId;
+    safeLocalStorageSetItem('curman_canonical_planning_id', nextId);
+    setPlanningId(nextId);
+    setPlanningCreatedAt(new Date().toISOString());
+    setHydratedPlanningId(undefined);
+    setProgTitle('');
    setProgPeriod('');
    setProgHours(0);
    setProgNotes('');
