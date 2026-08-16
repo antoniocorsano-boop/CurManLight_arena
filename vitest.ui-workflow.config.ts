@@ -13,6 +13,8 @@ const include = [
   'src/__tests__/guided-workflow-accessibility.test.tsx',
   'src/__tests__/interaction.cml603d.test.tsx',
   'src/__tests__/design-transfer-integration.test.tsx',
+  'src/__tests__/beta-b1-planning-continuity.test.ts',
+  'src/__tests__/beta-b1-planning-continuity.test.tsx',
   'src/__tests__/curriculum-functional-pilot/cml631g-pilot-init.test.tsx',
   'src/__tests__/social-task10.test.tsx',
 ];

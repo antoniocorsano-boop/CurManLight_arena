@@ -13,7 +13,7 @@ import type { EntityId } from '../../../domain/curriculum/identity/types';
 import { safeLocalStorageGetItem, safeLocalStorageSetItem } from '../../../lib/consolidatedStorage';
 import type { ActiveProgTab, AppViewsLayerProps } from '../types/appViewContracts';
 import type { AppTab } from '../../navigation';
-import { createLocalDidacticPlanningRepository } from '../../../lib/didacticPlanningRepository';
+import { createLocalDidacticPlanningRepository, saveDidacticPlanningSafely } from '../../../lib/didacticPlanningRepository';
 
 export type { AppViewsLayerProps } from '../types/appViewContracts';
 
@@ -97,7 +97,6 @@ export function AppViewsLayer(props: AppViewsLayerProps) {
     anticipatedFields,
     confirmAnticipatedField,
     applyAnticipatoryPrefill,
-    saveProgDraft,
     handleGenerateUda,
     compileProgPreviewText,
     handleTriggerGemSuggestion,
@@ -277,26 +276,37 @@ export function AppViewsLayer(props: AppViewsLayerProps) {
    if (stored) return stored as EntityId;
    return `planning-${Date.now()}` as EntityId;
   });
+  const [planningCreatedAt, setPlanningCreatedAt] = useState(() => new Date().toISOString());
   const [restoredPlanning, setRestoredPlanning] = useState<DidacticPlanning | undefined>();
   const [hydratedPlanningId, setHydratedPlanningId] = useState<EntityId>();
-  const [persistedPlannings, setPersistedPlannings] = useState<DidacticPlanning[]>(() => planningRepository.list());
+  const [newPlanningArchiveTimestamp, setNewPlanningArchiveTimestamp] = useState<string>();
+  const [persistedPlannings, setPersistedPlannings] = useState<DidacticPlanning[]>([]);
+  const [planningRepositoryError, setPlanningRepositoryError] = useState<string>();
 
   useEffect(() => {
    safeLocalStorageSetItem('curman_canonical_planning_id', planningId);
-   const restored = planningRepository.get(planningId);
-   setRestoredPlanning(restored);
-   if (restored) {
-    setProgTitle(restored.content.title ?? '');
-    setProgPeriod(restored.content.period ?? '');
-    setProgHours(restored.content.hours ?? 0);
-    setProgNotes(restored.content.notes ?? '');
-    setTargetClass(restored.context.classLabel ?? '');
-    setRealTaskInput(restored.content.activities[0] ?? '');
-    if (restored.status === 'ready') setProgStatus('pronta per confronto');
+   try {
+    const restored = planningRepository.get(planningId);
+    setRestoredPlanning(restored);
+    if (restored) {
+     setProgTitle(restored.content.title ?? '');
+     setProgPeriod(restored.content.period ?? '');
+     setProgHours(restored.content.hours ?? 0);
+     setProgNotes(restored.content.notes ?? '');
+     setTargetClass(restored.context.classLabel ?? '');
+     setRealTaskInput(restored.content.activities[0] ?? '');
+     if (restored.status === 'ready') setProgStatus('pronta per confronto');
+    }
+    setPersistedPlannings(planningRepository.list());
+   } catch (error) {
+    setRestoredPlanning(undefined);
+    setPlanningRepositoryError(error instanceof Error ? error.message : 'Unable to read the Planning archive.');
    }
    setHydratedPlanningId(planningId);
   }, [planningId, planningRepository]);
   const canonicalPlanning: DidacticPlanning = useMemo(() => {
+    const restoredPlanningIsActive = restoredPlanning?.id === planningId && hydratedPlanningId === planningId;
+   const hasNewCurriculumSelection = newPlanningArchiveTimestamp !== undefined && designArchive.updatedAt !== newPlanningArchiveTimestamp;
    const current = createCanonicalPlanningWorkspace({
     id: planningId,
     draft: {
@@ -306,24 +316,42 @@ export function AppViewsLayer(props: AppViewsLayerProps) {
      classLabel: targetClass,
      period: progPeriod,
      hours: progHours,
-     objectives: selectedObiettivi.map(index => localCurriculum[discipline]?.[order]?.obiettivi?.[index]).filter((value): value is string => Boolean(value)),
-     activities: realTaskInput.trim() ? [realTaskInput.trim()] : [],
+     objectives: restoredPlanningIsActive
+      ? restoredPlanning.content.objectives
+      : selectedObiettivi.length > 0
+      ? selectedObiettivi.map(index => localCurriculum[discipline]?.[order]?.obiettivi?.[index]).filter((value): value is string => Boolean(value))
+      : (restoredPlanning?.id === planningId ? restoredPlanning.content.objectives : []),
+     activities: restoredPlanningIsActive
+      ? (realTaskInput === (restoredPlanning.content.activities[0] ?? '')
+       ? restoredPlanning.content.activities
+       : [realTaskInput.trim(), ...restoredPlanning.content.activities.slice(1)].filter(Boolean))
+      : (realTaskInput.trim() ? [realTaskInput.trim()] : []),
      notes: progNotes,
     },
-    curriculumSelections: designArchive.selections,
+    curriculumSelections: restoredPlanningIsActive || (newPlanningArchiveTimestamp !== undefined && !hasNewCurriculumSelection)
+     ? []
+     : designArchive.selections,
     status: progStatus === 'pronta per confronto' ? 'ready' : 'in_progress',
    });
-   return {
+    return {
     ...current,
-    createdAt: restoredPlanning?.createdAt ?? current.createdAt,
-    curriculumReferences: current.curriculumReferences.length > 0 ? current.curriculumReferences : (restoredPlanning?.curriculumReferences ?? []),
+    createdAt: restoredPlanningIsActive ? restoredPlanning.createdAt : planningCreatedAt,
+    curriculumReferences: restoredPlanningIsActive ? restoredPlanning.curriculumReferences : current.curriculumReferences,
     reconstruction: 'partial',
    };
-  }, [planningId, progTitle, discipline, order, targetClass, progPeriod, progHours, realTaskInput, progNotes, progStatus, selectedObiettivi, localCurriculum, designArchive.selections, restoredPlanning]);
+  }, [planningId, planningCreatedAt, progTitle, discipline, order, targetClass, progPeriod, progHours, realTaskInput, progNotes, progStatus, selectedObiettivi, localCurriculum, designArchive.selections, designArchive.updatedAt, restoredPlanning, hydratedPlanningId, newPlanningArchiveTimestamp]);
   const persistCanonicalPlanning = () => {
-   planningRepository.save(canonicalPlanning);
-   setPersistedPlannings(planningRepository.list());
+   const result = saveDidacticPlanningSafely(planningRepository, canonicalPlanning);
+   if (result.ok) setPersistedPlannings(planningRepository.list());
+   return result;
   };
+  const saveCanonicalPlanningFromUi = () => {
+   const result = persistCanonicalPlanning();
+   showToast(result.ok ? 'Planning salvato.' : `Impossibile salvare il Planning: ${result.message}`, result.ok);
+  };
+  useEffect(() => {
+   if (planningRepositoryError) showToast(`Impossibile leggere i Planning salvati: ${planningRepositoryError}`, false);
+  }, [planningRepositoryError]);
   useEffect(() => {
    if (hydratedPlanningId !== planningId) return;
    persistCanonicalPlanning();
@@ -345,8 +373,18 @@ export function AppViewsLayer(props: AppViewsLayerProps) {
    const nextId = `planning-${Date.now()}` as EntityId;
    safeLocalStorageSetItem('curman_canonical_planning_id', nextId);
    setPlanningId(nextId);
+   setPlanningCreatedAt(new Date().toISOString());
    setHydratedPlanningId(undefined);
+   setNewPlanningArchiveTimestamp(useCurriculumStore.getState().designArchive.updatedAt);
    setProgTitle('');
+   setProgPeriod('');
+   setProgHours(0);
+   setProgNotes('');
+   setRealTaskInput('');
+   setTargetClass('');
+   setTargetSection('');
+   setProgStatus('bozza');
+   useCurriculumStore.setState({ selectedTraguardi: [], selectedObiettivi: [], selectedEvidenze: [] });
    setActiveProgTab('annuale');
   };
   const setCanonicalTitle = (value: string) => setProgTitle(updatePlanningContent(canonicalPlanning, { title: value }).content.title ?? '');
@@ -493,7 +531,7 @@ export function AppViewsLayer(props: AppViewsLayerProps) {
        anticipatedFields={anticipatedFields}
        confirmAnticipatedField={confirmAnticipatedField}
        applyAnticipatoryPrefill={applyAnticipatoryPrefill}
-       saveProgDraft={saveProgDraft}
+       saveProgDraft={saveCanonicalPlanningFromUi}
        handleGenerateUda={handleGenerateUda}
        compileProgPreviewText={compileProgPreviewText}
        handleTriggerGemSuggestion={handleTriggerGemSuggestion}
