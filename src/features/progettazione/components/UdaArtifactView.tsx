@@ -4,14 +4,16 @@ import type { UdaModel } from '../../../types/curriculum';
 interface UdaArtifactViewProps {
   uda: UdaModel;
   onSave?: (uda: UdaModel) => void;
+  onExport?: (uda: UdaModel) => void;
   onBackToPlanning: () => void;
 }
 
 const splitLines = (value: string | undefined) => (value ?? '').split('\n').map(item => item.trim()).filter(Boolean);
 
-export default function UdaArtifactView({ uda, onSave, onBackToPlanning }: UdaArtifactViewProps) {
+export default function UdaArtifactView({ uda, onSave, onExport, onBackToPlanning }: UdaArtifactViewProps) {
   const [draft, setDraft] = useState<UdaModel>(uda);
   useEffect(() => setDraft(uda), [uda]);
+  const hasUnsavedChanges = JSON.stringify(draft) !== JSON.stringify(uda);
   const update = <K extends keyof UdaModel>(field: K, value: UdaModel[K]) => setDraft(current => ({ ...current, [field]: value }));
   const save = () => onSave?.({ ...draft, updatedAt: new Date().toISOString(), obiettivi: splitLines(draft.obiettivi.join('\n')), activities: splitLines(draft.activities?.join('\n')), assessment: splitLines(draft.assessment?.join('\n')), materials: splitLines(draft.materials?.join('\n')) });
 
@@ -35,7 +37,7 @@ export default function UdaArtifactView({ uda, onSave, onBackToPlanning }: UdaAr
           <ArtifactSection title="Obiettivi"><ItemList items={draft.obiettivi} /></ArtifactSection><ArtifactSection title="Attività"><ItemList items={draft.activities} fallback={draft.realTask} /></ArtifactSection><ArtifactSection title="Valutazione"><ItemList items={draft.assessment} /></ArtifactSection><ArtifactSection title="Materiali"><ItemList items={draft.materials} /></ArtifactSection>
         </>}
       </div>
-      <footer className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-5"><p className="text-[10px] font-semibold text-slate-500">Derivata dalla progettazione {draft.sourcePlanningRef ? String(draft.sourcePlanningRef.id) : 'storica'}</p><div className="flex gap-2">{onSave && <button type="button" onClick={save} className="rounded-xl bg-indigo-600 px-4 py-2 text-[10px] font-black uppercase tracking-wide text-white hover:bg-indigo-700">Salva UDA</button>}<button type="button" onClick={onBackToPlanning} className="rounded-xl border border-indigo-200 px-4 py-2 text-[10px] font-black uppercase tracking-wide text-indigo-700 hover:bg-indigo-50">Torna alla progettazione</button></div></footer>
+      <footer className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-5"><p className="text-[10px] font-semibold text-slate-500">Derivata dalla progettazione {draft.sourcePlanningRef ? String(draft.sourcePlanningRef.id) : 'storica'}</p><div className="flex gap-2">{onExport && <button type="button" onClick={() => onExport(uda)} disabled={hasUnsavedChanges} title={hasUnsavedChanges ? 'Salva prima di esportare' : 'Esporta la versione salvata'} className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-2 text-[10px] font-black uppercase tracking-wide text-emerald-700 hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-50">{hasUnsavedChanges ? 'Salva prima di esportare' : 'Stampa / Salva PDF'}</button>}{onSave && <button type="button" onClick={save} className="rounded-xl bg-indigo-600 px-4 py-2 text-[10px] font-black uppercase tracking-wide text-white hover:bg-indigo-700">Salva UDA</button>}<button type="button" onClick={onBackToPlanning} className="rounded-xl border border-indigo-200 px-4 py-2 text-[10px] font-black uppercase tracking-wide text-indigo-700 hover:bg-indigo-50">Torna alla progettazione</button></div></footer>
     </section>
   );
 }

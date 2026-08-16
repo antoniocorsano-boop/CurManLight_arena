@@ -157,7 +157,7 @@ export type ProgettazioneTabProps = Pick<AppViewsLayerProps,
   | 'setSelectedUdaForOutcomes'
   | 'setShowOutcomesModal'
   | 'handleAddAnnotation'
-> & { canonicalPlanning?: DidacticPlanning; materializedUda?: UdaModel; onMaterializeUda?: () => void; onSaveUda?: (uda: UdaModel) => void };
+> & { canonicalPlanning?: DidacticPlanning; materializedUda?: UdaModel; onMaterializeUda?: () => void; onSaveUda?: (uda: UdaModel) => void; onExportUda?: (uda: UdaModel) => void };
 
 export function ProgettazioneTab(props: ProgettazioneTabProps) {
   const { activeProgTab, setActiveProgTab, discipline, order, selectedTraguardi, savedUda } = useCurriculumStore();
@@ -374,7 +374,7 @@ export function ProgettazioneTab(props: ProgettazioneTabProps) {
 
       {/* UDA Library View */}
       {activeProgTab === 'uda' && (
-        materializedUda ? <UdaArtifactView uda={materializedUda} onSave={props.onSaveUda} onBackToPlanning={() => setActiveProgTab('annuale')} /> : <ArchivioUdaView
+        materializedUda ? <UdaArtifactView uda={materializedUda} onSave={props.onSaveUda} onExport={props.onExportUda} onBackToPlanning={() => setActiveProgTab('annuale')} /> : <ArchivioUdaView
           discipline={discipline}
           order={order}
           targetClass={targetClass}

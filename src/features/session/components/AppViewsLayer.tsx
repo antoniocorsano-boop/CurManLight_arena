@@ -15,6 +15,7 @@ import type { ActiveProgTab, AppViewsLayerProps } from '../types/appViewContract
 import type { AppTab } from '../../navigation';
 import { createLocalDidacticPlanningRepository, saveDidacticPlanningSafely } from '../../../lib/didacticPlanningRepository';
 import type { UdaModel } from '../../../types/curriculum';
+import { printUdaDocument } from '../../documents/services/udaDocumentExport';
 
 export type { AppViewsLayerProps } from '../types/appViewContracts';
 
@@ -378,6 +379,10 @@ export function AppViewsLayer(props: AppViewsLayerProps) {
     showToast(`Impossibile salvare la UDA: ${error instanceof Error ? error.message : 'errore di persistenza'}`, false);
    }
   };
+  const handleExportUda = (uda: UdaModel) => {
+   const result = printUdaDocument(uda);
+   showToast(result.message, result.success);
+  };
   const planningCatalogue = buildPlanningCatalogue({ plannings: resolveCanonicalPlanningSources([canonicalPlanning, ...persistedPlannings], []), udaArtifacts: savedUda });
   const startNewPlanning = () => {
    const nextId = `planning-${Date.now()}` as EntityId;
@@ -508,6 +513,7 @@ export function AppViewsLayer(props: AppViewsLayerProps) {
        materializedUda={materializedUda}
        onMaterializeUda={handleMaterializeUda}
        onSaveUda={handleSaveUda}
+       onExportUda={handleExportUda}
        localCurriculum={localCurriculum}
        savedUda={savedUda}
        targetClass={targetClass}

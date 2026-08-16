@@ -68,10 +68,20 @@ describe('Beta B2 Planning to UDA runtime smoke', () => {
 
     await useCurriculumStore.persist.rehydrate();
     expect(useCurriculumStore.getState().savedUda).toHaveLength(1);
-    renderSurface(false);
+    const reopened = renderSurface(false);
     fireEvent.click(await screen.findByRole('button', { name: 'Apri UDA Energia e territorio' }));
     expect(screen.getByDisplayValue('Energia e territorio')).toBeInTheDocument();
     expect(screen.getByLabelText('Valutazione')).toHaveValue('Rubrica osservativa');
+    const print = vi.fn();
+    const write = vi.fn();
+    vi.spyOn(window, 'open').mockReturnValue({ document: { write, close: vi.fn() }, print, close: vi.fn() } as unknown as Window);
+    fireEvent.click(screen.getByRole('button', { name: 'Stampa / Salva PDF' }));
+    expect(print).toHaveBeenCalledOnce();
+    expect(write).toHaveBeenCalledWith(expect.stringContaining('Energia e territorio'));
+    expect(write).toHaveBeenCalledWith(expect.stringContaining('Comprendere i consumi'));
+    expect(write).toHaveBeenCalledWith(expect.stringContaining('Mappa dei consumi'));
+    expect(write).toHaveBeenCalledWith(expect.stringContaining('Rubrica osservativa'));
+    expect(reopened.showToast).toHaveBeenCalledWith('Stampa avviata. Salva il documento come PDF dalla finestra di stampa.', true);
     expect(useCurriculumStore.getState().savedUda).toHaveLength(1);
     await waitFor(() => expect(useCurriculumStore.getState().savedUda[0].id).toBe(saved[0].id));
   });
