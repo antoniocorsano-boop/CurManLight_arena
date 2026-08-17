@@ -12,6 +12,50 @@ import type { EntityId, EntityMetadata, EntityReference, ContentOrigin } from '.
 import type { SchoolOrder } from '../../../types/curriculum';
 import type { DisciplineCode, CurriculumNodeType, CurriculumLinkType } from './vocabularies';
 
+// ─── Source-native curriculum projection ─────────────────────────────────────
+
+/**
+ * Natura dell'area così come è organizzata dalla fonte normativa.
+ * Consente di rappresentare, senza inventare discipline, campi di esperienza,
+ * aree trasversali e sezioni generali della fonte.
+ */
+export type SourceAreaKind =
+  | 'discipline'
+  | 'experience-field'
+  | 'transversal-area'
+  | 'general-section';
+
+/** Identità dell'area nella fonte originaria. */
+export interface SourceAreaReference {
+  kind: SourceAreaKind;
+  code: string;
+  label: string;
+}
+
+/** Identità del nucleo così come denominato dalla fonte originaria. */
+export interface SourceNucleusReference {
+  code: string;
+  label: string;
+}
+
+/**
+ * Checkpoint normativi esplicitamente necessari per il primo ciclo 2012.
+ * Il vocabolario è controllato e può essere esteso solo tramite modifica del
+ * contratto, evitando stringhe temporali arbitrarie nei dati normativi.
+ */
+export type NormativeCheckpoint =
+  | 'end-infanzia'
+  | 'end-primary-grade-3'
+  | 'end-primary'
+  | 'end-lower-secondary';
+
+export const VALID_NORMATIVE_CHECKPOINTS: readonly NormativeCheckpoint[] = [
+  'end-infanzia',
+  'end-primary-grade-3',
+  'end-primary',
+  'end-lower-secondary',
+] as const;
+
 // ─── Curriculum Version ──────────────────────────────────────────────────────
 
 /**
@@ -106,9 +150,16 @@ export interface CurriculumSegment {
   curriculumVersionRef: EntityReference;
   /** Ordine scolastico */
   schoolOrder: SchoolOrder;
-  /** Disciplina */
-  disciplineCode: DisciplineCode;
-  /** Nucleo fondante */
+  /**
+   * Disciplina canonica quando il segmento è disciplinare.
+   * È null per strutture fonte-native non disciplinari (es. campi di esperienza).
+   */
+  disciplineCode: DisciplineCode | null;
+  /** Area così come organizzata dalla fonte normativa. */
+  sourceArea?: SourceAreaReference;
+  /** Nucleo così come denominato dalla fonte normativa. */
+  sourceNucleus?: SourceNucleusReference;
+  /** Nucleo fondante legacy/compatibilità */
   nucleusId?: string;
   /** Titolo del segmento */
   title: string;
@@ -194,9 +245,11 @@ export interface CurriculumNode {
   provenance: CurriculumProvenance;
   /** Informazioni legacy (se presenti) */
   legacy?: LegacyNodeInfo;
-  /** Grado (se specifico) */
+  /** Checkpoint temporale normativo controllato. */
+  normativeCheckpoint?: NormativeCheckpoint;
+  /** Grado (campo legacy/istituzionale, se specifico) */
   grade?: string;
-  /** Periodo (se specifico) */
+  /** Periodo (campo legacy/istituzionale, se specifico) */
   period?: string;
   /** Se è trasversale */
   isCrossCurricular?: boolean;
