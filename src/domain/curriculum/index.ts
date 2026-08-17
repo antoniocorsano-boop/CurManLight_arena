@@ -206,3 +206,6 @@ export {
   createA02CurriculumReadModel,
 } from './readModels';
 export type { A11SourceSummary, A02CurriculumQuery } from './readModels';
+
+export { fixture2012 } from './fixture2012';
+export type { Fixture2012 } from './fixture2012';
