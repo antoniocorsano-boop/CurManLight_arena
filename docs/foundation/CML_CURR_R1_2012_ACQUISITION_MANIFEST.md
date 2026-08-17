@@ -8,7 +8,8 @@
 Legend:
 
 - `CAPTURED` = source structure/role verified and registered;
-- `TO_ACQUIRE` = authoritative text still to be normalised into the canonical dataset;
+- `SOURCE_VERIFIED` = section boundaries and normative role verified against the official annex; normalization into canonical records is still separate work;
+- `TO_ACQUIRE` = authoritative text still to be normalized into the canonical dataset;
 - `SEPARATE_SOURCE` = intentionally outside the D.M. 254/2012 annex source;
 - `TRANSVERSAL` = must not be flattened into an invented discipline.
 
@@ -16,59 +17,61 @@ Legend:
 
 | Source section | Status | Notes |
 |---|---|---|
-| Cultura scuola persona | CAPTURED | structure verified from official annex index |
-| Finalità generali | CAPTURED | structure verified |
-| L'organizzazione del curricolo | CAPTURED | structure verified |
-| Scuola dell'infanzia | CAPTURED | structure verified |
-| Scuola del primo ciclo | CAPTURED | structure verified |
+| Cultura scuola persona | SOURCE_VERIFIED | official annex index and section verified |
+| Finalità generali | SOURCE_VERIFIED | official annex index and section verified |
+| L'organizzazione del curricolo | SOURCE_VERIFIED | official annex index and section verified |
+| Scuola dell'infanzia | SOURCE_VERIFIED | official annex index and section verified |
+| Scuola del primo ciclo | SOURCE_VERIFIED | official annex index and section verified |
 
 ## B. General sections
 
 | Section | Status |
 |---|---|
-| La scuola nel nuovo scenario | TO_ACQUIRE |
-| Centralità della persona | TO_ACQUIRE |
-| Per una nuova cittadinanza | TO_ACQUIRE |
-| Per un nuovo umanesimo | TO_ACQUIRE |
-| Scuola, Costituzione, Europa | TO_ACQUIRE |
-| Profilo dello studente | TO_ACQUIRE |
-| Dalle Indicazioni al curricolo | TO_ACQUIRE |
-| Aree disciplinari e discipline | TO_ACQUIRE |
-| Continuità ed unitarietà del curricolo | TO_ACQUIRE |
-| Traguardi per lo sviluppo delle competenze — framing | CAPTURED |
-| Obiettivi di apprendimento — framing | CAPTURED |
-| Valutazione | TO_ACQUIRE |
-| Certificazione delle competenze | TO_ACQUIRE |
-| Una scuola di tutti e di ciascuno | TO_ACQUIRE |
-| Comunità educativa, comunità professionale, cittadinanza | TO_ACQUIRE |
+| La scuola nel nuovo scenario | SOURCE_VERIFIED |
+| Centralità della persona | SOURCE_VERIFIED |
+| Per una nuova cittadinanza | SOURCE_VERIFIED |
+| Per un nuovo umanesimo | SOURCE_VERIFIED |
+| Scuola, Costituzione, Europa | SOURCE_VERIFIED |
+| Profilo dello studente | SOURCE_VERIFIED |
+| Dalle Indicazioni al curricolo | SOURCE_VERIFIED |
+| Aree disciplinari e discipline | SOURCE_VERIFIED |
+| Continuità ed unitarietà del curricolo | SOURCE_VERIFIED |
+| Traguardi per lo sviluppo delle competenze — framing | SOURCE_VERIFIED |
+| Obiettivi di apprendimento — framing | SOURCE_VERIFIED |
+| Valutazione | SOURCE_VERIFIED |
+| Certificazione delle competenze | SOURCE_VERIFIED |
+| Una scuola di tutti e di ciascuno | SOURCE_VERIFIED |
+| Comunità educativa, comunità professionale, cittadinanza | SOURCE_VERIFIED |
 
 ## C. Scuola dell'infanzia
 
 | Section / field | Status |
 |---|---|
-| I bambini, le famiglie, i docenti, l'ambiente di apprendimento | TO_ACQUIRE |
-| I campi di esperienza — framing | TO_ACQUIRE |
-| Il sé e l'altro | TO_ACQUIRE |
-| Il corpo e il movimento | TO_ACQUIRE |
-| Immagini, suoni, colori | TO_ACQUIRE |
-| I discorsi e le parole | TO_ACQUIRE |
-| La conoscenza del mondo | TO_ACQUIRE |
-| Dalla scuola dell'infanzia alla scuola primaria | TO_ACQUIRE |
+| I bambini, le famiglie, i docenti, l'ambiente di apprendimento | SOURCE_VERIFIED |
+| I campi di esperienza — framing | SOURCE_VERIFIED |
+| Il sé e l'altro | SOURCE_VERIFIED |
+| Il corpo e il movimento | SOURCE_VERIFIED |
+| Immagini, suoni, colori | SOURCE_VERIFIED |
+| I discorsi e le parole | SOURCE_VERIFIED |
+| La conoscenza del mondo | SOURCE_VERIFIED |
+| Dalla scuola dell'infanzia alla scuola primaria | SOURCE_VERIFIED |
+
+Important source-native rule: the five fields of experience are not to be rewritten as school subjects. Their narrative framing and their end-of-infanzia competence targets remain attached to the field itself.
 
 ## D. Scuola del primo ciclo — common framing
 
 | Section | Status |
 |---|---|
-| Il senso dell'esperienza educativa | TO_ACQUIRE |
-| L'alfabetizzazione culturale di base | TO_ACQUIRE |
+| Il senso dell'esperienza educativa | SOURCE_VERIFIED |
+| L'alfabetizzazione culturale di base | SOURCE_VERIFIED |
 | Cittadinanza e Costituzione | TRANSVERSAL |
-| L'ambiente di apprendimento | TO_ACQUIRE |
+| L'ambiente di apprendimento | SOURCE_VERIFIED |
 
 ## E. Discipline
 
 | Discipline | Narrative | Primary traguardi | Primary objectives | Lower-secondary traguardi | Lower-secondary objectives | Overall |
 |---|---|---|---|---|---|---|
-| Italiano | TO_ACQUIRE | TO_ACQUIRE | TO_ACQUIRE | TO_ACQUIRE | TO_ACQUIRE | TO_ACQUIRE |
+| Italiano | SOURCE_VERIFIED | SOURCE_VERIFIED | SOURCE_VERIFIED | SOURCE_VERIFIED | SOURCE_VERIFIED | SOURCE_VERIFIED |
 | Lingua inglese | TO_ACQUIRE | TO_ACQUIRE | TO_ACQUIRE | TO_ACQUIRE | TO_ACQUIRE | TO_ACQUIRE |
 | Seconda lingua comunitaria | TO_ACQUIRE | source-native applicability | source-native applicability | TO_ACQUIRE | TO_ACQUIRE | TO_ACQUIRE |
 | Storia | TO_ACQUIRE | TO_ACQUIRE | TO_ACQUIRE | TO_ACQUIRE | TO_ACQUIRE | TO_ACQUIRE |
@@ -79,6 +82,20 @@ Legend:
 | Arte e immagine | TO_ACQUIRE | TO_ACQUIRE | TO_ACQUIRE | TO_ACQUIRE | TO_ACQUIRE | TO_ACQUIRE |
 | Educazione fisica | TO_ACQUIRE | TO_ACQUIRE | TO_ACQUIRE | TO_ACQUIRE | TO_ACQUIRE | TO_ACQUIRE |
 | Tecnologia | TO_ACQUIRE | TO_ACQUIRE | TO_ACQUIRE | TO_ACQUIRE | TO_ACQUIRE | TO_ACQUIRE |
+
+### Italiano — verified source-native structure
+
+The official 2012 annex establishes the following structure for Italiano:
+
+- discipline narrative / epistemic and pedagogical framing;
+- competence targets at the end of primary school;
+- primary objectives at the end of class 3;
+- primary objectives at the end of class 5;
+- competence targets at the end of lower-secondary school;
+- lower-secondary objectives at the end of class 3;
+- thematic nuclei used for objectives, including `Ascolto e parlato`, `Lettura`, `Scrittura`, `Acquisizione ed espansione del lessico ricettivo e produttivo`, and `Elementi di grammatica esplicita e riflessione sugli usi della lingua`.
+
+CML must preserve these source-native checkpoints. It must not manufacture annual national objectives for classes 1, 2, 4, or individual lower-secondary years.
 
 ## F. Verified temporal rules
 
@@ -105,15 +122,25 @@ Legend:
 | Cittadinanza e Costituzione | TRANSVERSAL | part of first-cycle framing; not a 2012 discipline section equivalent to Italiano/Matematica/etc. |
 | Later Educazione civica framework | SEPARATE_SOURCE | must retain its own later normative provenance |
 
-## H. Next acquisition order
+## H. Acquisition gates
 
-1. Complete general normative framing.
-2. Acquire the five fields of experience and transition-to-primary section.
-3. Acquire Italiano completely and validate the ingestion pattern.
-4. Continue in official source order through all remaining disciplines.
-5. Reconcile per-discipline nuclei and milestone structures.
-6. Produce machine-checkable source coverage and provenance checks.
+1. `SOURCE_VERIFIED` is not equivalent to canonical data ingestion.
+2. No source text may be silently paraphrased and labeled normative.
+3. Every normalized record must retain source ID plus a stable source locator.
+4. The official source hierarchy must remain reconstructable from the normalized records.
+5. Institutional elaborations, evidences, annual objectives, and teaching activities remain derived layers and cannot be inserted into the national source layer.
+6. The first normalization pilot is Italiano; its ingestion pattern must be validated before bulk ingestion of the remaining disciplines.
+
+## I. Next acquisition order
+
+1. Normalize the five fields of experience and their end-of-infanzia competence targets.
+2. Normalize Italiano completely and validate the ingestion pattern.
+3. Continue in official source order through all remaining disciplines.
+4. Reconcile per-discipline nuclei and milestone structures without forcing uniformity.
+5. Produce machine-checkable source coverage and provenance checks.
 
 Current gate:
 
-`CURR_R1_2012_ACQUISITION = IN_PROGRESS`
+`CURR_R1_2012_SOURCE_STRUCTURE = VERIFIED_FOR_GENERAL_INFANZIA_ITALIANO`
+
+`CURR_R1_2012_CANONICAL_INGESTION = PENDING`
