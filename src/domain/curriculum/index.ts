@@ -209,3 +209,6 @@ export type { A11SourceSummary, A02CurriculumQuery } from './readModels';
 
 export { fixture2012 } from './fixture2012';
 export type { Fixture2012 } from './fixture2012';
+
+export { createR1BNationalCurriculumReadModel } from './r1bNationalCurriculumReadModel';
+export type { R1BQuery, R1BVersionResult, R1BReadModel } from './r1bNationalCurriculumReadModel';
