@@ -28,6 +28,9 @@ import type {
   CurriculumLinkStatus,
   LegacyNodeInfo,
   CompletenessLevel,
+  SourceAreaReference,
+  SourceNucleusReference,
+  NormativeCheckpoint,
 } from './model/types';
 
 // ─── Source Constructors ─────────────────────────────────────────────────────
@@ -170,10 +173,12 @@ export function createCurriculumVersion(
 export function createCurriculumSegment(
   curriculumVersionRef: EntityReference,
   schoolOrder: SchoolOrder,
-  disciplineCode: DisciplineCode,
+  disciplineCode: DisciplineCode | null,
   title: string,
   options?: {
     description?: string;
+    sourceArea?: SourceAreaReference;
+    sourceNucleus?: SourceNucleusReference;
     nucleusId?: string;
     status?: CurriculumSegmentStatus;
     completeness?: CompletenessLevel;
@@ -191,6 +196,8 @@ export function createCurriculumSegment(
     curriculumVersionRef,
     schoolOrder,
     disciplineCode,
+    sourceArea: options?.sourceArea,
+    sourceNucleus: options?.sourceNucleus,
     nucleusId: options?.nucleusId,
     title,
     description: options?.description,
@@ -217,6 +224,7 @@ export function createCurriculumNode(
     status?: CurriculumNodeStatus;
     provenance?: CurriculumProvenance;
     legacy?: LegacyNodeInfo;
+    normativeCheckpoint?: NormativeCheckpoint;
     grade?: string;
     period?: string;
     isCrossCurricular?: boolean;
@@ -239,6 +247,7 @@ export function createCurriculumNode(
     status: options?.status || 'active',
     provenance: options?.provenance || 'legacy',
     legacy: options?.legacy,
+    normativeCheckpoint: options?.normativeCheckpoint,
     grade: options?.grade,
     period: options?.period,
     isCrossCurricular: options?.isCrossCurricular,
