@@ -28,6 +28,7 @@ import {
   VALID_LINK_STATUSES,
   VALID_PROVENANCES,
   VALID_COMPLETENESS_LEVELS,
+  VALID_NORMATIVE_CHECKPOINTS,
 } from './model/types';
 import { SCHOOL_ORDERS } from './model/vocabularies';
 
@@ -189,8 +190,16 @@ export function validateCurriculumSegment(segment: CurriculumSegment): Curriculu
     errors.push({ code: 'SEG-004', message: 'Ordine scolastico non valido', severity: 'error', entityType: 'CurriculumSegment', path: 'schoolOrder' });
   }
 
-  if (!segment.disciplineCode) {
-    errors.push({ code: 'SEG-005', message: 'Disciplina obbligatoria', severity: 'error', entityType: 'CurriculumSegment', path: 'disciplineCode' });
+  if (!segment.disciplineCode && !segment.sourceArea) {
+    errors.push({ code: 'SEG-005', message: 'Disciplina o area fonte-nativa obbligatoria', severity: 'error', entityType: 'CurriculumSegment', path: 'disciplineCode' });
+  }
+
+  if (segment.sourceArea && (!segment.sourceArea.code.trim() || !segment.sourceArea.label.trim())) {
+    errors.push({ code: 'SEG-009', message: 'Area fonte-nativa incompleta', severity: 'error', entityType: 'CurriculumSegment', path: 'sourceArea' });
+  }
+
+  if (segment.sourceNucleus && (!segment.sourceNucleus.code.trim() || !segment.sourceNucleus.label.trim())) {
+    errors.push({ code: 'SEG-010', message: 'Nucleo fonte-nativo incompleto', severity: 'error', entityType: 'CurriculumSegment', path: 'sourceNucleus' });
   }
 
   if (!segment.title || segment.title.trim().length === 0) {
@@ -257,6 +266,10 @@ export function validateCurriculumNode(node: CurriculumNode): CurriculumValidati
 
   if (node.provenance === 'legacy' && (!node.legacy || !node.legacy.isLegacy)) {
     errors.push({ code: 'NODE-010', message: 'Nodo legacy senza informazioni legacy', severity: 'warning', entityType: 'CurriculumNode', path: 'legacy' });
+  }
+
+  if (node.normativeCheckpoint && !VALID_NORMATIVE_CHECKPOINTS.includes(node.normativeCheckpoint)) {
+    errors.push({ code: 'NODE-011', message: 'Checkpoint normativo non valido', severity: 'error', entityType: 'CurriculumNode', path: 'normativeCheckpoint' });
   }
 
   return {
