@@ -108,6 +108,10 @@ export type {
   EvidenceNode as CanonicalEvidenceNode,
   CurriculumValidationError as CanonicalCurriculumValidationError,
   CurriculumValidationResult as CanonicalCurriculumValidationResult,
+  SourceAreaKind,
+  SourceAreaReference,
+  SourceNucleusReference,
+  NormativeCheckpoint,
 } from './model/types';
 
 export {
@@ -118,6 +122,7 @@ export {
   VALID_LINK_STATUSES as VALID_CANONICAL_LINK_STATUSES,
   VALID_PROVENANCES,
   VALID_COMPLETENESS_LEVELS,
+  VALID_NORMATIVE_CHECKPOINTS,
 } from './model/types';
 
 // Vocabularies
