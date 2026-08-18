@@ -56,7 +56,7 @@ export const VERSION_2025_PRIMARIA = createCurriculumVersion(
   'Indicazioni nazionali 2025 — Primaria',
   'primaria',
   {
-    disciplines: ['italiano'],
+    disciplines: ['italiano', 'inglese'],
     status: 'active',
     mainSourceRefs: [SOURCE_REF_2025],
     origin: 'normative-source',
@@ -68,7 +68,7 @@ export const VERSION_2025_SECONDARIA = createCurriculumVersion(
   'Indicazioni nazionali 2025 — Secondaria',
   'secondaria',
   {
-    disciplines: ['italiano', 'musica'],
+    disciplines: ['italiano', 'latino', 'inglese', 'seconda-lingua', 'musica'],
     status: 'active',
     mainSourceRefs: [SOURCE_REF_2025],
     origin: 'normative-source',
@@ -199,6 +199,23 @@ export const SEGMENTS_2025_PRIMARIA_ITALIANO = [
   ),
 ];
 
+export const SEGMENTS_2025_PRIMARIA_INGLESE = [
+  createCurriculumSegment(
+    createCurriculumVersionReference(VERSION_2025_PRIMARIA.id, VERSION_2025_PRIMARIA.title),
+    'primaria',
+    'inglese',
+    'Inglese',
+    {
+      sourceArea: { kind: 'discipline', code: 'in2025-inglese', label: 'Inglese' },
+      status: 'complete',
+      completeness: 'complete',
+      sourceRefs: [SOURCE_REF_2025],
+      origin: 'normative-source',
+      now: '2026-08-18T00:00:00.000Z',
+    }
+  ),
+];
+
 export const SEGMENTS_2025_SECONDARIA_ITALIANO = [
   createCurriculumSegment(
     createCurriculumVersionReference(VERSION_2025_SECONDARIA.id, VERSION_2025_SECONDARIA.title),
@@ -207,6 +224,23 @@ export const SEGMENTS_2025_SECONDARIA_ITALIANO = [
     'Italiano',
     {
       sourceArea: { kind: 'discipline', code: 'in2025-italiano', label: 'Italiano' },
+      status: 'complete',
+      completeness: 'complete',
+      sourceRefs: [SOURCE_REF_2025],
+      origin: 'normative-source',
+      now: '2026-08-18T00:00:00.000Z',
+    }
+  ),
+];
+
+export const SEGMENTS_2025_SECONDARIA_INGLESE = [
+  createCurriculumSegment(
+    createCurriculumVersionReference(VERSION_2025_SECONDARIA.id, VERSION_2025_SECONDARIA.title),
+    'secondaria',
+    'inglese',
+    'Inglese',
+    {
+      sourceArea: { kind: 'discipline', code: 'in2025-inglese', label: 'Inglese' },
       status: 'complete',
       completeness: 'complete',
       sourceRefs: [SOURCE_REF_2025],
@@ -233,6 +267,23 @@ export const SEGMENTS_2025_SECONDARIA_STRUMENTO_MUSICALE = [
         resolutionReason: 'Percorso ad indirizzo musicale',
         cohortEntryYear: 2026,
       },
+      origin: 'normative-source',
+      now: '2026-08-18T00:00:00.000Z',
+    }
+  ),
+];
+
+export const SEGMENTS_2025_SECONDARIA_LATINO = [
+  createCurriculumSegment(
+    createCurriculumVersionReference(VERSION_2025_SECONDARIA.id, VERSION_2025_SECONDARIA.title),
+    'secondaria',
+    'latino',
+    'Latino',
+    {
+      sourceArea: { kind: 'discipline', code: 'in2025-latino', label: 'Latino' },
+      status: 'complete',
+      completeness: 'complete',
+      sourceRefs: [SOURCE_REF_2025],
       origin: 'normative-source',
       now: '2026-08-18T00:00:00.000Z',
     }
@@ -285,6 +336,52 @@ export const NODES_2025_PRIMARIA_ITALIANO = [
   ),
 ];
 
+export const NODES_2025_PRIMARIA_INGLESE = [
+  createCurriculumNode(
+    createCurriculumVersionReference(VERSION_2025_PRIMARIA.id, VERSION_2025_PRIMARIA.title),
+    createSegmentReference(SEGMENTS_2025_PRIMARIA_INGLESE[0].id, SEGMENTS_2025_PRIMARIA_INGLESE[0].title),
+    'competenza',
+    'Competenza - fine primaria',
+    {
+      status: 'active',
+      provenance: 'normative',
+      sourceRefs: [SOURCE_REF_2025],
+      origin: 'normative-source',
+      now: '2026-08-18T00:00:00.000Z',
+      normativeCheckpoint: 'end-primary',
+    }
+  ),
+  createCurriculumNode(
+    createCurriculumVersionReference(VERSION_2025_PRIMARIA.id, VERSION_2025_PRIMARIA.title),
+    createSegmentReference(SEGMENTS_2025_PRIMARIA_INGLESE[0].id, SEGMENTS_2025_PRIMARIA_INGLESE[0].title),
+    'obiettivo',
+    'Obiettivo OSA 2025 - classe III',
+    {
+      status: 'active',
+      provenance: 'normative',
+      sourceRefs: [SOURCE_REF_2025],
+      origin: 'normative-source',
+      now: '2026-08-18T00:00:00.000Z',
+      normativeCheckpoint: 'end-primary-grade-3',
+      normativeNodeKind: 'osa-2025',
+    }
+  ),
+  createCurriculumNode(
+    createCurriculumVersionReference(VERSION_2025_PRIMARIA.id, VERSION_2025_PRIMARIA.title),
+    createSegmentReference(SEGMENTS_2025_PRIMARIA_INGLESE[0].id, SEGMENTS_2025_PRIMARIA_INGLESE[0].title),
+    'conoscenza',
+    'Conoscenza - fine primaria',
+    {
+      status: 'active',
+      provenance: 'normative',
+      sourceRefs: [SOURCE_REF_2025],
+      origin: 'normative-source',
+      now: '2026-08-18T00:00:00.000Z',
+      normativeCheckpoint: 'end-primary',
+    }
+  ),
+];
+
 export const NODES_2025_SECONDARIA_ITALIANO = [
   createCurriculumNode(
     createCurriculumVersionReference(VERSION_2025_SECONDARIA.id, VERSION_2025_SECONDARIA.title),
@@ -302,6 +399,55 @@ export const NODES_2025_SECONDARIA_ITALIANO = [
   ),
 ];
 
+export const NODES_2025_SECONDARIA_INGLESE = [
+  createCurriculumNode(
+    createCurriculumVersionReference(VERSION_2025_SECONDARIA.id, VERSION_2025_SECONDARIA.title),
+    createSegmentReference(SEGMENTS_2025_SECONDARIA_INGLESE[0].id, SEGMENTS_2025_SECONDARIA_INGLESE[0].title),
+    'competenza',
+    'Competenza - fine secondaria I grado',
+    {
+      status: 'active',
+      provenance: 'normative',
+      sourceRefs: [SOURCE_REF_2025],
+      origin: 'normative-source',
+      now: '2026-08-18T00:00:00.000Z',
+      normativeCheckpoint: 'end-lower-secondary',
+    }
+  ),
+];
+
+export const NODES_2025_SECONDARIA_LATINO = [
+  createCurriculumNode(
+    createCurriculumVersionReference(VERSION_2025_SECONDARIA.id, VERSION_2025_SECONDARIA.title),
+    createSegmentReference(SEGMENTS_2025_SECONDARIA_LATINO[0].id, SEGMENTS_2025_SECONDARIA_LATINO[0].title),
+    'competenza',
+    'Competenza - fine secondaria I grado',
+    {
+      status: 'active',
+      provenance: 'normative',
+      sourceRefs: [SOURCE_REF_2025],
+      origin: 'normative-source',
+      now: '2026-08-18T00:00:00.000Z',
+      normativeCheckpoint: 'end-lower-secondary',
+    }
+  ),
+  createCurriculumNode(
+    createCurriculumVersionReference(VERSION_2025_SECONDARIA.id, VERSION_2025_SECONDARIA.title),
+    createSegmentReference(SEGMENTS_2025_SECONDARIA_LATINO[0].id, SEGMENTS_2025_SECONDARIA_LATINO[0].title),
+    'obiettivo',
+    'Obiettivo LEL - classe II',
+    {
+      status: 'active',
+      provenance: 'normative',
+      sourceRefs: [SOURCE_REF_2025],
+      origin: 'normative-source',
+      now: '2026-08-18T00:00:00.000Z',
+      normativeCheckpoint: 'end-lower-secondary',
+      normativeNodeKind: 'osa-2025',
+    }
+  ),
+];
+
 export const fixture2025 = {
   SOURCE_2025,
   SOURCE_VERSION_2025,
@@ -311,11 +457,17 @@ export const fixture2025 = {
   VERSION_2025_SECONDARIA,
   SEGMENTS_2025_INFANZIA,
   SEGMENTS_2025_PRIMARIA_ITALIANO,
+  SEGMENTS_2025_PRIMARIA_INGLESE,
   SEGMENTS_2025_SECONDARIA_ITALIANO,
+  SEGMENTS_2025_SECONDARIA_INGLESE,
   SEGMENTS_2025_SECONDARIA_STRUMENTO_MUSICALE,
+  SEGMENTS_2025_SECONDARIA_LATINO,
   NODES_2025_INFANZIA,
   NODES_2025_PRIMARIA_ITALIANO,
+  NODES_2025_PRIMARIA_INGLESE,
   NODES_2025_SECONDARIA_ITALIANO,
+  NODES_2025_SECONDARIA_INGLESE,
+  NODES_2025_SECONDARIA_LATINO,
 };
 
 export type Fixture2025 = typeof fixture2025;

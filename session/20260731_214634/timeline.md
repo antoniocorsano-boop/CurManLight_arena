@@ -14,3 +14,30 @@
 
 ## 2026-07-31 22:16:35 +02:00
 - Plan approved with CML_637B_DEPENDENCY_COMPATIBILITY_MATRIX_EXECUTION_APPROVED. Plan updated: cell B split into B1 (vite8+plugin-react 5.x) and B2 (vite8+plugin-react-oxc); full cell isolation protocol (restore package.json/lock/vitest.config.ts + rm node_modules + clean install + npm ls record); cell C uses explicit overrides (never manual lock edit) with diff/resolved version/vite count recorded; decision criteria ranked (4 checks green, zero warnings, no CJS->ESM regression, single vite major, minimal diff, no src changes). Executing Tasks 1-7 in scratch worktree CurManLight_arena_matrix.
+
+## 2026-08-18 10:31:09 +02:00
+- CURR_R1E_WORKTREE_RECOVERY = VERIFIED. Diff pulito: ripristino 'Il sé e l\'altro' in SEGMENTS_2012_INFANZIA, normalizzazione disciplineCode 'arte'/'educazione-fisica', test suite espansa, manifest aggiornato. Test: 273/273 fast, 193/193 curriculum-domain. Build: PASS. Pronto per commit recovery.
+
+## 2026-08-18 10:41:37 +02:00
+- R1E-1 Lingue SOURCE_VERIFIED. Manifest aggiornato a PARTIALLY_VERIFIED con lotto R1E-1 completato. Test lotto lingue aggiunti (11 test). Curriculum-domain: 204/204 PASS. Commit: 73e2c42.
+
+## 2026-08-18 10:50:08 +02:00
+- R1E-2 Storia+Geografia SOURCE_VERIFIED. Manifest aggiornato con lotto R1E-2 e nota rappresentazione sequenza narrativa. Test lotto storia-geografia aggiunti (12 test). Curriculum-domain: 216/216 PASS. test:fast: 273/273 PASS. Commit: adddc14.
+
+## 2026-08-18 10:55:44 +02:00
+- R1E-3 Matematica+Scienze+Tecnologia SOURCE_VERIFIED. Manifest aggiornato con lotto R1E-3. Test lotto MST aggiunti (15 test). Curriculum-domain: 231/231 PASS. test:fast: 273/273 PASS. Commit: fb9c01d.
+
+## 2026-08-18 11:01:47 +02:00
+- R1E-4 Linguaggi espressivi e corporei SOURCE_VERIFIED. Manifest aggiornato con lotto R1E-4. Test lotto linguaggi aggiunti (15 test). Curriculum-domain: 246/246 PASS. test:fast: 273/273 PASS. Commit: fb85db2.
+
+## 2026-08-18 11:20:15 +02:00
+- R1E-5 Sezioni comuni/trasversali/narrative SOURCE_VERIFIED. Rimosse generazioni sintetiche di nodi traguardo/obiettivo per sezioni narrative infanzia. Manifest aggiornato con lotto R1E-5 e note di rappresentazione. Test lotto common-sections aggiunti (9 test). Regressioni R1B/R1C allineate. Curriculum-domain: 255/255 PASS. test:fast: 273/273 PASS. Commit: 08ab296.
+
+## 2026-08-18 11:28:46 +02:00
+- R1E-6 Global completeness gate VERIFIED. Tutte le dimensioni (strutturale, testuale, semantica, provenienza) verdi. Regressioni architetturali verificate: R1A/R1B/R1C/R11D PASS, test:fast 273/273 PASS, tsc --noEmit PASS, build PASS. Manifest aggiornato a CURR_R1_2012_NORMATIVE_COMPLETENESS = VERIFIED e CURR_R1_2012_CANONICAL_INGESTION = VERIFIED. Documento di gate dedicato: CML_CURR_R1_2012_R1E6_GATE.md. Commit: 7dc0c5d.
+
+## 2026-08-18 13:02:24 +02:00
+- R2B contract audit COMPLETE, R2C minimal 2025 projection IMPLEMENTED_VERIFIED. Commit a0f9c90. GAP-R2-01/R2-04 closed by reuse, GAP-R2-02 resolved via normativeNodeKind, GAP-R2-03 resolved via frameworkApplicability. Focused tests 6/6 PASS. Curriculum-domain 261/261 PASS, test:fast 273/273 PASS, tsc --noEmit PASS, build PASS. Next: R2D fixture2025 pilot.
+
+## 2026-08-18 15:19:00 +02:00
+- R2D fixture2025 pilot EXPANDED. Fixed incorrect primaria disciplines (removed latino, seconda-lingua — not valid for primaria per vocabularies.ts). Added 2025 Lingue lot: SEGMENTS_2025_PRIMARIA_INGLESE, NODES_2025_PRIMARIA_INGLESE, SEGMENTS_2025_SECONDARIA_INGLESE, NODES_2025_SECONDARIA_INGLESE, SEGMENTS_2025_SECONDARIA_LATINO, NODES_2025_SECONDARIA_LATINO. New test file fixture-2025-lingue-lot.test.ts (9 tests). All 2025 tests 36/36 PASS. test:fast 273/273 PASS, curriculum-domain 261/261 PASS, tsc --noEmit PASS, build PASS.
