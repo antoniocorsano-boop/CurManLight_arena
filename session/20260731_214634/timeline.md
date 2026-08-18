@@ -39,5 +39,5 @@
 ## 2026-08-18 13:02:24 +02:00
 - R2B contract audit COMPLETE, R2C minimal 2025 projection IMPLEMENTED_VERIFIED. Commit a0f9c90. GAP-R2-01/R2-04 closed by reuse, GAP-R2-02 resolved via normativeNodeKind, GAP-R2-03 resolved via frameworkApplicability. Focused tests 6/6 PASS. Curriculum-domain 261/261 PASS, test:fast 273/273 PASS, tsc --noEmit PASS, build PASS. Next: R2D fixture2025 pilot.
 
-## 2026-08-18 15:19:00 +02:00
-- R2D fixture2025 pilot EXPANDED. Fixed incorrect primaria disciplines (removed latino, seconda-lingua — not valid for primaria per vocabularies.ts). Added 2025 Lingue lot: SEGMENTS_2025_PRIMARIA_INGLESE, NODES_2025_PRIMARIA_INGLESE, SEGMENTS_2025_SECONDARIA_INGLESE, NODES_2025_SECONDARIA_INGLESE, SEGMENTS_2025_SECONDARIA_LATINO, NODES_2025_SECONDARIA_LATINO. New test file fixture-2025-lingue-lot.test.ts (9 tests). All 2025 tests 36/36 PASS. test:fast 273/273 PASS, curriculum-domain 261/261 PASS, tsc --noEmit PASS, build PASS.
+## 2026-08-18 15:32:00 +02:00
+- R2E-3 Storia+Geografia 2025 COMPLETE. Added SEGMENTS_2025_PRIMARIA_STORIA, NODES_2025_PRIMARIA_STORIA, SEGMENTS_2025_SECONDARIA_STORIA, NODES_2025_SECONDARIA_STORIA, SEGMENTS_2025_PRIMARIA_GEOGRAFIA, NODES_2025_PRIMARIA_GEOGRAFIA, SEGMENTS_2025_SECONDARIA_GEOGRAFIA, NODES_2025_SECONDARIA_GEOGRAFIA. New test file fixture-2025-storia-geografia-lot.test.ts (11 tests). All 2025 tests 49/49 PASS. test:fast 273/273 PASS, curriculum-domain 304/304 PASS, tsc --noEmit PASS, build PASS. Acquisition manifest updated with R2D and R2E sections.

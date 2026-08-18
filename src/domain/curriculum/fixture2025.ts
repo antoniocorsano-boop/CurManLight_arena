@@ -448,6 +448,228 @@ export const NODES_2025_SECONDARIA_LATINO = [
   ),
 ];
 
+export const SEGMENTS_2025_PRIMARIA_STORIA = [
+  createCurriculumSegment(
+    createCurriculumVersionReference(VERSION_2025_PRIMARIA.id, VERSION_2025_PRIMARIA.title),
+    'primaria',
+    'storia',
+    'Storia',
+    {
+      sourceArea: { kind: 'discipline', code: 'in2025-storia', label: 'Storia' },
+      status: 'complete',
+      completeness: 'complete',
+      sourceRefs: [SOURCE_REF_2025],
+      origin: 'normative-source',
+      now: '2026-08-18T00:00:00.000Z',
+    }
+  ),
+];
+
+export const SEGMENTS_2025_SECONDARIA_STORIA = [
+  createCurriculumSegment(
+    createCurriculumVersionReference(VERSION_2025_SECONDARIA.id, VERSION_2025_SECONDARIA.title),
+    'secondaria',
+    'storia',
+    'Storia',
+    {
+      sourceArea: { kind: 'discipline', code: 'in2025-storia', label: 'Storia' },
+      status: 'complete',
+      completeness: 'complete',
+      sourceRefs: [SOURCE_REF_2025],
+      origin: 'normative-source',
+      now: '2026-08-18T00:00:00.000Z',
+    }
+  ),
+];
+
+export const SEGMENTS_2025_PRIMARIA_GEOGRAFIA = [
+  createCurriculumSegment(
+    createCurriculumVersionReference(VERSION_2025_PRIMARIA.id, VERSION_2025_PRIMARIA.title),
+    'primaria',
+    'geografia',
+    'Geografia',
+    {
+      sourceArea: { kind: 'discipline', code: 'in2025-geografia', label: 'Geografia' },
+      status: 'complete',
+      completeness: 'complete',
+      sourceRefs: [SOURCE_REF_2025],
+      origin: 'normative-source',
+      now: '2026-08-18T00:00:00.000Z',
+    }
+  ),
+];
+
+export const SEGMENTS_2025_SECONDARIA_GEOGRAFIA = [
+  createCurriculumSegment(
+    createCurriculumVersionReference(VERSION_2025_SECONDARIA.id, VERSION_2025_SECONDARIA.title),
+    'secondaria',
+    'geografia',
+    'Geografia',
+    {
+      sourceArea: { kind: 'discipline', code: 'in2025-geografia', label: 'Geografia' },
+      status: 'complete',
+      completeness: 'complete',
+      sourceRefs: [SOURCE_REF_2025],
+      origin: 'normative-source',
+      now: '2026-08-18T00:00:00.000Z',
+    }
+  ),
+];
+
+export const NODES_2025_PRIMARIA_STORIA = [
+  createCurriculumNode(
+    createCurriculumVersionReference(VERSION_2025_PRIMARIA.id, VERSION_2025_PRIMARIA.title),
+    createSegmentReference(SEGMENTS_2025_PRIMARIA_STORIA[0].id, SEGMENTS_2025_PRIMARIA_STORIA[0].title),
+    'competenza',
+    'Competenza - fine primaria',
+    {
+      status: 'active',
+      provenance: 'normative',
+      sourceRefs: [SOURCE_REF_2025],
+      origin: 'normative-source',
+      now: '2026-08-18T00:00:00.000Z',
+      normativeCheckpoint: 'end-primary',
+    }
+  ),
+  createCurriculumNode(
+    createCurriculumVersionReference(VERSION_2025_PRIMARIA.id, VERSION_2025_PRIMARIA.title),
+    createSegmentReference(SEGMENTS_2025_PRIMARIA_STORIA[0].id, SEGMENTS_2025_PRIMARIA_STORIA[0].title),
+    'obiettivo',
+    'Obiettivo OSA 2025 - classe III',
+    {
+      status: 'active',
+      provenance: 'normative',
+      sourceRefs: [SOURCE_REF_2025],
+      origin: 'normative-source',
+      now: '2026-08-18T00:00:00.000Z',
+      normativeCheckpoint: 'end-primary-grade-3',
+      normativeNodeKind: 'osa-2025',
+    }
+  ),
+  createCurriculumNode(
+    createCurriculumVersionReference(VERSION_2025_PRIMARIA.id, VERSION_2025_PRIMARIA.title),
+    createSegmentReference(SEGMENTS_2025_PRIMARIA_STORIA[0].id, SEGMENTS_2025_PRIMARIA_STORIA[0].title),
+    'conoscenza',
+    'Conoscenza - fine primaria',
+    {
+      status: 'active',
+      provenance: 'normative',
+      sourceRefs: [SOURCE_REF_2025],
+      origin: 'normative-source',
+      now: '2026-08-18T00:00:00.000Z',
+      normativeCheckpoint: 'end-primary',
+    }
+  ),
+];
+
+export const NODES_2025_SECONDARIA_STORIA = [
+  createCurriculumNode(
+    createCurriculumVersionReference(VERSION_2025_SECONDARIA.id, VERSION_2025_SECONDARIA.title),
+    createSegmentReference(SEGMENTS_2025_SECONDARIA_STORIA[0].id, SEGMENTS_2025_SECONDARIA_STORIA[0].title),
+    'competenza',
+    'Competenza - fine secondaria I grado',
+    {
+      status: 'active',
+      provenance: 'normative',
+      sourceRefs: [SOURCE_REF_2025],
+      origin: 'normative-source',
+      now: '2026-08-18T00:00:00.000Z',
+      normativeCheckpoint: 'end-lower-secondary',
+    }
+  ),
+  createCurriculumNode(
+    createCurriculumVersionReference(VERSION_2025_SECONDARIA.id, VERSION_2025_SECONDARIA.title),
+    createSegmentReference(SEGMENTS_2025_SECONDARIA_STORIA[0].id, SEGMENTS_2025_SECONDARIA_STORIA[0].title),
+    'obiettivo',
+    'Obiettivo - fine secondaria I grado',
+    {
+      status: 'active',
+      provenance: 'normative',
+      sourceRefs: [SOURCE_REF_2025],
+      origin: 'normative-source',
+      now: '2026-08-18T00:00:00.000Z',
+      normativeCheckpoint: 'end-lower-secondary',
+    }
+  ),
+];
+
+export const NODES_2025_PRIMARIA_GEOGRAFIA = [
+  createCurriculumNode(
+    createCurriculumVersionReference(VERSION_2025_PRIMARIA.id, VERSION_2025_PRIMARIA.title),
+    createSegmentReference(SEGMENTS_2025_PRIMARIA_GEOGRAFIA[0].id, SEGMENTS_2025_PRIMARIA_GEOGRAFIA[0].title),
+    'competenza',
+    'Competenza - fine primaria',
+    {
+      status: 'active',
+      provenance: 'normative',
+      sourceRefs: [SOURCE_REF_2025],
+      origin: 'normative-source',
+      now: '2026-08-18T00:00:00.000Z',
+      normativeCheckpoint: 'end-primary',
+    }
+  ),
+  createCurriculumNode(
+    createCurriculumVersionReference(VERSION_2025_PRIMARIA.id, VERSION_2025_PRIMARIA.title),
+    createSegmentReference(SEGMENTS_2025_PRIMARIA_GEOGRAFIA[0].id, SEGMENTS_2025_PRIMARIA_GEOGRAFIA[0].title),
+    'obiettivo',
+    'Obiettivo OSA 2025 - classe III',
+    {
+      status: 'active',
+      provenance: 'normative',
+      sourceRefs: [SOURCE_REF_2025],
+      origin: 'normative-source',
+      now: '2026-08-18T00:00:00.000Z',
+      normativeCheckpoint: 'end-primary-grade-3',
+      normativeNodeKind: 'osa-2025',
+    }
+  ),
+  createCurriculumNode(
+    createCurriculumVersionReference(VERSION_2025_PRIMARIA.id, VERSION_2025_PRIMARIA.title),
+    createSegmentReference(SEGMENTS_2025_PRIMARIA_GEOGRAFIA[0].id, SEGMENTS_2025_PRIMARIA_GEOGRAFIA[0].title),
+    'conoscenza',
+    'Conoscenza - fine primaria',
+    {
+      status: 'active',
+      provenance: 'normative',
+      sourceRefs: [SOURCE_REF_2025],
+      origin: 'normative-source',
+      now: '2026-08-18T00:00:00.000Z',
+      normativeCheckpoint: 'end-primary',
+    }
+  ),
+];
+
+export const NODES_2025_SECONDARIA_GEOGRAFIA = [
+  createCurriculumNode(
+    createCurriculumVersionReference(VERSION_2025_SECONDARIA.id, VERSION_2025_SECONDARIA.title),
+    createSegmentReference(SEGMENTS_2025_SECONDARIA_GEOGRAFIA[0].id, SEGMENTS_2025_SECONDARIA_GEOGRAFIA[0].title),
+    'competenza',
+    'Competenza - fine secondaria I grado',
+    {
+      status: 'active',
+      provenance: 'normative',
+      sourceRefs: [SOURCE_REF_2025],
+      origin: 'normative-source',
+      now: '2026-08-18T00:00:00.000Z',
+      normativeCheckpoint: 'end-lower-secondary',
+    }
+  ),
+  createCurriculumNode(
+    createCurriculumVersionReference(VERSION_2025_SECONDARIA.id, VERSION_2025_SECONDARIA.title),
+    createSegmentReference(SEGMENTS_2025_SECONDARIA_GEOGRAFIA[0].id, SEGMENTS_2025_SECONDARIA_GEOGRAFIA[0].title),
+    'obiettivo',
+    'Obiettivo - fine secondaria I grado',
+    {
+      status: 'active',
+      provenance: 'normative',
+      sourceRefs: [SOURCE_REF_2025],
+      origin: 'normative-source',
+      now: '2026-08-18T00:00:00.000Z',
+      normativeCheckpoint: 'end-lower-secondary',
+    }
+  ),
+];
+
 export const fixture2025 = {
   SOURCE_2025,
   SOURCE_VERSION_2025,
@@ -458,16 +680,24 @@ export const fixture2025 = {
   SEGMENTS_2025_INFANZIA,
   SEGMENTS_2025_PRIMARIA_ITALIANO,
   SEGMENTS_2025_PRIMARIA_INGLESE,
+  SEGMENTS_2025_PRIMARIA_STORIA,
+  SEGMENTS_2025_PRIMARIA_GEOGRAFIA,
   SEGMENTS_2025_SECONDARIA_ITALIANO,
   SEGMENTS_2025_SECONDARIA_INGLESE,
   SEGMENTS_2025_SECONDARIA_STRUMENTO_MUSICALE,
   SEGMENTS_2025_SECONDARIA_LATINO,
+  SEGMENTS_2025_SECONDARIA_STORIA,
+  SEGMENTS_2025_SECONDARIA_GEOGRAFIA,
   NODES_2025_INFANZIA,
   NODES_2025_PRIMARIA_ITALIANO,
   NODES_2025_PRIMARIA_INGLESE,
+  NODES_2025_PRIMARIA_STORIA,
+  NODES_2025_PRIMARIA_GEOGRAFIA,
   NODES_2025_SECONDARIA_ITALIANO,
   NODES_2025_SECONDARIA_INGLESE,
   NODES_2025_SECONDARIA_LATINO,
+  NODES_2025_SECONDARIA_STORIA,
+  NODES_2025_SECONDARIA_GEOGRAFIA,
 };
 
 export type Fixture2025 = typeof fixture2025;

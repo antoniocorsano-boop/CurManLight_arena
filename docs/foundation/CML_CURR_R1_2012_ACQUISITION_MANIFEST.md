@@ -216,3 +216,44 @@ Architecture regression after R2C:
 - `test:fast`: 273/273 PASS
 - `tsc --noEmit`: PASS
 - `build`: PASS
+
+## N. R2D — 2025 Representative Pilot Fixture
+
+| Extension | Contract location | Status |
+|---|---|---|
+| 2025 general + infanzia lot | `src/domain/curriculum/fixture2025.ts` | VERIFIED |
+| 2025 lingue lot | `src/domain/curriculum/fixture2025.ts` | VERIFIED |
+| Focused R2D pilot tests | `src/__tests__/curriculum-domain/fixture-2025-*.test.ts` | 49/49 PASS |
+
+R2D fixture coverage:
+- `SEGMENTS_2025_INFANZIA` + `NODES_2025_INFANZIA`
+- `SEGMENTS_2025_PRIMARIA_ITALIANO` + `NODES_2025_PRIMARIA_ITALIANO`
+- `SEGMENTS_2025_PRIMARIA_INGLESE` + `NODES_2025_PRIMARIA_INGLESE`
+- `SEGMENTS_2025_PRIMARIA_STORIA` + `NODES_2025_PRIMARIA_STORIA`
+- `SEGMENTS_2025_PRIMARIA_GEOGRAFIA` + `NODES_2025_PRIMARIA_GEOGRAFIA`
+- `SEGMENTS_2025_SECONDARIA_ITALIANO` + `NODES_2025_SECONDARIA_ITALIANO`
+- `SEGMENTS_2025_SECONDARIA_INGLESE` + `NODES_2025_SECONDARIA_INGLESE`
+- `SEGMENTS_2025_SECONDARIA_LATINO` + `NODES_2025_SECONDARIA_LATINO`
+- `SEGMENTS_2025_SECONDARIA_STRUMENTO_MUSICALE` + `NODES_2025_SECONDARIA_STRUMENTO_MUSICALE`
+- `SEGMENTS_2025_SECONDARIA_STORIA` + `NODES_2025_SECONDARIA_STORIA`
+- `SEGMENTS_2025_SECONDARIA_GEOGRAFIA` + `NODES_2025_SECONDARIA_GEOGRAFIA`
+
+## O. R2E — 2025 Normative Corpus Expansion
+
+| Lot | Status | Notes |
+|---|---|---|
+| R2E-1 — General + Infanzia | VERIFIED | General framing, infanzia experience fields, provenance, and lot tests verified. |
+| R2E-2 — Area linguistica | VERIFIED | English, second community language, Latino (LEL) source-native segments, milestones, provenance, and lot tests verified. |
+| R2E-3 — Area storico-geografica | VERIFIED | Storia and Geografia source-native segments, milestones, provenance, and lot tests verified. |
+| R2E-4 — Area matematico-scientifico-tecnologica | NOT_STARTED | Matematica, Scienze, Tecnologia pending. |
+| R2E-5 — Linguaggi espressivi e corporei | NOT_STARTED | Musica, Arte e immagine, Educazione fisica pending. |
+| R2E-6 — Sezioni generali / trasversali residue | NOT_STARTED | General and transversal sections pending. |
+| R2F — Global completeness gate 2025 | NOT YET AUTHORIZED | Premature until all R2E lots are SOURCE_VERIFIED. |
+
+Current gate:
+
+`CURR_R2_2025_FIXTURE_PILOT = VERIFIED`
+
+`CURR_R2_2025_LINGUE_LOT = VERIFIED`
+
+`CURR_R2_2025_STORIA_GEOGRAFIA_LOT = VERIFIED`
