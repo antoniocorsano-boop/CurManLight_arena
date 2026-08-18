@@ -2,7 +2,7 @@
 
 > **Source:** D.M. 16 novembre 2012, n. 254 — official Gazzetta Ufficiale annex
 > **Source ID:** `national-2012|dm-254-2012`
-> **Status:** PARTIALLY_VERIFIED
+> **Status:** VERIFIED
 > **Rule:** source completeness is structural + textual + provenance-based, never inferred from node counts alone.
 
 Legend:
@@ -156,6 +156,7 @@ These gaps are explicitly recorded in `fixture2012.representationGaps`.
 | R1E-3 — Area matematico-scientifico-tecnologica | SOURCE_VERIFIED | Matematica, Scienze, and Tecnologia source-native segments, milestones, provenance, and lot tests verified. No synthetic nuclei or curriculumKB-style reinterpretation introduced for Tecnologia. |
 | R1E-4 — Linguaggi espressivi e corporei | SOURCE_VERIFIED | Musica, Arte e immagine, and Educazione fisica source-native segments, milestones, provenance, and lot tests verified. Discipline codes normalized to `arte` and `educazione-fisica`; no invented disciplines or infanzia-style experience fields introduced. |
 | R1E-5 — Sezioni comuni / trasversali / narrative | SOURCE_VERIFIED | Common, transversal, and narrative sections verified as source-native `general-section` or `transversal-area` segments. No synthetic `traguardo`/`obiettivo` nodes invented for narrative text. `Cittadinanza e Costituzione` retained as transversal without `educazioneCivica` retro-mapping. Representation gaps for macrostructure and narrative framing remain explicitly recorded. |
+| R1E-6 — Global completeness gate | VERIFIED | Final audit passed across structural, textual, semantic, provenance, and architecture regression dimensions. See `CML_CURR_R1_2012_R1E6_GATE.md` for the full evidence record. |
 
 ### R1E-2 representation note
 
@@ -175,6 +176,8 @@ Narrative and common sections are preserved as `CurriculumSegment` records with 
 
 Current gate:
 
-`CURR_R1_2012_NORMATIVE_COMPLETENESS = PARTIALLY_VERIFIED`
+`CURR_R1_2012_NORMATIVE_COMPLETENESS = VERIFIED`
 
-`CURR_R1_2012_CANONICAL_INGESTION = PENDING`
+`CURR_R1_2012_CANONICAL_INGESTION = VERIFIED`
+
+Evidence record: `CML_CURR_R1_2012_R1E6_GATE.md`

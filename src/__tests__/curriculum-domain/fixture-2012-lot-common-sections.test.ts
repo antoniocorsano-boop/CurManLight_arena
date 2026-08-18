@@ -2,7 +2,6 @@ import { describe, it, expect } from 'vitest';
 import { fixture2012 } from '../../domain/curriculum/fixture2012';
 import {
   validateCurriculumSegment,
-  validateCurriculumNode,
 } from '../../domain/curriculum/validation';
 
 describe('CURR-R1E-5 — Sezioni comuni / trasversali / narrative lotto verification', () => {
