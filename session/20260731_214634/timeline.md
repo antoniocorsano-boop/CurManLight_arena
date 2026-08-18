@@ -53,3 +53,6 @@
 
 ## 2026-08-18 21:01:00 +02:00
 - R2F global completeness gate 2025 COMPLETE and VERIFIED. Added fixture-2025-global-completeness-gate.test.ts (11 tests). All 2025 tests 103/103 PASS. test:fast 273/273 PASS, curriculum-domain 358/358 PASS, tsc --noEmit PASS, build PASS. Structural, textual, semantic, applicability, and provenance dimensions all pass. CURR_R2_2025_NORMATIVE_COMPLETENESS = VERIFIED. Acquisition manifest updated.
+
+## 2026-08-18 21:28:00 +02:00
+- R3A multi-framework consultation boundary IMPLEMENTED_VERIFIED. Added adaptFixture2025ToNationalCurriculumFixture, extended ContentItem/ContentDetail with normativeNodeKind, extended AreaInfo with frameworkApplicability. New test national-curriculum-multi-framework.test.ts (12 tests). All curriculum-domain 370/370 PASS, test:fast 273/273 PASS, tsc --noEmit PASS, build PASS. IN2012 and IN2025 available as independent frameworks; no UI/store/routing changes.

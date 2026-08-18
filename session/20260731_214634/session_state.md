@@ -6,10 +6,10 @@
 - Repo: C:/Users/anton/cml_h2v_r3_runtime_3_i6_h1
 - Branch: feat/cml-636f-2025-corpus-completion
 - Started: 2026-07-31 21:46:34 +02:00
-- Updated: 2026-08-18 21:01:00 +02:00
+- Updated: 2026-08-18 21:28:00 +02:00
 
-# Goal
-CURR-R2F — 2025 global completeness gate: final audit and VERIFIED verdict.
+## Goal
+CURR-R3A — 2025 multi-framework consultation boundary: IN2025 integrated into consultation service.
 
 ## Current Subtask
 R2F global completeness gate 2025 COMPLETE. Added fixture-2025-global-completeness-gate.test.ts (11 tests). All 2025 tests 103/103 PASS. Acquisition manifest updated with VERIFIED verdict.
@@ -22,7 +22,7 @@ R2F global completeness gate 2025 COMPLETE. Added fixture-2025-global-completene
 - R2B contract audit COMPLETE: GAP-R2-01/R2-04 closed by reuse, GAP-R2-02 resolved via normativeNodeKind, GAP-R2-03 resolved via frameworkApplicability.
 - R2C minimal 2025 projection IMPLEMENTED_VERIFIED: commit a0f9c90.
 - R2D fixture2025 pilot VERIFIED: general + infanzia + lingue lots verified, tests 49/49 PASS.
-- R2E-3 through R2E-6 VERIFIED; R2F GLOBAL COMPLETENESS GATE VERIFIED: structural, textual, semantic, applicability, provenance all pass; CURR_R2_2025_NORMATIVE_COMPLETENESS = VERIFIED.
+- R2F GLOBAL COMPLETENESS GATE VERIFIED; R3A MULTI-FRAMEWORK BOUNDARY IMPLEMENTED_VERIFIED: IN2012 and IN2025 available, independent queries, frameworkApplicability preserved on AreaInfo, normativeNodeKind preserved on ContentItem/ContentDetail.
 
 ## Plan
 - [x] R2B: contract audit
@@ -47,6 +47,7 @@ R2F global completeness gate 2025 COMPLETE. Added fixture-2025-global-completene
 - curriculum-domain: 358/358 PASS
 - tsc --noEmit: PASS
 - build: PASS
+
 
 
 

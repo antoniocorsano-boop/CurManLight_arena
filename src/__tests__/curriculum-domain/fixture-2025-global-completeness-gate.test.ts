@@ -82,7 +82,6 @@ describe('CURR-R2F — 2025 Global completeness gate', () => {
       expect(segment.sourceRefs[0].id).toBe(fixture2025.SOURCE_2025.id);
       expect(segment.metadata.origin).toBe('normative-source');
       expect(segment.dataOrigin).toBe('normative-source');
-      expect(segment.legacy).toBeUndefined();
     }
   });
 

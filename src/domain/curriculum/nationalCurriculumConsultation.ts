@@ -10,6 +10,8 @@ import type { DisciplineCode, CurriculumNodeType } from './model/vocabularies';
 import type { SchoolOrder } from '../../types/curriculum';
 import type { EntityReference, EntityMetadata } from './identity/types';
 import type { Fixture2012 } from './fixture2012';
+import type { Fixture2025 } from './fixture2025';
+import type { FrameworkApplicabilityReference } from './types';
 
 export interface NationalCurriculumFixture {
   framework: FrameworkInfo;
@@ -37,6 +39,7 @@ export interface AreaInfo {
   code: string;
   disciplineCode: DisciplineCode | null;
   schoolOrder: SchoolOrder;
+  frameworkApplicability?: FrameworkApplicabilityReference;
 }
 
 export interface ContentItem {
@@ -44,6 +47,7 @@ export interface ContentItem {
   text: string;
   nodeType: CurriculumNodeType;
   normativeCheckpoint?: NormativeCheckpoint;
+  normativeNodeKind?: 'objective-2012' | 'osa-2025';
   schoolOrder: SchoolOrder;
   disciplineCode: DisciplineCode | null;
   sourceAreaKind: SourceAreaKind;
@@ -116,6 +120,77 @@ export function adaptFixture2012ToNationalCurriculumFixture(fixture: Fixture2012
   ];
 }
 
+export function adaptFixture2025ToNationalCurriculumFixture(fixture: Fixture2025): NationalCurriculumFixture[] {
+  return [
+    {
+      framework: {
+        id: 'IN2025',
+        title: 'Indicazioni nazionali 2025',
+        source: {
+          title: fixture.SOURCE_2025.title,
+          authority: fixture.SOURCE_2025.authority,
+          issuedAt: fixture.SOURCE_2025.issuedAt,
+          versionLabel: fixture.SOURCE_2025.versionLabel,
+        },
+        schoolOrders: ['infanzia', 'primaria', 'secondaria'],
+      },
+      versions: [fixture.VERSION_2025_INFANZIA, fixture.VERSION_2025_PRIMARIA, fixture.VERSION_2025_SECONDARIA],
+      segments: [
+        ...fixture.SEGMENTS_2025_INFANZIA,
+        ...fixture.SEGMENTS_2025_PRIMARIA_ITALIANO,
+        ...fixture.SEGMENTS_2025_PRIMARIA_INGLESE,
+        ...fixture.SEGMENTS_2025_PRIMARIA_STORIA,
+        ...fixture.SEGMENTS_2025_PRIMARIA_GEOGRAFIA,
+        ...fixture.SEGMENTS_2025_PRIMARIA_MATEMATICA,
+        ...fixture.SEGMENTS_2025_PRIMARIA_SCIENZE,
+        ...fixture.SEGMENTS_2025_PRIMARIA_TECNOLOGIA,
+        ...fixture.SEGMENTS_2025_PRIMARIA_MUSICA,
+        ...fixture.SEGMENTS_2025_PRIMARIA_ARTE,
+        ...fixture.SEGMENTS_2025_PRIMARIA_EDUCAZIONE_FISICA,
+        ...fixture.SEGMENTS_2025_PRIMARIA_GENERAL_SECTIONS,
+        ...fixture.SEGMENTS_2025_SECONDARIA_ITALIANO,
+        ...fixture.SEGMENTS_2025_SECONDARIA_INGLESE,
+        ...fixture.SEGMENTS_2025_SECONDARIA_STRUMENTO_MUSICALE,
+        ...fixture.SEGMENTS_2025_SECONDARIA_LATINO,
+        ...fixture.SEGMENTS_2025_SECONDARIA_STORIA,
+        ...fixture.SEGMENTS_2025_SECONDARIA_GEOGRAFIA,
+        ...fixture.SEGMENTS_2025_SECONDARIA_MATEMATICA,
+        ...fixture.SEGMENTS_2025_SECONDARIA_SCIENZE,
+        ...fixture.SEGMENTS_2025_SECONDARIA_TECNOLOGIA,
+        ...fixture.SEGMENTS_2025_SECONDARIA_MUSICA,
+        ...fixture.SEGMENTS_2025_SECONDARIA_ARTE,
+        ...fixture.SEGMENTS_2025_SECONDARIA_EDUCAZIONE_FISICA,
+        ...fixture.SEGMENTS_2025_SECONDARIA_GENERAL_SECTIONS,
+      ],
+      nodes: [
+        ...fixture.NODES_2025_INFANZIA,
+        ...fixture.NODES_2025_PRIMARIA_ITALIANO,
+        ...fixture.NODES_2025_PRIMARIA_INGLESE,
+        ...fixture.NODES_2025_PRIMARIA_STORIA,
+        ...fixture.NODES_2025_PRIMARIA_GEOGRAFIA,
+        ...fixture.NODES_2025_PRIMARIA_MATEMATICA,
+        ...fixture.NODES_2025_PRIMARIA_SCIENZE,
+        ...fixture.NODES_2025_PRIMARIA_TECNOLOGIA,
+        ...fixture.NODES_2025_PRIMARIA_MUSICA,
+        ...fixture.NODES_2025_PRIMARIA_ARTE,
+        ...fixture.NODES_2025_PRIMARIA_EDUCAZIONE_FISICA,
+        ...fixture.NODES_2025_SECONDARIA_ITALIANO,
+        ...fixture.NODES_2025_SECONDARIA_INGLESE,
+        ...fixture.NODES_2025_SECONDARIA_STRUMENTO_MUSICALE,
+        ...fixture.NODES_2025_SECONDARIA_LATINO,
+        ...fixture.NODES_2025_SECONDARIA_STORIA,
+        ...fixture.NODES_2025_SECONDARIA_GEOGRAFIA,
+        ...fixture.NODES_2025_SECONDARIA_MATEMATICA,
+        ...fixture.NODES_2025_SECONDARIA_SCIENZE,
+        ...fixture.NODES_2025_SECONDARIA_TECNOLOGIA,
+        ...fixture.NODES_2025_SECONDARIA_MUSICA,
+        ...fixture.NODES_2025_SECONDARIA_ARTE,
+        ...fixture.NODES_2025_SECONDARIA_EDUCAZIONE_FISICA,
+      ],
+    },
+  ];
+}
+
 export function createNationalCurriculumConsultationService(fixtures: readonly NationalCurriculumFixture[]): NationalCurriculumConsultationService {
   const frameworks = fixtures
     .map(fixture => fixture.framework)
@@ -161,6 +236,7 @@ export function createNationalCurriculumConsultationService(fixtures: readonly N
             code: sourceArea?.code ?? segment.title,
             disciplineCode: segment.disciplineCode,
             schoolOrder: segment.schoolOrder,
+            frameworkApplicability: segment.frameworkApplicability,
           });
         }
       }
@@ -225,6 +301,7 @@ export function createNationalCurriculumConsultationService(fixtures: readonly N
             text: node.text,
             nodeType: node.nodeType,
             normativeCheckpoint: node.normativeCheckpoint,
+            normativeNodeKind: node.normativeNodeKind,
             schoolOrder: segment.schoolOrder,
             disciplineCode: segment.disciplineCode,
             sourceAreaKind: segment.sourceArea?.kind ?? 'discipline',
@@ -258,6 +335,7 @@ export function createNationalCurriculumConsultationService(fixtures: readonly N
           text: node.text,
           nodeType: node.nodeType,
           normativeCheckpoint: node.normativeCheckpoint,
+          normativeNodeKind: node.normativeNodeKind,
           schoolOrder: segment.schoolOrder,
           disciplineCode: segment.disciplineCode,
           sourceAreaKind: segment.sourceArea?.kind ?? 'discipline',
