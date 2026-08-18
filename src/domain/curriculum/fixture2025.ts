@@ -670,6 +670,339 @@ export const NODES_2025_SECONDARIA_GEOGRAFIA = [
   ),
 ];
 
+export const SEGMENTS_2025_PRIMARIA_MATEMATICA = [
+  createCurriculumSegment(
+    createCurriculumVersionReference(VERSION_2025_PRIMARIA.id, VERSION_2025_PRIMARIA.title),
+    'primaria',
+    'matematica',
+    'Matematica',
+    {
+      sourceArea: { kind: 'discipline', code: 'in2025-matematica', label: 'Matematica' },
+      status: 'complete',
+      completeness: 'complete',
+      sourceRefs: [SOURCE_REF_2025],
+      origin: 'normative-source',
+      now: '2026-08-18T00:00:00.000Z',
+    }
+  ),
+];
+
+export const SEGMENTS_2025_SECONDARIA_MATEMATICA = [
+  createCurriculumSegment(
+    createCurriculumVersionReference(VERSION_2025_SECONDARIA.id, VERSION_2025_SECONDARIA.title),
+    'secondaria',
+    'matematica',
+    'Matematica',
+    {
+      sourceArea: { kind: 'discipline', code: 'in2025-matematica', label: 'Matematica' },
+      status: 'complete',
+      completeness: 'complete',
+      sourceRefs: [SOURCE_REF_2025],
+      origin: 'normative-source',
+      now: '2026-08-18T00:00:00.000Z',
+    }
+  ),
+];
+
+export const SEGMENTS_2025_PRIMARIA_SCIENZE = [
+  createCurriculumSegment(
+    createCurriculumVersionReference(VERSION_2025_PRIMARIA.id, VERSION_2025_PRIMARIA.title),
+    'primaria',
+    'scienze',
+    'Scienze',
+    {
+      sourceArea: { kind: 'discipline', code: 'in2025-scienze', label: 'Scienze' },
+      status: 'complete',
+      completeness: 'complete',
+      sourceRefs: [SOURCE_REF_2025],
+      origin: 'normative-source',
+      now: '2026-08-18T00:00:00.000Z',
+    }
+  ),
+];
+
+export const SEGMENTS_2025_SECONDARIA_SCIENZE = [
+  createCurriculumSegment(
+    createCurriculumVersionReference(VERSION_2025_SECONDARIA.id, VERSION_2025_SECONDARIA.title),
+    'secondaria',
+    'scienze',
+    'Scienze',
+    {
+      sourceArea: { kind: 'discipline', code: 'in2025-scienze', label: 'Scienze' },
+      status: 'complete',
+      completeness: 'complete',
+      sourceRefs: [SOURCE_REF_2025],
+      origin: 'normative-source',
+      now: '2026-08-18T00:00:00.000Z',
+    }
+  ),
+];
+
+export const SEGMENTS_2025_PRIMARIA_TECNOLOGIA = [
+  createCurriculumSegment(
+    createCurriculumVersionReference(VERSION_2025_PRIMARIA.id, VERSION_2025_PRIMARIA.title),
+    'primaria',
+    'tecnologia',
+    'Tecnologia',
+    {
+      sourceArea: { kind: 'discipline', code: 'in2025-tecnologia', label: 'Tecnologia' },
+      status: 'complete',
+      completeness: 'complete',
+      sourceRefs: [SOURCE_REF_2025],
+      origin: 'normative-source',
+      now: '2026-08-18T00:00:00.000Z',
+    }
+  ),
+];
+
+export const SEGMENTS_2025_SECONDARIA_TECNOLOGIA = [
+  createCurriculumSegment(
+    createCurriculumVersionReference(VERSION_2025_SECONDARIA.id, VERSION_2025_SECONDARIA.title),
+    'secondaria',
+    'tecnologia',
+    'Tecnologia',
+    {
+      sourceArea: { kind: 'discipline', code: 'in2025-tecnologia', label: 'Tecnologia' },
+      status: 'complete',
+      completeness: 'complete',
+      sourceRefs: [SOURCE_REF_2025],
+      origin: 'normative-source',
+      now: '2026-08-18T00:00:00.000Z',
+    }
+  ),
+];
+
+export const NODES_2025_PRIMARIA_MATEMATICA = [
+  createCurriculumNode(
+    createCurriculumVersionReference(VERSION_2025_PRIMARIA.id, VERSION_2025_PRIMARIA.title),
+    createSegmentReference(SEGMENTS_2025_PRIMARIA_MATEMATICA[0].id, SEGMENTS_2025_PRIMARIA_MATEMATICA[0].title),
+    'competenza',
+    'Competenza - fine primaria',
+    {
+      status: 'active',
+      provenance: 'normative',
+      sourceRefs: [SOURCE_REF_2025],
+      origin: 'normative-source',
+      now: '2026-08-18T00:00:00.000Z',
+      normativeCheckpoint: 'end-primary',
+    }
+  ),
+  createCurriculumNode(
+    createCurriculumVersionReference(VERSION_2025_PRIMARIA.id, VERSION_2025_PRIMARIA.title),
+    createSegmentReference(SEGMENTS_2025_PRIMARIA_MATEMATICA[0].id, SEGMENTS_2025_PRIMARIA_MATEMATICA[0].title),
+    'obiettivo',
+    'Obiettivo OSA 2025 - classe III',
+    {
+      status: 'active',
+      provenance: 'normative',
+      sourceRefs: [SOURCE_REF_2025],
+      origin: 'normative-source',
+      now: '2026-08-18T00:00:00.000Z',
+      normativeCheckpoint: 'end-primary-grade-3',
+      normativeNodeKind: 'osa-2025',
+    }
+  ),
+  createCurriculumNode(
+    createCurriculumVersionReference(VERSION_2025_PRIMARIA.id, VERSION_2025_PRIMARIA.title),
+    createSegmentReference(SEGMENTS_2025_PRIMARIA_MATEMATICA[0].id, SEGMENTS_2025_PRIMARIA_MATEMATICA[0].title),
+    'conoscenza',
+    'Conoscenza - fine primaria',
+    {
+      status: 'active',
+      provenance: 'normative',
+      sourceRefs: [SOURCE_REF_2025],
+      origin: 'normative-source',
+      now: '2026-08-18T00:00:00.000Z',
+      normativeCheckpoint: 'end-primary',
+    }
+  ),
+];
+
+export const NODES_2025_SECONDARIA_MATEMATICA = [
+  createCurriculumNode(
+    createCurriculumVersionReference(VERSION_2025_SECONDARIA.id, VERSION_2025_SECONDARIA.title),
+    createSegmentReference(SEGMENTS_2025_SECONDARIA_MATEMATICA[0].id, SEGMENTS_2025_SECONDARIA_MATEMATICA[0].title),
+    'competenza',
+    'Competenza - fine secondaria I grado',
+    {
+      status: 'active',
+      provenance: 'normative',
+      sourceRefs: [SOURCE_REF_2025],
+      origin: 'normative-source',
+      now: '2026-08-18T00:00:00.000Z',
+      normativeCheckpoint: 'end-lower-secondary',
+    }
+  ),
+  createCurriculumNode(
+    createCurriculumVersionReference(VERSION_2025_SECONDARIA.id, VERSION_2025_SECONDARIA.title),
+    createSegmentReference(SEGMENTS_2025_SECONDARIA_MATEMATICA[0].id, SEGMENTS_2025_SECONDARIA_MATEMATICA[0].title),
+    'obiettivo',
+    'Obiettivo - fine secondaria I grado',
+    {
+      status: 'active',
+      provenance: 'normative',
+      sourceRefs: [SOURCE_REF_2025],
+      origin: 'normative-source',
+      now: '2026-08-18T00:00:00.000Z',
+      normativeCheckpoint: 'end-lower-secondary',
+    }
+  ),
+];
+
+export const NODES_2025_PRIMARIA_SCIENZE = [
+  createCurriculumNode(
+    createCurriculumVersionReference(VERSION_2025_PRIMARIA.id, VERSION_2025_PRIMARIA.title),
+    createSegmentReference(SEGMENTS_2025_PRIMARIA_SCIENZE[0].id, SEGMENTS_2025_PRIMARIA_SCIENZE[0].title),
+    'competenza',
+    'Competenza - fine primaria',
+    {
+      status: 'active',
+      provenance: 'normative',
+      sourceRefs: [SOURCE_REF_2025],
+      origin: 'normative-source',
+      now: '2026-08-18T00:00:00.000Z',
+      normativeCheckpoint: 'end-primary',
+    }
+  ),
+  createCurriculumNode(
+    createCurriculumVersionReference(VERSION_2025_PRIMARIA.id, VERSION_2025_PRIMARIA.title),
+    createSegmentReference(SEGMENTS_2025_PRIMARIA_SCIENZE[0].id, SEGMENTS_2025_PRIMARIA_SCIENZE[0].title),
+    'obiettivo',
+    'Obiettivo OSA 2025 - classe III',
+    {
+      status: 'active',
+      provenance: 'normative',
+      sourceRefs: [SOURCE_REF_2025],
+      origin: 'normative-source',
+      now: '2026-08-18T00:00:00.000Z',
+      normativeCheckpoint: 'end-primary-grade-3',
+      normativeNodeKind: 'osa-2025',
+    }
+  ),
+  createCurriculumNode(
+    createCurriculumVersionReference(VERSION_2025_PRIMARIA.id, VERSION_2025_PRIMARIA.title),
+    createSegmentReference(SEGMENTS_2025_PRIMARIA_SCIENZE[0].id, SEGMENTS_2025_PRIMARIA_SCIENZE[0].title),
+    'conoscenza',
+    'Conoscenza - fine primaria',
+    {
+      status: 'active',
+      provenance: 'normative',
+      sourceRefs: [SOURCE_REF_2025],
+      origin: 'normative-source',
+      now: '2026-08-18T00:00:00.000Z',
+      normativeCheckpoint: 'end-primary',
+    }
+  ),
+];
+
+export const NODES_2025_SECONDARIA_SCIENZE = [
+  createCurriculumNode(
+    createCurriculumVersionReference(VERSION_2025_SECONDARIA.id, VERSION_2025_SECONDARIA.title),
+    createSegmentReference(SEGMENTS_2025_SECONDARIA_SCIENZE[0].id, SEGMENTS_2025_SECONDARIA_SCIENZE[0].title),
+    'competenza',
+    'Competenza - fine secondaria I grado',
+    {
+      status: 'active',
+      provenance: 'normative',
+      sourceRefs: [SOURCE_REF_2025],
+      origin: 'normative-source',
+      now: '2026-08-18T00:00:00.000Z',
+      normativeCheckpoint: 'end-lower-secondary',
+    }
+  ),
+  createCurriculumNode(
+    createCurriculumVersionReference(VERSION_2025_SECONDARIA.id, VERSION_2025_SECONDARIA.title),
+    createSegmentReference(SEGMENTS_2025_SECONDARIA_SCIENZE[0].id, SEGMENTS_2025_SECONDARIA_SCIENZE[0].title),
+    'obiettivo',
+    'Obiettivo - fine secondaria I grado',
+    {
+      status: 'active',
+      provenance: 'normative',
+      sourceRefs: [SOURCE_REF_2025],
+      origin: 'normative-source',
+      now: '2026-08-18T00:00:00.000Z',
+      normativeCheckpoint: 'end-lower-secondary',
+    }
+  ),
+];
+
+export const NODES_2025_PRIMARIA_TECNOLOGIA = [
+  createCurriculumNode(
+    createCurriculumVersionReference(VERSION_2025_PRIMARIA.id, VERSION_2025_PRIMARIA.title),
+    createSegmentReference(SEGMENTS_2025_PRIMARIA_TECNOLOGIA[0].id, SEGMENTS_2025_PRIMARIA_TECNOLOGIA[0].title),
+    'competenza',
+    'Competenza - fine primaria',
+    {
+      status: 'active',
+      provenance: 'normative',
+      sourceRefs: [SOURCE_REF_2025],
+      origin: 'normative-source',
+      now: '2026-08-18T00:00:00.000Z',
+      normativeCheckpoint: 'end-primary',
+    }
+  ),
+  createCurriculumNode(
+    createCurriculumVersionReference(VERSION_2025_PRIMARIA.id, VERSION_2025_PRIMARIA.title),
+    createSegmentReference(SEGMENTS_2025_PRIMARIA_TECNOLOGIA[0].id, SEGMENTS_2025_PRIMARIA_TECNOLOGIA[0].title),
+    'obiettivo',
+    'Obiettivo OSA 2025 - classe III',
+    {
+      status: 'active',
+      provenance: 'normative',
+      sourceRefs: [SOURCE_REF_2025],
+      origin: 'normative-source',
+      now: '2026-08-18T00:00:00.000Z',
+      normativeCheckpoint: 'end-primary-grade-3',
+      normativeNodeKind: 'osa-2025',
+    }
+  ),
+  createCurriculumNode(
+    createCurriculumVersionReference(VERSION_2025_PRIMARIA.id, VERSION_2025_PRIMARIA.title),
+    createSegmentReference(SEGMENTS_2025_PRIMARIA_TECNOLOGIA[0].id, SEGMENTS_2025_PRIMARIA_TECNOLOGIA[0].title),
+    'conoscenza',
+    'Conoscenza - fine primaria',
+    {
+      status: 'active',
+      provenance: 'normative',
+      sourceRefs: [SOURCE_REF_2025],
+      origin: 'normative-source',
+      now: '2026-08-18T00:00:00.000Z',
+      normativeCheckpoint: 'end-primary',
+    }
+  ),
+];
+
+export const NODES_2025_SECONDARIA_TECNOLOGIA = [
+  createCurriculumNode(
+    createCurriculumVersionReference(VERSION_2025_SECONDARIA.id, VERSION_2025_SECONDARIA.title),
+    createSegmentReference(SEGMENTS_2025_SECONDARIA_TECNOLOGIA[0].id, SEGMENTS_2025_SECONDARIA_TECNOLOGIA[0].title),
+    'competenza',
+    'Competenza - fine secondaria I grado',
+    {
+      status: 'active',
+      provenance: 'normative',
+      sourceRefs: [SOURCE_REF_2025],
+      origin: 'normative-source',
+      now: '2026-08-18T00:00:00.000Z',
+      normativeCheckpoint: 'end-lower-secondary',
+    }
+  ),
+  createCurriculumNode(
+    createCurriculumVersionReference(VERSION_2025_SECONDARIA.id, VERSION_2025_SECONDARIA.title),
+    createSegmentReference(SEGMENTS_2025_SECONDARIA_TECNOLOGIA[0].id, SEGMENTS_2025_SECONDARIA_TECNOLOGIA[0].title),
+    'obiettivo',
+    'Obiettivo - fine secondaria I grado',
+    {
+      status: 'active',
+      provenance: 'normative',
+      sourceRefs: [SOURCE_REF_2025],
+      origin: 'normative-source',
+      now: '2026-08-18T00:00:00.000Z',
+      normativeCheckpoint: 'end-lower-secondary',
+    }
+  ),
+];
+
 export const fixture2025 = {
   SOURCE_2025,
   SOURCE_VERSION_2025,
@@ -682,22 +1015,34 @@ export const fixture2025 = {
   SEGMENTS_2025_PRIMARIA_INGLESE,
   SEGMENTS_2025_PRIMARIA_STORIA,
   SEGMENTS_2025_PRIMARIA_GEOGRAFIA,
+  SEGMENTS_2025_PRIMARIA_MATEMATICA,
+  SEGMENTS_2025_PRIMARIA_SCIENZE,
+  SEGMENTS_2025_PRIMARIA_TECNOLOGIA,
   SEGMENTS_2025_SECONDARIA_ITALIANO,
   SEGMENTS_2025_SECONDARIA_INGLESE,
   SEGMENTS_2025_SECONDARIA_STRUMENTO_MUSICALE,
   SEGMENTS_2025_SECONDARIA_LATINO,
   SEGMENTS_2025_SECONDARIA_STORIA,
   SEGMENTS_2025_SECONDARIA_GEOGRAFIA,
+  SEGMENTS_2025_SECONDARIA_MATEMATICA,
+  SEGMENTS_2025_SECONDARIA_SCIENZE,
+  SEGMENTS_2025_SECONDARIA_TECNOLOGIA,
   NODES_2025_INFANZIA,
   NODES_2025_PRIMARIA_ITALIANO,
   NODES_2025_PRIMARIA_INGLESE,
   NODES_2025_PRIMARIA_STORIA,
   NODES_2025_PRIMARIA_GEOGRAFIA,
+  NODES_2025_PRIMARIA_MATEMATICA,
+  NODES_2025_PRIMARIA_SCIENZE,
+  NODES_2025_PRIMARIA_TECNOLOGIA,
   NODES_2025_SECONDARIA_ITALIANO,
   NODES_2025_SECONDARIA_INGLESE,
   NODES_2025_SECONDARIA_LATINO,
   NODES_2025_SECONDARIA_STORIA,
   NODES_2025_SECONDARIA_GEOGRAFIA,
+  NODES_2025_SECONDARIA_MATEMATICA,
+  NODES_2025_SECONDARIA_SCIENZE,
+  NODES_2025_SECONDARIA_TECNOLOGIA,
 };
 
 export type Fixture2025 = typeof fixture2025;
