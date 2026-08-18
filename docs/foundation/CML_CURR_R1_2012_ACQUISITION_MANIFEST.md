@@ -153,6 +153,7 @@ These gaps are explicitly recorded in `fixture2012.representationGaps`.
 |---|---|---|
 | R1E-1 — Lingue | SOURCE_VERIFIED | English and second community language structure, milestones, provenance, and lot tests verified. |
 | R1E-2 — Area storico-geografica | SOURCE_VERIFIED | Storia and Geografia source-native segments, milestones, provenance, and lot tests verified. |
+| R1E-3 — Area matematico-scientifico-tecnologica | SOURCE_VERIFIED | Matematica, Scienze, and Tecnologia source-native segments, milestones, provenance, and lot tests verified. No synthetic nuclei or curriculumKB-style reinterpretation introduced for Tecnologia. |
 
 ### R1E-2 representation note
 
