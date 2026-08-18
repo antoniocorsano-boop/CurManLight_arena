@@ -72,8 +72,8 @@ Important source-native rule: the five fields of experience are not to be rewrit
 | Discipline | Narrative | Primary traguardi | Primary objectives | Lower-secondary traguardi | Lower-secondary objectives | Overall |
 |---|---|---|---|---|---|---|
 | Italiano | SOURCE_VERIFIED | SOURCE_VERIFIED | SOURCE_VERIFIED | SOURCE_VERIFIED | SOURCE_VERIFIED | SOURCE_VERIFIED |
-| Lingua inglese | TO_ACQUIRE | TO_ACQUIRE | TO_ACQUIRE | TO_ACQUIRE | TO_ACQUIRE | TO_ACQUIRE |
-| Seconda lingua comunitaria | TO_ACQUIRE | source-native applicability | source-native applicability | TO_ACQUIRE | TO_ACQUIRE | TO_ACQUIRE |
+| Lingua inglese | SOURCE_VERIFIED | SOURCE_VERIFIED | SOURCE_VERIFIED | SOURCE_VERIFIED | SOURCE_VERIFIED | SOURCE_VERIFIED |
+| Seconda lingua comunitaria | SOURCE_VERIFIED | source-native applicability | source-native applicability | SOURCE_VERIFIED | SOURCE_VERIFIED | SOURCE_VERIFIED |
 | Storia | TO_ACQUIRE | TO_ACQUIRE | TO_ACQUIRE | TO_ACQUIRE | TO_ACQUIRE | TO_ACQUIRE |
 | Geografia | TO_ACQUIRE | TO_ACQUIRE | TO_ACQUIRE | TO_ACQUIRE | TO_ACQUIRE | TO_ACQUIRE |
 | Matematica | TO_ACQUIRE | TO_ACQUIRE | TO_ACQUIRE | TO_ACQUIRE | TO_ACQUIRE | TO_ACQUIRE |

@@ -276,6 +276,226 @@ export const NODES_2012_SECONDARIA = [
   ),
 ];
 
+export const SEGMENTS_2012_PRIMARIA_INGLESE = [
+  createCurriculumSegment(
+    createCurriculumVersionReference(VERSION_2012_PRIMARIA.id, VERSION_2012_PRIMARIA.title),
+    'primaria',
+    'inglese',
+    'Lingua inglese',
+    {
+      sourceArea: { kind: 'discipline', code: 'in2012-inglese', label: 'Lingua inglese' },
+      status: 'complete',
+      completeness: 'complete',
+      sourceRefs: [SOURCE_REF],
+      origin: 'normative-source',
+      now: '2026-08-17T00:00:00.000Z',
+    }
+  ),
+];
+
+export const SEGMENTS_2012_SECONDARIA_INGLESE = [
+  createCurriculumSegment(
+    createCurriculumVersionReference(VERSION_2012_SECONDARIA.id, VERSION_2012_SECONDARIA.title),
+    'secondaria',
+    'inglese',
+    'Lingua inglese',
+    {
+      sourceArea: { kind: 'discipline', code: 'in2012-inglese', label: 'Lingua inglese' },
+      status: 'complete',
+      completeness: 'complete',
+      sourceRefs: [SOURCE_REF],
+      origin: 'normative-source',
+      now: '2026-08-17T00:00:00.000Z',
+    }
+  ),
+];
+
+export const SEGMENTS_2012_PRIMARIA_SECONDA_LINGUA = [
+  createCurriculumSegment(
+    createCurriculumVersionReference(VERSION_2012_PRIMARIA.id, VERSION_2012_PRIMARIA.title),
+    'primaria',
+    'seconda-lingua',
+    'Seconda lingua comunitaria',
+    {
+      sourceArea: { kind: 'discipline', code: 'in2012-secondaLingua', label: 'Seconda lingua comunitaria' },
+      status: 'complete',
+      completeness: 'complete',
+      sourceRefs: [SOURCE_REF],
+      origin: 'normative-source',
+      now: '2026-08-17T00:00:00.000Z',
+    }
+  ),
+];
+
+export const SEGMENTS_2012_SECONDARIA_SECONDA_LINGUA = [
+  createCurriculumSegment(
+    createCurriculumVersionReference(VERSION_2012_SECONDARIA.id, VERSION_2012_SECONDARIA.title),
+    'secondaria',
+    'seconda-lingua',
+    'Seconda lingua comunitaria',
+    {
+      sourceArea: { kind: 'discipline', code: 'in2012-secondaLingua', label: 'Seconda lingua comunitaria' },
+      status: 'complete',
+      completeness: 'complete',
+      sourceRefs: [SOURCE_REF],
+      origin: 'normative-source',
+      now: '2026-08-17T00:00:00.000Z',
+    }
+  ),
+];
+
+export const NODES_2012_PRIMARIA_INGLESE = [
+  createCurriculumNode(
+    createCurriculumVersionReference(VERSION_2012_PRIMARIA.id, VERSION_2012_PRIMARIA.title),
+    createSegmentReference(SEGMENTS_2012_PRIMARIA_INGLESE[0].id, SEGMENTS_2012_PRIMARIA_INGLESE[0].title),
+    'traguardo',
+    'Traguardo - fine primaria',
+    {
+      status: 'active',
+      provenance: 'normative',
+      sourceRefs: [SOURCE_REF],
+      origin: 'normative-source',
+      now: '2026-08-17T00:00:00.000Z',
+      normativeCheckpoint: 'end-primary',
+    }
+  ),
+  createCurriculumNode(
+    createCurriculumVersionReference(VERSION_2012_PRIMARIA.id, VERSION_2012_PRIMARIA.title),
+    createSegmentReference(SEGMENTS_2012_PRIMARIA_INGLESE[0].id, SEGMENTS_2012_PRIMARIA_INGLESE[0].title),
+    'obiettivo',
+    'Obiettivo - classe III',
+    {
+      status: 'active',
+      provenance: 'normative',
+      sourceRefs: [SOURCE_REF],
+      origin: 'normative-source',
+      now: '2026-08-17T00:00:00.000Z',
+      normativeCheckpoint: 'end-primary-grade-3',
+    }
+  ),
+  createCurriculumNode(
+    createCurriculumVersionReference(VERSION_2012_PRIMARIA.id, VERSION_2012_PRIMARIA.title),
+    createSegmentReference(SEGMENTS_2012_PRIMARIA_INGLESE[0].id, SEGMENTS_2012_PRIMARIA_INGLESE[0].title),
+    'obiettivo',
+    'Obiettivo - fine primaria',
+    {
+      status: 'active',
+      provenance: 'normative',
+      sourceRefs: [SOURCE_REF],
+      origin: 'normative-source',
+      now: '2026-08-17T00:00:00.000Z',
+      normativeCheckpoint: 'end-primary',
+    }
+  ),
+];
+
+export const NODES_2012_SECONDARIA_INGLESE = [
+  createCurriculumNode(
+    createCurriculumVersionReference(VERSION_2012_SECONDARIA.id, VERSION_2012_SECONDARIA.title),
+    createSegmentReference(SEGMENTS_2012_SECONDARIA_INGLESE[0].id, SEGMENTS_2012_SECONDARIA_INGLESE[0].title),
+    'traguardo',
+    'Traguardo - fine secondaria I grado',
+    {
+      status: 'active',
+      provenance: 'normative',
+      sourceRefs: [SOURCE_REF],
+      origin: 'normative-source',
+      now: '2026-08-17T00:00:00.000Z',
+      normativeCheckpoint: 'end-lower-secondary',
+    }
+  ),
+  createCurriculumNode(
+    createCurriculumVersionReference(VERSION_2012_SECONDARIA.id, VERSION_2012_SECONDARIA.title),
+    createSegmentReference(SEGMENTS_2012_SECONDARIA_INGLESE[0].id, SEGMENTS_2012_SECONDARIA_INGLESE[0].title),
+    'obiettivo',
+    'Obiettivo - fine secondaria I grado',
+    {
+      status: 'active',
+      provenance: 'normative',
+      sourceRefs: [SOURCE_REF],
+      origin: 'normative-source',
+      now: '2026-08-17T00:00:00.000Z',
+      normativeCheckpoint: 'end-lower-secondary',
+    }
+  ),
+];
+
+export const NODES_2012_PRIMARIA_SECONDA_LINGUA = [
+  createCurriculumNode(
+    createCurriculumVersionReference(VERSION_2012_PRIMARIA.id, VERSION_2012_PRIMARIA.title),
+    createSegmentReference(SEGMENTS_2012_PRIMARIA_SECONDA_LINGUA[0].id, SEGMENTS_2012_PRIMARIA_SECONDA_LINGUA[0].title),
+    'traguardo',
+    'Traguardo - fine primaria',
+    {
+      status: 'active',
+      provenance: 'normative',
+      sourceRefs: [SOURCE_REF],
+      origin: 'normative-source',
+      now: '2026-08-17T00:00:00.000Z',
+      normativeCheckpoint: 'end-primary',
+    }
+  ),
+  createCurriculumNode(
+    createCurriculumVersionReference(VERSION_2012_PRIMARIA.id, VERSION_2012_PRIMARIA.title),
+    createSegmentReference(SEGMENTS_2012_PRIMARIA_SECONDA_LINGUA[0].id, SEGMENTS_2012_PRIMARIA_SECONDA_LINGUA[0].title),
+    'obiettivo',
+    'Obiettivo - classe III',
+    {
+      status: 'active',
+      provenance: 'normative',
+      sourceRefs: [SOURCE_REF],
+      origin: 'normative-source',
+      now: '2026-08-17T00:00:00.000Z',
+      normativeCheckpoint: 'end-primary-grade-3',
+    }
+  ),
+  createCurriculumNode(
+    createCurriculumVersionReference(VERSION_2012_PRIMARIA.id, VERSION_2012_PRIMARIA.title),
+    createSegmentReference(SEGMENTS_2012_PRIMARIA_SECONDA_LINGUA[0].id, SEGMENTS_2012_PRIMARIA_SECONDA_LINGUA[0].title),
+    'obiettivo',
+    'Obiettivo - fine primaria',
+    {
+      status: 'active',
+      provenance: 'normative',
+      sourceRefs: [SOURCE_REF],
+      origin: 'normative-source',
+      now: '2026-08-17T00:00:00.000Z',
+      normativeCheckpoint: 'end-primary',
+    }
+  ),
+];
+
+export const NODES_2012_SECONDARIA_SECONDA_LINGUA = [
+  createCurriculumNode(
+    createCurriculumVersionReference(VERSION_2012_SECONDARIA.id, VERSION_2012_SECONDARIA.title),
+    createSegmentReference(SEGMENTS_2012_SECONDARIA_SECONDA_LINGUA[0].id, SEGMENTS_2012_SECONDARIA_SECONDA_LINGUA[0].title),
+    'traguardo',
+    'Traguardo - fine secondaria I grado',
+    {
+      status: 'active',
+      provenance: 'normative',
+      sourceRefs: [SOURCE_REF],
+      origin: 'normative-source',
+      now: '2026-08-17T00:00:00.000Z',
+      normativeCheckpoint: 'end-lower-secondary',
+    }
+  ),
+  createCurriculumNode(
+    createCurriculumVersionReference(VERSION_2012_SECONDARIA.id, VERSION_2012_SECONDARIA.title),
+    createSegmentReference(SEGMENTS_2012_SECONDARIA_SECONDA_LINGUA[0].id, SEGMENTS_2012_SECONDARIA_SECONDA_LINGUA[0].title),
+    'obiettivo',
+    'Obiettivo - fine secondaria I grado',
+    {
+      status: 'active',
+      provenance: 'normative',
+      sourceRefs: [SOURCE_REF],
+      origin: 'normative-source',
+      now: '2026-08-17T00:00:00.000Z',
+      normativeCheckpoint: 'end-lower-secondary',
+    }
+  ),
+];
+
 export const fixture2012 = {
   SOURCE_2012,
   SOURCE_VERSION_2012,
@@ -285,10 +505,18 @@ export const fixture2012 = {
   VERSION_2012_SECONDARIA,
   SEGMENTS_2012_INFANZIA,
   SEGMENTS_2012_PRIMARIA,
+  SEGMENTS_2012_PRIMARIA_INGLESE,
+  SEGMENTS_2012_PRIMARIA_SECONDA_LINGUA,
   SEGMENTS_2012_SECONDARIA,
+  SEGMENTS_2012_SECONDARIA_INGLESE,
+  SEGMENTS_2012_SECONDARIA_SECONDA_LINGUA,
   NODES_2012_INFANZIA,
   NODES_2012_PRIMARIA,
+  NODES_2012_PRIMARIA_INGLESE,
+  NODES_2012_PRIMARIA_SECONDA_LINGUA,
   NODES_2012_SECONDARIA,
+  NODES_2012_SECONDARIA_INGLESE,
+  NODES_2012_SECONDARIA_SECONDA_LINGUA,
 };
 
 export type Fixture2012 = typeof fixture2012;
