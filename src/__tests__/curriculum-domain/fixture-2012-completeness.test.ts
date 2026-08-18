@@ -16,4 +16,15 @@ describe('CURR-R1E — 2012 Normative Corpus Completeness', () => {
     expect(secondaLingua).toBeDefined();
     expect(secondaLingua.disciplineCode).toBe('seconda-lingua');
   });
+
+  it('includes history and geography disciplines for primaria and secondaria', () => {
+    const storiaPrimaria = fixture2012.SEGMENTS_2012_PRIMARIA.find(s => s.disciplineCode === 'storia');
+    const storiaSecondaria = fixture2012.SEGMENTS_2012_SECONDARIA.find(s => s.disciplineCode === 'storia');
+    const geografiaPrimaria = fixture2012.SEGMENTS_2012_PRIMARIA.find(s => s.disciplineCode === 'geografia');
+    const geografiaSecondaria = fixture2012.SEGMENTS_2012_SECONDARIA.find(s => s.disciplineCode === 'geografia');
+    expect(storiaPrimaria).toBeDefined();
+    expect(storiaSecondaria).toBeDefined();
+    expect(geografiaPrimaria).toBeDefined();
+    expect(geografiaSecondaria).toBeDefined();
+  });
 });
