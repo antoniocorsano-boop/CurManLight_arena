@@ -57,7 +57,7 @@ interface DashboardViewProps {
   setSelectedBrainDoc: (value: string) => void;
   setWikiWorkspaceTab: (value: 'read') => void;
   setShowSaveModal: (value: boolean) => void;
-  setActiveCurricoloView: (value: 'albero' | 'mappa' | 'popolamento') => void;
+  setActiveCurricoloView: (value: 'albero' | 'mappa' | 'popolamento' | 'nazionale') => void;
   setActiveProgTab: (value: string) => void;
   setSelectedUda: (uda: UdaModel | null) => void;
 }

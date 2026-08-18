@@ -3,6 +3,9 @@ import { useCurriculumStore } from '../../../store/useCurriculumStore';
 import type { DecisionStatus, Proposal, SchoolOrder } from '../../../types/curriculum';
 import type { AppViewsLayerProps, CurriculumMap, GeneratedKnowledgeOutput, PopolamentoTab } from '../../session';
 import { PilotMainView } from '../../curriculum-functional-pilot';
+import { NationalCurriculumView } from './NationalCurriculumView';
+import { createNationalCurriculumConsultationService, adaptFixture2012ToNationalCurriculumFixture } from '../../../domain/curriculum/nationalCurriculumConsultation';
+import { fixture2012 } from '../../../domain/curriculum/fixture2012';
 
 const orderLabelsForMap: Record<string, string> = {
   infanzia: "Scuola dell'Infanzia (Mappe di Senso & Campi d'Esperienza)",
@@ -82,6 +85,10 @@ export function CurriculumTab({
   handleResetCurriculumToBaseline,
 }: CurriculumTabProps) {
   const { activeCurricoloView, setActiveCurricoloView, discipline, order, setDiscipline, decisions, customTexts } = useCurriculumStore();
+
+  const nationalCurriculumService = createNationalCurriculumConsultationService(
+    adaptFixture2012ToNationalCurriculumFixture(fixture2012)
+  );
 
   return (
     <div className="space-y-6 fade-in text-left">
@@ -164,6 +171,15 @@ export function CurriculumTab({
               <h4 className="text-xs font-bold text-slate-800 uppercase">Integrazione & Popolamento</h4>
               <p className="text-[11px] text-slate-500 font-semibold leading-normal">Modifica la copia locale con assistenza non verificata o caricando file CSV.</p>
             </button>
+
+            <button
+              onClick={() => setActiveCurricoloView('nazionale')}
+              className="bg-white border border-slate-200 hover:border-indigo-400 p-5 rounded-2xl shadow-sm hover:shadow-md transition text-left space-y-2"
+            >
+              <span className="text-[10px] font-black text-indigo-600 uppercase tracking-wider block">Azione 4</span>
+              <h4 className="text-xs font-bold text-slate-800 uppercase">Indicazioni nazionali</h4>
+              <p className="text-[11px] text-slate-500 font-semibold leading-normal">Consulta i traguardi e gli obiettivi del D.M. 254/2012 per ordine e disciplina.</p>
+            </button>
           </div>
         </div>
       )}
@@ -219,6 +235,11 @@ export function CurriculumTab({
       {/* VIEW D: PILOTA SPERIMENTALE */}
       {activeCurricoloView === 'pilota' && (
         <PilotMainView />
+      )}
+
+      {/* VIEW E: INDICAZIONI NAZIONALI */}
+      {activeCurricoloView === 'nazionale' && (
+        <NationalCurriculumView service={nationalCurriculumService} />
       )}
     </div>
   );

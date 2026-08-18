@@ -172,6 +172,7 @@ export function createNationalCurriculumConsultationService(fixtures: readonly N
       schoolOrder?: SchoolOrder;
       disciplineCode?: DisciplineCode | null;
       sourceAreaKind?: SourceAreaKind;
+      sourceAreaCode?: string;
       nodeType?: CurriculumNodeType;
       normativeCheckpoint?: NormativeCheckpoint;
       text?: string;

@@ -4,7 +4,7 @@ import type { GraphEdge, GraphNode } from '../../../lib/architectureGraph';
 import type { CurricularLevel, DecisionStatus, Proposal, SchoolOrder, UdaModel, UserRole } from '../../../types/curriculum';
 import type { A07InstitutionalDocumentRead } from '../../../domain/institution';
 
-export type ActiveCurricoloView = 'home' | 'albero' | 'mappa' | 'popolamento' | 'pilota';
+export type ActiveCurricoloView = 'home' | 'albero' | 'mappa' | 'popolamento' | 'pilota' | 'nazionale';
 export type ActiveProcessoTab = 'flusso' | 'verifica';
 export type ActiveProgTab = 'home' | 'annuale' | 'uda' | 'certificazione' | 'social' | 'classe-home' | 'classe';
 export type ClasseSubTab = 'registro' | 'strumenti' | 'pianificazione';
