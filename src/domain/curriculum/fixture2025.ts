@@ -772,6 +772,108 @@ export const SEGMENTS_2025_SECONDARIA_TECNOLOGIA = [
   ),
 ];
 
+export const SEGMENTS_2025_PRIMARIA_MUSICA = [
+  createCurriculumSegment(
+    createCurriculumVersionReference(VERSION_2025_PRIMARIA.id, VERSION_2025_PRIMARIA.title),
+    'primaria',
+    'musica',
+    'Musica',
+    {
+      sourceArea: { kind: 'discipline', code: 'in2025-musica', label: 'Musica' },
+      status: 'complete',
+      completeness: 'complete',
+      sourceRefs: [SOURCE_REF_2025],
+      origin: 'normative-source',
+      now: '2026-08-18T00:00:00.000Z',
+    }
+  ),
+];
+
+export const SEGMENTS_2025_SECONDARIA_MUSICA = [
+  createCurriculumSegment(
+    createCurriculumVersionReference(VERSION_2025_SECONDARIA.id, VERSION_2025_SECONDARIA.title),
+    'secondaria',
+    'musica',
+    'Musica',
+    {
+      sourceArea: { kind: 'discipline', code: 'in2025-musica', label: 'Musica' },
+      status: 'complete',
+      completeness: 'complete',
+      sourceRefs: [SOURCE_REF_2025],
+      origin: 'normative-source',
+      now: '2026-08-18T00:00:00.000Z',
+    }
+  ),
+];
+
+export const SEGMENTS_2025_PRIMARIA_ARTE = [
+  createCurriculumSegment(
+    createCurriculumVersionReference(VERSION_2025_PRIMARIA.id, VERSION_2025_PRIMARIA.title),
+    'primaria',
+    'arte',
+    'Arte e immagine',
+    {
+      sourceArea: { kind: 'discipline', code: 'in2025-arte', label: 'Arte e immagine' },
+      status: 'complete',
+      completeness: 'complete',
+      sourceRefs: [SOURCE_REF_2025],
+      origin: 'normative-source',
+      now: '2026-08-18T00:00:00.000Z',
+    }
+  ),
+];
+
+export const SEGMENTS_2025_SECONDARIA_ARTE = [
+  createCurriculumSegment(
+    createCurriculumVersionReference(VERSION_2025_SECONDARIA.id, VERSION_2025_SECONDARIA.title),
+    'secondaria',
+    'arte',
+    'Arte e immagine',
+    {
+      sourceArea: { kind: 'discipline', code: 'in2025-arte', label: 'Arte e immagine' },
+      status: 'complete',
+      completeness: 'complete',
+      sourceRefs: [SOURCE_REF_2025],
+      origin: 'normative-source',
+      now: '2026-08-18T00:00:00.000Z',
+    }
+  ),
+];
+
+export const SEGMENTS_2025_PRIMARIA_EDUCAZIONE_FISICA = [
+  createCurriculumSegment(
+    createCurriculumVersionReference(VERSION_2025_PRIMARIA.id, VERSION_2025_PRIMARIA.title),
+    'primaria',
+    'educazione-fisica',
+    'Educazione fisica',
+    {
+      sourceArea: { kind: 'discipline', code: 'in2025-educazione-fisica', label: 'Educazione fisica' },
+      status: 'complete',
+      completeness: 'complete',
+      sourceRefs: [SOURCE_REF_2025],
+      origin: 'normative-source',
+      now: '2026-08-18T00:00:00.000Z',
+    }
+  ),
+];
+
+export const SEGMENTS_2025_SECONDARIA_EDUCAZIONE_FISICA = [
+  createCurriculumSegment(
+    createCurriculumVersionReference(VERSION_2025_SECONDARIA.id, VERSION_2025_SECONDARIA.title),
+    'secondaria',
+    'educazione-fisica',
+    'Educazione fisica',
+    {
+      sourceArea: { kind: 'discipline', code: 'in2025-educazione-fisica', label: 'Educazione fisica' },
+      status: 'complete',
+      completeness: 'complete',
+      sourceRefs: [SOURCE_REF_2025],
+      origin: 'normative-source',
+      now: '2026-08-18T00:00:00.000Z',
+    }
+  ),
+];
+
 export const NODES_2025_PRIMARIA_MATEMATICA = [
   createCurriculumNode(
     createCurriculumVersionReference(VERSION_2025_PRIMARIA.id, VERSION_2025_PRIMARIA.title),
@@ -1003,6 +1105,237 @@ export const NODES_2025_SECONDARIA_TECNOLOGIA = [
   ),
 ];
 
+export const NODES_2025_PRIMARIA_MUSICA = [
+  createCurriculumNode(
+    createCurriculumVersionReference(VERSION_2025_PRIMARIA.id, VERSION_2025_PRIMARIA.title),
+    createSegmentReference(SEGMENTS_2025_PRIMARIA_MUSICA[0].id, SEGMENTS_2025_PRIMARIA_MUSICA[0].title),
+    'competenza',
+    'Competenza - fine primaria',
+    {
+      status: 'active',
+      provenance: 'normative',
+      sourceRefs: [SOURCE_REF_2025],
+      origin: 'normative-source',
+      now: '2026-08-18T00:00:00.000Z',
+      normativeCheckpoint: 'end-primary',
+    }
+  ),
+  createCurriculumNode(
+    createCurriculumVersionReference(VERSION_2025_PRIMARIA.id, VERSION_2025_PRIMARIA.title),
+    createSegmentReference(SEGMENTS_2025_PRIMARIA_MUSICA[0].id, SEGMENTS_2025_PRIMARIA_MUSICA[0].title),
+    'obiettivo',
+    'Obiettivo OSA 2025 - classe III',
+    {
+      status: 'active',
+      provenance: 'normative',
+      sourceRefs: [SOURCE_REF_2025],
+      origin: 'normative-source',
+      now: '2026-08-18T00:00:00.000Z',
+      normativeCheckpoint: 'end-primary-grade-3',
+      normativeNodeKind: 'osa-2025',
+    }
+  ),
+  createCurriculumNode(
+    createCurriculumVersionReference(VERSION_2025_PRIMARIA.id, VERSION_2025_PRIMARIA.title),
+    createSegmentReference(SEGMENTS_2025_PRIMARIA_MUSICA[0].id, SEGMENTS_2025_PRIMARIA_MUSICA[0].title),
+    'conoscenza',
+    'Conoscenza - fine primaria',
+    {
+      status: 'active',
+      provenance: 'normative',
+      sourceRefs: [SOURCE_REF_2025],
+      origin: 'normative-source',
+      now: '2026-08-18T00:00:00.000Z',
+      normativeCheckpoint: 'end-primary',
+    }
+  ),
+];
+
+export const NODES_2025_SECONDARIA_MUSICA = [
+  createCurriculumNode(
+    createCurriculumVersionReference(VERSION_2025_SECONDARIA.id, VERSION_2025_SECONDARIA.title),
+    createSegmentReference(SEGMENTS_2025_SECONDARIA_MUSICA[0].id, SEGMENTS_2025_SECONDARIA_MUSICA[0].title),
+    'competenza',
+    'Competenza - fine secondaria I grado',
+    {
+      status: 'active',
+      provenance: 'normative',
+      sourceRefs: [SOURCE_REF_2025],
+      origin: 'normative-source',
+      now: '2026-08-18T00:00:00.000Z',
+      normativeCheckpoint: 'end-lower-secondary',
+    }
+  ),
+  createCurriculumNode(
+    createCurriculumVersionReference(VERSION_2025_SECONDARIA.id, VERSION_2025_SECONDARIA.title),
+    createSegmentReference(SEGMENTS_2025_SECONDARIA_MUSICA[0].id, SEGMENTS_2025_SECONDARIA_MUSICA[0].title),
+    'obiettivo',
+    'Obiettivo - fine secondaria I grado',
+    {
+      status: 'active',
+      provenance: 'normative',
+      sourceRefs: [SOURCE_REF_2025],
+      origin: 'normative-source',
+      now: '2026-08-18T00:00:00.000Z',
+      normativeCheckpoint: 'end-lower-secondary',
+    }
+  ),
+];
+
+export const NODES_2025_PRIMARIA_ARTE = [
+  createCurriculumNode(
+    createCurriculumVersionReference(VERSION_2025_PRIMARIA.id, VERSION_2025_PRIMARIA.title),
+    createSegmentReference(SEGMENTS_2025_PRIMARIA_ARTE[0].id, SEGMENTS_2025_PRIMARIA_ARTE[0].title),
+    'competenza',
+    'Competenza - fine primaria',
+    {
+      status: 'active',
+      provenance: 'normative',
+      sourceRefs: [SOURCE_REF_2025],
+      origin: 'normative-source',
+      now: '2026-08-18T00:00:00.000Z',
+      normativeCheckpoint: 'end-primary',
+    }
+  ),
+  createCurriculumNode(
+    createCurriculumVersionReference(VERSION_2025_PRIMARIA.id, VERSION_2025_PRIMARIA.title),
+    createSegmentReference(SEGMENTS_2025_PRIMARIA_ARTE[0].id, SEGMENTS_2025_PRIMARIA_ARTE[0].title),
+    'obiettivo',
+    'Obiettivo OSA 2025 - classe III',
+    {
+      status: 'active',
+      provenance: 'normative',
+      sourceRefs: [SOURCE_REF_2025],
+      origin: 'normative-source',
+      now: '2026-08-18T00:00:00.000Z',
+      normativeCheckpoint: 'end-primary-grade-3',
+      normativeNodeKind: 'osa-2025',
+    }
+  ),
+  createCurriculumNode(
+    createCurriculumVersionReference(VERSION_2025_PRIMARIA.id, VERSION_2025_PRIMARIA.title),
+    createSegmentReference(SEGMENTS_2025_PRIMARIA_ARTE[0].id, SEGMENTS_2025_PRIMARIA_ARTE[0].title),
+    'conoscenza',
+    'Conoscenza - fine primaria',
+    {
+      status: 'active',
+      provenance: 'normative',
+      sourceRefs: [SOURCE_REF_2025],
+      origin: 'normative-source',
+      now: '2026-08-18T00:00:00.000Z',
+      normativeCheckpoint: 'end-primary',
+    }
+  ),
+];
+
+export const NODES_2025_SECONDARIA_ARTE = [
+  createCurriculumNode(
+    createCurriculumVersionReference(VERSION_2025_SECONDARIA.id, VERSION_2025_SECONDARIA.title),
+    createSegmentReference(SEGMENTS_2025_SECONDARIA_ARTE[0].id, SEGMENTS_2025_SECONDARIA_ARTE[0].title),
+    'competenza',
+    'Competenza - fine secondaria I grado',
+    {
+      status: 'active',
+      provenance: 'normative',
+      sourceRefs: [SOURCE_REF_2025],
+      origin: 'normative-source',
+      now: '2026-08-18T00:00:00.000Z',
+      normativeCheckpoint: 'end-lower-secondary',
+    }
+  ),
+  createCurriculumNode(
+    createCurriculumVersionReference(VERSION_2025_SECONDARIA.id, VERSION_2025_SECONDARIA.title),
+    createSegmentReference(SEGMENTS_2025_SECONDARIA_ARTE[0].id, SEGMENTS_2025_SECONDARIA_ARTE[0].title),
+    'obiettivo',
+    'Obiettivo - fine secondaria I grado',
+    {
+      status: 'active',
+      provenance: 'normative',
+      sourceRefs: [SOURCE_REF_2025],
+      origin: 'normative-source',
+      now: '2026-08-18T00:00:00.000Z',
+      normativeCheckpoint: 'end-lower-secondary',
+    }
+  ),
+];
+
+export const NODES_2025_PRIMARIA_EDUCAZIONE_FISICA = [
+  createCurriculumNode(
+    createCurriculumVersionReference(VERSION_2025_PRIMARIA.id, VERSION_2025_PRIMARIA.title),
+    createSegmentReference(SEGMENTS_2025_PRIMARIA_EDUCAZIONE_FISICA[0].id, SEGMENTS_2025_PRIMARIA_EDUCAZIONE_FISICA[0].title),
+    'competenza',
+    'Competenza - fine primaria',
+    {
+      status: 'active',
+      provenance: 'normative',
+      sourceRefs: [SOURCE_REF_2025],
+      origin: 'normative-source',
+      now: '2026-08-18T00:00:00.000Z',
+      normativeCheckpoint: 'end-primary',
+    }
+  ),
+  createCurriculumNode(
+    createCurriculumVersionReference(VERSION_2025_PRIMARIA.id, VERSION_2025_PRIMARIA.title),
+    createSegmentReference(SEGMENTS_2025_PRIMARIA_EDUCAZIONE_FISICA[0].id, SEGMENTS_2025_PRIMARIA_EDUCAZIONE_FISICA[0].title),
+    'obiettivo',
+    'Obiettivo OSA 2025 - classe III',
+    {
+      status: 'active',
+      provenance: 'normative',
+      sourceRefs: [SOURCE_REF_2025],
+      origin: 'normative-source',
+      now: '2026-08-18T00:00:00.000Z',
+      normativeCheckpoint: 'end-primary-grade-3',
+      normativeNodeKind: 'osa-2025',
+    }
+  ),
+  createCurriculumNode(
+    createCurriculumVersionReference(VERSION_2025_PRIMARIA.id, VERSION_2025_PRIMARIA.title),
+    createSegmentReference(SEGMENTS_2025_PRIMARIA_EDUCAZIONE_FISICA[0].id, SEGMENTS_2025_PRIMARIA_EDUCAZIONE_FISICA[0].title),
+    'conoscenza',
+    'Conoscenza - fine primaria',
+    {
+      status: 'active',
+      provenance: 'normative',
+      sourceRefs: [SOURCE_REF_2025],
+      origin: 'normative-source',
+      now: '2026-08-18T00:00:00.000Z',
+      normativeCheckpoint: 'end-primary',
+    }
+  ),
+];
+
+export const NODES_2025_SECONDARIA_EDUCAZIONE_FISICA = [
+  createCurriculumNode(
+    createCurriculumVersionReference(VERSION_2025_SECONDARIA.id, VERSION_2025_SECONDARIA.title),
+    createSegmentReference(SEGMENTS_2025_SECONDARIA_EDUCAZIONE_FISICA[0].id, SEGMENTS_2025_SECONDARIA_EDUCAZIONE_FISICA[0].title),
+    'competenza',
+    'Competenza - fine secondaria I grado',
+    {
+      status: 'active',
+      provenance: 'normative',
+      sourceRefs: [SOURCE_REF_2025],
+      origin: 'normative-source',
+      now: '2026-08-18T00:00:00.000Z',
+      normativeCheckpoint: 'end-lower-secondary',
+    }
+  ),
+  createCurriculumNode(
+    createCurriculumVersionReference(VERSION_2025_SECONDARIA.id, VERSION_2025_SECONDARIA.title),
+    createSegmentReference(SEGMENTS_2025_SECONDARIA_EDUCAZIONE_FISICA[0].id, SEGMENTS_2025_SECONDARIA_EDUCAZIONE_FISICA[0].title),
+    'obiettivo',
+    'Obiettivo - fine secondaria I grado',
+    {
+      status: 'active',
+      provenance: 'normative',
+      sourceRefs: [SOURCE_REF_2025],
+      origin: 'normative-source',
+      now: '2026-08-18T00:00:00.000Z',
+      normativeCheckpoint: 'end-lower-secondary',
+    }
+  ),
+];
+
 export const fixture2025 = {
   SOURCE_2025,
   SOURCE_VERSION_2025,
@@ -1018,6 +1351,9 @@ export const fixture2025 = {
   SEGMENTS_2025_PRIMARIA_MATEMATICA,
   SEGMENTS_2025_PRIMARIA_SCIENZE,
   SEGMENTS_2025_PRIMARIA_TECNOLOGIA,
+  SEGMENTS_2025_PRIMARIA_MUSICA,
+  SEGMENTS_2025_PRIMARIA_ARTE,
+  SEGMENTS_2025_PRIMARIA_EDUCAZIONE_FISICA,
   SEGMENTS_2025_SECONDARIA_ITALIANO,
   SEGMENTS_2025_SECONDARIA_INGLESE,
   SEGMENTS_2025_SECONDARIA_STRUMENTO_MUSICALE,
@@ -1027,6 +1363,9 @@ export const fixture2025 = {
   SEGMENTS_2025_SECONDARIA_MATEMATICA,
   SEGMENTS_2025_SECONDARIA_SCIENZE,
   SEGMENTS_2025_SECONDARIA_TECNOLOGIA,
+  SEGMENTS_2025_SECONDARIA_MUSICA,
+  SEGMENTS_2025_SECONDARIA_ARTE,
+  SEGMENTS_2025_SECONDARIA_EDUCAZIONE_FISICA,
   NODES_2025_INFANZIA,
   NODES_2025_PRIMARIA_ITALIANO,
   NODES_2025_PRIMARIA_INGLESE,
@@ -1035,6 +1374,9 @@ export const fixture2025 = {
   NODES_2025_PRIMARIA_MATEMATICA,
   NODES_2025_PRIMARIA_SCIENZE,
   NODES_2025_PRIMARIA_TECNOLOGIA,
+  NODES_2025_PRIMARIA_MUSICA,
+  NODES_2025_PRIMARIA_ARTE,
+  NODES_2025_PRIMARIA_EDUCAZIONE_FISICA,
   NODES_2025_SECONDARIA_ITALIANO,
   NODES_2025_SECONDARIA_INGLESE,
   NODES_2025_SECONDARIA_LATINO,
@@ -1043,6 +1385,9 @@ export const fixture2025 = {
   NODES_2025_SECONDARIA_MATEMATICA,
   NODES_2025_SECONDARIA_SCIENZE,
   NODES_2025_SECONDARIA_TECNOLOGIA,
+  NODES_2025_SECONDARIA_MUSICA,
+  NODES_2025_SECONDARIA_ARTE,
+  NODES_2025_SECONDARIA_EDUCAZIONE_FISICA,
 };
 
 export type Fixture2025 = typeof fixture2025;

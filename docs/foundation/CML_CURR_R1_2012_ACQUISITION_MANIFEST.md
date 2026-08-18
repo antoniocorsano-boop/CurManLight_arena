@@ -246,7 +246,7 @@ R2D fixture coverage:
 | R2E-2 — Area linguistica | VERIFIED | English, second community language, Latino (LEL) source-native segments, milestones, provenance, and lot tests verified. |
 | R2E-3 — Area storico-geografica | VERIFIED | Storia and Geografia source-native segments, milestones, provenance, and lot tests verified. |
 | R2E-4 — Area matematico-scientifico-tecnologica | VERIFIED | Matematica, Scienze, and Tecnologia source-native segments, milestones, provenance, and lot tests verified. No STEM synthetic discipline or curriculumKB-style reinterpretation introduced. |
-| R2E-5 — Linguaggi espressivi e corporei | NOT_STARTED | Musica, Arte e immagine, Educazione fisica pending. |
+| R2E-5 — Linguaggi espressivi e corporei | VERIFIED | Musica, Arte e immagine, and Educazione fisica source-native segments, milestones, provenance, and lot tests verified. Musica kept distinct from Strumento musicale; no 2012 contamination introduced. |
 | R2E-6 — Sezioni generali / trasversali residue | NOT_STARTED | General and transversal sections pending. |
 | R2F — Global completeness gate 2025 | NOT YET AUTHORIZED | Premature until all R2E lots are SOURCE_VERIFIED. |
 

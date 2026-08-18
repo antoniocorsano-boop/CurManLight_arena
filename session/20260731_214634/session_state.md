@@ -6,13 +6,13 @@
 - Repo: C:/Users/anton/cml_h2v_r3_runtime_3_i6_h1
 - Branch: feat/cml-636f-2025-corpus-completion
 - Started: 2026-07-31 21:46:34 +02:00
-- Updated: 2026-08-18 20:23:00 +02:00
+- Updated: 2026-08-18 20:34:00 +02:00
 
 ## Goal
-CURR-R2 — 2025 normative corpus completion: contract audit (R2B), minimal projection (R2C), and fixture pilot expansion (R2D).
+CURR-R2 — 2025 normative corpus completion: contract audit (R2B), minimal projection (R2C), fixture pilot expansion (R2D), and lot-wise acquisition (R2E+).
 
 ## Current Subtask
-R2E-4 Matematica+Scienze+Tecnologia 2025 COMPLETE. Added 6 segment arrays + 12 node arrays for MST 2025, plus lot test (13 tests). Acquisition manifest updated. Next: R2E-5 Musica+Arte+Educazione fisica.
+R2E-5 Musica+Arte e immagine+Educazione fisica 2025 COMPLETE. Added 6 segment arrays + 12 node arrays for linguaggi espressivi 2025, plus lot test (15 tests). Acquisition manifest updated. Next: R2E-6 Strumento musicale + sezioni trasversali residue.
 
 ## Loaded Skills
 - agent-memory protocol - preserve context across Codex, opencode, Copilot, and Claude.
@@ -22,7 +22,7 @@ R2E-4 Matematica+Scienze+Tecnologia 2025 COMPLETE. Added 6 segment arrays + 12 n
 - R2B contract audit COMPLETE: GAP-R2-01/R2-04 closed by reuse, GAP-R2-02 resolved via normativeNodeKind, GAP-R2-03 resolved via frameworkApplicability.
 - R2C minimal 2025 projection IMPLEMENTED_VERIFIED: commit a0f9c90.
 - R2D fixture2025 pilot VERIFIED: general + infanzia + lingue lots verified, tests 49/49 PASS.
-- R2E-3 Storia+Geografia VERIFIED; R2E-4 MST VERIFIED: primaria/secondaria segments and nodes for matematica/scienze/tecnologia added, provenance validated, no STEM synthetic discipline.
+- R2E-3 Storia+Geografia VERIFIED; R2E-4 MST VERIFIED; R2E-5 Linguaggi espressivi VERIFIED: primaria/secondaria segments and nodes for musica/arte/educazione-fisica added, provenance validated, Musica distinct from Strumento musicale, no 2012 contamination.
 
 ## Plan
 - [x] R2B: contract audit
@@ -30,7 +30,8 @@ R2E-4 Matematica+Scienze+Tecnologia 2025 COMPLETE. Added 6 segment arrays + 12 n
 - [x] R2D: fixture2025 pilot expansion (lingue lot)
 - [x] R2E-3: Storia + Geografia lot
 - [x] R2E-4: Matematica + Scienze + Tecnologia lot
-- [ ] R2E-5+: remaining 2025 lots (musica/arte/educazione-fisica, trasversali)
+- [x] R2E-5: Musica + Arte e immagine + Educazione fisica lot
+- [ ] R2E-6: Strumento musicale + sezioni trasversali residue
 - [ ] R2F: 2025 global completeness gate
 
 ## Assumptions
@@ -41,11 +42,13 @@ R2E-4 Matematica+Scienze+Tecnologia 2025 COMPLETE. Added 6 segment arrays + 12 n
 - Nessun blocco. R2D completato localmente.
 
 ## Evidence
-- Test: 64/64 2025-specific tests PASS
+- Test: 79/79 2025-specific tests PASS
 - test:fast: 273/273 PASS
-- curriculum-domain: 319/319 PASS
+- curriculum-domain: 334/334 PASS
 - tsc --noEmit: PASS
 - build: PASS
+
+
 
 
 
