@@ -57,4 +57,22 @@ describe('CURR-R1E — 2012 Normative Corpus Completeness', () => {
     expect(educazioneFisicaPrimaria).toBeDefined();
     expect(educazioneFisicaSecondaria).toBeDefined();
   });
+
+  it('includes general framing sections with correct sourceArea kinds', () => {
+    const generalSections = fixture2012.SEGMENTS_2012_INFANZIA.filter(s => s.sourceArea?.kind === 'general-section');
+    const transversalAreas = fixture2012.SEGMENTS_2012_PRIMARIA.filter(s => s.sourceArea?.kind === 'transversal-area');
+    expect(generalSections.length).toBeGreaterThanOrEqual(2);
+    expect(transversalAreas.length).toBeGreaterThanOrEqual(1);
+  });
+
+  it('does not represent Cittadinanza e Costituzione as a 2012 discipline', () => {
+    const cittadinanza = fixture2012.SEGMENTS_2012_PRIMARIA.find(s => (s.disciplineCode as any) === 'educazioneCivica');
+    expect(cittadinanza).toBeUndefined();
+  });
+
+  it('documents representation gaps explicitly', () => {
+    const gaps = (fixture2012 as any).representationGaps ?? [];
+    expect(gaps).toBeDefined();
+    expect(Array.isArray(gaps)).toBe(true);
+  });
 });

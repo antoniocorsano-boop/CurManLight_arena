@@ -42,19 +42,22 @@ Legend:
 | Certificazione delle competenze | SOURCE_VERIFIED |
 | Una scuola di tutti e di ciascuno | SOURCE_VERIFIED |
 | Comunità educativa, comunità professionale, cittadinanza | SOURCE_VERIFIED |
+| Cultura scuola persona | REPRESENTATION_GAP | see section J |
+| Finalità generali | REPRESENTATION_GAP | see section J |
+| L'organizzazione del curricolo | REPRESENTATION_GAP | see section J |
 
 ## C. Scuola dell'infanzia
 
 | Section / field | Status |
 |---|---|
-| I bambini, le famiglie, i docenti, l'ambiente di apprendimento | SOURCE_VERIFIED |
+| I bambini, le famiglie, i docenti, l'ambiente di apprendimento | CAPTURED |
 | I campi di esperienza — framing | SOURCE_VERIFIED |
-| Il sé e l'altro | SOURCE_VERIFIED |
-| Il corpo e il movimento | SOURCE_VERIFIED |
-| Immagini, suoni, colori | SOURCE_VERIFIED |
-| I discorsi e le parole | SOURCE_VERIFIED |
-| La conoscenza del mondo | SOURCE_VERIFIED |
-| Dalla scuola dell'infanzia alla scuola primaria | SOURCE_VERIFIED |
+| Il sé e l'altro | CAPTURED |
+| Il corpo e il movimento | CAPTURED |
+| Immagini, suoni, colori | CAPTURED |
+| I discorsi e le parole | CAPTURED |
+| La conoscenza del mondo | CAPTURED |
+| Dalla scuola dell'infanzia alla scuola primaria | CAPTURED |
 
 Important source-native rule: the five fields of experience are not to be rewritten as school subjects. Their narrative framing and their end-of-infanzia competence targets remain attached to the field itself.
 
@@ -62,10 +65,10 @@ Important source-native rule: the five fields of experience are not to be rewrit
 
 | Section | Status |
 |---|---|
-| Il senso dell'esperienza educativa | SOURCE_VERIFIED |
-| L'alfabetizzazione culturale di base | SOURCE_VERIFIED |
-| Cittadinanza e Costituzione | TRANSVERSAL |
-| L'ambiente di apprendimento | SOURCE_VERIFIED |
+| Il senso dell'esperienza educativa | CAPTURED |
+| L'alfabetizzazione culturale di base | CAPTURED |
+| Cittadinanza e Costituzione | CAPTURED (transversal-area) |
+| L'ambiente di apprendimento | CAPTURED |
 
 ## E. Discipline
 
@@ -131,6 +134,19 @@ CML must preserve these source-native checkpoints. It must not manufacture annua
 5. Institutional elaborations, evidences, annual objectives, and teaching activities remain derived layers and cannot be inserted into the national source layer.
 6. The first normalization pilot is Italiano; its ingestion pattern must be validated before bulk ingestion of the remaining disciplines.
 
+## J. Representation gaps (R1E-5)
+
+The following source-native parts cannot be represented in the current domain model without falsifying their type:
+
+| Section | Reason |
+|---|---|
+| Cultura scuola persona | Macrostructure spanning all school orders; no specific school order anchor for a curriculum segment. |
+| Finalità generali | Macrostructure spanning all school orders; no specific school order anchor for a curriculum segment. |
+| L'organizzazione del curricolo | Macrostructure spanning all school orders; no specific school order anchor for a curriculum segment. |
+| General sections narrative text | Narrative framing and pedagogical orientation text does not map to any CurriculumNodeType without falsification. Source-native role is orientation, not competence target or objective. |
+
+These gaps are explicitly recorded in `fixture2012.representationGaps`.
+
 ## I. Next acquisition order
 
 1. Normalize the five fields of experience and their end-of-infanzia competence targets.
@@ -141,6 +157,6 @@ CML must preserve these source-native checkpoints. It must not manufacture annua
 
 Current gate:
 
-`CURR_R1_2012_SOURCE_STRUCTURE = VERIFIED_FOR_GENERAL_INFANZIA_ITALIANO`
+`CURR_R1_2012_SOURCE_STRUCTURE = VERIFIED_FOR_GENERAL_INFANZIA_ITALIANO_TRASVERSAL`
 
 `CURR_R1_2012_CANONICAL_INGESTION = PENDING`

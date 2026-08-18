@@ -147,6 +147,34 @@ export const SEGMENTS_2012_INFANZIA = [
       now: '2026-08-17T00:00:00.000Z',
     }
   ),
+  createCurriculumSegment(
+    createCurriculumVersionReference(VERSION_2012_INFANZIA.id, VERSION_2012_INFANZIA.title),
+    'infanzia',
+    null,
+    'I bambini, le famiglie, i docenti, l\'ambiente di apprendimento',
+    {
+      sourceArea: { kind: 'general-section', code: 'in2012-infanzia-bambini-famiglie', label: 'I bambini, le famiglie, i docenti, l\'ambiente di apprendimento' },
+      status: 'complete',
+      completeness: 'complete',
+      sourceRefs: [SOURCE_REF],
+      origin: 'normative-source',
+      now: '2026-08-17T00:00:00.000Z',
+    }
+  ),
+  createCurriculumSegment(
+    createCurriculumVersionReference(VERSION_2012_INFANZIA.id, VERSION_2012_INFANZIA.title),
+    'infanzia',
+    null,
+    'Dalla scuola dell\'infanzia alla scuola primaria',
+    {
+      sourceArea: { kind: 'general-section', code: 'in2012-infanzia-transizione-primaria', label: 'Dalla scuola dell\'infanzia alla scuola primaria' },
+      status: 'complete',
+      completeness: 'complete',
+      sourceRefs: [SOURCE_REF],
+      origin: 'normative-source',
+      now: '2026-08-17T00:00:00.000Z',
+    }
+  ),
 ];
 
 export const SEGMENTS_2012_PRIMARIA = [
@@ -276,6 +304,62 @@ export const SEGMENTS_2012_PRIMARIA = [
       now: '2026-08-17T00:00:00.000Z',
     }
   ),
+  createCurriculumSegment(
+    createCurriculumVersionReference(VERSION_2012_PRIMARIA.id, VERSION_2012_PRIMARIA.title),
+    'primaria',
+    null,
+    'Il senso dell\'esperienza educativa',
+    {
+      sourceArea: { kind: 'general-section', code: 'in2012-primaria-senso-esperienza', label: 'Il senso dell\'esperienza educativa' },
+      status: 'complete',
+      completeness: 'complete',
+      sourceRefs: [SOURCE_REF],
+      origin: 'normative-source',
+      now: '2026-08-17T00:00:00.000Z',
+    }
+  ),
+  createCurriculumSegment(
+    createCurriculumVersionReference(VERSION_2012_PRIMARIA.id, VERSION_2012_PRIMARIA.title),
+    'primaria',
+    null,
+    'L\'alfabetizzazione culturale di base',
+    {
+      sourceArea: { kind: 'general-section', code: 'in2012-primaria-alfabetizzazione-culturale', label: 'L\'alfabetizzazione culturale di base' },
+      status: 'complete',
+      completeness: 'complete',
+      sourceRefs: [SOURCE_REF],
+      origin: 'normative-source',
+      now: '2026-08-17T00:00:00.000Z',
+    }
+  ),
+  createCurriculumSegment(
+    createCurriculumVersionReference(VERSION_2012_PRIMARIA.id, VERSION_2012_PRIMARIA.title),
+    'primaria',
+    null,
+    'L\'ambiente di apprendimento',
+    {
+      sourceArea: { kind: 'general-section', code: 'in2012-primaria-ambiente-apprendimento', label: 'L\'ambiente di apprendimento' },
+      status: 'complete',
+      completeness: 'complete',
+      sourceRefs: [SOURCE_REF],
+      origin: 'normative-source',
+      now: '2026-08-17T00:00:00.000Z',
+    }
+  ),
+  createCurriculumSegment(
+    createCurriculumVersionReference(VERSION_2012_PRIMARIA.id, VERSION_2012_PRIMARIA.title),
+    'primaria',
+    null,
+    'Cittadinanza e Costituzione',
+    {
+      sourceArea: { kind: 'transversal-area', code: 'in2012-primaria-cittadinanza-costituzione', label: 'Cittadinanza e Costituzione' },
+      status: 'complete',
+      completeness: 'complete',
+      sourceRefs: [SOURCE_REF],
+      origin: 'normative-source',
+      now: '2026-08-17T00:00:00.000Z',
+    }
+  ),
 ];
 
 export const SEGMENTS_2012_SECONDARIA = [
@@ -398,6 +482,62 @@ export const SEGMENTS_2012_SECONDARIA = [
     'Educazione fisica',
     {
       sourceArea: { kind: 'discipline', code: 'in2012-educazione-fisica', label: 'Educazione fisica' },
+      status: 'complete',
+      completeness: 'complete',
+      sourceRefs: [SOURCE_REF],
+      origin: 'normative-source',
+      now: '2026-08-17T00:00:00.000Z',
+    }
+  ),
+  createCurriculumSegment(
+    createCurriculumVersionReference(VERSION_2012_SECONDARIA.id, VERSION_2012_SECONDARIA.title),
+    'secondaria',
+    null,
+    'Il senso dell\'esperienza educativa',
+    {
+      sourceArea: { kind: 'general-section', code: 'in2012-secondaria-senso-esperienza', label: 'Il senso dell\'esperienza educativa' },
+      status: 'complete',
+      completeness: 'complete',
+      sourceRefs: [SOURCE_REF],
+      origin: 'normative-source',
+      now: '2026-08-17T00:00:00.000Z',
+    }
+  ),
+  createCurriculumSegment(
+    createCurriculumVersionReference(VERSION_2012_SECONDARIA.id, VERSION_2012_SECONDARIA.title),
+    'secondaria',
+    null,
+    'L\'alfabetizzazione culturale di base',
+    {
+      sourceArea: { kind: 'general-section', code: 'in2012-secondaria-alfabetizzazione-culturale', label: 'L\'alfabetizzazione culturale di base' },
+      status: 'complete',
+      completeness: 'complete',
+      sourceRefs: [SOURCE_REF],
+      origin: 'normative-source',
+      now: '2026-08-17T00:00:00.000Z',
+    }
+  ),
+  createCurriculumSegment(
+    createCurriculumVersionReference(VERSION_2012_SECONDARIA.id, VERSION_2012_SECONDARIA.title),
+    'secondaria',
+    null,
+    'L\'ambiente di apprendimento',
+    {
+      sourceArea: { kind: 'general-section', code: 'in2012-secondaria-ambiente-apprendimento', label: 'L\'ambiente di apprendimento' },
+      status: 'complete',
+      completeness: 'complete',
+      sourceRefs: [SOURCE_REF],
+      origin: 'normative-source',
+      now: '2026-08-17T00:00:00.000Z',
+    }
+  ),
+  createCurriculumSegment(
+    createCurriculumVersionReference(VERSION_2012_SECONDARIA.id, VERSION_2012_SECONDARIA.title),
+    'secondaria',
+    null,
+    'Cittadinanza e Costituzione',
+    {
+      sourceArea: { kind: 'transversal-area', code: 'in2012-secondaria-cittadinanza-costituzione', label: 'Cittadinanza e Costituzione' },
       status: 'complete',
       completeness: 'complete',
       sourceRefs: [SOURCE_REF],
@@ -1600,6 +1740,29 @@ export const NODES_2012_SECONDARIA_GEOGRAFIA = [
   ),
 ];
 
+export const REPRESENTATION_GAPS_2012 = [
+  {
+    id: 'gap-2012-macrostructure-cultura-scuola-persona',
+    reason: 'Macrostructure section spanning all school orders without a specific school order anchor; cannot be faithfully represented as a curriculum segment tied to a single version.',
+    sourceReference: 'D.M. 254/2012 — Cultura scuola persona',
+  },
+  {
+    id: 'gap-2012-macrostructure-finalita-generali',
+    reason: 'Macrostructure section spanning all school orders without a specific school order anchor; cannot be faithfully represented as a curriculum segment tied to a single version.',
+    sourceReference: 'D.M. 254/2012 — Finalità generali',
+  },
+  {
+    id: 'gap-2012-macrostructure-organizzazione-curricolo',
+    reason: 'Macrostructure section spanning all school orders without a specific school order anchor; cannot be faithfully represented as a curriculum segment tied to a single version.',
+    sourceReference: 'D.M. 254/2012 — L\'organizzazione del curricolo',
+  },
+  {
+    id: 'gap-2012-narrative-framing-text',
+    reason: 'Narrative framing and pedagogical orientation text within general sections does not map to any CurriculumNodeType without falsification. Source-native role is orientation, not competence target or objective.',
+    sourceReference: 'D.M. 254/2012 — general sections narrative text',
+  },
+];
+
 export const fixture2012 = {
   SOURCE_2012,
   SOURCE_VERSION_2012,
@@ -1653,6 +1816,13 @@ export const fixture2012 = {
   NODES_2012_SECONDARIA_MUSICA,
   NODES_2012_SECONDARIA_ARTE,
   NODES_2012_SECONDARIA_EDUCAZIONE_FISICA,
+  representationGaps: REPRESENTATION_GAPS_2012,
 };
 
 export type Fixture2012 = typeof fixture2012;
+
+export interface RepresentationGap {
+  id: string;
+  reason: string;
+  sourceReference: string;
+}

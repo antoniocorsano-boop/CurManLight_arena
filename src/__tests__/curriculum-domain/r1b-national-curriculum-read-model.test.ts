@@ -13,9 +13,9 @@ describe('CURR-R1B — National Curriculum Read Model', () => {
     expect(versions[2].title).toBe('Indicazioni nazionali 2012 — Secondaria');
   });
 
-  it('lists 5 infanzia segments with disciplineCode=null', () => {
+  it('lists 7 infanzia segments with disciplineCode=null', () => {
     const segments = readModel.listSegments({ schoolOrder: 'infanzia' });
-    expect(segments).toHaveLength(5);
+    expect(segments).toHaveLength(7);
     for (const segment of segments) {
       expect(segment.disciplineCode).toBeNull();
     }
@@ -23,15 +23,15 @@ describe('CURR-R1B — National Curriculum Read Model', () => {
 
   it('filters by disciplineCode=null explicitly', () => {
     const segments = readModel.listSegments({ disciplineCode: null });
-    expect(segments).toHaveLength(5);
+    expect(segments).toHaveLength(15);
     for (const segment of segments) {
-      expect(segment.schoolOrder).toBe('infanzia');
+      expect(segment.disciplineCode).toBeNull();
     }
   });
 
   it('does not filter discipline when disciplineCode is omitted', () => {
     const segments = readModel.listSegments({});
-    expect(segments).toHaveLength(23);
+    expect(segments).toHaveLength(33);
   });
 
   it('filters by sourceAreaKind=experience-field', () => {
@@ -47,8 +47,8 @@ describe('CURR-R1B — National Curriculum Read Model', () => {
   it('getVersion aggregates segments and nodes by ID', () => {
     const result = readModel.getVersion(fixture2012.VERSION_2012_INFANZIA.id);
     expect(result).toBeDefined();
-    expect(result!.segments).toHaveLength(5);
-    expect(result!.nodes).toHaveLength(5);
+    expect(result!.segments).toHaveLength(7);
+    expect(result!.nodes).toHaveLength(7);
   });
 
   it('getVersion returns undefined for unknown ID', () => {

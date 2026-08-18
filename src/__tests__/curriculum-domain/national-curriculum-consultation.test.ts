@@ -26,14 +26,15 @@ describe('CURR-R1C — National Curriculum Consultation Boundary', () => {
 
   it('lists areas for infanzia', () => {
     const areas = service.listAreas('IN2012', 'infanzia');
-    expect(areas).toHaveLength(5);
-    expect(areas[0].kind).toBe('experience-field');
-    expect(areas[0].disciplineCode).toBeNull();
+    expect(areas).toHaveLength(7);
+    const experienceFields = areas.filter(a => a.kind === 'experience-field');
+    expect(experienceFields).toHaveLength(5);
+    expect(experienceFields[0].disciplineCode).toBeNull();
   });
 
   it('lists areas for primaria', () => {
     const areas = service.listAreas('IN2012', 'primaria');
-    expect(areas).toHaveLength(9);
+    expect(areas).toHaveLength(13);
     expect(areas[0].kind).toBe('discipline');
     expect(areas[0].disciplineCode).toBe('arteImmagine');
   });
@@ -50,12 +51,12 @@ describe('CURR-R1C — National Curriculum Consultation Boundary', () => {
 
   it('filters content by schoolOrder', () => {
     const items = service.listContent({ schoolOrder: 'infanzia' });
-    expect(items).toHaveLength(5);
+    expect(items).toHaveLength(7);
   });
 
   it('filters content by disciplineCode=null explicitly', () => {
     const items = service.listContent({ disciplineCode: null });
-    expect(items).toHaveLength(5);
+    expect(items).toHaveLength(7);
     for (const item of items) {
       expect(item.schoolOrder).toBe('infanzia');
     }

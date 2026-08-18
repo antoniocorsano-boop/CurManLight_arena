@@ -16,11 +16,11 @@ describe('CURR-R1A — 2012 Normative Fixture', () => {
   });
 
   it('freezes documented entity counts', () => {
-    expect(fixture2012.SEGMENTS_2012_INFANZIA).toHaveLength(5);
+    expect(fixture2012.SEGMENTS_2012_INFANZIA).toHaveLength(7);
     expect(fixture2012.NODES_2012_INFANZIA.length).toBeGreaterThanOrEqual(5);
-    expect(fixture2012.SEGMENTS_2012_PRIMARIA).toHaveLength(9);
+    expect(fixture2012.SEGMENTS_2012_PRIMARIA).toHaveLength(13);
     expect(fixture2012.NODES_2012_PRIMARIA.length).toBeGreaterThanOrEqual(3);
-    expect(fixture2012.SEGMENTS_2012_SECONDARIA).toHaveLength(9);
+    expect(fixture2012.SEGMENTS_2012_SECONDARIA).toHaveLength(13);
     expect(fixture2012.NODES_2012_SECONDARIA.length).toBeGreaterThanOrEqual(2);
   });
 
@@ -89,7 +89,9 @@ describe('CURR-R1A — 2012 Normative Fixture', () => {
   });
 
   it('represents infanzia experience fields without inventing disciplines', () => {
-    for (const segment of fixture2012.SEGMENTS_2012_INFANZIA) {
+    const experienceFields = fixture2012.SEGMENTS_2012_INFANZIA.filter(s => s.sourceArea?.kind === 'experience-field');
+    expect(experienceFields).toHaveLength(5);
+    for (const segment of experienceFields) {
       expect(segment.disciplineCode).toBeNull();
       expect(segment.sourceArea?.kind).toBe('experience-field');
     }
