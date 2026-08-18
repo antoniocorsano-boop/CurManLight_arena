@@ -4,6 +4,8 @@
 > **Source ID:** `national-2012|dm-254-2012`
 > **Status:** VERIFIED
 > **Rule:** source completeness is structural + textual + provenance-based, never inferred from node counts alone.
+> **R2B status:** `CURR_R2B_CONTRACT_AUDIT = COMPLETE`
+> **R2C status:** `CURR_R2C_MINIMAL_2025_PROJECTION = IMPLEMENTED_VERIFIED`
 
 Legend:
 
@@ -181,3 +183,36 @@ Current gate:
 `CURR_R1_2012_CANONICAL_INGESTION = VERIFIED`
 
 Evidence record: `CML_CURR_R1_2012_R1E6_GATE.md`
+
+## L. R2B — 2025 Contract Audit
+
+| Gap | Finding | Outcome |
+|---|---|---|
+| GAP-R2-01 competenza attesa | `CurriculumNodeType` already supports `competenza`/`competence` | CLOSED_BY_REUSE |
+| GAP-R2-02 OSA 2025 | No source-native discriminator between 2012 objectives and 2025 OSA | RESOLVED via `normativeNodeKind` |
+| GAP-R2-03 Strumento musicale | No conditional applicability representation for music-track-only areas | RESOLVED via `frameworkApplicability` on `CurriculumSegment` |
+| GAP-R2-04 conoscenza | `CurriculumNodeType` already supports `conoscenza`/`knowledge` | CLOSED_BY_REUSE |
+
+## M. R2C — Minimal 2025 Projection Extension
+
+| Extension | Contract location | Status |
+|---|---|---|
+| `CurriculumNode.normativeNodeKind?: 'objective-2012' \| 'osa-2025'` | `src/domain/curriculum/model/types.ts` | IMPLEMENTED_VERIFIED |
+| `CurriculumSegment.frameworkApplicability?: FrameworkApplicabilityReference` | `src/domain/curriculum/model/types.ts` | IMPLEMENTED_VERIFIED |
+| Validation rule `NODE-012` for invalid `normativeNodeKind` | `src/domain/curriculum/validation.ts` | IMPLEMENTED_VERIFIED |
+| Constructor support for `normativeNodeKind` and `frameworkApplicability` | `src/domain/curriculum/constructors.ts` | IMPLEMENTED_VERIFIED |
+| Focused R2C contract tests | `src/__tests__/curriculum-domain/fixture-2025-r2c-contract.test.ts` | 6/6 PASS |
+
+R2C focused tests:
+- `objective-2012` node accepted
+- `osa-2025` node accepted
+- invalid `normativeNodeKind` rejected
+- omission preserves R1 behavior
+- `frameworkApplicability` accepted on conditional segment
+- omission preserves R1 behavior
+
+Architecture regression after R2C:
+- `curriculum-domain`: 261/261 PASS
+- `test:fast`: 273/273 PASS
+- `tsc --noEmit`: PASS
+- `build`: PASS

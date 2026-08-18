@@ -11,6 +11,7 @@
 import type { EntityId, EntityMetadata, EntityReference, ContentOrigin } from '../identity/types';
 import type { SchoolOrder } from '../../../types/curriculum';
 import type { DisciplineCode, CurriculumNodeType, CurriculumLinkType } from './vocabularies';
+import type { FrameworkApplicabilityReference } from '../types';
 
 // ─── Source-native curriculum projection ─────────────────────────────────────
 
@@ -161,6 +162,8 @@ export interface CurriculumSegment {
   sourceNucleus?: SourceNucleusReference;
   /** Nucleo fondante legacy/compatibilità */
   nucleusId?: string;
+  /** Applicabilità condizionale del segmento a framework/percorsi specifici. */
+  frameworkApplicability?: FrameworkApplicabilityReference;
   /** Titolo del segmento */
   title: string;
   /** Descrizione */
@@ -247,6 +250,8 @@ export interface CurriculumNode {
   legacy?: LegacyNodeInfo;
   /** Checkpoint temporale normativo controllato. */
   normativeCheckpoint?: NormativeCheckpoint;
+  /** Discriminante source-native per obiettivi 2025 vs obiettivi 2012. */
+  normativeNodeKind?: 'objective-2012' | 'osa-2025';
   /** Grado (campo legacy/istituzionale, se specifico) */
   grade?: string;
   /** Periodo (campo legacy/istituzionale, se specifico) */

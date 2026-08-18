@@ -272,6 +272,10 @@ export function validateCurriculumNode(node: CurriculumNode): CurriculumValidati
     errors.push({ code: 'NODE-011', message: 'Checkpoint normativo non valido', severity: 'error', entityType: 'CurriculumNode', path: 'normativeCheckpoint' });
   }
 
+  if (node.normativeNodeKind && !['objective-2012', 'osa-2025'].includes(node.normativeNodeKind)) {
+    errors.push({ code: 'NODE-012', message: 'normativeNodeKind non valido', severity: 'error', entityType: 'CurriculumNode', path: 'normativeNodeKind' });
+  }
+
   return {
     valid: errors.filter(e => e.severity === 'error').length === 0,
     errors,

@@ -32,6 +32,7 @@ import type {
   SourceNucleusReference,
   NormativeCheckpoint,
 } from './model/types';
+import type { FrameworkApplicabilityReference } from './types';
 
 // ─── Source Constructors ─────────────────────────────────────────────────────
 
@@ -180,6 +181,7 @@ export function createCurriculumSegment(
     sourceArea?: SourceAreaReference;
     sourceNucleus?: SourceNucleusReference;
     nucleusId?: string;
+    frameworkApplicability?: FrameworkApplicabilityReference;
     status?: CurriculumSegmentStatus;
     completeness?: CompletenessLevel;
     sourceRefs?: EntityReference[];
@@ -199,6 +201,7 @@ export function createCurriculumSegment(
     sourceArea: options?.sourceArea,
     sourceNucleus: options?.sourceNucleus,
     nucleusId: options?.nucleusId,
+    frameworkApplicability: options?.frameworkApplicability,
     title,
     description: options?.description,
     status: options?.status || 'empty',
@@ -225,6 +228,7 @@ export function createCurriculumNode(
     provenance?: CurriculumProvenance;
     legacy?: LegacyNodeInfo;
     normativeCheckpoint?: NormativeCheckpoint;
+    normativeNodeKind?: 'objective-2012' | 'osa-2025';
     grade?: string;
     period?: string;
     isCrossCurricular?: boolean;
@@ -248,6 +252,7 @@ export function createCurriculumNode(
     provenance: options?.provenance || 'legacy',
     legacy: options?.legacy,
     normativeCheckpoint: options?.normativeCheckpoint,
+    normativeNodeKind: options?.normativeNodeKind,
     grade: options?.grade,
     period: options?.period,
     isCrossCurricular: options?.isCrossCurricular,
