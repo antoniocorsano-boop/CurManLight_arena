@@ -192,6 +192,48 @@ export const SEGMENTS_2012_PRIMARIA = [
       now: '2026-08-17T00:00:00.000Z',
     }
   ),
+  createCurriculumSegment(
+    createCurriculumVersionReference(VERSION_2012_PRIMARIA.id, VERSION_2012_PRIMARIA.title),
+    'primaria',
+    'matematica',
+    'Matematica',
+    {
+      sourceArea: { kind: 'discipline', code: 'in2012-matematica', label: 'Matematica' },
+      status: 'complete',
+      completeness: 'complete',
+      sourceRefs: [SOURCE_REF],
+      origin: 'normative-source',
+      now: '2026-08-17T00:00:00.000Z',
+    }
+  ),
+  createCurriculumSegment(
+    createCurriculumVersionReference(VERSION_2012_PRIMARIA.id, VERSION_2012_PRIMARIA.title),
+    'primaria',
+    'scienze',
+    'Scienze',
+    {
+      sourceArea: { kind: 'discipline', code: 'in2012-scienze', label: 'Scienze' },
+      status: 'complete',
+      completeness: 'complete',
+      sourceRefs: [SOURCE_REF],
+      origin: 'normative-source',
+      now: '2026-08-17T00:00:00.000Z',
+    }
+  ),
+  createCurriculumSegment(
+    createCurriculumVersionReference(VERSION_2012_PRIMARIA.id, VERSION_2012_PRIMARIA.title),
+    'primaria',
+    'tecnologia',
+    'Tecnologia',
+    {
+      sourceArea: { kind: 'discipline', code: 'in2012-tecnologia', label: 'Tecnologia' },
+      status: 'complete',
+      completeness: 'complete',
+      sourceRefs: [SOURCE_REF],
+      origin: 'normative-source',
+      now: '2026-08-17T00:00:00.000Z',
+    }
+  ),
 ];
 
 export const SEGMENTS_2012_SECONDARIA = [
@@ -230,6 +272,48 @@ export const SEGMENTS_2012_SECONDARIA = [
     'Geografia',
     {
       sourceArea: { kind: 'discipline', code: 'in2012-geografia', label: 'Geografia' },
+      status: 'complete',
+      completeness: 'complete',
+      sourceRefs: [SOURCE_REF],
+      origin: 'normative-source',
+      now: '2026-08-17T00:00:00.000Z',
+    }
+  ),
+  createCurriculumSegment(
+    createCurriculumVersionReference(VERSION_2012_SECONDARIA.id, VERSION_2012_SECONDARIA.title),
+    'secondaria',
+    'matematica',
+    'Matematica',
+    {
+      sourceArea: { kind: 'discipline', code: 'in2012-matematica', label: 'Matematica' },
+      status: 'complete',
+      completeness: 'complete',
+      sourceRefs: [SOURCE_REF],
+      origin: 'normative-source',
+      now: '2026-08-17T00:00:00.000Z',
+    }
+  ),
+  createCurriculumSegment(
+    createCurriculumVersionReference(VERSION_2012_SECONDARIA.id, VERSION_2012_SECONDARIA.title),
+    'secondaria',
+    'scienze',
+    'Scienze',
+    {
+      sourceArea: { kind: 'discipline', code: 'in2012-scienze', label: 'Scienze' },
+      status: 'complete',
+      completeness: 'complete',
+      sourceRefs: [SOURCE_REF],
+      origin: 'normative-source',
+      now: '2026-08-17T00:00:00.000Z',
+    }
+  ),
+  createCurriculumSegment(
+    createCurriculumVersionReference(VERSION_2012_SECONDARIA.id, VERSION_2012_SECONDARIA.title),
+    'secondaria',
+    'tecnologia',
+    'Tecnologia',
+    {
+      sourceArea: { kind: 'discipline', code: 'in2012-tecnologia', label: 'Tecnologia' },
       status: 'complete',
       completeness: 'complete',
       sourceRefs: [SOURCE_REF],
@@ -464,6 +548,336 @@ export const SEGMENTS_2012_SECONDARIA_GEOGRAFIA = [
       sourceRefs: [SOURCE_REF],
       origin: 'normative-source',
       now: '2026-08-17T00:00:00.000Z',
+    }
+  ),
+];
+
+export const SEGMENTS_2012_PRIMARIA_MATEMATICA = [
+  createCurriculumSegment(
+    createCurriculumVersionReference(VERSION_2012_PRIMARIA.id, VERSION_2012_PRIMARIA.title),
+    'primaria',
+    'matematica',
+    'Matematica',
+    {
+      sourceArea: { kind: 'discipline', code: 'in2012-matematica', label: 'Matematica' },
+      status: 'complete',
+      completeness: 'complete',
+      sourceRefs: [SOURCE_REF],
+      origin: 'normative-source',
+      now: '2026-08-17T00:00:00.000Z',
+    }
+  ),
+];
+
+export const SEGMENTS_2012_SECONDARIA_MATEMATICA = [
+  createCurriculumSegment(
+    createCurriculumVersionReference(VERSION_2012_SECONDARIA.id, VERSION_2012_SECONDARIA.title),
+    'secondaria',
+    'matematica',
+    'Matematica',
+    {
+      sourceArea: { kind: 'discipline', code: 'in2012-matematica', label: 'Matematica' },
+      status: 'complete',
+      completeness: 'complete',
+      sourceRefs: [SOURCE_REF],
+      origin: 'normative-source',
+      now: '2026-08-17T00:00:00.000Z',
+    }
+  ),
+];
+
+export const SEGMENTS_2012_PRIMARIA_SCIENZE = [
+  createCurriculumSegment(
+    createCurriculumVersionReference(VERSION_2012_PRIMARIA.id, VERSION_2012_PRIMARIA.title),
+    'primaria',
+    'scienze',
+    'Scienze',
+    {
+      sourceArea: { kind: 'discipline', code: 'in2012-scienze', label: 'Scienze' },
+      status: 'complete',
+      completeness: 'complete',
+      sourceRefs: [SOURCE_REF],
+      origin: 'normative-source',
+      now: '2026-08-17T00:00:00.000Z',
+    }
+  ),
+];
+
+export const SEGMENTS_2012_SECONDARIA_SCIENZE = [
+  createCurriculumSegment(
+    createCurriculumVersionReference(VERSION_2012_SECONDARIA.id, VERSION_2012_SECONDARIA.title),
+    'secondaria',
+    'scienze',
+    'Scienze',
+    {
+      sourceArea: { kind: 'discipline', code: 'in2012-scienze', label: 'Scienze' },
+      status: 'complete',
+      completeness: 'complete',
+      sourceRefs: [SOURCE_REF],
+      origin: 'normative-source',
+      now: '2026-08-17T00:00:00.000Z',
+    }
+  ),
+];
+
+export const SEGMENTS_2012_PRIMARIA_TECNOLOGIA = [
+  createCurriculumSegment(
+    createCurriculumVersionReference(VERSION_2012_PRIMARIA.id, VERSION_2012_PRIMARIA.title),
+    'primaria',
+    'tecnologia',
+    'Tecnologia',
+    {
+      sourceArea: { kind: 'discipline', code: 'in2012-tecnologia', label: 'Tecnologia' },
+      status: 'complete',
+      completeness: 'complete',
+      sourceRefs: [SOURCE_REF],
+      origin: 'normative-source',
+      now: '2026-08-17T00:00:00.000Z',
+    }
+  ),
+];
+
+export const SEGMENTS_2012_SECONDARIA_TECNOLOGIA = [
+  createCurriculumSegment(
+    createCurriculumVersionReference(VERSION_2012_SECONDARIA.id, VERSION_2012_SECONDARIA.title),
+    'secondaria',
+    'tecnologia',
+    'Tecnologia',
+    {
+      sourceArea: { kind: 'discipline', code: 'in2012-tecnologia', label: 'Tecnologia' },
+      status: 'complete',
+      completeness: 'complete',
+      sourceRefs: [SOURCE_REF],
+      origin: 'normative-source',
+      now: '2026-08-17T00:00:00.000Z',
+    }
+  ),
+];
+
+export const NODES_2012_PRIMARIA_MATEMATICA = [
+  createCurriculumNode(
+    createCurriculumVersionReference(VERSION_2012_PRIMARIA.id, VERSION_2012_PRIMARIA.title),
+    createSegmentReference(SEGMENTS_2012_PRIMARIA_MATEMATICA[0].id, SEGMENTS_2012_PRIMARIA_MATEMATICA[0].title),
+    'traguardo',
+    'Traguardo - fine primaria',
+    {
+      status: 'active',
+      provenance: 'normative',
+      sourceRefs: [SOURCE_REF],
+      origin: 'normative-source',
+      now: '2026-08-17T00:00:00.000Z',
+      normativeCheckpoint: 'end-primary',
+    }
+  ),
+  createCurriculumNode(
+    createCurriculumVersionReference(VERSION_2012_PRIMARIA.id, VERSION_2012_PRIMARIA.title),
+    createSegmentReference(SEGMENTS_2012_PRIMARIA_MATEMATICA[0].id, SEGMENTS_2012_PRIMARIA_MATEMATICA[0].title),
+    'obiettivo',
+    'Obiettivo - classe III',
+    {
+      status: 'active',
+      provenance: 'normative',
+      sourceRefs: [SOURCE_REF],
+      origin: 'normative-source',
+      now: '2026-08-17T00:00:00.000Z',
+      normativeCheckpoint: 'end-primary-grade-3',
+    }
+  ),
+  createCurriculumNode(
+    createCurriculumVersionReference(VERSION_2012_PRIMARIA.id, VERSION_2012_PRIMARIA.title),
+    createSegmentReference(SEGMENTS_2012_PRIMARIA_MATEMATICA[0].id, SEGMENTS_2012_PRIMARIA_MATEMATICA[0].title),
+    'obiettivo',
+    'Obiettivo - fine primaria',
+    {
+      status: 'active',
+      provenance: 'normative',
+      sourceRefs: [SOURCE_REF],
+      origin: 'normative-source',
+      now: '2026-08-17T00:00:00.000Z',
+      normativeCheckpoint: 'end-primary',
+    }
+  ),
+];
+
+export const NODES_2012_SECONDARIA_MATEMATICA = [
+  createCurriculumNode(
+    createCurriculumVersionReference(VERSION_2012_SECONDARIA.id, VERSION_2012_SECONDARIA.title),
+    createSegmentReference(SEGMENTS_2012_SECONDARIA_MATEMATICA[0].id, SEGMENTS_2012_SECONDARIA_MATEMATICA[0].title),
+    'traguardo',
+    'Traguardo - fine secondaria I grado',
+    {
+      status: 'active',
+      provenance: 'normative',
+      sourceRefs: [SOURCE_REF],
+      origin: 'normative-source',
+      now: '2026-08-17T00:00:00.000Z',
+      normativeCheckpoint: 'end-lower-secondary',
+    }
+  ),
+  createCurriculumNode(
+    createCurriculumVersionReference(VERSION_2012_SECONDARIA.id, VERSION_2012_SECONDARIA.title),
+    createSegmentReference(SEGMENTS_2012_SECONDARIA_MATEMATICA[0].id, SEGMENTS_2012_SECONDARIA_MATEMATICA[0].title),
+    'obiettivo',
+    'Obiettivo - fine secondaria I grado',
+    {
+      status: 'active',
+      provenance: 'normative',
+      sourceRefs: [SOURCE_REF],
+      origin: 'normative-source',
+      now: '2026-08-17T00:00:00.000Z',
+      normativeCheckpoint: 'end-lower-secondary',
+    }
+  ),
+];
+
+export const NODES_2012_PRIMARIA_SCIENZE = [
+  createCurriculumNode(
+    createCurriculumVersionReference(VERSION_2012_PRIMARIA.id, VERSION_2012_PRIMARIA.title),
+    createSegmentReference(SEGMENTS_2012_PRIMARIA_SCIENZE[0].id, SEGMENTS_2012_PRIMARIA_SCIENZE[0].title),
+    'traguardo',
+    'Traguardo - fine primaria',
+    {
+      status: 'active',
+      provenance: 'normative',
+      sourceRefs: [SOURCE_REF],
+      origin: 'normative-source',
+      now: '2026-08-17T00:00:00.000Z',
+      normativeCheckpoint: 'end-primary',
+    }
+  ),
+  createCurriculumNode(
+    createCurriculumVersionReference(VERSION_2012_PRIMARIA.id, VERSION_2012_PRIMARIA.title),
+    createSegmentReference(SEGMENTS_2012_PRIMARIA_SCIENZE[0].id, SEGMENTS_2012_PRIMARIA_SCIENZE[0].title),
+    'obiettivo',
+    'Obiettivo - classe III',
+    {
+      status: 'active',
+      provenance: 'normative',
+      sourceRefs: [SOURCE_REF],
+      origin: 'normative-source',
+      now: '2026-08-17T00:00:00.000Z',
+      normativeCheckpoint: 'end-primary-grade-3',
+    }
+  ),
+  createCurriculumNode(
+    createCurriculumVersionReference(VERSION_2012_PRIMARIA.id, VERSION_2012_PRIMARIA.title),
+    createSegmentReference(SEGMENTS_2012_PRIMARIA_SCIENZE[0].id, SEGMENTS_2012_PRIMARIA_SCIENZE[0].title),
+    'obiettivo',
+    'Obiettivo - fine primaria',
+    {
+      status: 'active',
+      provenance: 'normative',
+      sourceRefs: [SOURCE_REF],
+      origin: 'normative-source',
+      now: '2026-08-17T00:00:00.000Z',
+      normativeCheckpoint: 'end-primary',
+    }
+  ),
+];
+
+export const NODES_2012_SECONDARIA_SCIENZE = [
+  createCurriculumNode(
+    createCurriculumVersionReference(VERSION_2012_SECONDARIA.id, VERSION_2012_SECONDARIA.title),
+    createSegmentReference(SEGMENTS_2012_SECONDARIA_SCIENZE[0].id, SEGMENTS_2012_SECONDARIA_SCIENZE[0].title),
+    'traguardo',
+    'Traguardo - fine secondaria I grado',
+    {
+      status: 'active',
+      provenance: 'normative',
+      sourceRefs: [SOURCE_REF],
+      origin: 'normative-source',
+      now: '2026-08-17T00:00:00.000Z',
+      normativeCheckpoint: 'end-lower-secondary',
+    }
+  ),
+  createCurriculumNode(
+    createCurriculumVersionReference(VERSION_2012_SECONDARIA.id, VERSION_2012_SECONDARIA.title),
+    createSegmentReference(SEGMENTS_2012_SECONDARIA_SCIENZE[0].id, SEGMENTS_2012_SECONDARIA_SCIENZE[0].title),
+    'obiettivo',
+    'Obiettivo - fine secondaria I grado',
+    {
+      status: 'active',
+      provenance: 'normative',
+      sourceRefs: [SOURCE_REF],
+      origin: 'normative-source',
+      now: '2026-08-17T00:00:00.000Z',
+      normativeCheckpoint: 'end-lower-secondary',
+    }
+  ),
+];
+
+export const NODES_2012_PRIMARIA_TECNOLOGIA = [
+  createCurriculumNode(
+    createCurriculumVersionReference(VERSION_2012_PRIMARIA.id, VERSION_2012_PRIMARIA.title),
+    createSegmentReference(SEGMENTS_2012_PRIMARIA_TECNOLOGIA[0].id, SEGMENTS_2012_PRIMARIA_TECNOLOGIA[0].title),
+    'traguardo',
+    'Traguardo - fine primaria',
+    {
+      status: 'active',
+      provenance: 'normative',
+      sourceRefs: [SOURCE_REF],
+      origin: 'normative-source',
+      now: '2026-08-17T00:00:00.000Z',
+      normativeCheckpoint: 'end-primary',
+    }
+  ),
+  createCurriculumNode(
+    createCurriculumVersionReference(VERSION_2012_PRIMARIA.id, VERSION_2012_PRIMARIA.title),
+    createSegmentReference(SEGMENTS_2012_PRIMARIA_TECNOLOGIA[0].id, SEGMENTS_2012_PRIMARIA_TECNOLOGIA[0].title),
+    'obiettivo',
+    'Obiettivo - classe III',
+    {
+      status: 'active',
+      provenance: 'normative',
+      sourceRefs: [SOURCE_REF],
+      origin: 'normative-source',
+      now: '2026-08-17T00:00:00.000Z',
+      normativeCheckpoint: 'end-primary-grade-3',
+    }
+  ),
+  createCurriculumNode(
+    createCurriculumVersionReference(VERSION_2012_PRIMARIA.id, VERSION_2012_PRIMARIA.title),
+    createSegmentReference(SEGMENTS_2012_PRIMARIA_TECNOLOGIA[0].id, SEGMENTS_2012_PRIMARIA_TECNOLOGIA[0].title),
+    'obiettivo',
+    'Obiettivo - fine primaria',
+    {
+      status: 'active',
+      provenance: 'normative',
+      sourceRefs: [SOURCE_REF],
+      origin: 'normative-source',
+      now: '2026-08-17T00:00:00.000Z',
+      normativeCheckpoint: 'end-primary',
+    }
+  ),
+];
+
+export const NODES_2012_SECONDARIA_TECNOLOGIA = [
+  createCurriculumNode(
+    createCurriculumVersionReference(VERSION_2012_SECONDARIA.id, VERSION_2012_SECONDARIA.title),
+    createSegmentReference(SEGMENTS_2012_SECONDARIA_TECNOLOGIA[0].id, SEGMENTS_2012_SECONDARIA_TECNOLOGIA[0].title),
+    'traguardo',
+    'Traguardo - fine secondaria I grado',
+    {
+      status: 'active',
+      provenance: 'normative',
+      sourceRefs: [SOURCE_REF],
+      origin: 'normative-source',
+      now: '2026-08-17T00:00:00.000Z',
+      normativeCheckpoint: 'end-lower-secondary',
+    }
+  ),
+  createCurriculumNode(
+    createCurriculumVersionReference(VERSION_2012_SECONDARIA.id, VERSION_2012_SECONDARIA.title),
+    createSegmentReference(SEGMENTS_2012_SECONDARIA_TECNOLOGIA[0].id, SEGMENTS_2012_SECONDARIA_TECNOLOGIA[0].title),
+    'obiettivo',
+    'Obiettivo - fine secondaria I grado',
+    {
+      status: 'active',
+      provenance: 'normative',
+      sourceRefs: [SOURCE_REF],
+      origin: 'normative-source',
+      now: '2026-08-17T00:00:00.000Z',
+      normativeCheckpoint: 'end-lower-secondary',
     }
   ),
 ];
@@ -785,22 +1199,34 @@ export const fixture2012 = {
   SEGMENTS_2012_PRIMARIA_SECONDA_LINGUA,
   SEGMENTS_2012_PRIMARIA_STORIA,
   SEGMENTS_2012_PRIMARIA_GEOGRAFIA,
+  SEGMENTS_2012_PRIMARIA_MATEMATICA,
+  SEGMENTS_2012_PRIMARIA_SCIENZE,
+  SEGMENTS_2012_PRIMARIA_TECNOLOGIA,
   SEGMENTS_2012_SECONDARIA,
   SEGMENTS_2012_SECONDARIA_INGLESE,
   SEGMENTS_2012_SECONDARIA_SECONDA_LINGUA,
   SEGMENTS_2012_SECONDARIA_STORIA,
   SEGMENTS_2012_SECONDARIA_GEOGRAFIA,
+  SEGMENTS_2012_SECONDARIA_MATEMATICA,
+  SEGMENTS_2012_SECONDARIA_SCIENZE,
+  SEGMENTS_2012_SECONDARIA_TECNOLOGIA,
   NODES_2012_INFANZIA,
   NODES_2012_PRIMARIA,
   NODES_2012_PRIMARIA_INGLESE,
   NODES_2012_PRIMARIA_SECONDA_LINGUA,
   NODES_2012_PRIMARIA_STORIA,
   NODES_2012_PRIMARIA_GEOGRAFIA,
+  NODES_2012_PRIMARIA_MATEMATICA,
+  NODES_2012_PRIMARIA_SCIENZE,
+  NODES_2012_PRIMARIA_TECNOLOGIA,
   NODES_2012_SECONDARIA,
   NODES_2012_SECONDARIA_INGLESE,
   NODES_2012_SECONDARIA_SECONDA_LINGUA,
   NODES_2012_SECONDARIA_STORIA,
   NODES_2012_SECONDARIA_GEOGRAFIA,
+  NODES_2012_SECONDARIA_MATEMATICA,
+  NODES_2012_SECONDARIA_SCIENZE,
+  NODES_2012_SECONDARIA_TECNOLOGIA,
 };
 
 export type Fixture2012 = typeof fixture2012;

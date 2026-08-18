@@ -27,4 +27,19 @@ describe('CURR-R1E — 2012 Normative Corpus Completeness', () => {
     expect(geografiaPrimaria).toBeDefined();
     expect(geografiaSecondaria).toBeDefined();
   });
+
+  it('includes mathematics, science, and technology disciplines for primaria and secondaria', () => {
+    const matematicaPrimaria = fixture2012.SEGMENTS_2012_PRIMARIA.find(s => s.disciplineCode === 'matematica');
+    const matematicaSecondaria = fixture2012.SEGMENTS_2012_SECONDARIA.find(s => s.disciplineCode === 'matematica');
+    const scienzePrimaria = fixture2012.SEGMENTS_2012_PRIMARIA.find(s => s.disciplineCode === 'scienze');
+    const scienzeSecondaria = fixture2012.SEGMENTS_2012_SECONDARIA.find(s => s.disciplineCode === 'scienze');
+    const tecnologiaPrimaria = fixture2012.SEGMENTS_2012_PRIMARIA.find(s => s.disciplineCode === 'tecnologia');
+    const tecnologiaSecondaria = fixture2012.SEGMENTS_2012_SECONDARIA.find(s => s.disciplineCode === 'tecnologia');
+    expect(matematicaPrimaria).toBeDefined();
+    expect(matematicaSecondaria).toBeDefined();
+    expect(scienzePrimaria).toBeDefined();
+    expect(scienzeSecondaria).toBeDefined();
+    expect(tecnologiaPrimaria).toBeDefined();
+    expect(tecnologiaSecondaria).toBeDefined();
+  });
 });
