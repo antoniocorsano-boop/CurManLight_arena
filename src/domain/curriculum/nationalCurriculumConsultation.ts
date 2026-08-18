@@ -64,6 +64,7 @@ export interface NationalCurriculumConsultationService {
     schoolOrder?: SchoolOrder;
     disciplineCode?: DisciplineCode | null;
     sourceAreaKind?: SourceAreaKind;
+    sourceAreaCode?: string;
     nodeType?: CurriculumNodeType;
     normativeCheckpoint?: NormativeCheckpoint;
     text?: string;
@@ -200,6 +201,9 @@ export function createNationalCurriculumConsultationService(fixtures: readonly N
             continue;
           }
           if (query.sourceAreaKind !== undefined && segment.sourceArea?.kind !== query.sourceAreaKind) {
+            continue;
+          }
+          if (query.sourceAreaCode !== undefined && segment.sourceArea?.code !== query.sourceAreaCode) {
             continue;
           }
           if (query.nodeType !== undefined && node.nodeType !== query.nodeType) {

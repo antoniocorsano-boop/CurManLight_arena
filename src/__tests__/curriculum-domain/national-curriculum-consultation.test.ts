@@ -71,6 +71,20 @@ describe('CURR-R1C — National Curriculum Consultation Boundary', () => {
     expect(items).toHaveLength(5);
   });
 
+  it('filters content by sourceAreaCode', () => {
+    const items = service.listContent({ sourceAreaCode: 'in2012-infanzia-discorsi-parole' });
+    expect(items).toHaveLength(1);
+    expect(items[0].text).toContain('Traguardo');
+  });
+
+  it('combines sourceAreaCode with schoolOrder', () => {
+    const items = service.listContent({
+      sourceAreaCode: 'in2012-italiano',
+      schoolOrder: 'primaria',
+    });
+    expect(items.length).toBeGreaterThanOrEqual(1);
+  });
+
   it('filters content by nodeType', () => {
     const items = service.listContent({ nodeType: 'traguardo' });
     expect(items.length).toBeGreaterThanOrEqual(3);
