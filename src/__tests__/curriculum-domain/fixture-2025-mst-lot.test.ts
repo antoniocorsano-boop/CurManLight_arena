@@ -73,7 +73,7 @@ describe('CURR-R2E-4 — 2025 Matematica + Scienze + Tecnologia lotto verificati
       ...fixture2025.SEGMENTS_2025_SECONDARIA_TECNOLOGIA,
     ];
 
-    const stemSegments = allSegments.filter(s => s.disciplineCode === 'stem');
+    const stemSegments = allSegments.filter(s => s.sourceArea?.code === 'stem');
     expect(stemSegments).toHaveLength(0);
   });
 

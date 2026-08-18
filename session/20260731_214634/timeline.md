@@ -50,3 +50,6 @@
 
 ## 2026-08-18 20:47:00 +02:00
 - R2E-6 Strumento musicale+sezioni trasversali residue 2025 COMPLETE. Added NODES_2025_SECONDARIA_STRUMENTO_MUSICALE, SEGMENTS_2025_PRIMARIA_GENERAL_SECTIONS, SEGMENTS_2025_SECONDARIA_GENERAL_SECTIONS. New test file fixture-2025-strumento-musicale-e-trasversali-lot.test.ts (13 tests). All 2025 tests 92/92 PASS. test:fast 273/273 PASS, curriculum-domain 347/347 PASS, tsc --noEmit PASS, build PASS. Strumento musicale frameworkApplicability preserved and validated; general/transversal sections added as source-native segments with zero synthetic narrative nodes; no STEM synthetic discipline introduced. Acquisition manifest updated. Next: R2F global completeness gate.
+
+## 2026-08-18 21:01:00 +02:00
+- R2F global completeness gate 2025 COMPLETE and VERIFIED. Added fixture-2025-global-completeness-gate.test.ts (11 tests). All 2025 tests 103/103 PASS. test:fast 273/273 PASS, curriculum-domain 358/358 PASS, tsc --noEmit PASS, build PASS. Structural, textual, semantic, applicability, and provenance dimensions all pass. CURR_R2_2025_NORMATIVE_COMPLETENESS = VERIFIED. Acquisition manifest updated.

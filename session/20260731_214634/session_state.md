@@ -6,13 +6,13 @@
 - Repo: C:/Users/anton/cml_h2v_r3_runtime_3_i6_h1
 - Branch: feat/cml-636f-2025-corpus-completion
 - Started: 2026-07-31 21:46:34 +02:00
-- Updated: 2026-08-18 20:47:00 +02:00
+- Updated: 2026-08-18 21:01:00 +02:00
 
-## Goal
-CURR-R2 — 2025 normative corpus completion: contract audit (R2B), minimal projection (R2C), fixture pilot expansion (R2D), and lot-wise acquisition (R2E+).
+# Goal
+CURR-R2F — 2025 global completeness gate: final audit and VERIFIED verdict.
 
 ## Current Subtask
-R2E-6 Strumento musicale+sezioni trasversali residue 2025 COMPLETE. Added NODES_2025_SECONDARIA_STRUMENTO_MUSICALE, SEGMENTS_2025_PRIMARIA_GENERAL_SECTIONS, SEGMENTS_2025_SECONDARIA_GENERAL_SECTIONS, plus lot test (13 tests). Acquisition manifest updated. Next: R2F global completeness gate.
+R2F global completeness gate 2025 COMPLETE. Added fixture-2025-global-completeness-gate.test.ts (11 tests). All 2025 tests 103/103 PASS. Acquisition manifest updated with VERIFIED verdict.
 
 ## Loaded Skills
 - agent-memory protocol - preserve context across Codex, opencode, Copilot, and Claude.
@@ -22,7 +22,7 @@ R2E-6 Strumento musicale+sezioni trasversali residue 2025 COMPLETE. Added NODES_
 - R2B contract audit COMPLETE: GAP-R2-01/R2-04 closed by reuse, GAP-R2-02 resolved via normativeNodeKind, GAP-R2-03 resolved via frameworkApplicability.
 - R2C minimal 2025 projection IMPLEMENTED_VERIFIED: commit a0f9c90.
 - R2D fixture2025 pilot VERIFIED: general + infanzia + lingue lots verified, tests 49/49 PASS.
-- R2E-3 Storia+Geografia VERIFIED; R2E-4 MST VERIFIED; R2E-5 Linguaggi espressivi VERIFIED; R2E-6 Strumento musicale+trasversali VERIFIED: Strumento musicale nodes with frameworkApplicability added, general/transversal sections added, no synthetic narrative nodes, no STEM synthetic discipline.
+- R2E-3 through R2E-6 VERIFIED; R2F GLOBAL COMPLETENESS GATE VERIFIED: structural, textual, semantic, applicability, provenance all pass; CURR_R2_2025_NORMATIVE_COMPLETENESS = VERIFIED.
 
 ## Plan
 - [x] R2B: contract audit
@@ -32,7 +32,7 @@ R2E-6 Strumento musicale+sezioni trasversali residue 2025 COMPLETE. Added NODES_
 - [x] R2E-4: Matematica + Scienze + Tecnologia lot
 - [x] R2E-5: Musica + Arte e immagine + Educazione fisica lot
 - [x] R2E-6: Strumento musicale + sezioni trasversali residue
-- [ ] R2F: 2025 global completeness gate
+- [x] R2F: 2025 global completeness gate
 
 ## Assumptions
 - Session files are safe to commit because they must not contain secrets.
@@ -42,11 +42,13 @@ R2E-6 Strumento musicale+sezioni trasversali residue 2025 COMPLETE. Added NODES_
 - Nessun blocco. R2D completato localmente.
 
 ## Evidence
-- Test: 92/92 2025-specific tests PASS
+- Test: 103/103 2025-specific tests PASS
 - test:fast: 273/273 PASS
-- curriculum-domain: 347/347 PASS
+- curriculum-domain: 358/358 PASS
 - tsc --noEmit: PASS
 - build: PASS
+
+
 
 
 

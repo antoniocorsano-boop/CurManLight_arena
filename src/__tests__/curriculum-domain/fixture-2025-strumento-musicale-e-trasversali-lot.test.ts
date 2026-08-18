@@ -119,11 +119,10 @@ describe('CURR-R2E-6 — 2025 Strumento musicale + sezioni trasversali residue',
   });
 
   it('does not create synthetic curriculum nodes for general sections', () => {
-    const primariaNodes = fixture2025.NODES_2025_PRIMARIA_GENERAL_SECTIONS;
-    const secondariaNodes = fixture2025.NODES_2025_SECONDARIA_GENERAL_SECTIONS;
+    const fixture2025Record = fixture2025 as Record<string, unknown>;
 
-    expect(primariaNodes).toBeUndefined();
-    expect(secondariaNodes).toBeUndefined();
+    expect(fixture2025Record['NODES_2025_PRIMARIA_GENERAL_SECTIONS']).toBeUndefined();
+    expect(fixture2025Record['NODES_2025_SECONDARIA_GENERAL_SECTIONS']).toBeUndefined();
   });
 
   it('passes canonical validation for every general section segment', () => {
@@ -160,7 +159,7 @@ describe('CURR-R2E-6 — 2025 Strumento musicale + sezioni trasversali residue',
       ...fixture2025.SEGMENTS_2025_SECONDARIA_GENERAL_SECTIONS,
     ];
 
-    const stemSegments = allSegments.filter(s => s.disciplineCode === 'stem');
+    const stemSegments = allSegments.filter(s => s.sourceArea?.code === 'stem');
     expect(stemSegments).toHaveLength(0);
 
     const stemLabels = allSegments.filter(s => s.title === 'STEM');
