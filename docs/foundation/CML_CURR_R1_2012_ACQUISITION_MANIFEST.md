@@ -152,6 +152,11 @@ These gaps are explicitly recorded in `fixture2012.representationGaps`.
 | Lot | Status | Notes |
 |---|---|---|
 | R1E-1 — Lingue | SOURCE_VERIFIED | English and second community language structure, milestones, provenance, and lot tests verified. |
+| R1E-2 — Area storico-geografica | SOURCE_VERIFIED | Storia and Geografia source-native segments, milestones, provenance, and lot tests verified. |
+
+### R1E-2 representation note
+
+The current canonical model preserves the primary→lower-secondary historical narrative sequence implicitly through source-native segment and node ordering. No explicit synthetic link nodes were introduced, and no forced temporal bridge was added between `NODES_2012_PRIMARIA_STORIA` and `NODES_2012_SECONDARIA_STORIA`. If a future requirement needs explicit cross-order narrative linkage, it must be modelled as an additive representation rather than retrofitted into the national source layer.
 
 ## I. Next acquisition order
 
