@@ -273,6 +273,155 @@ export const SEGMENTS_2025_SECONDARIA_STRUMENTO_MUSICALE = [
   ),
 ];
 
+export const NODES_2025_SECONDARIA_STRUMENTO_MUSICALE = [
+  createCurriculumNode(
+    createCurriculumVersionReference(VERSION_2025_SECONDARIA.id, VERSION_2025_SECONDARIA.title),
+    createSegmentReference(SEGMENTS_2025_SECONDARIA_STRUMENTO_MUSICALE[0].id, SEGMENTS_2025_SECONDARIA_STRUMENTO_MUSICALE[0].title),
+    'competenza',
+    'Competenza - fine secondaria I grado',
+    {
+      status: 'active',
+      provenance: 'normative',
+      sourceRefs: [SOURCE_REF_2025],
+      origin: 'normative-source',
+      now: '2026-08-18T00:00:00.000Z',
+      normativeCheckpoint: 'end-lower-secondary',
+    }
+  ),
+  createCurriculumNode(
+    createCurriculumVersionReference(VERSION_2025_SECONDARIA.id, VERSION_2025_SECONDARIA.title),
+    createSegmentReference(SEGMENTS_2025_SECONDARIA_STRUMENTO_MUSICALE[0].id, SEGMENTS_2025_SECONDARIA_STRUMENTO_MUSICALE[0].title),
+    'obiettivo',
+    'Obiettivo - fine secondaria I grado',
+    {
+      status: 'active',
+      provenance: 'normative',
+      sourceRefs: [SOURCE_REF_2025],
+      origin: 'normative-source',
+      now: '2026-08-18T00:00:00.000Z',
+      normativeCheckpoint: 'end-lower-secondary',
+    }
+  ),
+];
+
+export const SEGMENTS_2025_PRIMARIA_GENERAL_SECTIONS = [
+  createCurriculumSegment(
+    createCurriculumVersionReference(VERSION_2025_PRIMARIA.id, VERSION_2025_PRIMARIA.title),
+    'primaria',
+    null,
+    'Il senso dell\'esperienza educativa',
+    {
+      sourceArea: { kind: 'general-section', code: 'in2025-primaria-senso-esperienza', label: 'Il senso dell\'esperienza educativa' },
+      status: 'complete',
+      completeness: 'complete',
+      sourceRefs: [SOURCE_REF_2025],
+      origin: 'normative-source',
+      now: '2026-08-18T00:00:00.000Z',
+    }
+  ),
+  createCurriculumSegment(
+    createCurriculumVersionReference(VERSION_2025_PRIMARIA.id, VERSION_2025_PRIMARIA.title),
+    'primaria',
+    null,
+    'L\'alfabetizzazione culturale di base',
+    {
+      sourceArea: { kind: 'general-section', code: 'in2025-primaria-alfabetizzazione-culturale', label: 'L\'alfabetizzazione culturale di base' },
+      status: 'complete',
+      completeness: 'complete',
+      sourceRefs: [SOURCE_REF_2025],
+      origin: 'normative-source',
+      now: '2026-08-18T00:00:00.000Z',
+    }
+  ),
+  createCurriculumSegment(
+    createCurriculumVersionReference(VERSION_2025_PRIMARIA.id, VERSION_2025_PRIMARIA.title),
+    'primaria',
+    null,
+    'L\'ambiente di apprendimento',
+    {
+      sourceArea: { kind: 'general-section', code: 'in2025-primaria-ambiente-apprendimento', label: 'L\'ambiente di apprendimento' },
+      status: 'complete',
+      completeness: 'complete',
+      sourceRefs: [SOURCE_REF_2025],
+      origin: 'normative-source',
+      now: '2026-08-18T00:00:00.000Z',
+    }
+  ),
+  createCurriculumSegment(
+    createCurriculumVersionReference(VERSION_2025_PRIMARIA.id, VERSION_2025_PRIMARIA.title),
+    'primaria',
+    null,
+    'Cittadinanza e Costituzione',
+    {
+      sourceArea: { kind: 'transversal-area', code: 'in2025-primaria-cittadinanza-costituzione', label: 'Cittadinanza e Costituzione' },
+      status: 'complete',
+      completeness: 'complete',
+      sourceRefs: [SOURCE_REF_2025],
+      origin: 'normative-source',
+      now: '2026-08-18T00:00:00.000Z',
+    }
+  ),
+];
+
+export const SEGMENTS_2025_SECONDARIA_GENERAL_SECTIONS = [
+  createCurriculumSegment(
+    createCurriculumVersionReference(VERSION_2025_SECONDARIA.id, VERSION_2025_SECONDARIA.title),
+    'secondaria',
+    null,
+    'Il senso dell\'esperienza educativa',
+    {
+      sourceArea: { kind: 'general-section', code: 'in2025-secondaria-senso-esperienza', label: 'Il senso dell\'esperienza educativa' },
+      status: 'complete',
+      completeness: 'complete',
+      sourceRefs: [SOURCE_REF_2025],
+      origin: 'normative-source',
+      now: '2026-08-18T00:00:00.000Z',
+    }
+  ),
+  createCurriculumSegment(
+    createCurriculumVersionReference(VERSION_2025_SECONDARIA.id, VERSION_2025_SECONDARIA.title),
+    'secondaria',
+    null,
+    'L\'alfabetizzazione culturale di base',
+    {
+      sourceArea: { kind: 'general-section', code: 'in2025-secondaria-alfabetizzazione-culturale', label: 'L\'alfabetizzazione culturale di base' },
+      status: 'complete',
+      completeness: 'complete',
+      sourceRefs: [SOURCE_REF_2025],
+      origin: 'normative-source',
+      now: '2026-08-18T00:00:00.000Z',
+    }
+  ),
+  createCurriculumSegment(
+    createCurriculumVersionReference(VERSION_2025_SECONDARIA.id, VERSION_2025_SECONDARIA.title),
+    'secondaria',
+    null,
+    'L\'ambiente di apprendimento',
+    {
+      sourceArea: { kind: 'general-section', code: 'in2025-secondaria-ambiente-apprendimento', label: 'L\'ambiente di apprendimento' },
+      status: 'complete',
+      completeness: 'complete',
+      sourceRefs: [SOURCE_REF_2025],
+      origin: 'normative-source',
+      now: '2026-08-18T00:00:00.000Z',
+    }
+  ),
+  createCurriculumSegment(
+    createCurriculumVersionReference(VERSION_2025_SECONDARIA.id, VERSION_2025_SECONDARIA.title),
+    'secondaria',
+    null,
+    'Cittadinanza e Costituzione',
+    {
+      sourceArea: { kind: 'transversal-area', code: 'in2025-secondaria-cittadinanza-costituzione', label: 'Cittadinanza e Costituzione' },
+      status: 'complete',
+      completeness: 'complete',
+      sourceRefs: [SOURCE_REF_2025],
+      origin: 'normative-source',
+      now: '2026-08-18T00:00:00.000Z',
+    }
+  ),
+];
+
 export const SEGMENTS_2025_SECONDARIA_LATINO = [
   createCurriculumSegment(
     createCurriculumVersionReference(VERSION_2025_SECONDARIA.id, VERSION_2025_SECONDARIA.title),
@@ -1354,6 +1503,7 @@ export const fixture2025 = {
   SEGMENTS_2025_PRIMARIA_MUSICA,
   SEGMENTS_2025_PRIMARIA_ARTE,
   SEGMENTS_2025_PRIMARIA_EDUCAZIONE_FISICA,
+  SEGMENTS_2025_PRIMARIA_GENERAL_SECTIONS,
   SEGMENTS_2025_SECONDARIA_ITALIANO,
   SEGMENTS_2025_SECONDARIA_INGLESE,
   SEGMENTS_2025_SECONDARIA_STRUMENTO_MUSICALE,
@@ -1366,6 +1516,7 @@ export const fixture2025 = {
   SEGMENTS_2025_SECONDARIA_MUSICA,
   SEGMENTS_2025_SECONDARIA_ARTE,
   SEGMENTS_2025_SECONDARIA_EDUCAZIONE_FISICA,
+  SEGMENTS_2025_SECONDARIA_GENERAL_SECTIONS,
   NODES_2025_INFANZIA,
   NODES_2025_PRIMARIA_ITALIANO,
   NODES_2025_PRIMARIA_INGLESE,
@@ -1388,6 +1539,7 @@ export const fixture2025 = {
   NODES_2025_SECONDARIA_MUSICA,
   NODES_2025_SECONDARIA_ARTE,
   NODES_2025_SECONDARIA_EDUCAZIONE_FISICA,
+  NODES_2025_SECONDARIA_STRUMENTO_MUSICALE,
 };
 
 export type Fixture2025 = typeof fixture2025;
