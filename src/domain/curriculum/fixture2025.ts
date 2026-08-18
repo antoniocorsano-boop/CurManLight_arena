@@ -10,17 +10,17 @@ import {
 } from './constructors';
 
 export const SOURCE_2025 = createSource(
-  'D.M. 2025 — Nuove Indicazioni nazionali per il curricolo',
+  'D.M. 9 dicembre 2025, n. 221 — Nuove Indicazioni nazionali per il curricolo',
   'normative-national',
   {
-    schoolOrders: ['primaria', 'secondaria'],
+    schoolOrders: ['infanzia', 'primaria', 'secondaria'],
     disciplines: ['italiano', 'musica'],
     isNational: true,
   },
   {
     authority: "Ministero dell'Istruzione",
-    issuedAt: '2025-01-01',
-    versionLabel: 'D.M. 2025',
+    issuedAt: '2025-12-09',
+    versionLabel: 'D.M. 221/2025',
     status: 'active',
     origin: 'normative-source',
     now: '2026-08-18T00:00:00.000Z',
@@ -31,8 +31,8 @@ export const SOURCE_VERSION_2025 = createSourceVersion(
   createSourceReference(SOURCE_2025.id),
   1,
   {
-    label: 'D.M. 2025',
-    issuedAt: '2025-01-01',
+    label: 'D.M. 221/2025',
+    issuedAt: '2025-12-09',
     status: 'active',
     origin: 'normative-source',
     now: '2026-08-18T00:00:00.000Z',
@@ -40,6 +40,17 @@ export const SOURCE_VERSION_2025 = createSourceVersion(
 );
 
 export const SOURCE_REF_2025 = createSourceReference(SOURCE_2025.id);
+
+export const VERSION_2025_INFANZIA = createCurriculumVersion(
+  'Indicazioni nazionali 2025 — Infanzia',
+  'infanzia',
+  {
+    status: 'active',
+    mainSourceRefs: [SOURCE_REF_2025],
+    origin: 'normative-source',
+    now: '2026-08-18T00:00:00.000Z',
+  }
+);
 
 export const VERSION_2025_PRIMARIA = createCurriculumVersion(
   'Indicazioni nazionali 2025 — Primaria',
@@ -63,6 +74,112 @@ export const VERSION_2025_SECONDARIA = createCurriculumVersion(
     origin: 'normative-source',
     now: '2026-08-18T00:00:00.000Z',
   }
+);
+
+export const SEGMENTS_2025_INFANZIA = [
+  createCurriculumSegment(
+    createCurriculumVersionReference(VERSION_2025_INFANZIA.id, VERSION_2025_INFANZIA.title),
+    'infanzia',
+    null,
+    'Il sé e l\'altro',
+    {
+      sourceArea: { kind: 'experience-field', code: 'in2025-infanzia-se-altro', label: 'Il sé e l\'altro' },
+      status: 'complete',
+      completeness: 'complete',
+      sourceRefs: [SOURCE_REF_2025],
+      origin: 'normative-source',
+      now: '2026-08-18T00:00:00.000Z',
+    }
+  ),
+  createCurriculumSegment(
+    createCurriculumVersionReference(VERSION_2025_INFANZIA.id, VERSION_2025_INFANZIA.title),
+    'infanzia',
+    null,
+    'Il corpo e il movimento',
+    {
+      sourceArea: { kind: 'experience-field', code: 'in2025-infanzia-corpo-movimento', label: 'Il corpo e il movimento' },
+      status: 'complete',
+      completeness: 'complete',
+      sourceRefs: [SOURCE_REF_2025],
+      origin: 'normative-source',
+      now: '2026-08-18T00:00:00.000Z',
+    }
+  ),
+  createCurriculumSegment(
+    createCurriculumVersionReference(VERSION_2025_INFANZIA.id, VERSION_2025_INFANZIA.title),
+    'infanzia',
+    null,
+    'Immagini, suoni e colori',
+    {
+      sourceArea: { kind: 'experience-field', code: 'in2025-infanzia-immagini-suoni-colori', label: 'Immagini, suoni e colori' },
+      status: 'complete',
+      completeness: 'complete',
+      sourceRefs: [SOURCE_REF_2025],
+      origin: 'normative-source',
+      now: '2026-08-18T00:00:00.000Z',
+    }
+  ),
+  createCurriculumSegment(
+    createCurriculumVersionReference(VERSION_2025_INFANZIA.id, VERSION_2025_INFANZIA.title),
+    'infanzia',
+    null,
+    'I discorsi e le parole',
+    {
+      sourceArea: { kind: 'experience-field', code: 'in2025-infanzia-discorsi-parole', label: 'I discorsi e le parole' },
+      status: 'complete',
+      completeness: 'complete',
+      sourceRefs: [SOURCE_REF_2025],
+      origin: 'normative-source',
+      now: '2026-08-18T00:00:00.000Z',
+    }
+  ),
+  createCurriculumSegment(
+    createCurriculumVersionReference(VERSION_2025_INFANZIA.id, VERSION_2025_INFANZIA.title),
+    'infanzia',
+    null,
+    'La conoscenza del mondo',
+    {
+      sourceArea: { kind: 'experience-field', code: 'in2025-infanzia-conoscenza-mondo', label: 'La conoscenza del mondo' },
+      status: 'complete',
+      completeness: 'complete',
+      sourceRefs: [SOURCE_REF_2025],
+      origin: 'normative-source',
+      now: '2026-08-18T00:00:00.000Z',
+    }
+  ),
+  createCurriculumSegment(
+    createCurriculumVersionReference(VERSION_2025_INFANZIA.id, VERSION_2025_INFANZIA.title),
+    'infanzia',
+    null,
+    'Dalla scuola dell\'infanzia alla scuola primaria',
+    {
+      sourceArea: { kind: 'general-section', code: 'in2025-infanzia-transizione-primaria', label: 'Dalla scuola dell\'infanzia alla scuola primaria' },
+      status: 'complete',
+      completeness: 'complete',
+      sourceRefs: [SOURCE_REF_2025],
+      origin: 'normative-source',
+      now: '2026-08-18T00:00:00.000Z',
+    }
+  ),
+];
+
+export const NODES_2025_INFANZIA = SEGMENTS_2025_INFANZIA.filter(
+  segment => segment.sourceArea?.kind === 'experience-field'
+).map((segment) =>
+  createCurriculumNode(
+    createCurriculumVersionReference(VERSION_2025_INFANZIA.id, VERSION_2025_INFANZIA.title),
+    createSegmentReference(segment.id, segment.title),
+    'traguardo',
+    `Traguardo - ${segment.title}`,
+    {
+      status: 'active',
+      provenance: 'normative',
+      sourceRefs: [SOURCE_REF_2025],
+      origin: 'normative-source',
+      now: '2026-08-18T00:00:00.000Z',
+      normativeCheckpoint: 'end-infanzia',
+    }
+  )
 );
 
 export const SEGMENTS_2025_PRIMARIA_ITALIANO = [
@@ -189,11 +306,14 @@ export const fixture2025 = {
   SOURCE_2025,
   SOURCE_VERSION_2025,
   SOURCE_REF_2025,
+  VERSION_2025_INFANZIA,
   VERSION_2025_PRIMARIA,
   VERSION_2025_SECONDARIA,
+  SEGMENTS_2025_INFANZIA,
   SEGMENTS_2025_PRIMARIA_ITALIANO,
   SEGMENTS_2025_SECONDARIA_ITALIANO,
   SEGMENTS_2025_SECONDARIA_STRUMENTO_MUSICALE,
+  NODES_2025_INFANZIA,
   NODES_2025_PRIMARIA_ITALIANO,
   NODES_2025_SECONDARIA_ITALIANO,
 };
