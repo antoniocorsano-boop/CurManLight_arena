@@ -234,6 +234,48 @@ export const SEGMENTS_2012_PRIMARIA = [
       now: '2026-08-17T00:00:00.000Z',
     }
   ),
+  createCurriculumSegment(
+    createCurriculumVersionReference(VERSION_2012_PRIMARIA.id, VERSION_2012_PRIMARIA.title),
+    'primaria',
+    'musica',
+    'Musica',
+    {
+      sourceArea: { kind: 'discipline', code: 'in2012-musica', label: 'Musica' },
+      status: 'complete',
+      completeness: 'complete',
+      sourceRefs: [SOURCE_REF],
+      origin: 'normative-source',
+      now: '2026-08-17T00:00:00.000Z',
+    }
+  ),
+  createCurriculumSegment(
+    createCurriculumVersionReference(VERSION_2012_PRIMARIA.id, VERSION_2012_PRIMARIA.title),
+    'primaria',
+    'arteImmagine',
+    'Arte e immagine',
+    {
+      sourceArea: { kind: 'discipline', code: 'in2012-arte-immagine', label: 'Arte e immagine' },
+      status: 'complete',
+      completeness: 'complete',
+      sourceRefs: [SOURCE_REF],
+      origin: 'normative-source',
+      now: '2026-08-17T00:00:00.000Z',
+    }
+  ),
+  createCurriculumSegment(
+    createCurriculumVersionReference(VERSION_2012_PRIMARIA.id, VERSION_2012_PRIMARIA.title),
+    'primaria',
+    'educazioneFisica',
+    'Educazione fisica',
+    {
+      sourceArea: { kind: 'discipline', code: 'in2012-educazione-fisica', label: 'Educazione fisica' },
+      status: 'complete',
+      completeness: 'complete',
+      sourceRefs: [SOURCE_REF],
+      origin: 'normative-source',
+      now: '2026-08-17T00:00:00.000Z',
+    }
+  ),
 ];
 
 export const SEGMENTS_2012_SECONDARIA = [
@@ -314,6 +356,48 @@ export const SEGMENTS_2012_SECONDARIA = [
     'Tecnologia',
     {
       sourceArea: { kind: 'discipline', code: 'in2012-tecnologia', label: 'Tecnologia' },
+      status: 'complete',
+      completeness: 'complete',
+      sourceRefs: [SOURCE_REF],
+      origin: 'normative-source',
+      now: '2026-08-17T00:00:00.000Z',
+    }
+  ),
+  createCurriculumSegment(
+    createCurriculumVersionReference(VERSION_2012_SECONDARIA.id, VERSION_2012_SECONDARIA.title),
+    'secondaria',
+    'musica',
+    'Musica',
+    {
+      sourceArea: { kind: 'discipline', code: 'in2012-musica', label: 'Musica' },
+      status: 'complete',
+      completeness: 'complete',
+      sourceRefs: [SOURCE_REF],
+      origin: 'normative-source',
+      now: '2026-08-17T00:00:00.000Z',
+    }
+  ),
+  createCurriculumSegment(
+    createCurriculumVersionReference(VERSION_2012_SECONDARIA.id, VERSION_2012_SECONDARIA.title),
+    'secondaria',
+    'arteImmagine',
+    'Arte e immagine',
+    {
+      sourceArea: { kind: 'discipline', code: 'in2012-arte-immagine', label: 'Arte e immagine' },
+      status: 'complete',
+      completeness: 'complete',
+      sourceRefs: [SOURCE_REF],
+      origin: 'normative-source',
+      now: '2026-08-17T00:00:00.000Z',
+    }
+  ),
+  createCurriculumSegment(
+    createCurriculumVersionReference(VERSION_2012_SECONDARIA.id, VERSION_2012_SECONDARIA.title),
+    'secondaria',
+    'educazioneFisica',
+    'Educazione fisica',
+    {
+      sourceArea: { kind: 'discipline', code: 'in2012-educazione-fisica', label: 'Educazione fisica' },
       status: 'complete',
       completeness: 'complete',
       sourceRefs: [SOURCE_REF],
@@ -620,6 +704,108 @@ export const SEGMENTS_2012_SECONDARIA_SCIENZE = [
   ),
 ];
 
+export const SEGMENTS_2012_PRIMARIA_MUSICA = [
+  createCurriculumSegment(
+    createCurriculumVersionReference(VERSION_2012_PRIMARIA.id, VERSION_2012_PRIMARIA.title),
+    'primaria',
+    'musica',
+    'Musica',
+    {
+      sourceArea: { kind: 'discipline', code: 'in2012-musica', label: 'Musica' },
+      status: 'complete',
+      completeness: 'complete',
+      sourceRefs: [SOURCE_REF],
+      origin: 'normative-source',
+      now: '2026-08-17T00:00:00.000Z',
+    }
+  ),
+];
+
+export const SEGMENTS_2012_SECONDARIA_MUSICA = [
+  createCurriculumSegment(
+    createCurriculumVersionReference(VERSION_2012_SECONDARIA.id, VERSION_2012_SECONDARIA.title),
+    'secondaria',
+    'musica',
+    'Musica',
+    {
+      sourceArea: { kind: 'discipline', code: 'in2012-musica', label: 'Musica' },
+      status: 'complete',
+      completeness: 'complete',
+      sourceRefs: [SOURCE_REF],
+      origin: 'normative-source',
+      now: '2026-08-17T00:00:00.000Z',
+    }
+  ),
+];
+
+export const SEGMENTS_2012_PRIMARIA_ARTE = [
+  createCurriculumSegment(
+    createCurriculumVersionReference(VERSION_2012_PRIMARIA.id, VERSION_2012_PRIMARIA.title),
+    'primaria',
+    'arteImmagine',
+    'Arte e immagine',
+    {
+      sourceArea: { kind: 'discipline', code: 'in2012-arte-immagine', label: 'Arte e immagine' },
+      status: 'complete',
+      completeness: 'complete',
+      sourceRefs: [SOURCE_REF],
+      origin: 'normative-source',
+      now: '2026-08-17T00:00:00.000Z',
+    }
+  ),
+];
+
+export const SEGMENTS_2012_SECONDARIA_ARTE = [
+  createCurriculumSegment(
+    createCurriculumVersionReference(VERSION_2012_SECONDARIA.id, VERSION_2012_SECONDARIA.title),
+    'secondaria',
+    'arteImmagine',
+    'Arte e immagine',
+    {
+      sourceArea: { kind: 'discipline', code: 'in2012-arte-immagine', label: 'Arte e immagine' },
+      status: 'complete',
+      completeness: 'complete',
+      sourceRefs: [SOURCE_REF],
+      origin: 'normative-source',
+      now: '2026-08-17T00:00:00.000Z',
+    }
+  ),
+];
+
+export const SEGMENTS_2012_PRIMARIA_EDUCAZIONE_FISICA = [
+  createCurriculumSegment(
+    createCurriculumVersionReference(VERSION_2012_PRIMARIA.id, VERSION_2012_PRIMARIA.title),
+    'primaria',
+    'educazioneFisica',
+    'Educazione fisica',
+    {
+      sourceArea: { kind: 'discipline', code: 'in2012-educazione-fisica', label: 'Educazione fisica' },
+      status: 'complete',
+      completeness: 'complete',
+      sourceRefs: [SOURCE_REF],
+      origin: 'normative-source',
+      now: '2026-08-17T00:00:00.000Z',
+    }
+  ),
+];
+
+export const SEGMENTS_2012_SECONDARIA_EDUCAZIONE_FISICA = [
+  createCurriculumSegment(
+    createCurriculumVersionReference(VERSION_2012_SECONDARIA.id, VERSION_2012_SECONDARIA.title),
+    'secondaria',
+    'educazioneFisica',
+    'Educazione fisica',
+    {
+      sourceArea: { kind: 'discipline', code: 'in2012-educazione-fisica', label: 'Educazione fisica' },
+      status: 'complete',
+      completeness: 'complete',
+      sourceRefs: [SOURCE_REF],
+      origin: 'normative-source',
+      now: '2026-08-17T00:00:00.000Z',
+    }
+  ),
+];
+
 export const SEGMENTS_2012_PRIMARIA_TECNOLOGIA = [
   createCurriculumSegment(
     createCurriculumVersionReference(VERSION_2012_PRIMARIA.id, VERSION_2012_PRIMARIA.title),
@@ -869,6 +1055,234 @@ export const NODES_2012_SECONDARIA_TECNOLOGIA = [
   createCurriculumNode(
     createCurriculumVersionReference(VERSION_2012_SECONDARIA.id, VERSION_2012_SECONDARIA.title),
     createSegmentReference(SEGMENTS_2012_SECONDARIA_TECNOLOGIA[0].id, SEGMENTS_2012_SECONDARIA_TECNOLOGIA[0].title),
+    'obiettivo',
+    'Obiettivo - fine secondaria I grado',
+    {
+      status: 'active',
+      provenance: 'normative',
+      sourceRefs: [SOURCE_REF],
+      origin: 'normative-source',
+      now: '2026-08-17T00:00:00.000Z',
+      normativeCheckpoint: 'end-lower-secondary',
+    }
+  ),
+];
+
+export const NODES_2012_PRIMARIA_MUSICA = [
+  createCurriculumNode(
+    createCurriculumVersionReference(VERSION_2012_PRIMARIA.id, VERSION_2012_PRIMARIA.title),
+    createSegmentReference(SEGMENTS_2012_PRIMARIA_MUSICA[0].id, SEGMENTS_2012_PRIMARIA_MUSICA[0].title),
+    'traguardo',
+    'Traguardo - fine primaria',
+    {
+      status: 'active',
+      provenance: 'normative',
+      sourceRefs: [SOURCE_REF],
+      origin: 'normative-source',
+      now: '2026-08-17T00:00:00.000Z',
+      normativeCheckpoint: 'end-primary',
+    }
+  ),
+  createCurriculumNode(
+    createCurriculumVersionReference(VERSION_2012_PRIMARIA.id, VERSION_2012_PRIMARIA.title),
+    createSegmentReference(SEGMENTS_2012_PRIMARIA_MUSICA[0].id, SEGMENTS_2012_PRIMARIA_MUSICA[0].title),
+    'obiettivo',
+    'Obiettivo - classe III',
+    {
+      status: 'active',
+      provenance: 'normative',
+      sourceRefs: [SOURCE_REF],
+      origin: 'normative-source',
+      now: '2026-08-17T00:00:00.000Z',
+      normativeCheckpoint: 'end-primary-grade-3',
+    }
+  ),
+  createCurriculumNode(
+    createCurriculumVersionReference(VERSION_2012_PRIMARIA.id, VERSION_2012_PRIMARIA.title),
+    createSegmentReference(SEGMENTS_2012_PRIMARIA_MUSICA[0].id, SEGMENTS_2012_PRIMARIA_MUSICA[0].title),
+    'obiettivo',
+    'Obiettivo - fine primaria',
+    {
+      status: 'active',
+      provenance: 'normative',
+      sourceRefs: [SOURCE_REF],
+      origin: 'normative-source',
+      now: '2026-08-17T00:00:00.000Z',
+      normativeCheckpoint: 'end-primary',
+    }
+  ),
+];
+
+export const NODES_2012_SECONDARIA_MUSICA = [
+  createCurriculumNode(
+    createCurriculumVersionReference(VERSION_2012_SECONDARIA.id, VERSION_2012_SECONDARIA.title),
+    createSegmentReference(SEGMENTS_2012_SECONDARIA_MUSICA[0].id, SEGMENTS_2012_SECONDARIA_MUSICA[0].title),
+    'traguardo',
+    'Traguardo - fine secondaria I grado',
+    {
+      status: 'active',
+      provenance: 'normative',
+      sourceRefs: [SOURCE_REF],
+      origin: 'normative-source',
+      now: '2026-08-17T00:00:00.000Z',
+      normativeCheckpoint: 'end-lower-secondary',
+    }
+  ),
+  createCurriculumNode(
+    createCurriculumVersionReference(VERSION_2012_SECONDARIA.id, VERSION_2012_SECONDARIA.title),
+    createSegmentReference(SEGMENTS_2012_SECONDARIA_MUSICA[0].id, SEGMENTS_2012_SECONDARIA_MUSICA[0].title),
+    'obiettivo',
+    'Obiettivo - fine secondaria I grado',
+    {
+      status: 'active',
+      provenance: 'normative',
+      sourceRefs: [SOURCE_REF],
+      origin: 'normative-source',
+      now: '2026-08-17T00:00:00.000Z',
+      normativeCheckpoint: 'end-lower-secondary',
+    }
+  ),
+];
+
+export const NODES_2012_PRIMARIA_ARTE = [
+  createCurriculumNode(
+    createCurriculumVersionReference(VERSION_2012_PRIMARIA.id, VERSION_2012_PRIMARIA.title),
+    createSegmentReference(SEGMENTS_2012_PRIMARIA_ARTE[0].id, SEGMENTS_2012_PRIMARIA_ARTE[0].title),
+    'traguardo',
+    'Traguardo - fine primaria',
+    {
+      status: 'active',
+      provenance: 'normative',
+      sourceRefs: [SOURCE_REF],
+      origin: 'normative-source',
+      now: '2026-08-17T00:00:00.000Z',
+      normativeCheckpoint: 'end-primary',
+    }
+  ),
+  createCurriculumNode(
+    createCurriculumVersionReference(VERSION_2012_PRIMARIA.id, VERSION_2012_PRIMARIA.title),
+    createSegmentReference(SEGMENTS_2012_PRIMARIA_ARTE[0].id, SEGMENTS_2012_PRIMARIA_ARTE[0].title),
+    'obiettivo',
+    'Obiettivo - classe III',
+    {
+      status: 'active',
+      provenance: 'normative',
+      sourceRefs: [SOURCE_REF],
+      origin: 'normative-source',
+      now: '2026-08-17T00:00:00.000Z',
+      normativeCheckpoint: 'end-primary-grade-3',
+    }
+  ),
+  createCurriculumNode(
+    createCurriculumVersionReference(VERSION_2012_PRIMARIA.id, VERSION_2012_PRIMARIA.title),
+    createSegmentReference(SEGMENTS_2012_PRIMARIA_ARTE[0].id, SEGMENTS_2012_PRIMARIA_ARTE[0].title),
+    'obiettivo',
+    'Obiettivo - fine primaria',
+    {
+      status: 'active',
+      provenance: 'normative',
+      sourceRefs: [SOURCE_REF],
+      origin: 'normative-source',
+      now: '2026-08-17T00:00:00.000Z',
+      normativeCheckpoint: 'end-primary',
+    }
+  ),
+];
+
+export const NODES_2012_SECONDARIA_ARTE = [
+  createCurriculumNode(
+    createCurriculumVersionReference(VERSION_2012_SECONDARIA.id, VERSION_2012_SECONDARIA.title),
+    createSegmentReference(SEGMENTS_2012_SECONDARIA_ARTE[0].id, SEGMENTS_2012_SECONDARIA_ARTE[0].title),
+    'traguardo',
+    'Traguardo - fine secondaria I grado',
+    {
+      status: 'active',
+      provenance: 'normative',
+      sourceRefs: [SOURCE_REF],
+      origin: 'normative-source',
+      now: '2026-08-17T00:00:00.000Z',
+      normativeCheckpoint: 'end-lower-secondary',
+    }
+  ),
+  createCurriculumNode(
+    createCurriculumVersionReference(VERSION_2012_SECONDARIA.id, VERSION_2012_SECONDARIA.title),
+    createSegmentReference(SEGMENTS_2012_SECONDARIA_ARTE[0].id, SEGMENTS_2012_SECONDARIA_ARTE[0].title),
+    'obiettivo',
+    'Obiettivo - fine secondaria I grado',
+    {
+      status: 'active',
+      provenance: 'normative',
+      sourceRefs: [SOURCE_REF],
+      origin: 'normative-source',
+      now: '2026-08-17T00:00:00.000Z',
+      normativeCheckpoint: 'end-lower-secondary',
+    }
+  ),
+];
+
+export const NODES_2012_PRIMARIA_EDUCAZIONE_FISICA = [
+  createCurriculumNode(
+    createCurriculumVersionReference(VERSION_2012_PRIMARIA.id, VERSION_2012_PRIMARIA.title),
+    createSegmentReference(SEGMENTS_2012_PRIMARIA_EDUCAZIONE_FISICA[0].id, SEGMENTS_2012_PRIMARIA_EDUCAZIONE_FISICA[0].title),
+    'traguardo',
+    'Traguardo - fine primaria',
+    {
+      status: 'active',
+      provenance: 'normative',
+      sourceRefs: [SOURCE_REF],
+      origin: 'normative-source',
+      now: '2026-08-17T00:00:00.000Z',
+      normativeCheckpoint: 'end-primary',
+    }
+  ),
+  createCurriculumNode(
+    createCurriculumVersionReference(VERSION_2012_PRIMARIA.id, VERSION_2012_PRIMARIA.title),
+    createSegmentReference(SEGMENTS_2012_PRIMARIA_EDUCAZIONE_FISICA[0].id, SEGMENTS_2012_PRIMARIA_EDUCAZIONE_FISICA[0].title),
+    'obiettivo',
+    'Obiettivo - classe III',
+    {
+      status: 'active',
+      provenance: 'normative',
+      sourceRefs: [SOURCE_REF],
+      origin: 'normative-source',
+      now: '2026-08-17T00:00:00.000Z',
+      normativeCheckpoint: 'end-primary-grade-3',
+    }
+  ),
+  createCurriculumNode(
+    createCurriculumVersionReference(VERSION_2012_PRIMARIA.id, VERSION_2012_PRIMARIA.title),
+    createSegmentReference(SEGMENTS_2012_PRIMARIA_EDUCAZIONE_FISICA[0].id, SEGMENTS_2012_PRIMARIA_EDUCAZIONE_FISICA[0].title),
+    'obiettivo',
+    'Obiettivo - fine primaria',
+    {
+      status: 'active',
+      provenance: 'normative',
+      sourceRefs: [SOURCE_REF],
+      origin: 'normative-source',
+      now: '2026-08-17T00:00:00.000Z',
+      normativeCheckpoint: 'end-primary',
+    }
+  ),
+];
+
+export const NODES_2012_SECONDARIA_EDUCAZIONE_FISICA = [
+  createCurriculumNode(
+    createCurriculumVersionReference(VERSION_2012_SECONDARIA.id, VERSION_2012_SECONDARIA.title),
+    createSegmentReference(SEGMENTS_2012_SECONDARIA_EDUCAZIONE_FISICA[0].id, SEGMENTS_2012_SECONDARIA_EDUCAZIONE_FISICA[0].title),
+    'traguardo',
+    'Traguardo - fine secondaria I grado',
+    {
+      status: 'active',
+      provenance: 'normative',
+      sourceRefs: [SOURCE_REF],
+      origin: 'normative-source',
+      now: '2026-08-17T00:00:00.000Z',
+      normativeCheckpoint: 'end-lower-secondary',
+    }
+  ),
+  createCurriculumNode(
+    createCurriculumVersionReference(VERSION_2012_SECONDARIA.id, VERSION_2012_SECONDARIA.title),
+    createSegmentReference(SEGMENTS_2012_SECONDARIA_EDUCAZIONE_FISICA[0].id, SEGMENTS_2012_SECONDARIA_EDUCAZIONE_FISICA[0].title),
     'obiettivo',
     'Obiettivo - fine secondaria I grado',
     {
@@ -1202,6 +1616,9 @@ export const fixture2012 = {
   SEGMENTS_2012_PRIMARIA_MATEMATICA,
   SEGMENTS_2012_PRIMARIA_SCIENZE,
   SEGMENTS_2012_PRIMARIA_TECNOLOGIA,
+  SEGMENTS_2012_PRIMARIA_MUSICA,
+  SEGMENTS_2012_PRIMARIA_ARTE,
+  SEGMENTS_2012_PRIMARIA_EDUCAZIONE_FISICA,
   SEGMENTS_2012_SECONDARIA,
   SEGMENTS_2012_SECONDARIA_INGLESE,
   SEGMENTS_2012_SECONDARIA_SECONDA_LINGUA,
@@ -1210,6 +1627,9 @@ export const fixture2012 = {
   SEGMENTS_2012_SECONDARIA_MATEMATICA,
   SEGMENTS_2012_SECONDARIA_SCIENZE,
   SEGMENTS_2012_SECONDARIA_TECNOLOGIA,
+  SEGMENTS_2012_SECONDARIA_MUSICA,
+  SEGMENTS_2012_SECONDARIA_ARTE,
+  SEGMENTS_2012_SECONDARIA_EDUCAZIONE_FISICA,
   NODES_2012_INFANZIA,
   NODES_2012_PRIMARIA,
   NODES_2012_PRIMARIA_INGLESE,
@@ -1219,6 +1639,9 @@ export const fixture2012 = {
   NODES_2012_PRIMARIA_MATEMATICA,
   NODES_2012_PRIMARIA_SCIENZE,
   NODES_2012_PRIMARIA_TECNOLOGIA,
+  NODES_2012_PRIMARIA_MUSICA,
+  NODES_2012_PRIMARIA_ARTE,
+  NODES_2012_PRIMARIA_EDUCAZIONE_FISICA,
   NODES_2012_SECONDARIA,
   NODES_2012_SECONDARIA_INGLESE,
   NODES_2012_SECONDARIA_SECONDA_LINGUA,
@@ -1227,6 +1650,9 @@ export const fixture2012 = {
   NODES_2012_SECONDARIA_MATEMATICA,
   NODES_2012_SECONDARIA_SCIENZE,
   NODES_2012_SECONDARIA_TECNOLOGIA,
+  NODES_2012_SECONDARIA_MUSICA,
+  NODES_2012_SECONDARIA_ARTE,
+  NODES_2012_SECONDARIA_EDUCAZIONE_FISICA,
 };
 
 export type Fixture2012 = typeof fixture2012;

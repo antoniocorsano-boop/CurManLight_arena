@@ -31,7 +31,7 @@ describe('CURR-R1B — National Curriculum Read Model', () => {
 
   it('does not filter discipline when disciplineCode is omitted', () => {
     const segments = readModel.listSegments({});
-    expect(segments).toHaveLength(7);
+    expect(segments).toHaveLength(23);
   });
 
   it('filters by sourceAreaKind=experience-field', () => {

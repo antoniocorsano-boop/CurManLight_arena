@@ -42,4 +42,19 @@ describe('CURR-R1E — 2012 Normative Corpus Completeness', () => {
     expect(tecnologiaPrimaria).toBeDefined();
     expect(tecnologiaSecondaria).toBeDefined();
   });
+
+  it('includes music, art, and physical education disciplines for primaria and secondaria', () => {
+    const musicaPrimaria = fixture2012.SEGMENTS_2012_PRIMARIA.find(s => s.disciplineCode === 'musica');
+    const musicaSecondaria = fixture2012.SEGMENTS_2012_SECONDARIA.find(s => s.disciplineCode === 'musica');
+    const artePrimaria = fixture2012.SEGMENTS_2012_PRIMARIA.find(s => s.disciplineCode === 'arteImmagine');
+    const arteSecondaria = fixture2012.SEGMENTS_2012_SECONDARIA.find(s => s.disciplineCode === 'arteImmagine');
+    const educazioneFisicaPrimaria = fixture2012.SEGMENTS_2012_PRIMARIA.find(s => s.disciplineCode === 'educazioneFisica');
+    const educazioneFisicaSecondaria = fixture2012.SEGMENTS_2012_SECONDARIA.find(s => s.disciplineCode === 'educazioneFisica');
+    expect(musicaPrimaria).toBeDefined();
+    expect(musicaSecondaria).toBeDefined();
+    expect(artePrimaria).toBeDefined();
+    expect(arteSecondaria).toBeDefined();
+    expect(educazioneFisicaPrimaria).toBeDefined();
+    expect(educazioneFisicaSecondaria).toBeDefined();
+  });
 });
