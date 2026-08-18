@@ -51,12 +51,12 @@ describe('CURR-R1C — National Curriculum Consultation Boundary', () => {
 
   it('filters content by schoolOrder', () => {
     const items = service.listContent({ schoolOrder: 'infanzia' });
-    expect(items).toHaveLength(7);
+    expect(items).toHaveLength(5);
   });
 
   it('filters content by disciplineCode=null explicitly', () => {
     const items = service.listContent({ disciplineCode: null });
-    expect(items).toHaveLength(7);
+    expect(items).toHaveLength(5);
     for (const item of items) {
       expect(item.schoolOrder).toBe('infanzia');
     }

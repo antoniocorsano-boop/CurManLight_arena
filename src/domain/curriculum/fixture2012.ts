@@ -547,7 +547,9 @@ export const SEGMENTS_2012_SECONDARIA = [
   ),
 ];
 
-export const NODES_2012_INFANZIA = SEGMENTS_2012_INFANZIA.map((segment) =>
+export const NODES_2012_INFANZIA = SEGMENTS_2012_INFANZIA.filter(
+  segment => segment.sourceArea?.kind === 'experience-field'
+).map((segment) =>
   createCurriculumNode(
     createCurriculumVersionReference(VERSION_2012_INFANZIA.id, VERSION_2012_INFANZIA.title),
     createSegmentReference(segment.id, segment.title),

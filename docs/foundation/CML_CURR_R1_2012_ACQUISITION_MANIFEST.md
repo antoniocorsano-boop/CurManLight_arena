@@ -155,10 +155,15 @@ These gaps are explicitly recorded in `fixture2012.representationGaps`.
 | R1E-2 — Area storico-geografica | SOURCE_VERIFIED | Storia and Geografia source-native segments, milestones, provenance, and lot tests verified. |
 | R1E-3 — Area matematico-scientifico-tecnologica | SOURCE_VERIFIED | Matematica, Scienze, and Tecnologia source-native segments, milestones, provenance, and lot tests verified. No synthetic nuclei or curriculumKB-style reinterpretation introduced for Tecnologia. |
 | R1E-4 — Linguaggi espressivi e corporei | SOURCE_VERIFIED | Musica, Arte e immagine, and Educazione fisica source-native segments, milestones, provenance, and lot tests verified. Discipline codes normalized to `arte` and `educazione-fisica`; no invented disciplines or infanzia-style experience fields introduced. |
+| R1E-5 — Sezioni comuni / trasversali / narrative | SOURCE_VERIFIED | Common, transversal, and narrative sections verified as source-native `general-section` or `transversal-area` segments. No synthetic `traguardo`/`obiettivo` nodes invented for narrative text. `Cittadinanza e Costituzione` retained as transversal without `educazioneCivica` retro-mapping. Representation gaps for macrostructure and narrative framing remain explicitly recorded. |
 
 ### R1E-2 representation note
 
 The current canonical model preserves the primary→lower-secondary historical narrative sequence implicitly through source-native segment and node ordering. No explicit synthetic link nodes were introduced, and no forced temporal bridge was added between `NODES_2012_PRIMARIA_STORIA` and `NODES_2012_SECONDARIA_STORIA`. If a future requirement needs explicit cross-order narrative linkage, it must be modelled as an additive representation rather than retrofitted into the national source layer.
+
+### R1E-5 representation note
+
+Narrative and common sections are preserved as `CurriculumSegment` records with `sourceArea.kind` set to `general-section` or `transversal-area`. They do not generate synthetic `CurriculumNode` entries of type `traguardo` or `obiettivo`, because the official 2012 source assigns them an orientation/narrative role, not a competence-target role. This keeps the national source layer faithful and avoids inventing checkpoints where the source does not define them.
 
 ## I. Next acquisition order
 

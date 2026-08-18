@@ -48,7 +48,7 @@ describe('CURR-R1B — National Curriculum Read Model', () => {
     const result = readModel.getVersion(fixture2012.VERSION_2012_INFANZIA.id);
     expect(result).toBeDefined();
     expect(result!.segments).toHaveLength(7);
-    expect(result!.nodes).toHaveLength(7);
+    expect(result!.nodes).toHaveLength(5);
   });
 
   it('getVersion returns undefined for unknown ID', () => {
