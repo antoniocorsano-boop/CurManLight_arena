@@ -2,7 +2,7 @@
 
 > **Source:** D.M. 16 novembre 2012, n. 254 — official Gazzetta Ufficiale annex
 > **Source ID:** `national-2012|dm-254-2012`
-> **Status:** VERIFIED
+> **Status:** PARTIALLY_VERIFIED
 > **Rule:** source completeness is structural + textual + provenance-based, never inferred from node counts alone.
 
 Legend:
@@ -147,6 +147,12 @@ The following source-native parts cannot be represented in the current domain mo
 
 These gaps are explicitly recorded in `fixture2012.representationGaps`.
 
+## K. Completed lots
+
+| Lot | Status | Notes |
+|---|---|---|
+| R1E-1 — Lingue | SOURCE_VERIFIED | English and second community language structure, milestones, provenance, and lot tests verified. |
+
 ## I. Next acquisition order
 
 1. Normalize the five fields of experience and their end-of-infanzia competence targets.
@@ -157,6 +163,6 @@ These gaps are explicitly recorded in `fixture2012.representationGaps`.
 
 Current gate:
 
-`CURR_R1_2012_NORMATIVE_COMPLETENESS = VERIFIED`
+`CURR_R1_2012_NORMATIVE_COMPLETENESS = PARTIALLY_VERIFIED`
 
 `CURR_R1_2012_CANONICAL_INGESTION = PENDING`
