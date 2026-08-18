@@ -2,7 +2,7 @@
 
 > **Source:** D.M. 16 novembre 2012, n. 254 — official Gazzetta Ufficiale annex
 > **Source ID:** `national-2012|dm-254-2012`
-> **Status:** IN PROGRESS
+> **Status:** VERIFIED
 > **Rule:** source completeness is structural + textual + provenance-based, never inferred from node counts alone.
 
 Legend:
@@ -157,6 +157,6 @@ These gaps are explicitly recorded in `fixture2012.representationGaps`.
 
 Current gate:
 
-`CURR_R1_2012_SOURCE_STRUCTURE = VERIFIED_FOR_GENERAL_INFANZIA_ITALIANO_TRASVERSAL`
+`CURR_R1_2012_NORMATIVE_COMPLETENESS = VERIFIED`
 
 `CURR_R1_2012_CANONICAL_INGESTION = PENDING`

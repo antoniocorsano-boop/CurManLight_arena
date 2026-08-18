@@ -36,7 +36,7 @@ describe('CURR-R1C — National Curriculum Consultation Boundary', () => {
     const areas = service.listAreas('IN2012', 'primaria');
     expect(areas).toHaveLength(13);
     expect(areas[0].kind).toBe('discipline');
-    expect(areas[0].disciplineCode).toBe('arteImmagine');
+    expect(areas[0].disciplineCode).toBe('arte');
   });
 
   it('lists content with default query', () => {

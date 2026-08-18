@@ -279,7 +279,7 @@ export const SEGMENTS_2012_PRIMARIA = [
   createCurriculumSegment(
     createCurriculumVersionReference(VERSION_2012_PRIMARIA.id, VERSION_2012_PRIMARIA.title),
     'primaria',
-    'arteImmagine',
+    'arte',
     'Arte e immagine',
     {
       sourceArea: { kind: 'discipline', code: 'in2012-arte-immagine', label: 'Arte e immagine' },
@@ -293,7 +293,7 @@ export const SEGMENTS_2012_PRIMARIA = [
   createCurriculumSegment(
     createCurriculumVersionReference(VERSION_2012_PRIMARIA.id, VERSION_2012_PRIMARIA.title),
     'primaria',
-    'educazioneFisica',
+    'educazione-fisica',
     'Educazione fisica',
     {
       sourceArea: { kind: 'discipline', code: 'in2012-educazione-fisica', label: 'Educazione fisica' },
@@ -464,7 +464,7 @@ export const SEGMENTS_2012_SECONDARIA = [
   createCurriculumSegment(
     createCurriculumVersionReference(VERSION_2012_SECONDARIA.id, VERSION_2012_SECONDARIA.title),
     'secondaria',
-    'arteImmagine',
+    'arte',
     'Arte e immagine',
     {
       sourceArea: { kind: 'discipline', code: 'in2012-arte-immagine', label: 'Arte e immagine' },
@@ -478,7 +478,7 @@ export const SEGMENTS_2012_SECONDARIA = [
   createCurriculumSegment(
     createCurriculumVersionReference(VERSION_2012_SECONDARIA.id, VERSION_2012_SECONDARIA.title),
     'secondaria',
-    'educazioneFisica',
+    'educazione-fisica',
     'Educazione fisica',
     {
       sourceArea: { kind: 'discipline', code: 'in2012-educazione-fisica', label: 'Educazione fisica' },
@@ -882,7 +882,7 @@ export const SEGMENTS_2012_PRIMARIA_ARTE = [
   createCurriculumSegment(
     createCurriculumVersionReference(VERSION_2012_PRIMARIA.id, VERSION_2012_PRIMARIA.title),
     'primaria',
-    'arteImmagine',
+    'arte',
     'Arte e immagine',
     {
       sourceArea: { kind: 'discipline', code: 'in2012-arte-immagine', label: 'Arte e immagine' },
@@ -899,7 +899,7 @@ export const SEGMENTS_2012_SECONDARIA_ARTE = [
   createCurriculumSegment(
     createCurriculumVersionReference(VERSION_2012_SECONDARIA.id, VERSION_2012_SECONDARIA.title),
     'secondaria',
-    'arteImmagine',
+    'arte',
     'Arte e immagine',
     {
       sourceArea: { kind: 'discipline', code: 'in2012-arte-immagine', label: 'Arte e immagine' },
@@ -916,7 +916,7 @@ export const SEGMENTS_2012_PRIMARIA_EDUCAZIONE_FISICA = [
   createCurriculumSegment(
     createCurriculumVersionReference(VERSION_2012_PRIMARIA.id, VERSION_2012_PRIMARIA.title),
     'primaria',
-    'educazioneFisica',
+    'educazione-fisica',
     'Educazione fisica',
     {
       sourceArea: { kind: 'discipline', code: 'in2012-educazione-fisica', label: 'Educazione fisica' },
@@ -933,7 +933,7 @@ export const SEGMENTS_2012_SECONDARIA_EDUCAZIONE_FISICA = [
   createCurriculumSegment(
     createCurriculumVersionReference(VERSION_2012_SECONDARIA.id, VERSION_2012_SECONDARIA.title),
     'secondaria',
-    'educazioneFisica',
+    'educazione-fisica',
     'Educazione fisica',
     {
       sourceArea: { kind: 'discipline', code: 'in2012-educazione-fisica', label: 'Educazione fisica' },
