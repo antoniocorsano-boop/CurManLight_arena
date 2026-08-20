@@ -19,6 +19,7 @@ export type GapContinuityFindingType =
 export type StructuralFactCategory =
   | 'checkpoint-difference'
   | 'nodeType-difference'
+  | 'area-difference'
   | 'conditional-applicability';
 
 export type UnresolvedStructuralCaseCategory = 'split' | 'merge';
@@ -96,12 +97,14 @@ export interface CurriculumGapContinuityReport {
 const STRUCTURAL_CATEGORY_ORDER: Record<StructuralFactCategory, number> = {
   'checkpoint-difference': 0,
   'nodeType-difference': 1,
-  'conditional-applicability': 2,
+  'area-difference': 2,
+  'conditional-applicability': 3,
 };
 
 function structuralCategory(difference: StructuralDifference): StructuralFactCategory | undefined {
   if (difference.kind.startsWith('checkpoint-')) return 'checkpoint-difference';
   if (difference.kind.startsWith('node-type-')) return 'nodeType-difference';
+  if (difference.kind.startsWith('area-only-')) return 'area-difference';
   if (difference.kind === 'applicability-difference') return 'conditional-applicability';
   return undefined;
 }
@@ -114,6 +117,41 @@ function areaCodeFor(
   if (areaRef === undefined) return undefined;
   const side = frameworkId === comparison.left.frameworkId ? comparison.left : comparison.right;
   return side.areas.find(area => area.id === areaRef)?.code ?? areaRef;
+}
+
+function firstArea(comparison: NationalCurriculumComparisonResult, frameworkId: string) {
+  const side = frameworkId === comparison.left.frameworkId ? comparison.left : comparison.right;
+  return [...side.areas].sort((a, b) => a.id.localeCompare(b.id))[0];
+}
+
+function firstItemAreaCode(comparison: NationalCurriculumComparisonResult, frameworkId: string): string | undefined {
+  const side = frameworkId === comparison.left.frameworkId ? comparison.left : comparison.right;
+  const codes = [
+    ...side.items.map(item => item.sourceAreaCode),
+    ...Object.values(side.itemSourceAreaCodes ?? {}),
+  ].filter((value): value is string => value !== undefined);
+  return [...new Set(codes)].sort((a, b) => a.localeCompare(b))[0];
+}
+
+function derivedAreaReference(
+  comparison: NationalCurriculumComparisonResult,
+  frameworkId: string,
+  areaRef: string | undefined,
+): { ref: string | undefined; code: string | undefined } {
+  if (areaRef !== undefined) {
+    return { ref: areaRef, code: areaCodeFor(comparison, frameworkId, areaRef) };
+  }
+  const area = firstArea(comparison, frameworkId);
+  return {
+    ref: area?.id,
+    code: area?.code ?? firstItemAreaCode(comparison, frameworkId),
+  };
+}
+
+function differenceSides(difference: StructuralDifference): { left: boolean; right: boolean } {
+  if (difference.kind.endsWith('-left')) return { left: true, right: false };
+  if (difference.kind.endsWith('-right')) return { left: false, right: true };
+  return { left: difference.leftRef !== undefined, right: difference.rightRef !== undefined };
 }
 
 function sideNodeMap(items: ContentItem[]): Map<string, ContentItem> {
@@ -199,19 +237,22 @@ export function createCurriculumGapContinuityReport(
     .sort((a, b) => STRUCTURAL_CATEGORY_ORDER[a.category] - STRUCTURAL_CATEGORY_ORDER[b.category]);
 
   for (const { difference, category } of structuralFacts) {
+    const sides = differenceSides(difference);
+    const leftArea = sides.left ? derivedAreaReference(comparison, comparison.left.frameworkId, difference.leftRef) : { ref: undefined, code: undefined };
+    const rightArea = sides.right ? derivedAreaReference(comparison, comparison.right.frameworkId, difference.rightRef) : { ref: undefined, code: undefined };
     const frameworks = [
-      difference.leftRef !== undefined ? comparison.left.frameworkId : undefined,
-      difference.rightRef !== undefined ? comparison.right.frameworkId : undefined,
+      sides.left ? comparison.left.frameworkId : undefined,
+      sides.right ? comparison.right.frameworkId : undefined,
     ].filter((value): value is string => value !== undefined);
     findings.push({
       type: 'structural-fact',
       category,
       frameworks,
       references: {
-        leftAreaRef: difference.leftRef,
-        rightAreaRef: difference.rightRef,
-        leftAreaCode: areaCodeFor(comparison, comparison.left.frameworkId, difference.leftRef),
-        rightAreaCode: areaCodeFor(comparison, comparison.right.frameworkId, difference.rightRef),
+        leftAreaRef: leftArea.ref,
+        rightAreaRef: rightArea.ref,
+        leftAreaCode: leftArea.code,
+        rightAreaCode: rightArea.code,
       },
       evidence: [difference],
       provenance: { sources: ['R4A'], method: 'deterministic-structural-analysis' },

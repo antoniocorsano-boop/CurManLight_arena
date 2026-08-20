@@ -58,8 +58,10 @@ function comparison(leftItems: ContentItem[], rightItems: ContentItem[]): Nation
       itemSourceAreaCodes: Object.fromEntries(rightItems.map(value => [value.id, value.sourceAreaCode])),
     },
     structuralDifferences: [
-      { kind: 'checkpoint-only-right', description: 'checkpoint 2025', rightRef: 'area-right' },
-      { kind: 'node-type-only-left', description: 'traguardo only 2012', leftRef: 'left-unmatched' },
+      { kind: 'checkpoint-only-right', description: 'checkpoint 2025' },
+      { kind: 'node-type-only-left', description: 'traguardo only 2012' },
+      { kind: 'area-only-left', description: 'area only 2012', leftRef: 'area-left' },
+      { kind: 'area-only-right', description: 'area only 2025', rightRef: 'area-right' },
       { kind: 'applicability-difference', description: 'conditional area', leftRef: 'area-left', rightRef: 'area-right' },
     ],
   };
@@ -76,6 +78,8 @@ describe('CURR-R4D-A gap / continuity report domain', () => {
 
     expect(result.scope).toEqual(scope);
     expect(result.findings.map(finding => finding.type)).toEqual([
+      'structural-fact',
+      'structural-fact',
       'structural-fact',
       'structural-fact',
       'structural-fact',
@@ -101,8 +105,38 @@ describe('CURR-R4D-A gap / continuity report domain', () => {
     const result = createCurriculumGapContinuityReport(comparison([], []), [], {});
     const facts = result.findings.filter((finding): finding is Extract<CurriculumGapContinuityFinding, { type: 'structural-fact' }> => finding.type === 'structural-fact');
 
-    expect(facts.map(fact => fact.category)).toEqual(['checkpoint-difference', 'nodeType-difference', 'conditional-applicability']);
+    expect(facts.map(fact => fact.category)).toEqual([
+      'checkpoint-difference',
+      'nodeType-difference',
+      'area-difference',
+      'area-difference',
+      'conditional-applicability',
+    ]);
     expect(facts.every(fact => fact.provenance.sources.includes('R4A'))).toBe(true);
+
+    expect(facts[0]).toMatchObject({
+      frameworks: ['IN2025'],
+      references: { rightAreaRef: 'area-right', rightAreaCode: 'area-2025' },
+    });
+    expect(facts[1]).toMatchObject({
+      frameworks: ['IN2012'],
+      references: { leftAreaRef: 'area-left', leftAreaCode: 'area-2012' },
+    });
+  });
+
+  it('keeps valid area-only structural differences as sourced findings', () => {
+    const result = createCurriculumGapContinuityReport(comparison([], []), [], {});
+    const areaFacts = result.findings.filter(
+      (finding): finding is Extract<CurriculumGapContinuityFinding, { type: 'structural-fact' }> =>
+        finding.type === 'structural-fact' && finding.category === 'area-difference',
+    );
+
+    expect(areaFacts).toHaveLength(2);
+    expect(areaFacts.map(fact => [fact.frameworks, fact.references])).toEqual([
+      [['IN2012'], { leftAreaRef: 'area-left', leftAreaCode: 'area-2012', rightAreaCode: undefined, rightAreaRef: undefined }],
+      [['IN2025'], { leftAreaCode: undefined, leftAreaRef: undefined, rightAreaRef: 'area-right', rightAreaCode: 'area-2025' }],
+    ]);
+    expect(areaFacts.every(fact => fact.provenance.sources.includes('R4A'))).toBe(true);
   });
 
   it('reports one-to-many and many-to-one candidate shapes as unresolved gaps, never as resolved mappings', () => {
