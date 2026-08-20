@@ -1,10 +1,20 @@
 import { fireEvent, render, screen, within } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
-import { createNationalCurriculumComparisonService } from '../../domain/curriculum/nationalCurriculumComparison';
-import { createSemanticMappingCandidateService } from '../../domain/curriculum/nationalCurriculumSemanticCandidates';
+import { describe, expect, it, vi } from 'vitest';
+import type { ContentItem } from '../../domain/curriculum/nationalCurriculumConsultation';
+import {
+  createNationalCurriculumComparisonService,
+  type NationalCurriculumComparisonResult,
+  type NationalCurriculumComparisonService,
+} from '../../domain/curriculum/nationalCurriculumComparison';
+import {
+  createSemanticMappingCandidateService,
+  type SemanticMappingCandidate,
+  type SemanticMappingCandidateService,
+} from '../../domain/curriculum/nationalCurriculumSemanticCandidates';
 import {
   buildComparisonReviewModel,
   createReviewScope,
+  type ReviewScope,
 } from '../../features/curriculum/components/curriculumComparisonReviewModel';
 import { CurriculumComparisonReviewView } from '../../features/curriculum/components/CurriculumComparisonReviewView';
 
@@ -20,14 +30,96 @@ const primaryItalianComparison = comparisonService.compare('IN2012', 'IN2025', p
 const primaryItalianCandidates = candidateService.generateCandidates('IN2012', 'IN2025', primaryItalianScope);
 const primaryItalianModel = buildComparisonReviewModel(primaryItalianComparison, primaryItalianCandidates);
 
-function renderReview(initialScope = primaryItalianScope) {
-  return render(
-    <CurriculumComparisonReviewView
-      comparisonService={comparisonService}
-      candidateService={candidateService}
-      initialScope={initialScope}
-    />,
-  );
+type ReadOnlyReviewProps = Readonly<{
+  comparisonService: NationalCurriculumComparisonService;
+  candidateService: SemanticMappingCandidateService;
+  scope: ReviewScope;
+}>;
+
+function renderReview(scope: ReviewScope = primaryItalianScope) {
+  const props: ReadOnlyReviewProps = Object.freeze({ comparisonService, candidateService, scope });
+  return render(<CurriculumComparisonReviewView {...props} />);
+}
+
+function contentItem(
+  id: string,
+  text: string,
+  framework: 'IN2012' | 'IN2025',
+  normativeNodeKind?: ContentItem['normativeNodeKind'],
+): ContentItem {
+  return {
+    id,
+    text,
+    nodeType: framework === 'IN2025' ? 'competenza' : 'traguardo',
+    normativeCheckpoint: 'end-primary',
+    normativeNodeKind,
+    schoolOrder: 'primaria',
+    disciplineCode: 'italiano',
+    sourceAreaKind: 'discipline',
+  };
+}
+
+function candidate(
+  id: string,
+  leftNodeId: string,
+  rightNodeId: string,
+  confidence: SemanticMappingCandidate['confidence'],
+  rightNormativeNodeKind?: SemanticMappingCandidate['right']['normativeNodeKind'],
+): SemanticMappingCandidate {
+  return {
+    id,
+    left: {
+      frameworkId: 'IN2012',
+      nodeId: leftNodeId,
+      schoolOrder: 'primaria',
+      disciplineCode: 'italiano',
+      normativeCheckpoint: 'end-primary',
+      normativeNodeKind: 'objective-2012',
+    },
+    right: {
+      frameworkId: 'IN2025',
+      nodeId: rightNodeId,
+      schoolOrder: 'primaria',
+      disciplineCode: 'italiano',
+      normativeCheckpoint: 'end-primary',
+      normativeNodeKind: rightNormativeNodeKind,
+    },
+    relationKind: 'unclassified-correspondence',
+    evidence: [],
+    confidence,
+    status: 'candidate',
+    generatedBy: 'deterministic-structural-analysis',
+  };
+}
+
+function customReviewServices(candidates: SemanticMappingCandidate[]) {
+  const left = contentItem('opaque-left-node-17', 'Testo sinistro non identificativo', 'IN2012', 'objective-2012');
+  const right = contentItem('opaque-right-node-42', 'Testo destro non identificativo', 'IN2025', 'osa-2025');
+  const comparison: NationalCurriculumComparisonResult = {
+    left: { frameworkId: 'IN2012', areas: [], items: [left] },
+    right: { frameworkId: 'IN2025', areas: [], items: [right] },
+    structuralDifferences: [],
+  };
+  const customComparisonService: NationalCurriculumComparisonService = {
+    compare: vi.fn(() => comparison),
+  };
+  const customCandidateService: SemanticMappingCandidateService = {
+    generateCandidates: vi.fn(() => candidates),
+  };
+  return { comparison, customComparisonService, customCandidateService, left, right };
+}
+
+function renderCustomReview(candidates: SemanticMappingCandidate[] = [
+  candidate('candidate-opaque', 'opaque-left-node-17', 'opaque-right-node-42', 'medium', 'osa-2025'),
+]) {
+  const services = customReviewServices(candidates);
+  const props: ReadOnlyReviewProps = Object.freeze({
+    comparisonService: services.customComparisonService,
+    candidateService: services.customCandidateService,
+    scope: primaryItalianScope,
+  });
+  render(<CurriculumComparisonReviewView {...props} />);
+  return services;
 }
 
 describe('CURR-R4C Task 2 — comparison review UI contract', () => {
@@ -62,49 +154,62 @@ describe('CURR-R4C Task 2 — comparison review UI contract', () => {
   it('opens candidate details only after the user selects a candidate', () => {
     renderReview();
     const first = primaryItalianModel.candidates[0];
-
-    expect(first.left?.text).toBeTruthy();
-    expect(screen.queryByText(first.left!.text)).toBeInTheDocument();
-    expect(screen.queryByText(first.right!.text)).toBeInTheDocument();
-
     const candidateButton = screen.getByRole('button', { name: new RegExp(first.left!.text.slice(0, 24)) });
+
+    expect(screen.getByText(/seleziona un candidato/i)).toBeInTheDocument();
     fireEvent.click(candidateButton);
 
     expect(screen.getByText(first.left!.text)).toBeInTheDocument();
     expect(screen.getByText(first.right!.text)).toBeInTheDocument();
   });
 
-  it('does not auto-select or rank candidates by confidence', () => {
-    renderReview();
+  it('preserves input order for high and low candidates and never auto-selects one', () => {
+    const high = candidate('candidate-high', 'opaque-left-node-17', 'opaque-right-node-42', 'high');
+    const low = candidate('candidate-low', 'opaque-left-node-17', 'opaque-right-node-42', 'low');
+    renderCustomReview([high, low]);
 
+    const buttons = screen.getAllByRole('button', { name: /candidate-(high|low)/i });
+    expect(buttons.map(button => button.getAttribute('data-candidate-id'))).toEqual(['candidate-high', 'candidate-low']);
+    expect(buttons.every(button => button.getAttribute('aria-pressed') !== 'true')).toBe(true);
     expect(screen.getByText(/seleziona un candidato/i)).toBeInTheDocument();
-    expect(screen.queryByText(/ordinati per confidenza|ranking|classifica/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/ranking|classifica|ordinati per confidenza/i)).not.toBeInTheDocument();
   });
 
   it('resets the inspector selection when the review scope changes', () => {
     renderReview();
     const first = primaryItalianModel.candidates[0];
-    const candidateButton = screen.getByRole('button', { name: new RegExp(first.left!.text.slice(0, 24)) });
-    fireEvent.click(candidateButton);
+    fireEvent.click(screen.getByRole('button', { name: new RegExp(first.left!.text.slice(0, 24)) }));
     expect(screen.getByText(first.right!.text)).toBeInTheDocument();
 
-    const orderSelect = screen.getByRole('combobox', { name: /ordine/i });
-    fireEvent.change(orderSelect, { target: { value: 'secondaria' } });
+    fireEvent.change(screen.getByRole('combobox', { name: /ordine/i }), { target: { value: 'secondaria' } });
 
     expect(screen.getByText(/seleziona un candidato/i)).toBeInTheDocument();
   });
 
-  it('highlights joined endpoints by node identity without exposing nodeId as content', () => {
-    renderReview();
-    const first = primaryItalianModel.candidates[0];
-    const candidateButton = screen.getByRole('button', { name: new RegExp(first.left!.text.slice(0, 24)) });
+  it('joins and highlights endpoints by opaque nodeId, not by candidate id or visible text', () => {
+    const services = renderCustomReview();
+    const button = screen.getByRole('button', { name: /candidate-opaque/i });
 
-    fireEvent.click(candidateButton);
+    expect(button).toHaveAttribute('data-candidate-id', 'candidate-opaque');
+    expect(screen.queryByText('opaque-left-node-17')).not.toBeInTheDocument();
+    expect(screen.queryByText('opaque-right-node-42')).not.toBeInTheDocument();
 
-    expect(candidateButton).toHaveAttribute('aria-pressed', 'true');
-    expect(screen.queryByText(first.candidate.left.nodeId!)).not.toBeInTheDocument();
-    expect(screen.queryByText(first.candidate.right.nodeId!)).not.toBeInTheDocument();
-    expect(screen.getByText(first.left!.text)).toBeInTheDocument();
+    fireEvent.click(button);
+
+    expect(button).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByText(services.left.text)).toHaveAttribute('data-node-id', services.left.id);
+    expect(screen.getByText(services.right.text)).toHaveAttribute('data-node-id', services.right.id);
+    expect(screen.getByText(services.left.text)).toHaveAttribute('data-framework-id', 'IN2012');
+    expect(screen.getByText(services.right.text)).toHaveAttribute('data-framework-id', 'IN2025');
+  });
+
+  it('renders normativeNodeKind osa-2025 as normative metadata, not only as text', () => {
+    const services = renderCustomReview();
+    fireEvent.click(screen.getByRole('button', { name: /candidate-opaque/i }));
+
+    const rightEndpoint = screen.getByText(services.right.text);
+    expect(rightEndpoint).toHaveAttribute('data-normative-node-kind', 'osa-2025');
+    expect(within(rightEndpoint.parentElement as HTMLElement).getByText(/OSA 2025/i)).toBeInTheDocument();
   });
 
   it('keeps Strumento musicale structural-only and marks 2025 normative nodes explicitly as OSA', () => {
@@ -131,6 +236,32 @@ describe('CURR-R4C Task 2 — comparison review UI contract', () => {
     expect(screen.getByText(/nessuna differenza strutturale/i)).toBeInTheDocument();
   });
 
+  it('switches between wide two-column and narrow sequential layout at the responsive boundary', () => {
+    const originalMatchMedia = window.matchMedia;
+    let wide = true;
+    window.matchMedia = vi.fn((query: string) => ({
+      matches: wide && query.includes('min-width'),
+      media: query,
+      onchange: null,
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      dispatchEvent: vi.fn(),
+    })) as typeof window.matchMedia;
+
+    try {
+      renderReview();
+      expect(screen.getByTestId('curriculum-comparison-review-layout')).toHaveAttribute('data-layout', 'wide-two-column');
+
+      wide = false;
+      fireEvent(window, new Event('resize'));
+      expect(screen.getByTestId('curriculum-comparison-review-layout')).toHaveAttribute('data-layout', 'narrow-sequential');
+    } finally {
+      window.matchMedia = originalMatchMedia;
+    }
+  });
+
   it('exposes responsive labels and accessible controls', () => {
     renderReview();
 
@@ -140,12 +271,9 @@ describe('CURR-R4C Task 2 — comparison review UI contract', () => {
     expect(within(screen.getByRole('region', { name: /ispettore|inspector/i })).getByText(/candidati semantici/i)).toBeInTheDocument();
   });
 
-  it('does not expose approval, persistence, or CurriculumLink actions', () => {
+  it('accepts only readonly comparison inputs and exposes no write-boundary actions', () => {
     renderReview();
 
-    expect(screen.queryByRole('button', { name: /approva/i })).not.toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: /salva relazione/i })).not.toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: /accetta mapping/i })).not.toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: /crea link|curriculumlink/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /approva|salva|crea link|curriculumlink|accetta mapping/i })).not.toBeInTheDocument();
   });
 });
