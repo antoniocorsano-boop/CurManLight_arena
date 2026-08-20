@@ -80,6 +80,14 @@ describe('curriculum comparison review model (CURR-R4C Task 1)', () => {
     expect(model.selectedCandidateId).toBeNull();
   });
 
+  it('fails closed to no selection when selectedCandidateId is omitted or null', () => {
+    const items = comparison([contentItem('left-1', 'a')], [contentItem('right-1', 'a')]);
+    const mapped = [candidate('candidate-1', 'left-1', 'right-1')];
+
+    expect(buildComparisonReviewModel(items, mapped).selectedCandidateId).toBeNull();
+    expect(buildComparisonReviewModel(items, mapped, null).selectedCandidateId).toBeNull();
+  });
+
   it('preserves distinct source-native area codes in review scope', () => {
     expect(createReviewScope({
       schoolOrder: 'primaria',
@@ -96,9 +104,26 @@ describe('curriculum comparison review model (CURR-R4C Task 1)', () => {
     });
   });
 
-  it('starts and resets selection to null', () => {
+  it('starts with no selection', () => {
     expect(createReviewSelectionState()).toEqual({ selectedCandidateId: null });
-    expect(resetSelectionOnScopeChange({ selectedCandidateId: 'candidate-1' }, createReviewScope({ leftSourceAreaCode: 'changed' })))
+  });
+
+  it('preserves selection when the previous and current scopes are equal', () => {
+    const scope = createReviewScope({ schoolOrder: 'primaria', leftSourceAreaCode: 'area-left' });
+
+    expect(resetSelectionOnScopeChange(
+      { selectedCandidateId: 'candidate-1' },
+      scope,
+      createReviewScope({ schoolOrder: 'primaria', leftSourceAreaCode: 'area-left' }),
+    )).toEqual({ selectedCandidateId: 'candidate-1' });
+  });
+
+  it('resets selection when the previous and current scopes differ', () => {
+    expect(resetSelectionOnScopeChange(
+      { selectedCandidateId: 'candidate-1' },
+      createReviewScope({ leftSourceAreaCode: 'area-left', rightSourceAreaCode: 'area-right' }),
+      createReviewScope({ leftSourceAreaCode: 'area-left', rightSourceAreaCode: 'area-other' }),
+    ))
       .toEqual({ selectedCandidateId: null });
   });
 });

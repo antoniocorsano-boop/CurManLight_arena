@@ -37,7 +37,7 @@ export function createReviewScope(input: ReviewScope = {}): ReviewScope {
 export function buildComparisonReviewModel(
   comparison: NationalCurriculumComparisonResult,
   candidates: SemanticMappingCandidate[],
-  selectedCandidateId: string | null,
+  selectedCandidateId: string | null = null,
 ): CurriculumComparisonReviewModel {
   const leftByNodeId = new Map(comparison.left.items.map(item => [item.id, item]));
   const rightByNodeId = new Map(comparison.right.items.map(item => [item.id, item]));
@@ -58,8 +58,16 @@ export function createReviewSelectionState(): ReviewSelectionState {
 }
 
 export function resetSelectionOnScopeChange(
-  _selection: ReviewSelectionState,
-  _scope: ReviewScope,
+  selection: ReviewSelectionState,
+  previousScope: ReviewScope,
+  currentScope: ReviewScope,
 ): ReviewSelectionState {
-  return createReviewSelectionState();
+  const scopeIsEqual =
+    previousScope.schoolOrder === currentScope.schoolOrder &&
+    previousScope.disciplineCode === currentScope.disciplineCode &&
+    previousScope.normativeCheckpoint === currentScope.normativeCheckpoint &&
+    previousScope.leftSourceAreaCode === currentScope.leftSourceAreaCode &&
+    previousScope.rightSourceAreaCode === currentScope.rightSourceAreaCode;
+
+  return scopeIsEqual ? { selectedCandidateId: selection.selectedCandidateId ?? null } : createReviewSelectionState();
 }
