@@ -280,26 +280,32 @@ describe('CURR-R4C Task 2 — comparison review UI contract', () => {
       target: { value: 'end-primary-grade-3' },
     });
 
-    expect(services.customComparisonService.compare).toHaveBeenCalled();
-    expect(services.customCandidateService.generateCandidates).toHaveBeenCalled();
-    for (const [, , scope] of vi.mocked(services.customComparisonService.compare).mock.calls) {
-      expect(scope).toMatchObject({
-        schoolOrder: 'secondaria',
-        disciplineCode: 'musica',
-        normativeCheckpoint: 'end-primary-grade-3',
-        sourceAreaCode: 'strumento-musicale',
-      });
-      expect(scope).not.toMatchObject({ sourceAreaCode: 'musica' });
-    }
-    for (const [, , scope] of vi.mocked(services.customCandidateService.generateCandidates).mock.calls) {
-      expect(scope).toMatchObject({
-        schoolOrder: 'secondaria',
-        disciplineCode: 'musica',
-        normativeCheckpoint: 'end-primary-grade-3',
-        sourceAreaCode: 'musica',
-      });
-      expect(scope).not.toMatchObject({ sourceAreaCode: 'strumento-musicale' });
-    }
+    const finalScope = createReviewScope({
+      schoolOrder: 'secondaria',
+      disciplineCode: 'musica',
+      normativeCheckpoint: 'end-primary-grade-3',
+      leftSourceAreaCode: 'strumento-musicale',
+      rightSourceAreaCode: 'musica',
+    });
+    expect(finalScope).toMatchObject({
+      schoolOrder: 'secondaria',
+      disciplineCode: 'musica',
+      normativeCheckpoint: 'end-primary-grade-3',
+      leftSourceAreaCode: 'strumento-musicale',
+      rightSourceAreaCode: 'musica',
+    });
+    expect(finalScope.leftSourceAreaCode).not.toBe(finalScope.rightSourceAreaCode);
+
+    expect(vi.mocked(services.customComparisonService.compare).mock.calls.slice(-1)[0]).toEqual([
+      'IN2012',
+      'IN2025',
+      finalScope,
+    ]);
+    expect(vi.mocked(services.customCandidateService.generateCandidates).mock.calls.slice(-1)[0]).toEqual([
+      'IN2012',
+      'IN2025',
+      finalScope,
+    ]);
   });
 
   it('joins and highlights endpoints by opaque nodeId, not by candidate id or visible text', () => {
@@ -425,8 +431,16 @@ describe('CURR-R4C Task 2 — comparison review UI contract', () => {
     expect(screen.getByText(/ENTRY_COHORT_2026_OR_LATER/i)).toBeInTheDocument();
     expect(screen.getByText('Candidato')).toBeInTheDocument();
     expect(screen.getByText('Candidato').closest('button')).toBeNull();
-    expect(screen.getByText(services.left.text)).toHaveAttribute('data-node-type', 'obiettivo');
-    expect(screen.getByText(services.right.text)).toHaveAttribute('data-node-type', 'competenza');
+    const leftEndpoint = screen.getByText(services.left.text);
+    const rightEndpoint = screen.getByText(services.right.text);
+    expect(leftEndpoint).toHaveAttribute('data-framework-id', 'IN2012');
+    expect(leftEndpoint).toHaveAttribute('data-node-id', services.left.id);
+    expect(leftEndpoint).toHaveAttribute('data-node-type', 'obiettivo');
+    expect(leftEndpoint).toHaveAttribute('data-normative-node-kind', 'objective-2012');
+    expect(rightEndpoint).toHaveAttribute('data-framework-id', 'IN2025');
+    expect(rightEndpoint).toHaveAttribute('data-node-id', services.right.id);
+    expect(rightEndpoint).toHaveAttribute('data-node-type', 'competenza');
+    expect(rightEndpoint).toHaveAttribute('data-normative-node-kind', 'osa-2025');
 
     for (const forbiddenText of [
       /Approva/i,
