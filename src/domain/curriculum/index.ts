@@ -262,3 +262,5 @@ export type {
   ReportProvenance,
   ReportReferences,
 } from './curriculumGapContinuityReport';
+export { serializeCurriculumGapContinuityReport } from './curriculumGapContinuityReportExport';
+export type { CurriculumGapContinuityReportExport } from './curriculumGapContinuityReportExport';
