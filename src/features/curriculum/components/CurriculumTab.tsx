@@ -4,8 +4,9 @@ import type { DecisionStatus, Proposal, SchoolOrder } from '../../../types/curri
 import type { AppViewsLayerProps, CurriculumMap, GeneratedKnowledgeOutput, PopolamentoTab } from '../../session';
 import { PilotMainView } from '../../curriculum-functional-pilot';
 import { NationalCurriculumView } from './NationalCurriculumView';
-import { createNationalCurriculumConsultationService, adaptFixture2012ToNationalCurriculumFixture } from '../../../domain/curriculum/nationalCurriculumConsultation';
+import { createNationalCurriculumConsultationService, adaptFixture2012ToNationalCurriculumFixture, adaptFixture2025ToNationalCurriculumFixture } from '../../../domain/curriculum/nationalCurriculumConsultation';
 import { fixture2012 } from '../../../domain/curriculum/fixture2012';
+import { fixture2025 } from '../../../domain/curriculum/fixture2025';
 
 const orderLabelsForMap: Record<string, string> = {
   infanzia: "Scuola dell'Infanzia (Mappe di Senso & Campi d'Esperienza)",
@@ -84,11 +85,12 @@ export function CurriculumTab({
   handleCSVUpload,
   handleResetCurriculumToBaseline,
 }: CurriculumTabProps) {
-  const { activeCurricoloView, setActiveCurricoloView, discipline, order, setDiscipline, decisions, customTexts } = useCurriculumStore();
+  const { activeCurricoloView, setActiveCurricoloView, discipline, order, schoolYear, setDiscipline, decisions, customTexts } = useCurriculumStore();
 
-  const nationalCurriculumService = createNationalCurriculumConsultationService(
-    adaptFixture2012ToNationalCurriculumFixture(fixture2012)
-  );
+  const nationalCurriculumService = createNationalCurriculumConsultationService([
+    ...adaptFixture2012ToNationalCurriculumFixture(fixture2012),
+    ...adaptFixture2025ToNationalCurriculumFixture(fixture2025),
+  ]);
 
   return (
     <div className="space-y-6 fade-in text-left">
@@ -237,10 +239,15 @@ export function CurriculumTab({
         <PilotMainView />
       )}
 
-      {/* VIEW E: INDICAZIONI NAZIONALI */}
-      {activeCurricoloView === 'nazionale' && (
-        <NationalCurriculumView service={nationalCurriculumService} />
-      )}
+{/* VIEW E: INDICAZIONI NAZIONALI */}
+{activeCurricoloView === 'nazionale' && (
+  <NationalCurriculumView 
+    service={nationalCurriculumService}
+    schoolYearStr={schoolYear}
+    schoolOrderContext={order}
+    classLevelContext={undefined}
+  />
+)}
     </div>
   );
 }
