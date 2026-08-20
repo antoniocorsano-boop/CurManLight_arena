@@ -1,4 +1,5 @@
 import { fireEvent, render, screen, within } from '@testing-library/react';
+import type { ComponentProps } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import type { ContentItem } from '../../domain/curriculum/nationalCurriculumConsultation';
 import {
@@ -35,6 +36,13 @@ type ReadOnlyReviewProps = Readonly<{
   candidateService: SemanticMappingCandidateService;
   scope: ReviewScope;
 }>;
+
+type ForbiddenReviewProp = 'onApprove' | 'onSave' | 'onCreateLink' | 'persist' | 'CurriculumLink';
+type AssertNoForbiddenReviewProps<Props> = Extract<keyof Props, ForbiddenReviewProp> extends never ? true : never;
+
+const reviewViewHasNoWriteBoundaryProps: AssertNoForbiddenReviewProps<
+  ComponentProps<typeof CurriculumComparisonReviewView>
+> = true;
 
 function renderReview(scope: ReviewScope = primaryItalianScope) {
   const props: ReadOnlyReviewProps = Object.freeze({ comparisonService, candidateService, scope });
@@ -92,12 +100,16 @@ function candidate(
   };
 }
 
-function customReviewServices(candidates: SemanticMappingCandidate[]) {
-  const left = contentItem('opaque-left-node-17', 'Testo sinistro non identificativo', 'IN2012', 'objective-2012');
-  const right = contentItem('opaque-right-node-42', 'Testo destro non identificativo', 'IN2025', 'osa-2025');
+function customReviewServices(
+  candidates: SemanticMappingCandidate[],
+  items: { left: ContentItem[]; right: ContentItem[] } = {
+    left: [contentItem('opaque-left-node-17', 'Testo sinistro non identificativo', 'IN2012', 'objective-2012')],
+    right: [contentItem('opaque-right-node-42', 'Testo destro non identificativo', 'IN2025', 'osa-2025')],
+  },
+) {
   const comparison: NationalCurriculumComparisonResult = {
-    left: { frameworkId: 'IN2012', areas: [], items: [left] },
-    right: { frameworkId: 'IN2025', areas: [], items: [right] },
+    left: { frameworkId: 'IN2012', areas: [], items: items.left },
+    right: { frameworkId: 'IN2025', areas: [], items: items.right },
     structuralDifferences: [],
   };
   const customComparisonService: NationalCurriculumComparisonService = {
@@ -106,7 +118,7 @@ function customReviewServices(candidates: SemanticMappingCandidate[]) {
   const customCandidateService: SemanticMappingCandidateService = {
     generateCandidates: vi.fn(() => candidates),
   };
-  return { comparison, customComparisonService, customCandidateService, left, right };
+  return { comparison, customComparisonService, customCandidateService, left: items.left[0], right: items.right[0] };
 }
 
 function renderCustomReview(candidates: SemanticMappingCandidate[] = [
@@ -203,6 +215,31 @@ describe('CURR-R4C Task 2 — comparison review UI contract', () => {
     expect(screen.getByText(services.right.text)).toHaveAttribute('data-framework-id', 'IN2025');
   });
 
+  it('joins and highlights the selected candidate endpoints when each side has multiple items in a different order', () => {
+    const candidates = [
+      candidate('candidate-crossed', 'left-node-b', 'right-node-a', 'high'),
+      candidate('candidate-second', 'left-node-a', 'right-node-b', 'medium'),
+    ];
+    const leftItems = [
+      contentItem('left-node-a', 'Sinistro A', 'IN2012', 'objective-2012'),
+      contentItem('left-node-b', 'Sinistro B', 'IN2012', 'objective-2012'),
+    ];
+    const rightItems = [
+      contentItem('right-node-a', 'Destro A', 'IN2025', 'osa-2025'),
+      contentItem('right-node-b', 'Destro B', 'IN2025', 'osa-2025'),
+    ];
+    renderCustomReview(candidates, { left: leftItems, right: rightItems });
+
+    fireEvent.click(screen.getByRole('button', { name: /candidate-crossed/i }));
+
+    expect(screen.getByText('Sinistro B')).toHaveAttribute('data-node-id', 'left-node-b');
+    expect(screen.getByText('Sinistro B')).toHaveAttribute('data-highlighted', 'true');
+    expect(screen.getByText('Destro A')).toHaveAttribute('data-node-id', 'right-node-a');
+    expect(screen.getByText('Destro A')).toHaveAttribute('data-highlighted', 'true');
+    expect(screen.getByText('Sinistro A')).not.toHaveAttribute('data-highlighted', 'true');
+    expect(screen.getByText('Destro B')).not.toHaveAttribute('data-highlighted', 'true');
+  });
+
   it('renders normativeNodeKind osa-2025 as normative metadata, not only as text', () => {
     const services = renderCustomReview();
     fireEvent.click(screen.getByRole('button', { name: /candidate-opaque/i }));
@@ -274,6 +311,7 @@ describe('CURR-R4C Task 2 — comparison review UI contract', () => {
   it('accepts only readonly comparison inputs and exposes no write-boundary actions', () => {
     renderReview();
 
+    expect(reviewViewHasNoWriteBoundaryProps).toBe(true);
     expect(screen.queryByRole('button', { name: /approva|salva|crea link|curriculumlink|accetta mapping/i })).not.toBeInTheDocument();
   });
 });
