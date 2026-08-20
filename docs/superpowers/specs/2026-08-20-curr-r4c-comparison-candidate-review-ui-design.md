@@ -50,16 +50,38 @@ The UI receives context and derives its read model from the existing R4A and R4B
 
 The view should derive filtered comparison and candidate data from the same filter state, keeping the two framework panels, structural differences, and candidate inspector synchronized.
 
+The UI consumes R4A and R4B services through explicit read-only adapters or props. It must not import or read `fixture2012` or `fixture2025` directly. The filter scope—school order, discipline/area, and normative checkpoint—must be passed to both services consistently and deterministically.
+
+The component API must not expose approval, save, edit, candidate-state, or link-creation callbacks such as `onApprove`, `onSave`, or `onCreateLink`. Candidate selection is local view state only.
+
 ## Empty and edge states
 
 - No filter selection: show the neutral instructional state for choosing a school order.
 - No structural differences: show a neutral “Nessuna differenza strutturale rilevata per questa selezione.” message.
 - No candidates: show the candidate empty state above.
 - A framework has content without a counterpart: keep that content visible and show the corresponding R4A difference; do not fabricate a candidate.
+- A scope containing Strumento musicale only on one framework: show it as an R4A structural difference with no fabricated R4B candidate.
+- IN2025 OSA content: show `normativeNodeKind = osa-2025` explicitly; never flatten it into the 2012 “obiettivo” label.
 
 ## Accessibility and interaction
 
 Candidate rows are selectable controls with visible focus and selected states. The selected state must be understandable without color alone. Structural-difference badges and candidate badges must have distinct labels and visual hierarchy. All review content is keyboard reachable and read-only.
+
+Confidence is descriptive metadata only (`low`, `medium`, `high`). It must not be rendered as a probability, validity score, approval signal, or normative certainty. Use neutral terminology: “candidato”, “possibile continuità”, and “evidenze”. Do not use “equivalente”, “sostituisce”, or “approvato”.
+
+On narrow viewports the split view becomes two sequential framework sections while preserving the left/right endpoint labels and selected association. The responsive layout must not make a candidate appear to belong to the wrong framework.
+
+Tests should prefer accessible roles, labels, and visible text. `data-testid` is allowed only where a stable accessible query is not practical.
+
+## Acceptance criterion
+
+Without external documentation, a user must be able to distinguish:
+
+1. what belongs to IN2012;
+2. what belongs to IN2025;
+3. what differs structurally;
+4. what is only a candidate correspondence;
+5. what has no candidate correspondence.
 
 ## Verification contract
 
