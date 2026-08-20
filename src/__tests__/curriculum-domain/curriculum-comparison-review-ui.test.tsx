@@ -12,11 +12,7 @@ import {
   type SemanticMappingCandidate,
   type SemanticMappingCandidateService,
 } from '../../domain/curriculum/nationalCurriculumSemanticCandidates';
-import {
-  buildComparisonReviewModel,
-  createReviewScope,
-  type ReviewScope,
-} from '../../features/curriculum/components/curriculumComparisonReviewModel';
+import { createReviewScope, type ReviewScope } from '../../features/curriculum/components/curriculumComparisonReviewModel';
 import { CurriculumComparisonReviewView } from '../../features/curriculum/components/CurriculumComparisonReviewView';
 
 const comparisonService = createNationalCurriculumComparisonService();
@@ -27,10 +23,6 @@ const primaryItalianScope = createReviewScope({
   disciplineCode: 'italiano',
 });
 
-const primaryItalianComparison = comparisonService.compare('IN2012', 'IN2025', primaryItalianScope);
-const primaryItalianCandidates = candidateService.generateCandidates('IN2012', 'IN2025', primaryItalianScope);
-const primaryItalianModel = buildComparisonReviewModel(primaryItalianComparison, primaryItalianCandidates);
-
 type ReadOnlyReviewProps = Readonly<{
   comparisonService: NationalCurriculumComparisonService;
   candidateService: SemanticMappingCandidateService;
@@ -38,15 +30,17 @@ type ReadOnlyReviewProps = Readonly<{
 }>;
 
 type ForbiddenReviewProp = 'onApprove' | 'onSave' | 'onCreateLink' | 'persist' | 'CurriculumLink';
-type ReadOnlyReviewPropKeys = keyof ReadOnlyReviewProps;
-type AssertExplicitReadOnlyReviewProps = Exclude<ReadOnlyReviewPropKeys, 'comparisonService' | 'candidateService' | 'scope'> extends never
-  ? Exclude<'comparisonService' | 'candidateService' | 'scope', ReadOnlyReviewPropKeys> extends never
+type AssertExactProps<Actual, Expected> = [Actual] extends [Expected]
+  ? [Expected] extends [Actual]
     ? true
     : never
   : never;
 type AssertNoForbiddenReviewProps<Props> = Extract<keyof Props, ForbiddenReviewProp> extends never ? true : never;
 
-const reviewViewMatchesReadOnlyContract: AssertExplicitReadOnlyReviewProps = true;
+const reviewViewMatchesReadOnlyContract: AssertExactProps<
+  ComponentProps<typeof CurriculumComparisonReviewView>,
+  ReadOnlyReviewProps
+> = true;
 const reviewViewHasNoWriteBoundaryProps: AssertNoForbiddenReviewProps<
   ComponentProps<typeof CurriculumComparisonReviewView>
 > = true;
@@ -73,6 +67,19 @@ function contentItem(
     sourceAreaKind: 'discipline',
   };
 }
+
+type ReviewItems = { left: ContentItem[]; right: ContentItem[] };
+
+const customReviewItems: ReviewItems = {
+  left: [
+    contentItem('opaque-left-node-17', 'Testo sinistro non identificativo', 'IN2012', 'objective-2012'),
+    contentItem('opaque-left-node-18', 'Secondo testo sinistro', 'IN2012', 'objective-2012'),
+  ],
+  right: [
+    contentItem('opaque-right-node-42', 'Testo destro non identificativo', 'IN2025', 'osa-2025'),
+    contentItem('opaque-right-node-43', 'Secondo testo destro', 'IN2025', 'osa-2025'),
+  ],
+};
 
 function candidate(
   id: string,
@@ -109,11 +116,14 @@ function candidate(
 
 function customReviewServices(
   candidates: SemanticMappingCandidate[],
-  items: { left: ContentItem[]; right: ContentItem[] } = {
-    left: [contentItem('opaque-left-node-17', 'Testo sinistro non identificativo', 'IN2012', 'objective-2012')],
-    right: [contentItem('opaque-right-node-42', 'Testo destro non identificativo', 'IN2025', 'osa-2025')],
-  },
+  items: ReviewItems = customReviewItems,
 ) {
+  const left = items.left[0];
+  const right = items.right[0];
+  if (!left || !right) {
+    throw new Error('custom review fixtures must contain at least one item per side');
+  }
+
   const comparison: NationalCurriculumComparisonResult = {
     left: { frameworkId: 'IN2012', areas: [], items: items.left },
     right: { frameworkId: 'IN2025', areas: [], items: items.right },
@@ -125,8 +135,13 @@ function customReviewServices(
   const customCandidateService: SemanticMappingCandidateService = {
     generateCandidates: vi.fn(() => candidates),
   };
-  return { comparison, customComparisonService, customCandidateService, left: items.left[0], right: items.right[0] };
+  return { comparison, customComparisonService, customCandidateService, left, right };
 }
+
+const selectionCandidates = [
+  candidate('candidate-selection', 'opaque-left-node-17', 'opaque-right-node-42', 'medium', 'osa-2025'),
+  candidate('candidate-selection-second', 'opaque-left-node-18', 'opaque-right-node-43', 'low', 'osa-2025'),
+];
 
 function renderCustomReview(
   candidates: SemanticMappingCandidate[] = [
@@ -166,23 +181,24 @@ describe('CURR-R4C Task 2 — comparison review UI contract', () => {
   });
 
   it('shows the candidate list and selection prompt without an initial selection', () => {
-    renderReview();
+    renderCustomReview(selectionCandidates);
 
-    expect(primaryItalianModel.candidates.length).toBeGreaterThan(0);
+    expect(selectionCandidates).toHaveLength(2);
     expect(screen.getByText(/seleziona un candidato/i)).toBeInTheDocument();
     expect(screen.getAllByRole('button').length).toBeGreaterThan(0);
   });
 
   it('opens candidate details only after the user selects a candidate', () => {
-    renderReview();
-    const first = primaryItalianModel.candidates[0];
-    const candidateButton = screen.getByRole('button', { name: new RegExp(first.left!.text.slice(0, 24)) });
+    const services = renderCustomReview(selectionCandidates);
+    const first = selectionCandidates[0];
+    if (!first) throw new Error('selection fixture is empty');
+    const candidateButton = screen.getByRole('button', { name: /candidate-selection$/i });
 
     expect(screen.getByText(/seleziona un candidato/i)).toBeInTheDocument();
     fireEvent.click(candidateButton);
 
-    expect(screen.getByText(first.left!.text)).toBeInTheDocument();
-    expect(screen.getByText(first.right!.text)).toBeInTheDocument();
+    expect(screen.getByText(services.left.text)).toBeInTheDocument();
+    expect(screen.getByText(services.right.text)).toBeInTheDocument();
   });
 
   it('preserves input order for high and low candidates and never auto-selects one', () => {
@@ -198,10 +214,9 @@ describe('CURR-R4C Task 2 — comparison review UI contract', () => {
   });
 
   it('resets the inspector selection when the review scope changes', () => {
-    renderReview();
-    const first = primaryItalianModel.candidates[0];
-    fireEvent.click(screen.getByRole('button', { name: new RegExp(first.left!.text.slice(0, 24)) }));
-    expect(screen.getByText(first.right!.text)).toBeInTheDocument();
+    const services = renderCustomReview(selectionCandidates);
+    fireEvent.click(screen.getByRole('button', { name: /candidate-selection$/i }));
+    expect(screen.getByText(services.right.text)).toBeInTheDocument();
 
     fireEvent.change(screen.getByRole('combobox', { name: /ordine/i }), { target: { value: 'secondaria' } });
 
@@ -307,6 +322,10 @@ describe('CURR-R4C Task 2 — comparison review UI contract', () => {
       expect(layout).toHaveAttribute('data-layout', 'wide-two-column');
       expect(layout).toHaveAttribute('role', 'main');
       expect(window.matchMedia).toHaveBeenCalledWith('(min-width: 768px)');
+
+      viewportWidth = 768;
+      fireEvent(window, new Event('resize'));
+      expect(layout).toHaveAttribute('data-layout', 'wide-two-column');
 
       viewportWidth = 767;
       fireEvent(window, new Event('resize'));
