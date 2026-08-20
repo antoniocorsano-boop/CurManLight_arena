@@ -9,6 +9,7 @@
 import type {
   RevisionArchive,
   RevisionProposal,
+  RevisionEvidenceReference,
   Decision,
   EntityReference,
   RevisionError,
@@ -178,6 +179,7 @@ export interface A03ToA04TransferResult {
     transferType: 'proposed-content' | 'planned-institute-content' | 'legacy-with-warning';
     decisionRef?: EntityReference;
     decisionOutcome?: string;
+    evidenceRefs?: RevisionEvidenceReference[];
     warnings: RevisionWarning[];
   }>;
   nonTransferableProposals: Array<{
@@ -216,6 +218,16 @@ export function executeA03ToA04ProposalTransfer(
   const warnings: RevisionWarning[] = [];
   const transferableProposals: A03ToA04TransferResult['transferableProposals'] = [];
   const nonTransferableProposals: A03ToA04TransferResult['nonTransferableProposals'] = [];
+
+  const r4dEvidenceRefs = (proposal: RevisionProposal): RevisionEvidenceReference[] =>
+    proposal.evidenceRefs
+      .filter((reference): reference is RevisionEvidenceReference => 'source' in reference && reference.source === 'R4D')
+      .map(reference => ({
+        source: reference.source,
+        reportItemId: reference.reportItemId,
+        frameworkRefs: [...reference.frameworkRefs],
+        provenanceRefs: [...reference.provenanceRefs],
+      }));
 
   for (const ref of proposalRefs) {
     const proposal = archive.proposals.find(p => p.id === ref.id);
@@ -270,6 +282,7 @@ export function executeA03ToA04ProposalTransfer(
         transferType: 'legacy-with-warning',
         decisionRef: decision ? { id: decision.id, entityType: 'decision' } : undefined,
         decisionOutcome: decision?.outcome,
+        evidenceRefs: r4dEvidenceRefs(proposal),
         warnings: [{ code: 'LEGACY_TRANSFER', message: 'Legacy content transferred with warning. Not verified.' }],
       });
       continue;
@@ -283,6 +296,7 @@ export function executeA03ToA04ProposalTransfer(
         proposedText: proposal.proposedText,
         currentTextSnapshot: proposal.currentTextSnapshot,
         transferType: 'proposed-content',
+        evidenceRefs: r4dEvidenceRefs(proposal),
         warnings: [],
       });
       continue;
@@ -305,6 +319,7 @@ export function executeA03ToA04ProposalTransfer(
           transferType: 'planned-institute-content',
           decisionRef: { id: latestDecision.id, entityType: 'decision' },
           decisionOutcome: latestDecision.outcome,
+          evidenceRefs: r4dEvidenceRefs(proposal),
           warnings: [],
         });
         continue;
@@ -320,6 +335,7 @@ export function executeA03ToA04ProposalTransfer(
           transferType: 'planned-institute-content',
           decisionRef: { id: latestDecision.id, entityType: 'decision' },
           decisionOutcome: latestDecision.outcome,
+          evidenceRefs: r4dEvidenceRefs(proposal),
           warnings: [{ code: 'APPROVE_WITH_CHANGES', message: 'Version accepted with changes. Only the referenced version is transferred.' }],
         });
         continue;

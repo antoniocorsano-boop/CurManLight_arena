@@ -46,15 +46,21 @@ function isR4DEvidence(value: unknown): value is RevisionEvidenceReference {
   if (!value || typeof value !== 'object') return false;
   const candidate = value as RevisionEvidenceReference;
   return candidate.source === 'R4D'
+    && typeof candidate.reportItemId === 'string'
     && candidate.reportItemId.trim().length > 0
+    && Array.isArray(candidate.frameworkRefs)
+    && Array.isArray(candidate.provenanceRefs)
     && candidate.frameworkRefs.every(ref => !!ref?.id && !!ref?.entityType)
     && candidate.provenanceRefs.every(ref => !!ref?.id && !!ref?.entityType);
 }
 
 function isValidPeriod(effectiveFrom?: string, effectiveTo?: string): boolean {
   if (!effectiveFrom) return false;
+  const fromTime = new Date(effectiveFrom).getTime();
+  if (!Number.isFinite(fromTime)) return false;
   if (!effectiveTo) return true;
-  return new Date(effectiveFrom).getTime() < new Date(effectiveTo).getTime();
+  const toTime = new Date(effectiveTo).getTime();
+  return Number.isFinite(toTime) && fromTime < toTime;
 }
 
 export async function prepareCurriculumVersionFromDecision(

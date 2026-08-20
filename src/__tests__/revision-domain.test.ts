@@ -718,6 +718,49 @@ describe('executeA02ToA03ProposalTransfer', () => {
 // ─── A03→A04 Transfer ───────────────────────────────────────────────────────
 
 describe('executeA03ToA04ProposalTransfer', () => {
+  it('propagates typed R4D evidence references without copying report content', () => {
+    const archive = createEmptyRevisionStore();
+    const r = addProposal(archive, {
+      targetNodeRef: makeRef('node-1'),
+      curriculumVersionRef: makeRef('cv-1'),
+      currentTextSnapshot: 'old',
+      proposedText: 'new',
+      rationale: 'test',
+    });
+    if (!r.success) throw new Error('unexpected');
+    const archiveWithEvidence = {
+      ...r.archive,
+      proposals: r.archive.proposals.map(proposal => proposal.id === r.proposal.id
+        ? {
+          ...proposal,
+          evidenceRefs: [{
+            source: 'R4D' as const,
+            reportItemId: 'r4d-item-1',
+            frameworkRefs: [makeRef('framework-1', 'source')],
+            provenanceRefs: [makeRef('provenance-1', 'source')],
+          }],
+        }
+        : proposal),
+    };
+    const tr = transitionProposalStatus(archiveWithEvidence, r.proposal.id, 'ready-for-review', undefined, 'test');
+    if (!tr.success) throw new Error('unexpected');
+    const tr2 = transitionProposalStatus(tr.archive, r.proposal.id, 'submitted', undefined, 'test');
+    if (!tr2.success) throw new Error('unexpected');
+
+    const result = executeA03ToA04ProposalTransfer(
+      [{ id: r.proposal.id, entityType: 'revision-proposal' }],
+      tr2.archive,
+    );
+
+    expect(result.transferableProposals[0]?.evidenceRefs).toEqual([{
+      source: 'R4D',
+      reportItemId: 'r4d-item-1',
+      frameworkRefs: [makeRef('framework-1', 'source')],
+      provenanceRefs: [makeRef('provenance-1', 'source')],
+    }]);
+    expect(JSON.stringify(result)).not.toContain('structuralDifference');
+  });
+
   it('draft proposals are not transferable', () => {
     const archive = createEmptyRevisionStore();
     const r = addProposal(archive, {

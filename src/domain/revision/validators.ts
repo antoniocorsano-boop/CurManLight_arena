@@ -25,7 +25,10 @@ function error(code: string, message: string, field?: string): RevisionError {
 function isRevisionEvidenceReference(value: RevisionEvidenceRef): boolean {
   if ('source' in value) {
     return value.source === 'R4D'
+      && typeof value.reportItemId === 'string'
       && value.reportItemId.trim().length > 0
+      && Array.isArray(value.frameworkRefs)
+      && Array.isArray(value.provenanceRefs)
       && value.frameworkRefs.every(ref => isValidEntityReference(ref))
       && value.provenanceRefs.every(ref => isValidEntityReference(ref));
   }
