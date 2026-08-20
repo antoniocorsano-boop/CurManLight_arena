@@ -7,6 +7,15 @@ import type {
 
 export type { EntityReference, ActorReference };
 
+export interface RevisionEvidenceReference {
+  source: 'R4D';
+  reportItemId: string;
+  frameworkRefs: EntityReference[];
+  provenanceRefs: EntityReference[];
+}
+
+export type RevisionEvidenceRef = EntityReference | RevisionEvidenceReference;
+
 export type RevisionProposalStatus =
   | 'draft'
   | 'ready-for-review'
@@ -96,7 +105,7 @@ export interface RevisionProposal {
   currentTextSnapshot: string;
   proposedText: string;
   rationale: string;
-  evidenceRefs: EntityReference[];
+  evidenceRefs: RevisionEvidenceRef[];
   sourceRefs: EntityReference[];
   author?: ActorReference;
   institutionalContext?: InstitutionalContext;
@@ -113,7 +122,7 @@ export interface RevisionProposalVersion {
   proposedText: string;
   rationale: string;
   sourceRefs: EntityReference[];
-  evidenceRefs: EntityReference[];
+  evidenceRefs: RevisionEvidenceRef[];
   author?: ActorReference;
   createdAt: string;
   structuralFootprint: string;

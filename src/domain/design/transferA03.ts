@@ -92,7 +92,7 @@ export function executeA03ToA04Transfer(
     selectedTextSnapshot: version?.proposedText ?? proposal.proposedText,
     qualification: matrixResult.qualification,
     sourceRefs: [...proposal.sourceRefs],
-    evidenceRefs: [...proposal.evidenceRefs],
+    evidenceRefs: proposal.evidenceRefs.filter((reference): reference is EntityReference => 'id' in reference),
     transferContractVersion: '1.0',
     structuralFootprint,
   });

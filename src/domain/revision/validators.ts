@@ -1,4 +1,5 @@
 import { isValidEntityId } from '../curriculum/identity';
+import { isValidEntityReference } from '../curriculum/identity/validators';
 import type {
   RevisionArchive,
   RevisionProposal,
@@ -6,6 +7,7 @@ import type {
   RevisionError,
   RevisionWarning,
   RevisionValidationResult,
+  RevisionEvidenceRef,
 } from './types';
 import {
   REVISION_ARCHIVE_SCHEMA_VERSION,
@@ -20,6 +22,16 @@ function error(code: string, message: string, field?: string): RevisionError {
   return { code, message, field };
 }
 
+function isRevisionEvidenceReference(value: RevisionEvidenceRef): boolean {
+  if ('source' in value) {
+    return value.source === 'R4D'
+      && value.reportItemId.trim().length > 0
+      && value.frameworkRefs.every(ref => isValidEntityReference(ref))
+      && value.provenanceRefs.every(ref => isValidEntityReference(ref));
+  }
+  return isValidEntityReference(value);
+}
+
 export function validateProposal(proposal: unknown): RevisionValidationResult {
   const errors: RevisionError[] = [];
   if (!proposal || typeof proposal !== 'object') {
@@ -32,6 +44,13 @@ export function validateProposal(proposal: unknown): RevisionValidationResult {
   if (!p.curriculumVersionRef || typeof p.curriculumVersionRef !== 'object') errors.push(error('MISSING_CURRICULUM_VERSION', 'curriculumVersionRef required', 'curriculumVersionRef'));
   if (typeof p.currentTextSnapshot !== 'string') errors.push(error('MISSING_SNAPSHOT', 'currentTextSnapshot required', 'currentTextSnapshot'));
   if (typeof p.proposedText !== 'string') errors.push(error('MISSING_PROPOSED_TEXT', 'proposedText required', 'proposedText'));
+  if (Array.isArray(p.evidenceRefs)) {
+    for (const evidenceRef of p.evidenceRefs as RevisionEvidenceRef[]) {
+      if (!evidenceRef || typeof evidenceRef !== 'object' || !isRevisionEvidenceReference(evidenceRef)) {
+        errors.push(error('INVALID_EVIDENCE_REFERENCE', 'R4D evidence reference is invalid', 'evidenceRefs'));
+      }
+    }
+  }
   return errors.length > 0 ? { valid: false, errors, warnings: [] } : { valid: true, errors, warnings: [] };
 }
 

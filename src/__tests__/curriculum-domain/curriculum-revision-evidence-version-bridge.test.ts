@@ -6,12 +6,12 @@ import {
   type Decision,
   type RevisionArchive,
   type RevisionProposal,
+  type RevisionEvidenceReference,
 } from '../../domain/revision';
 import { createEntityReference, generateEntityId } from '../../domain/curriculum/identity';
 import type { EntityId, EntityReference } from '../../domain/curriculum/identity';
 import {
   prepareCurriculumVersionFromDecision,
-  type RevisionEvidenceReference,
   type RevisionVersionBridgeInput,
 } from '../../domain/revision/curriculumVersionBridge';
 
@@ -21,12 +21,17 @@ const ref = (value: string, entityType: EntityReference['entityType']): EntityRe
   entityType,
   snapshotLabel: value,
 });
+const validRef = (label: string, entityType: EntityReference['entityType']): EntityReference => ({
+  id: generateEntityId(),
+  entityType,
+  snapshotLabel: label,
+});
 
 const evidence: RevisionEvidenceReference = {
   source: 'R4D',
   reportItemId: 'r4d-item-1',
-  frameworkRefs: [ref('in2012-node-1', 'curriculum-node')],
-  provenanceRefs: [ref('r4d-provenance-1', 'source')],
+  frameworkRefs: [validRef('in2012-node-1', 'curriculum-node')],
+  provenanceRefs: [validRef('r4d-provenance-1', 'source')],
 };
 
 function makeProposalArchive(evidenceRefs: RevisionEvidenceReference[] = [evidence]): {
@@ -42,7 +47,7 @@ function makeProposalArchive(evidenceRefs: RevisionEvidenceReference[] = [eviden
     rationale: 'motivazione',
     evidenceRefs,
   }, '2026-08-20T10:00:00.000Z');
-  if (!result.success) throw new Error('fixture proposal creation failed');
+  if (!result.success) throw new Error(result.errors[0]?.message ?? 'fixture proposal creation failed');
   return { archive: result.archive, proposal: result.proposal };
 }
 
@@ -128,7 +133,7 @@ describe('CURR-R5-B revision evidence / decision / version bridge', () => {
       revisionArchive: decided,
       proposalId: proposal.id,
       decisionId: decision.id,
-      versionRepository: versionRepository([]),
+      versionRepository: versionRepository([{ id: 'version-1', versionNumber: '1.0', title: 'Curricolo corrente', status: 'approved', createdAt: '2025-09-01T00:00:00.000Z', updatedAt: '2025-09-01T00:00:00.000Z', approvedAt: '2025-09-01T00:00:00.000Z' }]),
       requireFormalInstitutionalValidation: false,
       targetStatus: 'approved',
       activation: { effectiveFrom: '2026-09-01T00:00:00.000Z' },
@@ -146,7 +151,7 @@ describe('CURR-R5-B revision evidence / decision / version bridge', () => {
       revisionArchive: decided,
       proposalId: proposal.id,
       decisionId: decision.id,
-      versionRepository: versionRepository([]),
+      versionRepository: versionRepository([{ id: 'version-1', versionNumber: '1.0', title: 'Curricolo corrente', status: 'approved', createdAt: '2025-09-01T00:00:00.000Z', updatedAt: '2025-09-01T00:00:00.000Z', approvedAt: '2025-09-01T00:00:00.000Z' }]),
       requireFormalInstitutionalValidation: false,
     } satisfies RevisionVersionBridgeInput;
     const result = await prepareCurriculumVersionFromDecision(input);

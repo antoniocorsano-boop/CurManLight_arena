@@ -14,6 +14,7 @@ import type {
   RevisionEventType,
   RevisionArchive,
   InstitutionalContext,
+  RevisionEvidenceRef,
 } from './types';
 import { REVISION_ARCHIVE_SCHEMA_VERSION } from './vocabularies';
 
@@ -39,7 +40,7 @@ export interface CreateProposalInput {
   currentTextSnapshot: string;
   proposedText: string;
   rationale?: string;
-  evidenceRefs?: EntityReference[];
+  evidenceRefs?: RevisionEvidenceRef[];
   sourceRefs?: EntityReference[];
   author?: ActorReference;
   institutionalContext?: InstitutionalContext;
@@ -71,7 +72,7 @@ export interface CreateProposalVersionInput {
   proposedText: string;
   rationale?: string;
   sourceRefs?: EntityReference[];
-  evidenceRefs?: EntityReference[];
+  evidenceRefs?: RevisionEvidenceRef[];
   author?: ActorReference;
   changeNote?: string;
   structuralFootprint?: string;
