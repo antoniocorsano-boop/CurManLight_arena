@@ -235,3 +235,14 @@ export type {
   StructuralDifference,
   NationalCurriculumComparisonResult,
 } from './nationalCurriculumComparison';
+
+// ─── CML-634B Semantic Mapping Candidate Layer ───────────────────────────────
+export { createSemanticMappingCandidateService } from './nationalCurriculumSemanticCandidates';
+export type {
+  SemanticMappingCandidateService,
+  SemanticMappingCandidate,
+  SemanticCandidateEndpoint,
+  SemanticCandidateRelationKind,
+  SemanticCandidateEvidence,
+  SemanticCandidateConfidence,
+} from './nationalCurriculumSemanticCandidates';
