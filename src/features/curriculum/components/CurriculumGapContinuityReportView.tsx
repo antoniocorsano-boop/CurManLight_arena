@@ -12,8 +12,18 @@ export interface CurriculumGapContinuityReportViewProps {
 
 type ReportSection = {
   label: string;
+  filter: ReportFilter;
   findings: CurriculumGapContinuityFinding[];
 };
+
+type ReportFilter =
+  | 'all'
+  | 'candidate-continuity'
+  | 'gap-2025-without-candidate'
+  | 'gap-2012-without-candidate'
+  | 'structural-fact'
+  | 'conditional-applicability'
+  | 'unresolved-structural-case';
 
 function evidenceLabel(evidence: unknown): string {
   if (typeof evidence !== 'object' || evidence === null) return String(evidence);
@@ -34,26 +44,32 @@ function sectionsFor(report: CurriculumGapContinuityReport): ReportSection[] {
   return [
     {
       label: 'Continuità candidate',
+      filter: 'candidate-continuity',
       findings: report.findings.filter(finding => finding.type === 'candidate-continuity'),
     },
     {
       label: 'Nuovi elementi 2025',
+      filter: 'gap-2025-without-candidate',
       findings: report.findings.filter(finding => finding.type === 'gap-2025-without-candidate'),
     },
     {
       label: 'Elementi 2012 senza candidato',
+      filter: 'gap-2012-without-candidate',
       findings: report.findings.filter(finding => finding.type === 'gap-2012-without-candidate'),
     },
     {
       label: 'Differenze strutturali',
+      filter: 'structural-fact',
       findings: structuralFacts.filter(finding => finding.category !== 'conditional-applicability'),
     },
     {
       label: 'Applicabilità condizionale',
+      filter: 'conditional-applicability',
       findings: structuralFacts.filter(finding => finding.category === 'conditional-applicability'),
     },
     {
       label: 'Casi split/merge da esaminare',
+      filter: 'unresolved-structural-case',
       findings: report.findings.filter(finding => finding.type === 'unresolved-structural-case'),
     },
   ];
@@ -97,8 +113,13 @@ function ReportSectionView({ section }: { section: ReportSection }) {
 
 export function CurriculumGapContinuityReportView({ report }: Readonly<CurriculumGapContinuityReportViewProps>) {
   const [showArtifact, setShowArtifact] = useState(false);
+  const [selectedFilter, setSelectedFilter] = useState<ReportFilter>('all');
   const sections = useMemo(() => sectionsFor(report), [report]);
   const artifact = useMemo(() => serializeCurriculumGapContinuityReport(report), [report]);
+  const visibleSections = selectedFilter === 'all'
+    ? sections
+    : sections.filter(section => section.filter === selectedFilter);
+  const filteredFindingCount = visibleSections.reduce((count, section) => count + section.findings.length, 0);
 
   return (
     <main className="space-y-5 text-left" data-testid="curriculum-gap-continuity-report">
@@ -115,8 +136,33 @@ export function CurriculumGapContinuityReportView({ report }: Readonly<Curriculu
         <p className="text-xs text-slate-600" aria-label="Scope report">Scope: {JSON.stringify(report.scope)}</p>
       </header>
       {showArtifact ? <pre aria-label="Artefatto JSON report" className="max-h-80 overflow-auto rounded-xl bg-slate-950 p-3 text-[11px] text-slate-100">{artifact}</pre> : null}
-      <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
-        {sections.map(section => <ReportSectionView key={section.label} section={section} />)}
+      <div className="space-y-3">
+        <label className="flex flex-wrap items-center gap-2 text-xs font-bold text-slate-700">
+          <span>Filtra per sezione</span>
+          <select
+            aria-label="Filtra per sezione"
+            value={selectedFilter}
+            onChange={event => setSelectedFilter(event.target.value as ReportFilter)}
+            className="rounded-lg border border-slate-300 bg-white px-2 py-1.5 font-normal"
+          >
+            <option value="all">Tutte</option>
+            <option value="candidate-continuity">Continuità candidate</option>
+            <option value="gap-2025-without-candidate">Nuovi elementi 2025</option>
+            <option value="gap-2012-without-candidate">Elementi 2012 senza candidato</option>
+            <option value="structural-fact">Differenze strutturali</option>
+            <option value="conditional-applicability">Applicabilità condizionale</option>
+            <option value="unresolved-structural-case">Casi split/merge da esaminare</option>
+          </select>
+        </label>
+        {selectedFilter !== 'all' && filteredFindingCount === 0 ? (
+          <p className="rounded-lg border border-dashed border-slate-300 p-3 text-xs text-slate-500">
+            Nessun finding per il filtro selezionato.
+          </p>
+        ) : (
+          <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
+            {visibleSections.map(section => <ReportSectionView key={section.label} section={section} />)}
+          </div>
+        )}
       </div>
     </main>
   );

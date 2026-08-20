@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import type { CurriculumGapContinuityReport } from '../../domain/curriculum/curriculumGapContinuityReport';
 import { CurriculumGapContinuityReportView } from '../../features/curriculum/components/CurriculumGapContinuityReportView';
 
@@ -112,5 +112,27 @@ describe('CURR-R4D-B report UI', () => {
 
     expect(container.firstElementChild?.className).toMatch(/space-y/);
     expect(screen.getByRole('region', { name: 'Continuità candidate' })).toBeVisible();
+  });
+  it('filters aggregate findings deterministically by accessible section control', () => {
+    render(<CurriculumGapContinuityReportView report={report} />);
+
+    fireEvent.change(screen.getByRole('combobox', { name: 'Filtra per sezione' }), {
+      target: { value: 'gap-2025-without-candidate' },
+    });
+
+    expect(screen.getByRole('region', { name: 'Nuovi elementi 2025' })).toHaveTextContent('right-new');
+    expect(screen.queryByRole('region', { name: /Continuit/ })).not.toBeInTheDocument();
+    expect(screen.queryByText('left-old')).not.toBeInTheDocument();
+  });
+
+  it('shows a neutral empty state when the selected finding kind has no results', () => {
+    render(<CurriculumGapContinuityReportView report={{ scope: {}, findings: [] }} />);
+
+    fireEvent.change(screen.getByRole('combobox', { name: 'Filtra per sezione' }), {
+      target: { value: 'structural-fact' },
+    });
+
+    expect(screen.getByText('Nessun finding per il filtro selezionato.')).toBeInTheDocument();
+    expect(screen.queryByText('Nessun finding per questo scope.')).not.toBeInTheDocument();
   });
 });
