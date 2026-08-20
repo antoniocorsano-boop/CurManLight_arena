@@ -262,23 +262,26 @@ describe('CURR-R3D — Applicable Framework Guidance UI', () => {
   it('shows applicable framework guidance when context is provided', () => {
     render(<NationalCurriculumView 
       service={service} 
-      schoolYearStr="2026/27" 
+      schoolYearStr="2026-2027" 
       schoolOrderContext="secondaria" 
       classLevelContext={1} 
     />);
     
     // Should show guidance section
     expect(screen.getByText('Framework applicabile al contesto corrente')).toBeInTheDocument();
-    expect(screen.getByText('Anno scolastico: 2026/27')).toBeInTheDocument();
-    expect(screen.getByText('Ordine: Scuola Secondaria I grado')).toBeInTheDocument();
-    expect(screen.getByText('Classe: 1ª')).toBeInTheDocument();
+    expect(screen.getByText('Anno scolastico:')).toBeInTheDocument();
+    expect(screen.getByText('2026/2027')).toBeInTheDocument();
+    expect(screen.getByText('Ordine:')).toBeInTheDocument();
+    expect(screen.getByText('Scuola Secondaria I grado')).toBeInTheDocument();
+    expect(screen.getByText('Classe:')).toBeInTheDocument();
+    expect(screen.getByText('1ª')).toBeInTheDocument();
     expect(screen.getByText('● Indicazioni nazionali 2025')).toBeInTheDocument();
   });
 
   it('shows framework mismatch warning when selected differs from applicable', () => {
     render(<NationalCurriculumView 
       service={service} 
-      schoolYearStr="2026/27" 
+      schoolYearStr="2026-2027" 
       schoolOrderContext="secondaria" 
       classLevelContext={1} 
     />);
@@ -291,13 +294,14 @@ describe('CURR-R3D — Applicable Framework Guidance UI', () => {
     
     // Should show mismatch warning
     expect(screen.getByText('Stai consultando il framework 2012.')).toBeInTheDocument();
-    expect(screen.getByText('Per questo contesto il framework applicabile è 2025.')).toBeInTheDocument();
+    expect(screen.getByText('Per questo contesto il framework applicabile è')).toBeInTheDocument();
+    expect(screen.getByText('2025')).toBeInTheDocument();
   });
 
   it('preserves manual framework selection', async () => {
     render(<NationalCurriculumView 
       service={service} 
-      schoolYearStr="2026/27" 
+      schoolYearStr="2026-2027" 
       schoolOrderContext="secondaria" 
       classLevelContext={1} 
     />);

@@ -147,7 +147,7 @@ export function NationalCurriculumView({
               <div className="flex">
                 <span className="font-black text-slate-600 w-20">Anno scolastico:</span>
                 <span className="text-slate-400">
-                  {schoolYearStr ? `${schoolYearStr.slice(0, 4)}/${parseInt(schoolYearStr.slice(5, 9)) + 1}` : '-'}
+                  {schoolYearStr ? schoolYearStr.replace('-', '/') : '-'}
                 </span>
               </div>
               <div className="flex">
