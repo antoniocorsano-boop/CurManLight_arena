@@ -7,6 +7,7 @@ import { DisciplineCode } from '../../domain/curriculum/model/vocabularies';
 import { SchoolOrder } from '../../types/curriculum';
 import { adaptFixture2012ToNationalCurriculumFixture, adaptFixture2025ToNationalCurriculumFixture } from '../../domain/curriculum/nationalCurriculumConsultation';
 import { createNationalCurriculumConsultationService } from '../../domain/curriculum/nationalCurriculumConsultation';
+import type { NationalCurriculumComparisonService } from '../../domain/curriculum/nationalCurriculumComparison';
 
 describe('SemanticMappingCandidateService (CURR-R4B)', () => {
   let comparisonService: ReturnType<typeof createNationalCurriculumComparisonService>;
@@ -246,6 +247,32 @@ describe('SemanticMappingCandidateService (CURR-R4B)', () => {
     expect(candidates.length).toBeGreaterThan(0);
     expect(candidates.every(candidate => candidate.left.sourceAreaCode === 'in2012-italiano')).toBe(true);
     expect(candidates.every(candidate => candidate.right.sourceAreaCode === 'in2025-italiano')).toBe(true);
+  });
+
+  it('should propagate typed framework applicability from comparison areas to both candidate endpoints', () => {
+    const leftItem = consultationService.listContent({ frameworkId: 'IN2012', schoolOrder: 'primaria', disciplineCode: 'italiano' })[0];
+    const rightItem = consultationService.listContent({ frameworkId: 'IN2025', schoolOrder: 'primaria', disciplineCode: 'italiano' })[0];
+    expect(leftItem).toBeDefined();
+    expect(rightItem).toBeDefined();
+
+    const applicability = {
+      framework: 'IN2025' as const,
+      resolutionStatus: 'resolved' as const,
+      resolutionReason: 'Percorso ad indirizzo musicale',
+      cohortEntryYear: 2026,
+    };
+    const comparisonWithApplicability: NationalCurriculumComparisonService = {
+      compare: () => ({
+        left: { frameworkId: 'IN2012', areas: [{ id: 'left-area', title: 'Area sinistra', kind: 'discipline', code: 'left-area', disciplineCode: 'italiano', schoolOrder: 'primaria', frameworkApplicability: applicability }], items: [leftItem!], itemSourceAreaCodes: { [leftItem!.id]: 'left-area' } },
+        right: { frameworkId: 'IN2025', areas: [{ id: 'right-area', title: 'Area destra', kind: 'discipline', code: 'right-area', disciplineCode: 'italiano', schoolOrder: 'primaria', frameworkApplicability: applicability }], items: [rightItem!], itemSourceAreaCodes: { [rightItem!.id]: 'right-area' } },
+        structuralDifferences: [],
+      }),
+    };
+    const candidates = createSemanticMappingCandidateService(comparisonWithApplicability).generateCandidates('IN2012', 'IN2025');
+
+    expect(candidates.length).toBeGreaterThan(0);
+    expect(candidates[0]?.left.frameworkApplicability).toEqual(applicability);
+    expect(candidates[0]?.right.frameworkApplicability).toEqual(applicability);
   });
 
   it('should not generate false candidate for STEM ↔ disciplina', () => {

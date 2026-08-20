@@ -206,6 +206,27 @@ function renderCustomReview(
 }
 
 describe('CURR-R4C Task 2 — comparison review UI contract', () => {
+  it('keeps the available framework items when the selected area has no opposite-side content', () => {
+    const leftItem = contentItem('left-only-area-node', 'Contenuto area disponibile', 'IN2012', 'objective-2012');
+    const comparison: NationalCurriculumComparisonResult = {
+      left: { frameworkId: 'IN2012', areas: [], items: [leftItem], itemSourceAreaCodes: { [leftItem.id]: 'in2012-only-area' } },
+      right: { frameworkId: 'IN2025', areas: [], items: [], itemSourceAreaCodes: {} },
+      structuralDifferences: [{ kind: 'area-only-left', description: 'Area disponibile solo in IN2012' }],
+    };
+    const scopedComparisonService: NationalCurriculumComparisonService = { compare: vi.fn(() => comparison) };
+    const scopedCandidateService: SemanticMappingCandidateService = { generateCandidates: vi.fn(() => []) };
+
+    render(
+      <CurriculumComparisonReviewView
+        comparisonService={scopedComparisonService}
+        candidateService={scopedCandidateService}
+        scope={{ ...primaryItalianScope, rightSourceAreaCode: 'in2025-missing-area' }}
+      />,
+    );
+
+    expect(screen.getByText('Contenuto area disponibile')).toBeInTheDocument();
+    expect(screen.getByLabelText('Nessun contenuto nello scope selezionato')).toBeInTheDocument();
+  });
   it('renders a split view with separate framework and review sections', () => {
     renderReview();
 

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { ContentItem } from '../../../domain/curriculum/nationalCurriculumConsultation';
-import type { NationalCurriculumComparisonResult, NationalCurriculumComparisonService } from '../../../domain/curriculum/nationalCurriculumComparison';
+import type { NationalCurriculumComparisonService } from '../../../domain/curriculum/nationalCurriculumComparison';
 import type { SemanticMappingCandidate, SemanticMappingCandidateService } from '../../../domain/curriculum/nationalCurriculumSemanticCandidates';
 import {
   buildComparisonReviewModel,
@@ -159,8 +159,8 @@ function Inspector({
               <ul>{selected.evidence.map((evidence, index) => <li key={`${evidence.kind}-${index}`}>{evidence.kind}</li>)}</ul>
               <div>{selected.left.nodeType} {selected.right.nodeType}</div>
               <div>{selected.left.normativeNodeKind} {selected.right.normativeNodeKind}</div>
-              {(selected.left as typeof selected.left & { frameworkApplicability?: { resolutionReason: string } }).frameworkApplicability ? <div>{(selected.left as typeof selected.left & { frameworkApplicability: { resolutionReason: string } }).frameworkApplicability.resolutionReason}</div> : null}
-              {(selected.right as typeof selected.right & { frameworkApplicability?: { resolutionReason: string } }).frameworkApplicability ? <div>{(selected.right as typeof selected.right & { frameworkApplicability: { resolutionReason: string } }).frameworkApplicability.resolutionReason}</div> : null}
+              {selected.left.frameworkApplicability ? <div>{selected.left.frameworkApplicability.resolutionReason}</div> : null}
+              {selected.right.frameworkApplicability ? <div>{selected.right.frameworkApplicability.resolutionReason}</div> : null}
             </div>
           ) : (
             <p>Seleziona un candidato per visualizzare le evidenze.</p>
@@ -186,19 +186,7 @@ export function CurriculumComparisonReviewView({ comparisonService, candidateSer
   const candidates = candidateService.generateCandidates('IN2012', 'IN2025', serviceScope);
   const leftItemSourceAreaCodes = comparison.left.itemSourceAreaCodes ?? {};
   const rightItemSourceAreaCodes = comparison.right.itemSourceAreaCodes ?? {};
-  const noScopedContent = Boolean(
-    (filters.leftSourceAreaCode && !comparison.left.items.some(item => leftItemSourceAreaCodes[item.id] === filters.leftSourceAreaCode))
-    || (filters.rightSourceAreaCode && !comparison.right.items.some(item => rightItemSourceAreaCodes[item.id] === filters.rightSourceAreaCode)),
-  );
-  const visibleComparison: NationalCurriculumComparisonResult = noScopedContent
-    ? {
-      ...comparison,
-      left: { ...comparison.left, items: [] },
-      right: { ...comparison.right, items: [] },
-      structuralDifferences: [],
-    }
-    : comparison;
-  const model = useMemo(() => buildComparisonReviewModel(visibleComparison, candidates, selectedCandidateId), [visibleComparison, candidates, selectedCandidateId]);
+  const model = useMemo(() => buildComparisonReviewModel(comparison, candidates, selectedCandidateId), [comparison, candidates, selectedCandidateId]);
   const selected = model.candidates.find(item => item.candidate.id === selectedCandidateId)?.candidate ?? null;
   const update = (key: keyof ReviewScope, value: string) => {
     setFilters(previous => ({ ...previous, [key]: value || undefined }));
@@ -218,12 +206,12 @@ export function CurriculumComparisonReviewView({ comparisonService, candidateSer
         </div>
       </header>
       <div style={{ display: wide ? 'grid' : 'block', gridTemplateColumns: '1fr 1fr' }}>
-        <FrameworkPanel frameworkId="IN2012" items={visibleComparison.left.items} itemSourceAreaCodes={leftItemSourceAreaCodes} selectedCandidate={selected} duplicateLabels={new Set(visibleComparison.left.items.map(item => item.text))} />
-        <FrameworkPanel frameworkId="IN2025" items={visibleComparison.right.items} itemSourceAreaCodes={rightItemSourceAreaCodes} selectedCandidate={selected} duplicateLabels={new Set(visibleComparison.left.items.map(item => item.text))} />
+        <FrameworkPanel frameworkId="IN2012" items={comparison.left.items} itemSourceAreaCodes={leftItemSourceAreaCodes} selectedCandidate={selected} duplicateLabels={new Set(comparison.left.items.map(item => item.text))} />
+        <FrameworkPanel frameworkId="IN2025" items={comparison.right.items} itemSourceAreaCodes={rightItemSourceAreaCodes} selectedCandidate={selected} duplicateLabels={new Set(comparison.left.items.map(item => item.text))} />
       </div>
       <section>
         <h2>Differenze strutturali</h2>
-        {visibleComparison.structuralDifferences.length === 0 ? <p>Nessuna differenza strutturale per questa selezione.</p> : <ul>{visibleComparison.structuralDifferences.map((difference, index) => <li key={`${difference.kind}-${index}`}>{difference.description}</li>)}</ul>}
+        {comparison.structuralDifferences.length === 0 ? <p>Nessuna differenza strutturale per questa selezione.</p> : <ul>{comparison.structuralDifferences.map((difference, index) => <li key={`${difference.kind}-${index}`}>{difference.description}</li>)}</ul>}
       </section>
       <div onClick={event => { const target = event.target as HTMLElement; const button = target.closest<HTMLButtonElement>('button[data-candidate-id]'); if (button) setSelectedCandidateId(button.dataset.candidateId ?? null); }}>
         <Inspector candidates={model.candidates} selectedCandidateId={selectedCandidateId} />

@@ -3,6 +3,7 @@ import type { ContentItem } from './nationalCurriculumConsultation';
 import type { DisciplineCode, CurriculumNodeType } from './model/vocabularies';
 import type { SchoolOrder } from '../../types/curriculum';
 import type { NormativeCheckpoint } from './model/types';
+import type { FrameworkApplicabilityReference } from './types';
 
 export interface SemanticCandidateEndpoint {
   frameworkId: 'IN2012' | 'IN2025';
@@ -14,6 +15,7 @@ export interface SemanticCandidateEndpoint {
 
   sourceAreaCode?: string;
   sourceNucleus?: string;
+  frameworkApplicability?: FrameworkApplicabilityReference;
 
   nodeType?: CurriculumNodeType;
   normativeCheckpoint?: NormativeCheckpoint;
@@ -76,6 +78,11 @@ export function createSemanticMappingCandidateService(
       // We'll collect all nodes from both sides
       const leftNodes = comparisonResult.left.items;
       const rightNodes = comparisonResult.right.items;
+      const areaApplicability = (frameworkId: SemanticCandidateEndpoint['frameworkId'], sourceAreaCode: string | undefined): FrameworkApplicabilityReference | undefined => {
+        if (sourceAreaCode === undefined) return undefined;
+        const areas = frameworkId === leftFrameworkId ? comparisonResult.left.areas : comparisonResult.right.areas;
+        return areas.find(area => area.code === sourceAreaCode)?.frameworkApplicability;
+      };
 
       const candidates: SemanticMappingCandidate[] = [];
 
@@ -174,6 +181,7 @@ export function createSemanticMappingCandidateService(
               disciplineCode: leftNode.disciplineCode,
               sourceAreaCode: comparisonResult.left.itemSourceAreaCodes?.[leftNode.id],
               sourceNucleus: undefined,
+              frameworkApplicability: areaApplicability(leftFrameworkId, comparisonResult.left.itemSourceAreaCodes?.[leftNode.id]),
               nodeType: leftNode.nodeType,
               normativeCheckpoint: leftNode.normativeCheckpoint,
               normativeNodeKind: leftNode.normativeNodeKind
@@ -186,6 +194,7 @@ export function createSemanticMappingCandidateService(
               disciplineCode: rightNode.disciplineCode,
               sourceAreaCode: comparisonResult.right.itemSourceAreaCodes?.[rightNode.id],
               sourceNucleus: undefined,
+              frameworkApplicability: areaApplicability(rightFrameworkId, comparisonResult.right.itemSourceAreaCodes?.[rightNode.id]),
               nodeType: rightNode.nodeType,
               normativeCheckpoint: rightNode.normativeCheckpoint,
               normativeNodeKind: rightNode.normativeNodeKind
