@@ -276,6 +276,7 @@ export type RevisioneTabProps = Pick<AppViewsLayerProps,
   | 'setRevisioneMode'
   | 'revisioneWizardIndex'
   | 'setRevisioneWizardIndex'
+  | 'curriculumVersions'
 >;
 
 export function RevisioneTab({
@@ -285,6 +286,7 @@ export function RevisioneTab({
   setRevisioneMode,
   revisioneWizardIndex,
   setRevisioneWizardIndex,
+  curriculumVersions,
 }: RevisioneTabProps) {
   const { decisions, customTexts, revisionArchive, activeRevisionFilter, setActiveRevisionFilter, setDecision, resetDecision, setCustomText } = useCurriculumStore();
 
@@ -322,7 +324,7 @@ export function RevisioneTab({
 
       <InstitutionalRevisionWorkflowPanel
         revisionArchive={revisionArchive}
-        versions={[]}
+        versions={curriculumVersions ?? []}
       />
 
       {/* Layout selector */}

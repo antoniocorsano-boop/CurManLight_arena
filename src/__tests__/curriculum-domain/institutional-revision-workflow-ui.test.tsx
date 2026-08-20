@@ -11,6 +11,8 @@ import {
   type RevisionArchive,
 } from '../../domain/revision';
 import { InstitutionalRevisionWorkflowPanel } from '../../features/curriculum/components/InstitutionalRevisionWorkflowPanel';
+import { RevisioneTab } from '../../features/curriculum/components/RevisioneTab';
+import { useCurriculumStore } from '../../store/useCurriculumStore';
 
 const ref = (id: string, entityType: string) => createEntityReference(id as never, entityType as never);
 
@@ -130,5 +132,26 @@ describe('CURR-R5-D institutional revision workflow UI', () => {
     expect(panel).toHaveTextContent('Stato informativo del registro locale');
     expect(screen.queryByRole('button')).not.toBeInTheDocument();
     expect(screen.queryByText(/firma|protocollo|autenticazione|CurriculumLink/i)).not.toBeInTheDocument();
+  });
+
+  it('passes real curriculum versions through the RevisioneTab integration and keeps qualification missing', () => {
+    const archive = makeArchive({ proposal: true, proposalStatus: 'accepted-for-decision', decision: true });
+    useCurriculumStore.setState({ revisionArchive: archive });
+
+    render(
+      <RevisioneTab
+        currentDisciplineProps={[]}
+        currentDisciplineDecided={0}
+        revisioneMode="list"
+        setRevisioneMode={() => undefined}
+        revisioneWizardIndex={0}
+        setRevisioneWizardIndex={() => undefined}
+        curriculumVersions={[makeVersion('draft')]}
+      />,
+    );
+
+    expect(screen.getByText('Versione preparata in bozza')).toBeInTheDocument();
+    expect(screen.getByText('Non qualificata istituzionalmente: preparazione della nuova versione bloccata.')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /qualifica|approva|crea versione/i })).not.toBeInTheDocument();
   });
 });

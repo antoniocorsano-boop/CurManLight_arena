@@ -55,6 +55,7 @@ export function AppViewsLayer(props: AppViewsLayerProps) {
     setRevisioneMode,
     revisioneWizardIndex,
     setRevisioneWizardIndex,
+    curriculumVersions,
     targetClass,
     setTargetClass,
     targetSection,
@@ -313,6 +314,7 @@ export function AppViewsLayer(props: AppViewsLayerProps) {
        setRevisioneMode={setRevisioneMode}
        revisioneWizardIndex={revisioneWizardIndex}
        setRevisioneWizardIndex={setRevisioneWizardIndex}
+       curriculumVersions={curriculumVersions}
       />
      )}
      {/* VIEW: AREA DI PROGETTAZIONE UNIFICATA */}

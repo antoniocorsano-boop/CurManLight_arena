@@ -3,6 +3,7 @@ import type { AppTab } from '../../navigation';
 import type { GraphEdge, GraphNode } from '../../../lib/architectureGraph';
 import type { CurricularLevel, DecisionStatus, Proposal, SchoolOrder, UdaModel, UserRole } from '../../../types/curriculum';
 import type { A07InstitutionalDocumentRead } from '../../../domain/institution';
+import type { InstituteCurriculumVersion } from '../../../domain/curriculum/version';
 
 export type ActiveCurricoloView = 'home' | 'albero' | 'mappa' | 'popolamento' | 'pilota' | 'nazionale' | 'confronto';
 export type ActiveProcessoTab = 'flusso' | 'verifica';
@@ -191,6 +192,7 @@ export interface AppViewsLayerProps {
   setRevisioneMode: (value: RevisioneMode) => void;
   revisioneWizardIndex: number;
   setRevisioneWizardIndex: Dispatch<SetStateAction<number>>;
+  curriculumVersions?: InstituteCurriculumVersion[];
   targetClass: string;
   setTargetClass: (value: string) => void;
   targetSection: string;
