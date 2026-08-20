@@ -19,6 +19,8 @@ export interface InstituteCurriculumVersion {
   status: InstituteCurriculumStatus;
 
   previousVersionId?: string;
+  revisionProposalId?: string;
+  decisionId?: string;
 
   createdAt: string;
   updatedAt: string;

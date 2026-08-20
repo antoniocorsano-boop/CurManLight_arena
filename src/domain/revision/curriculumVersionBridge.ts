@@ -137,6 +137,8 @@ export async function prepareCurriculumVersionFromDecision(
     versionNumber: `${previousVersion.versionNumber}.1`,
     status: input.targetStatus ?? 'draft',
     previousVersionId: previousVersion.id,
+    revisionProposalId: proposal.id,
+    decisionId: decision.id,
     createdAt: now,
     updatedAt: now,
   };

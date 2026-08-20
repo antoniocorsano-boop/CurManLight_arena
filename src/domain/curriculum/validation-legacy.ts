@@ -88,6 +88,27 @@ export function validateInstituteCurriculumVersion(
     });
   }
 
+  if (version.status === 'effective') {
+    if (!version.approvedAt) {
+      issues.push({
+        code: 'VERSION_EFFECTIVE_WITHOUT_APPROVED_AT',
+        severity: 'error',
+        entityType: 'InstituteCurriculumVersion',
+        entityId: version.id,
+        message: 'An effective version must have been approved previously (approvedAt required)',
+      });
+    }
+    if (!version.effectiveFrom) {
+      issues.push({
+        code: 'VERSION_EFFECTIVE_WITHOUT_EFFECTIVE_FROM',
+        severity: 'error',
+        entityType: 'InstituteCurriculumVersion',
+        entityId: version.id,
+        message: 'An effective version must have an effectiveFrom date',
+      });
+    }
+  }
+
   if (version.status === 'superseded' && !version.approvedAt) {
     issues.push({
       code: 'VERSION_SUPERSEDED_WITHOUT_APPROVED_AT',
@@ -395,7 +416,7 @@ export function canTransitionLinkStatus(
 // ─── Immutability Check ────────────────────────────────────────────────────────
 
 export function isApprovedVersionImmutable(version: InstituteCurriculumVersion): boolean {
-  return version.status === 'approved' || version.status === 'superseded';
+  return version.status === 'approved' || version.status === 'effective' || version.status === 'superseded';
 }
 
 // ─── Duplicate Detection ───────────────────────────────────────────────────────

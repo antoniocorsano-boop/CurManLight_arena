@@ -43,6 +43,7 @@ export type InstituteCurriculumStatus =
   | 'under-review'
   | 'proposed-to-collegio'
   | 'approved'
+  | 'effective'
   | 'superseded';
 
 // ─── Segment Work Status ────────────────────────────────────────────────────────
@@ -110,6 +111,7 @@ export const VALID_VERSION_STATUSES: readonly InstituteCurriculumStatus[] = [
   'under-review',
   'proposed-to-collegio',
   'approved',
+  'effective',
   'superseded',
 ] as const;
 
@@ -164,7 +166,8 @@ export const VERSION_STATUS_TRANSITIONS: ReadonlyMap<InstituteCurriculumStatus, 
   ['draft', ['under-review']],
   ['under-review', ['proposed-to-collegio', 'draft']],
   ['proposed-to-collegio', ['approved', 'under-review']],
-  ['approved', ['superseded']],
+  ['approved', ['effective', 'superseded']],
+  ['effective', ['superseded']],
   ['superseded', []],
 ]);
 
