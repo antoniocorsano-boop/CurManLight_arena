@@ -5,9 +5,11 @@ import type { AppViewsLayerProps, CurriculumMap, GeneratedKnowledgeOutput, Popol
 import { PilotMainView } from '../../curriculum-functional-pilot';
 import { NationalCurriculumView } from './NationalCurriculumView';
 import { CurriculumComparisonReviewView } from './CurriculumComparisonReviewView';
+import { CurriculumGapContinuityReportView } from './CurriculumGapContinuityReportView';
 import { createNationalCurriculumConsultationService, adaptFixture2012ToNationalCurriculumFixture, adaptFixture2025ToNationalCurriculumFixture } from '../../../domain/curriculum/nationalCurriculumConsultation';
 import { createNationalCurriculumComparisonService } from '../../../domain/curriculum/nationalCurriculumComparison';
 import { createSemanticMappingCandidateService } from '../../../domain/curriculum/nationalCurriculumSemanticCandidates';
+import { createCurriculumGapContinuityReport } from '../../../domain/curriculum/curriculumGapContinuityReport';
 import type { DisciplineCode } from '../../../domain/curriculum/model/vocabularies';
 import { fixture2012 } from '../../../domain/curriculum/fixture2012';
 import { fixture2025 } from '../../../domain/curriculum/fixture2025';
@@ -97,6 +99,10 @@ export function CurriculumTab({
   ]);
   const comparisonService = createNationalCurriculumComparisonService();
   const candidateService = createSemanticMappingCandidateService(comparisonService);
+  const reportScope = { schoolOrder: order, disciplineCode: discipline as DisciplineCode };
+  const reportComparison = comparisonService.compare('IN2012', 'IN2025', reportScope);
+  const reportCandidates = candidateService.generateCandidates('IN2012', 'IN2025', reportScope);
+  const gapContinuityReport = createCurriculumGapContinuityReport(reportComparison, reportCandidates, reportScope);
 
   return (
     <div className="space-y-6 fade-in text-left">
@@ -264,11 +270,14 @@ export function CurriculumTab({
   />
 )}
       {activeCurricoloView === 'confronto' && (
-        <CurriculumComparisonReviewView
-          comparisonService={comparisonService}
-          candidateService={candidateService}
-          scope={{ schoolOrder: order, disciplineCode: discipline as DisciplineCode }}
-        />
+        <div className="space-y-8">
+          <CurriculumComparisonReviewView
+            comparisonService={comparisonService}
+            candidateService={candidateService}
+            scope={reportScope}
+          />
+          <CurriculumGapContinuityReportView report={gapContinuityReport} />
+        </div>
       )}
     </div>
   );

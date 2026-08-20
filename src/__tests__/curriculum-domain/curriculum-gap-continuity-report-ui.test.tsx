@@ -91,7 +91,7 @@ describe('CURR-R4D-B report UI', () => {
     expect(screen.getByRole('region', { name: 'Applicabilità condizionale' })).toHaveTextContent('conditional applicability');
     expect(screen.getByRole('region', { name: 'Casi split/merge da esaminare' })).toHaveTextContent('split');
     expect(screen.getByText('confidence: high')).toBeInTheDocument();
-    expect(screen.getByText('provenienza: R4B')).toBeInTheDocument();
+    expect(screen.getAllByText('provenienza: R4B').length).toBeGreaterThan(0);
   });
 
   it('shows a neutral empty state for every aggregate section without findings', () => {
