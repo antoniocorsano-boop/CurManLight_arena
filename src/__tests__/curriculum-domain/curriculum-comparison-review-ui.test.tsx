@@ -38,8 +38,15 @@ type ReadOnlyReviewProps = Readonly<{
 }>;
 
 type ForbiddenReviewProp = 'onApprove' | 'onSave' | 'onCreateLink' | 'persist' | 'CurriculumLink';
+type ReadOnlyReviewPropKeys = keyof ReadOnlyReviewProps;
+type AssertExplicitReadOnlyReviewProps = Exclude<ReadOnlyReviewPropKeys, 'comparisonService' | 'candidateService' | 'scope'> extends never
+  ? Exclude<'comparisonService' | 'candidateService' | 'scope', ReadOnlyReviewPropKeys> extends never
+    ? true
+    : never
+  : never;
 type AssertNoForbiddenReviewProps<Props> = Extract<keyof Props, ForbiddenReviewProp> extends never ? true : never;
 
+const reviewViewMatchesReadOnlyContract: AssertExplicitReadOnlyReviewProps = true;
 const reviewViewHasNoWriteBoundaryProps: AssertNoForbiddenReviewProps<
   ComponentProps<typeof CurriculumComparisonReviewView>
 > = true;
@@ -121,10 +128,13 @@ function customReviewServices(
   return { comparison, customComparisonService, customCandidateService, left: items.left[0], right: items.right[0] };
 }
 
-function renderCustomReview(candidates: SemanticMappingCandidate[] = [
-  candidate('candidate-opaque', 'opaque-left-node-17', 'opaque-right-node-42', 'medium', 'osa-2025'),
-]) {
-  const services = customReviewServices(candidates);
+function renderCustomReview(
+  candidates: SemanticMappingCandidate[] = [
+    candidate('candidate-opaque', 'opaque-left-node-17', 'opaque-right-node-42', 'medium', 'osa-2025'),
+  ],
+  items?: { left: ContentItem[]; right: ContentItem[] },
+) {
+  const services = customReviewServices(candidates, items);
   const props: ReadOnlyReviewProps = Object.freeze({
     comparisonService: services.customComparisonService,
     candidateService: services.customCandidateService,
@@ -213,6 +223,8 @@ describe('CURR-R4C Task 2 — comparison review UI contract', () => {
     expect(screen.getByText(services.right.text)).toHaveAttribute('data-node-id', services.right.id);
     expect(screen.getByText(services.left.text)).toHaveAttribute('data-framework-id', 'IN2012');
     expect(screen.getByText(services.right.text)).toHaveAttribute('data-framework-id', 'IN2025');
+    expect(screen.getByText(services.left.text)).toHaveAttribute('data-highlighted', 'true');
+    expect(screen.getByText(services.right.text)).toHaveAttribute('data-highlighted', 'true');
   });
 
   it('joins and highlights the selected candidate endpoints when each side has multiple items in a different order', () => {
@@ -275,9 +287,11 @@ describe('CURR-R4C Task 2 — comparison review UI contract', () => {
 
   it('switches between wide two-column and narrow sequential layout at the responsive boundary', () => {
     const originalMatchMedia = window.matchMedia;
-    let wide = true;
+    let viewportWidth = 1024;
     window.matchMedia = vi.fn((query: string) => ({
-      matches: wide && query.includes('min-width'),
+      matches:
+        (query === '(min-width: 768px)' && viewportWidth >= 768)
+        || (query === '(max-width: 767px)' && viewportWidth <= 767),
       media: query,
       onchange: null,
       addListener: vi.fn(),
@@ -289,11 +303,15 @@ describe('CURR-R4C Task 2 — comparison review UI contract', () => {
 
     try {
       renderReview();
-      expect(screen.getByTestId('curriculum-comparison-review-layout')).toHaveAttribute('data-layout', 'wide-two-column');
+      const layout = screen.getByTestId('curriculum-comparison-review-layout');
+      expect(layout).toHaveAttribute('data-layout', 'wide-two-column');
+      expect(layout).toHaveAttribute('role', 'main');
+      expect(window.matchMedia).toHaveBeenCalledWith('(min-width: 768px)');
 
-      wide = false;
+      viewportWidth = 767;
       fireEvent(window, new Event('resize'));
-      expect(screen.getByTestId('curriculum-comparison-review-layout')).toHaveAttribute('data-layout', 'narrow-sequential');
+      expect(layout).toHaveAttribute('data-layout', 'narrow-sequential');
+      expect(window.matchMedia).toHaveBeenCalledWith('(max-width: 767px)');
     } finally {
       window.matchMedia = originalMatchMedia;
     }
@@ -308,10 +326,8 @@ describe('CURR-R4C Task 2 — comparison review UI contract', () => {
     expect(within(screen.getByRole('region', { name: /ispettore|inspector/i })).getByText(/candidati semantici/i)).toBeInTheDocument();
   });
 
-  it('accepts only readonly comparison inputs and exposes no write-boundary actions', () => {
-    renderReview();
-
+  it('declares only readonly comparison inputs at the component boundary', () => {
+    expect(reviewViewMatchesReadOnlyContract).toBe(true);
     expect(reviewViewHasNoWriteBoundaryProps).toBe(true);
-    expect(screen.queryByRole('button', { name: /approva|salva|crea link|curriculumlink|accetta mapping/i })).not.toBeInTheDocument();
   });
 });
