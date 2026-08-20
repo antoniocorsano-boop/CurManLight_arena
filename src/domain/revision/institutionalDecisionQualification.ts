@@ -37,7 +37,9 @@ export function validateInstitutionalDecisionQualification(
   if (!isValidEntityReference(candidate.authorityRef)) {
     errors.push('Qualification authorityRef is invalid.');
   }
-  if (expectedDecisionRef && (!isValidEntityReference(candidate.decisionRef) || candidate.decisionRef.id !== expectedDecisionRef.id)) {
+  if (expectedDecisionRef && (!isValidEntityReference(candidate.decisionRef)
+    || candidate.decisionRef.id !== expectedDecisionRef.id
+    || candidate.decisionRef.entityType !== expectedDecisionRef.entityType)) {
     errors.push('Qualification does not reference the requested decision.');
   }
   if (candidate.status !== 'qualified') {

@@ -56,6 +56,14 @@ describe('CURR-R5-C institutional decision qualification boundary', () => {
     expect(result).toMatchObject({ valid: false });
   });
 
+  it('blocks a matching decision id with the wrong entity type', () => {
+    const result = validateInstitutionalDecisionQualification(validQualification(), {
+      id: decisionRef.id,
+      entityType: 'revision-proposal',
+    });
+    expect(result).toMatchObject({ valid: false });
+  });
+
   it('blocks null, primitive and missing qualification values closed', () => {
     for (const candidate of [null, 42, 'qualified', undefined]) {
       expect(validateInstitutionalDecisionQualification(candidate)).toMatchObject({ valid: false });
