@@ -262,8 +262,6 @@ export function createCurriculumGapContinuityReport(
 
   for (const candidate of candidates) {
     if (candidate.left.nodeId === undefined || candidate.right.nodeId === undefined || unresolvedCandidateIds.has(candidate.id)) continue;
-    const left = leftItems.get(candidate.left.nodeId);
-    const right = rightItems.get(candidate.right.nodeId);
     findings.push({
       type: 'candidate-continuity',
       frameworks: ['IN2012', 'IN2025'],
@@ -279,8 +277,6 @@ export function createCurriculumGapContinuityReport(
       provenance: { sources: ['R4B'], method: candidate.generatedBy },
       scope,
     });
-    void left;
-    void right;
   }
 
   const unmatchedRight = [...rightItems.values()].filter(item => !candidateEndpointIds.right.has(item.id));
