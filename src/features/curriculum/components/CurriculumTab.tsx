@@ -4,7 +4,11 @@ import type { DecisionStatus, Proposal, SchoolOrder } from '../../../types/curri
 import type { AppViewsLayerProps, CurriculumMap, GeneratedKnowledgeOutput, PopolamentoTab } from '../../session';
 import { PilotMainView } from '../../curriculum-functional-pilot';
 import { NationalCurriculumView } from './NationalCurriculumView';
+import { CurriculumComparisonReviewView } from './CurriculumComparisonReviewView';
 import { createNationalCurriculumConsultationService, adaptFixture2012ToNationalCurriculumFixture, adaptFixture2025ToNationalCurriculumFixture } from '../../../domain/curriculum/nationalCurriculumConsultation';
+import { createNationalCurriculumComparisonService } from '../../../domain/curriculum/nationalCurriculumComparison';
+import { createSemanticMappingCandidateService } from '../../../domain/curriculum/nationalCurriculumSemanticCandidates';
+import type { DisciplineCode } from '../../../domain/curriculum/model/vocabularies';
 import { fixture2012 } from '../../../domain/curriculum/fixture2012';
 import { fixture2025 } from '../../../domain/curriculum/fixture2025';
 
@@ -91,6 +95,8 @@ export function CurriculumTab({
     ...adaptFixture2012ToNationalCurriculumFixture(fixture2012),
     ...adaptFixture2025ToNationalCurriculumFixture(fixture2025),
   ]);
+  const comparisonService = createNationalCurriculumComparisonService();
+  const candidateService = createSemanticMappingCandidateService(comparisonService);
 
   return (
     <div className="space-y-6 fade-in text-left">
@@ -182,6 +188,15 @@ export function CurriculumTab({
               <h4 className="text-xs font-bold text-slate-800 uppercase">Indicazioni nazionali</h4>
               <p className="text-[11px] text-slate-500 font-semibold leading-normal">Consulta i traguardi e gli obiettivi del D.M. 254/2012 per ordine e disciplina.</p>
             </button>
+
+            <button
+              onClick={() => setActiveCurricoloView('confronto')}
+              className="bg-white border border-slate-200 hover:border-indigo-400 p-5 rounded-2xl shadow-sm hover:shadow-md transition text-left space-y-2"
+            >
+              <span className="text-[10px] font-black text-indigo-600 uppercase tracking-wider block">Azione 5</span>
+              <h4 className="text-xs font-bold text-slate-800 uppercase">Confronto 2012 / 2025</h4>
+              <p className="text-[11px] text-slate-500 font-semibold leading-normal">Osserva differenze strutturali e corrispondenze candidate in modalità di sola lettura.</p>
+            </button>
           </div>
         </div>
       )}
@@ -248,6 +263,13 @@ export function CurriculumTab({
     classLevelContext={undefined}
   />
 )}
+      {activeCurricoloView === 'confronto' && (
+        <CurriculumComparisonReviewView
+          comparisonService={comparisonService}
+          candidateService={candidateService}
+          scope={{ schoolOrder: order, disciplineCode: discipline as DisciplineCode }}
+        />
+      )}
     </div>
   );
 }

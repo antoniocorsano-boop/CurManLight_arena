@@ -74,7 +74,7 @@ export interface UserState {
   selectedObiettivi: number[];
   selectedEvidenze: string[];
   activeProgTab: 'home' | 'annuale' | 'uda' | 'certificazione' | 'social' | 'classe-home' | 'classe';
-  activeCurricoloView: 'home' | 'albero' | 'mappa' | 'popolamento' | 'pilota' | 'nazionale';
+  activeCurricoloView: 'home' | 'albero' | 'mappa' | 'popolamento' | 'pilota' | 'nazionale' | 'confronto';
   activeProcessoTab: 'flusso' | 'verifica';
   activeGeneralSubtab: 'premessa' | 'riforma' | 'obiettivi' | 'livelli';
   documentExportHistory: DocumentExportEvent[];

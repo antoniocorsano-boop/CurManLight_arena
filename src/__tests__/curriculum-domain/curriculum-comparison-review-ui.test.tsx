@@ -14,6 +14,8 @@ import {
 } from '../../domain/curriculum/nationalCurriculumSemanticCandidates';
 import { createReviewScope, type ReviewScope } from '../../features/curriculum/components/curriculumComparisonReviewModel';
 import { CurriculumComparisonReviewView } from '../../features/curriculum/components/CurriculumComparisonReviewView';
+import { CurriculumTab } from '../../features/curriculum/components/CurriculumTab';
+import { useCurriculumStore } from '../../store/useCurriculumStore';
 
 const comparisonService = createNationalCurriculumComparisonService();
 const candidateService = createSemanticMappingCandidateService(comparisonService);
@@ -57,6 +59,43 @@ function renderReview(scope: ReviewScope = primaryItalianScope) {
   const props: ReadOnlyReviewProps = Object.freeze({ comparisonService, candidateService, scope });
   return render(<CurriculumComparisonReviewView {...props} />);
 }
+
+describe('CurriculumTab R4C integration', () => {
+  it('navigates to the dedicated confronto view without replacing nazionale', () => {
+    useCurriculumStore.setState({ activeCurricoloView: 'home' });
+
+    render(
+      <CurriculumTab
+        localCurriculum={{} as never}
+        showOnlyProfileCurriculum={false}
+        setShowOnlyProfileCurriculum={vi.fn()}
+        expandedMapSections={{}}
+        setExpandedMapSections={vi.fn()}
+        showOnlyProfileProcesso={false}
+        setShowOnlyProfileProcesso={vi.fn()}
+        importTopicInput=""
+        setImportTopicInput={vi.fn()}
+        isGeneratingKB={false}
+        generatedKBOuput={null}
+        localAgentStatus="disabled"
+        localAgentSize=""
+        popolamentoTab="copilot"
+        setPopolamentoTab={vi.fn()}
+        setShowAgentSetupModal={vi.fn()}
+        handleAiGenerateCurriculum={vi.fn()}
+        handleSaveGeneratedToKB={vi.fn()}
+        handleCSVUpload={vi.fn()}
+        handleResetCurriculumToBaseline={vi.fn()}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole('heading', { name: 'Confronto 2012 / 2025' }));
+
+    expect(screen.getByRole('heading', { name: 'IN2012' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'IN2025' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Approva|Salva relazione|Accetta mapping/i })).not.toBeInTheDocument();
+  });
+});
 
 function contentItem(
   id: string,
