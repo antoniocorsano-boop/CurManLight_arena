@@ -30,11 +30,10 @@ type ReadOnlyReviewProps = Readonly<{
 }>;
 
 type ForbiddenReviewProp = 'onApprove' | 'onSave' | 'onCreateLink' | 'persist' | 'CurriculumLink';
-type IsAny<T> = 0 extends (1 & T) ? true : false;
-type AssertExactProps<Actual, Expected> = IsAny<Actual> extends true
+type AssertExactProps<Actual, Expected> = string extends keyof Actual
   ? true
   : [keyof Actual] extends [never]
-  ? true
+    ? true
   : [Exclude<keyof Actual, keyof Expected>] extends [never]
     ? [Exclude<keyof Expected, keyof Actual>] extends [never]
       ? [Actual] extends [Expected]
@@ -101,8 +100,28 @@ function candidate(
   rightNodeId: string,
   confidence: SemanticMappingCandidate['confidence'],
   rightNormativeNodeKind?: SemanticMappingCandidate['right']['normativeNodeKind'],
+  options: Readonly<{
+    relationKind?: SemanticMappingCandidate['relationKind'];
+    evidence?: SemanticMappingCandidate['evidence'];
+    leftNodeType?: SemanticMappingCandidate['left']['nodeType'];
+    rightNodeType?: SemanticMappingCandidate['right']['nodeType'];
+    leftSourceAreaCode?: string;
+    rightSourceAreaCode?: string;
+    leftFrameworkApplicability?: {
+      framework: 'IN2012' | 'IN2025' | null;
+      resolutionStatus: 'resolved' | 'requires-context-confirmation';
+      resolutionReason: string;
+      cohortEntryYear?: number;
+    };
+    rightFrameworkApplicability?: {
+      framework: 'IN2012' | 'IN2025' | null;
+      resolutionStatus: 'resolved' | 'requires-context-confirmation';
+      resolutionReason: string;
+      cohortEntryYear?: number;
+    };
+  }> = {},
 ): SemanticMappingCandidate {
-  return {
+  const value: SemanticMappingCandidate = {
     id,
     left: {
       frameworkId: 'IN2012',
@@ -111,6 +130,8 @@ function candidate(
       disciplineCode: 'italiano',
       normativeCheckpoint: 'end-primary',
       normativeNodeKind: 'objective-2012',
+      nodeType: options.leftNodeType ?? 'obiettivo',
+      sourceAreaCode: options.leftSourceAreaCode,
     },
     right: {
       frameworkId: 'IN2025',
@@ -119,13 +140,23 @@ function candidate(
       disciplineCode: 'italiano',
       normativeCheckpoint: 'end-primary',
       normativeNodeKind: rightNormativeNodeKind,
+      nodeType: options.rightNodeType ?? 'competenza',
+      sourceAreaCode: options.rightSourceAreaCode,
     },
-    relationKind: 'unclassified-correspondence',
-    evidence: [],
+    relationKind: options.relationKind ?? 'unclassified-correspondence',
+    evidence: options.evidence ?? [],
     confidence,
     status: 'candidate',
     generatedBy: 'deterministic-structural-analysis',
   };
+
+  if (options.leftFrameworkApplicability) {
+    Object.assign(value.left, { frameworkApplicability: options.leftFrameworkApplicability });
+  }
+  if (options.rightFrameworkApplicability) {
+    Object.assign(value.right, { frameworkApplicability: options.rightFrameworkApplicability });
+  }
+  return value;
 }
 
 function customReviewServices(
@@ -162,12 +193,13 @@ function renderCustomReview(
     candidate('candidate-opaque', 'opaque-left-node-17', 'opaque-right-node-42', 'medium', 'osa-2025'),
   ],
   items?: { left: ContentItem[]; right: ContentItem[] },
+  scope: ReviewScope = primaryItalianScope,
 ) {
   const services = customReviewServices(candidates, items);
   const props: ReadOnlyReviewProps = Object.freeze({
     comparisonService: services.customComparisonService,
     candidateService: services.customCandidateService,
-    scope: primaryItalianScope,
+    scope,
   });
   render(<CurriculumComparisonReviewView {...props} />);
   return services;
@@ -233,6 +265,37 @@ describe('CURR-R4C Task 2 — comparison review UI contract', () => {
     expect(screen.getByText(/seleziona un candidato/i)).toBeInTheDocument();
   });
 
+  it('propagates shared schoolOrder, disciplineCode, and normativeCheckpoint to both read-only services', () => {
+    const services = renderCustomReview([], deterministicInstrumentReviewItems, createReviewScope({
+      schoolOrder: 'primaria',
+      disciplineCode: 'italiano',
+      normativeCheckpoint: 'end-primary',
+    }));
+
+    fireEvent.change(screen.getByRole('combobox', { name: /ordine/i }), { target: { value: 'secondaria' } });
+    fireEvent.change(screen.getByRole('combobox', { name: /disciplina|area/i }), { target: { value: 'musica' } });
+    fireEvent.change(screen.getByRole('combobox', { name: /checkpoint|traguardo/i }), {
+      target: { value: 'end-primary-grade-3' },
+    });
+
+    expect(services.customComparisonService.compare).toHaveBeenCalled();
+    expect(services.customCandidateService.generateCandidates).toHaveBeenCalled();
+    for (const [, , scope] of vi.mocked(services.customComparisonService.compare).mock.calls) {
+      expect(scope).toMatchObject({
+        schoolOrder: 'secondaria',
+        disciplineCode: 'musica',
+        normativeCheckpoint: 'end-primary-grade-3',
+      });
+    }
+    for (const [, , scope] of vi.mocked(services.customCandidateService.generateCandidates).mock.calls) {
+      expect(scope).toMatchObject({
+        schoolOrder: 'secondaria',
+        disciplineCode: 'musica',
+        normativeCheckpoint: 'end-primary-grade-3',
+      });
+    }
+  });
+
   it('joins and highlights endpoints by opaque nodeId, not by candidate id or visible text', () => {
     const services = renderCustomReview();
     const button = screen.getByRole('button', { name: /candidate-opaque/i });
@@ -284,6 +347,110 @@ describe('CURR-R4C Task 2 — comparison review UI contract', () => {
     const rightEndpoint = screen.getByText(services.right.text);
     expect(rightEndpoint).toHaveAttribute('data-normative-node-kind', 'osa-2025');
     expect(within(rightEndpoint.parentElement as HTMLElement).getByText(/OSA 2025/i)).toBeInTheDocument();
+  });
+
+  it('keeps source-native area codes on their originating framework side', () => {
+    const sourceNativeCandidate = candidate(
+      'candidate-source-native-areas',
+      'opaque-left-node-17',
+      'opaque-right-node-42',
+      'medium',
+      'osa-2025',
+      {
+        leftSourceAreaCode: 'strumento-musicale',
+        rightSourceAreaCode: 'musica',
+      },
+    );
+    const services = renderCustomReview([sourceNativeCandidate]);
+    fireEvent.click(screen.getByRole('button', { name: /candidate-source-native-areas/i }));
+
+    const leftEndpoint = screen.getByText(services.left.text);
+    const rightEndpoint = screen.getByText(services.right.text);
+    expect(leftEndpoint).toHaveAttribute('data-source-area-code', 'strumento-musicale');
+    expect(rightEndpoint).toHaveAttribute('data-source-area-code', 'musica');
+    expect(leftEndpoint).not.toHaveAttribute('data-source-area-code', 'musica');
+    expect(rightEndpoint).not.toHaveAttribute('data-source-area-code', 'strumento-musicale');
+    expect(screen.queryByText('IN2012:musica')).not.toBeInTheDocument();
+    expect(screen.queryByText('IN2025:strumento-musicale')).not.toBeInTheDocument();
+  });
+
+  it('shows the selected relation inspector as descriptive and non-editable', () => {
+    const inspectedCandidate = candidate(
+      'candidate-inspector-contract',
+      'opaque-left-node-17',
+      'opaque-right-node-42',
+      'high',
+      'osa-2025',
+      {
+        relationKind: 'possible-continuity',
+        evidence: [
+          { kind: 'same-discipline', disciplineCode: 'italiano' },
+          { kind: 'same-school-order', schoolOrder: 'primaria' },
+          { kind: 'same-checkpoint', checkpoint: 'end-primary' },
+        ],
+        leftNodeType: 'obiettivo',
+        rightNodeType: 'competenza',
+        leftFrameworkApplicability: {
+          framework: 'IN2012',
+          resolutionStatus: 'resolved',
+          resolutionReason: 'BEFORE_TRANSITION',
+        },
+        rightFrameworkApplicability: {
+          framework: 'IN2025',
+          resolutionStatus: 'resolved',
+          resolutionReason: 'ENTRY_COHORT_2026_OR_LATER',
+          cohortEntryYear: 2026,
+        },
+      },
+    );
+    const services = renderCustomReview([inspectedCandidate]);
+    fireEvent.click(screen.getByRole('button', { name: /candidate-inspector-contract/i }));
+
+    expect(screen.getByText('possible-continuity')).toBeInTheDocument();
+    expect(screen.getByText(/same-discipline/i)).toBeInTheDocument();
+    expect(screen.getByText(/same-school-order/i)).toBeInTheDocument();
+    expect(screen.getByText(/same-checkpoint/i)).toBeInTheDocument();
+    expect(screen.getByText(/high|alta/i)).toBeInTheDocument();
+    expect(screen.getByText(/obiettivo/i)).toBeInTheDocument();
+    expect(screen.getByText(/competenza/i)).toBeInTheDocument();
+    expect(screen.getByText(/objective-2012/i)).toBeInTheDocument();
+    expect(screen.getByText(/osa-2025/i)).toBeInTheDocument();
+    expect(screen.getByText(/BEFORE_TRANSITION/i)).toBeInTheDocument();
+    expect(screen.getByText(/ENTRY_COHORT_2026_OR_LATER/i)).toBeInTheDocument();
+    expect(screen.getByText('Candidato')).toBeInTheDocument();
+    expect(screen.getByText('Candidato').closest('button')).toBeNull();
+    expect(screen.getByText(services.left.text)).toHaveAttribute('data-node-type', 'obiettivo');
+    expect(screen.getByText(services.right.text)).toHaveAttribute('data-node-type', 'competenza');
+  });
+
+  it('covers all confidence values without exposing an editable relation state', () => {
+    const candidates = (['low', 'medium', 'high'] as const).map(confidence =>
+      candidate(`candidate-confidence-${confidence}`, 'opaque-left-node-17', 'opaque-right-node-42', confidence),
+    );
+    renderCustomReview(candidates);
+
+    for (const confidence of ['low', 'medium', 'high']) {
+      fireEvent.click(screen.getByRole('button', { name: new RegExp(`candidate-confidence-${confidence}`, 'i') }));
+      expect(screen.getByText(new RegExp(confidence, 'i'))).toBeInTheDocument();
+    }
+  });
+
+  it('has an explicit UI blacklist for write or equivalence actions', () => {
+    renderCustomReview(selectionCandidates);
+
+    for (const forbiddenText of [
+      /Approva/i,
+      /Conferma equivalenza/i,
+      /Sostituisci/i,
+      /Accetta mapping/i,
+      /Salva relazione/i,
+      /equivalente/i,
+      /approvato/i,
+      /CurriculumLink/i,
+    ]) {
+      expect(screen.queryByText(forbiddenText)).not.toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: forbiddenText })).not.toBeInTheDocument();
+    }
   });
 
   it('keeps Strumento musicale structural-only and marks 2025 normative nodes explicitly as OSA', () => {
