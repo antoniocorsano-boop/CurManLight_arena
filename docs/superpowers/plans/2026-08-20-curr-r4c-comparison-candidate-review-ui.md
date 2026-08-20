@@ -15,8 +15,8 @@
 **Files:**
 - Create: `src/features/curriculum/components/curriculumComparisonReviewModel.ts`
 - Test: `src/__tests__/curriculum-domain/curriculum-comparison-review-model.test.ts`
-- Modify: `src/domain/curriculum/nationalCurriculumComparison.ts` only if side-specific source-area scope is required
-- Modify: `src/domain/curriculum/nationalCurriculumSemanticCandidates.ts` only if the same scope must flow into candidate generation
+- Modify: `src/domain/curriculum/nationalCurriculumComparison.ts` only after a failing R4C test proves the current API cannot represent side-specific source-area scope
+- Modify: `src/domain/curriculum/nationalCurriculumSemanticCandidates.ts` only after the same failing R4C test proves the candidate API also needs that additive scope
 
 - [ ] **Step 1: Write failing tests for source and selection contracts**
 
@@ -85,9 +85,9 @@ export function resetSelectionOnScopeChange(state: { selectedCandidateId: string
 
 Resolve endpoints strictly by `nodeId`; never fall back to text, label, position, proximity, or confidence.
 
-- [ ] **Step 4: Extend R4A/R4B scope only if the failing area test proves it necessary**
+- [ ] **Step 4: Extend R4A/R4B scope only after a fail-closed proof**
 
-If side-specific source areas are needed, preserve existing callers and add:
+Do not modify R4A or R4B to simplify the UI. First run the focused R4C source-native-area test against the current APIs. Only if that test demonstrates that side-specific selection cannot be represented, preserve existing callers and add:
 
 ```ts
 export interface ComparisonScope {
@@ -177,7 +177,7 @@ Expected: FAIL because the component is not implemented.
 interface CurriculumComparisonReviewViewProps {
   comparisonService: NationalCurriculumComparisonService;
   candidateService: SemanticMappingCandidateService;
-  initialScope?: ReviewScope;
+  scope?: ReviewScope;
 }
 ```
 
@@ -185,7 +185,7 @@ Keep `selectedCandidateId` local and initialize it to `null). Reset it when shar
 
 - [ ] **Step 2: Render filters and two framework panels**
 
-Render labelled controls for school order, discipline/area, checkpoint, and side-specific source areas. Use shared scope for school order, discipline, and checkpoint; pass source-area selections only to their originating side. Render IN2012 left and IN2025 right with node IDs and metadata.
+Render labelled controls for school order, discipline/area, checkpoint, and side-specific source areas. Use shared scope for school order, discipline, and checkpoint; pass source-area selections only to their originating side. Render IN2012 left and IN2025 right with human-readable content and metadata. Keep `nodeId` internal for joins, highlighting, and tests; do not render it as ordinary UI content.
 
 - [ ] **Step 3: Render separate R4A and R4B lower sections**
 
@@ -292,10 +292,11 @@ Expected: `test:fast` remains `273/273 PASS`, TypeScript exits 0, and Vite build
 - [ ] **Step 4: Audit the write boundary**
 
 ```bash
-rg -n "onApprove|onSave|onCreateLink|CurriculumLink|create.*Link|persist|save|approve|accept" src/features/curriculum/components/CurriculumComparisonReviewView.tsx src/features/curriculum/components/CurriculumTab.tsx
+rg -n "onApprove|onSave|onCreateLink|CurriculumLink|create.*Link|persist|save|approve|accept" src/features/curriculum/components/CurriculumComparisonReviewView.tsx
+rg -n "activeCurricoloView === 'confronto'|CurriculumComparisonReviewView" src/features/curriculum/components/CurriculumTab.tsx
 ```
 
-Expected: no approval, persistence, or link-creation handlers in the R4C view or integration path.
+Expected: the new R4C component has no approval, persistence, or link-creation handlers; the `CurriculumTab` match is limited to the dedicated `confronto` branch and component integration. Existing save/import behavior in other `CurriculumTab` sub-views is outside this audit.
 
 - [ ] **Step 5: Push only the R4C implementation**
 
@@ -318,4 +319,3 @@ Do not add `src/__tests__/curriculum-domain/import-test.test.ts`, `AGENTS.md`, `
 - Responsive layout preserves endpoint identity.
 - No approval, edit, persistence, `CurriculumLink`, or R5 workflow path exists.
 - `CurriculumTab` is the only integration boundary; no route or NationalCurriculumView replacement is introduced.
-
