@@ -270,6 +270,8 @@ describe('CURR-R4C Task 2 — comparison review UI contract', () => {
       schoolOrder: 'primaria',
       disciplineCode: 'italiano',
       normativeCheckpoint: 'end-primary',
+      leftSourceAreaCode: 'strumento-musicale',
+      rightSourceAreaCode: 'musica',
     }));
 
     fireEvent.change(screen.getByRole('combobox', { name: /ordine/i }), { target: { value: 'secondaria' } });
@@ -285,14 +287,18 @@ describe('CURR-R4C Task 2 — comparison review UI contract', () => {
         schoolOrder: 'secondaria',
         disciplineCode: 'musica',
         normativeCheckpoint: 'end-primary-grade-3',
+        sourceAreaCode: 'strumento-musicale',
       });
+      expect(scope).not.toMatchObject({ sourceAreaCode: 'musica' });
     }
     for (const [, , scope] of vi.mocked(services.customCandidateService.generateCandidates).mock.calls) {
       expect(scope).toMatchObject({
         schoolOrder: 'secondaria',
         disciplineCode: 'musica',
         normativeCheckpoint: 'end-primary-grade-3',
+        sourceAreaCode: 'musica',
       });
+      expect(scope).not.toMatchObject({ sourceAreaCode: 'strumento-musicale' });
     }
   });
 
@@ -421,6 +427,20 @@ describe('CURR-R4C Task 2 — comparison review UI contract', () => {
     expect(screen.getByText('Candidato').closest('button')).toBeNull();
     expect(screen.getByText(services.left.text)).toHaveAttribute('data-node-type', 'obiettivo');
     expect(screen.getByText(services.right.text)).toHaveAttribute('data-node-type', 'competenza');
+
+    for (const forbiddenText of [
+      /Approva/i,
+      /Conferma equivalenza/i,
+      /Sostituisci/i,
+      /Accetta mapping/i,
+      /Salva relazione/i,
+      /equivalente/i,
+      /approvato/i,
+      /CurriculumLink/i,
+    ]) {
+      expect(screen.queryByText(forbiddenText)).not.toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: forbiddenText })).not.toBeInTheDocument();
+    }
   });
 
   it('covers all confidence values without exposing an editable relation state', () => {
@@ -504,6 +524,12 @@ describe('CURR-R4C Task 2 — comparison review UI contract', () => {
       fireEvent(window, new Event('resize'));
       expect(layout).toHaveAttribute('data-layout', 'narrow-sequential');
       expect(window.matchMedia).toHaveBeenCalledWith('(max-width: 767px)');
+
+      const leftPanel = screen.getByRole('region', { name: /IN2012/i });
+      const rightPanel = screen.getByRole('region', { name: /IN2025/i });
+      expect(within(leftPanel).getByRole('heading', { name: 'IN2012' })).toBeInTheDocument();
+      expect(within(rightPanel).getByRole('heading', { name: 'IN2025' })).toBeInTheDocument();
+      expect(leftPanel.compareDocumentPosition(rightPanel) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     } finally {
       window.matchMedia = originalMatchMedia;
     }
