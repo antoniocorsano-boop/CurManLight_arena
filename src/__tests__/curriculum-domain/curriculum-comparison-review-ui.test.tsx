@@ -26,7 +26,7 @@ const primaryItalianScope = createReviewScope({
 type ReadOnlyReviewProps = Readonly<{
   comparisonService: NationalCurriculumComparisonService;
   candidateService: SemanticMappingCandidateService;
-  scope: ReviewScope;
+  scope?: ReviewScope;
 }>;
 
 type ForbiddenReviewProp = 'onApprove' | 'onSave' | 'onCreateLink' | 'persist' | 'CurriculumLink';
