@@ -126,9 +126,11 @@ function FilterSelect({
 function Inspector({
   candidates,
   selectedCandidateId,
+  onSelectCandidate,
 }: {
   candidates: ReturnType<typeof buildComparisonReviewModel>['candidates'];
   selectedCandidateId: string | null;
+  onSelectCandidate: (candidateId: string) => void;
 }) {
   const selected = candidates.find(candidate => candidate.candidate.id === selectedCandidateId)?.candidate ?? null;
   return (
@@ -146,6 +148,7 @@ function Inspector({
                 data-candidate-id={candidate.id}
                 aria-pressed={candidate.id === selectedCandidateId}
                 aria-label={candidate.id}
+                onClick={() => onSelectCandidate(candidate.id)}
               >
                 Seleziona
               </button>
@@ -213,8 +216,8 @@ export function CurriculumComparisonReviewView({ comparisonService, candidateSer
         <h2>Differenze strutturali</h2>
         {comparison.structuralDifferences.length === 0 ? <p>Nessuna differenza strutturale per questa selezione.</p> : <ul>{comparison.structuralDifferences.map((difference, index) => <li key={`${difference.kind}-${index}`}>{difference.description}</li>)}</ul>}
       </section>
-      <div onClick={event => { const target = event.target as HTMLElement; const button = target.closest<HTMLButtonElement>('button[data-candidate-id]'); if (button) setSelectedCandidateId(button.dataset.candidateId ?? null); }}>
-        <Inspector candidates={model.candidates} selectedCandidateId={selectedCandidateId} />
+      <div>
+        <Inspector candidates={model.candidates} selectedCandidateId={selectedCandidateId} onSelectCandidate={setSelectedCandidateId} />
       </div>
     </main>
   );
