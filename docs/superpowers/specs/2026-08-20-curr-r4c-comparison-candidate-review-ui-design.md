@@ -28,9 +28,17 @@ Neither section may use action language such as Approva, Conferma equivalenza, S
 
 ## Candidate inspector
 
-When no candidate is available for the current selection, the inspector shows:
+The candidate area has three explicit states:
+
+- when `candidates.length === 0`, show:
 
 > Nessuna corrispondenza candidata per questa selezione.
+
+- when `candidates.length > 0` and `selectedCandidateId === null`, show the candidate list and:
+
+> Seleziona un candidato per visualizzare le evidenze.
+
+- when `selectedCandidateId !== null`, show the candidate list and the detailed inspector below it.
 
 When a candidate is selected, the inspector shows, read-only:
 
@@ -44,15 +52,23 @@ When a candidate is selected, the inspector shows, read-only:
 
 No state transition is exposed.
 
+The initial `selectedCandidateId` is always `null`. R4C must not automatically select or rank a candidate. Candidate ordering must not default to confidence descending; deterministic R4B ordering is not semantic ranking. When school order, discipline/area, or checkpoint changes, R4A and R4B are recomputed and `selectedCandidateId` is reset to `null`.
+
 ## Data flow and boundaries
 
 The UI receives context and derives its read model from the existing R4A and R4B services. It must not access fixtures directly, mutate service results, write to application stores, create `CurriculumLink` entities, or call institutional revision flows.
 
 The view should derive filtered comparison and candidate data from the same filter state, keeping the two framework panels, structural differences, and candidate inspector synchronized.
 
-The UI consumes R4A and R4B services through explicit read-only adapters or props. It must not import or read `fixture2012` or `fixture2025` directly. The filter scope—school order, discipline/area, and normative checkpoint—must be passed to both services consistently and deterministically.
+The UI consumes R4A and R4B services through explicit read-only adapters or props. It must not import or read `fixture2012` or `fixture2025` directly. Shared filters are passed to both services consistently and deterministically, while source-native area identity remains framework-specific as defined below.
 
 The component API must not expose approval, save, edit, candidate-state, or link-creation callbacks such as `onApprove`, `onSave`, or `onCreateLink`. Candidate selection is local view state only.
+
+Filter semantics are explicit: school order is a shared scope; `disciplineCode` is a shared scope when applicable; normative checkpoint is a shared scope; source-native area selection retains the originating framework identity and is not a cross-framework equivalence. `sourceAreaCode` values from IN2012 and IN2025 must never be assumed equal merely because the strings match.
+
+When a candidate is displayed, its endpoints resolve strictly by identifier: `candidate.left.nodeId` maps to `comparison.left.items[id]`, and `candidate.right.nodeId` maps to `comparison.right.items[id]`. The UI must not join endpoints by text, label, list position, or visual proximity.
+
+The integration boundary is `CurriculumTab`: R4C is a dedicated curriculum sub-view, requires no new top-level route, and does not replace `NationalCurriculumView`. It must not be implemented as a modal, institutional revision route, or main application workflow.
 
 ## Empty and edge states
 
@@ -93,5 +109,12 @@ R4C is complete only when focused UI tests cover:
 - candidate selection and synchronized highlighting;
 - candidate inspector details and empty state;
 - absent approval, edit, persistence, and `CurriculumLink` write paths.
+
+Focused acceptance tests must also cover:
+
+- source-native area codes are not treated as cross-framework identity;
+- candidate endpoints resolve by `nodeId`, never by text;
+- changing scope clears `selectedCandidateId`;
+- multiple candidates are neither automatically selected nor ranked by confidence.
 
 The repository gates remain `curriculum-domain`, `test:fast`, `tsc --noEmit`, and `build`.
