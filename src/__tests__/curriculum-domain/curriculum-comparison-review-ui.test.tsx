@@ -30,11 +30,20 @@ type ReadOnlyReviewProps = Readonly<{
 }>;
 
 type ForbiddenReviewProp = 'onApprove' | 'onSave' | 'onCreateLink' | 'persist' | 'CurriculumLink';
-type AssertExactProps<Actual, Expected> = [Actual] extends [Expected]
-  ? [Expected] extends [Actual]
-    ? true
-    : never
-  : never;
+type IsAny<T> = 0 extends (1 & T) ? true : false;
+type AssertExactProps<Actual, Expected> = IsAny<Actual> extends true
+  ? true
+  : [keyof Actual] extends [never]
+  ? true
+  : [Exclude<keyof Actual, keyof Expected>] extends [never]
+    ? [Exclude<keyof Expected, keyof Actual>] extends [never]
+      ? [Actual] extends [Expected]
+        ? [Expected] extends [Actual]
+          ? true
+          : never
+        : never
+      : never
+    : never;
 type AssertNoForbiddenReviewProps<Props> = Extract<keyof Props, ForbiddenReviewProp> extends never ? true : never;
 
 const reviewViewMatchesReadOnlyContract: AssertExactProps<
@@ -79,6 +88,11 @@ const customReviewItems: ReviewItems = {
     contentItem('opaque-right-node-42', 'Testo destro non identificativo', 'IN2025', 'osa-2025'),
     contentItem('opaque-right-node-43', 'Secondo testo destro', 'IN2025', 'osa-2025'),
   ],
+};
+
+const deterministicInstrumentReviewItems: ReviewItems = {
+  left: [contentItem('instrument-left-node', 'Strumento musicale', 'IN2012', 'objective-2012')],
+  right: [contentItem('instrument-right-node', 'Strumento musicale', 'IN2025', 'osa-2025')],
 };
 
 function candidate(
@@ -170,12 +184,7 @@ describe('CURR-R4C Task 2 — comparison review UI contract', () => {
   });
 
   it('shows an empty inspector when candidates are absent', () => {
-    renderReview(createReviewScope({
-      schoolOrder: 'secondaria',
-      disciplineCode: 'musica',
-      leftSourceAreaCode: 'in2025-strumento-musicale',
-      rightSourceAreaCode: 'in2025-strumento-musicale',
-    }));
+    renderCustomReview([], deterministicInstrumentReviewItems);
 
     expect(screen.getByText(/nessun candidato semantico/i)).toBeInTheDocument();
   });
@@ -183,15 +192,16 @@ describe('CURR-R4C Task 2 — comparison review UI contract', () => {
   it('shows the candidate list and selection prompt without an initial selection', () => {
     renderCustomReview(selectionCandidates);
 
-    expect(selectionCandidates).toHaveLength(2);
+    const candidateButtons = screen.getAllByRole('button', { name: /candidate-selection/i });
+    expect(candidateButtons).toHaveLength(selectionCandidates.length);
+    expect(candidateButtons.map(button => button.getAttribute('data-candidate-id'))).toEqual(
+      selectionCandidates.map(item => item.id),
+    );
     expect(screen.getByText(/seleziona un candidato/i)).toBeInTheDocument();
-    expect(screen.getAllByRole('button').length).toBeGreaterThan(0);
   });
 
   it('opens candidate details only after the user selects a candidate', () => {
     const services = renderCustomReview(selectionCandidates);
-    const first = selectionCandidates[0];
-    if (!first) throw new Error('selection fixture is empty');
     const candidateButton = screen.getByRole('button', { name: /candidate-selection$/i });
 
     expect(screen.getByText(/seleziona un candidato/i)).toBeInTheDocument();
@@ -277,11 +287,7 @@ describe('CURR-R4C Task 2 — comparison review UI contract', () => {
   });
 
   it('keeps Strumento musicale structural-only and marks 2025 normative nodes explicitly as OSA', () => {
-    renderReview(createReviewScope({
-      schoolOrder: 'secondaria',
-      disciplineCode: 'musica',
-      rightSourceAreaCode: 'in2025-strumento-musicale',
-    }));
+    renderCustomReview([], deterministicInstrumentReviewItems);
 
     expect(screen.getByText(/Strumento musicale/i)).toBeInTheDocument();
     expect(screen.getByText(/OSA 2025/i)).toBeInTheDocument();
