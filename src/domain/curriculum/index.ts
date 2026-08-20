@@ -246,3 +246,19 @@ export type {
   SemanticCandidateEvidence,
   SemanticCandidateConfidence,
 } from './nationalCurriculumSemanticCandidates';
+
+// CURR-R4D-A Gap / Continuity Report read model
+export { createCurriculumGapContinuityReport } from './curriculumGapContinuityReport';
+export type {
+  CurriculumGapContinuityReport,
+  CurriculumGapContinuityFinding,
+  CandidateContinuityFinding,
+  GapFinding,
+  StructuralFactFinding,
+  UnresolvedStructuralCaseFinding,
+  GapContinuityFindingType,
+  StructuralFactCategory,
+  UnresolvedStructuralCaseCategory,
+  ReportProvenance,
+  ReportReferences,
+} from './curriculumGapContinuityReport';
