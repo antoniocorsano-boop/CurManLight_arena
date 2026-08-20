@@ -6,6 +6,8 @@ import type {
   RevisionArchive,
   RevisionEvidenceReference,
 } from './types';
+import { validateInstitutionalDecisionQualification } from './institutionalDecisionQualification';
+import type { InstitutionalDecisionQualification } from './institutionalDecisionQualification';
 export type { RevisionEvidenceReference } from './types';
 
 export interface FormalInstitutionalValidation {
@@ -25,6 +27,7 @@ export interface RevisionVersionBridgeInput {
   versionRepository: CurriculumVersionRepositoryPort;
   requireFormalInstitutionalValidation: boolean;
   formalInstitutionalValidation?: FormalInstitutionalValidation;
+  institutionalDecisionQualification?: InstitutionalDecisionQualification;
   targetStatus?: 'draft' | 'proposed-to-collegio' | 'approved';
   activation?: { effectiveFrom?: string; effectiveTo?: string };
 }
@@ -91,11 +94,24 @@ export async function prepareCurriculumVersionFromDecision(
   if (!['approve', 'approve-with-changes'].includes(decision.outcome)) return blocked('Decision outcome does not authorize version preparation.');
   if (decision.status !== 'recorded-local') return blocked('Decision is not in the existing recorded-local state.');
   if (!decision.authority?.declaredRole) return blocked('Decision authority is required.');
-  if (input.requireFormalInstitutionalValidation && !input.formalInstitutionalValidation?.validated) {
-    return blocked('Formal institutional validation is required; recorded-local is not formal institutional validation.');
-  }
   if (input.formalInstitutionalValidation && !isValidEntityReference(input.formalInstitutionalValidation.reference)) {
     return blocked('Formal institutional validation reference is invalid.');
+  }
+  if (input.requireFormalInstitutionalValidation) {
+    if (!input.institutionalDecisionQualification) {
+      return blocked('Formal institutional validation is required; recorded-local is not formal institutional validation.');
+    }
+    const qualification = validateInstitutionalDecisionQualification(
+      input.institutionalDecisionQualification,
+      { id: decision.id, entityType: 'decision' },
+    );
+    if (!qualification.valid) return blocked(`Institutional decision qualification is invalid: ${qualification.errors.join(' ')}`);
+  } else if (input.institutionalDecisionQualification) {
+    const qualification = validateInstitutionalDecisionQualification(
+      input.institutionalDecisionQualification,
+      { id: decision.id, entityType: 'decision' },
+    );
+    if (!qualification.valid) return blocked(`Institutional decision qualification is invalid: ${qualification.errors.join(' ')}`);
   }
 
   if (proposal.evidenceRefs.some(reference => !isValidRevisionEvidenceRef(reference))) {
