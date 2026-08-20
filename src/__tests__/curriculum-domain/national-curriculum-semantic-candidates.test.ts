@@ -236,6 +236,18 @@ describe('SemanticMappingCandidateService (CURR-R4B)', () => {
     // We don't assert on the length because we are not implementing area<->area yet.
   });
 
+  it('should preserve independent normalized source areas on candidate endpoints', () => {
+    const candidates = candidateService.generateCandidates('IN2012', 'IN2025', {
+      schoolOrder: 'primaria',
+      leftSourceAreaCode: 'in2012-italiano',
+      rightSourceAreaCode: 'in2025-italiano',
+    });
+
+    expect(candidates.length).toBeGreaterThan(0);
+    expect(candidates.every(candidate => candidate.left.sourceAreaCode === 'in2012-italiano')).toBe(true);
+    expect(candidates.every(candidate => candidate.right.sourceAreaCode === 'in2025-italiano')).toBe(true);
+  });
+
   it('should not generate false candidate for STEM ↔ disciplina', () => {
     // STEM is not a discipline in our vocabularies, so we should not get any candidate that compares STEM to a discipline.
     // We'll try to generate candidates for a discipline that is not STEM, but we don't have STEM as a discipline code.

@@ -85,6 +85,20 @@ describe('NationalCurriculumComparisonService (CURR-R4A)', () => {
     // expect(rightArea).toBeDefined(); // Temporarily commenting out to see what happens
   });
 
+  it('should apply independent source area codes and expose normalized item area metadata', () => {
+    const result = comparisonService.compare('IN2012', 'IN2025', {
+      schoolOrder: 'primaria',
+      leftSourceAreaCode: 'in2012-italiano',
+      rightSourceAreaCode: 'in2025-italiano',
+    });
+
+    expect(result.left.items.length).toBeGreaterThan(0);
+    expect(result.right.items.length).toBeGreaterThan(0);
+    expect(result.left.items.every(item => result.left.itemSourceAreaCodes![item.id] === 'in2012-italiano')).toBe(true);
+    expect(result.right.items.every(item => result.right.itemSourceAreaCodes![item.id] === 'in2025-italiano')).toBe(true);
+    expect(result.left.itemSourceAreaCodes).not.toEqual(result.right.itemSourceAreaCodes);
+  });
+
   it('should keep checkpoints distinct', () => {
     const result = comparisonService.compare('IN2012', 'IN2025', {
       schoolOrder: 'primaria' as SchoolOrder

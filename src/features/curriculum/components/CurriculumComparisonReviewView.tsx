@@ -36,18 +36,14 @@ function useWideLayout(): boolean {
   return wide;
 }
 
-function itemAreaCode(item: ContentItem): string | undefined {
-  return (item as ContentItem & { sourceAreaCode?: string }).sourceAreaCode;
-}
-
 function itemLabel(item: ContentItem): string {
   return item.text;
 }
 
-function Endpoint({ item, frameworkId, highlighted, metadata, showText = true }: { item: ContentItem; frameworkId: 'IN2012' | 'IN2025'; highlighted: boolean; metadata?: SemanticMappingCandidate['left'] | SemanticMappingCandidate['right']; showText?: boolean }) {
+function Endpoint({ item, frameworkId, highlighted, metadata, areaCode, showText = true }: { item: ContentItem; frameworkId: 'IN2012' | 'IN2025'; highlighted: boolean; metadata?: SemanticMappingCandidate['left'] | SemanticMappingCandidate['right']; areaCode?: string; showText?: boolean }) {
   const nodeType = metadata?.nodeType ?? item.nodeType;
   const normativeNodeKind = metadata?.normativeNodeKind ?? item.normativeNodeKind;
-  const sourceAreaCode = metadata?.sourceAreaCode ?? itemAreaCode(item);
+  const sourceAreaCode = metadata?.sourceAreaCode ?? areaCode;
   return (
     <article className={highlighted ? 'curriculum-review-endpoint curriculum-review-endpoint--highlighted' : 'curriculum-review-endpoint'}>
       {showText ? (
@@ -68,11 +64,13 @@ function Endpoint({ item, frameworkId, highlighted, metadata, showText = true }:
 function FrameworkPanel({
   frameworkId,
   items,
+  itemSourceAreaCodes,
   selectedCandidate,
   duplicateLabels,
 }: {
   frameworkId: 'IN2012' | 'IN2025';
   items: ContentItem[];
+  itemSourceAreaCodes: Record<string, string | undefined>;
   selectedCandidate: SemanticMappingCandidate | null;
   duplicateLabels: Set<string>;
 }) {
@@ -89,6 +87,7 @@ function FrameworkPanel({
               key={item.id}
               item={item}
               frameworkId={frameworkId}
+              areaCode={itemSourceAreaCodes[item.id]}
               highlighted={item.id === selectedNodeId}
               metadata={selectedNodeId === item.id ? selectedCandidate?.[frameworkId === 'IN2012' ? 'left' : 'right'] : undefined}
               showText={!(frameworkId === 'IN2025' && duplicateLabels.has(item.text))}
@@ -102,11 +101,13 @@ function FrameworkPanel({
 
 function FilterSelect({
   label,
+  ariaLabel,
   value,
   onChange,
   options,
 }: {
   label: string;
+  ariaLabel?: string;
   value: string;
   onChange: (value: string) => void;
   options: string[];
@@ -114,7 +115,7 @@ function FilterSelect({
   return (
     <label>
       {label}
-      <select aria-label={label} value={value} onChange={event => onChange(event.target.value)}>
+      <select aria-label={ariaLabel ?? label} value={value} onChange={event => onChange(event.target.value)}>
         <option value="">Tutti</option>
         {options.map(option => <option key={option} value={option}>{option}</option>)}
       </select>
@@ -180,12 +181,14 @@ export function CurriculumComparisonReviewView({ comparisonService, candidateSer
     setSelectedCandidateId(null);
   }, [scope?.schoolOrder, scope?.disciplineCode, scope?.normativeCheckpoint, scope?.leftSourceAreaCode, scope?.rightSourceAreaCode]);
 
-  const serviceScope = filters as ReviewScope & { sourceAreaCode?: string };
+  const serviceScope = filters;
   const comparison = comparisonService.compare('IN2012', 'IN2025', serviceScope);
   const candidates = candidateService.generateCandidates('IN2012', 'IN2025', serviceScope);
+  const leftItemSourceAreaCodes = comparison.left.itemSourceAreaCodes ?? {};
+  const rightItemSourceAreaCodes = comparison.right.itemSourceAreaCodes ?? {};
   const noScopedContent = Boolean(
-    (filters.leftSourceAreaCode && !comparison.left.items.some(item => itemAreaCode(item) === filters.leftSourceAreaCode))
-    || (filters.rightSourceAreaCode && !comparison.right.items.some(item => itemAreaCode(item) === filters.rightSourceAreaCode)),
+    (filters.leftSourceAreaCode && !comparison.left.items.some(item => leftItemSourceAreaCodes[item.id] === filters.leftSourceAreaCode))
+    || (filters.rightSourceAreaCode && !comparison.right.items.some(item => rightItemSourceAreaCodes[item.id] === filters.rightSourceAreaCode)),
   );
   const visibleComparison: NationalCurriculumComparisonResult = noScopedContent
     ? {
@@ -210,11 +213,13 @@ export function CurriculumComparisonReviewView({ comparisonService, candidateSer
           <FilterSelect label="Ordine scolastico" value={filters.schoolOrder ?? ''} onChange={value => update('schoolOrder', value)} options={['primaria', 'secondaria']} />
           <FilterSelect label="Disciplina/area" value={filters.disciplineCode ?? ''} onChange={value => update('disciplineCode', value)} options={['italiano', 'matematica', 'musica']} />
           <FilterSelect label="Checkpoint" value={filters.normativeCheckpoint ?? ''} onChange={value => update('normativeCheckpoint', value)} options={['end-primary', 'end-primary-grade-3']} />
+          <FilterSelect label="Area IN2012" ariaLabel="Filtro IN2012" value={filters.leftSourceAreaCode ?? ''} onChange={value => update('leftSourceAreaCode', value)} options={comparison.left.areas.map(area => area.code)} />
+          <FilterSelect label="Area IN2025" ariaLabel="Filtro IN2025" value={filters.rightSourceAreaCode ?? ''} onChange={value => update('rightSourceAreaCode', value)} options={comparison.right.areas.map(area => area.code)} />
         </div>
       </header>
       <div style={{ display: wide ? 'grid' : 'block', gridTemplateColumns: '1fr 1fr' }}>
-        <FrameworkPanel frameworkId="IN2012" items={visibleComparison.left.items} selectedCandidate={selected} duplicateLabels={new Set(visibleComparison.left.items.map(item => item.text))} />
-        <FrameworkPanel frameworkId="IN2025" items={visibleComparison.right.items} selectedCandidate={selected} duplicateLabels={new Set(visibleComparison.left.items.map(item => item.text))} />
+        <FrameworkPanel frameworkId="IN2012" items={visibleComparison.left.items} itemSourceAreaCodes={leftItemSourceAreaCodes} selectedCandidate={selected} duplicateLabels={new Set(visibleComparison.left.items.map(item => item.text))} />
+        <FrameworkPanel frameworkId="IN2025" items={visibleComparison.right.items} itemSourceAreaCodes={rightItemSourceAreaCodes} selectedCandidate={selected} duplicateLabels={new Set(visibleComparison.left.items.map(item => item.text))} />
       </div>
       <section>
         <h2>Differenze strutturali</h2>

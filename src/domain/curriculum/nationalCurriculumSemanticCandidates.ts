@@ -172,7 +172,7 @@ export function createSemanticMappingCandidateService(
               nodeId: leftNode.id,
               schoolOrder: leftNode.schoolOrder,
               disciplineCode: leftNode.disciplineCode,
-              sourceAreaCode: undefined, // we don't have it in ContentItem, we could look up the segment but skip for now
+              sourceAreaCode: comparisonResult.left.itemSourceAreaCodes?.[leftNode.id],
               sourceNucleus: undefined,
               nodeType: leftNode.nodeType,
               normativeCheckpoint: leftNode.normativeCheckpoint,
@@ -184,7 +184,7 @@ export function createSemanticMappingCandidateService(
               nodeId: rightNode.id,
               schoolOrder: rightNode.schoolOrder,
               disciplineCode: rightNode.disciplineCode,
-              sourceAreaCode: undefined,
+              sourceAreaCode: comparisonResult.right.itemSourceAreaCodes?.[rightNode.id],
               sourceNucleus: undefined,
               nodeType: rightNode.nodeType,
               normativeCheckpoint: rightNode.normativeCheckpoint,

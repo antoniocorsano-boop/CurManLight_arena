@@ -11,6 +11,8 @@ export interface ComparisonScope {
   disciplineCode?: DisciplineCode | null;
   sourceAreaKind?: SourceAreaKind;
   sourceAreaCode?: string;
+  leftSourceAreaCode?: string;
+  rightSourceAreaCode?: string;
   normativeCheckpoint?: NormativeCheckpoint;
 }
 
@@ -18,6 +20,7 @@ export interface FrameworkSideSummary {
   frameworkId: string;
   areas: AreaInfo[];
   items: ContentItem[];
+  itemSourceAreaCodes?: Record<string, string | undefined>;
 }
 
 export interface StructuralDifference {
@@ -76,7 +79,9 @@ function getAreasForFramework(frameworkId: string, scope: ComparisonScope): Area
     if (scope.sourceAreaKind !== undefined && segment.sourceArea?.kind !== scope.sourceAreaKind) {
       continue;
     }
-    if (scope.sourceAreaCode !== undefined && segment.sourceArea?.code !== scope.sourceAreaCode) {
+    const sideSourceAreaCode = frameworkId === 'IN2012' ? scope.leftSourceAreaCode : scope.rightSourceAreaCode;
+    const requestedSourceAreaCode = sideSourceAreaCode ?? scope.sourceAreaCode;
+    if (requestedSourceAreaCode !== undefined && segment.sourceArea?.code !== requestedSourceAreaCode) {
       continue;
     }
     const sourceArea = segment.sourceArea;
@@ -118,13 +123,16 @@ export function createNationalCurriculumComparisonService(): NationalCurriculumC
       const leftAreas = getAreasForFramework(leftFrameworkId, scope);
       const rightAreas = getAreasForFramework(rightFrameworkId, scope);
 
-      // Get content for each framework using the consultation service
+      // Get content for each framework using the consultation service.
+      // Source-area filters are intentionally side-specific for R4C.
+      const leftSourceAreaCode = scope.leftSourceAreaCode ?? scope.sourceAreaCode;
+      const rightSourceAreaCode = scope.rightSourceAreaCode ?? scope.sourceAreaCode;
       const leftContent = consultationService.listContent({
         frameworkId: leftFrameworkId,
         schoolOrder: scope.schoolOrder,
         disciplineCode: scope.disciplineCode,
         sourceAreaKind: scope.sourceAreaKind,
-        sourceAreaCode: scope.sourceAreaCode,
+        sourceAreaCode: leftSourceAreaCode,
         normativeCheckpoint: scope.normativeCheckpoint
         // Note: nodeType and text are not in our scope, so we leave them undefined
       });
@@ -134,7 +142,7 @@ export function createNationalCurriculumComparisonService(): NationalCurriculumC
         schoolOrder: scope.schoolOrder,
         disciplineCode: scope.disciplineCode,
         sourceAreaKind: scope.sourceAreaKind,
-        sourceAreaCode: scope.sourceAreaCode,
+        sourceAreaCode: rightSourceAreaCode,
         normativeCheckpoint: scope.normativeCheckpoint
       });
 
@@ -258,16 +266,21 @@ export function createNationalCurriculumComparisonService(): NationalCurriculumC
         return rightRefA.localeCompare(rightRefB);
       });
 
+      const itemSourceAreaCodes = (items: ContentItem[]): Record<string, string | undefined> =>
+        Object.fromEntries(items.map(item => [item.id, item.sourceAreaCode]));
+
       return {
         left: {
           frameworkId: leftFrameworkId,
           areas: leftAreas,
-          items: leftContent
+          items: leftContent,
+          itemSourceAreaCodes: itemSourceAreaCodes(leftContent),
         },
         right: {
           frameworkId: rightFrameworkId,
           areas: rightAreas,
-          items: rightContent
+          items: rightContent,
+          itemSourceAreaCodes: itemSourceAreaCodes(rightContent),
         },
         structuralDifferences: differences
       };

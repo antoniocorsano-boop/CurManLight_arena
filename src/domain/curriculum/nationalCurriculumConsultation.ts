@@ -51,6 +51,8 @@ export interface ContentItem {
   schoolOrder: SchoolOrder;
   disciplineCode: DisciplineCode | null;
   sourceAreaKind: SourceAreaKind;
+  /** Normalized join metadata; UI consumers should use the owning side summary. */
+  sourceAreaCode?: string;
 }
 
 export interface ContentDetail extends ContentItem {
@@ -305,6 +307,7 @@ export function createNationalCurriculumConsultationService(fixtures: readonly N
             schoolOrder: segment.schoolOrder,
             disciplineCode: segment.disciplineCode,
             sourceAreaKind: segment.sourceArea?.kind ?? 'discipline',
+            sourceAreaCode: segment.sourceArea?.code,
           });
         }
       }
