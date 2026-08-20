@@ -50,17 +50,31 @@ function isR4DEvidence(value: unknown): value is RevisionEvidenceReference {
     && candidate.reportItemId.trim().length > 0
     && Array.isArray(candidate.frameworkRefs)
     && Array.isArray(candidate.provenanceRefs)
-    && candidate.frameworkRefs.every(ref => !!ref?.id && !!ref?.entityType)
-    && candidate.provenanceRefs.every(ref => !!ref?.id && !!ref?.entityType);
+    && candidate.frameworkRefs.every(ref => isValidEntityReference(ref))
+    && candidate.provenanceRefs.every(ref => isValidEntityReference(ref));
+}
+
+function isValidRevisionEvidenceRef(value: unknown): boolean {
+  if (!value || typeof value !== 'object') return false;
+  return isR4DEvidence(value) || isValidEntityReference(value);
 }
 
 function isValidPeriod(effectiveFrom?: string, effectiveTo?: string): boolean {
-  if (!effectiveFrom) return false;
-  const fromTime = new Date(effectiveFrom).getTime();
-  if (!Number.isFinite(fromTime)) return false;
+  const parseIsoDate = (value: string | undefined): number | undefined => {
+    if (!value || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return undefined;
+    const [year, month, day] = value.split('-').map(Number);
+    const date = new Date(Date.UTC(year, month - 1, day));
+    if (date.getUTCFullYear() !== year || date.getUTCMonth() !== month - 1 || date.getUTCDate() !== day) {
+      return undefined;
+    }
+    return date.getTime();
+  };
+
+  const fromTime = parseIsoDate(effectiveFrom);
+  if (fromTime === undefined) return false;
   if (!effectiveTo) return true;
-  const toTime = new Date(effectiveTo).getTime();
-  return Number.isFinite(toTime) && fromTime < toTime;
+  const toTime = parseIsoDate(effectiveTo);
+  return toTime !== undefined && fromTime < toTime;
 }
 
 export async function prepareCurriculumVersionFromDecision(
@@ -84,7 +98,7 @@ export async function prepareCurriculumVersionFromDecision(
     return blocked('Formal institutional validation reference is invalid.');
   }
 
-  if (proposal.evidenceRefs.some(reference => 'source' in reference && !isR4DEvidence(reference))) {
+  if (proposal.evidenceRefs.some(reference => !isValidRevisionEvidenceRef(reference))) {
     return blocked('R4D evidence reference is invalid.');
   }
 

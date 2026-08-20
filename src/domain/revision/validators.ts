@@ -22,17 +22,17 @@ function error(code: string, message: string, field?: string): RevisionError {
   return { code, message, field };
 }
 
-function isRevisionEvidenceReference(value: RevisionEvidenceRef): boolean {
-  if ('source' in value) {
-    return value.source === 'R4D'
-      && typeof value.reportItemId === 'string'
-      && value.reportItemId.trim().length > 0
-      && Array.isArray(value.frameworkRefs)
-      && Array.isArray(value.provenanceRefs)
-      && value.frameworkRefs.every(ref => isValidEntityReference(ref))
-      && value.provenanceRefs.every(ref => isValidEntityReference(ref));
-  }
-  return isValidEntityReference(value);
+function isRevisionEvidenceReference(value: unknown): value is RevisionEvidenceRef {
+  if (!value || typeof value !== 'object') return false;
+  if (isValidEntityReference(value)) return true;
+  const candidate = value as Extract<RevisionEvidenceRef, { source: 'R4D' }>;
+  return candidate.source === 'R4D'
+    && typeof candidate.reportItemId === 'string'
+    && candidate.reportItemId.trim().length > 0
+    && Array.isArray(candidate.frameworkRefs)
+    && Array.isArray(candidate.provenanceRefs)
+    && candidate.frameworkRefs.every(ref => isValidEntityReference(ref))
+    && candidate.provenanceRefs.every(ref => isValidEntityReference(ref));
 }
 
 export function validateProposal(proposal: unknown): RevisionValidationResult {

@@ -194,6 +194,46 @@ describe('CURR-R5-B revision evidence / decision / version bridge', () => {
     expect(result).toMatchObject({ status: 'blocked', reason: 'Approval/activation requires a valid effective period.' });
   });
 
+  it.each([
+    ['2026/09/01', undefined],
+    ['2026-9-01', undefined],
+    ['2026-02-30', undefined],
+  ])('blocks non-canonical or impossible effectiveFrom %s', async (effectiveFrom, effectiveTo) => {
+    const { archive, proposal } = makeProposalArchive();
+    const { archive: decided, decision } = makeRecordedDecision(archive, proposal);
+    const result = await prepareCurriculumVersionFromDecision({
+      revisionArchive: decided,
+      proposalId: proposal.id,
+      decisionId: decision.id,
+      versionRepository: versionRepository([{ id: 'version-1', versionNumber: '1.0', title: 'Curricolo corrente', status: 'approved', createdAt: '2025-09-01T00:00:00.000Z', updatedAt: '2025-09-01T00:00:00.000Z', approvedAt: '2025-09-01T00:00:00.000Z' }]),
+      requireFormalInstitutionalValidation: false,
+      activation: { effectiveFrom, effectiveTo },
+    });
+
+    expect(result).toMatchObject({ status: 'blocked', reason: 'Approval/activation requires a valid effective period.' });
+  });
+
+  it.each([null, 42, 'R4D'])('blocks arbitrary malformed evidence ref %j without throwing', async (malformedEvidence) => {
+    const { archive, proposal } = makeProposalArchive([]);
+    const malformedArchive = {
+      ...archive,
+      proposals: archive.proposals.map(candidate => candidate.id === proposal.id
+        ? { ...candidate, evidenceRefs: [malformedEvidence] }
+        : candidate),
+    } as RevisionArchive;
+    const { archive: decided, decision } = makeRecordedDecision(malformedArchive, proposal);
+
+    const result = await prepareCurriculumVersionFromDecision({
+      revisionArchive: decided,
+      proposalId: proposal.id,
+      decisionId: decision.id,
+      versionRepository: versionRepository([{ id: 'version-1', versionNumber: '1.0', title: 'Curricolo corrente', status: 'approved', createdAt: '2025-09-01T00:00:00.000Z', updatedAt: '2025-09-01T00:00:00.000Z', approvedAt: '2025-09-01T00:00:00.000Z' }]),
+      requireFormalInstitutionalValidation: false,
+    });
+
+    expect(result).toMatchObject({ status: 'blocked', reason: 'R4D evidence reference is invalid.' });
+  });
+
   it('does not mutate the R4 evidence/report input and does not emulate signature or protocol', async () => {
     const { archive, proposal } = makeProposalArchive();
     const before = structuredClone(archive);
