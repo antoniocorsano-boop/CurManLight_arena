@@ -18,7 +18,7 @@
 - Modify: `src/domain/curriculum/nationalCurriculumComparison.ts` only after a failing R4C test proves the current API cannot represent side-specific source-area scope
 - Modify: `src/domain/curriculum/nationalCurriculumSemanticCandidates.ts` only after the same failing R4C test proves the candidate API also needs that additive scope
 
-- [ ] **Step 1: Write failing tests for source and selection contracts**
+- [x] **Step 1: Write failing tests for source and selection contracts**
 
 ```ts
 it('resolves candidate endpoints by nodeId, never by text or list position', () => {
@@ -43,7 +43,7 @@ it('starts with no selected candidate and resets on scope change', () => {
 });
 ```
 
-- [ ] **Step 2: Run the model tests and verify RED**
+- [x] **Step 2: Run the model tests and verify RED**
 
 Run:
 
@@ -53,7 +53,7 @@ npx vitest run src/__tests__/curriculum-domain/curriculum-comparison-review-mode
 
 Expected: FAIL because the R4C model functions do not yet exist.
 
-- [ ] **Step 3: Implement the minimal pure model**
+- [x] **Step 3: Implement the minimal pure model**
 
 Define these contracts without React or fixture imports:
 
@@ -85,7 +85,7 @@ export function resetSelectionOnScopeChange(state: { selectedCandidateId: string
 
 Resolve endpoints strictly by `nodeId`; never fall back to text, label, position, proximity, or confidence.
 
-- [ ] **Step 4: Extend R4A/R4B scope only after a fail-closed proof**
+- [x] **Step 4: Extend R4A/R4B scope only after a fail-closed proof**
 
 Do not modify R4A or R4B to simplify the UI. First run the focused R4C source-native-area test against the current APIs. Only if that test demonstrates that side-specific selection cannot be represented, preserve existing callers and add:
 
@@ -99,7 +99,7 @@ export interface ComparisonScope {
 
 Apply each side-specific code only to its originating framework query. Do not compare the two strings as equivalent.
 
-- [ ] **Step 5: Run model and domain regression tests**
+- [x] **Step 5: Run model and domain regression tests**
 
 ```bash
 npx vitest run src/__tests__/curriculum-domain/curriculum-comparison-review-model.test.ts src/__tests__/curriculum-domain/national-curriculum-comparison.test.ts src/__tests__/curriculum-domain/national-curriculum-semantic-candidates.test.ts
@@ -107,7 +107,7 @@ npx vitest run src/__tests__/curriculum-domain/curriculum-comparison-review-mode
 
 Expected: all selected tests pass.
 
-- [ ] **Step 6: Commit the read-model contract**
+- [x] **Step 6: Commit the read-model contract**
 
 ```bash
 git add src/features/curriculum/components/curriculumComparisonReviewModel.ts src/__tests__/curriculum-domain/curriculum-comparison-review-model.test.ts
@@ -115,6 +115,16 @@ git commit -m "feat(curriculum): add R4C comparison review model"
 ```
 
 Include R4A/R4B files only if Step 4 changed them.
+
+#### Task 1 execution evidence
+
+Reported by implementer (test output was not saved as a separate artifact):
+
+- RED: before the selection correction, the dedicated model test reported 2 correctly failing selection/reset tests: omitted `selectedCandidateId` was not fail-closed, and equal scopes did not preserve selection.
+- GREEN after `f8fbde3`: dedicated review-model test, `7/7 PASS`.
+- `npm run typecheck`: PASS.
+- Task 1 commits: `b68c257` (`feat(curriculum): add R4C comparison review model`) and `f8fbde3` (`fix(curriculum): harden R4C review model selection`).
+- No UI, `CurriculumTab`, R4A, or R4B API changes were made.
 
 ### Task 2: Add failing R4C UI tests
 
