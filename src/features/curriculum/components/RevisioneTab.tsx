@@ -15,6 +15,7 @@ import { transitionProposalStatus } from '../../../domain/revision/repository';
 import { addProposal } from '../../../domain/revision/repository';
 import { createEntityReference } from '../../../domain/curriculum/identity';
 import type { EntityId } from '../../../domain/curriculum/identity/types';
+import { InstitutionalRevisionWorkflowPanel } from './InstitutionalRevisionWorkflowPanel';
 
 // ─── Canonical Proposal Actions (no double-write) ────────────────────────
 
@@ -285,7 +286,7 @@ export function RevisioneTab({
   revisioneWizardIndex,
   setRevisioneWizardIndex,
 }: RevisioneTabProps) {
-  const { decisions, customTexts, activeRevisionFilter, setActiveRevisionFilter, setDecision, resetDecision, setCustomText } = useCurriculumStore();
+  const { decisions, customTexts, revisionArchive, activeRevisionFilter, setActiveRevisionFilter, setDecision, resetDecision, setCustomText } = useCurriculumStore();
 
   return (
     <div className="space-y-6 fade-in text-left">
@@ -318,6 +319,11 @@ export function RevisioneTab({
 
       {/* Canonical Proposals Section */}
       <CanonicalProposalsSection />
+
+      <InstitutionalRevisionWorkflowPanel
+        revisionArchive={revisionArchive}
+        versions={[]}
+      />
 
       {/* Layout selector */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-white p-3.5 border border-slate-200 rounded-2xl shadow-sm gap-3">
