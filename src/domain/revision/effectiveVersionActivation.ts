@@ -28,6 +28,10 @@ function blocked(reason: string): EffectiveVersionActivationResult {
   return { status: 'blocked', reason };
 }
 
+function matchesReference(reference: EntityReference, id: string, entityType: EntityReference['entityType']): boolean {
+  return reference.id === id && reference.entityType === entityType;
+}
+
 function parseCanonicalDate(value: unknown): number | undefined {
   if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return undefined;
   const [year, month, day] = value.split('-').map(Number);
@@ -66,10 +70,12 @@ export async function prepareEffectiveVersionActivation(
   const decision = input.revisionArchive.decisions.find(candidate => candidate.id === input.decisionId);
   if (!decision) return blocked('Decision is not registered through the existing workflow.');
   if (decision.status !== 'recorded-local') return blocked('Only a recorded-local decision can be qualified for activation.');
-  if (decision.proposalRef.id !== proposal.id || decision.proposalRef.entityType !== 'revision-proposal') {
+  if (!matchesReference(decision.proposalRef, proposal.id, 'revision-proposal')) {
     return blocked('Decision does not reference the selected proposal.');
   }
-  if (decision.proposalVersionRef.id !== proposal.currentVersionRef) return blocked('Decision does not reference the current proposal version.');
+  if (!matchesReference(decision.proposalVersionRef, proposal.currentVersionRef, 'revision-proposal')) {
+    return blocked('Decision does not reference the current proposal version.');
+  }
   if (!proposal.decisionRefs.some(reference => reference.id === decision.id && reference.entityType === 'decision')) {
     return blocked('Decision is not linked from the proposal.');
   }

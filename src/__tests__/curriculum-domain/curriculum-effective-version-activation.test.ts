@@ -129,8 +129,10 @@ describe('CURR-R5-E effective version activation orchestration', () => {
 
   it.each(['unverified', 'rejected'] as const)('blocks a %s qualification fail-closed', async status => {
     const input = validInput();
-    const { decisionId } = makeRevision();
-    const invalidQualification = makeQualification(decisionId, status);
+    const invalidQualification = {
+      ...input.institutionalDecisionQualification,
+      status,
+    } as InstitutionalDecisionQualification;
     const result = await prepareEffectiveVersionActivation({
       ...input,
       institutionalDecisionQualification: invalidQualification,
@@ -170,6 +172,46 @@ describe('CURR-R5-E effective version activation orchestration', () => {
     expect(result.status).toBe('blocked');
     expect(versions[0].status).toBe('effective');
   });
+
+  it('blocks overlap with an already approved version without superseding it', async () => {
+    const input = validInput();
+    const versions = await input.versionRepository.list();
+    versions[0] = {
+      ...versions[0],
+      status: 'approved',
+      effectiveFrom: '2026-01-01',
+      effectiveTo: '2027-01-01',
+    };
+    const result = await prepareEffectiveVersionActivation({ ...input, effectivePeriod: { effectiveFrom: '2026-09-01' } });
+
+    expect(result.status).toBe('blocked');
+    expect(versions[0].status).toBe('approved');
+  });
+
+  it.each(['proposalRef', 'proposalVersionRef'] as const)(
+    'blocks a decision reference with the same id but wrong entityType (%s)',
+    async referenceName => {
+      const input = validInput();
+      const decision = input.revisionArchive.decisions[0];
+      if (!decision) throw new Error('decision fixture missing');
+      const malformedDecision = {
+        ...decision,
+        [referenceName]: {
+          ...decision[referenceName],
+          entityType: 'curriculum-version' as const,
+        },
+      };
+      const result = await prepareEffectiveVersionActivation({
+        ...input,
+        revisionArchive: {
+          ...input.revisionArchive,
+          decisions: [malformedDecision],
+        },
+      });
+
+      expect(result.status).toBe('blocked');
+    },
+  );
 
   it('preserves the proposal decision qualification version period chain and does not mutate R4 evidence', async () => {
     const input = validInput();
