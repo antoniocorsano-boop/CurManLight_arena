@@ -225,3 +225,13 @@ export type {
   ContentDetail,
   NationalCurriculumConsultationService,
 } from './nationalCurriculumConsultation';
+
+// ─── CML-634A Semantic Comparison Read Model ─────────────────────────────────
+export { createNationalCurriculumComparisonService } from './nationalCurriculumComparison';
+export type {
+  NationalCurriculumComparisonService,
+  ComparisonScope,
+  FrameworkSideSummary,
+  StructuralDifference,
+  NationalCurriculumComparisonResult,
+} from './nationalCurriculumComparison';
