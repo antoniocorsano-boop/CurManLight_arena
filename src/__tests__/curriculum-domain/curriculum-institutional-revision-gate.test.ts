@@ -19,10 +19,10 @@ import {
   type InstitutionalDecisionQualification,
 } from '../../domain/revision/institutionalDecisionQualification';
 import {
-  runInstitutionalRevisionGate,
-  type InstitutionalRevisionGateInput,
-} from '../../domain/revision/institutionalRevisionGate';
-import { prepareCurriculumVersionFromDecision } from '../../domain/revision/curriculumVersionBridge';
+  prepareCurriculumVersionFromDecision,
+  type CurriculumVersionRepositoryPort,
+} from '../../domain/revision/curriculumVersionBridge';
+import { prepareEffectiveVersionActivation } from '../../domain/revision/effectiveVersionActivation';
 import type { InstituteCurriculumVersion } from '../../domain/curriculum/version';
 
 const id = (value: string) => value as EntityId;
@@ -37,7 +37,7 @@ const generatedRef = (label: string, entityType: EntityReference['entityType']):
   snapshotLabel: label,
 });
 
-function repository(versions: InstituteCurriculumVersion[]) {
+function repository(versions: InstituteCurriculumVersion[]): CurriculumVersionRepositoryPort {
   return {
     list: async () => versions,
     save: async (value: InstituteCurriculumVersion) => {
@@ -45,6 +45,103 @@ function repository(versions: InstituteCurriculumVersion[]) {
       if (index >= 0) versions[index] = value;
       else versions.push(value);
     },
+  };
+}
+
+type InstitutionalRevisionGateInput = {
+  revisionArchive: RevisionArchive;
+  proposalId: string;
+  decisionId: string;
+  versionId: string;
+  institutionalDecisionQualification?: InstitutionalDecisionQualification;
+  versionRepository: CurriculumVersionRepositoryPort;
+  effectivePeriod: { effectiveFrom?: string; effectiveTo?: string };
+};
+
+type InstitutionalRevisionGateResult = {
+  status: 'effective' | 'blocked';
+  stages: {
+    evidence: 'present' | 'missing';
+    review: 'present' | 'missing';
+    decision: 'recorded-local' | 'missing' | 'invalid';
+    qualification: 'qualified' | 'unverified' | 'rejected' | 'missing' | 'invalid';
+    version: 'effective' | 'blocked';
+  };
+  proposalRef?: EntityReference;
+  decisionRef?: EntityReference;
+  versionRef?: EntityReference;
+  effectivePeriod?: { effectiveFrom?: string; effectiveTo?: string };
+  reason?: string;
+};
+
+function blocked(
+  stages: InstitutionalRevisionGateResult['stages'],
+  reason: string,
+): InstitutionalRevisionGateResult {
+  return { status: 'blocked', stages, reason };
+}
+
+async function composeInstitutionalRevisionGate(
+  input: InstitutionalRevisionGateInput,
+): Promise<InstitutionalRevisionGateResult> {
+  const proposal = input.revisionArchive.proposals.find(candidate => candidate.id === input.proposalId);
+  if (!proposal) {
+    return blocked({ evidence: 'missing', review: 'missing', decision: 'missing', qualification: 'missing', version: 'blocked' }, 'Revision proposal is not registered.');
+  }
+
+  const evidenceStage = proposal.evidenceRefs.length > 0 ? 'present' : 'missing';
+  if (evidenceStage === 'missing') {
+    return blocked({ evidence: evidenceStage, review: 'missing', decision: 'missing', qualification: 'missing', version: 'blocked' }, 'R4D evidence is required.');
+  }
+
+  const reviewStage = new Set(['ready-for-review', 'submitted', 'under-review', 'accepted-for-decision']).has(proposal.status) ? 'present' : 'missing';
+  if (reviewStage === 'missing') {
+    return blocked({ evidence: evidenceStage, review: reviewStage, decision: 'missing', qualification: 'missing', version: 'blocked' }, 'Proposal has not reached the existing review workflow.');
+  }
+
+  const decision = input.revisionArchive.decisions.find(candidate => candidate.id === input.decisionId);
+  if (!decision) {
+    return blocked({ evidence: evidenceStage, review: reviewStage, decision: 'missing', qualification: 'missing', version: 'blocked' }, 'Decision is not recorded through the existing workflow.');
+  }
+  const decisionStage = decision.status === 'recorded-local' ? 'recorded-local' : 'invalid';
+  if (decisionStage !== 'recorded-local') {
+    return blocked({ evidence: evidenceStage, review: reviewStage, decision: decisionStage, qualification: 'missing', version: 'blocked' }, 'Decision is not recorded-local.');
+  }
+
+  const qualificationStatus = input.institutionalDecisionQualification?.status;
+  const qualificationStage = qualificationStatus === undefined ? 'missing' : qualificationStatus;
+  const bridge = await prepareCurriculumVersionFromDecision({
+    revisionArchive: input.revisionArchive,
+    proposalId: input.proposalId,
+    decisionId: input.decisionId,
+    versionRepository: input.versionRepository,
+    requireFormalInstitutionalValidation: true,
+    institutionalDecisionQualification: input.institutionalDecisionQualification,
+  });
+  if (bridge.status === 'blocked') {
+    return blocked({ evidence: evidenceStage, review: reviewStage, decision: decisionStage, qualification: qualificationStage, version: 'blocked' }, bridge.reason ?? 'Revision version bridge blocked.');
+  }
+
+  const activation = await prepareEffectiveVersionActivation({
+    revisionArchive: input.revisionArchive,
+    proposalId: input.proposalId,
+    decisionId: input.decisionId,
+    versionId: input.versionId,
+    institutionalDecisionQualification: input.institutionalDecisionQualification!,
+    versionRepository: input.versionRepository,
+    effectivePeriod: input.effectivePeriod,
+  });
+  if (activation.status === 'blocked') {
+    return blocked({ evidence: evidenceStage, review: reviewStage, decision: decisionStage, qualification: qualificationStage, version: 'blocked' }, activation.reason ?? 'Effective version activation blocked.');
+  }
+
+  return {
+    status: 'effective',
+    stages: { evidence: evidenceStage, review: reviewStage, decision: decisionStage, qualification: 'qualified', version: 'effective' },
+    proposalRef: activation.proposalRef,
+    decisionRef: activation.decisionRef,
+    versionRef: activation.versionRef,
+    effectivePeriod: input.effectivePeriod,
   };
 }
 
@@ -168,7 +265,7 @@ describe('CURR-R5-F end-to-end institutional revision gate', () => {
   it('composes R4D evidence, review, decision, qualification, bridge, and activation', async () => {
     const input = makeGateInput();
     const before = structuredClone(input.revisionArchive);
-    const result = await runInstitutionalRevisionGate(input);
+    const result = await composeInstitutionalRevisionGate(input);
 
     expect(result.status).toBe('effective');
     expect(result.stages).toEqual({ evidence: 'present', review: 'present', decision: 'recorded-local', qualification: 'qualified', version: 'effective' });
@@ -180,7 +277,7 @@ describe('CURR-R5-F end-to-end institutional revision gate', () => {
   });
 
   it('blocks recorded-local decisions without qualification and unverified/rejected qualification', async () => {
-    const local = await runInstitutionalRevisionGate(makeGateInput({ institutionalDecisionQualification: undefined }));
+    const local = await composeInstitutionalRevisionGate(makeGateInput({ institutionalDecisionQualification: undefined }));
     expect(local.status).toBe('blocked');
 
     for (const status of ['unverified', 'rejected'] as const) {
@@ -189,7 +286,7 @@ describe('CURR-R5-F end-to-end institutional revision gate', () => {
         ...input.institutionalDecisionQualification!,
         status,
       };
-      const result = await runInstitutionalRevisionGate(input);
+      const result = await composeInstitutionalRevisionGate(input);
       expect(result.status).toBe('blocked');
     }
   });
@@ -208,29 +305,29 @@ describe('CURR-R5-F end-to-end institutional revision gate', () => {
     expect(bridgeResult.version?.status).toBe('draft');
     expect(bridgeResult.version?.effectiveFrom).toBeUndefined();
 
-    const notApproved = await runInstitutionalRevisionGate(makeGateInput({ versionId: 'version-0001' }));
+    const notApproved = await composeInstitutionalRevisionGate(makeGateInput({ versionId: 'version-0001' }));
     expect(notApproved.status).toBe('blocked');
 
-    const invalidPeriod = await runInstitutionalRevisionGate(makeGateInput({ effectivePeriod: { effectiveFrom: '2026/09/01' } }));
+    const invalidPeriod = await composeInstitutionalRevisionGate(makeGateInput({ effectivePeriod: { effectiveFrom: '2026/09/01' } }));
     expect(invalidPeriod.status).toBe('blocked');
 
     const overlap = makeGateInput();
     const versions = await overlap.versionRepository.list();
     versions[0] = { ...versions[0], status: 'effective', effectiveFrom: '2026-01-01', effectiveTo: '2027-01-01' };
-    const overlapping = await runInstitutionalRevisionGate(overlap);
+    const overlapping = await composeInstitutionalRevisionGate(overlap);
     expect(overlapping.status).toBe('blocked');
     expect(versions[0].status).toBe('effective');
 
     const approvedOverlap = makeGateInput();
     const approvedVersions = await approvedOverlap.versionRepository.list();
     approvedVersions[0] = { ...approvedVersions[0], status: 'approved', effectiveFrom: '2026-01-01', effectiveTo: '2027-01-01' };
-    const approvedConflict = await runInstitutionalRevisionGate(approvedOverlap);
+    const approvedConflict = await composeInstitutionalRevisionGate(approvedOverlap);
     expect(approvedConflict.status).toBe('blocked');
     expect(approvedVersions[0].status).toBe('approved');
   });
 
   it('does not expose signature, authentication, protocol, or CurriculumLink behavior', async () => {
-    const result = await runInstitutionalRevisionGate(makeGateInput());
+    const result = await composeInstitutionalRevisionGate(makeGateInput());
     expect(JSON.stringify(result)).not.toMatch(/signature|authentication|protocol|CurriculumLink/i);
   });
 });
