@@ -67,8 +67,9 @@ export type CurriculumTabProps = Pick<AppViewsLayerProps,
   | 'handleSaveGeneratedToKB'
   | 'handleCSVUpload'
   | 'handleResetCurriculumToBaseline'
-  | 'handleTabSwitch'
->;
+> & {
+  handleTabSwitch?: AppViewsLayerProps['handleTabSwitch'];
+};
 
 export function CurriculumTab({
   localCurriculum,
@@ -91,7 +92,7 @@ export function CurriculumTab({
   handleSaveGeneratedToKB,
   handleCSVUpload,
   handleResetCurriculumToBaseline,
-  handleTabSwitch,
+  handleTabSwitch = () => undefined,
 }: CurriculumTabProps) {
   const { activeCurricoloView, setActiveCurricoloView, discipline, order, schoolYear, setDiscipline, decisions, customTexts } = useCurriculumStore();
 
