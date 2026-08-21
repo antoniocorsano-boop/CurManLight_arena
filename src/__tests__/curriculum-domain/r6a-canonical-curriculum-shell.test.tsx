@@ -1,6 +1,8 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
+import { MemoryRouter } from 'react-router-dom';
+import App from '../../App';
 import { AppSidebar } from '../../features/navigation/components/AppSidebar';
 import { CurriculumTab } from '../../features/curriculum/components/CurriculumTab';
 import { useCurriculumStore } from '../../store/useCurriculumStore';
@@ -34,5 +36,14 @@ describe('R6-A canonical curriculum shell exposure', () => {
     expect(screen.getByRole('heading', { name: 'Curricolo' })).toBeInTheDocument();
     expect(screen.getByText('Indicazioni nazionali')).toBeInTheDocument(); expect(screen.getByText(/Curricolo d.istituto/)).toBeInTheDocument(); expect(screen.getByText('Confronto 2012 / 2025')).toBeInTheDocument();
     await userEvent.setup().click(screen.getByRole('button', { name: /Processo Revisione istituzionale/ })); expect(curriculumProps.handleTabSwitch).toHaveBeenCalledWith('revisione');
+  });
+
+  it('routes the canonical institutional revision card to the real RevisioneTab', async () => {
+    vi.stubGlobal('speechSynthesis', { cancel: vi.fn() });
+    render(<MemoryRouter initialEntries={['/curriculum']}><App /></MemoryRouter>);
+
+    await userEvent.setup().click(screen.getByRole('button', { name: /Processo Revisione istituzionale/ }));
+
+    expect(await screen.findByRole('heading', { name: /Revisione del Curricolo: Gap 2025/ })).toBeInTheDocument();
   });
 });

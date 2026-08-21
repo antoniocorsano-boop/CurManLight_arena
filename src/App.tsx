@@ -433,7 +433,8 @@ export default function App() {
  const navigate = useNavigate();
 
  const pathnameToTab = (pathname: string): AppTab => {
-  if (pathname.startsWith('/curriculum') || pathname.startsWith('/revisione')) return 'curricolo';
+  if (pathname.startsWith('/revisione')) return 'revisione';
+  if (pathname.startsWith('/curriculum')) return 'curricolo';
   if (pathname.startsWith('/classroom')) return 'progetta-annuale';
   if (pathname.startsWith('/planning')) return 'progetta-annuale';
   if (pathname.startsWith('/documents')) return 'esportazioni';
@@ -467,7 +468,7 @@ export default function App() {
  const tabToPath = (tab: AppTab): string => {
   switch (tab) {
    case 'curricolo': return '/curriculum';
-   case 'revisione': return '/curriculum';
+   case 'revisione': return '/revisione';
    case 'progetta-annuale': return '/planning';
    case 'processo': return '/planning';
    case 'esportazioni': return '/documents';
