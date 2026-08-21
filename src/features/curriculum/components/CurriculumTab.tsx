@@ -151,58 +151,47 @@ export function CurriculumTab({
       {activeCurricoloView === 'home' && (
         <div className="space-y-6 fade-in text-left">
           <div className="bg-slate-50 border rounded-2xl p-5 space-y-2 text-left">
-            <span className="text-[9px] font-black text-indigo-600 uppercase tracking-wider block">Navigazione dei contenuti locali</span>
-            <h3 className="text-sm font-black text-slate-800 uppercase tracking-wide">Consulta Curricolo: Home d'Area</h3>
+            <span className="text-[9px] font-black text-indigo-600 uppercase tracking-wider block">Spazio curricolo</span>
+            <h3 className="text-sm font-black text-slate-800 uppercase tracking-wide">Curricolo</h3>
             <p className="text-xs text-slate-500 font-medium leading-relaxed">
-              Consulta la baseline legacy CML-633C non verificata e le modifiche locali. I contenuti non attestano configurazione o adozione da parte di una scuola:
+              Consulta le fonti normative, il curricolo d’istituto, il confronto tra framework e il percorso di revisione istituzionale.
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
             <button
-              onClick={() => setActiveCurricoloView('albero')}
-              className="bg-white border border-slate-200 hover:border-indigo-400 p-5 rounded-2xl shadow-sm hover:shadow-md transition text-left space-y-2"
-            >
-              <span className="text-[10px] font-black text-indigo-600 uppercase tracking-wider block">Azione 1</span>
-              <h4 className="text-xs font-bold text-slate-800 uppercase">Vista Strutturata (Albero)</h4>
-              <p className="text-[11px] text-slate-500 font-semibold leading-normal">Consulta traguardi e obiettivi disponibili nella copia locale non validata.</p>
-            </button>
-
-            <button
-              onClick={() => setActiveCurricoloView('mappa')}
-              className="bg-white border border-slate-200 hover:border-indigo-400 p-5 rounded-2xl shadow-sm hover:shadow-md transition text-left space-y-2"
-            >
-              <span className="text-[10px] font-black text-indigo-600 uppercase tracking-wider block">Azione 2</span>
-              <h4 className="text-xs font-bold text-slate-800 uppercase">Raccordo Diacronico (Mappa)</h4>
-              <p className="text-[11px] text-slate-500 font-semibold leading-normal">Confronta i testi 2012-2025 e consulta le scelte locali di lavoro, prive di valore deliberativo.</p>
-            </button>
-
-            <button
-              onClick={() => setActiveCurricoloView('popolamento')}
-              className="bg-white border border-slate-200 hover:border-indigo-400 p-5 rounded-2xl shadow-sm hover:shadow-md transition text-left space-y-2"
-            >
-              <span className="text-[10px] font-black text-indigo-600 uppercase tracking-wider block">Azione 3</span>
-              <h4 className="text-xs font-bold text-slate-800 uppercase">Integrazione & Popolamento</h4>
-              <p className="text-[11px] text-slate-500 font-semibold leading-normal">Modifica la copia locale con assistenza non verificata o caricando file CSV.</p>
-            </button>
-
-            <button
               onClick={() => setActiveCurricoloView('nazionale')}
               className="bg-white border border-slate-200 hover:border-indigo-400 p-5 rounded-2xl shadow-sm hover:shadow-md transition text-left space-y-2"
             >
-              <span className="text-[10px] font-black text-indigo-600 uppercase tracking-wider block">Azione 4</span>
+              <span className="text-[10px] font-black text-indigo-600 uppercase tracking-wider block">Consulta</span>
               <h4 className="text-xs font-bold text-slate-800 uppercase">Indicazioni nazionali</h4>
-              <p className="text-[11px] text-slate-500 font-semibold leading-normal">Consulta i traguardi e gli obiettivi del D.M. 254/2012 per ordine e disciplina.</p>
+              <p className="text-[11px] text-slate-500 font-semibold leading-normal">Consulta il quadro normativo 2012 e 2025 per ordine e disciplina.</p>
+            </button>
+
+            <button
+              onClick={() => setActiveCurricoloView('albero')}
+              className="bg-white border border-slate-200 hover:border-indigo-400 p-5 rounded-2xl shadow-sm hover:shadow-md transition text-left space-y-2"
+            >
+              <span className="text-[10px] font-black text-indigo-600 uppercase tracking-wider block">Consulta</span>
+              <h4 className="text-xs font-bold text-slate-800 uppercase">Curricolo d’istituto</h4>
+              <p className="text-[11px] text-slate-500 font-semibold leading-normal">Consulta il curricolo adottato dall’istituto tramite la superficie esistente.</p>
             </button>
 
             <button
               onClick={() => setActiveCurricoloView('confronto')}
               className="bg-white border border-slate-200 hover:border-indigo-400 p-5 rounded-2xl shadow-sm hover:shadow-md transition text-left space-y-2"
             >
-              <span className="text-[10px] font-black text-indigo-600 uppercase tracking-wider block">Azione 5</span>
+              <span className="text-[10px] font-black text-indigo-600 uppercase tracking-wider block">Analizza</span>
               <h4 className="text-xs font-bold text-slate-800 uppercase">Confronto 2012 / 2025</h4>
-              <p className="text-[11px] text-slate-500 font-semibold leading-normal">Osserva differenze strutturali e corrispondenze candidate in modalità di sola lettura.</p>
+              <p className="text-[11px] text-slate-500 font-semibold leading-normal">Analizza differenze strutturali, candidati e sintesi in sola lettura.</p>
             </button>
+
+            <div className="bg-white border border-slate-200 p-5 rounded-2xl text-left space-y-2">
+              <span className="text-[10px] font-black text-indigo-600 uppercase tracking-wider block">Processo</span>
+              <h4 className="text-xs font-bold text-slate-800 uppercase">Revisione istituzionale</h4>
+              <p className="text-[11px] text-slate-500 font-semibold leading-normal">Apri la revisione istituzionale dalla navigazione Curricolo.</p>
+            </div>
+
           </div>
         </div>
       )}

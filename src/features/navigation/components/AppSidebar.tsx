@@ -33,7 +33,7 @@ export function AppSidebar({
       {/* 2. AMBIENTE: CURRICOLO */}
       <div className="pt-2 border-t border-slate-100 mt-2">
        <button
-        onClick={() => { handleTabSwitch('curricolo'); setActiveCurricoloView(typeof navigator !== 'undefined' && navigator.webdriver ? 'albero' : 'home'); }}
+        onClick={() => { handleTabSwitch('curricolo'); setActiveCurricoloView('home'); }}
         className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition ${
           (activeTab === 'curricolo' || activeTab === 'revisione' || activeTab === 'fonti') 
             ? 'text-primary-600 font-extrabold bg-slate-50' 
@@ -43,9 +43,19 @@ export function AppSidebar({
         <span>Consulta Curricolo</span>
        </button>
 
-       {/* Dynamic Contextual Sub-menu for Curricolo */}
-       {((typeof navigator !== 'undefined' && navigator.webdriver) || activeTab === 'curricolo' || activeTab === 'revisione' || activeTab === 'fonti') && (
+       {/* Canonical curriculum navigation. Legacy views remain available internally but are not primary shell destinations. */}
+       {((typeof navigator !== 'undefined' && navigator.webdriver) || activeTab === 'curricolo' || activeTab === 'revisione') && (
         <div className="pl-3.5 mt-1.5 space-y-1 border-l-2 border-indigo-100 ml-3.5">
+         <div
+          role="button"
+          onClick={() => { handleTabSwitch('curricolo'); setActiveCurricoloView('nazionale'); }}
+          className={`w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer transition ${
+            activeTab === 'curricolo' && activeCurricoloView === 'nazionale' ? 'bg-indigo-50 text-indigo-700 font-bold' : 'text-slate-500 hover:text-slate-800'
+          }`}
+         >
+          <span>Indicazioni nazionali</span>
+         </div>
+
          <div
           role="button"
           onClick={() => { handleTabSwitch('curricolo'); setActiveCurricoloView('albero'); }}
@@ -53,27 +63,17 @@ export function AppSidebar({
             activeTab === 'curricolo' && activeCurricoloView === 'albero' ? 'bg-indigo-50 text-indigo-700 font-bold' : 'text-slate-500 hover:text-slate-800'
           }`}
          >
-          <span>Vista Strutturata (Albero)</span>
+          <span>Curricolo d’istituto</span>
          </div>
 
          <div
           role="button"
-          onClick={() => { handleTabSwitch('curricolo'); setActiveCurricoloView('mappa'); }}
+          onClick={() => { handleTabSwitch('curricolo'); setActiveCurricoloView('confronto'); }}
           className={`w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer transition ${
-            activeTab === 'curricolo' && activeCurricoloView === 'mappa' ? 'bg-indigo-50 text-indigo-700 font-bold' : 'text-slate-500 hover:text-slate-800'
+            activeTab === 'curricolo' && activeCurricoloView === 'confronto' ? 'bg-indigo-50 text-indigo-700 font-bold' : 'text-slate-500 hover:text-slate-800'
           }`}
          >
-          <span>Raccordo Diacronico (Mappa)</span>
-         </div>
-
-         <div
-          role="button"
-          onClick={() => { handleTabSwitch('curricolo'); setActiveCurricoloView('popolamento'); }}
-          className={`w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer transition ${
-            activeTab === 'curricolo' && activeCurricoloView === 'popolamento' ? 'bg-indigo-50 text-indigo-700 font-bold' : 'text-slate-500 hover:text-slate-800'
-          }`}
-         >
-          <span>Integrazione & Popolamento</span>
+          <span>Confronto 2012 / 2025</span>
          </div>
 
          <div
@@ -83,29 +83,10 @@ export function AppSidebar({
             activeTab === 'revisione' ? 'bg-indigo-50 text-indigo-700 font-bold' : 'text-slate-500 hover:text-slate-800'
           }`}
          >
-          <span>Revisione (Gap 2025)</span>
+          <span>Revisione istituzionale</span>
           {pendingCount > 0 && <span className="bg-amber-100 text-amber-800 text-[8px] px-1.5 py-0.2 rounded-full font-black">{pendingCount}</span>}
          </div>
 
-         <div
-          role="button"
-          onClick={() => handleTabSwitch('fonti')}
-          className={`w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer transition ${
-            activeTab === 'fonti' ? 'bg-indigo-50 text-indigo-700 font-bold' : 'text-slate-500 hover:text-slate-800'
-          }`}
-         >
-          <span>Fonti locali</span>
-         </div>
-
-         <div
-          role="button"
-          onClick={() => { handleTabSwitch('curricolo'); setActiveCurricoloView('pilota'); }}
-          className={`w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer transition ${
-            activeTab === 'curricolo' && activeCurricoloView === 'pilota' ? 'bg-indigo-50 text-indigo-700 font-bold' : 'text-slate-500 hover:text-slate-800'
-          }`}
-         >
-          <span>★ Pilota Sperimentale</span>
-         </div>
         </div>
        )}
       </div>
@@ -237,4 +218,3 @@ export function AppSidebar({
 
   );
 }
-
