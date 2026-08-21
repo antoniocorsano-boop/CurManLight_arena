@@ -14,3 +14,4 @@ export * from './decisionEffects';
 export * from './curriculumVersionBridge';
 export * from './institutionalDecisionQualification';
 export * from './effectiveVersionActivation';
+export * from './institutionalRevisionGate';
