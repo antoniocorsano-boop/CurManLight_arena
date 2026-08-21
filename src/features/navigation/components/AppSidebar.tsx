@@ -46,38 +46,38 @@ export function AppSidebar({
        {/* Canonical curriculum navigation. Legacy views remain available internally but are not primary shell destinations. */}
        {((typeof navigator !== 'undefined' && navigator.webdriver) || activeTab === 'curricolo' || activeTab === 'revisione') && (
         <div className="pl-3.5 mt-1.5 space-y-1 border-l-2 border-indigo-100 ml-3.5">
-         <div
-          role="button"
+         <button
+          type="button"
           onClick={() => { handleTabSwitch('curricolo'); setActiveCurricoloView('nazionale'); }}
           className={`w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer transition ${
             activeTab === 'curricolo' && activeCurricoloView === 'nazionale' ? 'bg-indigo-50 text-indigo-700 font-bold' : 'text-slate-500 hover:text-slate-800'
           }`}
          >
           <span>Indicazioni nazionali</span>
-         </div>
+         </button>
 
-         <div
-          role="button"
+         <button
+          type="button"
           onClick={() => { handleTabSwitch('curricolo'); setActiveCurricoloView('albero'); }}
           className={`w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer transition ${
             activeTab === 'curricolo' && activeCurricoloView === 'albero' ? 'bg-indigo-50 text-indigo-700 font-bold' : 'text-slate-500 hover:text-slate-800'
           }`}
          >
           <span>Curricolo d’istituto</span>
-         </div>
+         </button>
 
-         <div
-          role="button"
+         <button
+          type="button"
           onClick={() => { handleTabSwitch('curricolo'); setActiveCurricoloView('confronto'); }}
           className={`w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer transition ${
             activeTab === 'curricolo' && activeCurricoloView === 'confronto' ? 'bg-indigo-50 text-indigo-700 font-bold' : 'text-slate-500 hover:text-slate-800'
           }`}
          >
           <span>Confronto 2012 / 2025</span>
-         </div>
+         </button>
 
-         <div
-          role="button"
+         <button
+          type="button"
           onClick={() => handleTabSwitch('revisione')}
           className={`w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer transition ${
             activeTab === 'revisione' ? 'bg-indigo-50 text-indigo-700 font-bold' : 'text-slate-500 hover:text-slate-800'
@@ -85,7 +85,7 @@ export function AppSidebar({
          >
           <span>Revisione istituzionale</span>
           {pendingCount > 0 && <span className="bg-amber-100 text-amber-800 text-[8px] px-1.5 py-0.2 rounded-full font-black">{pendingCount}</span>}
-         </div>
+         </button>
 
         </div>
        )}

@@ -282,6 +282,7 @@ export function AppViewsLayer(props: AppViewsLayerProps) {
      {/* VIEW: CURRICOLO */}
      {activeTab === 'curricolo' && (
       <CurriculumTab
+       handleTabSwitch={handleTabSwitch}
        localCurriculum={localCurriculum}
        showOnlyProfileCurriculum={showOnlyProfileCurriculum}
        setShowOnlyProfileCurriculum={setShowOnlyProfileCurriculum}

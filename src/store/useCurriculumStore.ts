@@ -184,7 +184,7 @@ export const useCurriculumStore = create<StoreActions>()(
       selectedObiettivi: [],
       selectedEvidenze: [],
       activeProgTab: 'annuale',
-      activeCurricoloView: 'albero',
+      activeCurricoloView: 'home',
       activeProcessoTab: 'flusso',
       activeGeneralSubtab: 'premessa',
       documentExportHistory: [],

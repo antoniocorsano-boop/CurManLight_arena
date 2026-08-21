@@ -67,6 +67,7 @@ export type CurriculumTabProps = Pick<AppViewsLayerProps,
   | 'handleSaveGeneratedToKB'
   | 'handleCSVUpload'
   | 'handleResetCurriculumToBaseline'
+  | 'handleTabSwitch'
 >;
 
 export function CurriculumTab({
@@ -90,6 +91,7 @@ export function CurriculumTab({
   handleSaveGeneratedToKB,
   handleCSVUpload,
   handleResetCurriculumToBaseline,
+  handleTabSwitch,
 }: CurriculumTabProps) {
   const { activeCurricoloView, setActiveCurricoloView, discipline, order, schoolYear, setDiscipline, decisions, customTexts } = useCurriculumStore();
 
@@ -186,11 +188,11 @@ export function CurriculumTab({
               <p className="text-[11px] text-slate-500 font-semibold leading-normal">Analizza differenze strutturali, candidati e sintesi in sola lettura.</p>
             </button>
 
-            <div className="bg-white border border-slate-200 p-5 rounded-2xl text-left space-y-2">
+            <button type="button" onClick={() => handleTabSwitch('revisione')} className="bg-white border border-slate-200 hover:border-indigo-400 p-5 rounded-2xl text-left space-y-2 transition">
               <span className="text-[10px] font-black text-indigo-600 uppercase tracking-wider block">Processo</span>
               <h4 className="text-xs font-bold text-slate-800 uppercase">Revisione istituzionale</h4>
               <p className="text-[11px] text-slate-500 font-semibold leading-normal">Apri la revisione istituzionale dalla navigazione Curricolo.</p>
-            </div>
+            </button>
 
           </div>
         </div>
