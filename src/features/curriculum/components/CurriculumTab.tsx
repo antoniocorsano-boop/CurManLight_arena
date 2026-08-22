@@ -110,7 +110,7 @@ export function CurriculumTab({
   return (
     <div className="space-y-6 fade-in text-left">
       {/* Dynamic Contextual Header Panel */}
-      <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 transition duration-200">
+      {false && <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 transition duration-200">
         <div className="space-y-1">
           <span className="text-[9px] font-black text-indigo-600 uppercase tracking-wider block">Area locale di consultazione</span>
           <h2 className="text-sm font-black text-slate-800 uppercase tracking-wide">
@@ -149,14 +149,14 @@ export function CurriculumTab({
             ))}
           </div>
         )}
-      </div>
+      </div>}
 
       {activeCurricoloView === 'home' && (
         <div className="space-y-6 fade-in text-left">
-          <div className="bg-slate-50 border rounded-2xl p-5 space-y-2 text-left">
-            <span className="text-[9px] font-black text-indigo-600 uppercase tracking-wider block">Spazio curricolo</span>
-            <h3 className="text-sm font-black text-slate-800 uppercase tracking-wide">Curricolo</h3>
-            <p className="text-xs text-slate-500 font-medium leading-relaxed">
+          <div className="space-y-2 text-left">
+            <p className="text-xs font-semibold uppercase tracking-wide text-indigo-600">Area curricolo</p>
+            <h1 className="text-3xl font-bold text-indigo-800">Curricolo</h1>
+            <p className="max-w-3xl text-sm leading-6 text-slate-600">
               Consulta le fonti normative, il curricolo d’istituto, il confronto tra framework e il percorso di revisione istituzionale.
             </p>
           </div>

@@ -5,6 +5,7 @@ import { MemoryRouter } from 'react-router-dom';
 import App from '../../App';
 import { AppSidebar } from '../../features/navigation/components/AppSidebar';
 import { CurriculumTab } from '../../features/curriculum/components/CurriculumTab';
+import { DashboardView } from '../../features/session/components/DashboardView';
 import { useCurriculumStore } from '../../store/useCurriculumStore';
 
 const curriculumProps = {
@@ -17,6 +18,35 @@ const curriculumProps = {
 };
 
 describe('R6-A canonical curriculum shell exposure', () => {
+  it('opens Home as a task-oriented teacher workspace without legacy module cards', () => {
+    render(
+      <DashboardView
+        activeTab="dashboard"
+        role="insegnante"
+        savedUda={[]}
+        decisions={{}}
+        wizardStep={1}
+        progTitle=""
+        progStatus="bozza"
+        documentExportHistory={[]}
+        handleDownloadCml={vi.fn()}
+        handleTabSwitch={vi.fn()}
+        setSelectedBrainDoc={vi.fn()}
+        setWikiWorkspaceTab={vi.fn()}
+        setShowSaveModal={vi.fn()}
+        setActiveCurricoloView={vi.fn()}
+        setActiveProgTab={vi.fn()}
+        setSelectedUda={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByRole('heading', { name: 'Cosa devi fare oggi?' })).toBeInTheDocument();
+    expect(screen.getByText('Contesto attivo')).toBeInTheDocument();
+    for (const legacyLabel of ['PTOF HUB', 'UDA Compilatore', 'Apri Wizard', 'Ambiente Aula', 'PTOF Hub (IA)']) {
+      expect(screen.queryByText(new RegExp(legacyLabel, 'i'))).not.toBeInTheDocument();
+    }
+  });
+
   it('exposes the six canonical primary product areas without legacy labels', async () => {
     const handleTabSwitch = vi.fn();
     const setActiveCurricoloView = vi.fn();
@@ -67,6 +97,8 @@ describe('R6-A canonical curriculum shell exposure', () => {
   it('opens with the canonical curriculum landing and makes institutional revision actionable', async () => {
     render(<CurriculumTab {...curriculumProps} />);
     expect(screen.getByRole('heading', { name: 'Curricolo' })).toBeInTheDocument();
+    expect(screen.queryByText(/Area locale di consultazione/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Visualizzazione degli obiettivi verticali/i)).not.toBeInTheDocument();
     expect(screen.getByText('Indicazioni nazionali')).toBeInTheDocument(); expect(screen.getByText(/Curricolo d.istituto/)).toBeInTheDocument(); expect(screen.getByText('Confronto 2012 / 2025')).toBeInTheDocument();
     await userEvent.setup().click(screen.getByRole('button', { name: /Processo Revisione istituzionale/ })); expect(curriculumProps.handleTabSwitch).toHaveBeenCalledWith('revisione');
   });
