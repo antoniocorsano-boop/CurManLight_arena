@@ -17,6 +17,39 @@ const curriculumProps = {
 };
 
 describe('R6-A canonical curriculum shell exposure', () => {
+  it('exposes the six canonical primary product areas without legacy labels', async () => {
+    const handleTabSwitch = vi.fn();
+    const setActiveCurricoloView = vi.fn();
+    const setActiveProgTab = vi.fn();
+
+    render(
+      <AppSidebar
+        sidebarCollapsed={false}
+        activeTab="dashboard"
+        activeCurricoloView="home"
+        activeProgTab="home"
+        pendingCount={0}
+        handleTabSwitch={handleTabSwitch}
+        setActiveCurricoloView={setActiveCurricoloView}
+        setActiveProgTab={setActiveProgTab}
+      />,
+    );
+
+    const primaryLabels = ['Home', 'Curricolo', 'Progettazione', 'Documenti', 'Classe', 'Impostazioni'];
+    for (const label of primaryLabels) {
+      expect(screen.getByRole('button', { name: new RegExp(`^${label}$`) })).toBeInTheDocument();
+    }
+
+    for (const legacyLabel of ['Home Dashboard', 'Consulta Curricolo', 'Progettazione UDA', 'Spazio d\'Aula e Classe', 'WikiLLM e archivio locale']) {
+      expect(screen.queryByRole('button', { name: new RegExp(`^${legacyLabel}$`) })).not.toBeInTheDocument();
+    }
+
+    await userEvent.setup().click(screen.getByRole('button', { name: /^Documenti$/ }));
+    expect(handleTabSwitch).toHaveBeenCalledWith('esportazioni');
+    await userEvent.setup().click(screen.getByRole('button', { name: /^Impostazioni$/ }));
+    expect(handleTabSwitch).toHaveBeenCalledWith('fonti');
+  });
+
   it('defaults the curriculum store to the canonical landing view', () => {
     expect(useCurriculumStore.getState().activeCurricoloView).toBe('home');
   });
