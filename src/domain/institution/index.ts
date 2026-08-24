@@ -6,3 +6,5 @@ export * from './repository';
 export * from './serialization';
 export * from './legacyAdapters';
 export * from './selectors';
+export * from './capabilities';
+export * from './sharedWorkspacePort';
