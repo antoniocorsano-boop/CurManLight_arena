@@ -1,5 +1,6 @@
 import type { EntityReference } from '../../domain/curriculum/identity/types';
 import type { InstitutionalRole } from '../../domain/curriculum/types';
+import type { ArenaCapability } from '../../domain/institution/capabilities';
 
 /**
  * Arena Human Task contract.
@@ -18,13 +19,7 @@ export type HumanTaskStage =
 
 export type HumanTaskStakeholder = InstitutionalRole | 'sistema';
 
-export type HumanTaskCapability =
-  | 'CURRICULUM_READ'
-  | 'CURRICULUM_PROPOSE'
-  | 'REVISION_REVIEW'
-  | 'REVISION_DECIDE'
-  | 'DOCUMENT_PREPARE'
-  | 'DOCUMENT_EXPORT';
+export type HumanTaskCapability = Exclude<ArenaCapability, 'WORKSPACE_ADMIN'>;
 
 export type HumanTaskEvidenceOrigin =
   | 'canonical'
