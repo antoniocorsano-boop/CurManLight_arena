@@ -8,3 +8,5 @@ export * from './legacyAdapters';
 export * from './selectors';
 export * from './capabilities';
 export * from './sharedWorkspacePort';
+export * from './workspaceSessionPort';
+export * from './workspaceAccess';
