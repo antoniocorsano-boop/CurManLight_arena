@@ -1,0 +1,60 @@
+name: H1 Apply Revision Human Task Surface
+
+on:
+  push:
+    branches: [feat/arena-human-task-revision-surface]
+
+permissions:
+  contents: write
+
+jobs:
+  apply-surface:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/arena-human-task-revision-surface
+
+      - name: Apply focused integration
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path('src/features/curriculum/components/RevisioneTab.tsx')
+          text = path.read_text(encoding='utf-8')
+
+          import_anchor = "import type { EntityId } from '../../../domain/curriculum/identity/types';\n"
+          import_line = "import { HumanTaskSummary, evaluateRevisionHumanTask } from '../../guided-workflow';\n"
+          if import_line not in text:
+              if import_anchor not in text:
+                  raise SystemExit('Import anchor not found')
+              text = text.replace(import_anchor, import_anchor + import_line, 1)
+
+          node_anchor = "        const nodeLabel = proposal.targetNodeRef.snapshotLabel || proposal.targetNodeRef.id;\n"
+          task_line = "        const humanTask = evaluateRevisionHumanTask(proposal);\n"
+          if task_line not in text:
+              if node_anchor not in text:
+                  raise SystemExit('Proposal anchor not found')
+              text = text.replace(node_anchor, node_anchor + task_line, 1)
+
+          summary = """            <HumanTaskSummary\n              projection={humanTask.projection}\n              receipt={humanTask.receipt}\n            />\n\n"""
+          if '<HumanTaskSummary' not in text:
+              start = text.index(task_line)
+              marker = '            {/* Comparison */}'
+              position = text.index(marker, start)
+              text = text[:position] + summary + text[position:]
+
+          path.write_text(text, encoding='utf-8')
+          PY
+
+      - name: Commit integration
+        run: |
+          if git diff --quiet; then
+            echo "No changes required"
+            exit 0
+          fi
+          git config user.name "curmanlight-automation"
+          git config user.email "actions@users.noreply.github.com"
+          git add src/features/curriculum/components/RevisioneTab.tsx
+          git commit -m "feat(human-task): integrate revision task summary"
+          git push
