@@ -1,0 +1,42 @@
+name: H1 Fix TypeScript
+
+on:
+  push:
+    branches: [feat/arena-human-task-revision-surface]
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/arena-human-task-revision-surface
+      - name: Remove unused projection parameter
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          path = Path('src/features/guided-workflow/revisionHumanTask.ts')
+          text = path.read_text(encoding='utf-8')
+          text = text.replace(
+              "const evidenceRequirements = (\n  proposal: RevisionProposal,\n  descriptor: RevisionHumanTaskDescriptor\n): HumanTaskStakeholderRequirement[] => {",
+              "const evidenceRequirements = (\n  descriptor: RevisionHumanTaskDescriptor\n): HumanTaskStakeholderRequirement[] => {",
+              1,
+          )
+          text = text.replace(
+              "stakeholderRequirements: evidenceRequirements(proposal, descriptor),",
+              "stakeholderRequirements: evidenceRequirements(descriptor),",
+              1,
+          )
+          path.write_text(text, encoding='utf-8')
+          PY
+      - name: Commit cleanup
+        run: |
+          if git diff --quiet; then exit 0; fi
+          git config user.name "curmanlight-automation"
+          git config user.email "actions@users.noreply.github.com"
+          git add src/features/guided-workflow/revisionHumanTask.ts
+          git commit -m "fix(human-task): remove unused projection parameter"
+          git push
