@@ -1,0 +1,43 @@
+name: H2A Unify Capabilities
+
+on:
+  push:
+    branches: [feat/arena-h2a-role-capability-boundary]
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/arena-h2a-role-capability-boundary
+      - name: Use institution capability source of truth
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          path = Path('src/features/guided-workflow/humanTask.ts')
+          text = path.read_text(encoding='utf-8')
+
+          import_anchor = "import type { InstitutionalRole } from '../../domain/curriculum/types';\n"
+          import_line = "import type { ArenaCapability } from '../../domain/institution/capabilities';\n"
+          if import_line not in text:
+              text = text.replace(import_anchor, import_anchor + import_line, 1)
+
+          old = """export type HumanTaskCapability =\n  | 'CURRICULUM_READ'\n  | 'CURRICULUM_PROPOSE'\n  | 'REVISION_REVIEW'\n  | 'REVISION_DECIDE'\n  | 'DOCUMENT_PREPARE'\n  | 'DOCUMENT_EXPORT';\n"""
+          new = "export type HumanTaskCapability = Exclude<ArenaCapability, 'WORKSPACE_ADMIN'>;\n"
+          if old not in text and new not in text:
+              raise SystemExit('Capability type anchor not found')
+          text = text.replace(old, new, 1)
+          path.write_text(text, encoding='utf-8')
+          PY
+      - name: Commit patch
+        run: |
+          if git diff --quiet; then exit 0; fi
+          git config user.name "curmanlight-automation"
+          git config user.email "actions@users.noreply.github.com"
+          git add src/features/guided-workflow/humanTask.ts
+          git commit -m "refactor(human-task): use institution capability registry"
+          git push
