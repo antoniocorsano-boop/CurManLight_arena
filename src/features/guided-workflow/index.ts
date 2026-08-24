@@ -7,4 +7,6 @@ export * from './components/DesignReviewStep';
 export * from './components/DocumentPreparationStep';
 export * from './components/CompletionStep';
 export * from './components/WorkflowProgress';
+export * from './components/HumanTaskSummary';
 export * from './humanTask';
+export * from './revisionHumanTask';

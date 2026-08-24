@@ -15,6 +15,7 @@ import { transitionProposalStatus } from '../../../domain/revision/repository';
 import { addProposal } from '../../../domain/revision/repository';
 import { createEntityReference } from '../../../domain/curriculum/identity';
 import type { EntityId } from '../../../domain/curriculum/identity/types';
+import { HumanTaskSummary, evaluateRevisionHumanTask } from '../../guided-workflow';
 
 // ─── Canonical Proposal Actions (no double-write) ────────────────────────
 
@@ -87,6 +88,7 @@ function CanonicalProposalsSection() {
 
         const statusLabel = PROPOSAL_STATUS_LABELS[proposal.status];
         const nodeLabel = proposal.targetNodeRef.snapshotLabel || proposal.targetNodeRef.id;
+        const humanTask = evaluateRevisionHumanTask(proposal);
 
         return (
           <div key={proposal.id} className="bg-white border-2 border-indigo-200 rounded-xl overflow-hidden">
@@ -100,6 +102,11 @@ function CanonicalProposalsSection() {
                 v{version?.versionNumber ?? 1} | {proposal.metadata.createdAt.slice(0, 10)}
               </span>
             </div>
+
+            <HumanTaskSummary
+              projection={humanTask.projection}
+              receipt={humanTask.receipt}
+            />
 
             {/* Comparison */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 p-4 text-xs leading-relaxed">
