@@ -120,7 +120,6 @@ const DESCRIPTORS: Record<RevisionProposalStatus, RevisionHumanTaskDescriptor> =
 };
 
 const evidenceRequirements = (
-  proposal: RevisionProposal,
   descriptor: RevisionHumanTaskDescriptor
 ): HumanTaskStakeholderRequirement[] => {
   const baseEvidence = ['current-text', 'proposed-text'];
@@ -216,7 +215,7 @@ export const buildRevisionHumanTaskProjection = (
     stateLabel: descriptor.stateLabel,
     sourceRefs: uniqueSources,
     evidence,
-    stakeholderRequirements: evidenceRequirements(proposal, descriptor),
+    stakeholderRequirements: evidenceRequirements(descriptor),
     primaryAction: {
       label: descriptor.primaryLabel,
       capability: descriptor.capability,
