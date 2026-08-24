@@ -21,6 +21,7 @@
   },
   "dependencies": {
     "@playwright/test": "^1.61.1",
+    "@supabase/supabase-js": "^2.112.3",
     "dexie": "^4.0.8",
     "dexie-react-hooks": "^1.1.1",
     "jsdom": "^29.1.1",
