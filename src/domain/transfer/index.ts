@@ -144,3 +144,13 @@ export {
   serializeCmlLocalHandoffV2,
   parseCmlLocalHandoffV2,
 } from './interopCurriculumContextV2';
+
+// Runtime projection for handoff v2 — binds the current Arena curriculum + revision process without activating new-domain persistence.
+export type {
+  ArenaRuntimeCurriculumBindingInput,
+  ArenaRuntimeCurriculumProjection,
+} from './interopRuntimeBindingV2';
+export {
+  projectArenaRuntimeCurriculumV2,
+  createCmlLocalHandoffV2FromArenaRuntime,
+} from './interopRuntimeBindingV2';
