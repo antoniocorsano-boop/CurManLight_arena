@@ -1,0 +1,27 @@
+{
+  "schema": "CML_ARENA_BETA_READINESS_V1",
+  "auditedBaseline": "d368b2bd0040dfe808d8ae65b13ba60942a831d5",
+  "status": "NOT_READY",
+  "betaDefinition": "bounded external pilot usable without developer intervention during normal operation, with observable and recoverable failures",
+  "scope": {
+    "state": "TO_FREEZE",
+    "personalStudentDataRequired": false
+  },
+  "gates": [
+    {"id":"BETA-G1","name":"Scope and journey freeze","state":"NOT_SATISFIED","exit":"BETA_SCOPE_FROZEN"},
+    {"id":"BETA-G2","name":"Canonical Beta environment","state":"NOT_SATISFIED","exit":"BETA_ENVIRONMENT_READY"},
+    {"id":"BETA-G3","name":"Real identity and authority","state":"NOT_SATISFIED","exit":"BETA_IDENTITY_AUTHORITY_PASS"},
+    {"id":"BETA-G4","name":"End-to-end institutional workflow","state":"NOT_SATISFIED","exit":"BETA_E2E_WORKFLOW_PASS"},
+    {"id":"BETA-G5","name":"Human Interaction Acceptance","state":"PARTIAL","exit":"BETA_HIA_PASS"},
+    {"id":"BETA-G6","name":"Accessibility acceptance","state":"NOT_SATISFIED","exit":"BETA_ACCESSIBILITY_PASS"},
+    {"id":"BETA-G7","name":"Real-user pilot","state":"NOT_SATISFIED","exit":"BETA_REAL_USER_ACCEPTANCE_PASS"},
+    {"id":"BETA-G8","name":"Recovery and data safety","state":"NOT_SATISFIED","exit":"BETA_RECOVERY_PASS"},
+    {"id":"BETA-G9","name":"Security and privacy release gate","state":"PARTIAL","exit":"BETA_SECURITY_PRIVACY_PASS"},
+    {"id":"BETA-G10","name":"Observability, support and incident loop","state":"NOT_SATISFIED","exit":"BETA_OPERATIONS_PASS"},
+    {"id":"BETA-G11","name":"Release candidate gate","state":"NOT_SATISFIED","exit":"BETA_RC_PASS"}
+  ],
+  "authorizationRule": "ALL_REQUIRED_GATES_PASS",
+  "authorizedVerdict": "CML_ARENA_BETA_READY",
+  "currentVerdict": "CML_ARENA_BETA_NOT_READY",
+  "nextPhase": "B0_BETA_SCOPE_FREEZE"
+}
