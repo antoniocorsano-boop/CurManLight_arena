@@ -111,3 +111,13 @@ export {
   validateCmlInteropEnvelope,
   parseCmlInteropEnvelope,
 } from './interopV1';
+
+// Local Arena → Docente OS handoff v1 — preview only, teacher acceptance required.
+export type { CmlLocalHandoffV1, CmlLocalHandoffValidationResult } from './interopHandoffV1';
+export {
+  CML_LOCAL_HANDOFF_FORMAT,
+  createCmlLocalHandoffV1,
+  validateCmlLocalHandoffV1,
+  serializeCmlLocalHandoffV1,
+  parseCmlLocalHandoffV1,
+} from './interopHandoffV1';
