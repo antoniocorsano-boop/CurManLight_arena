@@ -1,0 +1,20 @@
+{
+  "id": "HT-BETA-CURRICULUM-CONTEXT",
+  "actor": "teacher-or-curriculum-reviewer",
+  "intent": "Capire quale quadro curricolare si applica al contesto scolastico corrente e da quali fonti deriva.",
+  "context": ["school-year", "school-order", "class-cohort", "discipline"],
+  "entry_points": ["curriculum-context", "curriculum-review"],
+  "success": "L'utente riconosce framework, applicabilità, stato provvisorio/approvato e provenienza senza scegliere manualmente la norma applicabile.",
+  "primary_action": "Inspect applicable curriculum context",
+  "secondary_actions": ["Inspect provenance"],
+  "failure_states": ["invalid-context", "missing-curriculum-source", "incomplete-planning-baseline"],
+  "recovery": {
+    "required": true,
+    "strategies": ["show missing context", "return to context selection", "preserve last valid state without inventing applicability"]
+  },
+  "consequential": false,
+  "human_authority_required": false,
+  "patterns": ["HP-CONTEXTUAL_ENTRY", "HP-RECOGNITION_OVER_RECALL", "HP-RECOVERABLE_ERROR"],
+  "accessibility": ["status understandable without color alone", "keyboard reachable context controls", "touch targets usable on mobile"],
+  "acceptance_evidence": ["desktop context state", "mobile context state", "invalid context recovery", "provenance inspection"]
+}
