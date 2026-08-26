@@ -1,5 +1,5 @@
 name: Beta incident
- description: Report a problem observed in the CurManLight Arena Beta without sharing personal or secret data.
+description: Report a problem observed in the CurManLight Arena Beta without sharing personal or secret data.
 title: "[BETA] "
 labels: []
 body:
