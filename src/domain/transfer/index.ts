@@ -86,3 +86,28 @@ export {
   tryAdaptLegacyUdaModel,
   isLegacyFormat,
 } from './legacyAdapters';
+
+// Arena ↔ Docente OS interoperability v1 — transport-independent, domain-only.
+export type {
+  CmlInteropProduct,
+  CmlInteropGeneratedBy,
+  CmlInteropMessageType,
+  CmlCanonicalRef,
+  CmlSourceProvenance,
+  CmlInteropEnvelope,
+  CurriculumAdoptedPayload,
+  PlanningConstraint,
+  AnnualPlanningFrameworkPayload,
+  UdaFrameworkPayload,
+  CurriculumFeedbackPayload,
+  CurriculumAlignmentEvidencePayload,
+  CmlInteropValidationError,
+  CmlInteropValidationResult,
+} from './interopV1';
+export {
+  CML_INTEROP_CONTRACT,
+  CML_INTEROP_PAYLOAD_VERSION,
+  CML_INTEROP_PRIVACY_CLASS,
+  validateCmlInteropEnvelope,
+  parseCmlInteropEnvelope,
+} from './interopV1';
