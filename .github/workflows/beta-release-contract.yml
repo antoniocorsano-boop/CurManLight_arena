@@ -1,0 +1,35 @@
+name: Beta Release Contract
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  beta-release-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      CML_RELEASE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+      CML_RELEASE_REF: ${{ github.head_ref || github.ref }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build Beta artifact
+        run: npm run build:beta
+
+      - name: Verify Beta release contract
+        run: npm run beta:verify
