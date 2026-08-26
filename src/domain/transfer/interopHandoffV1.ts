@@ -35,7 +35,7 @@ function sameRef(a: { namespace: string; entityType: string; entityId: string; v
     && a.versionId === b.versionId;
 }
 
-function footprintMaterial(handoff: Omit<CmlLocalHandoffV1, 'structuralFootprint'>): unknown {
+function footprintMaterial(handoff: Omit<CmlLocalHandoffV1, 'structuralFootprint'>): Record<string, unknown> {
   return {
     format: handoff.format,
     targetProduct: handoff.targetProduct,
@@ -118,15 +118,15 @@ export function validateCmlLocalHandoffV1(
     if (!handoff.structuralFootprint || handoff.structuralFootprint.algorithm !== 'fnv1a' || handoff.structuralFootprint.version !== 1 || !handoff.structuralFootprint.hash) {
       errors.push('structuralFootprint is invalid');
     } else {
-      const material = {
-        format: handoff.format,
-        targetProduct: handoff.targetProduct,
-        acceptanceRequired: handoff.acceptanceRequired,
-        importMode: handoff.importMode,
-        generatedAt: handoff.generatedAt,
-        curriculumAdopted: handoff.curriculumAdopted,
-        annualPlanningFramework: handoff.annualPlanningFramework,
-      } as Omit<CmlLocalHandoffV1, 'structuralFootprint'>;
+      const material: Omit<CmlLocalHandoffV1, 'structuralFootprint'> = {
+        format: handoff.format as typeof CML_LOCAL_HANDOFF_FORMAT,
+        targetProduct: handoff.targetProduct as 'DOCENTE_OS',
+        acceptanceRequired: handoff.acceptanceRequired as true,
+        importMode: handoff.importMode as 'PREVIEW_ONLY',
+        generatedAt: handoff.generatedAt as string,
+        curriculumAdopted: handoff.curriculumAdopted as CmlInteropEnvelope<CurriculumAdoptedPayload>,
+        annualPlanningFramework: handoff.annualPlanningFramework as CmlInteropEnvelope<AnnualPlanningFrameworkPayload>,
+      };
       const expected = computeStructuralFootprint(footprintMaterial(material));
       if (expected.hash !== handoff.structuralFootprint.hash) errors.push('structuralFootprint mismatch');
     }
