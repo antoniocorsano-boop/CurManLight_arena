@@ -1,0 +1,16 @@
+{
+  "schema": "CML_BETA_B1_ACCEPTANCE_V1",
+  "phase": "B1",
+  "gate": "BETA-G2",
+  "status": "IN_PROGRESS",
+  "requiredEvidence": {
+    "artifactContract": "PENDING_CI",
+    "canonicalUrl": "PENDING_DEPLOYMENT",
+    "releaseShaVisible": "PENDING_DEPLOYMENT",
+    "reproducibleDeploy": "IMPLEMENTED_NOT_YET_OBSERVED",
+    "rollback": "IMPLEMENTED_NOT_YET_REHEARSED",
+    "publishedSmoke": "PENDING_DEPLOYMENT"
+  },
+  "passRule": "ALL_REQUIRED_EVIDENCE_OBSERVED",
+  "forbiddenShortcut": "WORKFLOW_EXISTENCE_IS_NOT_DEPLOYMENT_EVIDENCE"
+}
