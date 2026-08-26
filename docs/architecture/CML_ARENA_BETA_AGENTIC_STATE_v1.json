@@ -1,0 +1,71 @@
+{
+  "version": "1.0.0",
+  "product": "CurManLight Arena",
+  "program": "CML_ARENA_REAL_BETA",
+  "status": "CML_ARENA_BETA_NOT_READY",
+  "auditedBaseline": "d368b2bd0040dfe808d8ae65b13ba60942a831d5",
+  "executionMode": "AGENTIC_GATED",
+  "rules": {
+    "singleReadyPhase": true,
+    "skipPrerequisites": false,
+    "directWriteToMain": false,
+    "humanGatesCannotBeAutoPassed": true,
+    "releaseGatesRequireExactSha": true,
+    "scopeExpansionRequiresBlockingEvidence": true
+  },
+  "phases": [
+    {
+      "id": "B0",
+      "name": "Beta Scope Freeze",
+      "gates": ["BETA-G1"],
+      "status": "IN_PROGRESS",
+      "prerequisites": [],
+      "exit": "BETA_SCOPE_FROZEN"
+    },
+    {
+      "id": "B1",
+      "name": "Environment and Operations Foundation",
+      "gates": ["BETA-G2"],
+      "status": "BLOCKED_BY_PREREQUISITE",
+      "prerequisites": ["B0"],
+      "exit": "BETA_ENVIRONMENT_READY"
+    },
+    {
+      "id": "B2",
+      "name": "Identity and Authority",
+      "gates": ["BETA-G3"],
+      "status": "BLOCKED_BY_PREREQUISITE",
+      "prerequisites": ["B1"],
+      "exit": "BETA_IDENTITY_AUTHORITY_PASS"
+    },
+    {
+      "id": "B3",
+      "name": "E2E Human Workflow",
+      "gates": ["BETA-G4", "BETA-G5", "BETA-G6"],
+      "status": "BLOCKED_BY_PREREQUISITE",
+      "prerequisites": ["B2"],
+      "exit": ["BETA_E2E_WORKFLOW_PASS", "BETA_HIA_PASS", "BETA_ACCESSIBILITY_PASS"]
+    },
+    {
+      "id": "B4",
+      "name": "Real Users",
+      "gates": ["BETA-G7"],
+      "status": "BLOCKED_BY_PREREQUISITE",
+      "prerequisites": ["B3"],
+      "exit": "BETA_REAL_USER_ACCEPTANCE_PASS"
+    },
+    {
+      "id": "B5",
+      "name": "Safety Operations and Release Candidate",
+      "gates": ["BETA-G8", "BETA-G9", "BETA-G10", "BETA-G11"],
+      "status": "BLOCKED_BY_PREREQUISITE",
+      "prerequisites": ["B4"],
+      "exit": ["BETA_RECOVERY_PASS", "BETA_SECURITY_PRIVACY_PASS", "BETA_OPERATIONS_PASS", "BETA_RC_PASS"]
+    }
+  ],
+  "nextAction": {
+    "phase": "B0",
+    "action": "Complete scope freeze artifacts and HIM validation",
+    "mayModifyRuntime": false
+  }
+}

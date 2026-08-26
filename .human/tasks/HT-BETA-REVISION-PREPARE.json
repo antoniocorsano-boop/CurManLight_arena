@@ -1,0 +1,20 @@
+{
+  "id": "HT-BETA-REVISION-PREPARE",
+  "actor": "teacher-or-curriculum-reviewer",
+  "intent": "Preparare o ispezionare una proposta di revisione comprendendo motivazione, evidenze, stato e responsabilità prima della decisione istituzionale.",
+  "context": ["curriculum-revision", "proposal-version", "evidence", "stakeholder-responsibility"],
+  "entry_points": ["revision-proposal", "curriculum-review"],
+  "success": "La proposta è comprensibile, verificabile e pronta per il passaggio al decisore senza confondere proposta e decisione.",
+  "primary_action": "Prepare revision for review",
+  "secondary_actions": ["Inspect evidence", "Return to curriculum context"],
+  "failure_states": ["missing-rationale", "missing-evidence", "stale-proposal-version", "unauthorized-edit"],
+  "recovery": {
+    "required": true,
+    "strategies": ["show missing requirement", "preserve draft", "reload current proposal version", "return to read-only inspection when unauthorized"]
+  },
+  "consequential": false,
+  "human_authority_required": false,
+  "patterns": ["HP-PRIMARY_ACTION", "HP-PROGRESSIVE_DISCLOSURE", "HP-RECOVERABLE_ERROR", "HP-RECOGNITION_OVER_RECALL"],
+  "accessibility": ["evidence and state labels exposed to assistive technology", "keyboard complete preparation flow", "mobile-safe disclosure"],
+  "acceptance_evidence": ["draft state", "blocked missing rationale", "evidence disclosure", "stale version recovery", "mobile review"]
+}

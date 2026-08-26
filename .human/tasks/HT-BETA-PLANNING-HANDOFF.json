@@ -1,0 +1,20 @@
+{
+  "id": "HT-BETA-PLANNING-HANDOFF",
+  "actor": "teacher-or-curriculum-reviewer",
+  "intent": "Produrre una baseline curricolare trasferibile per la pianificazione senza trasformare automaticamente il curricolo in lavoro operativo del docente.",
+  "context": ["curriculum-baseline", "approval-state", "planning-handoff", "provenance"],
+  "entry_points": ["curriculum-baseline", "planning-handoff"],
+  "success": "L'utente vede cosa viene trasferito, lo stato provvisorio/approvato, la provenienza e il fatto che l'applicazione downstream richiede accettazione esplicita.",
+  "primary_action": "Preview planning handoff",
+  "secondary_actions": ["Inspect requirements", "Inspect provenance"],
+  "failure_states": ["incomplete-baseline", "validation-failed", "tampered-handoff", "unsupported-context"],
+  "recovery": {
+    "required": true,
+    "strategies": ["return to curriculum context", "show validation issue", "regenerate from canonical state", "do not export invalid bundle"]
+  },
+  "consequential": true,
+  "human_authority_required": true,
+  "patterns": ["HP-PREVIEW_COMMIT", "HP-CONFIRM_CONSEQUENCE", "HP-RECEIPT", "HP-RECOVERABLE_ERROR", "HP-RECOGNITION_OVER_RECALL"],
+  "accessibility": ["preview readable with keyboard and assistive technology", "approval state not color-only", "mobile-safe requirements inspection"],
+  "acceptance_evidence": ["valid preview", "provisional-state warning", "validation failure", "tamper rejection", "explicit export/hand-off confirmation"]
+}
