@@ -1,0 +1,20 @@
+{
+  "id": "HT-REVISION-DECISION",
+  "actor": "institutional_reviewer",
+  "intent": "valutare una proposta di revisione curricolare e assumere una decisione istituzionale consapevole",
+  "context": ["revision_workspace", "canonical_curriculum_source_known", "stakeholder_responsibility_known"],
+  "entry_points": ["guided_workflow_revision"],
+  "success": "la decisione è esplicitamente assunta dal responsabile umano sulla base di evidenze verificabili e resta distinta dalla proposta del sistema",
+  "primary_action": "decidere_sulla_revisione",
+  "secondary_actions": ["esaminare_evidenze", "rinviare_la_decisione"],
+  "failure_states": ["missing_canonical_source", "missing_stakeholder_evidence", "unknown_evidence_reference", "decision_without_human_confirmation"],
+  "recovery": {
+    "required": true,
+    "strategies": ["return_to_review", "restore_missing_evidence", "block_promotion_until_human_confirmation"]
+  },
+  "consequential": true,
+  "human_authority_required": true,
+  "patterns": ["HP-PRIMARY_ACTION", "HP-PREVIEW_COMMIT", "HP-CONFIRM_CONSEQUENCE", "HP-RECEIPT", "HP-RECOVERABLE_ERROR", "HP-RECOGNITION_OVER_RECALL"],
+  "accessibility": ["decision_consequence_is_programmatically_identifiable", "evidence_and_action_do_not_depend_on_color_only", "keyboard_operable_review_flow"],
+  "acceptance_evidence": ["arena_human_task_cognitive_gate", "institutional_decision_human_confirmation"]
+}
