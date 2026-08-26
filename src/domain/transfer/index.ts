@@ -121,3 +121,26 @@ export {
   serializeCmlLocalHandoffV1,
   parseCmlLocalHandoffV1,
 } from './interopHandoffV1';
+
+// Local Arena → Docente OS handoff v2 — curriculum applicability, provisional completeness and transition remodulation.
+export type {
+  CurriculumApprovalState,
+  CurriculumApplicabilityStatus,
+  TransitionRemodulationState,
+  CurriculumRequirementAuthority,
+  CurriculumRequirementKind,
+  CurriculumRequirementV1,
+  TransitionRemodulationV1,
+  CurriculumContextForClassV1,
+  CmlLocalHandoffV2,
+  CmlLocalHandoffV2ValidationResult,
+} from './interopCurriculumContextV2';
+export {
+  CML_LOCAL_HANDOFF_FORMAT_V2,
+  CML_CURRICULUM_CONTEXT_CONTRACT,
+  validateCurriculumContextForClassV1,
+  createCmlLocalHandoffV2,
+  validateCmlLocalHandoffV2,
+  serializeCmlLocalHandoffV2,
+  parseCmlLocalHandoffV2,
+} from './interopCurriculumContextV2';
