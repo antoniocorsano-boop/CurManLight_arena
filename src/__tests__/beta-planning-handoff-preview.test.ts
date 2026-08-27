@@ -2,7 +2,11 @@ import { describe, expect, it } from 'vitest';
 import type { A07InstitutionalDocumentRead } from '../domain/institution';
 import { createEmptyRevisionArchive } from '../domain/revision';
 import type { CurriculumMap } from '../features/session/types/appViewContracts';
-import { buildPlanningHandoffPreview } from '../features/beta/planningHandoffPreview';
+import {
+  buildPlanningHandoffPreview,
+  resolvePlanningHandoffClassContext,
+  resolvePlanningSchoolYear,
+} from '../features/beta/planningHandoffPreview';
 
 const emptyLevel = () => ({
   traguardi: [],
@@ -16,7 +20,13 @@ const emptyLevel = () => ({
 function curriculumMap(): CurriculumMap {
   return {
     tecnologia: {
-      infanzia: emptyLevel(),
+      infanzia: {
+        traguardi: ['Esplorare oggetti, materiali e semplici trasformazioni.'],
+        obiettivi: ['Osservare e descrivere semplici artefatti e processi.'],
+        evidenze: [],
+        nucleiFondanti: ['Oggetti, materiali e trasformazioni'],
+        proposals: [],
+      },
       primaria: emptyLevel(),
       secondaria: {
         traguardi: ['Progettare soluzioni tecnologiche in modo consapevole.'],
@@ -39,6 +49,7 @@ const configuredProfile: A07InstitutionalDocumentRead = {
 function baseInput() {
   return {
     institutionalProfile: configuredProfile,
+    configuredSchoolOrders: ['secondaria'] as const,
     schoolYear: '2026-2027',
     schoolOrder: 'secondaria' as const,
     classLevel: 1,
@@ -82,6 +93,41 @@ describe('B3 planning handoff preview', () => {
     )).toBe(true);
   });
 
+  it('uses the configured institutional academic year before the legacy store fallback', () => {
+    expect(resolvePlanningSchoolYear('2026/2027', '')).toBe('2026-2027');
+    expect(resolvePlanningSchoolYear('2026/2027', '2025-2026')).toBe('2026-2027');
+    expect(resolvePlanningSchoolYear(undefined, '2026-2027')).toBe('2026-2027');
+  });
+
+  it('maps the infancy display class to the canonical cohort context instead of parsing the label', () => {
+    const classContext = resolvePlanningHandoffClassContext('infanzia', 'Fascia Unica 3-5 anni', 'A');
+    expect(classContext).toEqual({
+      classLevel: 1,
+      sectionRef: 'A',
+      cohortRef: 'fascia-unica-3-5-anni',
+    });
+
+    const preview = requireReady(buildPlanningHandoffPreview({
+      ...baseInput(),
+      configuredSchoolOrders: ['infanzia'],
+      schoolOrder: 'infanzia',
+      ...classContext,
+    }));
+    expect(preview.handoff.curricularContext.cohortRef).toBe('fascia-unica-3-5-anni');
+    expect(preview.handoff.curricularContext.applicabilityStatus).toBe('APPLICABLE');
+  });
+
+  it('blocks an order that the active institute does not provide', () => {
+    const preview = buildPlanningHandoffPreview({
+      ...baseInput(),
+      configuredSchoolOrders: ['primaria'],
+    });
+
+    expect(preview.status).toBe('blocked');
+    if (preview.status !== 'blocked') return;
+    expect(preview.reason).toContain('non è configurato per l’istituto attivo');
+  });
+
   it('blocks the preview when Arena has no configured institutional identity', () => {
     const preview = buildPlanningHandoffPreview({
       ...baseInput(),
@@ -99,7 +145,7 @@ describe('B3 planning handoff preview', () => {
 
   it('blocks malformed class context rather than silently creating a generic handoff', () => {
     const invalidClass = buildPlanningHandoffPreview({ ...baseInput(), classLevel: Number.NaN });
-    const invalidSection = buildPlanningHandoffPreview({ ...baseInput(), sectionRef: '   ' });
+    const invalidSection = buildPlanningHandoffPreview({ ...baseInput(), sectionRef: '   ', cohortRef: undefined });
 
     expect(invalidClass.status).toBe('blocked');
     expect(invalidSection.status).toBe('blocked');
