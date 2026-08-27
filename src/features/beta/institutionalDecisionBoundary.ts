@@ -15,13 +15,21 @@ export const isTerminalInstitutionalOutcome = (
   outcome: InstitutionalDecisionOutcome
 ): boolean => TERMINAL_OUTCOMES.includes(outcome);
 
-export const receiptIsTerminalForCurrentVersion = (
+export const receiptMatchesCurrentVersion = (
   receipt: InstitutionalRevisionDecisionReceipt | null,
   currentFingerprint: string | null
 ): boolean => Boolean(
   receipt
   && currentFingerprint
   && receipt.proposalVersionFingerprint === currentFingerprint
+);
+
+export const receiptIsTerminalForCurrentVersion = (
+  receipt: InstitutionalRevisionDecisionReceipt | null,
+  currentFingerprint: string | null
+): boolean => Boolean(
+  receiptMatchesCurrentVersion(receipt, currentFingerprint)
+  && receipt
   && isTerminalInstitutionalOutcome(receipt.outcome)
 );
 
@@ -29,8 +37,12 @@ export const decisionControlsMayOpen = (
   lookupState: ReceiptLookupState,
   receipt: InstitutionalRevisionDecisionReceipt | null,
   currentFingerprint: string | null
-): boolean => lookupState === 'resolved'
-  && !receiptIsTerminalForCurrentVersion(receipt, currentFingerprint);
+): boolean => {
+  if (lookupState !== 'resolved') return false;
+  if (!receipt) return Boolean(currentFingerprint);
+  if (!receiptMatchesCurrentVersion(receipt, currentFingerprint)) return false;
+  return !isTerminalInstitutionalOutcome(receipt.outcome);
+};
 
 export const previewStillMatchesVersion = (
   previewFingerprint: string | null,
