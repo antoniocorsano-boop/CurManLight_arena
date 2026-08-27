@@ -1,0 +1,85 @@
+{
+  "schemaVersion": 1,
+  "gate": "BETA-G5",
+  "status": "IN_PROGRESS_HUMAN",
+  "himProfile": "HIM-L2",
+  "himVersion": "1.0.0",
+  "canonicalPublishedRelease": {
+    "sha": "5ed2a995cc3fbaa50ba9e5ee314a56d36f5a170e",
+    "url": "https://antoniocorsano-boop.github.io/CurManLight_arena/",
+    "deploymentRun": 33086955515,
+    "publishedIdentitySmoke": "PASS"
+  },
+  "humanTasks": [
+    {
+      "id": "HT-BETA-CURRICULUM-CONTEXT",
+      "requiredHumanEvidence": [
+        "desktop context comprehensibility",
+        "mobile context comprehensibility",
+        "invalid-context recovery intelligibility",
+        "provenance inspection clarity"
+      ]
+    },
+    {
+      "id": "HT-BETA-REVISION-PREPARE",
+      "requiredHumanEvidence": [
+        "draft state clarity",
+        "blocked missing-rationale clarity",
+        "evidence disclosure clarity",
+        "stale-version recovery intelligibility",
+        "mobile review comfort"
+      ]
+    },
+    {
+      "id": "HT-REVISION-DECISION",
+      "requiredHumanEvidence": [
+        "consequence preview is understandable",
+        "no institutional outcome appears preselected",
+        "authority boundary is understandable",
+        "explicit human confirmation is unmistakable",
+        "receipt and non-final continuation are understandable"
+      ]
+    },
+    {
+      "id": "HT-BETA-PLANNING-HANDOFF",
+      "requiredHumanEvidence": [
+        "preview-only meaning is understood",
+        "provisional baseline warning is understood",
+        "teacher acceptance requirement is understood",
+        "validation failure recovery is understandable",
+        "desktop and mobile requirements inspection is comfortable"
+      ]
+    }
+  ],
+  "automatedEvidence": {
+    "purpose": "Prepare repeatable evidence for human inspection without replacing subjective acceptance.",
+    "workflow": ".github/workflows/beta-hia-evidence.yml",
+    "captureScript": "scripts/capture-beta-g5-hia.cjs",
+    "expectedArtifactPrefix": "beta-g5-hia-evidence-",
+    "covered": [
+      "desktop revision entry",
+      "desktop structured proposal entry",
+      "desktop proposal-ready state",
+      "desktop authority-blocked decision state",
+      "desktop planning-handoff surface when reachable",
+      "mobile authority-blocked decision state",
+      "mobile planning-handoff surface when reachable",
+      "zero consequential decision RPC during non-authorized capture",
+      "uncaught page-error detection"
+    ]
+  },
+  "humanAcceptanceBoundary": {
+    "automationMayPassStructuralChecks": true,
+    "automationMayPassSubjectiveUsability": false,
+    "requiredDecision": "A human reviewer must explicitly accept or reject the critical-task experience on desktop and mobile.",
+    "passToken": "BETA_HIA_PASS"
+  },
+  "excludedFromThisGate": [
+    "BETA-G6 automated accessibility",
+    "keyboard acceptance",
+    "focus acceptance",
+    "touch-target acceptance",
+    "manual WCAG AA review"
+  ],
+  "nextAction": "Run the HIA evidence workflow on the review SHA, inspect the artifact and published Beta with a human reviewer, record findings, remediate significant findings, and only then consider BETA-G5 PASS."
+}
