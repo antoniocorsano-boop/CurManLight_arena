@@ -95,30 +95,48 @@ export function StructuredProposalStarter({
     setMessage('Proposta strutturata creata. Resta una proposta locale finché non attraversa revisione e decisione istituzionale autenticata.');
   };
 
+  const goToLocalChoices = () => {
+    document.getElementById('local-choice-workspace')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
   return (
-    <section aria-label="Avvio proposta strutturata Beta" className="rounded-2xl border border-indigo-200 bg-indigo-50/40 p-4 text-xs space-y-3">
-      <div>
-        <strong className="block text-[10px] uppercase tracking-wider text-indigo-800">BETA · dalla scelta locale alla proposta</strong>
-        <p className="mt-1 text-slate-700">
-          Una scelta locale può diventare una proposta strutturata, ma non diventa per questo decisione o curricolo d’istituto. La provenienza resta esplicitamente locale e non verificata.
+    <section
+      aria-label="Avvio proposta strutturata Beta"
+      data-hia-task-block="structured-proposal"
+      className="rounded-2xl border border-indigo-200 bg-indigo-50/30 p-3 text-sm text-slate-700 space-y-3 sm:p-4"
+    >
+      <div className="max-w-[75ch]">
+        <strong className="block text-xs uppercase tracking-wider text-indigo-800">BETA · dalla scelta locale alla proposta</strong>
+        <p className="mt-1 leading-relaxed">
+          Trasforma una scelta locale in una proposta da revisionare. Non è ancora una decisione né curricolo d’istituto.
         </p>
       </div>
 
       {candidates.length === 0 ? (
-        <p role="status" className="rounded-lg border border-slate-200 bg-white p-3 text-slate-600">
-          Registra prima una scelta locale “Usa testo 2025” oppure una proposta personalizzata. Le scelte “Mantieni testo 2012” non generano una proposta di modifica.
-        </p>
+        <div role="status" className="rounded-xl border border-slate-200 bg-white p-3 space-y-3">
+          <p className="leading-relaxed">
+            Prima serve una scelta <strong>Usa testo 2025</strong> oppure una proposta personalizzata. <strong>Mantieni testo 2012</strong> non genera una modifica.
+          </p>
+          <button
+            type="button"
+            data-hia-primary-action="revision-open-local-choice"
+            onClick={goToLocalChoices}
+            className="rounded-lg bg-indigo-700 px-4 py-2.5 font-bold text-white hover:bg-indigo-600"
+          >
+            Vai alla prima scelta
+          </button>
+        </div>
       ) : (
         <>
           <label className="block font-semibold">
-            Scelta locale da trasformare in proposta
+            Scelta locale da trasformare
             <select
               value={selectedId}
               onChange={(event) => {
                 setSelectedId(event.target.value);
                 setMessage(null);
               }}
-              className="mt-1 block w-full rounded-lg border border-slate-300 bg-white p-2"
+              className="mt-1 block w-full rounded-lg border border-slate-300 bg-white p-2.5"
             >
               <option value="">Seleziona…</option>
               {candidates.map((proposal) => (
@@ -128,16 +146,19 @@ export function StructuredProposalStarter({
           </label>
 
           {selected && selectedDecision && (
-            <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
-              <div className="rounded-lg border border-slate-200 bg-white p-3">
-                <strong className="block text-[10px] uppercase text-slate-500">Testo di confronto</strong>
-                <p className="mt-1">{selected.oldText}</p>
+            <details className="rounded-xl border border-slate-200 bg-white p-3">
+              <summary className="cursor-pointer font-semibold text-slate-700">Controlla il confronto</summary>
+              <div className="mt-3 grid grid-cols-1 gap-2 md:grid-cols-2">
+                <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+                  <strong className="block text-xs uppercase text-slate-500">Testo di confronto</strong>
+                  <p className="mt-1 leading-relaxed">{selected.oldText}</p>
+                </div>
+                <div className="rounded-lg border border-indigo-200 bg-indigo-50/30 p-3">
+                  <strong className="block text-xs uppercase text-indigo-700">Testo proposto</strong>
+                  <p className="mt-1 leading-relaxed">{proposedTextFor(selected, selectedDecision, customTexts)}</p>
+                </div>
               </div>
-              <div className="rounded-lg border border-indigo-200 bg-white p-3">
-                <strong className="block text-[10px] uppercase text-indigo-700">Testo proposto</strong>
-                <p className="mt-1">{proposedTextFor(selected, selectedDecision, customTexts)}</p>
-              </div>
-            </div>
+            </details>
           )}
 
           <label className="block font-semibold">
@@ -146,23 +167,24 @@ export function StructuredProposalStarter({
               value={rationale}
               onChange={(event) => setRationale(event.target.value)}
               rows={3}
-              className="mt-1 block w-full rounded-lg border border-slate-300 bg-white p-2"
+              className="mt-1 block w-full rounded-lg border border-slate-300 bg-white p-2.5"
               placeholder="Perché questa modifica merita una revisione formale?"
             />
           </label>
 
           <button
             type="button"
+            data-hia-primary-action="revision-create-structured"
             disabled={!selected || !rationale.trim()}
             onClick={createStructuredProposal}
-            className="rounded-lg bg-indigo-700 px-3 py-2 font-bold text-white disabled:cursor-not-allowed disabled:opacity-50"
+            className="rounded-lg bg-indigo-700 px-4 py-2.5 font-bold text-white disabled:cursor-not-allowed disabled:opacity-50"
           >
             Crea proposta strutturata
           </button>
         </>
       )}
 
-      {message && <p role="status" aria-live="polite" className="rounded-lg bg-white p-2">{message}</p>}
+      {message && <p role="status" aria-live="polite" className="rounded-lg border border-slate-200 bg-white p-3">{message}</p>}
 
       <PlanningHandoffPreview />
     </section>
