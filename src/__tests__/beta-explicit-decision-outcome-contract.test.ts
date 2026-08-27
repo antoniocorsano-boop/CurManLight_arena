@@ -1,8 +1,8 @@
 import { readFileSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
+import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
-const panelPath = fileURLToPath(new URL('../features/beta/InstitutionalDecisionPanel.tsx', import.meta.url));
+const panelPath = join(process.cwd(), 'src/features/beta/InstitutionalDecisionPanel.tsx');
 const panelSource = readFileSync(panelPath, 'utf8');
 
 describe('BETA-G4 explicit institutional outcome contract', () => {
