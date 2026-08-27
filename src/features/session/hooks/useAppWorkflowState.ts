@@ -5,6 +5,8 @@ import { safeLocalStorageGetItem, safeLocalStorageSetItem } from '../../../lib/c
 const WIZARD_STEP_MIN = 1;
 const WIZARD_STEP_MAX = 5;
 const WIZARD_STEP_KEY = 'curman_wizardStep';
+const TARGET_CLASS_KEY = 'curman_targetClass';
+const TARGET_SECTION_KEY = 'curman_targetSection';
 
 function readWizardStep(): number {
  const raw = safeLocalStorageGetItem(WIZARD_STEP_KEY, '');
@@ -27,8 +29,8 @@ export function useAppWorkflowState({ initialNodes }: UseAppWorkflowStateArgs) {
  const [wizardStep, setWizardStep] = useState<number>(() => readWizardStep());
  const [revisioneMode, setRevisioneMode] = useState<'list' | 'wizard'>('list');
  const [revisioneWizardIndex, setRevisioneWizardIndex] = useState<number>(0);
- const [targetClass, setTargetClass] = useState(() => safeLocalStorageGetItem('curman_targetClass', '1'));
- const [targetSection, setTargetSection] = useState<string>(() => safeLocalStorageGetItem('curman_targetSection', 'A'));
+ const [targetClass, setTargetClass] = useState(() => safeLocalStorageGetItem(TARGET_CLASS_KEY, '1'));
+ const [targetSection, setTargetSection] = useState<string>(() => safeLocalStorageGetItem(TARGET_SECTION_KEY, 'A'));
  const [activeCompetencyExplorer, setActiveCompetencyExplorer] = useState<string | null>('KC1');
  const [graphNodes] = useState<GraphNode[]>(initialNodes);
  const [selectedNodeId, setSelectedNodeId] = useState<string | null>('app');
@@ -36,6 +38,14 @@ export function useAppWorkflowState({ initialNodes }: UseAppWorkflowStateArgs) {
  useEffect(() => {
   safeLocalStorageSetItem(WIZARD_STEP_KEY, String(wizardStep));
  }, [wizardStep]);
+
+ useEffect(() => {
+  safeLocalStorageSetItem(TARGET_CLASS_KEY, targetClass);
+ }, [targetClass]);
+
+ useEffect(() => {
+  safeLocalStorageSetItem(TARGET_SECTION_KEY, targetSection);
+ }, [targetSection]);
 
  return {
   classeSubTab,
