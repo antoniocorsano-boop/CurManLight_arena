@@ -1,0 +1,18 @@
+{
+  "phase": "B3",
+  "gate": "BETA-G4",
+  "status": "PENDING_CI",
+  "executable": "scripts/verify-beta-g4-browser.cjs",
+  "workflow": ".github/workflows/beta-e2e-workflow.yml",
+  "requiredSameShaChecks": [
+    "revision-route-real",
+    "local-choice-to-structured-proposal",
+    "review-state-progression",
+    "blocked-without-authenticated-identity",
+    "zero-decision-rpc-while-blocked",
+    "refresh-reentry-blocked",
+    "mobile-viewport-reachability",
+    "no-uncaught-page-errors"
+  ],
+  "nonClaim": "No authorized institutional decision is claimed by this evidence."
+}
