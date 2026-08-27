@@ -1,0 +1,56 @@
+{
+  "version": "1.0.0",
+  "phase": "B3",
+  "status": "IN_PROGRESS",
+  "canonicalBaseSha": "f65c105a045e1efc88a5b0698f27e6e8eaeb4192",
+  "gates": {
+    "BETA-G4": {
+      "status": "PENDING",
+      "completedFoundation": [
+        "shared-decision-port-separated-from-local-DecisionAuthority",
+        "server-authoritative-REVISION_DECIDE-write-boundary",
+        "append-only-institutional-decision-receipt",
+        "proposal-version-SHA256-binding",
+        "idempotent-client-request-boundary",
+        "no-direct-client-insert-update-delete",
+        "fail-closed-no-local-fallback"
+      ],
+      "stillRequired": [
+        "bind-shared-decision-receipt-to-beta-human-workflow",
+        "browser-e2e-happy",
+        "browser-e2e-blocked",
+        "browser-e2e-rejected",
+        "refresh-reentry",
+        "recoverable-error",
+        "resulting-curriculum-baseline-inspection",
+        "planning-handoff-preview"
+      ]
+    },
+    "BETA-G5": {
+      "status": "PENDING_HUMAN",
+      "stillRequired": [
+        "hia-desktop",
+        "hia-mobile",
+        "empty-loading-success-blocked-error-recovery-states",
+        "human-review"
+      ]
+    },
+    "BETA-G6": {
+      "status": "PENDING_HUMAN",
+      "stillRequired": [
+        "automated-a11y",
+        "keyboard",
+        "focus",
+        "touch",
+        "manual-aa-review"
+      ]
+    }
+  },
+  "nonClaims": [
+    "This tranche does not promote historical local DecisionAuthority to authenticated authority.",
+    "This tranche does not mutate the curriculum automatically after a decision receipt.",
+    "This tranche does not claim BETA_E2E_WORKFLOW_PASS.",
+    "This tranche does not claim BETA_HIA_PASS or BETA_ACCESSIBILITY_PASS."
+  ],
+  "nextAction": "Bind the authenticated decision receipt into the bounded Beta revision flow, then exercise the complete published journey with Playwright on desktop and mobile while keeping G5/G6 human acceptance explicit."
+}

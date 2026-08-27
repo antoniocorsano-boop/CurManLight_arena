@@ -11,3 +11,4 @@ export * from './serialization';
 export * from './transferIntegration';
 export * from './documentIntegration';
 export * from './decisionEffects';
+export * from './sharedDecisionPort';
