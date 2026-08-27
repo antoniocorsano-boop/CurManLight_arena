@@ -45,61 +45,71 @@ export default function BetaIdentityPage() {
   const [password, setPassword] = useState('');
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
-  const [transportProbe, setTransportProbe] = useState<ProbeState>({ status: 'idle', detail: 'Non verificato' });
-  const [apiProbe, setApiProbe] = useState<ProbeState>({ status: 'idle', detail: 'Non verificata' });
+  const [simpleProbe, setSimpleProbe] = useState<ProbeState>({ status: 'idle', detail: 'Non verificato' });
+  const [headerProbe, setHeaderProbe] = useState<ProbeState>({ status: 'idle', detail: 'Non verificato' });
 
-  const probeTransport = async () => {
-    if (!supabaseUrl) {
-      setTransportProbe({ status: 'http-error', detail: 'Configurazione Beta incompleta' });
+  const probeSimpleCors = async () => {
+    if (!supabaseUrl || !publishableKey) {
+      setSimpleProbe({ status: 'http-error', detail: 'Configurazione Beta incompleta' });
       return false;
     }
 
-    setTransportProbe({ status: 'checking', detail: 'Verifica HTTPS no-CORS in corso…' });
+    setSimpleProbe({ status: 'checking', detail: 'GET semplice senza preflight in corso…' });
     try {
-      await fetch(`${supabaseUrl.replace(/\/$/, '')}/auth/v1/health`, {
+      const endpoint = `${supabaseUrl.replace(/\/$/, '')}/auth/v1/settings?apikey=${encodeURIComponent(publishableKey)}`;
+      const response = await fetch(endpoint, {
         method: 'GET',
-        mode: 'no-cors',
+        mode: 'cors',
+        credentials: 'omit',
         cache: 'no-store',
       });
-      setTransportProbe({ status: 'reachable', detail: 'Trasporto HTTPS raggiungibile' });
+
+      if (!response.ok) {
+        setSimpleProbe({ status: 'http-error', detail: `Endpoint raggiunto, HTTP ${response.status}` });
+        return false;
+      }
+
+      setSimpleProbe({ status: 'reachable', detail: 'GET semplice cross-origin riuscito' });
       return true;
     } catch (error) {
       const detail = error instanceof Error ? error.message : 'Errore di rete sconosciuto';
-      setTransportProbe({ status: 'unreachable', detail: `NETWORK_UNREACHABLE · ${detail}` });
+      setSimpleProbe({ status: 'unreachable', detail: `SIMPLE_FETCH_BLOCKED · ${detail}` });
       return false;
     }
   };
 
-  const probeApi = async () => {
+  const probeHeaderCors = async () => {
     if (!supabaseUrl || !publishableKey) {
-      setApiProbe({ status: 'http-error', detail: 'Configurazione Beta incompleta' });
+      setHeaderProbe({ status: 'http-error', detail: 'Configurazione Beta incompleta' });
       return false;
     }
 
-    setApiProbe({ status: 'checking', detail: 'Verifica API/CORS in corso…' });
+    setHeaderProbe({ status: 'checking', detail: 'GET con header apikey / preflight in corso…' });
     try {
       const response = await fetch(`${supabaseUrl.replace(/\/$/, '')}/auth/v1/settings`, {
         method: 'GET',
+        mode: 'cors',
+        credentials: 'omit',
         headers: { apikey: publishableKey },
         cache: 'no-store',
       });
 
       if (!response.ok) {
-        setApiProbe({ status: 'http-error', detail: `Endpoint raggiunto, HTTP ${response.status}` });
+        setHeaderProbe({ status: 'http-error', detail: `Endpoint raggiunto, HTTP ${response.status}` });
         return false;
       }
 
-      setApiProbe({ status: 'reachable', detail: 'API Auth raggiungibile con CORS' });
+      setHeaderProbe({ status: 'reachable', detail: 'GET con apikey header riuscito' });
       return true;
     } catch (error) {
       const detail = error instanceof Error ? error.message : 'Errore di rete sconosciuto';
-      setApiProbe({ status: 'unreachable', detail: `FETCH_BLOCKED · ${detail}` });
+      setHeaderProbe({ status: 'unreachable', detail: `HEADER_FETCH_BLOCKED · ${detail}` });
       return false;
     }
   };
 
   const probeSupabase = async () => {
-    await Promise.all([probeTransport(), probeApi()]);
+    await Promise.all([probeSimpleCors(), probeHeaderCors()]);
   };
 
   const refreshMemberships = async (nextSession: Session | null) => {
@@ -189,14 +199,14 @@ export default function BetaIdentityPage() {
 
   const endpointHost = supabaseUrl ? new URL(supabaseUrl).hostname : '—';
   const browserOnline = typeof navigator === 'undefined' ? '—' : navigator.onLine ? 'sì' : 'no';
-  const transportReachable = transportProbe.status === 'reachable';
-  const apiBlocked = apiProbe.status === 'unreachable';
-  const diagnosticMessage = transportReachable && apiBlocked
-    ? 'Il telefono raggiunge Supabase via HTTPS, ma il browser blocca la richiesta API cross-origin. Il problema è quindi CORS/preflight, filtro privacy o browser, non DNS o disponibilità Supabase.'
-    : transportProbe.status === 'unreachable'
-      ? 'Il telefono non raggiunge nemmeno il trasporto HTTPS verso Supabase. Il problema è compatibile con DNS privato, VPN, filtro contenuti o rete.'
-      : apiProbe.status === 'reachable'
-        ? 'Trasporto e API/CORS sono entrambi raggiungibili.'
+  const simpleReachable = simpleProbe.status === 'reachable';
+  const headerBlocked = headerProbe.status === 'unreachable';
+  const diagnosticMessage = simpleReachable && headerBlocked
+    ? 'Il GET cross-origin semplice funziona, mentre la richiesta con header apikey fallisce: il problema è isolato al preflight/header CORS o a un filtro che interviene su quella richiesta.'
+    : simpleProbe.status === 'unreachable' && headerProbe.status === 'unreachable'
+      ? 'La navigazione diretta verso Supabase è stata osservata come funzionante, ma il browser blocca entrambe le fetch cross-origin. Il problema è quindi nel contesto fetch/browser/dispositivo, non nel DNS o nella disponibilità del progetto.'
+      : simpleReachable && headerProbe.status === 'reachable'
+        ? 'Entrambe le modalità fetch raggiungono Supabase: il percorso Auth del browser è disponibile.'
         : 'Diagnostica in corso o non ancora conclusiva.';
 
   return (
@@ -211,11 +221,11 @@ export default function BetaIdentityPage() {
 
         <section aria-label="Diagnostica connessione Supabase" style={{ marginTop: 20, padding: 16, border: '1px solid #dee2e6', borderRadius: 8, background: '#f8f9fa' }}>
           <strong>Connessione Supabase</strong>
-          <p style={{ margin: '8px 0 4px' }}>Trasporto HTTPS: <code>{transportProbe.status.toUpperCase()}</code> · {transportProbe.detail}</p>
-          <p style={{ margin: '4px 0' }}>API/CORS: <code>{apiProbe.status.toUpperCase()}</code> · {apiProbe.detail}</p>
+          <p style={{ margin: '8px 0 4px' }}>GET semplice / senza preflight: <code>{simpleProbe.status.toUpperCase()}</code> · {simpleProbe.detail}</p>
+          <p style={{ margin: '4px 0' }}>GET con apikey header / preflight: <code>{headerProbe.status.toUpperCase()}</code> · {headerProbe.detail}</p>
           <p style={{ margin: '4px 0' }}>Browser online: <strong>{browserOnline}</strong></p>
           <p style={{ margin: '4px 0' }}>Endpoint: <code>{endpointHost}</code></p>
-          <button type="button" onClick={() => void probeSupabase()} disabled={transportProbe.status === 'checking' || apiProbe.status === 'checking'} style={{ padding: '8px 12px', marginTop: 8 }}>
+          <button type="button" onClick={() => void probeSupabase()} disabled={simpleProbe.status === 'checking' || headerProbe.status === 'checking'} style={{ padding: '8px 12px', marginTop: 8 }}>
             Verifica connessione
           </button>
           {supabaseUrl && (
