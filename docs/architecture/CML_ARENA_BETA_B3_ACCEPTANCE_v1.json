@@ -1,8 +1,8 @@
 {
-  "version": "1.0.0",
+  "version": "1.1.0",
   "phase": "B3",
   "status": "IN_PROGRESS",
-  "canonicalBaseSha": "f65c105a045e1efc88a5b0698f27e6e8eaeb4192",
+  "canonicalBaseSha": "32a59fe3369ca5788fd04dcfd8ac0ca3e01383bd",
   "gates": {
     "BETA-G4": {
       "status": "PENDING",
@@ -13,15 +13,23 @@
         "proposal-version-SHA256-binding",
         "idempotent-client-request-boundary",
         "no-direct-client-insert-update-delete",
-        "fail-closed-no-local-fallback"
+        "fail-closed-no-local-fallback",
+        "typed-revision-route",
+        "local-choice-to-structured-proposal-bridge",
+        "authenticated-decision-panel",
+        "receipt-refresh-reentry-reader",
+        "stale-version-fingerprint-detection"
+      ],
+      "evidenceUnderValidationInThisPr": [
+        "browser-e2e-blocked",
+        "refresh-reentry-blocked",
+        "zero-consequential-rpc-while-blocked",
+        "mobile-viewport-reachability"
       ],
       "stillRequired": [
-        "bind-shared-decision-receipt-to-beta-human-workflow",
-        "browser-e2e-happy",
-        "browser-e2e-blocked",
-        "browser-e2e-rejected",
-        "refresh-reentry",
-        "recoverable-error",
+        "browser-e2e-authorized-real-membership",
+        "browser-e2e-authorized-rejected-or-returned-outcome",
+        "institutional-receipt-refresh-reentry-real",
         "resulting-curriculum-baseline-inspection",
         "planning-handoff-preview"
       ]
@@ -46,11 +54,16 @@
       ]
     }
   },
+  "authoritySafety": {
+    "currentBetaBackendActiveCollegioMembershipAvailable": false,
+    "testAuthorityWillNotBeFabricated": true,
+    "reason": "A real authorized browser decision must use an intentionally granted active collegio membership. Revoked memberships are not reactivated merely to satisfy a test."
+  },
   "nonClaims": [
-    "This tranche does not promote historical local DecisionAuthority to authenticated authority.",
-    "This tranche does not mutate the curriculum automatically after a decision receipt.",
-    "This tranche does not claim BETA_E2E_WORKFLOW_PASS.",
+    "Historical local DecisionAuthority remains self-declared and non-authenticated.",
+    "A decision receipt does not mutate the curriculum automatically.",
+    "This tranche does not claim BETA_E2E_WORKFLOW_PASS until a real authorized journey is certified.",
     "This tranche does not claim BETA_HIA_PASS or BETA_ACCESSIBILITY_PASS."
   ],
-  "nextAction": "Bind the authenticated decision receipt into the bounded Beta revision flow, then exercise the complete published journey with Playwright on desktop and mobile while keeping G5/G6 human acceptance explicit."
+  "nextAction": "Validate the blocked browser journey on this PR, then provision or identify an intentionally authorized collegio Beta tester through the governed membership process before exercising the real consequential happy path."
 }
