@@ -5,13 +5,17 @@ on:
     paths:
       - '.human/**'
       - 'tools/human-interaction-model/**'
+      - 'tools/human-communication-model/**'
       - 'agent_skills/human-interaction-model/**'
+      - 'agent_skills/human-communication-model/**'
       - 'src/features/guided-workflow/humanTask.ts'
+      - 'src/domain/human-communication/**'
+      - 'src/__tests__/human-communication-model.test.ts'
       - '.github/workflows/human-interaction-model.yml'
   workflow_dispatch:
 
 jobs:
-  validate-him:
+  validate-human-models:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -22,3 +26,5 @@ jobs:
           node-version: '22'
       - name: Validate HIM installation
         run: node tools/human-interaction-model/validate.mjs .
+      - name: Validate HCM installation
+        run: node tools/human-communication-model/validate.mjs .

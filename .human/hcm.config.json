@@ -1,0 +1,75 @@
+{
+  "human_communication_model_version": "1.0.0",
+  "profile": "HCM-L2",
+  "product": {
+    "id": "curmanlight-arena",
+    "default_locale": "it-IT"
+  },
+  "compatibility": {
+    "him_config": ".human/him.config.json",
+    "human_task_directory": ".human/tasks",
+    "domain_state_remains_authoritative": true
+  },
+  "principles": {
+    "role_aware_language": true,
+    "task_phase_aware_tone": true,
+    "progressive_terminology": true,
+    "memory_is_context_not_authority": true,
+    "canonical_state_independent_from_copy": true
+  },
+  "roles": {
+    "default": { "label": "persona", "tone": "plain" },
+    "docente": { "label": "docente", "tone": "operational" },
+    "referente": { "label": "referente curricolare", "tone": "facilitative" },
+    "collegio": { "label": "organo collegiale", "tone": "formal" },
+    "tecnico": { "label": "referente tecnico", "tone": "technical" }
+  },
+  "task_phases": {
+    "ORIENT": "plain",
+    "EXPLORE": "descriptive",
+    "ACT": "operational",
+    "REVIEW": "precise",
+    "DECIDE": "formal",
+    "RECOVER": "recovery",
+    "COMPLETE": "confirmatory"
+  },
+  "terminology": {
+    "primary_layer": "human",
+    "technical_layer": "progressive-disclosure",
+    "forbidden_primary_patterns": [
+      "UUID",
+      "CML_*",
+      "SHA-256",
+      "RPC",
+      "RLS",
+      "database table"
+    ],
+    "domain_terms_allowed_when_task_relevant": [
+      "curricolo",
+      "proposta",
+      "revisione",
+      "decisione istituzionale",
+      "provenienza"
+    ]
+  },
+  "memory": {
+    "rememberable": [
+      "working-context",
+      "display-preference",
+      "resume-point",
+      "role-context"
+    ],
+    "canonical_source_required": [
+      "membership",
+      "decision-authority",
+      "institutional-decision",
+      "receipt"
+    ],
+    "canonical_records_are_not_memory": true
+  },
+  "authority": {
+    "role_never_implies_authority": true,
+    "copy_never_grants_capability": true,
+    "verified_authority_must_come_from_domain": true
+  }
+}

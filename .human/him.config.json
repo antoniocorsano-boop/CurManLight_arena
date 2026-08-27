@@ -19,6 +19,7 @@
   },
   "compatibility": {
     "domain_human_task_contract": "src/features/guided-workflow/humanTask.ts",
-    "domain_contract_remains_authoritative": true
+    "domain_contract_remains_authoritative": true,
+    "human_communication_model": ".human/hcm.config.json"
   }
 }

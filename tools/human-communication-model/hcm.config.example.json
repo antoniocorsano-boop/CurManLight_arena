@@ -1,0 +1,47 @@
+{
+  "human_communication_model_version": "1.0.0",
+  "profile": "HCM-L2",
+  "product": {
+    "id": "your-product-id",
+    "default_locale": "it-IT"
+  },
+  "compatibility": {
+    "him_config": ".human/him.config.json",
+    "human_task_directory": ".human/tasks",
+    "domain_state_remains_authoritative": true
+  },
+  "principles": {
+    "role_aware_language": true,
+    "task_phase_aware_tone": true,
+    "progressive_terminology": true,
+    "memory_is_context_not_authority": true,
+    "canonical_state_independent_from_copy": true
+  },
+  "roles": {
+    "default": { "label": "persona", "tone": "plain" }
+  },
+  "task_phases": {
+    "ORIENT": "plain",
+    "EXPLORE": "descriptive",
+    "ACT": "operational",
+    "REVIEW": "precise",
+    "DECIDE": "formal",
+    "RECOVER": "recovery",
+    "COMPLETE": "confirmatory"
+  },
+  "terminology": {
+    "primary_layer": "human",
+    "technical_layer": "progressive-disclosure",
+    "forbidden_primary_patterns": ["UUID", "CML_*", "SHA-256", "RPC", "RLS"]
+  },
+  "memory": {
+    "rememberable": ["working-context", "display-preference", "resume-point", "role-context"],
+    "canonical_source_required": ["membership", "decision-authority", "institutional-decision", "receipt"],
+    "canonical_records_are_not_memory": true
+  },
+  "authority": {
+    "role_never_implies_authority": true,
+    "copy_never_grants_capability": true,
+    "verified_authority_must_come_from_domain": true
+  }
+}
