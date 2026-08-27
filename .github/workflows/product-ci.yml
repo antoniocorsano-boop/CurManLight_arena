@@ -36,6 +36,7 @@ jobs:
           src/__tests__/revision-human-task.test.ts
           src/__tests__/institution-capabilities.test.ts
           src/__tests__/supabase-workspace-foundation.test.ts
+          src/__tests__/home-human-communication.test.ts
 
       - name: TypeScript
         run: npx tsc --noEmit
