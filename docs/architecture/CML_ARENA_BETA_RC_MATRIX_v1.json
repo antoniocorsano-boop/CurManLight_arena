@@ -3,8 +3,8 @@
   "releaseStatus": "NOT_AUTHORIZED",
   "requiredGates": [
     {"id": "BETA-G1", "evidence": ["beta-scope", "beta-human-tasks", "agentic-state"], "status": "PASS"},
-    {"id": "BETA-G2", "evidence": ["canonical-beta-url", "release-sha", "reproducible-deploy", "rollback"], "status": "IN_PROGRESS"},
-    {"id": "BETA-G3", "evidence": ["authenticated-membership", "rls-tests", "denied-authority-tests", "membership-lifecycle"], "status": "PENDING"},
+    {"id": "BETA-G2", "evidence": ["canonical-beta-url", "release-sha", "reproducible-deploy", "published-smoke", "rollback", "restore"], "status": "PASS"},
+    {"id": "BETA-G3", "evidence": ["authenticated-membership", "rls-tests", "denied-authority-tests", "membership-lifecycle"], "status": "IN_PROGRESS"},
     {"id": "BETA-G4", "evidence": ["browser-e2e-happy", "browser-e2e-blocked", "refresh-reentry", "recovery-flow"], "status": "PENDING"},
     {"id": "BETA-G5", "evidence": ["hia-desktop", "hia-mobile", "empty-loading-error-recovery-states", "human-review"], "status": "PENDING_HUMAN"},
     {"id": "BETA-G6", "evidence": ["automated-a11y", "keyboard", "focus", "touch", "manual-aa-review"], "status": "PENDING_HUMAN"},

@@ -4,7 +4,7 @@
   "program": "CML_ARENA_REAL_BETA",
   "status": "CML_ARENA_BETA_NOT_READY",
   "auditedBaseline": "d368b2bd0040dfe808d8ae65b13ba60942a831d5",
-  "canonicalBaseline": "abd9e7be5138ae68b24c4108ae21ccccacfd41bb",
+  "canonicalBaseline": "51512294bcf1158e55cb49d5b755ad09448ac03d",
   "executionMode": "AGENTIC_GATED",
   "rules": {
     "singleReadyPhase": true,
@@ -27,7 +27,7 @@
       "id": "B1",
       "name": "Environment and Operations Foundation",
       "gates": ["BETA-G2"],
-      "status": "IN_PROGRESS",
+      "status": "COMPLETE",
       "prerequisites": ["B0"],
       "exit": "BETA_ENVIRONMENT_READY"
     },
@@ -35,7 +35,7 @@
       "id": "B2",
       "name": "Identity and Authority",
       "gates": ["BETA-G3"],
-      "status": "BLOCKED_BY_PREREQUISITE",
+      "status": "IN_PROGRESS",
       "prerequisites": ["B1"],
       "exit": "BETA_IDENTITY_AUTHORITY_PASS"
     },
@@ -65,8 +65,8 @@
     }
   ],
   "nextAction": {
-    "phase": "B1",
-    "action": "Validate Beta release artifact, merge release-ops foundation, publish canonical Pages environment, then collect deployment and rollback evidence",
+    "phase": "B2",
+    "action": "Implement and verify authenticated membership, authority boundaries, denied-authority behavior and membership lifecycle for BETA-G3",
     "mayModifyRuntime": true
   }
 }

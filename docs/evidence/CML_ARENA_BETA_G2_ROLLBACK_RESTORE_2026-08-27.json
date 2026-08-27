@@ -1,0 +1,34 @@
+{
+  "schema": "CML_BETA_G2_ROLLBACK_RESTORE_EVIDENCE_V1",
+  "gate": "BETA-G2",
+  "observedAt": "2026-08-27T04:47:10Z",
+  "canonicalUrl": "https://antoniocorsano-boop.github.io/CurManLight_arena/",
+  "currentReleaseSha": "51512294bcf1158e55cb49d5b755ad09448ac03d",
+  "knownGoodRollbackSha": "96bf70b0ed6b08ecac8f8145a11394f461cd86e3",
+  "sequence": [
+    {
+      "step": "CURRENT_RELEASE_DEPLOY",
+      "workflowRun": 33039963975,
+      "result": "PASS",
+      "publishedSmoke": "BETA_PUBLISHED_SMOKE_PASS 51512294bcf1158e55cb49d5b755ad09448ac03d"
+    },
+    {
+      "step": "ROLLBACK_TO_KNOWN_GOOD",
+      "workflowRun": 33040227210,
+      "result": "PASS",
+      "publishedSmoke": "BETA_PUBLISHED_SMOKE_PASS 96bf70b0ed6b08ecac8f8145a11394f461cd86e3"
+    },
+    {
+      "step": "RESTORE_CURRENT_RELEASE",
+      "workflowRun": 33040399270,
+      "result": "PASS",
+      "publishedSmoke": "BETA_PUBLISHED_SMOKE_PASS 51512294bcf1158e55cb49d5b755ad09448ac03d"
+    }
+  ],
+  "conclusion": "BETA_ENVIRONMENT_READY",
+  "releaseAuthorization": "NOT_AUTHORIZED",
+  "securityCarryForward": {
+    "dependencyAudit": "7 vulnerabilities previously observed: 3 moderate, 4 high",
+    "assignedGate": "BETA-G9"
+  }
+}

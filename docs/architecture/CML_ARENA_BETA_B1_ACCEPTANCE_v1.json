@@ -2,34 +2,43 @@
   "schema": "CML_BETA_B1_ACCEPTANCE_V1",
   "phase": "B1",
   "gate": "BETA-G2",
-  "status": "IN_PROGRESS",
-  "releaseCandidate": {
-    "sha": "96bf70b0ed6b08ecac8f8145a11394f461cd86e3",
+  "status": "PASS",
+  "exit": "BETA_ENVIRONMENT_READY",
+  "canonicalRelease": {
+    "sha": "51512294bcf1158e55cb49d5b755ad09448ac03d",
     "url": "https://antoniocorsano-boop.github.io/CurManLight_arena/",
-    "workflowRun": 33037166659,
-    "workflowAttempt": 2
+    "deploymentRun": 33039963975,
+    "restoreRun": 33040399270
+  },
+  "rollbackRehearsal": {
+    "knownGoodSha": "96bf70b0ed6b08ecac8f8145a11394f461cd86e3",
+    "rollbackRun": 33040227210,
+    "rollbackSmoke": "BETA_PUBLISHED_SMOKE_PASS 96bf70b0ed6b08ecac8f8145a11394f461cd86e3",
+    "restoreRun": 33040399270,
+    "restoreSmoke": "BETA_PUBLISHED_SMOKE_PASS 51512294bcf1158e55cb49d5b755ad09448ac03d"
   },
   "requiredEvidence": {
     "artifactContract": "OBSERVED_PASS",
     "canonicalUrl": "OBSERVED_PASS",
-    "releaseShaVisible": "OBSERVED_IN_DEPLOYMENT_AND_ARTIFACT",
+    "releaseShaVisible": "OBSERVED_PASS",
     "reproducibleDeploy": "OBSERVED_PASS",
-    "rollback": "IMPLEMENTED_NOT_YET_REHEARSED",
-    "publishedSmoke": "AUTOMATED_CHECK_ADDED_NOT_YET_OBSERVED"
+    "rollback": "OBSERVED_PASS",
+    "publishedSmoke": "OBSERVED_PASS"
   },
   "observedEvidence": [
-    "273 fast tests passed",
-    "TypeScript passed",
-    "Beta artifact prepared for exact release SHA",
-    "Beta release contract passed",
-    "GitHub Pages artifact uploaded",
-    "GitHub Pages deployment reported success",
-    "GitHub environment URL assigned",
-    "deployment pages_build_version equals releaseCandidate.sha"
+    "Beta artifact prepared and verified for exact immutable SHA",
+    "GitHub Pages deployment succeeded on canonical URL",
+    "published HTTP smoke passed",
+    "published beta-release.json matched the requested release SHA",
+    "rollback to previously deployed known-good SHA succeeded",
+    "rollback published smoke passed",
+    "restore of current canonical release succeeded",
+    "restore published smoke passed"
   ],
   "knownNonB1Finding": {
-    "dependencyAudit": "npm install reported 7 vulnerabilities (3 moderate, 4 high); this remains evidence to resolve under BETA-G9 and is not silently promoted by B1"
+    "dependencyAudit": "npm install reported 7 vulnerabilities (3 moderate, 4 high); this remains evidence to resolve under BETA-G9 and is not promoted by B1"
   },
   "passRule": "ALL_REQUIRED_EVIDENCE_OBSERVED",
-  "forbiddenShortcut": "WORKFLOW_EXISTENCE_OR_DEPLOYMENT_SUCCESS_ALONE_IS_NOT_FULL_B1_ACCEPTANCE"
+  "result": "BETA_ENVIRONMENT_READY",
+  "releaseAuthorization": "NOT_AUTHORIZED"
 }
