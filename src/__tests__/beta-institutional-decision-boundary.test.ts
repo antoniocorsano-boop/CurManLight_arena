@@ -30,8 +30,9 @@ describe('institutional decision boundary', () => {
     expect(decisionControlsMayOpen('error', null, 'a'.repeat(64))).toBe(false);
   });
 
-  it('opens only after a conclusive no-receipt lookup', () => {
+  it('opens only after a conclusive no-receipt lookup and a computed current fingerprint', () => {
     expect(decisionControlsMayOpen('resolved', null, 'a'.repeat(64))).toBe(true);
+    expect(decisionControlsMayOpen('resolved', null, null)).toBe(false);
   });
 
   it('treats approve, approve-with-changes and reject as terminal', () => {
@@ -48,8 +49,10 @@ describe('institutional decision boundary', () => {
     expect(decisionControlsMayOpen('resolved', receipt('return-for-revision'), 'a'.repeat(64))).toBe(true);
   });
 
-  it('does not treat a receipt for a different fingerprint as terminal for the current content', () => {
-    expect(receiptIsTerminalForCurrentVersion(receipt('approve', 'b'.repeat(64)), 'a'.repeat(64))).toBe(false);
+  it('fails closed when an existing receipt fingerprint differs from current content', () => {
+    const mismatched = receipt('approve', 'b'.repeat(64));
+    expect(receiptIsTerminalForCurrentVersion(mismatched, 'a'.repeat(64))).toBe(false);
+    expect(decisionControlsMayOpen('resolved', mismatched, 'a'.repeat(64))).toBe(false);
   });
 
   it('invalidates a prepared preview when the freshly computed fingerprint changes', () => {
