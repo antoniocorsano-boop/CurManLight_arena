@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - '.env.beta'
+      - 'index.html'
       - 'src/main.tsx'
       - 'src/features/beta/**'
       - 'src/domain/institution/**'
@@ -18,6 +19,7 @@ on:
     branches: [main]
     paths:
       - '.env.beta'
+      - 'index.html'
       - 'src/main.tsx'
       - 'src/features/beta/**'
       - 'src/domain/institution/**'
@@ -61,6 +63,7 @@ jobs:
           set -euo pipefail
           grep -Fq 'VITE_SUPABASE_URL=https://ysgaokenrutmgzkhcxvy.supabase.co' .env.beta
           grep -Eq '^VITE_SUPABASE_PUBLISHABLE_KEY=sb_publishable_' .env.beta
+          grep -Fq "connect-src 'self' https://www.googleapis.com https://accounts.google.com https://ysgaokenrutmgzkhcxvy.supabase.co" index.html
           if grep -Eiq '(service_role|secret_key|sb_secret_)' .env.beta; then
             echo 'Secret Supabase credential must not be committed to Beta environment'
             exit 1
