@@ -6,17 +6,20 @@ on:
       - 'src/main.tsx'
       - 'src/App.tsx'
       - 'src/features/navigation/**'
+      - 'src/features/session/hooks/useAppWorkflowState.ts'
       - 'src/features/curriculum/components/RevisioneTab.tsx'
       - 'src/features/beta/**'
       - 'src/domain/revision/repository.ts'
       - 'src/domain/revision/sharedDecisionPort.ts'
       - 'src/domain/revision/versionFingerprint.ts'
       - 'src/domain/revision/index.ts'
+      - 'src/domain/transfer/**'
       - 'src/infrastructure/supabase/sharedRevisionDecisionRepository.ts'
       - 'src/infrastructure/supabase/index.ts'
       - 'src/__tests__/revision-initial-version-reference.test.ts'
       - 'src/__tests__/beta-shared-decision-boundary.test.ts'
       - 'src/__tests__/beta-institutional-decision-boundary.test.ts'
+      - 'src/__tests__/beta-planning-handoff-preview.test.ts'
       - 'src/__tests__/beta-revision-routing-contract.test.ts'
       - 'src/__tests__/beta-revision-version-fingerprint.test.ts'
       - 'src/__tests__/beta-router-basename-contract.test.ts'
@@ -33,17 +36,20 @@ on:
       - 'src/main.tsx'
       - 'src/App.tsx'
       - 'src/features/navigation/**'
+      - 'src/features/session/hooks/useAppWorkflowState.ts'
       - 'src/features/curriculum/components/RevisioneTab.tsx'
       - 'src/features/beta/**'
       - 'src/domain/revision/repository.ts'
       - 'src/domain/revision/sharedDecisionPort.ts'
       - 'src/domain/revision/versionFingerprint.ts'
       - 'src/domain/revision/index.ts'
+      - 'src/domain/transfer/**'
       - 'src/infrastructure/supabase/sharedRevisionDecisionRepository.ts'
       - 'src/infrastructure/supabase/index.ts'
       - 'src/__tests__/revision-initial-version-reference.test.ts'
       - 'src/__tests__/beta-shared-decision-boundary.test.ts'
       - 'src/__tests__/beta-institutional-decision-boundary.test.ts'
+      - 'src/__tests__/beta-planning-handoff-preview.test.ts'
       - 'src/__tests__/beta-revision-routing-contract.test.ts'
       - 'src/__tests__/beta-revision-version-fingerprint.test.ts'
       - 'src/__tests__/beta-router-basename-contract.test.ts'
@@ -75,6 +81,7 @@ jobs:
           src/__tests__/revision-initial-version-reference.test.ts
           src/__tests__/beta-shared-decision-boundary.test.ts
           src/__tests__/beta-institutional-decision-boundary.test.ts
+          src/__tests__/beta-planning-handoff-preview.test.ts
           src/__tests__/beta-revision-routing-contract.test.ts
           src/__tests__/beta-revision-version-fingerprint.test.ts
           src/__tests__/beta-router-basename-contract.test.ts
