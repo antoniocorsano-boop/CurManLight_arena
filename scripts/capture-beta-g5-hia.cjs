@@ -5,42 +5,38 @@ const { chromium } = require('playwright');
 const baseUrl = process.env.BETA_BASE_URL || 'http://127.0.0.1:4173/CurManLight_arena';
 const revisionUrl = `${baseUrl.replace(/\/$/, '')}/revisione`;
 const outputDir = path.resolve(process.env.HIA_OUTPUT_DIR || 'artifacts/hia');
-
 fs.mkdirSync(outputDir, { recursive: true });
 
-async function dismissKnownNonTaskDialogs(page) {
-  for (let attempt = 0; attempt < 6; attempt += 1) {
-    await page.waitForTimeout(attempt === 0 ? 500 : 250);
-    let dismissed = false;
+async function dismissKnownNonTaskDialogs(page, settleMs = 1400) {
+  const deadline = Date.now() + settleMs;
+  do {
+    await page.waitForTimeout(200);
 
     const onboarding = page
       .locator('[role="dialog"][aria-modal="true"]')
       .filter({ hasText: 'Profilo personale locale' })
       .first();
-    if (await onboarding.isVisible({ timeout: 250 }).catch(() => false)) {
-      const headerClose = onboarding.locator('button').first();
-      await headerClose.click({ timeout: 2000 });
+    if (await onboarding.isVisible({ timeout: 150 }).catch(() => false)) {
+      await onboarding.locator('button').first().click({ timeout: 2000 });
       await onboarding.waitFor({ state: 'hidden', timeout: 3000 }).catch(() => undefined);
       console.log('HIA_DISMISS known-dialog=local-profile');
-      dismissed = true;
+      continue;
     }
 
     const motto = page
       .locator('[role="dialog"][aria-modal="true"]')
       .filter({ hasText: 'Motto e Metodo Operativo' })
       .first();
-    if (await motto.isVisible({ timeout: 250 }).catch(() => false)) {
+    if (await motto.isVisible({ timeout: 150 }).catch(() => false)) {
       const understood = motto.getByRole('button', { name: 'Ho capito', exact: true });
-      if (await understood.isVisible({ timeout: 250 }).catch(() => false)) {
+      if (await understood.isVisible({ timeout: 150 }).catch(() => false)) {
         await understood.click({ timeout: 2000 });
         await motto.waitFor({ state: 'hidden', timeout: 3000 }).catch(() => undefined);
         console.log('HIA_DISMISS known-dialog=motto');
-        dismissed = true;
+        continue;
       }
     }
-
-    if (!dismissed) return;
-  }
+  } while (Date.now() < deadline);
 }
 
 async function expectVisibleText(root, text, timeout = 8000) {
@@ -55,6 +51,13 @@ async function capture(page, fileName, label, captures) {
   await page.screenshot({ path: filePath, fullPage: true });
   captures.push({ label, file: fileName, url: page.url(), viewport: page.viewportSize() });
   console.log(`HIA_CAPTURE ${label} ${fileName}`);
+}
+
+async function waitForDecisionPanel(page) {
+  const panel = page.getByRole('region', { name: 'Decisione istituzionale Beta' }).first();
+  await panel.waitFor({ state: 'visible', timeout: 8000 });
+  await expectVisibleText(panel, 'Nessuna identità Beta autenticata');
+  return panel;
 }
 
 (async () => {
@@ -84,11 +87,10 @@ async function capture(page, fileName, label, captures) {
   try {
     const response = await page.goto(revisionUrl, { waitUntil: 'domcontentloaded', timeout: 30000 });
     check('published-style revision route responds', Boolean(response));
-    await dismissKnownNonTaskDialogs(page);
+    await dismissKnownNonTaskDialogs(page, 1800);
     await expectVisibleText(page, 'Revisione del Curricolo: Gap 2025');
     await capture(page, '01-revision-entry-desktop.png', 'revision-entry-desktop', captures);
 
-    await dismissKnownNonTaskDialogs(page);
     const localChoice = page.getByRole('button', { name: 'Usa testo 2025' }).first();
     await localChoice.waitFor({ state: 'visible', timeout: 8000 });
     await localChoice.click();
@@ -97,7 +99,6 @@ async function capture(page, fileName, label, captures) {
     await starter.waitFor({ state: 'visible', timeout: 5000 });
     await capture(page, '02-structured-proposal-entry-desktop.png', 'structured-proposal-entry-desktop', captures);
 
-    await dismissKnownNonTaskDialogs(page);
     await starter.locator('select').selectOption({ index: 1 });
     await starter.locator('textarea').fill('Evidenza HIA: la motivazione deve essere comprensibile prima del passaggio alla revisione formale.');
     await starter.getByRole('button', { name: 'Crea proposta strutturata' }).click();
@@ -106,7 +107,6 @@ async function capture(page, fileName, label, captures) {
     await prepareButton.waitFor({ state: 'visible', timeout: 5000 });
     await capture(page, '03-proposal-ready-desktop.png', 'proposal-ready-desktop', captures);
 
-    await dismissKnownNonTaskDialogs(page);
     await prepareButton.click();
     const submitButton = page.getByRole('button', { name: 'Invia', exact: true }).first();
     await submitButton.waitFor({ state: 'visible', timeout: 3000 });
@@ -120,9 +120,7 @@ async function capture(page, fileName, label, captures) {
     await admitButton.waitFor({ state: 'visible', timeout: 3000 });
     await admitButton.click();
 
-    const decisionPanel = page.getByRole('region', { name: 'Decisione istituzionale Beta' }).first();
-    await decisionPanel.waitFor({ state: 'visible', timeout: 5000 });
-    await expectVisibleText(decisionPanel, 'Nessuna identità Beta autenticata');
+    const decisionPanel = await waitForDecisionPanel(page);
     check('consequential decision is visibly blocked without authority', true);
     check('blocked HIA capture performs no institutional decision write', decisionRpcCalls === 0);
     await capture(page, '04-decision-authority-block-desktop.png', 'decision-authority-block-desktop', captures);
@@ -133,14 +131,21 @@ async function capture(page, fileName, label, captures) {
       await capture(page, '05-planning-handoff-desktop.png', 'planning-handoff-desktop', captures);
     }
 
+    // Mobile evidence must be a real responsive re-entry, not a desktop render merely resized in place.
     await page.setViewportSize({ width: 390, height: 844 });
-    await dismissKnownNonTaskDialogs(page);
-    await decisionPanel.scrollIntoViewIfNeeded();
-    check('decision state remains reachable on mobile', await decisionPanel.isVisible());
+    const mobileResponse = await page.reload({ waitUntil: 'domcontentloaded', timeout: 30000 });
+    check('mobile re-entry responds after viewport change', Boolean(mobileResponse));
+    await dismissKnownNonTaskDialogs(page, 1800);
+    await expectVisibleText(page, 'Revisione del Curricolo: Gap 2025');
+
+    const mobileDecisionPanel = await waitForDecisionPanel(page);
+    await mobileDecisionPanel.scrollIntoViewIfNeeded();
+    check('decision state remains reachable after true mobile re-entry', await mobileDecisionPanel.isVisible());
     await capture(page, '06-decision-authority-block-mobile.png', 'decision-authority-block-mobile', captures);
 
-    if (await handoffPanel.isVisible({ timeout: 1000 }).catch(() => false)) {
-      await handoffPanel.scrollIntoViewIfNeeded();
+    const mobileHandoffPanel = page.getByRole('region', { name: 'Anteprima passaggio alla progettazione' }).first();
+    if (await mobileHandoffPanel.isVisible({ timeout: 1500 }).catch(() => false)) {
+      await mobileHandoffPanel.scrollIntoViewIfNeeded();
       await capture(page, '07-planning-handoff-mobile.png', 'planning-handoff-mobile', captures);
     }
 
@@ -154,6 +159,7 @@ async function capture(page, fileName, label, captures) {
       generatedAt: new Date().toISOString(),
       baseUrl,
       humanReviewRequired: true,
+      mobileCaptureMode: 'viewport-change-plus-reload-reentry',
       humanReviewNotAutomated: [
         'task comprehensibility',
         'visual hierarchy',
