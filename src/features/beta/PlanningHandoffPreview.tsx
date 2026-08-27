@@ -1,26 +1,19 @@
 import { useMemo } from 'react';
 import { ArrowRight, CheckCircle2, ShieldCheck, TriangleAlert } from 'lucide-react';
-import type { A07InstitutionalDocumentRead } from '../../domain/institution';
+import { useAppContext } from '../../components/layout/AppContext';
 import { useCurriculumStore } from '../../store/useCurriculumStore';
-import type { CurriculumMap } from '../session/types/appViewContracts';
 import { buildPlanningHandoffPreview } from './planningHandoffPreview';
-
-export interface PlanningHandoffPreviewProps {
-  localCurriculum: CurriculumMap;
-  targetClass: string;
-  targetSection: string;
-  institutionalProfile: A07InstitutionalDocumentRead;
-}
 
 const curriculumStateLabel = (state: 'APPROVED' | 'PROVISIONAL_COMPLETE'): string =>
   state === 'APPROVED' ? 'Approvato' : 'Completo per progettare · ancora provvisorio';
 
-export function PlanningHandoffPreview({
-  localCurriculum,
-  targetClass,
-  targetSection,
-  institutionalProfile,
-}: PlanningHandoffPreviewProps) {
+export function PlanningHandoffPreview() {
+  const {
+    localCurriculum,
+    targetClass,
+    targetSection,
+    institutionalProfile,
+  } = useAppContext();
   const {
     discipline,
     order,
