@@ -7,3 +7,4 @@ export { Sidebar } from './components/Sidebar';
 export { TopBar } from './components/TopBar';
 export { useAppNavigation } from './hooks/useAppNavigation';
 export type { AppTab } from './hooks/useAppNavigation';
+export { pathnameToAppTab, appTabToPath } from './appRouting';

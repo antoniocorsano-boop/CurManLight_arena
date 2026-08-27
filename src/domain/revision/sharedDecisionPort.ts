@@ -34,6 +34,11 @@ export interface InstitutionalRevisionDecisionReceipt {
  * self-declared role or to local-only persistence.
  */
 export interface SharedRevisionDecisionRepository {
+  findInstitutionalDecisionForVersion(
+    context: WorkspaceActorContext,
+    proposalVersionRef: string
+  ): Promise<InstitutionalRevisionDecisionReceipt | null>;
+
   recordInstitutionalDecision(
     context: WorkspaceActorContext,
     input: InstitutionalRevisionDecisionInput

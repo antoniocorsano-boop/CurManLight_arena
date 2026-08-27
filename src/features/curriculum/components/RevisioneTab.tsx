@@ -16,6 +16,7 @@ import { addProposal } from '../../../domain/revision/repository';
 import { createEntityReference } from '../../../domain/curriculum/identity';
 import type { EntityId } from '../../../domain/curriculum/identity/types';
 import { HumanTaskSummary, evaluateRevisionHumanTask } from '../../guided-workflow';
+import { InstitutionalDecisionPanel, StructuredProposalStarter } from '../../beta';
 
 // ─── Canonical Proposal Actions (no double-write) ────────────────────────
 
@@ -245,9 +246,12 @@ function CanonicalProposalsSection() {
                 </>
               )}
               {proposal.status === 'accepted-for-decision' && (
-                <span className="text-[10px] text-slate-500 self-center">
-                  In attesa di registrazione decisione — usare il pannello decisioni
-                </span>
+                <>
+                  <span className="text-[10px] text-slate-500 self-center">
+                    In attesa di decisione istituzionale autenticata
+                  </span>
+                  {version && <InstitutionalDecisionPanel proposal={proposal} version={version} />}
+                </>
               )}
               {proposal.status === 'rejected' && (
                 <button
@@ -292,7 +296,7 @@ export function RevisioneTab({
   revisioneWizardIndex,
   setRevisioneWizardIndex,
 }: RevisioneTabProps) {
-  const { decisions, customTexts, activeRevisionFilter, setActiveRevisionFilter, setDecision, resetDecision, setCustomText } = useCurriculumStore();
+  const { decisions, customTexts, activeRevisionFilter, setActiveRevisionFilter, setDecision, resetDecision, setCustomText, discipline, order } = useCurriculumStore();
 
   return (
     <div className="space-y-6 fade-in text-left">
@@ -322,6 +326,14 @@ export function RevisioneTab({
           <p className="font-semibold text-slate-700 leading-normal">Le scelte registrate sono note di lavoro non obbligatorie e non determinano applicabilità o adozione.</p>
         </div>
       </div>
+
+      <StructuredProposalStarter
+        proposals={currentDisciplineProps}
+        decisions={decisions}
+        customTexts={customTexts}
+        discipline={discipline}
+        order={order}
+      />
 
       {/* Canonical Proposals Section */}
       <CanonicalProposalsSection />

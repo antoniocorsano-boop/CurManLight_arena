@@ -39,6 +39,7 @@ import ReactDOM from 'react-dom/client'
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import App from './App.tsx'
 import BetaIdentityPage from './features/beta/BetaIdentityPage.tsx'
+import { resolveRouterBasename } from './features/navigation/routerBasename'
 import './index.css'
 
 class ErrorBoundary extends React.Component<
@@ -76,6 +77,7 @@ class ErrorBoundary extends React.Component<
 }
 
 const betaIdentityQueryEntry = new URLSearchParams(window.location.search).get('betaIdentity') === '1';
+const routerBasename = resolveRouterBasename(import.meta.env.MODE);
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
  <React.StrictMode>
@@ -83,7 +85,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
    {betaIdentityQueryEntry ? (
     <BetaIdentityPage />
    ) : (
-    <BrowserRouter basename={import.meta.env.BASE_URL}>
+    <BrowserRouter basename={routerBasename}>
      <Routes>
       <Route path="/beta-identity" element={<BetaIdentityPage />} />
       <Route path="*" element={<App />} />
