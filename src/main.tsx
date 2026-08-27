@@ -36,8 +36,9 @@ if ('serviceWorker' in navigator && window.location.protocol !== 'file:') {
 
 import React from 'react'
 import ReactDOM from 'react-dom/client'
-import { BrowserRouter } from 'react-router-dom'
+import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import App from './App.tsx'
+import BetaIdentityPage from './features/beta/BetaIdentityPage.tsx'
 import './index.css'
 
 class ErrorBoundary extends React.Component<
@@ -78,7 +79,10 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
  <React.StrictMode>
   <ErrorBoundary>
    <BrowserRouter basename={import.meta.env.BASE_URL}>
-    <App />
+    <Routes>
+     <Route path="/beta-identity" element={<BetaIdentityPage />} />
+     <Route path="*" element={<App />} />
+    </Routes>
    </BrowserRouter>
   </ErrorBoundary>
  </React.StrictMode>,
