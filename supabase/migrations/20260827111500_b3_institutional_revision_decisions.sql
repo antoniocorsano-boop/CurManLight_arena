@@ -71,11 +71,17 @@ begin
   end if;
 
   if p_workspace_id is null
+     or p_proposal_ref is null
      or nullif(trim(p_proposal_ref), '') is null
+     or p_proposal_version_ref is null
      or nullif(trim(p_proposal_version_ref), '') is null
+     or p_proposal_version_fingerprint is null
      or p_proposal_version_fingerprint !~ '^[a-f0-9]{64}$'
+     or p_outcome is null
      or p_outcome not in ('approve', 'approve-with-changes', 'reject', 'defer', 'return-for-revision')
+     or p_rationale is null
      or nullif(trim(p_rationale), '') is null
+     or char_length(trim(p_rationale)) > 4000
      or p_client_request_id is null then
     raise exception 'INVALID_INSTITUTIONAL_DECISION_INPUT' using errcode = '22023';
   end if;
