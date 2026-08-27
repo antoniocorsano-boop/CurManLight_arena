@@ -112,6 +112,17 @@ export {
   parseCmlInteropEnvelope,
 } from './interopV1';
 
+// Docente OS → Arena feedback intake v1 — non-authoritative evidence, human triage required.
+export type {
+  DocenteFeedbackAuthority,
+  DocenteFeedbackObservation,
+  DocenteFeedbackIntakeReceipt,
+} from './docenteFeedbackIntake';
+export {
+  prepareDocenteFeedbackObservation,
+  DocenteFeedbackInbox,
+} from './docenteFeedbackIntake';
+
 // Local Arena → Docente OS handoff v1 — preview only, teacher acceptance required.
 export type { CmlLocalHandoffV1, CmlLocalHandoffValidationResult } from './interopHandoffV1';
 export {
