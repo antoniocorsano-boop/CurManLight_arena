@@ -47,6 +47,7 @@ export function StructuredProposalStarter({
   });
 
   const selected = candidates.find((proposal) => proposal.id === selectedId) ?? null;
+  const selectedDecision = selected ? decisions[selected.id] : undefined;
 
   const createStructuredProposal = () => {
     if (!selected || !rationale.trim()) return;
@@ -125,7 +126,7 @@ export function StructuredProposalStarter({
             </select>
           </label>
 
-          {selected && (
+          {selected && selectedDecision && (
             <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
               <div className="rounded-lg border border-slate-200 bg-white p-3">
                 <strong className="block text-[10px] uppercase text-slate-500">Testo di confronto</strong>
@@ -133,7 +134,7 @@ export function StructuredProposalStarter({
               </div>
               <div className="rounded-lg border border-indigo-200 bg-white p-3">
                 <strong className="block text-[10px] uppercase text-indigo-700">Testo proposto</strong>
-                <p className="mt-1">{proposedTextFor(selected, decisions[selected.id], customTexts)}</p>
+                <p className="mt-1">{proposedTextFor(selected, selectedDecision, customTexts)}</p>
               </div>
             </div>
           )}
