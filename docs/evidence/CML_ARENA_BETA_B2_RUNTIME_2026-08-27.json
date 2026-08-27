@@ -10,6 +10,12 @@
     "status": "ACTIVE_HEALTHY",
     "apiUrl": "https://ysgaokenrutmgzkhcxvy.supabase.co"
   },
+  "canonicalBeta": {
+    "url": "https://antoniocorsano-boop.github.io/CurManLight_arena/",
+    "releaseSha": "6093b6a37a01f4a52e7b4649bb00d9b62070046a",
+    "deployRunId": 33051725610,
+    "publishedSmoke": "PASS"
+  },
   "deployment": {
     "migration": "20260824070000_h2b_workspace_foundation.sql",
     "migrationApplied": true,
@@ -63,16 +69,60 @@
       }
     ],
     "finalMembershipStatus": "revoked",
-    "note": "The rehearsal exercised deployed PostgreSQL RLS using authenticated role and JWT subject context. It is database-runtime evidence, not a substitute for a browser-issued Supabase Auth session."
+    "note": "This rehearsal exercised deployed PostgreSQL RLS using authenticated role and JWT subject context."
   },
   "browserAuth": {
-    "status": "PENDING_OBSERVATION",
-    "required": [
-      "real Supabase Auth session from the published Beta browser",
-      "membership resolution using that session user id",
-      "browser-observed denied authority when membership is absent or inactive"
+    "status": "OBSERVED_PASS",
+    "actor": "RUNTIME_ACTOR_R1_PII_OMITTED_FROM_PUBLIC_EVIDENCE",
+    "authMethod": "email_password",
+    "publishedBrowser": true,
+    "authTokenRequestStatus": 200,
+    "authReferer": "https://antoniocorsano-boop.github.io/",
+    "observations": [
+      "published Beta created a real Supabase Auth session",
+      "before provisioning, the authenticated browser resolved zero memberships and attributed no institutional authority",
+      "after privileged provisioning, the same authenticated browser resolved one server-backed docente membership in active state",
+      "after server-side transition to suspended, the browser resolved the membership as suspended",
+      "after server-side transition to revoked, the browser resolved the membership as revoked"
     ]
   },
-  "gateStatus": "IN_PROGRESS",
+  "realBrowserLifecycle": {
+    "workspaceId": "33333333-3333-4333-8333-333333333333",
+    "role": "docente",
+    "states": [
+      {
+        "state": "ABSENT",
+        "browserMembershipVisible": false,
+        "institutionalAuthorityAttributed": false,
+        "result": "PASS"
+      },
+      {
+        "state": "ACTIVE",
+        "browserMembershipVisible": true,
+        "authenticatedRlsMembershipRows": 1,
+        "authenticatedRlsWorkspaceRows": 1,
+        "result": "PASS"
+      },
+      {
+        "state": "SUSPENDED",
+        "browserMembershipVisible": true,
+        "authenticatedRlsMembershipRows": 1,
+        "authenticatedRlsWorkspaceRows": 0,
+        "result": "PASS"
+      },
+      {
+        "state": "REVOKED",
+        "browserMembershipVisible": true,
+        "authenticatedRlsMembershipRows": 1,
+        "authenticatedRlsWorkspaceRows": 0,
+        "result": "PASS"
+      }
+    ],
+    "finalState": "revoked",
+    "authorityEscalation": "NONE",
+    "note": "Browser screenshots were human-observed during the controlled rehearsal but are intentionally not committed because they contain account-identifying information."
+  },
+  "gateStatus": "PASS",
+  "exit": "BETA_IDENTITY_AUTHORITY_PASS",
   "overallBetaStatus": "CML_ARENA_BETA_NOT_READY"
 }
