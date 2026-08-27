@@ -150,3 +150,42 @@ jobs:
               exit 1
               ;;
           esac
+
+      - name: Verify Supabase Auth CORS preflight when configured
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ ! -f .env.beta ]]; then
+            echo "BETA_SUPABASE_CORS_PREFLIGHT_SKIP no .env.beta on requested release"
+            exit 0
+          fi
+
+          VITE_SUPABASE_URL="$(sed -n 's/^VITE_SUPABASE_URL=//p' .env.beta | head -n 1)"
+          if [[ -z "$VITE_SUPABASE_URL" ]]; then
+            echo "BETA_SUPABASE_CORS_PREFLIGHT_SKIP no VITE_SUPABASE_URL on requested release"
+            exit 0
+          fi
+
+          BETA_ORIGIN="$(printf '%s' "$BETA_URL" | sed -E 's#^(https?://[^/]+).*$#\1#')"
+          HTTP_STATUS="$(curl --silent --show-error --location \
+            --request OPTIONS \
+            --header "Origin: ${BETA_ORIGIN}" \
+            --header "Access-Control-Request-Method: GET" \
+            --header "Access-Control-Request-Headers: apikey" \
+            --dump-header /tmp/supabase-preflight-headers.txt \
+            --output /tmp/supabase-preflight-body.txt \
+            --write-out '%{http_code}' \
+            "${VITE_SUPABASE_URL%/}/auth/v1/settings")"
+
+          case "$HTTP_STATUS" in
+            200|204) ;;
+            *)
+              echo "Unexpected Supabase Auth preflight status: ${HTTP_STATUS}"
+              cat /tmp/supabase-preflight-headers.txt
+              exit 1
+              ;;
+          esac
+
+          grep -qi '^access-control-allow-origin:' /tmp/supabase-preflight-headers.txt
+          grep -qiE '^access-control-allow-headers:.*apikey' /tmp/supabase-preflight-headers.txt
+          echo "BETA_SUPABASE_CORS_PREFLIGHT_PASS status=${HTTP_STATUS} origin=${BETA_ORIGIN}"
