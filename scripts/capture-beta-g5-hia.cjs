@@ -8,14 +8,38 @@ const outputDir = path.resolve(process.env.HIA_OUTPUT_DIR || 'artifacts/hia');
 
 fs.mkdirSync(outputDir, { recursive: true });
 
-async function closeLocalProfileIfPresent(page) {
-  await page.waitForTimeout(900);
-  const dialog = page.locator('[role="dialog"][aria-modal="true"]');
-  if (!(await dialog.isVisible({ timeout: 700 }).catch(() => false))) return;
-  const closeButton = dialog.locator('button').first();
-  if (await closeButton.isVisible({ timeout: 500 }).catch(() => false)) {
-    await closeButton.click();
-    await dialog.waitFor({ state: 'hidden', timeout: 3000 }).catch(() => undefined);
+async function dismissKnownNonTaskDialogs(page) {
+  for (let attempt = 0; attempt < 6; attempt += 1) {
+    await page.waitForTimeout(attempt === 0 ? 500 : 250);
+    let dismissed = false;
+
+    const onboarding = page
+      .locator('[role="dialog"][aria-modal="true"]')
+      .filter({ hasText: 'Profilo personale locale' })
+      .first();
+    if (await onboarding.isVisible({ timeout: 250 }).catch(() => false)) {
+      const headerClose = onboarding.locator('button').first();
+      await headerClose.click({ timeout: 2000 });
+      await onboarding.waitFor({ state: 'hidden', timeout: 3000 }).catch(() => undefined);
+      console.log('HIA_DISMISS known-dialog=local-profile');
+      dismissed = true;
+    }
+
+    const motto = page
+      .locator('[role="dialog"][aria-modal="true"]')
+      .filter({ hasText: 'Motto e Metodo Operativo' })
+      .first();
+    if (await motto.isVisible({ timeout: 250 }).catch(() => false)) {
+      const understood = motto.getByRole('button', { name: 'Ho capito', exact: true });
+      if (await understood.isVisible({ timeout: 250 }).catch(() => false)) {
+        await understood.click({ timeout: 2000 });
+        await motto.waitFor({ state: 'hidden', timeout: 3000 }).catch(() => undefined);
+        console.log('HIA_DISMISS known-dialog=motto');
+        dismissed = true;
+      }
+    }
+
+    if (!dismissed) return;
   }
 }
 
@@ -26,6 +50,7 @@ async function expectVisibleText(root, text, timeout = 8000) {
 }
 
 async function capture(page, fileName, label, captures) {
+  await dismissKnownNonTaskDialogs(page);
   const filePath = path.join(outputDir, fileName);
   await page.screenshot({ path: filePath, fullPage: true });
   captures.push({ label, file: fileName, url: page.url(), viewport: page.viewportSize() });
@@ -59,10 +84,11 @@ async function capture(page, fileName, label, captures) {
   try {
     const response = await page.goto(revisionUrl, { waitUntil: 'domcontentloaded', timeout: 30000 });
     check('published-style revision route responds', Boolean(response));
-    await closeLocalProfileIfPresent(page);
+    await dismissKnownNonTaskDialogs(page);
     await expectVisibleText(page, 'Revisione del Curricolo: Gap 2025');
     await capture(page, '01-revision-entry-desktop.png', 'revision-entry-desktop', captures);
 
+    await dismissKnownNonTaskDialogs(page);
     const localChoice = page.getByRole('button', { name: 'Usa testo 2025' }).first();
     await localChoice.waitFor({ state: 'visible', timeout: 8000 });
     await localChoice.click();
@@ -71,6 +97,7 @@ async function capture(page, fileName, label, captures) {
     await starter.waitFor({ state: 'visible', timeout: 5000 });
     await capture(page, '02-structured-proposal-entry-desktop.png', 'structured-proposal-entry-desktop', captures);
 
+    await dismissKnownNonTaskDialogs(page);
     await starter.locator('select').selectOption({ index: 1 });
     await starter.locator('textarea').fill('Evidenza HIA: la motivazione deve essere comprensibile prima del passaggio alla revisione formale.');
     await starter.getByRole('button', { name: 'Crea proposta strutturata' }).click();
@@ -79,6 +106,7 @@ async function capture(page, fileName, label, captures) {
     await prepareButton.waitFor({ state: 'visible', timeout: 5000 });
     await capture(page, '03-proposal-ready-desktop.png', 'proposal-ready-desktop', captures);
 
+    await dismissKnownNonTaskDialogs(page);
     await prepareButton.click();
     const submitButton = page.getByRole('button', { name: 'Invia', exact: true }).first();
     await submitButton.waitFor({ state: 'visible', timeout: 3000 });
@@ -106,6 +134,7 @@ async function capture(page, fileName, label, captures) {
     }
 
     await page.setViewportSize({ width: 390, height: 844 });
+    await dismissKnownNonTaskDialogs(page);
     await decisionPanel.scrollIntoViewIfNeeded();
     check('decision state remains reachable on mobile', await decisionPanel.isVisible());
     await capture(page, '06-decision-authority-block-mobile.png', 'decision-authority-block-mobile', captures);
