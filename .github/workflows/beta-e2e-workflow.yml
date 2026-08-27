@@ -8,11 +8,13 @@ on:
       - 'src/features/navigation/**'
       - 'src/features/curriculum/components/RevisioneTab.tsx'
       - 'src/features/beta/**'
+      - 'src/domain/revision/repository.ts'
       - 'src/domain/revision/sharedDecisionPort.ts'
       - 'src/domain/revision/versionFingerprint.ts'
       - 'src/domain/revision/index.ts'
       - 'src/infrastructure/supabase/sharedRevisionDecisionRepository.ts'
       - 'src/infrastructure/supabase/index.ts'
+      - 'src/__tests__/revision-initial-version-reference.test.ts'
       - 'src/__tests__/beta-shared-decision-boundary.test.ts'
       - 'src/__tests__/beta-revision-routing-contract.test.ts'
       - 'src/__tests__/beta-revision-version-fingerprint.test.ts'
@@ -30,11 +32,13 @@ on:
       - 'src/features/navigation/**'
       - 'src/features/curriculum/components/RevisioneTab.tsx'
       - 'src/features/beta/**'
+      - 'src/domain/revision/repository.ts'
       - 'src/domain/revision/sharedDecisionPort.ts'
       - 'src/domain/revision/versionFingerprint.ts'
       - 'src/domain/revision/index.ts'
       - 'src/infrastructure/supabase/sharedRevisionDecisionRepository.ts'
       - 'src/infrastructure/supabase/index.ts'
+      - 'src/__tests__/revision-initial-version-reference.test.ts'
       - 'src/__tests__/beta-shared-decision-boundary.test.ts'
       - 'src/__tests__/beta-revision-routing-contract.test.ts'
       - 'src/__tests__/beta-revision-version-fingerprint.test.ts'
@@ -62,6 +66,7 @@ jobs:
       - name: BETA-G4 revision contracts
         run: >-
           npx vitest run
+          src/__tests__/revision-initial-version-reference.test.ts
           src/__tests__/beta-shared-decision-boundary.test.ts
           src/__tests__/beta-revision-routing-contract.test.ts
           src/__tests__/beta-revision-version-fingerprint.test.ts
