@@ -2,13 +2,11 @@ import type { RevisionProposal, RevisionProposalVersion } from './types';
 
 interface StableEntityReference {
   id: string;
-  entityType?: string;
   snapshotLabel?: string;
 }
 
-const toStableReference = (reference: { id: string; entityType?: string; snapshotLabel?: string }): StableEntityReference => ({
+const toStableReference = (reference: { id: string; snapshotLabel?: string }): StableEntityReference => ({
   id: String(reference.id),
-  entityType: reference.entityType,
   snapshotLabel: reference.snapshotLabel,
 });
 
