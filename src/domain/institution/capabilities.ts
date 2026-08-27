@@ -3,6 +3,7 @@ import type { InstitutionalRole } from '../curriculum/types';
 export type ArenaCapability =
   | 'CURRICULUM_READ'
   | 'CURRICULUM_PROPOSE'
+  | 'CURRICULUM_BASELINE_ATTEST'
   | 'REVISION_REVIEW'
   | 'REVISION_DECIDE'
   | 'DOCUMENT_PREPARE'
@@ -37,6 +38,7 @@ const ROLE_CAPABILITIES: Readonly<Record<InstitutionalRole, readonly ArenaCapabi
   referente: [
     'CURRICULUM_READ',
     'CURRICULUM_PROPOSE',
+    'CURRICULUM_BASELINE_ATTEST',
     'REVISION_REVIEW',
     'DOCUMENT_PREPARE',
     'DOCUMENT_EXPORT',
@@ -58,6 +60,7 @@ const ROLE_CAPABILITIES: Readonly<Record<InstitutionalRole, readonly ArenaCapabi
 };
 
 const AUTHENTICATED_ONLY_CAPABILITIES: readonly ArenaCapability[] = [
+  'CURRICULUM_BASELINE_ATTEST',
   'REVISION_DECIDE',
   'WORKSPACE_ADMIN',
 ];
