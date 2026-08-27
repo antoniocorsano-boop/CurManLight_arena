@@ -26,7 +26,6 @@ export const appTabToPath = (tab: AppTab): string => {
     case 'second-brain': return '/knowledge';
     case 'fonti': return '/settings';
     case 'guida': return '/guida';
-    case 'progetta-evidenze': return '/planning';
     case 'dashboard':
     default: return '/';
   }
