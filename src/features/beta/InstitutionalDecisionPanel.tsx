@@ -33,6 +33,8 @@ export interface InstitutionalDecisionPanelProps {
   version: RevisionProposalVersion;
 }
 
+type DecisionOutcomeSelection = InstitutionalDecisionOutcome | '';
+
 const VALID_ROLES: readonly WorkspaceMemberRole[] = [
   'docente',
   'dipartimento',
@@ -84,7 +86,7 @@ export function InstitutionalDecisionPanel({ proposal, version }: InstitutionalD
   const [session, setSession] = useState<Session | null>(null);
   const [memberships, setMemberships] = useState<WorkspaceMembership[]>([]);
   const [workspaceId, setWorkspaceId] = useState('');
-  const [outcome, setOutcome] = useState<InstitutionalDecisionOutcome>('approve');
+  const [outcome, setOutcome] = useState<DecisionOutcomeSelection>('');
   const [rationale, setRationale] = useState('');
   const [previewFingerprint, setPreviewFingerprint] = useState<string | null>(null);
   const [requestId, setRequestId] = useState<string | null>(null);
@@ -228,7 +230,7 @@ export function InstitutionalDecisionPanel({ proposal, version }: InstitutionalD
   const resumableReceipt = Boolean(receipt && receiptMatches && controlsMayOpen);
 
   const preparePreview = async () => {
-    if (!controlsMayOpen) return;
+    if (!controlsMayOpen || !outcome) return;
     setBusy(true);
     setMessage(null);
     try {
@@ -250,6 +252,7 @@ export function InstitutionalDecisionPanel({ proposal, version }: InstitutionalD
       || !session
       || !selectedMembership
       || !canDecide
+      || !outcome
       || !previewFingerprint
       || !requestId
       || !confirmed
@@ -388,16 +391,20 @@ export function InstitutionalDecisionPanel({ proposal, version }: InstitutionalD
             </div>
           ) : controlsMayOpen ? (
             <div className="space-y-3">
+              <div role="note" className="rounded-lg border border-indigo-200 bg-indigo-50 p-3 text-indigo-950">
+                Nessun esito è preselezionato. Scegli esplicitamente l’esito istituzionale prima di preparare l’anteprima.
+              </div>
               <label className="block font-semibold">
                 Esito proposto
                 <select
                   value={outcome}
                   onChange={(event) => {
-                    setOutcome(event.target.value as InstitutionalDecisionOutcome);
+                    setOutcome(event.target.value as DecisionOutcomeSelection);
                     resetPreview();
                   }}
                   className="mt-1 block w-full rounded-lg border border-slate-300 bg-white p-2"
                 >
+                  <option value="" disabled>Seleziona un esito…</option>
                   {Object.entries(OUTCOME_LABELS).map(([value, label]) => (
                     <option key={value} value={value}>{label}</option>
                   ))}
@@ -421,7 +428,7 @@ export function InstitutionalDecisionPanel({ proposal, version }: InstitutionalD
               {!previewFingerprint ? (
                 <button
                   type="button"
-                  disabled={busy || !rationale.trim()}
+                  disabled={busy || !outcome || !rationale.trim()}
                   onClick={() => void preparePreview()}
                   className="rounded-lg bg-indigo-600 px-3 py-2 font-bold text-white disabled:cursor-not-allowed disabled:opacity-50"
                 >
@@ -430,7 +437,7 @@ export function InstitutionalDecisionPanel({ proposal, version }: InstitutionalD
               ) : (
                 <div className="space-y-3 rounded-lg border-2 border-indigo-200 bg-white p-3">
                   <strong className="block text-indigo-900">Anteprima della conseguenza</strong>
-                  <div><strong>Esito:</strong> {OUTCOME_LABELS[outcome]}</div>
+                  <div><strong>Esito:</strong> {outcome ? OUTCOME_LABELS[outcome] : '—'}</div>
                   <div><strong>Motivazione:</strong> {rationale}</div>
                   <div><strong>Versione vincolata:</strong> v{version.versionNumber}</div>
                   <div><strong>Impronta SHA-256:</strong> <code className="break-all">{previewFingerprint}</code></div>
