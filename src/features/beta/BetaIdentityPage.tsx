@@ -9,6 +9,11 @@ type MembershipRow = {
   status: string;
 };
 
+type NetworkProbe = {
+  status: 'idle' | 'checking' | 'reachable' | 'http-error' | 'unreachable';
+  detail: string;
+};
+
 const pageStyle = {
   minHeight: '100vh',
   boxSizing: 'border-box' as const,
@@ -32,12 +37,43 @@ const panelStyle = {
 export default function BetaIdentityPage() {
   const optional = useMemo(() => getOptionalSupabaseBrowserClient(), []);
   const client = optional.client;
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string | undefined;
+  const publishableKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string | undefined;
   const [session, setSession] = useState<Session | null>(null);
   const [memberships, setMemberships] = useState<MembershipRow[]>([]);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  const [networkProbe, setNetworkProbe] = useState<NetworkProbe>({ status: 'idle', detail: 'Non verificata' });
+
+  const probeSupabase = async () => {
+    if (!supabaseUrl || !publishableKey) {
+      setNetworkProbe({ status: 'http-error', detail: 'Configurazione Beta incompleta' });
+      return false;
+    }
+
+    setNetworkProbe({ status: 'checking', detail: 'Verifica in corso…' });
+    try {
+      const response = await fetch(`${supabaseUrl.replace(/\/$/, '')}/auth/v1/settings`, {
+        method: 'GET',
+        headers: { apikey: publishableKey },
+        cache: 'no-store',
+      });
+
+      if (!response.ok) {
+        setNetworkProbe({ status: 'http-error', detail: `Endpoint raggiunto, HTTP ${response.status}` });
+        return false;
+      }
+
+      setNetworkProbe({ status: 'reachable', detail: 'Endpoint Auth raggiungibile' });
+      return true;
+    } catch (error) {
+      const detail = error instanceof Error ? error.message : 'Errore di rete sconosciuto';
+      setNetworkProbe({ status: 'unreachable', detail: `NETWORK_UNREACHABLE · ${detail}` });
+      return false;
+    }
+  };
 
   const refreshMemberships = async (nextSession: Session | null) => {
     if (!client || !nextSession) {
@@ -62,6 +98,7 @@ export default function BetaIdentityPage() {
   useEffect(() => {
     if (!client) return;
 
+    void probeSupabase();
     void client.auth.getSession().then(({ data }) => {
       setSession(data.session);
       void refreshMemberships(data.session);
@@ -82,7 +119,12 @@ export default function BetaIdentityPage() {
     setMessage(null);
     const { error } = await client.auth.signInWithPassword({ email, password });
     setBusy(false);
-    setMessage(error ? `Accesso non riuscito: ${error.message}` : 'Sessione autenticata creata.');
+    if (error) {
+      setMessage(`Accesso non riuscito: ${error.message}`);
+      if (/failed to fetch|network/i.test(error.message)) void probeSupabase();
+      return;
+    }
+    setMessage('Sessione autenticata creata.');
   };
 
   const signUp = async () => {
@@ -93,6 +135,7 @@ export default function BetaIdentityPage() {
     setBusy(false);
     if (error) {
       setMessage(`Creazione account non riuscita: ${error.message}`);
+      if (/failed to fetch|network/i.test(error.message)) void probeSupabase();
       return;
     }
     setMessage(data.session ? 'Account creato e sessione autenticata attiva.' : 'Account creato. Controlla l’email se Supabase richiede conferma prima dell’accesso.');
@@ -117,6 +160,9 @@ export default function BetaIdentityPage() {
     );
   }
 
+  const endpointHost = supabaseUrl ? new URL(supabaseUrl).hostname : '—';
+  const browserOnline = typeof navigator === 'undefined' ? '—' : navigator.onLine ? 'sì' : 'no';
+
   return (
     <main style={pageStyle}>
       <section style={panelStyle}>
@@ -126,6 +172,21 @@ export default function BetaIdentityPage() {
           Questo punto di verifica usa esclusivamente la sessione Supabase e la membership letta dal database.
           Il ruolo locale dell’app non attribuisce autorità istituzionale.
         </p>
+
+        <section aria-label="Diagnostica connessione Supabase" style={{ marginTop: 20, padding: 16, border: '1px solid #dee2e6', borderRadius: 8, background: '#f8f9fa' }}>
+          <strong>Connessione Supabase</strong>
+          <p style={{ margin: '8px 0 4px' }}>Stato: <code>{networkProbe.status.toUpperCase()}</code> · {networkProbe.detail}</p>
+          <p style={{ margin: '4px 0' }}>Browser online: <strong>{browserOnline}</strong></p>
+          <p style={{ margin: '4px 0' }}>Endpoint: <code>{endpointHost}</code></p>
+          <button type="button" onClick={() => void probeSupabase()} disabled={networkProbe.status === 'checking'} style={{ padding: '8px 12px', marginTop: 8 }}>
+            Verifica connessione
+          </button>
+          {networkProbe.status === 'unreachable' && (
+            <p role="alert" style={{ marginBottom: 0 }}>
+              Il browser non riesce a raggiungere l’endpoint Supabase. La richiesta Auth non può partire finché la rete, il DNS privato, una VPN o un blocco contenuti impediscono questa connessione.
+            </p>
+          )}
+        </section>
 
         {!session ? (
           <form onSubmit={signIn} style={{ display: 'grid', gap: 12, marginTop: 24 }}>
