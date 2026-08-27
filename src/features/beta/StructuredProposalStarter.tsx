@@ -4,6 +4,7 @@ import { createEntityReference } from '../../domain/curriculum/identity';
 import { addProposal } from '../../domain/revision/repository';
 import { useCurriculumStore } from '../../store/useCurriculumStore';
 import { getOptionalSupabaseBrowserClient } from '../../infrastructure/supabase/client';
+import { PlanningHandoffPreview } from './PlanningHandoffPreview';
 
 export interface StructuredProposalStarterProps {
   proposals: Proposal[];
@@ -162,6 +163,8 @@ export function StructuredProposalStarter({
       )}
 
       {message && <p role="status" aria-live="polite" className="rounded-lg bg-white p-2">{message}</p>}
+
+      <PlanningHandoffPreview />
     </section>
   );
 }

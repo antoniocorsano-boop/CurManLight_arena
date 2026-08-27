@@ -1,0 +1,81 @@
+{
+  "schemaVersion": 1,
+  "evidenceId": "B3-G4-AUTHORIZED-REHEARSAL-2026-08-27",
+  "gate": "BETA-G4",
+  "status": "PASS",
+  "environment": {
+    "backend": "CurManLight Arena Beta",
+    "supabaseProjectRef": "ysgaokenrutmgzkhcxvy",
+    "decisionJourneyDeployedSha": "62f86ed643c29db47b69cc9603b10202310a4374",
+    "finalPrHeadAfterPlanningContextFixes": "879c46f2cfdc73c32c672c36b0f54d2efef2a5b9"
+  },
+  "authorityRehearsal": {
+    "workspaceId": "28fb560f-a816-4f30-a7b5-2ba94fe34a7c",
+    "workspacePurpose": "BETA_G4_REHEARSAL",
+    "authorityRole": "collegio",
+    "membershipWasIntentionallyGranted": true,
+    "historicalRevokedMembershipWasReactivated": false,
+    "workspaceStatusAfterRehearsal": "archived",
+    "activeCollegioMembershipsAfterRehearsal": 0,
+    "receiptsPreservedAfterCleanup": 3
+  },
+  "requiredReturnedOutcomeReceipt": {
+    "receiptId": "30ba5773-5240-436d-90a0-998d00007ada",
+    "proposalVersionRef": "1e9b97cf-243e-4156-9d1e-7c1ae8661b36",
+    "proposalVersionFingerprint": "2f50315a4a0ae5833f282a5199a25e11727fb327a5351059a376ba6cdc8e8605",
+    "outcome": "return-for-revision",
+    "authorityRole": "collegio",
+    "decidedAt": "2026-08-27T14:53:37.309856Z",
+    "refreshReentry": "PASS",
+    "sameReceiptObservedAfterReload": true
+  },
+  "humanFactorsFinding": {
+    "finding": "The first decision UI version preselected approve, which made a consequential institutional outcome too easy to accept without an explicit outcome choice.",
+    "historicalReceiptsPreserved": [
+      {
+        "receiptId": "8f3de1f8-9738-441b-8276-bbcecb3a4b1e",
+        "outcome": "approve"
+      },
+      {
+        "receiptId": "480acf41-7aff-4af7-b927-5fe18883a95d",
+        "outcome": "approve"
+      }
+    ],
+    "remediation": "No institutional outcome is preselected; preview and recording require an explicit outcome choice.",
+    "remediationGate": "beta-explicit-decision-outcome-contract.test.ts"
+  },
+  "failClosedEvidence": {
+    "networkInterruptionDuringRehearsal": true,
+    "membershipLookupFailedClosed": true,
+    "decisionControlsBlockedWhileMembershipCouldNotBeVerified": true
+  },
+  "resultingBaselineInspection": {
+    "curriculumState": "PROVISIONAL_COMPLETE",
+    "approvalDecisionRefInvented": false,
+    "automaticCurriculumMutationFromReceipt": false,
+    "planningRevalidationConstraintRequired": true
+  },
+  "planningHandoff": {
+    "format": "CML_LOCAL_HANDOFF_V2",
+    "targetProduct": "DOCENTE_OS",
+    "importMode": "PREVIEW_ONLY",
+    "acceptanceRequired": true,
+    "downstreamWritePerformed": false,
+    "institutionalSchoolYearPreferred": true,
+    "selectedSchoolOrderValidatedAgainstInstitute": true,
+    "infanziaContextUsesCanonicalCohort": true
+  },
+  "ciOnFinalPlanningHead": {
+    "sha": "879c46f2cfdc73c32c672c36b0f54d2efef2a5b9",
+    "productCi": "PASS",
+    "betaIdentityAuthority": "PASS",
+    "betaReleaseContract": "PASS",
+    "betaE2eWorkflow": "PASS"
+  },
+  "nonClaims": [
+    "The rehearsal receipt is not a digital signature or protocol record.",
+    "BETA-G5 Human Interaction Acceptance is not claimed by this evidence.",
+    "BETA-G6 accessibility acceptance is not claimed by this evidence.",
+    "The handoff preview does not synchronize data into Docente OS."
+  ]
+}

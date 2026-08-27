@@ -1,11 +1,11 @@
 {
-  "version": "1.1.0",
+  "version": "1.2.0",
   "phase": "B3",
   "status": "IN_PROGRESS",
-  "canonicalBaseSha": "32a59fe3369ca5788fd04dcfd8ac0ca3e01383bd",
+  "canonicalBaseSha": "9488f694a04f6e231640f891dbaa33b5181faf84",
   "gates": {
     "BETA-G4": {
-      "status": "PENDING",
+      "status": "PASS",
       "completedFoundation": [
         "shared-decision-port-separated-from-local-DecisionAuthority",
         "server-authoritative-REVISION_DECIDE-write-boundary",
@@ -18,21 +18,27 @@
         "local-choice-to-structured-proposal-bridge",
         "authenticated-decision-panel",
         "receipt-refresh-reentry-reader",
-        "stale-version-fingerprint-detection"
+        "stale-version-fingerprint-detection",
+        "explicit-no-default-institutional-outcome",
+        "institutional-school-year-bound-planning-preview",
+        "institution-school-order-validation",
+        "infanzia-canonical-cohort-context"
       ],
-      "evidenceUnderValidationInThisPr": [
-        "browser-e2e-blocked",
-        "refresh-reentry-blocked",
-        "zero-consequential-rpc-while-blocked",
-        "mobile-viewport-reachability"
-      ],
-      "stillRequired": [
-        "browser-e2e-authorized-real-membership",
-        "browser-e2e-authorized-rejected-or-returned-outcome",
+      "certifiedEvidence": [
+        "blocked-browser-journey-and-refresh-reentry",
+        "zero-consequential-rpc-while-authority-unverified",
+        "mobile-viewport-reachability",
+        "authorized-browser-journey-with-intentionally-granted-active-collegio-membership",
+        "authorized-return-for-revision-outcome",
         "institutional-receipt-refresh-reentry-real",
-        "resulting-curriculum-baseline-inspection",
-        "planning-handoff-preview"
-      ]
+        "network-failure-fail-closed-membership-boundary",
+        "resulting-curriculum-baseline-remains-PROVISIONAL_COMPLETE",
+        "no-automatic-curriculum-mutation-from-institutional-receipt",
+        "CML_LOCAL_HANDOFF_V2-preview-only-with-teacher-acceptance-required",
+        "rehearsal-authority-revoked-and-workspace-archived-after-evidence-capture"
+      ],
+      "evidenceRef": "docs/evidence/B3_G4_AUTHORIZED_REHEARSAL_2026-08-27.json",
+      "stillRequired": []
     },
     "BETA-G5": {
       "status": "PENDING_HUMAN",
@@ -57,13 +63,23 @@
   "authoritySafety": {
     "currentBetaBackendActiveCollegioMembershipAvailable": false,
     "testAuthorityWillNotBeFabricated": true,
-    "reason": "A real authorized browser decision must use an intentionally granted active collegio membership. Revoked memberships are not reactivated merely to satisfy a test."
+    "rehearsalWorkspaceArchived": true,
+    "rehearsalMembershipRevoked": true,
+    "appendOnlyReceiptsPreserved": 3,
+    "reason": "The authorized rehearsal used an intentionally granted collegio membership in a dedicated Beta workspace. Historical revoked memberships were not reactivated. After the required receipt and refresh/re-entry evidence were captured, the rehearsal membership was revoked and the workspace archived."
+  },
+  "humanFactorsFinding": {
+    "status": "REMEDIATED",
+    "finding": "The first rehearsal UI preselected approve, allowing a consequential institutional outcome to be accepted without an explicit outcome choice.",
+    "remediation": "No outcome is now preselected; preview and recording are blocked until an explicit institutional outcome is chosen.",
+    "historicalReceiptsRemainAppendOnly": true
   },
   "nonClaims": [
     "Historical local DecisionAuthority remains self-declared and non-authenticated.",
-    "A decision receipt does not mutate the curriculum automatically.",
-    "This tranche does not claim BETA_E2E_WORKFLOW_PASS until a real authorized journey is certified.",
+    "An institutional decision receipt does not mutate the curriculum automatically.",
+    "A rehearsal receipt is not a digital signature or protocol record.",
+    "The planning handoff remains PREVIEW_ONLY and performs no runtime synchronization into Docente OS.",
     "This tranche does not claim BETA_HIA_PASS or BETA_ACCESSIBILITY_PASS."
   ],
-  "nextAction": "Validate the blocked browser journey on this PR, then provision or identify an intentionally authorized collegio Beta tester through the governed membership process before exercising the real consequential happy path."
+  "nextAction": "Begin BETA-G5 Human Interaction Acceptance on desktop and mobile while keeping BETA-G6 accessibility acceptance separate."
 }
