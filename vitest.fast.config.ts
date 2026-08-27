@@ -22,6 +22,7 @@ export default defineConfig({
       'src/domain/ai/ollamaTransport.test.ts',
       'src/domain/ai/requestPreview.test.ts',
       'src/__tests__/transfer-domain.test.ts',
+      'src/__tests__/docente-feedback-intake.test.ts',
       'src/__tests__/revision-domain.test.ts',
       'src/__tests__/identity.test.ts',
       'src/__tests__/beta-identity-authority.test.ts',
