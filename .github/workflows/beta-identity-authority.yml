@@ -3,21 +3,29 @@ name: Beta Identity Authority
 on:
   pull_request:
     paths:
+      - '.env.beta'
+      - 'src/main.tsx'
+      - 'src/features/beta/**'
       - 'src/domain/institution/**'
       - 'src/infrastructure/supabase/**'
       - 'src/__tests__/beta-identity-authority.test.ts'
       - 'supabase/migrations/**'
       - 'docs/architecture/CML_ARENA_BETA_B2_ACCEPTANCE_v1.json'
+      - 'docs/evidence/CML_ARENA_BETA_B2_RUNTIME_*.json'
       - '.github/workflows/beta-identity-authority.yml'
       - 'vitest.fast.config.ts'
   push:
     branches: [main]
     paths:
+      - '.env.beta'
+      - 'src/main.tsx'
+      - 'src/features/beta/**'
       - 'src/domain/institution/**'
       - 'src/infrastructure/supabase/**'
       - 'src/__tests__/beta-identity-authority.test.ts'
       - 'supabase/migrations/**'
       - 'docs/architecture/CML_ARENA_BETA_B2_ACCEPTANCE_v1.json'
+      - 'docs/evidence/CML_ARENA_BETA_B2_RUNTIME_*.json'
       - '.github/workflows/beta-identity-authority.yml'
       - 'vitest.fast.config.ts'
 
@@ -46,6 +54,15 @@ jobs:
           grep -Fq "membership.status = 'active'" "$file"
           if grep -Eiq 'for[[:space:]]+(insert|update|delete)' "$file"; then
             echo 'Unexpected client-side mutation policy in BETA-G3 foundation'
+            exit 1
+          fi
+      - name: Canonical Beta Supabase binding
+        run: |
+          set -euo pipefail
+          grep -Fq 'VITE_SUPABASE_URL=https://ysgaokenrutmgzkhcxvy.supabase.co' .env.beta
+          grep -Eq '^VITE_SUPABASE_PUBLISHABLE_KEY=sb_publishable_' .env.beta
+          if grep -Eiq '(service_role|secret_key|sb_secret_)' .env.beta; then
+            echo 'Secret Supabase credential must not be committed to Beta environment'
             exit 1
           fi
       - name: TypeScript
