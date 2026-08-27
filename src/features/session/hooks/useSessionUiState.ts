@@ -1,5 +1,13 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { SchoolOrder, UdaModel } from '../../../types/curriculum';
+
+export const OPEN_ONBOARDING_PROFILE_EVENT = 'curmanlight:open-onboarding-profile';
+
+export function requestOnboardingProfile() {
+ if (typeof window !== 'undefined') {
+  window.dispatchEvent(new Event(OPEN_ONBOARDING_PROFILE_EVENT));
+ }
+}
 
 interface UseSessionUiStateArgs {
  order: SchoolOrder;
@@ -26,6 +34,12 @@ export function useSessionUiState({ order }: UseSessionUiStateArgs) {
  const [generatedDocTitle, setGeneratedDocTitle] = useState<string | null>(null);
  const [generatedDocText, setGeneratedDocText] = useState<string | null>(null);
  const [showTourModal, setShowTourModal] = useState(false);
+
+ useEffect(() => {
+  const openOnboarding = () => setShowOnboardingModal(true);
+  window.addEventListener(OPEN_ONBOARDING_PROFILE_EVENT, openOnboarding);
+  return () => window.removeEventListener(OPEN_ONBOARDING_PROFILE_EVENT, openOnboarding);
+ }, []);
 
  return {
   showOnlyProfileCurriculum,
