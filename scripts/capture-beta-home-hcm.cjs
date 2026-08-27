@@ -130,9 +130,10 @@ async function inspect(page) {
 
     const metrics = await inspect(page);
     check('Home renders exactly one HCM role projection', metrics.homeSurfaceCount === 1);
-    check('fresh Home uses the default teacher projection', metrics.role === 'insegnante');
+    check('fresh Home does not imply a user role', metrics.role === 'non-dichiarato');
     check('fresh Home exposes exactly one marked primary action', metrics.visiblePrimaryActionCount === budgets.maxVisiblePrimaryActions);
     check('Home primary action is inside the first viewport', metrics.primaryActions[0]?.viewportIndex <= budgets.primaryActionMaxViewport);
+    check('fresh Home primary action is context setup', metrics.primaryActions[0]?.name === 'home-set-context');
     check('Home has no technical terminology above fold', metrics.technicalTokensAboveFold.length <= budgets.maxTechnicalTokensAboveFold);
     check('Home technical details start closed', metrics.openTechnicalDetails === 0);
     check('Home has no horizontal overflow', metrics.horizontalOverflowPx <= budgets.maxHorizontalOverflowPx);
@@ -142,8 +143,20 @@ async function inspect(page) {
     check('Home capture has no uncaught page errors', pageErrors.length === 0);
 
     await page.screenshot({ path: path.join(outputDir, '00-home-hcm-mobile.png'), fullPage: true });
+
+    const contextAction = page.locator('[data-hia-primary-action="home-set-context"]');
+    await contextAction.click();
+    const profileDialog = page
+      .locator('[role="dialog"][aria-modal="true"]')
+      .filter({ hasText: 'Profilo personale locale' })
+      .first();
+    await profileDialog.waitFor({ state: 'visible', timeout: 3000 });
+    check('Home context action opens the canonical local profile', await profileDialog.isVisible());
+    check('context setup remains explicitly local', await profileDialog.getByText('Profilo personale locale', { exact: false }).first().isVisible());
+    await page.screenshot({ path: path.join(outputDir, '01-home-context-profile-mobile.png'), fullPage: true });
+
     const summary = {
-      schemaVersion: 1,
+      schemaVersion: 2,
       gate: 'BETA-G5-HOME-HCM',
       generatedAt: new Date().toISOString(),
       homeUrl,
@@ -151,6 +164,12 @@ async function inspect(page) {
       metrics,
       checks,
       pageErrors,
+      contextBoundary: {
+        initialRole: metrics.role,
+        action: metrics.primaryActions[0]?.name ?? null,
+        authorityClaimed: false,
+        canonicalProfileOpened: true,
+      },
       humanReviewRequired: true,
     };
     fs.writeFileSync(path.join(outputDir, 'home-hcm-summary.json'), JSON.stringify(summary, null, 2));
@@ -158,7 +177,7 @@ async function inspect(page) {
     if (checks.some((item) => !item.passed)) process.exitCode = 1;
   } catch (error) {
     fs.writeFileSync(path.join(outputDir, 'home-hcm-summary.json'), JSON.stringify({
-      schemaVersion: 1,
+      schemaVersion: 2,
       gate: 'BETA-G5-HOME-HCM',
       status: 'FAILED',
       error: error instanceof Error ? error.message : String(error),
