@@ -1,30 +1,32 @@
 import { useMemo } from 'react';
 import { ArrowRight, CheckCircle2, ShieldCheck, TriangleAlert } from 'lucide-react';
-import { getA07InstitutionalDocumentRead } from '../../domain/institution';
-import { safeLocalStorageGetItem } from '../../lib/consolidatedStorage';
+import type { A07InstitutionalDocumentRead } from '../../domain/institution';
 import { useCurriculumStore } from '../../store/useCurriculumStore';
-import { useLocalCurriculum } from '../curriculum/hooks/useLocalCurriculum';
+import type { CurriculumMap } from '../session/types/appViewContracts';
 import { buildPlanningHandoffPreview } from './planningHandoffPreview';
+
+export interface PlanningHandoffPreviewProps {
+  localCurriculum: CurriculumMap;
+  targetClass: string;
+  targetSection: string;
+  institutionalProfile: A07InstitutionalDocumentRead;
+}
 
 const curriculumStateLabel = (state: 'APPROVED' | 'PROVISIONAL_COMPLETE'): string =>
   state === 'APPROVED' ? 'Approvato' : 'Completo per progettare · ancora provvisorio';
 
-export function PlanningHandoffPreview() {
+export function PlanningHandoffPreview({
+  localCurriculum,
+  targetClass,
+  targetSection,
+  institutionalProfile,
+}: PlanningHandoffPreviewProps) {
   const {
     discipline,
     order,
     schoolYear,
     revisionArchive,
-    institutionalArchive,
   } = useCurriculumStore();
-  const { localCurriculum } = useLocalCurriculum();
-
-  const targetClass = safeLocalStorageGetItem('curman_targetClass', '1');
-  const targetSection = safeLocalStorageGetItem('curman_targetSection', 'A');
-  const institutionalProfile = useMemo(
-    () => getA07InstitutionalDocumentRead(institutionalArchive),
-    [institutionalArchive],
-  );
 
   const preview = useMemo(() => buildPlanningHandoffPreview({
     institutionalProfile,
