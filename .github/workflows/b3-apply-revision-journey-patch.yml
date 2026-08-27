@@ -1,3 +1,4 @@
+# retry after TypeScript narrowing correction
 name: B3 Apply Revision Journey Patch
 
 on:
