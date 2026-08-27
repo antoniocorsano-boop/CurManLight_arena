@@ -1,0 +1,70 @@
+name: Beta G4 Authorized Rehearsal
+
+on:
+  push:
+    branches:
+      - rehearsal/beta-g4-authorized
+    paths:
+      - 'scripts/verify-beta-g4-authorized.cjs'
+      - '.github/workflows/beta-g4-authorized-rehearsal.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  authorized-rehearsal:
+    if: github.actor == 'antoniocorsano-boop'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      BETA_BASE_URL: http://127.0.0.1:4173/CurManLight_arena
+      SUPABASE_URL: https://ysgaokenrutmgzkhcxvy.supabase.co
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Require privileged rehearsal credential
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$SUPABASE_SERVICE_ROLE_KEY"
+          echo 'BETA_G4_PRIVILEGED_CREDENTIAL_PRESENT'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build Beta
+        run: npm run build:beta
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Authorized real-membership browser rehearsal
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/serve-beta-pages-preview.cjs > /tmp/cml-beta-g4-preview.log 2>&1 &
+          preview_pid=$!
+          trap 'kill "$preview_pid" 2>/dev/null || true; cat /tmp/cml-beta-g4-preview.log' EXIT
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent --show-error http://127.0.0.1:4173/CurManLight_arena/ >/dev/null; then
+              break
+            fi
+            sleep 1
+          done
+          curl --fail --silent --show-error http://127.0.0.1:4173/CurManLight_arena/ >/dev/null
+          node scripts/verify-beta-g4-authorized.cjs
+
+      - name: Upload sanitized G4 evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: beta-g4-authorized-evidence
+          path: artifacts/beta-g4-authorized-evidence.json
+          if-no-files-found: error
+          retention-days: 30
