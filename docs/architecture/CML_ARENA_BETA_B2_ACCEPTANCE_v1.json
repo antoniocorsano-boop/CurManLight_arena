@@ -1,0 +1,44 @@
+{
+  "schema": "CML_BETA_B2_ACCEPTANCE_V1",
+  "phase": "B2",
+  "gate": "BETA-G3",
+  "status": "IN_PROGRESS",
+  "baseline": "9f890df0296436001d17728e1f396cb5d3c7816b",
+  "requiredEvidence": {
+    "authenticatedMembership": "IMPLEMENTED_NOT_YET_OBSERVED_RUNTIME",
+    "roleCapabilityBoundary": "AUTOMATED_CONTRACT_ADDED_NOT_YET_OBSERVED",
+    "deniedAuthorityBehavior": "AUTOMATED_CONTRACT_ADDED_NOT_YET_OBSERVED",
+    "membershipLifecycle": "AUTOMATED_STATUS_CONTRACT_ADDED_NOT_YET_OBSERVED_RUNTIME",
+    "rlsIsolation": "STRUCTURAL_CONTRACT_ADDED_NOT_YET_OBSERVED_DATABASE"
+  },
+  "existingFoundation": [
+    "Supabase browser client persists and refreshes authenticated sessions when configured",
+    "workspace_memberships is keyed by workspace and auth.users identity",
+    "RLS permits a signed-in user to read only their own membership row",
+    "workspace read requires active membership",
+    "no client-side INSERT/UPDATE/DELETE membership policies exist",
+    "shared repository re-reads server-backed membership before capability authorization",
+    "self-declared local roles remain distinct from authenticated workspace assurance"
+  ],
+  "thisTranche": [
+    "automated privilege and denial tests",
+    "suspended and revoked membership denial tests",
+    "server-backed role recheck test against caller role tampering",
+    "RLS structural invariant tests",
+    "dedicated Beta Identity Authority CI gate"
+  ],
+  "remainingForPass": [
+    "observe a real authenticated Supabase session in the canonical Beta environment",
+    "observe own membership resolution from the database",
+    "observe denied access for a user without membership or with insufficient role",
+    "observe active to suspended or revoked lifecycle effect against the real database",
+    "verify RLS behavior against the deployed Supabase project rather than source text alone"
+  ],
+  "passRule": "ALL_REQUIRED_EVIDENCE_OBSERVED_ON_CANONICAL_BETA_IDENTITY_BOUNDARY",
+  "forbiddenShortcuts": [
+    "SELF_DECLARED_ROLE_MUST_NOT_BECOME_AUTHENTICATED_AUTHORITY",
+    "UNIT_TESTS_ALONE_DO_NOT_PASS_BETA_G3",
+    "SOURCE_SQL_ALONE_DOES_NOT_PROVE_DEPLOYED_RLS",
+    "NO_CLIENT_SIDE_SELF_ESCALATION"
+  ]
+}
