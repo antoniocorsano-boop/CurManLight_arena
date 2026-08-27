@@ -1,0 +1,78 @@
+{
+  "schema": "CML_BETA_B2_RUNTIME_EVIDENCE_V1",
+  "phase": "B2",
+  "gate": "BETA-G3",
+  "observedAt": "2026-08-27",
+  "canonicalSupabase": {
+    "projectId": "ysgaokenrutmgzkhcxvy",
+    "name": "CurManLight Arena Beta",
+    "region": "eu-west-1",
+    "status": "ACTIVE_HEALTHY",
+    "apiUrl": "https://ysgaokenrutmgzkhcxvy.supabase.co"
+  },
+  "deployment": {
+    "migration": "20260824070000_h2b_workspace_foundation.sql",
+    "migrationApplied": true,
+    "securityAdvisorLints": 0,
+    "observedPolicies": [
+      {
+        "table": "workspace_memberships",
+        "name": "memberships_select_own",
+        "command": "SELECT",
+        "role": "authenticated",
+        "predicate": "auth.uid() = user_id"
+      },
+      {
+        "table": "workspaces",
+        "name": "workspaces_select_active_member",
+        "command": "SELECT",
+        "role": "authenticated",
+        "predicateIncludes": "membership.user_id = auth.uid() AND membership.status = 'active'"
+      }
+    ]
+  },
+  "databaseRehearsal": {
+    "workspaceId": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+    "memberUserId": "11111111-1111-4111-8111-111111111111",
+    "outsiderUserId": "22222222-2222-4222-8222-222222222222",
+    "memberRole": "collegio",
+    "cases": [
+      {
+        "case": "ACTIVE_MEMBER",
+        "membershipRowsVisible": 1,
+        "workspaceRowsVisible": 1,
+        "result": "PASS"
+      },
+      {
+        "case": "OUTSIDER",
+        "membershipRowsVisible": 0,
+        "workspaceRowsVisible": 0,
+        "result": "PASS"
+      },
+      {
+        "case": "SUSPENDED_MEMBER",
+        "membershipRowsVisible": 1,
+        "workspaceRowsVisible": 0,
+        "result": "PASS"
+      },
+      {
+        "case": "REVOKED_MEMBER",
+        "membershipRowsVisible": 1,
+        "workspaceRowsVisible": 0,
+        "result": "PASS"
+      }
+    ],
+    "finalMembershipStatus": "revoked",
+    "note": "The rehearsal exercised deployed PostgreSQL RLS using authenticated role and JWT subject context. It is database-runtime evidence, not a substitute for a browser-issued Supabase Auth session."
+  },
+  "browserAuth": {
+    "status": "PENDING_OBSERVATION",
+    "required": [
+      "real Supabase Auth session from the published Beta browser",
+      "membership resolution using that session user id",
+      "browser-observed denied authority when membership is absent or inactive"
+    ]
+  },
+  "gateStatus": "IN_PROGRESS",
+  "overallBetaStatus": "CML_ARENA_BETA_NOT_READY"
+}
