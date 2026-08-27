@@ -12,3 +12,4 @@ export * from './transferIntegration';
 export * from './documentIntegration';
 export * from './decisionEffects';
 export * from './sharedDecisionPort';
+export * from './institutionalDecisionBinding';
