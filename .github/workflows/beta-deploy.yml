@@ -115,3 +115,14 @@ jobs:
             }
             console.log(`BETA_PUBLISHED_SMOKE_PASS ${data.releaseSha}`);
           '
+
+      - name: Verify public Supabase Auth health
+        shell: bash
+        run: |
+          set -euo pipefail
+          source .env.beta
+          test -n "$VITE_SUPABASE_URL"
+          curl --fail --silent --show-error --location --retry 4 --retry-delay 3 \
+            "${VITE_SUPABASE_URL%/}/auth/v1/health" >/tmp/supabase-auth-health.json
+          test -s /tmp/supabase-auth-health.json
+          echo "BETA_SUPABASE_AUTH_HEALTH_PASS ${VITE_SUPABASE_URL}"
