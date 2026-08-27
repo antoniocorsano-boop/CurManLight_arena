@@ -8,7 +8,6 @@ async function closeLocalProfileIfPresent(page) {
   const dialog = page.locator('[role="dialog"][aria-modal="true"]');
   if (!(await dialog.isVisible({ timeout: 800 }).catch(() => false))) return;
 
-  // The first button in the local-profile modal is the close action in its header.
   const closeButton = dialog.locator('button').first();
   if (await closeButton.isVisible({ timeout: 500 }).catch(() => false)) {
     await closeButton.click();
@@ -22,6 +21,22 @@ async function expectVisibleText(page, text, timeout = 8000) {
   return locator;
 }
 
+async function printRuntimeDiagnostics(page, consoleMessages, pageErrors) {
+  const title = await page.title().catch(() => '<unavailable>');
+  const bodyText = await page.locator('body').innerText().catch(() => '<unavailable>');
+  const rootHtml = await page.locator('#root').innerHTML().catch(() => '<unavailable>');
+
+  console.error('=== BETA-G4 RUNTIME DIAGNOSTICS ===');
+  console.error(`URL: ${page.url()}`);
+  console.error(`TITLE: ${title}`);
+  console.error(`BODY: ${bodyText.slice(0, 4000)}`);
+  console.error(`ROOT: ${rootHtml.slice(0, 4000)}`);
+  if (consoleMessages.length === 0) console.error('CONSOLE: <empty>');
+  for (const message of consoleMessages.slice(-30)) console.error(`CONSOLE ${message.type}: ${message.text}`);
+  if (pageErrors.length === 0) console.error('PAGEERROR: <empty>');
+  for (const error of pageErrors.slice(-20)) console.error(`PAGEERROR: ${error}`);
+}
+
 (async () => {
   const browser = await chromium.launch({ headless: true });
   const context = await browser.newContext({
@@ -30,9 +45,11 @@ async function expectVisibleText(page, text, timeout = 8000) {
   });
   const page = await context.newPage();
   const pageErrors = [];
+  const consoleMessages = [];
   let decisionRpcCalls = 0;
 
   page.on('pageerror', (error) => pageErrors.push(error.message));
+  page.on('console', (message) => consoleMessages.push({ type: message.type(), text: message.text() }));
   page.on('request', (request) => {
     if (request.url().includes('/rpc/record_institutional_revision_decision')) {
       decisionRpcCalls += 1;
@@ -48,7 +65,8 @@ async function expectVisibleText(page, text, timeout = 8000) {
   try {
     console.log('=== BETA-G4 BROWSER — BLOCKED INSTITUTIONAL DECISION JOURNEY ===');
 
-    await page.goto(revisionUrl, { waitUntil: 'domcontentloaded', timeout: 30000 });
+    const initialResponse = await page.goto(revisionUrl, { waitUntil: 'domcontentloaded', timeout: 30000 });
+    console.log(`Initial navigation status: ${initialResponse?.status() ?? 'unknown'} ${page.url()}`);
     await closeLocalProfileIfPresent(page);
 
     await expectVisibleText(page, 'Revisione del Curricolo: Gap 2025');
@@ -91,9 +109,9 @@ async function expectVisibleText(page, text, timeout = 8000) {
     check('4. Consequential decision is blocked without an authenticated Beta identity', true);
     check('5. No institutional-decision RPC is called while blocked', decisionRpcCalls === 0);
 
-    // Give the IndexedDB-backed Zustand persistence time to flush before re-entry.
     await page.waitForTimeout(1200);
-    await page.reload({ waitUntil: 'domcontentloaded', timeout: 30000 });
+    const refreshResponse = await page.reload({ waitUntil: 'domcontentloaded', timeout: 30000 });
+    console.log(`Refresh navigation status: ${refreshResponse?.status() ?? 'unknown'} ${page.url()}`);
     await closeLocalProfileIfPresent(page);
 
     await expectVisibleText(page, 'Revisione del Curricolo: Gap 2025');
@@ -117,6 +135,7 @@ async function expectVisibleText(page, text, timeout = 8000) {
     if (failed.length > 0) process.exitCode = 1;
   } catch (error) {
     console.error(error);
+    await printRuntimeDiagnostics(page, consoleMessages, pageErrors);
     process.exitCode = 1;
   } finally {
     await browser.close();
