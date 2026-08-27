@@ -24,6 +24,8 @@ jobs:
     timeout-minutes: 15
     env:
       CML_RELEASE_REF: ${{ inputs.ref }}
+    outputs:
+      release_sha: ${{ steps.release.outputs.sha }}
     steps:
       - name: Checkout requested release
         uses: actions/checkout@v4
@@ -76,7 +78,40 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     timeout-minutes: 10
+    outputs:
+      page_url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
+  smoke:
+    runs-on: ubuntu-latest
+    needs: [build, deploy]
+    timeout-minutes: 5
+    env:
+      BETA_URL: ${{ needs.deploy.outputs.page_url }}
+      EXPECTED_SHA: ${{ needs.build.outputs.release_sha }}
+    steps:
+      - name: Verify published application
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$BETA_URL"
+          curl --fail --silent --show-error --location --retry 6 --retry-delay 5 "${BETA_URL}" >/tmp/beta-index.html
+          test -s /tmp/beta-index.html
+
+      - name: Verify published release identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --silent --show-error --location --retry 6 --retry-delay 5 "${BETA_URL%/}/beta-release.json" >/tmp/beta-release.json
+          node -e '
+            const fs = require("fs");
+            const data = JSON.parse(fs.readFileSync("/tmp/beta-release.json", "utf8"));
+            if (data.sha !== process.env.EXPECTED_SHA) {
+              console.error(`Published SHA mismatch: expected ${process.env.EXPECTED_SHA}, got ${data.sha}`);
+              process.exit(1);
+            }
+            console.log(`BETA_PUBLISHED_SMOKE_PASS ${data.sha}`);
+          '
