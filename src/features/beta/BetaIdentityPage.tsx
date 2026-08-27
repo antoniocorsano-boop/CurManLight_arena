@@ -9,7 +9,7 @@ type MembershipRow = {
   status: string;
 };
 
-type NetworkProbe = {
+type ProbeState = {
   status: 'idle' | 'checking' | 'reachable' | 'http-error' | 'unreachable';
   detail: string;
 };
@@ -45,15 +45,38 @@ export default function BetaIdentityPage() {
   const [password, setPassword] = useState('');
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
-  const [networkProbe, setNetworkProbe] = useState<NetworkProbe>({ status: 'idle', detail: 'Non verificata' });
+  const [transportProbe, setTransportProbe] = useState<ProbeState>({ status: 'idle', detail: 'Non verificato' });
+  const [apiProbe, setApiProbe] = useState<ProbeState>({ status: 'idle', detail: 'Non verificata' });
 
-  const probeSupabase = async () => {
-    if (!supabaseUrl || !publishableKey) {
-      setNetworkProbe({ status: 'http-error', detail: 'Configurazione Beta incompleta' });
+  const probeTransport = async () => {
+    if (!supabaseUrl) {
+      setTransportProbe({ status: 'http-error', detail: 'Configurazione Beta incompleta' });
       return false;
     }
 
-    setNetworkProbe({ status: 'checking', detail: 'Verifica in corso…' });
+    setTransportProbe({ status: 'checking', detail: 'Verifica HTTPS no-CORS in corso…' });
+    try {
+      await fetch(`${supabaseUrl.replace(/\/$/, '')}/auth/v1/health`, {
+        method: 'GET',
+        mode: 'no-cors',
+        cache: 'no-store',
+      });
+      setTransportProbe({ status: 'reachable', detail: 'Trasporto HTTPS raggiungibile' });
+      return true;
+    } catch (error) {
+      const detail = error instanceof Error ? error.message : 'Errore di rete sconosciuto';
+      setTransportProbe({ status: 'unreachable', detail: `NETWORK_UNREACHABLE · ${detail}` });
+      return false;
+    }
+  };
+
+  const probeApi = async () => {
+    if (!supabaseUrl || !publishableKey) {
+      setApiProbe({ status: 'http-error', detail: 'Configurazione Beta incompleta' });
+      return false;
+    }
+
+    setApiProbe({ status: 'checking', detail: 'Verifica API/CORS in corso…' });
     try {
       const response = await fetch(`${supabaseUrl.replace(/\/$/, '')}/auth/v1/settings`, {
         method: 'GET',
@@ -62,17 +85,21 @@ export default function BetaIdentityPage() {
       });
 
       if (!response.ok) {
-        setNetworkProbe({ status: 'http-error', detail: `Endpoint raggiunto, HTTP ${response.status}` });
+        setApiProbe({ status: 'http-error', detail: `Endpoint raggiunto, HTTP ${response.status}` });
         return false;
       }
 
-      setNetworkProbe({ status: 'reachable', detail: 'Endpoint Auth raggiungibile' });
+      setApiProbe({ status: 'reachable', detail: 'API Auth raggiungibile con CORS' });
       return true;
     } catch (error) {
       const detail = error instanceof Error ? error.message : 'Errore di rete sconosciuto';
-      setNetworkProbe({ status: 'unreachable', detail: `NETWORK_UNREACHABLE · ${detail}` });
+      setApiProbe({ status: 'unreachable', detail: `FETCH_BLOCKED · ${detail}` });
       return false;
     }
+  };
+
+  const probeSupabase = async () => {
+    await Promise.all([probeTransport(), probeApi()]);
   };
 
   const refreshMemberships = async (nextSession: Session | null) => {
@@ -162,6 +189,15 @@ export default function BetaIdentityPage() {
 
   const endpointHost = supabaseUrl ? new URL(supabaseUrl).hostname : '—';
   const browserOnline = typeof navigator === 'undefined' ? '—' : navigator.onLine ? 'sì' : 'no';
+  const transportReachable = transportProbe.status === 'reachable';
+  const apiBlocked = apiProbe.status === 'unreachable';
+  const diagnosticMessage = transportReachable && apiBlocked
+    ? 'Il telefono raggiunge Supabase via HTTPS, ma il browser blocca la richiesta API cross-origin. Il problema è quindi CORS/preflight, filtro privacy o browser, non DNS o disponibilità Supabase.'
+    : transportProbe.status === 'unreachable'
+      ? 'Il telefono non raggiunge nemmeno il trasporto HTTPS verso Supabase. Il problema è compatibile con DNS privato, VPN, filtro contenuti o rete.'
+      : apiProbe.status === 'reachable'
+        ? 'Trasporto e API/CORS sono entrambi raggiungibili.'
+        : 'Diagnostica in corso o non ancora conclusiva.';
 
   return (
     <main style={pageStyle}>
@@ -175,17 +211,19 @@ export default function BetaIdentityPage() {
 
         <section aria-label="Diagnostica connessione Supabase" style={{ marginTop: 20, padding: 16, border: '1px solid #dee2e6', borderRadius: 8, background: '#f8f9fa' }}>
           <strong>Connessione Supabase</strong>
-          <p style={{ margin: '8px 0 4px' }}>Stato: <code>{networkProbe.status.toUpperCase()}</code> · {networkProbe.detail}</p>
+          <p style={{ margin: '8px 0 4px' }}>Trasporto HTTPS: <code>{transportProbe.status.toUpperCase()}</code> · {transportProbe.detail}</p>
+          <p style={{ margin: '4px 0' }}>API/CORS: <code>{apiProbe.status.toUpperCase()}</code> · {apiProbe.detail}</p>
           <p style={{ margin: '4px 0' }}>Browser online: <strong>{browserOnline}</strong></p>
           <p style={{ margin: '4px 0' }}>Endpoint: <code>{endpointHost}</code></p>
-          <button type="button" onClick={() => void probeSupabase()} disabled={networkProbe.status === 'checking'} style={{ padding: '8px 12px', marginTop: 8 }}>
+          <button type="button" onClick={() => void probeSupabase()} disabled={transportProbe.status === 'checking' || apiProbe.status === 'checking'} style={{ padding: '8px 12px', marginTop: 8 }}>
             Verifica connessione
           </button>
-          {networkProbe.status === 'unreachable' && (
-            <p role="alert" style={{ marginBottom: 0 }}>
-              Il browser non riesce a raggiungere l’endpoint Supabase. La richiesta Auth non può partire finché la rete, il DNS privato, una VPN o un blocco contenuti impediscono questa connessione.
+          {supabaseUrl && (
+            <p style={{ margin: '12px 0 0' }}>
+              <a href={`${supabaseUrl.replace(/\/$/, '')}/auth/v1/health`} target="_blank" rel="noreferrer">Apri endpoint Auth in una nuova scheda</a>
             </p>
           )}
+          <p role="status" style={{ marginBottom: 0 }}>{diagnosticMessage}</p>
         </section>
 
         {!session ? (
