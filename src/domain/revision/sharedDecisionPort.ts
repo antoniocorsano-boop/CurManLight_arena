@@ -38,4 +38,11 @@ export interface SharedRevisionDecisionRepository {
     context: WorkspaceActorContext,
     input: InstitutionalRevisionDecisionInput
   ): Promise<InstitutionalRevisionDecisionReceipt>;
+
+  /** Re-entry/read path: server receipt remains authoritative after refresh. */
+  listInstitutionalDecisions(
+    context: WorkspaceActorContext,
+    proposalRef: string,
+    proposalVersionRef: string
+  ): Promise<InstitutionalRevisionDecisionReceipt[]>;
 }
