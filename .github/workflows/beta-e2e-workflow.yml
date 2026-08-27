@@ -19,6 +19,7 @@ on:
       - 'src/__tests__/revision-initial-version-reference.test.ts'
       - 'src/__tests__/beta-shared-decision-boundary.test.ts'
       - 'src/__tests__/beta-institutional-decision-boundary.test.ts'
+      - 'src/__tests__/beta-explicit-decision-outcome-contract.test.ts'
       - 'src/__tests__/beta-planning-handoff-preview.test.ts'
       - 'src/__tests__/beta-revision-routing-contract.test.ts'
       - 'src/__tests__/beta-revision-version-fingerprint.test.ts'
@@ -49,6 +50,7 @@ on:
       - 'src/__tests__/revision-initial-version-reference.test.ts'
       - 'src/__tests__/beta-shared-decision-boundary.test.ts'
       - 'src/__tests__/beta-institutional-decision-boundary.test.ts'
+      - 'src/__tests__/beta-explicit-decision-outcome-contract.test.ts'
       - 'src/__tests__/beta-planning-handoff-preview.test.ts'
       - 'src/__tests__/beta-revision-routing-contract.test.ts'
       - 'src/__tests__/beta-revision-version-fingerprint.test.ts'
@@ -81,6 +83,7 @@ jobs:
           src/__tests__/revision-initial-version-reference.test.ts
           src/__tests__/beta-shared-decision-boundary.test.ts
           src/__tests__/beta-institutional-decision-boundary.test.ts
+          src/__tests__/beta-explicit-decision-outcome-contract.test.ts
           src/__tests__/beta-planning-handoff-preview.test.ts
           src/__tests__/beta-revision-routing-contract.test.ts
           src/__tests__/beta-revision-version-fingerprint.test.ts
