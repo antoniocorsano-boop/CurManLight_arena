@@ -5,7 +5,7 @@ on:
     paths:
       - 'src/domain/institution/**'
       - 'src/infrastructure/supabase/**'
-      - 'src/__tests__/beta-identity-authority.test.js'
+      - 'src/__tests__/beta-identity-authority.test.ts'
       - 'supabase/migrations/**'
       - 'docs/architecture/CML_ARENA_BETA_B2_ACCEPTANCE_v1.json'
       - '.github/workflows/beta-identity-authority.yml'
@@ -15,7 +15,7 @@ on:
     paths:
       - 'src/domain/institution/**'
       - 'src/infrastructure/supabase/**'
-      - 'src/__tests__/beta-identity-authority.test.js'
+      - 'src/__tests__/beta-identity-authority.test.ts'
       - 'supabase/migrations/**'
       - 'docs/architecture/CML_ARENA_BETA_B2_ACCEPTANCE_v1.json'
       - '.github/workflows/beta-identity-authority.yml'
@@ -35,6 +35,18 @@ jobs:
           cache: npm
       - run: npm ci
       - name: BETA-G3 contract tests
-        run: npx vitest run src/__tests__/beta-identity-authority.test.js
+        run: npx vitest run src/__tests__/beta-identity-authority.test.ts
+      - name: BETA-G3 RLS invariants
+        run: |
+          set -euo pipefail
+          file='supabase/migrations/20260824070000_h2b_workspace_foundation.sql'
+          grep -Fq 'alter table public.workspaces enable row level security' "$file"
+          grep -Fq 'alter table public.workspace_memberships enable row level security' "$file"
+          grep -Fq 'auth.uid() = user_id' "$file"
+          grep -Fq "membership.status = 'active'" "$file"
+          if grep -Eiq 'for[[:space:]]+(insert|update|delete)' "$file"; then
+            echo 'Unexpected client-side mutation policy in BETA-G3 foundation'
+            exit 1
+          fi
       - name: TypeScript
         run: npx tsc --noEmit
