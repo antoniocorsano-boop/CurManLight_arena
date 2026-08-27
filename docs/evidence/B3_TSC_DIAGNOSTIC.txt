@@ -1,1 +1,0 @@
-RESOLVED: the captured TypeScript issues were removed before the verified journey patch was committed. The current branch passed `npx tsc --noEmit` in the monouso verification job on 2026-08-27. This marker is retained only so the prior diagnostic history is not mistaken for an active blocker.
