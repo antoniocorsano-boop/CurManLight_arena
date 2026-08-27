@@ -1,4 +1,4 @@
-# retry after TypeScript narrowing correction
+# diagnostic retry: preserve exact TypeScript evidence on failure
 name: B3 Apply Revision Journey Patch
 
 on:
@@ -49,7 +49,6 @@ jobs:
               "   case 'revisione': return '/revisione';",
               'tabToPath revision route',
           )
-
           replace_exact(
               'src/features/curriculum/components/RevisioneTab.tsx',
               "import { HumanTaskSummary, evaluateRevisionHumanTask } from '../../guided-workflow';",
@@ -80,8 +79,6 @@ jobs:
               'className="mt-2 w-full rounded-xl border-2 border-emerald-200 bg-emerald-50/40 p-4 text-xs text-slate-700 space-y-3"',
               'decision panel flex width',
           )
-
-          Path('.github/workflows/b3-apply-revision-journey-patch.yml').unlink()
           PY
 
       - run: npm ci
@@ -94,14 +91,44 @@ jobs:
           src/__tests__/beta-shared-decision-boundary.test.ts
           src/__tests__/beta-identity-authority.test.ts
 
-      - name: TypeScript
-        run: npx tsc --noEmit
+      - name: TypeScript with diagnostic capture
+        id: tsc
+        shell: bash
+        run: |
+          set +e
+          npx tsc --noEmit > /tmp/b3-tsc.txt 2>&1
+          code=$?
+          cat /tmp/b3-tsc.txt
+          echo "exit_code=$code" >> "$GITHUB_OUTPUT"
+          if [ "$code" -ne 0 ]; then
+            mkdir -p docs/evidence
+            cp /tmp/b3-tsc.txt docs/evidence/B3_TSC_DIAGNOSTIC.txt
+          fi
+          exit 0
+
+      - name: Commit TypeScript diagnostic only
+        if: steps.tsc.outputs.exit_code != '0'
+        run: |
+          git checkout -- src/App.tsx src/features/curriculum/components/RevisioneTab.tsx src/features/beta/InstitutionalDecisionPanel.tsx
+          git config user.name 'CurManLight Beta Agent'
+          git config user.email 'actions@users.noreply.github.com'
+          git add docs/evidence/B3_TSC_DIAGNOSTIC.txt
+          git commit -m 'Beta B3: capture TypeScript diagnostic'
+          git push origin HEAD:beta/b3-g4-revision-journey
+
+      - name: Stop on TypeScript errors
+        if: steps.tsc.outputs.exit_code != '0'
+        run: exit 1
 
       - name: Beta build
+        if: steps.tsc.outputs.exit_code == '0'
         run: npm run build:beta
 
       - name: Commit verified patch to branch
+        if: steps.tsc.outputs.exit_code == '0'
         run: |
+          rm .github/workflows/b3-apply-revision-journey-patch.yml
+          rm -f docs/evidence/B3_TSC_DIAGNOSTIC.txt
           git config user.name 'CurManLight Beta Agent'
           git config user.email 'actions@users.noreply.github.com'
           git add -A
