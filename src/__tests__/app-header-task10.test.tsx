@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import type { ComponentProps } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { AppHeader } from '../features/navigation';
@@ -24,5 +24,43 @@ describe('CML-633D Task 10 AppHeader honesty', () => {
     expect(showToast).toHaveBeenNthCalledWith(1, expect.stringMatching(/non disponibile|non configurata/i), false);
     expect(showToast).toHaveBeenNthCalledWith(2, expect.stringMatching(/non disponibile|non configurata/i), false);
     expect(handleWorkspaceSync).not.toHaveBeenCalled();
+  });
+
+  it('uses the CurManLight brand control as the mobile open/close navigation toggle', async () => {
+    const previousWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 390 });
+
+    const sidebar = document.createElement('aside');
+    sidebar.id = 'sidebar';
+    sidebar.className = 'hidden md:block';
+    document.body.appendChild(sidebar);
+
+    const toggleSidebar = vi.fn(() => {
+      sidebar.className = sidebar.classList.contains('hidden')
+        ? 'fixed block'
+        : 'hidden md:block';
+    });
+
+    const { unmount } = render(<AppHeader {...props({ toggleSidebar, roleDropdownOpen: false })} />);
+
+    const openControl = await screen.findByRole('button', { name: 'Apri menu di navigazione' });
+    expect(openControl).toHaveAttribute('aria-controls', 'sidebar');
+    expect(openControl).toHaveAttribute('aria-expanded', 'false');
+
+    fireEvent.click(openControl);
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'Chiudi menu di navigazione' })).toHaveAttribute('aria-expanded', 'true');
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: 'Chiudi menu di navigazione' }));
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'Apri menu di navigazione' })).toHaveAttribute('aria-expanded', 'false');
+    });
+
+    expect(toggleSidebar).toHaveBeenCalledTimes(2);
+
+    unmount();
+    sidebar.remove();
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: previousWidth });
   });
 });
