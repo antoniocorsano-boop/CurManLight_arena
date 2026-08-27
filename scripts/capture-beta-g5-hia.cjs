@@ -104,6 +104,7 @@ async function inspectMobileLayout(page) {
   const page = await context.newPage();
   const pageErrors = [];
   const consoleErrors = [];
+  const httpErrors = [];
   const captures = [];
   let decisionRpcCalls = 0;
   let mobileLayout = null;
@@ -111,6 +112,16 @@ async function inspectMobileLayout(page) {
   page.on('pageerror', (error) => pageErrors.push(error.message));
   page.on('console', (message) => {
     if (message.type() === 'error') consoleErrors.push(message.text());
+  });
+  page.on('response', (response) => {
+    if (response.status() >= 400) {
+      const request = response.request();
+      httpErrors.push({
+        status: response.status(),
+        url: response.url(),
+        resourceType: request.resourceType(),
+      });
+    }
   });
   page.on('request', (request) => {
     if (request.url().includes('/rpc/record_institutional_revision_decision')) decisionRpcCalls += 1;
@@ -202,6 +213,10 @@ async function inspectMobileLayout(page) {
     check('no uncaught page errors during evidence capture', pageErrors.length === 0);
     check('no consequential RPC during non-authorized HIA capture', decisionRpcCalls === 0);
 
+    for (const item of httpErrors) {
+      console.log(`HIA_HTTP_ERROR status=${item.status} resource=${item.resourceType} url=${item.url}`);
+    }
+
     const summary = {
       schemaVersion: 1,
       gate: 'BETA-G5',
@@ -223,6 +238,7 @@ async function inspectMobileLayout(page) {
       checks,
       pageErrors,
       consoleErrors,
+      httpErrors,
       decisionRpcCalls,
     };
     fs.writeFileSync(path.join(outputDir, 'summary.json'), JSON.stringify(summary, null, 2));
@@ -241,6 +257,7 @@ async function inspectMobileLayout(page) {
       checks,
       pageErrors,
       consoleErrors,
+      httpErrors,
       decisionRpcCalls,
       mobileLayout,
       humanReviewRequired: true,
