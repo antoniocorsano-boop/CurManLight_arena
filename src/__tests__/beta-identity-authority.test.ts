@@ -1,0 +1,79 @@
+import { describe, expect, it } from 'vitest';
+import type { SupabaseClient } from '@supabase/supabase-js';
+import { resolveCapabilityAccess } from '../domain/institution/capabilities';
+import { isActiveWorkspaceActor, type WorkspaceActorContext } from '../domain/institution/sharedWorkspacePort';
+import { SupabaseSharedWorkspaceRepository } from '../infrastructure/supabase/sharedWorkspaceRepository';
+
+type MembershipRow = {
+  workspace_id: string;
+  user_id: string;
+  role: string;
+  status: string;
+};
+
+const makeClient = (row: MembershipRow | null): SupabaseClient => {
+  const maybeSingle = async () => ({ data: row, error: null });
+  const secondEq = () => ({ maybeSingle });
+  const firstEq = () => ({ eq: secondEq });
+  const select = () => ({ eq: firstEq });
+  return { from: () => ({ select }) } as unknown as SupabaseClient;
+};
+
+const actor = (
+  role: WorkspaceActorContext['membership']['role'],
+  status: WorkspaceActorContext['membership']['status'] = 'active'
+): WorkspaceActorContext => ({
+  assurance: 'authenticated-workspace',
+  membership: {
+    workspaceId: 'workspace-1',
+    userId: 'user-1',
+    role,
+    status,
+  },
+});
+
+describe('BETA-G3 identity and authority', () => {
+  it('does not promote self-declared roles into institutional authority', () => {
+    expect(resolveCapabilityAccess('collegio', 'REVISION_DECIDE', 'self-declared').allowed).toBe(false);
+    expect(resolveCapabilityAccess('amministratore', 'WORKSPACE_ADMIN', 'self-declared').allowed).toBe(false);
+  });
+
+  it('allows authenticated high-authority capabilities only when the role owns them', () => {
+    expect(resolveCapabilityAccess('collegio', 'REVISION_DECIDE', 'authenticated-workspace').allowed).toBe(true);
+    expect(resolveCapabilityAccess('docente', 'REVISION_DECIDE', 'authenticated-workspace').allowed).toBe(false);
+  });
+
+  it('treats only active memberships as active workspace actors', () => {
+    expect(isActiveWorkspaceActor(actor('docente', 'active'))).toBe(true);
+    expect(isActiveWorkspaceActor(actor('docente', 'suspended'))).toBe(false);
+    expect(isActiveWorkspaceActor(actor('docente', 'revoked'))).toBe(false);
+  });
+
+  it('re-checks server-backed membership instead of trusting the role carried by the caller', async () => {
+    const repository = new SupabaseSharedWorkspaceRepository(makeClient({
+      workspace_id: 'workspace-1',
+      user_id: 'user-1',
+      role: 'docente',
+      status: 'active',
+    }));
+
+    await expect(repository.can(actor('collegio'), 'REVISION_DECIDE')).resolves.toBe(false);
+  });
+
+  it('denies capabilities after membership suspension or revocation', async () => {
+    for (const status of ['suspended', 'revoked'] as const) {
+      const repository = new SupabaseSharedWorkspaceRepository(makeClient({
+        workspace_id: 'workspace-1',
+        user_id: 'user-1',
+        role: 'collegio',
+        status,
+      }));
+      await expect(repository.can(actor('collegio'), 'REVISION_DECIDE')).resolves.toBe(false);
+    }
+  });
+
+  it('fails closed when no authenticated membership exists', async () => {
+    const repository = new SupabaseSharedWorkspaceRepository(makeClient(null));
+    await expect(repository.can(actor('collegio'), 'REVISION_DECIDE')).resolves.toBe(false);
+  });
+});
