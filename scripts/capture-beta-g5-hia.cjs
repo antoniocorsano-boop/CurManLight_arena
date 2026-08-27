@@ -60,6 +60,44 @@ async function waitForDecisionPanel(page) {
   return panel;
 }
 
+async function inspectMobileLayout(page) {
+  return page.evaluate(() => {
+    const viewportWidth = window.innerWidth;
+    const scrollWidth = document.documentElement.scrollWidth;
+    const visibleBrokenImages = Array.from(document.images)
+      .filter((image) => {
+        const rect = image.getBoundingClientRect();
+        const visible = rect.width > 0 && rect.height > 0 && rect.bottom >= 0 && rect.top <= window.innerHeight;
+        return visible && (!image.complete || image.naturalWidth === 0);
+      })
+      .map((image) => ({ src: image.currentSrc || image.src, alt: image.alt || '' }));
+
+    const overflowCandidates = Array.from(document.querySelectorAll('body *'))
+      .map((element) => {
+        const rect = element.getBoundingClientRect();
+        const overflowRight = Math.max(0, rect.right - viewportWidth);
+        const overflowLeft = Math.max(0, -rect.left);
+        return {
+          tag: element.tagName.toLowerCase(),
+          className: typeof element.className === 'string' ? element.className.slice(0, 160) : '',
+          overflowPx: Math.max(overflowRight, overflowLeft),
+          width: Math.round(rect.width),
+        };
+      })
+      .filter((entry) => entry.overflowPx > 1)
+      .sort((a, b) => b.overflowPx - a.overflowPx)
+      .slice(0, 12);
+
+    return {
+      viewportWidth,
+      scrollWidth,
+      horizontalOverflowPx: Math.max(0, scrollWidth - viewportWidth),
+      visibleBrokenImages,
+      overflowCandidates,
+    };
+  });
+}
+
 (async () => {
   const browser = await chromium.launch({ headless: true });
   const context = await browser.newContext({ viewport: { width: 1280, height: 900 }, locale: 'it-IT' });
@@ -68,6 +106,7 @@ async function waitForDecisionPanel(page) {
   const consoleErrors = [];
   const captures = [];
   let decisionRpcCalls = 0;
+  let mobileLayout = null;
 
   page.on('pageerror', (error) => pageErrors.push(error.message));
   page.on('console', (message) => {
@@ -141,6 +180,17 @@ async function waitForDecisionPanel(page) {
     const mobileDecisionPanel = await waitForDecisionPanel(page);
     await mobileDecisionPanel.scrollIntoViewIfNeeded();
     check('decision state remains reachable after true mobile re-entry', await mobileDecisionPanel.isVisible());
+
+    mobileLayout = await inspectMobileLayout(page);
+    check('mobile document has no horizontal overflow', mobileLayout.horizontalOverflowPx <= 1);
+    check('mobile viewport has no visible broken images', mobileLayout.visibleBrokenImages.length === 0);
+    if (mobileLayout.overflowCandidates.length > 0) {
+      console.log(`HIA_MOBILE_OVERFLOW_DIAGNOSTICS ${JSON.stringify(mobileLayout.overflowCandidates)}`);
+    }
+    if (mobileLayout.visibleBrokenImages.length > 0) {
+      console.log(`HIA_BROKEN_IMAGES ${JSON.stringify(mobileLayout.visibleBrokenImages)}`);
+    }
+
     await capture(page, '06-decision-authority-block-mobile.png', 'decision-authority-block-mobile', captures);
 
     const mobileHandoffPanel = page.getByRole('region', { name: 'Anteprima passaggio alla progettazione' }).first();
@@ -160,6 +210,7 @@ async function waitForDecisionPanel(page) {
       baseUrl,
       humanReviewRequired: true,
       mobileCaptureMode: 'viewport-change-plus-reload-reentry',
+      mobileLayout,
       humanReviewNotAutomated: [
         'task comprehensibility',
         'visual hierarchy',
@@ -191,6 +242,7 @@ async function waitForDecisionPanel(page) {
       pageErrors,
       consoleErrors,
       decisionRpcCalls,
+      mobileLayout,
       humanReviewRequired: true,
     };
     fs.writeFileSync(path.join(outputDir, 'summary.json'), JSON.stringify(failure, null, 2));
