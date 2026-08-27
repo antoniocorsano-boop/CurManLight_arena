@@ -4,6 +4,7 @@
   "program": "CML_ARENA_REAL_BETA",
   "status": "CML_ARENA_BETA_NOT_READY",
   "auditedBaseline": "d368b2bd0040dfe808d8ae65b13ba60942a831d5",
+  "canonicalBaseline": "abd9e7be5138ae68b24c4108ae21ccccacfd41bb",
   "executionMode": "AGENTIC_GATED",
   "rules": {
     "singleReadyPhase": true,
@@ -18,7 +19,7 @@
       "id": "B0",
       "name": "Beta Scope Freeze",
       "gates": ["BETA-G1"],
-      "status": "IN_PROGRESS",
+      "status": "COMPLETE",
       "prerequisites": [],
       "exit": "BETA_SCOPE_FROZEN"
     },
@@ -26,7 +27,7 @@
       "id": "B1",
       "name": "Environment and Operations Foundation",
       "gates": ["BETA-G2"],
-      "status": "BLOCKED_BY_PREREQUISITE",
+      "status": "IN_PROGRESS",
       "prerequisites": ["B0"],
       "exit": "BETA_ENVIRONMENT_READY"
     },
@@ -64,8 +65,8 @@
     }
   ],
   "nextAction": {
-    "phase": "B0",
-    "action": "Complete scope freeze artifacts and HIM validation",
-    "mayModifyRuntime": false
+    "phase": "B1",
+    "action": "Validate Beta release artifact, merge release-ops foundation, publish canonical Pages environment, then collect deployment and rollback evidence",
+    "mayModifyRuntime": true
   }
 }

@@ -6,6 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "build:beta": "vite build --mode beta && node scripts/prepare-beta-release.mjs",
+    "beta:verify": "node scripts/verify-beta-release.mjs",
     "test": "vitest run",
     "test:fast": "vitest run --config vitest.fast.config.ts",
     "test:unit": "vitest run --project unit",
