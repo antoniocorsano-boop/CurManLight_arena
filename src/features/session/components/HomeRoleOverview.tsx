@@ -1,7 +1,8 @@
-import { ArrowRight, BookOpen, ClipboardList, Download, FileCheck2, Settings2 } from 'lucide-react';
+import { ArrowRight, BookOpen, ClipboardList, Download, FileCheck2, Settings2, UserCog } from 'lucide-react';
 import type { UserRole } from '../../../types/curriculum';
 import type { ProgStatus } from '../types/appViewContracts';
 import { getHomeRoleCommunication } from '../communication/homeCommunication';
+import { requestOnboardingProfile } from '../hooks/useSessionUiState';
 
 const WIZARD_STEP_LABELS: Record<number, string> = {
   1: 'Traguardi e obiettivi',
@@ -96,6 +97,20 @@ export function HomeRoleOverview({
           </span>
         )}
       </header>
+
+      {role === 'non-dichiarato' && (
+        <div className="mt-4">
+          <button
+            type="button"
+            onClick={requestOnboardingProfile}
+            className="flex w-full items-center justify-center gap-2 rounded-xl bg-indigo-700 px-4 py-3 text-sm font-bold text-white transition hover:bg-indigo-600"
+            data-hia-primary-action="home-set-context"
+          >
+            <UserCog className="h-4 w-4" aria-hidden="true" />
+            Imposta il tuo contesto
+          </button>
+        </div>
+      )}
 
       {role === 'insegnante' && (
         <div className="mt-4 space-y-3">
