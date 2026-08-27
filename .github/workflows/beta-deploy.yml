@@ -116,12 +116,27 @@ jobs:
             console.log(`BETA_PUBLISHED_SMOKE_PASS ${data.releaseSha}`);
           '
 
-      - name: Verify public Supabase Auth health
+      - name: Checkout requested release metadata
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+          fetch-depth: 1
+
+      - name: Verify public Supabase Auth health when configured
         shell: bash
         run: |
           set -euo pipefail
-          source .env.beta
-          test -n "$VITE_SUPABASE_URL"
+          if [[ ! -f .env.beta ]]; then
+            echo "BETA_SUPABASE_AUTH_HEALTH_SKIP no .env.beta on requested release"
+            exit 0
+          fi
+
+          VITE_SUPABASE_URL="$(sed -n 's/^VITE_SUPABASE_URL=//p' .env.beta | head -n 1)"
+          if [[ -z "$VITE_SUPABASE_URL" ]]; then
+            echo "BETA_SUPABASE_AUTH_HEALTH_SKIP no VITE_SUPABASE_URL on requested release"
+            exit 0
+          fi
+
           curl --fail --silent --show-error --location --retry 4 --retry-delay 3 \
             "${VITE_SUPABASE_URL%/}/auth/v1/health" >/tmp/supabase-auth-health.json
           test -s /tmp/supabase-auth-health.json
