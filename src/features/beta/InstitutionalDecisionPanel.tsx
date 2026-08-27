@@ -13,6 +13,13 @@ import type {
 } from '../../domain/institution/sharedWorkspacePort';
 import { getOptionalSupabaseBrowserClient } from '../../infrastructure/supabase/client';
 import { SupabaseSharedRevisionDecisionRepository } from '../../infrastructure/supabase/sharedRevisionDecisionRepository';
+import { resolveRouterBasename } from '../navigation/routerBasename';
+import {
+  decisionControlsMayOpen,
+  previewStillMatchesVersion,
+  receiptMatchesCurrentVersion,
+  type ReceiptLookupState,
+} from './institutionalDecisionBoundary';
 
 interface MembershipRow {
   workspace_id: string;
@@ -83,6 +90,7 @@ export function InstitutionalDecisionPanel({ proposal, version }: InstitutionalD
   const [requestId, setRequestId] = useState<string | null>(null);
   const [confirmed, setConfirmed] = useState(false);
   const [receipt, setReceipt] = useState<InstitutionalRevisionDecisionReceipt | null>(null);
+  const [receiptLookupState, setReceiptLookupState] = useState<ReceiptLookupState>('idle');
   const [currentFingerprint, setCurrentFingerprint] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
@@ -91,18 +99,36 @@ export function InstitutionalDecisionPanel({ proposal, version }: InstitutionalD
   const selectedMembership = activeMemberships.find((membership) => membership.workspaceId === workspaceId) ?? null;
   const canDecide = selectedMembership?.role === 'collegio';
 
-  const resetPreview = () => {
+  const clearPreparedDecision = () => {
     setPreviewFingerprint(null);
     setRequestId(null);
     setConfirmed(false);
+  };
+
+  const resetPreview = () => {
+    clearPreparedDecision();
     setMessage(null);
   };
 
   useEffect(() => {
+    let active = true;
+    setCurrentFingerprint(null);
+    setReceipt(null);
+    setReceiptLookupState('idle');
+    clearPreparedDecision();
+
     void fingerprintRevisionProposalVersion(version)
-      .then(setCurrentFingerprint)
-      .catch((error) => setMessage(error instanceof Error ? error.message : 'Impronta non calcolabile.'));
-  }, [version]);
+      .then((fingerprint) => {
+        if (active) setCurrentFingerprint(fingerprint);
+      })
+      .catch((error) => {
+        if (active) setMessage(error instanceof Error ? error.message : 'Impronta non calcolabile.');
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [version.id]);
 
   useEffect(() => {
     if (!client) return;
@@ -113,6 +139,8 @@ export function InstitutionalDecisionPanel({ proposal, version }: InstitutionalD
         setMemberships([]);
         setWorkspaceId('');
         setReceipt(null);
+        setReceiptLookupState('idle');
+        clearPreparedDecision();
         return;
       }
 
@@ -123,6 +151,9 @@ export function InstitutionalDecisionPanel({ proposal, version }: InstitutionalD
 
       if (error) {
         setMemberships([]);
+        setReceipt(null);
+        setReceiptLookupState('error');
+        clearPreparedDecision();
         setMessage(`Membership non leggibile: ${error.message}`);
         return;
       }
@@ -146,9 +177,14 @@ export function InstitutionalDecisionPanel({ proposal, version }: InstitutionalD
   }, [client]);
 
   useEffect(() => {
+    let active = true;
+
     if (!repository || !selectedMembership || !session) {
       setReceipt(null);
-      return;
+      setReceiptLookupState('idle');
+      return () => {
+        active = false;
+      };
     }
 
     const context: WorkspaceActorContext = {
@@ -156,32 +192,48 @@ export function InstitutionalDecisionPanel({ proposal, version }: InstitutionalD
       assurance: 'authenticated-workspace',
     };
 
+    setReceipt(null);
+    setReceiptLookupState('loading');
+    clearPreparedDecision();
+
     void repository
       .findInstitutionalDecisionForVersion(context, version.id)
       .then((found) => {
+        if (!active) return;
         setReceipt(found);
+        setReceiptLookupState('resolved');
         if (found) setMessage('Ricevuta istituzionale riletta dal workspace.');
       })
       .catch((error) => {
+        if (!active) return;
         setReceipt(null);
+        setReceiptLookupState('error');
+        clearPreparedDecision();
         setMessage(error instanceof Error ? error.message : 'Ricevuta non leggibile.');
       });
+
+    return () => {
+      active = false;
+    };
   }, [repository, selectedMembership?.workspaceId, selectedMembership?.role, session?.user.id, version.id]);
 
   if (optional.config.status !== 'configured' || !client || proposal.status !== 'accepted-for-decision') {
     return null;
   }
 
-  const identityHref = `${import.meta.env.BASE_URL}beta-identity`;
-  const receiptMatchesCurrentVersion = Boolean(
-    receipt && currentFingerprint && receipt.proposalVersionFingerprint === currentFingerprint
-  );
+  const routerBasename = resolveRouterBasename(import.meta.env.MODE).replace(/\/$/, '');
+  const identityHref = `${routerBasename}/beta-identity`;
+  const receiptMatches = receiptMatchesCurrentVersion(receipt, currentFingerprint);
+  const controlsMayOpen = decisionControlsMayOpen(receiptLookupState, receipt, currentFingerprint);
+  const resumableReceipt = Boolean(receipt && receiptMatches && controlsMayOpen);
 
   const preparePreview = async () => {
+    if (!controlsMayOpen) return;
     setBusy(true);
     setMessage(null);
     try {
       const fingerprint = await fingerprintRevisionProposalVersion(version);
+      setCurrentFingerprint(fingerprint);
       setPreviewFingerprint(fingerprint);
       setRequestId(createRequestId());
       setConfirmed(false);
@@ -193,29 +245,60 @@ export function InstitutionalDecisionPanel({ proposal, version }: InstitutionalD
   };
 
   const recordDecision = async () => {
-    if (!repository || !session || !selectedMembership || !canDecide || !previewFingerprint || !requestId || !confirmed) {
+    if (
+      !repository
+      || !session
+      || !selectedMembership
+      || !canDecide
+      || !previewFingerprint
+      || !requestId
+      || !confirmed
+      || !controlsMayOpen
+    ) {
       return;
     }
 
     setBusy(true);
     setMessage(null);
     try {
+      const freshFingerprint = await fingerprintRevisionProposalVersion(version);
+      setCurrentFingerprint(freshFingerprint);
+      if (!previewStillMatchesVersion(previewFingerprint, freshFingerprint)) {
+        clearPreparedDecision();
+        setMessage('La versione della proposta è cambiata dopo l’anteprima. La registrazione è stata bloccata: prepara una nuova anteprima.');
+        return;
+      }
+
       const context: WorkspaceActorContext = {
         membership: selectedMembership,
         assurance: 'authenticated-workspace',
       };
+
+      const latestReceipt = await repository.findInstitutionalDecisionForVersion(context, version.id);
+      setReceipt(latestReceipt);
+      setReceiptLookupState('resolved');
+      if (!decisionControlsMayOpen('resolved', latestReceipt, freshFingerprint)) {
+        clearPreparedDecision();
+        setMessage('Lo stato istituzionale della versione è cambiato. La registrazione è stata bloccata e la ricevuta è stata riletta dal server.');
+        return;
+      }
+
       const nextReceipt = await repository.recordInstitutionalDecision(context, {
         workspaceId: selectedMembership.workspaceId,
         proposalRef: proposal.id,
         proposalVersionRef: version.id,
-        proposalVersionFingerprint: previewFingerprint,
+        proposalVersionFingerprint: freshFingerprint,
         outcome,
         rationale,
         clientRequestId: requestId,
       });
       setReceipt(nextReceipt);
+      setReceiptLookupState('resolved');
+      clearPreparedDecision();
       setMessage('Decisione istituzionale registrata. Nessuna modifica del curricolo è stata applicata automaticamente.');
     } catch (error) {
+      clearPreparedDecision();
+      setReceiptLookupState('error');
       setMessage(error instanceof Error ? error.message : 'Decisione non registrata.');
     } finally {
       setBusy(false);
@@ -251,6 +334,7 @@ export function InstitutionalDecisionPanel({ proposal, version }: InstitutionalD
                 value={workspaceId}
                 onChange={(event) => {
                   setWorkspaceId(event.target.value);
+                  setReceiptLookupState('loading');
                   resetPreview();
                 }}
                 className="mt-1 block w-full rounded-lg border border-slate-300 bg-white p-2"
@@ -269,17 +353,31 @@ export function InstitutionalDecisionPanel({ proposal, version }: InstitutionalD
             <div><strong>Versione proposta:</strong> v{version.versionNumber} · <code>{version.id}</code></div>
           </div>
 
+          {receiptLookupState === 'loading' && canDecide && (
+            <div role="status" className="rounded-lg border border-slate-200 bg-white p-3 text-slate-700">
+              Verifica delle ricevute istituzionali in corso. La registrazione resta bloccata fino a esito certo.
+            </div>
+          )}
+
+          {receiptLookupState === 'error' && canDecide && (
+            <div role="alert" className="rounded-lg border border-rose-300 bg-rose-50 p-3 text-rose-900">
+              Impossibile verificare in modo affidabile le ricevute della versione. La registrazione resta bloccata.
+            </div>
+          )}
+
           {receipt && (
-            <div role="status" className={`rounded-lg border p-3 ${receiptMatchesCurrentVersion ? 'border-emerald-300 bg-emerald-50' : 'border-rose-300 bg-rose-50'}`}>
+            <div role="status" className={`rounded-lg border p-3 ${receiptMatches ? 'border-emerald-300 bg-emerald-50' : 'border-rose-300 bg-rose-50'}`}>
               <strong className="block">Ricevuta istituzionale già presente</strong>
               <div>Esito: {OUTCOME_LABELS[receipt.outcome]}</div>
               <div>Registrata: {new Date(receipt.decidedAt).toLocaleString('it-IT')}</div>
               <div>Ruolo: {receipt.authorityRole}</div>
               <div>Ricevuta: <code>{receipt.id}</code></div>
               <div className="mt-1">
-                {receiptMatchesCurrentVersion
-                  ? 'L’impronta corrisponde alla versione attualmente mostrata.'
-                  : 'ATTENZIONE: l’impronta non corrisponde alla versione attualmente mostrata. La ricevuta non vale per questo contenuto.'}
+                {!receiptMatches
+                  ? 'ATTENZIONE: l’impronta non corrisponde alla versione attualmente mostrata. La registrazione resta bloccata.'
+                  : resumableReceipt
+                    ? 'Esito non finale: la deliberazione può essere ripresa con una nuova anteprima e una nuova ricevuta append-only.'
+                    : 'L’impronta corrisponde alla versione attualmente mostrata e l’esito è finale per questa versione.'}
               </div>
             </div>
           )}
@@ -288,7 +386,7 @@ export function InstitutionalDecisionPanel({ proposal, version }: InstitutionalD
             <div role="status" className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-amber-900">
               La membership <strong>{selectedMembership?.role}</strong> può consultare il workspace ma non possiede <code>REVISION_DECIDE</code>. Nessun ruolo autodichiarato dell’app può sbloccare questa azione.
             </div>
-          ) : !receiptMatchesCurrentVersion ? (
+          ) : controlsMayOpen ? (
             <div className="space-y-3">
               <label className="block font-semibold">
                 Esito proposto
