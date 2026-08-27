@@ -16,6 +16,20 @@ const VALID_OUTCOMES: readonly InstitutionalDecisionOutcome[] = [
   'return-for-revision',
 ];
 
+const DECISION_SELECT = [
+  'id',
+  'workspace_id',
+  'proposal_ref',
+  'proposal_version_ref',
+  'proposal_version_fingerprint',
+  'outcome',
+  'rationale',
+  'decided_by',
+  'authority_role',
+  'decided_at',
+  'client_request_id',
+].join(',');
+
 interface InstitutionalDecisionRow {
   id: string;
   workspace_id: string;
@@ -82,6 +96,35 @@ export class SupabaseSharedRevisionDecisionRepository implements SharedRevisionD
     workspaceRepository?: SharedWorkspaceRepository
   ) {
     this.workspaceRepository = workspaceRepository ?? new SupabaseSharedWorkspaceRepository(client);
+  }
+
+  async findInstitutionalDecisionForVersion(
+    context: WorkspaceActorContext,
+    proposalVersionRef: string
+  ): Promise<InstitutionalRevisionDecisionReceipt | null> {
+    if (!proposalVersionRef.trim()) {
+      throw new Error('La versione della proposta è obbligatoria.');
+    }
+
+    const allowed = await this.workspaceRepository.can(context, 'CURRICULUM_READ');
+    if (!allowed) {
+      throw new Error('La membership autenticata non può leggere le decisioni del workspace.');
+    }
+
+    const { data, error } = await this.client
+      .from('institutional_revision_decisions')
+      .select(DECISION_SELECT)
+      .eq('workspace_id', context.membership.workspaceId)
+      .eq('proposal_version_ref', proposalVersionRef)
+      .order('decided_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (error) {
+      throw new Error(`Ricevuta istituzionale non leggibile: ${error.message}`);
+    }
+
+    return data ? toReceipt(data as InstitutionalDecisionRow) : null;
   }
 
   async recordInstitutionalDecision(
