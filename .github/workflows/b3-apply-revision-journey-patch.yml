@@ -1,4 +1,4 @@
-# diagnostic retry: preserve exact TypeScript evidence on failure
+# final bounded patch: typed routing + Beta revision journey binding
 name: B3 Apply Revision Journey Patch
 
 on:
@@ -39,16 +39,32 @@ jobs:
 
           replace_exact(
               'src/App.tsx',
-              "  if (pathname.startsWith('/curriculum') || pathname.startsWith('/revisione')) return 'curricolo';",
-              "  if (pathname.startsWith('/revisione')) return 'revisione';\n  if (pathname.startsWith('/curriculum')) return 'curricolo';",
-              'pathnameToTab revision route',
+              "import { AppHeader, AppSidebar, GlobalAlerts, MobileBottomNav, type AppTab } from './features/navigation';",
+              "import { AppHeader, AppSidebar, GlobalAlerts, MobileBottomNav, appTabToPath, pathnameToAppTab, type AppTab } from './features/navigation';",
+              'navigation routing import',
           )
+
           replace_exact(
               'src/App.tsx',
-              "   case 'revisione': return '/curriculum';",
-              "   case 'revisione': return '/revisione';",
-              'tabToPath revision route',
+              " const pathnameToTab = (pathname: string): AppTab => {\n  if (pathname.startsWith('/curriculum') || pathname.startsWith('/revisione')) return 'curricolo';\n  if (pathname.startsWith('/classroom')) return 'progetta-annuale';\n  if (pathname.startsWith('/planning')) return 'progetta-annuale';\n  if (pathname.startsWith('/documents')) return 'esportazioni';\n  if (pathname.startsWith('/copilot')) return 'dashboard';\n  if (pathname.startsWith('/knowledge') || pathname.startsWith('/second-brain')) return 'second-brain';\n  if (pathname.startsWith('/social')) return 'dashboard';\n  if (pathname.startsWith('/settings') || pathname.startsWith('/fonti')) return 'fonti';\n  if (pathname.startsWith('/guida')) return 'guida';\n  if (pathname.startsWith('/onboarding')) return 'dashboard';\n  return 'dashboard';\n };\n\n const activeTab = pathnameToTab(location.pathname);",
+              " const activeTab = pathnameToAppTab(location.pathname);",
+              'typed pathname routing',
           )
+
+          replace_exact(
+              'src/App.tsx',
+              " const tabToPath = (tab: AppTab): string => {\n  switch (tab) {\n   case 'curricolo': return '/curriculum';\n   case 'revisione': return '/curriculum';\n   case 'progetta-annuale': return '/planning';\n   case 'processo': return '/planning';\n   case 'esportazioni': return '/documents';\n   case 'certificazione-pa': return '/documents';\n   case 'second-brain': return '/knowledge';\n   case 'fonti': return '/settings';\n   case 'guida': return '/guida';\n   case 'dashboard':\n   default: return '/';\n  }\n };\n\n",
+              "",
+              'remove duplicated tab routing',
+          )
+
+          replace_exact(
+              'src/App.tsx',
+              "  navigate(tabToPath(tab));",
+              "  navigate(appTabToPath(tab));",
+              'typed tab navigation',
+          )
+
           replace_exact(
               'src/features/curriculum/components/RevisioneTab.tsx',
               "import { HumanTaskSummary, evaluateRevisionHumanTask } from '../../guided-workflow';",
@@ -113,7 +129,7 @@ jobs:
           git config user.name 'CurManLight Beta Agent'
           git config user.email 'actions@users.noreply.github.com'
           git add docs/evidence/B3_TSC_DIAGNOSTIC.txt
-          git commit -m 'Beta B3: capture TypeScript diagnostic'
+          git commit -m 'Beta B3: update TypeScript diagnostic'
           git push origin HEAD:beta/b3-g4-revision-journey
 
       - name: Stop on TypeScript errors
