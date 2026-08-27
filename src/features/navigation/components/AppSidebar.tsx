@@ -25,9 +25,9 @@ export function AppSidebar({
     <aside id="sidebar" className={`${sidebarCollapsed ? 'hidden' : 'hidden md:block'} w-full md:w-64 shrink-0 space-y-4 transition-all duration-300`}>
      <nav className="space-y-1 text-left">
       {/* 1. SEZIONE COMUNE: HOME */}
-      <p className="px-3 text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1.5 mt-2 text-left">Navigazione Globale</p>
+      <p className="px-3 text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1.5 mt-2 text-left">Orientamento</p>
       <button onClick={() => handleTabSwitch('dashboard')} className={`w-full flex items-center justify-between px-3.5 py-2 rounded-xl text-xs font-bold transition ${activeTab === 'dashboard' ? 'bg-primary-50 text-primary-600 border border-primary-100 shadow-sm' : 'text-slate-600 hover:bg-slate-50'}`}>
-       <span className="flex items-center space-x-2.5"><FolderOpen className="w-4 h-4 text-slate-500" /> <span>Home Dashboard</span></span>
+       <span className="flex items-center space-x-2.5"><FolderOpen className="w-4 h-4 text-slate-500" /> <span>Home</span></span>
       </button>
 
       {/* 2. AMBIENTE: CURRICOLO */}
@@ -35,12 +35,12 @@ export function AppSidebar({
        <button
         onClick={() => { handleTabSwitch('curricolo'); setActiveCurricoloView(typeof navigator !== 'undefined' && navigator.webdriver ? 'albero' : 'home'); }}
         className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition ${
-          (activeTab === 'curricolo' || activeTab === 'revisione' || activeTab === 'fonti') 
-            ? 'text-primary-600 font-extrabold bg-slate-50' 
+          (activeTab === 'curricolo' || activeTab === 'revisione' || activeTab === 'fonti')
+            ? 'text-primary-600 font-extrabold bg-slate-50'
             : 'text-slate-700 hover:bg-slate-50'
         }`}
        >
-        <span>Consulta Curricolo</span>
+        <span>Curricolo</span>
        </button>
 
        {/* Dynamic Contextual Sub-menu for Curricolo */}
@@ -53,7 +53,7 @@ export function AppSidebar({
             activeTab === 'curricolo' && activeCurricoloView === 'albero' ? 'bg-indigo-50 text-indigo-700 font-bold' : 'text-slate-500 hover:text-slate-800'
           }`}
          >
-          <span>Vista Strutturata (Albero)</span>
+          <span>Struttura del curricolo</span>
          </div>
 
          <div
@@ -63,7 +63,7 @@ export function AppSidebar({
             activeTab === 'curricolo' && activeCurricoloView === 'mappa' ? 'bg-indigo-50 text-indigo-700 font-bold' : 'text-slate-500 hover:text-slate-800'
           }`}
          >
-          <span>Raccordo Diacronico (Mappa)</span>
+          <span>Confronta nel tempo</span>
          </div>
 
          <div
@@ -73,7 +73,7 @@ export function AppSidebar({
             activeTab === 'curricolo' && activeCurricoloView === 'popolamento' ? 'bg-indigo-50 text-indigo-700 font-bold' : 'text-slate-500 hover:text-slate-800'
           }`}
          >
-          <span>Integrazione & Popolamento</span>
+          <span>Aggiorna il curricolo</span>
          </div>
 
          <div
@@ -83,7 +83,7 @@ export function AppSidebar({
             activeTab === 'revisione' ? 'bg-indigo-50 text-indigo-700 font-bold' : 'text-slate-500 hover:text-slate-800'
           }`}
          >
-          <span>Revisione (Gap 2025)</span>
+          <span>Revisione 2025</span>
           {pendingCount > 0 && <span className="bg-amber-100 text-amber-800 text-[8px] px-1.5 py-0.2 rounded-full font-black">{pendingCount}</span>}
          </div>
 
@@ -94,7 +94,7 @@ export function AppSidebar({
             activeTab === 'fonti' ? 'bg-indigo-50 text-indigo-700 font-bold' : 'text-slate-500 hover:text-slate-800'
           }`}
          >
-          <span>Fonti locali</span>
+          <span>Fonti</span>
          </div>
 
          <div
@@ -104,7 +104,7 @@ export function AppSidebar({
             activeTab === 'curricolo' && activeCurricoloView === 'pilota' ? 'bg-indigo-50 text-indigo-700 font-bold' : 'text-slate-500 hover:text-slate-800'
           }`}
          >
-          <span>★ Pilota Sperimentale</span>
+          <span>Area sperimentale</span>
          </div>
         </div>
        )}
@@ -116,11 +116,11 @@ export function AppSidebar({
         onClick={() => { handleTabSwitch('progetta-annuale'); setActiveProgTab(typeof navigator !== 'undefined' && navigator.webdriver ? 'annuale' : 'home'); }}
         className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition ${
           ((activeTab === 'progetta-annuale' && (activeProgTab === 'annuale' || activeProgTab === 'uda' || activeProgTab === 'certificazione')) || activeTab === 'processo' || activeTab === 'esportazioni')
-            ? 'text-primary-600 font-extrabold bg-slate-50' 
+            ? 'text-primary-600 font-extrabold bg-slate-50'
             : 'text-slate-700 hover:bg-slate-50'
         }`}
        >
-        <span>Progettazione UDA</span>
+        <span>Progettazione</span>
        </button>
 
        {/* Dynamic Contextual Sub-menu for Progettazione */}
@@ -133,7 +133,7 @@ export function AppSidebar({
             activeTab === 'progetta-annuale' && activeProgTab === 'annuale' ? 'bg-indigo-50 text-indigo-700 font-bold' : 'text-slate-500 hover:text-slate-800'
           }`}
          >
-          <span>Compilatore UDA (Wizard)</span>
+          <span>Prepara una UDA</span>
          </div>
 
          <div
@@ -143,7 +143,7 @@ export function AppSidebar({
             activeTab === 'progetta-annuale' && activeProgTab === 'uda' ? 'bg-indigo-50 text-indigo-700 font-bold' : 'text-slate-500 hover:text-slate-800'
           }`}
          >
-          <span>Archivio locale</span>
+          <span>UDA salvate</span>
          </div>
 
          <div
@@ -153,7 +153,7 @@ export function AppSidebar({
             activeTab === 'progetta-annuale' && activeProgTab === 'certificazione' ? 'bg-indigo-50 text-indigo-700 font-bold' : 'text-slate-500 hover:text-slate-800'
           }`}
          >
-          <span>Matrice delle Competenze</span>
+          <span>Competenze</span>
          </div>
 
          <div
@@ -163,7 +163,7 @@ export function AppSidebar({
             activeTab === 'processo' ? 'bg-indigo-50 text-indigo-700 font-bold' : 'text-slate-500 hover:text-slate-800'
           }`}
          >
-          <span>Processo & Consenso</span>
+          <span>Raccogli i contributi</span>
          </div>
 
          <div
@@ -173,7 +173,7 @@ export function AppSidebar({
             activeTab === 'esportazioni' ? 'bg-indigo-50 text-indigo-700 font-bold' : 'text-slate-500 hover:text-slate-800'
           }`}
          >
-          <span>Esportazione File d'Ufficio</span>
+          <span>Crea documenti</span>
          </div>
         </div>
        )}
@@ -185,11 +185,11 @@ export function AppSidebar({
         onClick={() => { handleTabSwitch('progetta-annuale'); setActiveProgTab(typeof navigator !== 'undefined' && navigator.webdriver ? 'classe' : 'classe-home'); }}
         className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition ${
           (activeTab === 'progetta-annuale' && (activeProgTab === 'classe' || activeProgTab === 'social'))
-            ? 'text-primary-600 font-extrabold bg-slate-50' 
+            ? 'text-primary-600 font-extrabold bg-slate-50'
             : 'text-slate-700 hover:bg-slate-50'
         }`}
        >
-        <span>Spazio d'Aula e Classe</span>
+        <span>Classe</span>
        </button>
 
        {/* Dynamic Contextual Sub-menu for Classe */}
@@ -202,7 +202,7 @@ export function AppSidebar({
             activeTab === 'progetta-annuale' && activeProgTab === 'classe' ? 'bg-indigo-50 text-indigo-700 font-bold' : 'text-slate-500 hover:text-slate-800'
           }`}
          >
-          <span>Ambiente & Esiti Classe</span>
+          <span>Attività e osservazioni</span>
          </div>
 
          <div
@@ -212,29 +212,28 @@ export function AppSidebar({
             activeTab === 'progetta-annuale' && activeProgTab === 'social' ? 'bg-indigo-50 text-indigo-700 font-bold' : 'text-slate-500 hover:text-slate-800'
           }`}
          >
-          <span>Osservatorio dei Riusi d'UDA</span>
+          <span>UDA condivise</span>
          </div>
         </div>
        )}
       </div>
 
-      {/* 5. SEZIONE COMUNE: SUPPORTO & CERTIFICAZIONE */}
-      <p className="px-3 text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1.5 mt-3 pt-1 border-t border-slate-100 text-left">Supporto e checklist non certificate</p>
-      
+      {/* 5. SEZIONE COMUNE: SUPPORTO */}
+      <p className="px-3 text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1.5 mt-3 pt-1 border-t border-slate-100 text-left">Supporto</p>
+
       <button onClick={() => handleTabSwitch('certificazione-pa')} className={`w-full flex items-center justify-between px-3.5 py-2 rounded-xl text-xs font-semibold transition ${activeTab === 'certificazione-pa' ? 'bg-primary-50 text-primary-600 border border-primary-100 shadow-sm' : 'text-slate-600 hover:bg-slate-50'}`}>
-       <span className="flex items-center space-x-2.5"><ShieldCheck className="w-4 h-4 text-emerald-600" /> <span className="font-extrabold text-indigo-950">Checklist accessibilità e conformità (non certificata)</span></span>
+       <span className="flex items-center space-x-2.5"><ShieldCheck className="w-4 h-4 text-emerald-600" /> <span className="font-extrabold text-indigo-950">Controlli e checklist</span></span>
       </button>
-      
+
       <button onClick={() => handleTabSwitch('second-brain')} className={`w-full flex items-center justify-between px-3.5 py-2 rounded-xl text-xs font-semibold transition ${activeTab === 'second-brain' ? 'bg-primary-50 text-primary-600 border border-primary-100 shadow-sm' : 'text-slate-600 hover:bg-slate-50'}`}>
-       <span className="flex items-center space-x-2.5"><Sparkles className="w-4 h-4 text-indigo-500" /> <span className="font-extrabold text-indigo-950">WikiLLM e archivio locale</span></span>
+       <span className="flex items-center space-x-2.5"><Sparkles className="w-4 h-4 text-indigo-500" /> <span className="font-extrabold text-indigo-950">Archivio e assistente</span></span>
       </button>
-      
+
       <button onClick={() => handleTabSwitch('guida')} className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition ${activeTab === 'guida' ? 'bg-primary-50 text-primary-600 border border-primary-100 shadow-sm' : 'text-slate-600 hover:bg-slate-50'}`}>
-       <span className="flex items-center space-x-2.5"><HelpCircle className="w-4 h-4 text-blue-500" /> <span>Guida Operativa</span></span>
+       <span className="flex items-center space-x-2.5"><HelpCircle className="w-4 h-4 text-blue-500" /> <span>Guida</span></span>
       </button>
      </nav>
     </aside>
 
   );
 }
-
