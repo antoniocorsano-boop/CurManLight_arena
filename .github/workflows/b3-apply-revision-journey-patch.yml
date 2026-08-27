@@ -1,0 +1,108 @@
+name: B3 Apply Revision Journey Patch
+
+on:
+  push:
+    branches:
+      - beta/b3-g4-revision-journey
+    paths:
+      - '.github/workflows/b3-apply-revision-journey-patch.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: beta/b3-g4-revision-journey
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Apply minimal route and view bindings
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          def replace_exact(path: str, old: str, new: str, label: str):
+              p = Path(path)
+              text = p.read_text()
+              if old not in text:
+                  raise SystemExit(f'Missing expected anchor: {label}')
+              p.write_text(text.replace(old, new, 1))
+
+          replace_exact(
+              'src/App.tsx',
+              "  if (pathname.startsWith('/curriculum') || pathname.startsWith('/revisione')) return 'curricolo';",
+              "  if (pathname.startsWith('/revisione')) return 'revisione';\n  if (pathname.startsWith('/curriculum')) return 'curricolo';",
+              'pathnameToTab revision route',
+          )
+          replace_exact(
+              'src/App.tsx',
+              "   case 'revisione': return '/curriculum';",
+              "   case 'revisione': return '/revisione';",
+              'tabToPath revision route',
+          )
+
+          replace_exact(
+              'src/features/curriculum/components/RevisioneTab.tsx',
+              "import { HumanTaskSummary, evaluateRevisionHumanTask } from '../../guided-workflow';",
+              "import { HumanTaskSummary, evaluateRevisionHumanTask } from '../../guided-workflow';\nimport { InstitutionalDecisionPanel, StructuredProposalStarter } from '../../beta';",
+              'beta component import',
+          )
+          replace_exact(
+              'src/features/curriculum/components/RevisioneTab.tsx',
+              "  const { decisions, customTexts, activeRevisionFilter, setActiveRevisionFilter, setDecision, resetDecision, setCustomText } = useCurriculumStore();",
+              "  const { decisions, customTexts, activeRevisionFilter, setActiveRevisionFilter, setDecision, resetDecision, setCustomText, discipline, order } = useCurriculumStore();",
+              'store discipline/order binding',
+          )
+          replace_exact(
+              'src/features/curriculum/components/RevisioneTab.tsx',
+              "      {/* Canonical Proposals Section */}\n      <CanonicalProposalsSection />",
+              "      <StructuredProposalStarter\n        proposals={currentDisciplineProps}\n        decisions={decisions}\n        customTexts={customTexts}\n        discipline={discipline}\n        order={order}\n      />\n\n      {/* Canonical Proposals Section */}\n      <CanonicalProposalsSection />",
+              'structured proposal starter',
+          )
+          replace_exact(
+              'src/features/curriculum/components/RevisioneTab.tsx',
+              "              {proposal.status === 'accepted-for-decision' && (\n                <span className=\"text-[10px] text-slate-500 self-center\">\n                  In attesa di registrazione decisione — usare il pannello decisioni\n                </span>\n              )}",
+              "              {proposal.status === 'accepted-for-decision' && (\n                <>\n                  <span className=\"text-[10px] text-slate-500 self-center\">\n                    In attesa di decisione istituzionale autenticata\n                  </span>\n                  {version && <InstitutionalDecisionPanel proposal={proposal} version={version} />}\n                </>\n              )}",
+              'institutional decision panel',
+          )
+          replace_exact(
+              'src/features/beta/InstitutionalDecisionPanel.tsx',
+              'className="m-4 rounded-xl border-2 border-emerald-200 bg-emerald-50/40 p-4 text-xs text-slate-700 space-y-3"',
+              'className="mt-2 w-full rounded-xl border-2 border-emerald-200 bg-emerald-50/40 p-4 text-xs text-slate-700 space-y-3"',
+              'decision panel flex width',
+          )
+
+          Path('.github/workflows/b3-apply-revision-journey-patch.yml').unlink()
+          PY
+
+      - run: npm ci
+
+      - name: B3 targeted contract tests
+        run: >-
+          npx vitest run
+          src/__tests__/beta-revision-routing-contract.test.ts
+          src/__tests__/beta-revision-version-fingerprint.test.ts
+          src/__tests__/beta-shared-decision-boundary.test.ts
+          src/__tests__/beta-identity-authority.test.ts
+
+      - name: TypeScript
+        run: npx tsc --noEmit
+
+      - name: Beta build
+        run: npm run build:beta
+
+      - name: Commit verified patch to branch
+        run: |
+          git config user.name 'CurManLight Beta Agent'
+          git config user.email 'actions@users.noreply.github.com'
+          git add -A
+          git commit -m 'Beta B3: bind authenticated decision to revision journey'
+          git push origin HEAD:beta/b3-g4-revision-journey
