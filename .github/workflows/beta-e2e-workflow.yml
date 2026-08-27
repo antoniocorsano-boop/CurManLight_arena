@@ -16,6 +16,7 @@ on:
       - 'src/__tests__/beta-revision-routing-contract.test.ts'
       - 'src/__tests__/beta-revision-version-fingerprint.test.ts'
       - 'scripts/verify-beta-g4-browser.cjs'
+      - 'scripts/serve-beta-pages-preview.cjs'
       - 'supabase/migrations/20260827111500_b3_institutional_revision_decisions.sql'
       - 'docs/architecture/CML_ARENA_BETA_B3_ACCEPTANCE_v1.json'
       - '.github/workflows/beta-e2e-workflow.yml'
@@ -35,6 +36,7 @@ on:
       - 'src/__tests__/beta-revision-routing-contract.test.ts'
       - 'src/__tests__/beta-revision-version-fingerprint.test.ts'
       - 'scripts/verify-beta-g4-browser.cjs'
+      - 'scripts/serve-beta-pages-preview.cjs'
       - 'supabase/migrations/20260827111500_b3_institutional_revision_decisions.sql'
       - 'docs/architecture/CML_ARENA_BETA_B3_ACCEPTANCE_v1.json'
       - '.github/workflows/beta-e2e-workflow.yml'
@@ -91,7 +93,7 @@ jobs:
           BETA_BASE_URL: http://127.0.0.1:4173/CurManLight_arena
         run: |
           set -euo pipefail
-          npx vite preview --host 127.0.0.1 --port 4173 --strictPort > /tmp/cml-beta-preview.log 2>&1 &
+          node scripts/serve-beta-pages-preview.cjs > /tmp/cml-beta-preview.log 2>&1 &
           preview_pid=$!
           trap 'kill "$preview_pid" 2>/dev/null || true; cat /tmp/cml-beta-preview.log' EXIT
           for attempt in $(seq 1 30); do
