@@ -124,7 +124,8 @@ export function InstitutionalDecisionPanel({ proposal, version }: InstitutionalD
         if (active) setCurrentFingerprint(fingerprint);
       })
       .catch((error) => {
-        if (active) setMessage(error instanceof Error ? error.message : 'Impronta non calcolabile.');
+        console.warn('[InstitutionalDecisionPanel] Version fingerprint unavailable', error);
+        if (active) setMessage('Impossibile verificare in modo affidabile la versione della proposta.');
       });
 
     return () => {
@@ -152,11 +153,12 @@ export function InstitutionalDecisionPanel({ proposal, version }: InstitutionalD
         .eq('user_id', nextSession.user.id);
 
       if (error) {
+        console.warn('[InstitutionalDecisionPanel] Membership lookup failed', error);
         setMemberships([]);
         setReceipt(null);
         setReceiptLookupState('error');
         clearPreparedDecision();
-        setMessage(`Membership non leggibile: ${error.message}`);
+        setMessage('Impossibile verificare l’incarico istituzionale. La decisione resta bloccata; riprova quando la connessione è disponibile.');
         return;
       }
 
@@ -204,14 +206,15 @@ export function InstitutionalDecisionPanel({ proposal, version }: InstitutionalD
         if (!active) return;
         setReceipt(found);
         setReceiptLookupState('resolved');
-        if (found) setMessage('Ricevuta istituzionale riletta dal workspace.');
+        if (found) setMessage('Ricevuta istituzionale riletta dall’ambiente istituzionale.');
       })
       .catch((error) => {
+        console.warn('[InstitutionalDecisionPanel] Receipt lookup failed', error);
         if (!active) return;
         setReceipt(null);
         setReceiptLookupState('error');
         clearPreparedDecision();
-        setMessage(error instanceof Error ? error.message : 'Ricevuta non leggibile.');
+        setMessage('Impossibile verificare la ricevuta della versione. La decisione resta bloccata.');
       });
 
     return () => {
@@ -240,7 +243,8 @@ export function InstitutionalDecisionPanel({ proposal, version }: InstitutionalD
       setRequestId(createRequestId());
       setConfirmed(false);
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : 'Impossibile preparare l’anteprima.');
+      console.warn('[InstitutionalDecisionPanel] Preview fingerprint unavailable', error);
+      setMessage('Impossibile preparare l’anteprima in modo affidabile.');
     } finally {
       setBusy(false);
     }
@@ -282,7 +286,7 @@ export function InstitutionalDecisionPanel({ proposal, version }: InstitutionalD
       setReceiptLookupState('resolved');
       if (!decisionControlsMayOpen('resolved', latestReceipt, freshFingerprint)) {
         clearPreparedDecision();
-        setMessage('Lo stato istituzionale della versione è cambiato. La registrazione è stata bloccata e la ricevuta è stata riletta dal server.');
+        setMessage('Lo stato istituzionale della versione è cambiato. La registrazione è stata bloccata e la ricevuta è stata riletta dal sistema.');
         return;
       }
 
@@ -300,9 +304,10 @@ export function InstitutionalDecisionPanel({ proposal, version }: InstitutionalD
       clearPreparedDecision();
       setMessage('Decisione istituzionale registrata. Nessuna modifica del curricolo è stata applicata automaticamente.');
     } catch (error) {
+      console.warn('[InstitutionalDecisionPanel] Decision record failed', error);
       clearPreparedDecision();
       setReceiptLookupState('error');
-      setMessage(error instanceof Error ? error.message : 'Decisione non registrata.');
+      setMessage('Decisione non registrata. Verifica la connessione e lo stato dell’incarico prima di riprovare.');
     } finally {
       setBusy(false);
     }
@@ -311,28 +316,35 @@ export function InstitutionalDecisionPanel({ proposal, version }: InstitutionalD
   return (
     <section
       aria-label="Decisione istituzionale Beta"
+      data-hcm-decision-panel
       className="mt-2 w-full rounded-xl border-2 border-emerald-200 bg-emerald-50/40 p-4 text-xs text-slate-700 space-y-3"
     >
       <div>
         <strong className="block text-[10px] uppercase tracking-wider text-emerald-800">BETA · decisione istituzionale</strong>
         <p className="mt-1">
-          Questa azione è distinta dalle scelte locali. Richiede una sessione autenticata e una membership attiva con capacità <code>REVISION_DECIDE</code>.
+          Questa azione è distinta dalle scelte locali. Per registrarla devi essere autenticato e avere un incarico istituzionale verificato.
         </p>
+        <details className="mt-2" data-hcm-technical-details>
+          <summary className="cursor-pointer font-semibold text-slate-500">Dettagli di autorizzazione</summary>
+          <div className="mt-2 rounded-lg bg-white p-2 text-[11px] text-slate-600">
+            Il controllo tecnico richiede una membership attiva con capacità <code>REVISION_DECIDE</code>. Il ruolo dichiarato localmente nell’app non sostituisce questa verifica.
+          </div>
+        </details>
       </div>
 
       {!session ? (
         <div role="status" className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-amber-900">
-          Nessuna identità Beta autenticata. <a className="font-bold underline" href={identityHref}>Accedi e verifica la membership</a> prima di assumere una decisione.
+          Nessuna identità Beta autenticata. <a className="font-bold underline" href={identityHref}>Accedi e verifica il tuo incarico</a> prima di assumere una decisione.
         </div>
       ) : activeMemberships.length === 0 ? (
         <div role="status" className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-amber-900">
-          La sessione è autenticata, ma non esiste una membership attiva. La decisione resta bloccata.
+          La sessione è autenticata, ma non risulta alcun incarico istituzionale attivo. La decisione resta bloccata.
         </div>
       ) : (
         <>
           {activeMemberships.length > 1 && (
             <label className="block font-semibold">
-              Workspace
+              Contesto istituzionale
               <select
                 value={workspaceId}
                 onChange={(event) => {
@@ -342,9 +354,9 @@ export function InstitutionalDecisionPanel({ proposal, version }: InstitutionalD
                 }}
                 className="mt-1 block w-full rounded-lg border border-slate-300 bg-white p-2"
               >
-                {activeMemberships.map((membership) => (
+                {activeMemberships.map((membership, index) => (
                   <option key={membership.workspaceId} value={membership.workspaceId}>
-                    {membership.workspaceId} · {membership.role}
+                    Incarico {index + 1} · {membership.role}
                   </option>
                 ))}
               </select>
@@ -352,8 +364,15 @@ export function InstitutionalDecisionPanel({ proposal, version }: InstitutionalD
           )}
 
           <div className="rounded-lg border border-slate-200 bg-white p-3">
-            <div><strong>Membership verificata:</strong> {selectedMembership?.role ?? '—'}</div>
-            <div><strong>Versione proposta:</strong> v{version.versionNumber} · <code>{version.id}</code></div>
+            <div><strong>Incarico verificato:</strong> {selectedMembership?.role ?? '—'}</div>
+            <div><strong>Versione proposta:</strong> v{version.versionNumber}</div>
+            <details className="mt-2" data-hcm-technical-details>
+              <summary className="cursor-pointer font-semibold text-slate-500">Riferimenti tecnici</summary>
+              <div className="mt-1 space-y-1 text-[11px] text-slate-500">
+                <div>Workspace: <code className="break-all">{selectedMembership?.workspaceId ?? '—'}</code></div>
+                <div>Versione: <code className="break-all">{version.id}</code></div>
+              </div>
+            </details>
           </div>
 
           {receiptLookupState === 'loading' && canDecide && (
@@ -374,20 +393,23 @@ export function InstitutionalDecisionPanel({ proposal, version }: InstitutionalD
               <div>Esito: {OUTCOME_LABELS[receipt.outcome]}</div>
               <div>Registrata: {new Date(receipt.decidedAt).toLocaleString('it-IT')}</div>
               <div>Ruolo: {receipt.authorityRole}</div>
-              <div>Ricevuta: <code>{receipt.id}</code></div>
               <div className="mt-1">
                 {!receiptMatches
-                  ? 'ATTENZIONE: l’impronta non corrisponde alla versione attualmente mostrata. La registrazione resta bloccata.'
+                  ? 'ATTENZIONE: la ricevuta non corrisponde alla versione attualmente mostrata. La registrazione resta bloccata.'
                   : resumableReceipt
-                    ? 'Esito non finale: la deliberazione può essere ripresa con una nuova anteprima e una nuova ricevuta append-only.'
-                    : 'L’impronta corrisponde alla versione attualmente mostrata e l’esito è finale per questa versione.'}
+                    ? 'Esito non finale: la deliberazione può essere ripresa con una nuova anteprima e una nuova ricevuta.'
+                    : 'La ricevuta corrisponde alla versione attualmente mostrata e l’esito è finale per questa versione.'}
               </div>
+              <details className="mt-2" data-hcm-technical-details>
+                <summary className="cursor-pointer font-semibold text-slate-500">Dettagli tecnici della ricevuta</summary>
+                <div className="mt-1 text-[11px] text-slate-500">ID: <code className="break-all">{receipt.id}</code></div>
+              </details>
             </div>
           )}
 
           {!canDecide ? (
             <div role="status" className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-amber-900">
-              La membership <strong>{selectedMembership?.role}</strong> può consultare il workspace ma non possiede <code>REVISION_DECIDE</code>. Nessun ruolo autodichiarato dell’app può sbloccare questa azione.
+              L’incarico <strong>{selectedMembership?.role}</strong> consente di consultare questo ambiente, ma non autorizza la registrazione di decisioni istituzionali. Un ruolo dichiarato localmente non può sbloccare questa azione.
             </div>
           ) : controlsMayOpen ? (
             <div className="space-y-3">
@@ -439,11 +461,16 @@ export function InstitutionalDecisionPanel({ proposal, version }: InstitutionalD
                   <strong className="block text-indigo-900">Anteprima della conseguenza</strong>
                   <div><strong>Esito:</strong> {outcome ? OUTCOME_LABELS[outcome] : '—'}</div>
                   <div><strong>Motivazione:</strong> {rationale}</div>
-                  <div><strong>Versione vincolata:</strong> v{version.versionNumber}</div>
-                  <div><strong>Impronta SHA-256:</strong> <code className="break-all">{previewFingerprint}</code></div>
+                  <div><strong>Versione della proposta:</strong> v{version.versionNumber}</div>
                   <p className="font-semibold text-slate-800">
-                    La registrazione crea una ricevuta istituzionale append-only. Non sostituisce la proposta, non modifica automaticamente il curricolo e non equivale a firma digitale o protocollazione.
+                    La registrazione crea una ricevuta istituzionale non modificabile. Non sostituisce la proposta, non modifica automaticamente il curricolo e non equivale a firma digitale o protocollazione.
                   </p>
+                  <details data-hcm-technical-details>
+                    <summary className="cursor-pointer font-semibold text-slate-500">Dettagli tecnici della registrazione</summary>
+                    <div className="mt-1 text-[11px] text-slate-500">
+                      Impronta SHA-256: <code className="break-all">{previewFingerprint}</code>. La ricevuta è conservata con semantica append-only.
+                    </div>
+                  </details>
                   <label className="flex items-start gap-2 font-semibold">
                     <input
                       type="checkbox"
