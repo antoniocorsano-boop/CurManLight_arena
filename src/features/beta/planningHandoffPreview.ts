@@ -5,15 +5,26 @@ import {
   validateCmlLocalHandoffV2,
   type CmlLocalHandoffV2,
 } from '../../domain/transfer';
+import { institutionalLabelToSchoolYear, parseSchoolYear } from '../../lib/academicYear';
 import type { CurriculumMap } from '../session/types/appViewContracts';
 import type { SchoolOrder } from '../../types/curriculum';
 
+const INFANZIA_COHORT_REF = 'fascia-unica-3-5-anni';
+
+export interface PlanningHandoffClassContext {
+  classLevel: number;
+  sectionRef?: string;
+  cohortRef?: string;
+}
+
 export interface PlanningHandoffPreviewInput {
   institutionalProfile: A07InstitutionalDocumentRead;
+  configuredSchoolOrders: readonly SchoolOrder[];
   schoolYear: string;
   schoolOrder: SchoolOrder;
   classLevel: number;
-  sectionRef: string;
+  sectionRef?: string;
+  cohortRef?: string;
   disciplineRef: string;
   curriculumMap: CurriculumMap;
   revisionArchive: RevisionArchive;
@@ -34,6 +45,37 @@ export type PlanningHandoffPreviewModel =
       totalRequirements: number;
     };
 
+export function resolvePlanningSchoolYear(
+  institutionalAcademicYearLabel: string | undefined,
+  legacySchoolYear: string,
+): string {
+  const institutionalSchoolYear = institutionalLabelToSchoolYear(institutionalAcademicYearLabel ?? '');
+  if (parseSchoolYear(institutionalSchoolYear)) return institutionalSchoolYear;
+  if (parseSchoolYear(legacySchoolYear)) return legacySchoolYear;
+  return institutionalSchoolYear || legacySchoolYear;
+}
+
+export function resolvePlanningHandoffClassContext(
+  schoolOrder: SchoolOrder,
+  targetClass: string,
+  targetSection: string,
+): PlanningHandoffClassContext {
+  const sectionRef = targetSection.trim() || undefined;
+
+  if (schoolOrder === 'infanzia') {
+    return {
+      classLevel: 1,
+      sectionRef,
+      cohortRef: INFANZIA_COHORT_REF,
+    };
+  }
+
+  return {
+    classLevel: Number.parseInt(targetClass, 10),
+    sectionRef,
+  };
+}
+
 export function buildPlanningHandoffPreview(
   input: PlanningHandoffPreviewInput,
 ): PlanningHandoffPreviewModel {
@@ -51,6 +93,20 @@ export function buildPlanningHandoffPreview(
     };
   }
 
+  if (!input.configuredSchoolOrders.includes(input.schoolOrder)) {
+    return {
+      status: 'blocked',
+      reason: `L’ordine ${input.schoolOrder} non è configurato per l’istituto attivo. Seleziona un ordine effettivamente offerto prima di preparare l’anteprima.`,
+    };
+  }
+
+  if (!parseSchoolYear(input.schoolYear)) {
+    return {
+      status: 'blocked',
+      reason: 'L’anno scolastico istituzionale non è disponibile in un formato utilizzabile per il passaggio alla progettazione.',
+    };
+  }
+
   if (!Number.isInteger(input.classLevel) || input.classLevel < 1) {
     return {
       status: 'blocked',
@@ -58,10 +114,10 @@ export function buildPlanningHandoffPreview(
     };
   }
 
-  if (!input.sectionRef.trim()) {
+  if (!input.sectionRef?.trim() && !input.cohortRef?.trim()) {
     return {
       status: 'blocked',
-      reason: 'Seleziona una sezione prima di preparare l’anteprima.',
+      reason: 'Seleziona una sezione o una coorte valida prima di preparare l’anteprima.',
     };
   }
 
@@ -78,7 +134,8 @@ export function buildPlanningHandoffPreview(
       schoolYearRef: input.schoolYear,
       schoolOrder: input.schoolOrder,
       classLevel: input.classLevel,
-      sectionRef: input.sectionRef.trim(),
+      ...(input.sectionRef?.trim() ? { sectionRef: input.sectionRef.trim() } : {}),
+      ...(input.cohortRef?.trim() ? { cohortRef: input.cohortRef.trim() } : {}),
       disciplineRef: input.disciplineRef,
       curriculumMap: input.curriculumMap,
       revisionArchive: input.revisionArchive,
