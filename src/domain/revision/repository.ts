@@ -28,6 +28,10 @@ export function addProposal(
   const proposal = createProposal(proposalInput, now);
   const version = createInitialProposalVersion(proposal, proposalInput, now);
 
+  // A proposal becomes persistable only when it points to the concrete frozen
+  // initial version created for it. createProposal() cannot know that ID yet.
+  proposal.currentVersionRef = version.id;
+
   const pv = validateProposal(proposal);
   if (!pv.valid) return { success: false, errors: pv.errors };
 
