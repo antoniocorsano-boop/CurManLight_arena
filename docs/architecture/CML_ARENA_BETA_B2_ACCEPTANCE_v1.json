@@ -2,14 +2,15 @@
   "schema": "CML_BETA_B2_ACCEPTANCE_V1",
   "phase": "B2",
   "gate": "BETA-G3",
-  "status": "IN_PROGRESS",
+  "status": "PASS",
   "baseline": "25703592a3ac98b2fc819ce852390d355d7f9d75",
+  "runtimeReleaseSha": "6093b6a37a01f4a52e7b4649bb00d9b62070046a",
   "canonicalSupabaseProject": "ysgaokenrutmgzkhcxvy",
   "requiredEvidence": {
-    "authenticatedMembership": "PENDING_BROWSER_AUTH_SESSION",
+    "authenticatedMembership": "OBSERVED_RUNTIME_PASS",
     "roleCapabilityBoundary": "OBSERVED_AUTOMATED_PASS",
-    "deniedAuthorityBehavior": "OBSERVED_DATABASE_AND_AUTOMATED_PASS",
-    "membershipLifecycle": "OBSERVED_DATABASE_PASS",
+    "deniedAuthorityBehavior": "OBSERVED_RUNTIME_DATABASE_AND_AUTOMATED_PASS",
+    "membershipLifecycle": "OBSERVED_REAL_BROWSER_AND_DATABASE_PASS",
     "rlsIsolation": "OBSERVED_DEPLOYED_DATABASE_PASS"
   },
   "observedRuntime": [
@@ -17,26 +18,27 @@
     "canonical H2B migration applied to the dedicated project",
     "Supabase security advisor reports zero lints after migration",
     "deployed RLS exposes only SELECT policies for authenticated users",
-    "active member sees own membership and workspace",
-    "outsider sees neither membership nor workspace",
-    "suspended member still sees own membership evidence but no workspace",
-    "revoked member still sees own membership evidence but no workspace"
+    "published GitHub Pages Beta on runtime release SHA 6093b6a37a01f4a52e7b4649bb00d9b62070046a created a real Supabase Auth password session",
+    "authenticated browser initially resolved no membership and attributed no institutional authority",
+    "same authenticated browser resolved a privileged-provisioned docente membership in active state",
+    "active membership exposed one membership and one workspace through deployed RLS",
+    "same browser observed the membership transition to suspended and then revoked",
+    "suspended and revoked membership remained auditable while deployed RLS denied workspace visibility",
+    "no client-side role or self-declared authority was promoted during the rehearsal"
   ],
   "existingFoundation": [
     "Supabase browser client persists and refreshes authenticated sessions when configured",
     "workspace_memberships is keyed by workspace and auth.users identity",
     "shared repository re-reads server-backed membership before capability authorization",
     "self-declared local roles remain distinct from authenticated workspace assurance",
-    "Beta build is bound only to public Supabase URL and publishable key"
+    "Beta build is bound only to public Supabase URL and publishable key",
+    "CSP connect-src is restricted to the canonical Supabase project"
   ],
   "runtimeEvidenceFile": "docs/evidence/CML_ARENA_BETA_B2_RUNTIME_2026-08-27.json",
-  "remainingForPass": [
-    "deploy the runtime identity route in the canonical GitHub Pages Beta",
-    "observe a real Supabase Auth session created by that published browser",
-    "resolve membership from the session user id",
-    "observe browser behavior with absent or inactive membership"
-  ],
+  "remainingForPass": [],
   "passRule": "ALL_REQUIRED_EVIDENCE_OBSERVED_ON_CANONICAL_BETA_IDENTITY_BOUNDARY",
+  "passRuleSatisfied": true,
+  "exit": "BETA_IDENTITY_AUTHORITY_PASS",
   "forbiddenShortcuts": [
     "SELF_DECLARED_ROLE_MUST_NOT_BECOME_AUTHENTICATED_AUTHORITY",
     "UNIT_TESTS_ALONE_DO_NOT_PASS_BETA_G3",
