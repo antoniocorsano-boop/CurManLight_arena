@@ -5,14 +5,19 @@ on:
     paths:
       - '.human/**'
       - 'src/features/curriculum/components/RevisioneTab.tsx'
+      - 'src/features/session/components/DashboardView.tsx'
+      - 'src/features/session/components/HomeRoleOverview.tsx'
+      - 'src/features/session/communication/**'
       - 'src/features/beta/**'
       - 'src/domain/revision/**'
       - 'src/domain/transfer/**'
       - 'src/domain/human-communication/**'
       - 'src/__tests__/human-communication-model.test.ts'
+      - 'src/__tests__/home-human-communication.test.ts'
       - 'tools/human-communication-model/**'
       - 'agent_skills/human-communication-model/**'
       - 'scripts/capture-beta-g5-hia.cjs'
+      - 'scripts/capture-beta-home-hcm.cjs'
       - 'scripts/serve-beta-pages-preview.cjs'
       - 'docs/architecture/CML_ARENA_BETA_B3_ACCEPTANCE_v1.json'
       - 'docs/evidence/B3_G5_HIA_ACCEPTANCE_2026-08-27.json'
@@ -49,6 +54,7 @@ jobs:
         run: >-
           npx vitest run
           src/__tests__/human-communication-model.test.ts
+          src/__tests__/home-human-communication.test.ts
           src/__tests__/beta-explicit-decision-outcome-contract.test.ts
           src/__tests__/beta-planning-handoff-preview.test.ts
           src/__tests__/beta-revision-routing-contract.test.ts
@@ -78,6 +84,7 @@ jobs:
             sleep 1
           done
           curl --fail --silent --show-error http://127.0.0.1:4173/CurManLight_arena/ > /dev/null
+          node scripts/capture-beta-home-hcm.cjs
           node scripts/capture-beta-g5-hia.cjs
 
       - name: Upload HIA evidence artifact

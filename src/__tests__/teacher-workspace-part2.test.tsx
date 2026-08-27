@@ -29,8 +29,6 @@ describe('Teacher Workspace Part 2 — Dashboard work status', () => {
     vi.clearAllMocks();
   });
 
-  // --- States ---
-
   it('1. nessuna attività: no UDA, wizardStep 1', () => {
     render(<DashboardView {...baseProps} />);
     expect(screen.getByText('Nessuna attività')).toBeDefined();
@@ -57,8 +55,6 @@ describe('Teacher Workspace Part 2 — Dashboard work status', () => {
     expect(screen.getByTestId('teacher-action-consult')).toBeDefined();
   });
 
-  // --- Timestamp ---
-
   it('5. timestamp assente: no "Ultimo salvataggio"', () => {
     render(<DashboardView {...baseProps} />);
     expect(screen.queryByText(/Ultimo salvataggio/)).toBeNull();
@@ -81,8 +77,6 @@ describe('Teacher Workspace Part 2 — Dashboard work status', () => {
     render(<DashboardView {...baseProps} />);
     expect(screen.getByText(/adesso/)).toBeDefined();
   });
-
-  // --- Metrics ---
 
   it('9. conteggio UDA pari a zero', () => {
     render(<DashboardView {...baseProps} />);
@@ -127,9 +121,7 @@ describe('Teacher Workspace Part 2 — Dashboard work status', () => {
     expect(screen.queryByText('In corso')).toBeNull();
   });
 
-  // --- Actions ---
-
-  it('16. azione Continua UDA → progetta-annuale + activeProgTab annuale', () => {
+  it('16. azione primaria di continuazione mantiene il routing precedente', () => {
     const handleTabSwitch = vi.fn();
     const setActiveProgTab = vi.fn();
     render(<DashboardView {...baseProps} wizardStep={3} handleTabSwitch={handleTabSwitch} setActiveProgTab={setActiveProgTab} />);
@@ -138,7 +130,7 @@ describe('Teacher Workspace Part 2 — Dashboard work status', () => {
     expect(setActiveProgTab).toHaveBeenCalledWith('annuale');
   });
 
-  it('17. azione Consulta UDA → progetta-annuale + activeProgTab uda', () => {
+  it('17. azione UDA mantiene il routing precedente', () => {
     const handleTabSwitch = vi.fn();
     const setActiveProgTab = vi.fn();
     const savedUda = [{ id: '1', title: 'Test UDA' }] as never[];
@@ -148,14 +140,12 @@ describe('Teacher Workspace Part 2 — Dashboard work status', () => {
     expect(setActiveProgTab).toHaveBeenCalledWith('uda');
   });
 
-  it('18. azione Inizia dal Curricolo → curricolo', () => {
+  it('18. azione iniziale apre il curricolo', () => {
     const handleTabSwitch = vi.fn();
     render(<DashboardView {...baseProps} handleTabSwitch={handleTabSwitch} />);
     screen.getByTestId('teacher-action-start').click();
     expect(handleTabSwitch).toHaveBeenCalledWith('curricolo');
   });
-
-  // --- Role visibility ---
 
   it('19. visibilità docente: widget presente', () => {
     render(<DashboardView {...baseProps} role="insegnante" />);
@@ -173,8 +163,6 @@ describe('Teacher Workspace Part 2 — Dashboard work status', () => {
     rerender(<DashboardView {...baseProps} role="dipartimento" />);
     expect(screen.queryByTestId('teacher-work-status')).toBeNull();
   });
-
-  // --- Reset & compatibility ---
 
   it('22. reset generale: curman_lastSaveTime rimosso, widget senza timestamp', () => {
     localStorage.setItem('curman_lastSaveTime', String(Date.now()));
@@ -194,8 +182,6 @@ describe('Teacher Workspace Part 2 — Dashboard work status', () => {
     expect(screen.getByText('1')).toBeDefined();
   });
 
-  // --- Timestamp sync ---
-
   it('24. sincronizzazione con curman_lastSaveTime: valore nel blob consolidato', () => {
     const blob = { curman_lastSaveTime: String(Date.now() - 600000) };
     localStorage.setItem('curmanlight_stato_consolidato', JSON.stringify(blob));
@@ -203,21 +189,19 @@ describe('Teacher Workspace Part 2 — Dashboard work status', () => {
     expect(screen.getByText(/Ultimo salvataggio/)).toBeDefined();
   });
 
-  // --- Wizard step detail ---
-
-  it('shows wizard step label when wizard active with title', () => {
+  it('shows human-facing planning label when internal wizard state is active with title', () => {
     render(<DashboardView {...baseProps} wizardStep={2} progTitle="UDA Italiano" />);
-    expect(screen.getByText('Wizard: UDA Italiano')).toBeDefined();
+    expect(screen.getByText('Progettazione: UDA Italiano')).toBeDefined();
   });
 
-  it('shows default step label when wizard active without title', () => {
+  it('shows human-facing step label when internal wizard state is active without title', () => {
     render(<DashboardView {...baseProps} wizardStep={2} />);
-    expect(screen.getByText('Passo 2: Compito di Realtà')).toBeDefined();
+    expect(screen.getByText('Passo 2: Compito di realtà')).toBeDefined();
   });
 
-  it('hides wizard detail when wizardStep is 1', () => {
+  it('hides planning step detail when wizardStep is 1', () => {
     render(<DashboardView {...baseProps} wizardStep={1} />);
-    expect(screen.queryByText(/Wizard:/)).toBeNull();
+    expect(screen.queryByText(/Progettazione:/)).toBeNull();
     expect(screen.queryByText(/Passo \d:/)).toBeNull();
   });
 

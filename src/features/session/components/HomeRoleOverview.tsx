@@ -134,6 +134,7 @@ export function HomeRoleOverview({
               onClick={() => { handleTabSwitch('progetta-annuale'); setActiveProgTab('annuale'); }}
               className="flex w-full items-center justify-center gap-2 rounded-xl bg-indigo-700 px-4 py-3 text-sm font-bold text-white transition hover:bg-indigo-600"
               data-testid="teacher-action-continue"
+              data-hia-primary-action="home-teacher-continue"
             >
               Continua la progettazione <ArrowRight className="h-4 w-4" aria-hidden="true" />
             </button>
@@ -142,6 +143,7 @@ export function HomeRoleOverview({
               onClick={() => { handleTabSwitch('progetta-annuale'); setActiveProgTab('uda'); }}
               className="flex w-full items-center justify-center gap-2 rounded-xl bg-indigo-50 px-4 py-3 text-sm font-bold text-indigo-800 transition hover:bg-indigo-100"
               data-testid="teacher-action-consult"
+              data-hia-primary-action="home-teacher-open-uda"
             >
               <BookOpen className="h-4 w-4" aria-hidden="true" /> Apri le UDA
             </button>
@@ -150,6 +152,7 @@ export function HomeRoleOverview({
               onClick={() => handleTabSwitch('curricolo')}
               className="flex w-full items-center justify-center gap-2 rounded-xl bg-indigo-700 px-4 py-3 text-sm font-bold text-white transition hover:bg-indigo-600"
               data-testid="teacher-action-start"
+              data-hia-primary-action="home-teacher-start"
             >
               Consulta il curricolo <ArrowRight className="h-4 w-4" aria-hidden="true" />
             </button>
