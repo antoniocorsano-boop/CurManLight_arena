@@ -1,0 +1,36 @@
+{
+  "schema": "CML_BETA_DEPLOYMENT_EVIDENCE_V1",
+  "observedAt": "2026-08-27T03:47:20Z",
+  "repository": "antoniocorsano-boop/CurManLight_arena",
+  "workflow": "Deploy Arena Beta",
+  "workflowRun": 33037166659,
+  "workflowAttempt": 2,
+  "releaseSha": "96bf70b0ed6b08ecac8f8145a11394f461cd86e3",
+  "canonicalUrl": "https://antoniocorsano-boop.github.io/CurManLight_arena/",
+  "result": "DEPLOYMENT_SUCCESS",
+  "checks": {
+    "checkoutExactSha": true,
+    "fastTests": {"status": "PASS", "count": 273},
+    "typescript": "PASS",
+    "betaBuild": "PASS",
+    "betaReleaseContract": "PASS",
+    "pagesConfiguration": "PASS",
+    "artifactUpload": "PASS",
+    "pagesDeployment": "PASS",
+    "pagesBuildVersionMatchesReleaseSha": true
+  },
+  "artifact": {
+    "id": 9632508614,
+    "sha256": "79495fb8e18edd24350ebb03b4a357a70764910958eae27c7b879b6c9e517d26",
+    "contains": ["index.html", "404.html", "beta-release.json"]
+  },
+  "remainingForBetaG2": [
+    "observe automated published smoke against canonical URL",
+    "rehearse rollback to a known-good deployable SHA and restore current release"
+  ],
+  "securityCarryForward": {
+    "npmAuditInstallObservation": "7 vulnerabilities reported: 3 moderate, 4 high",
+    "assignedGate": "BETA-G9",
+    "promotionRule": "must not be ignored or treated as B1 pass evidence"
+  }
+}
