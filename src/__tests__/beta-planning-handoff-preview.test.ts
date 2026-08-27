@@ -50,12 +50,16 @@ function baseInput() {
   };
 }
 
+function requireReady(preview: ReturnType<typeof buildPlanningHandoffPreview>) {
+  if (preview.status === 'blocked') {
+    throw new Error(`Expected ready B3 planning handoff preview: ${preview.reason}`);
+  }
+  return preview;
+}
+
 describe('B3 planning handoff preview', () => {
   it('builds a valid preview-only handoff from the current Arena baseline', () => {
-    const preview = buildPlanningHandoffPreview(baseInput());
-
-    expect(preview.status).toBe('ready');
-    if (preview.status !== 'ready') return;
+    const preview = requireReady(buildPlanningHandoffPreview(baseInput()));
 
     expect(preview.valid).toBe(true);
     expect(preview.validationErrors).toEqual([]);
@@ -68,10 +72,7 @@ describe('B3 planning handoff preview', () => {
   });
 
   it('keeps the resulting curriculum baseline provisional and does not invent institutional approval', () => {
-    const preview = buildPlanningHandoffPreview(baseInput());
-
-    expect(preview.status).toBe('ready');
-    if (preview.status !== 'ready') return;
+    const preview = requireReady(buildPlanningHandoffPreview(baseInput()));
 
     expect(preview.handoff.curricularContext.curriculumState).toBe('PROVISIONAL_COMPLETE');
     expect(preview.handoff.curricularContext.approvalDecisionRef).toBeUndefined();
