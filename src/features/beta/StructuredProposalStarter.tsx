@@ -1,5 +1,7 @@
 import { useMemo, useState } from 'react';
+import type { A07InstitutionalDocumentRead } from '../../domain/institution';
 import type { DecisionStatus, Proposal, SchoolOrder } from '../../types/curriculum';
+import type { CurriculumMap } from '../session/types/appViewContracts';
 import { createEntityReference } from '../../domain/curriculum/identity';
 import { addProposal } from '../../domain/revision/repository';
 import { useCurriculumStore } from '../../store/useCurriculumStore';
@@ -12,6 +14,10 @@ export interface StructuredProposalStarterProps {
   customTexts: Record<string, string>;
   discipline: string;
   order: SchoolOrder;
+  localCurriculum: CurriculumMap;
+  targetClass: string;
+  targetSection: string;
+  institutionalProfile: A07InstitutionalDocumentRead;
 }
 
 const proposedTextFor = (
@@ -30,6 +36,10 @@ export function StructuredProposalStarter({
   customTexts,
   discipline,
   order,
+  localCurriculum,
+  targetClass,
+  targetSection,
+  institutionalProfile,
 }: StructuredProposalStarterProps) {
   const optional = useMemo(() => getOptionalSupabaseBrowserClient(), []);
   const { revisionArchive, replaceRevisionArchive } = useCurriculumStore();
@@ -164,7 +174,12 @@ export function StructuredProposalStarter({
 
       {message && <p role="status" aria-live="polite" className="rounded-lg bg-white p-2">{message}</p>}
 
-      <PlanningHandoffPreview />
+      <PlanningHandoffPreview
+        localCurriculum={localCurriculum}
+        targetClass={targetClass}
+        targetSection={targetSection}
+        institutionalProfile={institutionalProfile}
+      />
     </section>
   );
 }
