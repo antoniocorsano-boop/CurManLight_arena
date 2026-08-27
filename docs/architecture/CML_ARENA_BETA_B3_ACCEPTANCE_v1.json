@@ -1,8 +1,8 @@
 {
-  "version": "1.2.0",
+  "version": "1.3.0",
   "phase": "B3",
   "status": "IN_PROGRESS",
-  "canonicalBaseSha": "9488f694a04f6e231640f891dbaa33b5181faf84",
+  "canonicalBaseSha": "5ed2a995cc3fbaa50ba9e5ee314a56d36f5a170e",
   "gates": {
     "BETA-G4": {
       "status": "PASS",
@@ -41,12 +41,23 @@
       "stillRequired": []
     },
     "BETA-G5": {
-      "status": "PENDING_HUMAN",
+      "status": "IN_PROGRESS_HUMAN",
+      "completedFoundation": [
+        "HIM-L2-critical-human-task-registry",
+        "canonical-release-published-identity-verified",
+        "bounded-desktop-mobile-evidence-capture-script",
+        "dedicated-HIA-evidence-workflow",
+        "non-authorized-capture-zero-consequential-write-guard",
+        "explicit-automation-cannot-pass-subjective-usability-boundary"
+      ],
+      "evidenceRef": "docs/evidence/B3_G5_HIA_ACCEPTANCE_2026-08-27.json",
       "stillRequired": [
-        "hia-desktop",
-        "hia-mobile",
-        "empty-loading-success-blocked-error-recovery-states",
-        "human-review"
+        "human-desktop-review-for-all-critical-tasks",
+        "human-mobile-review-for-all-critical-tasks",
+        "empty-loading-success-blocked-error-recovery-state-review",
+        "domain-language-and-visual-hierarchy-review",
+        "significant-finding-remediation-if-any",
+        "explicit-human-BETA_HIA_PASS-decision"
       ]
     },
     "BETA-G6": {
@@ -79,7 +90,8 @@
     "An institutional decision receipt does not mutate the curriculum automatically.",
     "A rehearsal receipt is not a digital signature or protocol record.",
     "The planning handoff remains PREVIEW_ONLY and performs no runtime synchronization into Docente OS.",
+    "Automated screenshots and state assertions do not constitute subjective Human Interaction Acceptance.",
     "This tranche does not claim BETA_HIA_PASS or BETA_ACCESSIBILITY_PASS."
   ],
-  "nextAction": "Begin BETA-G5 Human Interaction Acceptance on desktop and mobile while keeping BETA-G6 accessibility acceptance separate."
+  "nextAction": "Validate the BETA-G5 HIA evidence workflow on one immutable PR SHA, inspect its desktop/mobile artifact with a human reviewer against the published Beta, remediate significant findings if any, and only then consider BETA_HIA_PASS."
 }
