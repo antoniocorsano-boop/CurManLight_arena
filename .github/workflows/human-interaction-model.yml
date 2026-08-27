@@ -28,3 +28,12 @@ jobs:
         run: node tools/human-interaction-model/validate.mjs .
       - name: Validate HCM installation
         run: node tools/human-communication-model/validate.mjs .
+      - name: Prove portable HCM initialization
+        shell: bash
+        run: |
+          set -euo pipefail
+          target="$(mktemp -d)"
+          node tools/human-communication-model/init.mjs "$target"
+          test -f "$target/.human/hcm.config.json"
+          node tools/human-communication-model/validate.mjs "$target"
+          echo "HUMAN_COMMUNICATION_PORTABILITY_PASS"
