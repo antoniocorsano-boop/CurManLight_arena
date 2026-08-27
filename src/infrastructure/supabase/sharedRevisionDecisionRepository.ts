@@ -124,7 +124,7 @@ export class SupabaseSharedRevisionDecisionRepository implements SharedRevisionD
       throw new Error(`Ricevuta istituzionale non leggibile: ${error.message}`);
     }
 
-    return data ? toReceipt(data as InstitutionalDecisionRow) : null;
+    return data ? toReceipt(data as unknown as InstitutionalDecisionRow) : null;
   }
 
   async recordInstitutionalDecision(
