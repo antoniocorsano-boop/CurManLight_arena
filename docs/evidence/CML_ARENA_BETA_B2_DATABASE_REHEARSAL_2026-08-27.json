@@ -1,0 +1,45 @@
+{
+  "schema": "CML_BETA_B2_DATABASE_REHEARSAL_V1",
+  "observedAt": "2026-08-27",
+  "project": {
+    "ref": "ysgaokenrutmgzkhcxvy",
+    "name": "CurManLight Arena Beta",
+    "region": "eu-west-1",
+    "url": "https://ysgaokenrutmgzkhcxvy.supabase.co"
+  },
+  "sourceBaseline": "25703592a3ac98b2fc819ce852390d355d7f9d75",
+  "migration": {
+    "sourcePath": "supabase/migrations/20260824070000_h2b_workspace_foundation.sql",
+    "sourceBlobSha": "9d81ccf6bb4438d69ecf9897d82ec84b3edd741a",
+    "applied": true
+  },
+  "securityAdvisor": {
+    "lints": 0
+  },
+  "rehearsal": {
+    "workspaceId": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+    "activeMember": {
+      "membershipRows": 1,
+      "workspaceRows": 1
+    },
+    "outsider": {
+      "membershipRows": 0,
+      "workspaceRows": 0
+    },
+    "suspendedMember": {
+      "membershipRows": 1,
+      "workspaceRows": 0
+    },
+    "revokedMember": {
+      "membershipRows": 1,
+      "workspaceRows": 0
+    }
+  },
+  "assurance": {
+    "databaseRole": "authenticated",
+    "rowSecurity": "on",
+    "bypassRls": false,
+    "realBrowserAuthSessionObserved": false
+  },
+  "interpretation": "Deployed database RLS and membership lifecycle are observed. This evidence does not replace the required real Supabase browser authentication session for BETA-G3 PASS."
+}
