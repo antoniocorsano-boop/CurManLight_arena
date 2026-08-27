@@ -1,6 +1,5 @@
 import { Building, DownloadCloud, Layers, PanelLeftClose, RotateCcw, Save, ServerCog, ShieldAlert, Sparkles } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { useLocation } from 'react-router-dom';
 import { UiConfirmDialog } from '../../../ui/components/UiConfirmDialog';
 
 interface AppHeaderProps {
@@ -49,20 +48,46 @@ export function AppHeader({
   setShowCloudAccountModal,
 }: AppHeaderProps) {
   const [showResetConfirm, setShowResetConfirm] = useState(false);
-  const location = useLocation();
   const [navigationOpen, setNavigationOpen] = useState(() =>
     typeof window !== 'undefined' && window.innerWidth >= 768,
   );
 
   useEffect(() => {
-    if (typeof window !== 'undefined' && window.innerWidth < 768) {
-      setNavigationOpen(false);
-    }
-  }, [location.pathname]);
+    const sidebar = document.getElementById('sidebar');
+    if (!sidebar) return;
+
+    const syncFromSidebar = () => {
+      const mobile = window.innerWidth < 768;
+      setNavigationOpen(
+        mobile
+          ? !sidebar.classList.contains('hidden')
+          : sidebar.classList.contains('md:block'),
+      );
+    };
+
+    syncFromSidebar();
+    const observer = new MutationObserver(syncFromSidebar);
+    observer.observe(sidebar, { attributes: true, attributeFilter: ['class'] });
+    window.addEventListener('resize', syncFromSidebar);
+
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('resize', syncFromSidebar);
+    };
+  }, []);
 
   const handleNavigationToggle = () => {
     toggleSidebar();
-    setNavigationOpen((open) => !open);
+    requestAnimationFrame(() => {
+      const sidebar = document.getElementById('sidebar');
+      if (!sidebar) return;
+      const mobile = window.innerWidth < 768;
+      setNavigationOpen(
+        mobile
+          ? !sidebar.classList.contains('hidden')
+          : sidebar.classList.contains('md:block'),
+      );
+    });
   };
 
   return (
