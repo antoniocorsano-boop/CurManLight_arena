@@ -24,7 +24,7 @@ export default defineConfig({
       'src/__tests__/transfer-domain.test.ts',
       'src/__tests__/revision-domain.test.ts',
       'src/__tests__/identity.test.ts',
-      'src/__tests__/beta-identity-authority.test.ts'
+      'src/__tests__/beta-identity-authority.test.js'
     ],
     exclude: ['**/node_modules/**', '**/.git/**'],
     pool: 'threads',
