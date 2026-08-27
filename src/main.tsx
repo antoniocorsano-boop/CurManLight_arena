@@ -75,15 +75,21 @@ class ErrorBoundary extends React.Component<
  }
 }
 
+const betaIdentityQueryEntry = new URLSearchParams(window.location.search).get('betaIdentity') === '1';
+
 ReactDOM.createRoot(document.getElementById('root')!).render(
  <React.StrictMode>
   <ErrorBoundary>
-   <BrowserRouter basename={import.meta.env.BASE_URL}>
-    <Routes>
-     <Route path="/beta-identity" element={<BetaIdentityPage />} />
-     <Route path="*" element={<App />} />
-    </Routes>
-   </BrowserRouter>
+   {betaIdentityQueryEntry ? (
+    <BetaIdentityPage />
+   ) : (
+    <BrowserRouter basename={import.meta.env.BASE_URL}>
+     <Routes>
+      <Route path="/beta-identity" element={<BetaIdentityPage />} />
+      <Route path="*" element={<App />} />
+     </Routes>
+    </BrowserRouter>
+   )}
   </ErrorBoundary>
  </React.StrictMode>,
 )
