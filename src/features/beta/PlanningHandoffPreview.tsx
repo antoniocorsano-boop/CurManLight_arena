@@ -1,8 +1,13 @@
 import { useMemo } from 'react';
 import { ArrowRight, CheckCircle2, ShieldCheck, TriangleAlert } from 'lucide-react';
 import { useAppContext } from '../../components/layout/AppContext';
+import { getA04InstitutionalRead } from '../../domain/institution';
 import { useCurriculumStore } from '../../store/useCurriculumStore';
-import { buildPlanningHandoffPreview } from './planningHandoffPreview';
+import {
+  buildPlanningHandoffPreview,
+  resolvePlanningHandoffClassContext,
+  resolvePlanningSchoolYear,
+} from './planningHandoffPreview';
 
 const curriculumStateLabel = (state: 'APPROVED' | 'PROVISIONAL_COMPLETE'): string =>
   state === 'APPROVED' ? 'Approvato' : 'Completo per progettare · ancora provvisorio';
@@ -19,27 +24,45 @@ export function PlanningHandoffPreview() {
     order,
     schoolYear,
     revisionArchive,
+    institutionalArchive,
   } = useCurriculumStore();
+
+  const institutionalContext = useMemo(
+    () => getA04InstitutionalRead(institutionalArchive, order),
+    [institutionalArchive, order],
+  );
+  const resolvedSchoolYear = useMemo(
+    () => resolvePlanningSchoolYear(institutionalContext.academicYearLabel, schoolYear),
+    [institutionalContext.academicYearLabel, schoolYear],
+  );
+  const classContext = useMemo(
+    () => resolvePlanningHandoffClassContext(order, targetClass, targetSection),
+    [order, targetClass, targetSection],
+  );
 
   const preview = useMemo(() => buildPlanningHandoffPreview({
     institutionalProfile,
-    schoolYear,
+    configuredSchoolOrders: institutionalContext.configuredOrders,
+    schoolYear: resolvedSchoolYear,
     schoolOrder: order,
-    classLevel: Number.parseInt(targetClass, 10),
-    sectionRef: targetSection,
+    ...classContext,
     disciplineRef: discipline,
     curriculumMap: localCurriculum,
     revisionArchive,
   }), [
+    classContext,
     discipline,
+    institutionalContext.configuredOrders,
     institutionalProfile,
     localCurriculum,
     order,
+    resolvedSchoolYear,
     revisionArchive,
-    schoolYear,
-    targetClass,
-    targetSection,
   ]);
+
+  const classLabel = order === 'infanzia'
+    ? `${targetClass}${targetSection ? ` · Sezione ${targetSection}` : ''}`
+    : `Classe ${targetClass}${targetSection}`;
 
   return (
     <section
@@ -74,8 +97,8 @@ export function PlanningHandoffPreview() {
             <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
               <strong className="block text-[10px] uppercase text-slate-500">Contesto</strong>
               <div className="mt-1">{institutionalProfile.instituteName}</div>
-              <div>Classe {targetClass}{targetSection} · {discipline} · {order}</div>
-              <div>Anno {schoolYear}</div>
+              <div>{classLabel} · {discipline} · {order}</div>
+              <div>Anno {resolvedSchoolYear}</div>
             </div>
             <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
               <strong className="block text-[10px] uppercase text-slate-500">Baseline risultante</strong>
