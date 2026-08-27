@@ -1,4 +1,4 @@
-import { Menu, Sparkles, Save } from 'lucide-react';
+import { Layers, Menu, Sparkles, Save } from 'lucide-react';
 import { useNavigationStore } from '../../../stores';
 
 interface TopBarProps {
@@ -14,22 +14,22 @@ export function TopBar({ onToggleSidebar, onToggleCopilot, onShowSave, onShowAge
   return (
     <header className="bg-slate-900 text-white shadow-md border-b border-slate-800 sticky top-0 z-50 shrink-0">
       <div className="w-full px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
-          <div className="flex items-center space-x-3">
-            <button onClick={onToggleSidebar} className="flex p-2 hover:bg-slate-800 rounded-xl transition text-slate-400 hover:text-white" title="Espandi/Riduci Menu">
+        <div className="flex items-center justify-between h-16 min-w-0">
+          <div className="flex items-center space-x-3 min-w-0">
+            <button onClick={onToggleSidebar} className="flex p-2 hover:bg-slate-800 rounded-xl transition text-slate-400 hover:text-white shrink-0" title="Espandi/Riduci Menu">
               <Menu className="w-5 h-5" />
             </button>
-            <div className="flex items-center justify-center shrink-0">
-              <img src="images/curmanlight_v20_logo.png" alt="CurManLight" className="h-9 w-auto" />
+            <div className="flex h-9 w-9 items-center justify-center shrink-0 rounded-xl border border-slate-700 bg-slate-800" aria-hidden="true">
+              <Layers className="h-5 w-5 text-indigo-300" />
             </div>
-            <div>
-              <div className="flex items-center space-x-2">
-                <span className="text-lg font-extrabold tracking-tight bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent">CurManLight</span>
+            <div className="min-w-0">
+              <div className="flex items-center space-x-2 min-w-0">
+                <span className="truncate text-lg font-extrabold tracking-tight bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent">CurManLight</span>
               </div>
             </div>
           </div>
 
-          <div className="flex items-center space-x-3 text-xs">
+          <div className="flex items-center space-x-2 sm:space-x-3 text-xs shrink-0">
             <button 
               onClick={onToggleCopilot} 
               className={`p-2 rounded-xl border transition focus:outline-none flex items-center space-x-1.5 ${
