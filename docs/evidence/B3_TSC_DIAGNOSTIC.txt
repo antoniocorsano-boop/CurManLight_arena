@@ -1,5 +1,0 @@
-src/__tests__/beta-revision-routing-contract.test.ts(1,30): error TS2307: Cannot find module 'node:fs' or its corresponding type declarations.
-src/__tests__/beta-revision-routing-contract.test.ts(2,22): error TS2307: Cannot find module 'node:path' or its corresponding type declarations.
-src/__tests__/beta-revision-routing-contract.test.ts(5,58): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
-src/infrastructure/supabase/sharedRevisionDecisionRepository.ts(127,29): error TS2352: Conversion of type 'GenericStringError' to type 'InstitutionalDecisionRow' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
-  Type '{ error: true; } & String' is missing the following properties from type 'InstitutionalDecisionRow': id, workspace_id, proposal_ref, proposal_version_ref, and 7 more.

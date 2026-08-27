@@ -6,7 +6,7 @@ import { useCurriculumStore } from './store/useCurriculumStore';
 import { SchoolOrder, UdaModel } from './types/curriculum';
 import { AppModalsLayer, AppViewsLayer, useAppLocalHandlers, useAppStartupEffects, useAppWorkflowState, useOnboardingProfile, useSessionUiState, useToast, type AppModalsLayerProps, type AppViewsLayerProps } from './features/session';
 import { CopilotChatSidebar, useCopilotInteractionHandlers, useLocalAgentSetup } from './features/copilot';
-import { AppHeader, AppSidebar, GlobalAlerts, MobileBottomNav, type AppTab } from './features/navigation';
+import { AppHeader, AppSidebar, GlobalAlerts, MobileBottomNav, appTabToPath, pathnameToAppTab, type AppTab } from './features/navigation';
 import { AppContext, type AppContextValue } from './components/layout/AppContext';
 import { initialEdges, initialNodes } from './lib/architectureGraph';
 import { safeLocalStorageSetItem } from './lib/consolidatedStorage';
@@ -432,21 +432,7 @@ export default function App() {
  const location = useLocation();
  const navigate = useNavigate();
 
- const pathnameToTab = (pathname: string): AppTab => {
-  if (pathname.startsWith('/curriculum') || pathname.startsWith('/revisione')) return 'curricolo';
-  if (pathname.startsWith('/classroom')) return 'progetta-annuale';
-  if (pathname.startsWith('/planning')) return 'progetta-annuale';
-  if (pathname.startsWith('/documents')) return 'esportazioni';
-  if (pathname.startsWith('/copilot')) return 'dashboard';
-  if (pathname.startsWith('/knowledge') || pathname.startsWith('/second-brain')) return 'second-brain';
-  if (pathname.startsWith('/social')) return 'dashboard';
-  if (pathname.startsWith('/settings') || pathname.startsWith('/fonti')) return 'fonti';
-  if (pathname.startsWith('/guida')) return 'guida';
-  if (pathname.startsWith('/onboarding')) return 'dashboard';
-  return 'dashboard';
- };
-
- const activeTab = pathnameToTab(location.pathname);
+ const activeTab = pathnameToAppTab(location.pathname);
  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
  const toggleSidebar = () => {
@@ -464,24 +450,8 @@ export default function App() {
   }
  };
 
- const tabToPath = (tab: AppTab): string => {
-  switch (tab) {
-   case 'curricolo': return '/curriculum';
-   case 'revisione': return '/curriculum';
-   case 'progetta-annuale': return '/planning';
-   case 'processo': return '/planning';
-   case 'esportazioni': return '/documents';
-   case 'certificazione-pa': return '/documents';
-   case 'second-brain': return '/knowledge';
-   case 'fonti': return '/settings';
-   case 'guida': return '/guida';
-   case 'dashboard':
-   default: return '/';
-  }
- };
-
  const handleTabSwitch = (tab: AppTab) => {
-  navigate(tabToPath(tab));
+  navigate(appTabToPath(tab));
   // Close mobile sidebar
   if (window.innerWidth < 768) {
    const sidebar = document.getElementById('sidebar');

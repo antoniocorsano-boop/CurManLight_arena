@@ -225,7 +225,7 @@ export function InstitutionalDecisionPanel({ proposal, version }: InstitutionalD
   return (
     <section
       aria-label="Decisione istituzionale Beta"
-      className="m-4 rounded-xl border-2 border-emerald-200 bg-emerald-50/40 p-4 text-xs text-slate-700 space-y-3"
+      className="mt-2 w-full rounded-xl border-2 border-emerald-200 bg-emerald-50/40 p-4 text-xs text-slate-700 space-y-3"
     >
       <div>
         <strong className="block text-[10px] uppercase tracking-wider text-emerald-800">BETA · decisione istituzionale</strong>
