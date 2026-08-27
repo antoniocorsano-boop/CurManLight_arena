@@ -1,9 +1,12 @@
-import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
-const panelPath = join(process.cwd(), 'src/features/beta/InstitutionalDecisionPanel.tsx');
-const panelSource = readFileSync(panelPath, 'utf8');
+const modules = import.meta.glob('../features/beta/InstitutionalDecisionPanel.tsx', {
+  query: '?raw',
+  import: 'default',
+  eager: true,
+}) as Record<string, string>;
+
+const panelSource = Object.values(modules)[0] ?? '';
 
 describe('BETA-G4 explicit institutional outcome contract', () => {
   it('does not preselect an institutional decision outcome', () => {
