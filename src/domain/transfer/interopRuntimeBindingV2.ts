@@ -368,12 +368,13 @@ export function projectArenaRuntimeCurriculumV2(
     fnv1a(canonicalSerialize(projectedVersionMaterial)),
   );
 
-  const contextId = stableId('ctx', {
+  const contextIdMaterial = {
     curriculumVersionRef,
     schoolYearRef: input.schoolYearRef,
-    sectionRef: input.sectionRef,
-    cohortRef: input.cohortRef,
-  });
+    ...(nonEmpty(input.sectionRef) ? { sectionRef: input.sectionRef } : {}),
+    ...(nonEmpty(input.cohortRef) ? { cohortRef: input.cohortRef } : {}),
+  };
+  const contextId = stableId('ctx', contextIdMaterial);
   const sourceRefs = deduplicateRefs([
     currentFrameworkRef,
     legacyLevelRef,
