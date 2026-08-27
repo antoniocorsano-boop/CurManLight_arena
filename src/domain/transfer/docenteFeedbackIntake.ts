@@ -6,6 +6,11 @@ import {
 } from './interopV1';
 
 export type DocenteFeedbackAuthority = 'NON_AUTHORITATIVE_PROFESSIONAL_EVIDENCE';
+export type DocenteFeedbackCategory = 'SEQUENCING' | 'PREREQUISITE' | 'SCOPE' | 'WORDING' | 'FEASIBILITY' | 'OTHER';
+
+type CategorizedCurriculumFeedbackPayload = CurriculumFeedbackPayload & {
+  readonly category: DocenteFeedbackCategory;
+};
 
 export interface DocenteFeedbackObservation {
   readonly observationId: string;
@@ -19,6 +24,7 @@ export interface DocenteFeedbackObservation {
   readonly automaticDecisionAllowed: false;
   readonly curriculumVersionRef: CmlCanonicalRef;
   readonly alignedNodeRefs: readonly CmlCanonicalRef[];
+  readonly category: DocenteFeedbackCategory;
   readonly summary: string;
   readonly evidenceRefs: readonly CmlCanonicalRef[];
   readonly provenanceRefs: readonly CmlCanonicalRef[];
@@ -30,15 +36,19 @@ export interface DocenteFeedbackIntakeReceipt {
   readonly observation: DocenteFeedbackObservation;
 }
 
+const CATEGORIES: readonly DocenteFeedbackCategory[] = ['SEQUENCING', 'PREREQUISITE', 'SCOPE', 'WORDING', 'FEASIBILITY', 'OTHER'];
+
 function cloneRef(ref: CmlCanonicalRef): CmlCanonicalRef {
   return { ...ref };
 }
 
-function asFeedbackEnvelope(input: unknown): CmlInteropEnvelope<CurriculumFeedbackPayload> {
+function asFeedbackEnvelope(input: unknown): CmlInteropEnvelope<CategorizedCurriculumFeedbackPayload> {
   const parsed = parseCmlInteropEnvelope(input);
   if (parsed.sourceProduct !== 'DOCENTE_OS') throw new Error('curriculum feedback source must be DOCENTE_OS');
   if (parsed.messageType !== 'CURRICULUM_FEEDBACK_SUBMITTED') throw new Error('only CURRICULUM_FEEDBACK_SUBMITTED can enter feedback intake');
-  return parsed as CmlInteropEnvelope<CurriculumFeedbackPayload>;
+  const payload = parsed.payload as Record<string, unknown>;
+  if (!CATEGORIES.includes(payload.category as DocenteFeedbackCategory)) throw new Error('curriculum feedback category is required');
+  return parsed as CmlInteropEnvelope<CategorizedCurriculumFeedbackPayload>;
 }
 
 export function prepareDocenteFeedbackObservation(input: unknown): DocenteFeedbackObservation {
@@ -55,6 +65,7 @@ export function prepareDocenteFeedbackObservation(input: unknown): DocenteFeedba
     automaticDecisionAllowed: false,
     curriculumVersionRef: cloneRef(envelope.payload.curriculumVersionRef),
     alignedNodeRefs: envelope.payload.alignedNodeRefs.map(cloneRef),
+    category: envelope.payload.category,
     summary: envelope.payload.summary.trim(),
     evidenceRefs: envelope.payload.evidenceRefs.map(cloneRef),
     provenanceRefs: envelope.provenance.sourceRefs.map(cloneRef),
@@ -67,6 +78,7 @@ function stableObservationSignature(observation: DocenteFeedbackObservation): st
     sourceVersion: observation.sourceVersion,
     curriculumVersionRef: observation.curriculumVersionRef,
     alignedNodeRefs: observation.alignedNodeRefs,
+    category: observation.category,
     summary: observation.summary,
     evidenceRefs: observation.evidenceRefs,
   });
