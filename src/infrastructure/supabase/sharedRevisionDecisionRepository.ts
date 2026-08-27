@@ -30,6 +30,8 @@ interface InstitutionalDecisionRow {
   client_request_id: string;
 }
 
+const SELECT_COLUMNS = 'id,workspace_id,proposal_ref,proposal_version_ref,proposal_version_fingerprint,outcome,rationale,decided_by,authority_role,decided_at,client_request_id';
+
 const isInstitutionalOutcome = (value: string): value is InstitutionalDecisionOutcome =>
   VALID_OUTCOMES.includes(value as InstitutionalDecisionOutcome);
 
@@ -119,5 +121,34 @@ export class SupabaseSharedRevisionDecisionRepository implements SharedRevisionD
     }
 
     return toReceipt(row as InstitutionalDecisionRow);
+  }
+
+  async listInstitutionalDecisions(
+    context: WorkspaceActorContext,
+    proposalRef: string,
+    proposalVersionRef: string
+  ): Promise<InstitutionalRevisionDecisionReceipt[]> {
+    if (!proposalRef.trim() || !proposalVersionRef.trim()) {
+      return [];
+    }
+
+    const allowed = await this.workspaceRepository.can(context, 'CURRICULUM_READ');
+    if (!allowed) {
+      throw new Error('La membership autenticata non può leggere le decisioni del workspace.');
+    }
+
+    const { data, error } = await this.client
+      .from('institutional_revision_decisions')
+      .select(SELECT_COLUMNS)
+      .eq('workspace_id', context.membership.workspaceId)
+      .eq('proposal_ref', proposalRef)
+      .eq('proposal_version_ref', proposalVersionRef)
+      .order('decided_at', { ascending: false });
+
+    if (error) {
+      throw new Error(`Decisioni istituzionali non leggibili: ${error.message}`);
+    }
+
+    return ((data ?? []) as InstitutionalDecisionRow[]).map(toReceipt);
   }
 }
