@@ -3,14 +3,28 @@
   "phase": "B2",
   "gate": "BETA-G3",
   "status": "IN_PROGRESS",
-  "baseline": "9f890df0296436001d17728e1f396cb5d3c7816b",
-  "requiredEvidence": {
-    "authenticatedMembership": "IMPLEMENTED_NOT_YET_OBSERVED_RUNTIME",
-    "roleCapabilityBoundary": "AUTOMATED_CONTRACT_ADDED_NOT_YET_OBSERVED",
-    "deniedAuthorityBehavior": "AUTOMATED_CONTRACT_ADDED_NOT_YET_OBSERVED",
-    "membershipLifecycle": "AUTOMATED_STATUS_CONTRACT_ADDED_NOT_YET_OBSERVED_RUNTIME",
-    "rlsIsolation": "STRUCTURAL_CONTRACT_ADDED_NOT_YET_OBSERVED_DATABASE"
+  "baseline": "25703592a3ac98b2fc819ce852390d355d7f9d75",
+  "canonicalSupabase": {
+    "projectRef": "ysgaokenrutmgzkhcxvy",
+    "projectName": "CurManLight Arena Beta",
+    "region": "eu-west-1",
+    "url": "https://ysgaokenrutmgzkhcxvy.supabase.co"
   },
+  "requiredEvidence": {
+    "authenticatedMembership": "BROWSER_REHEARSAL_READY_NOT_YET_OBSERVED_AUTH_SESSION",
+    "roleCapabilityBoundary": "AUTOMATED_CONTRACT_OBSERVED_PASS",
+    "deniedAuthorityBehavior": "DEPLOYED_RLS_OBSERVED_WITH_AUTHENTICATED_DB_ROLE_PENDING_BROWSER_CONFIRMATION",
+    "membershipLifecycle": "DEPLOYED_DB_OBSERVED_ACTIVE_SUSPENDED_REVOKED_PENDING_BROWSER_CONFIRMATION",
+    "rlsIsolation": "DEPLOYED_DATABASE_OBSERVED_PASS"
+  },
+  "observedDatabaseEvidence": [
+    "canonical H2B migration applied to dedicated Arena Beta Supabase project",
+    "security advisor returned no lints after migration",
+    "active member resolved own membership and workspace under authenticated DB role",
+    "outsider resolved zero membership rows and zero workspace rows under authenticated DB role",
+    "suspended member retained own membership visibility but workspace visibility dropped to zero",
+    "revoked member retained own membership visibility but workspace visibility remained zero"
+  ],
   "existingFoundation": [
     "Supabase browser client persists and refreshes authenticated sessions when configured",
     "workspace_memberships is keyed by workspace and auth.users identity",
@@ -21,24 +35,25 @@
     "self-declared local roles remain distinct from authenticated workspace assurance"
   ],
   "thisTranche": [
-    "automated privilege and denial tests",
-    "suspended and revoked membership denial tests",
-    "server-backed role recheck test against caller role tampering",
-    "RLS structural invariant tests",
-    "dedicated Beta Identity Authority CI gate"
+    "dedicated Arena Beta Supabase environment",
+    "deployed H2B workspace migration and security advisor verification",
+    "database-level RLS and lifecycle rehearsal",
+    "isolated /beta/identity browser rehearsal route",
+    "beta-mode public Supabase configuration with no service-role material",
+    "Beta Identity Authority CI extended to cover the runtime rehearsal surface"
   ],
   "remainingForPass": [
-    "observe a real authenticated Supabase session in the canonical Beta environment",
-    "observe own membership resolution from the database",
-    "observe denied access for a user without membership or with insufficient role",
-    "observe active to suspended or revoked lifecycle effect against the real database",
-    "verify RLS behavior against the deployed Supabase project rather than source text alone"
+    "observe a real authenticated Supabase browser session in the canonical Beta environment",
+    "observe browser denial before membership assignment",
+    "observe browser own-membership and workspace resolution while membership is active",
+    "observe browser workspace denial after membership suspension or revocation"
   ],
   "passRule": "ALL_REQUIRED_EVIDENCE_OBSERVED_ON_CANONICAL_BETA_IDENTITY_BOUNDARY",
   "forbiddenShortcuts": [
     "SELF_DECLARED_ROLE_MUST_NOT_BECOME_AUTHENTICATED_AUTHORITY",
     "UNIT_TESTS_ALONE_DO_NOT_PASS_BETA_G3",
     "SOURCE_SQL_ALONE_DOES_NOT_PROVE_DEPLOYED_RLS",
+    "DATABASE_ROLE_SIMULATION_DOES_NOT_REPLACE_REAL_AUTH_SESSION",
     "NO_CLIENT_SIDE_SELF_ESCALATION"
   ]
 }
