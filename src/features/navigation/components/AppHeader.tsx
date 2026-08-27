@@ -136,7 +136,7 @@ export function AppHeader({
                 title="Apri assistente contestuale locale"
               >
                 <Sparkles className="h-4 w-4 text-indigo-400" />
-                <span className="hidden font-bold lg:inline">Co-pilota Chat</span>
+                <span className="hidden font-bold lg:inline">Assistente</span>
               </button>
 
               <div
@@ -148,31 +148,28 @@ export function AppHeader({
                         : 'border-indigo-500/30 bg-indigo-500/15 text-indigo-400 hover:bg-indigo-500/25')
                     : 'border-slate-700 bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-slate-300'
                 }`}
-                title="Stato del connettore LLM locale (clicca per configurare)"
+                title="Stato dell'assistente locale. Clicca per configurare."
+                data-local-agent-type={localAgentType}
+                data-local-agent-model={ollamaModelName}
+                data-local-agent-size={localAgentSize}
               >
                 <span className={`h-1.5 w-1.5 rounded-full ${
                   localAgentStatus === 'installed'
                     ? (localAgentType === 'ollama' && ollamaStatus !== 'connected' ? 'animate-pulse bg-amber-400' : 'animate-pulse bg-emerald-400')
                     : 'bg-slate-500'
                 }`} />
-                <span>
-                  {localAgentStatus === 'installed'
-                    ? (localAgentType === 'ollama'
-                        ? `Ollama: ${ollamaModelName}`
-                        : `WebGPU: ${localAgentSize === 'full' ? 'Completo' : 'Leggero'}`)
-                    : 'IA: Baseline d\'Aula'}
-                </span>
+                <span>{localAgentStatus === 'installed' ? 'Assistente locale: attivo' : 'Assistente locale: da configurare'}</span>
               </div>
 
               <div className="sr-only">
                 <span>Supervisione</span>
-                <span>Progettazione Attiva</span>
+                <span>Progettazione attiva</span>
               </div>
 
               <button
                 onClick={() => setShowSaveModal(true)}
                 className="flex items-center space-x-1 rounded-xl border border-slate-700 bg-slate-800 p-2 text-slate-300 transition hover:bg-slate-700 hover:text-white focus:outline-none"
-                title="Salvataggio della sessione locale"
+                title="Salva o gestisci una copia della sessione locale"
               >
                 <Save className="h-4 w-4" />
                 <span className="sr-only">Salvataggio</span>
@@ -203,17 +200,17 @@ export function AppHeader({
                         className="flex w-full items-center space-x-2 px-4 py-2 text-left font-bold text-slate-200 hover:bg-slate-700"
                       >
                         <RotateCcw className="h-3.5 w-3.5" />
-                        <span>Sincronizza Drive</span>
+                        <span>Sincronizza i file</span>
                       </button>
                       <button
-                        onClick={() => { showToast('Pubblicazione SCORM non disponibile: integrazione Classroom non configurata.', false); setRoleDropdownOpen(false); }}
+                        onClick={() => { showToast('La pubblicazione verso Classroom non è configurata.', false); setRoleDropdownOpen(false); }}
                         className="flex w-full items-center space-x-2 px-4 py-2 text-left font-bold text-slate-200 hover:bg-slate-700"
                       >
                         <Building className="h-3.5 w-3.5" />
-                        <span>Pubblicazione SCORM non disponibile</span>
+                        <span>Pubblicazione non disponibile</span>
                       </button>
                       <button
-                        onClick={() => { showToast('Importazione studenti non disponibile: integrazione Classroom non configurata.', false); setRoleDropdownOpen(false); }}
+                        onClick={() => { showToast('L’importazione degli studenti da Classroom non è configurata.', false); setRoleDropdownOpen(false); }}
                         className="flex w-full items-center space-x-2 px-4 py-2 text-left font-bold text-slate-200 hover:bg-slate-700"
                       >
                         <DownloadCloud className="h-3.5 w-3.5" />
@@ -234,7 +231,7 @@ export function AppHeader({
                           className="flex w-full items-center space-x-2 px-4 py-2 text-left font-semibold text-slate-400 hover:bg-slate-700"
                         >
                           <ServerCog className="h-3.5 w-3.5" />
-                          <span>Disconnetti Account</span>
+                          <span>Disconnetti account</span>
                         </button>
                       ) : (
                         <button
@@ -242,7 +239,7 @@ export function AppHeader({
                           className="flex w-full items-center space-x-2 px-4 py-2 text-left font-bold text-indigo-400 hover:bg-slate-700"
                         >
                           <DownloadCloud className="h-3.5 w-3.5" />
-                          <span>Connetti Cloud</span>
+                          <span>Collega un account</span>
                         </button>
                       )}
                     </div>
