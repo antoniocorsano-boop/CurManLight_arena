@@ -4,7 +4,7 @@
   "program": "CML_ARENA_REAL_BETA",
   "status": "CML_ARENA_BETA_NOT_READY",
   "auditedBaseline": "d368b2bd0040dfe808d8ae65b13ba60942a831d5",
-  "canonicalBaseline": "51512294bcf1158e55cb49d5b755ad09448ac03d",
+  "canonicalBaseline": "6093b6a37a01f4a52e7b4649bb00d9b62070046a",
   "executionMode": "AGENTIC_GATED",
   "rules": {
     "singleReadyPhase": true,
@@ -35,7 +35,7 @@
       "id": "B2",
       "name": "Identity and Authority",
       "gates": ["BETA-G3"],
-      "status": "IN_PROGRESS",
+      "status": "COMPLETE",
       "prerequisites": ["B1"],
       "exit": "BETA_IDENTITY_AUTHORITY_PASS"
     },
@@ -43,7 +43,7 @@
       "id": "B3",
       "name": "E2E Human Workflow",
       "gates": ["BETA-G4", "BETA-G5", "BETA-G6"],
-      "status": "BLOCKED_BY_PREREQUISITE",
+      "status": "IN_PROGRESS",
       "prerequisites": ["B2"],
       "exit": ["BETA_E2E_WORKFLOW_PASS", "BETA_HIA_PASS", "BETA_ACCESSIBILITY_PASS"]
     },
@@ -65,8 +65,8 @@
     }
   ],
   "nextAction": {
-    "phase": "B2",
-    "action": "Implement and verify authenticated membership, authority boundaries, denied-authority behavior and membership lifecycle for BETA-G3",
+    "phase": "B3",
+    "action": "Implement and certify the canonical institutional end-to-end human workflow for BETA-G4, then complete HIA and accessibility acceptance for BETA-G5 and BETA-G6",
     "mayModifyRuntime": true
   }
 }
