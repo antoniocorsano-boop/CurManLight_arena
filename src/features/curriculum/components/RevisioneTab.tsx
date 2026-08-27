@@ -78,7 +78,7 @@ function CanonicalProposalsSection() {
               </div>
             )}
 
-            <details defaultOpen={!decisionFocused} className="border-b border-slate-100">
+            <details open={!decisionFocused} className="border-b border-slate-100">
               <summary className="cursor-pointer px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50">
                 Contenuto, motivazione e provenienza
               </summary>
@@ -336,7 +336,7 @@ export function RevisioneTab({
 
       <details
         id="local-choice-workspace"
-        defaultOpen={!hasStructuredProposals}
+        open={!hasStructuredProposals}
         className="rounded-2xl border border-slate-200 bg-white"
         data-hia-task-block="local-choice-workspace"
       >
