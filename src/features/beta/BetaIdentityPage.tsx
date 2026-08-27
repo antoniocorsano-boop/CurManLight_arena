@@ -9,6 +9,26 @@ type MembershipRow = {
   status: string;
 };
 
+const pageStyle = {
+  minHeight: '100vh',
+  boxSizing: 'border-box' as const,
+  margin: 0,
+  padding: '48px 24px',
+  fontFamily: 'system-ui',
+  lineHeight: 1.5,
+  background: '#f8f9fa',
+  color: '#212529',
+};
+
+const panelStyle = {
+  maxWidth: 760,
+  margin: '0 auto',
+  padding: 24,
+  borderRadius: 12,
+  background: '#ffffff',
+  border: '1px solid #dee2e6',
+};
+
 export default function BetaIdentityPage() {
   const optional = useMemo(() => getOptionalSupabaseBrowserClient(), []);
   const client = optional.client;
@@ -88,80 +108,84 @@ export default function BetaIdentityPage() {
 
   if (optional.config.status !== 'configured' || !client) {
     return (
-      <main style={{ maxWidth: 760, margin: '48px auto', padding: 24, fontFamily: 'system-ui' }}>
-        <h1>Identità Beta non configurata</h1>
-        <p>Questa pagina è disponibile solo nella build Beta collegata al Supabase canonico.</p>
+      <main style={pageStyle}>
+        <section style={panelStyle}>
+          <h1>Identità Beta non configurata</h1>
+          <p>Questa pagina è disponibile solo nella build Beta collegata al Supabase canonico.</p>
+        </section>
       </main>
     );
   }
 
   return (
-    <main style={{ maxWidth: 760, margin: '48px auto', padding: 24, fontFamily: 'system-ui', lineHeight: 1.5 }}>
-      <p style={{ marginBottom: 8, fontWeight: 700 }}>CurManLight Arena · BETA-G3</p>
-      <h1 style={{ marginTop: 0 }}>Identità e autorità</h1>
-      <p>
-        Questo punto di verifica usa esclusivamente la sessione Supabase e la membership letta dal database.
-        Il ruolo locale dell’app non attribuisce autorità istituzionale.
-      </p>
+    <main style={pageStyle}>
+      <section style={panelStyle}>
+        <p style={{ marginBottom: 8, fontWeight: 700 }}>CurManLight Arena · BETA-G3</p>
+        <h1 style={{ marginTop: 0 }}>Identità e autorità</h1>
+        <p>
+          Questo punto di verifica usa esclusivamente la sessione Supabase e la membership letta dal database.
+          Il ruolo locale dell’app non attribuisce autorità istituzionale.
+        </p>
 
-      {!session ? (
-        <form onSubmit={signIn} style={{ display: 'grid', gap: 12, marginTop: 24 }}>
-          <label>
-            Email
-            <input
-              type="email"
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
-              required
-              autoComplete="email"
-              style={{ display: 'block', width: '100%', boxSizing: 'border-box', padding: 10, marginTop: 4 }}
-            />
-          </label>
-          <label>
-            Password
-            <input
-              type="password"
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-              required
-              minLength={8}
-              autoComplete="current-password"
-              style={{ display: 'block', width: '100%', boxSizing: 'border-box', padding: 10, marginTop: 4 }}
-            />
-          </label>
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-            <button type="submit" disabled={busy} style={{ padding: '10px 16px' }}>Accedi</button>
-            <button type="button" disabled={busy || !email || password.length < 8} onClick={signUp} style={{ padding: '10px 16px' }}>
-              Crea account Beta
-            </button>
-          </div>
-        </form>
-      ) : (
-        <section style={{ marginTop: 24 }}>
-          <h2>Sessione autenticata</h2>
-          <dl>
-            <dt>Email</dt><dd>{session.user.email ?? '—'}</dd>
-            <dt>User ID</dt><dd><code>{session.user.id}</code></dd>
-          </dl>
+        {!session ? (
+          <form onSubmit={signIn} style={{ display: 'grid', gap: 12, marginTop: 24 }}>
+            <label>
+              Email
+              <input
+                type="email"
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+                required
+                autoComplete="email"
+                style={{ display: 'block', width: '100%', boxSizing: 'border-box', padding: 10, marginTop: 4, color: '#212529', background: '#fff' }}
+              />
+            </label>
+            <label>
+              Password
+              <input
+                type="password"
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+                required
+                minLength={8}
+                autoComplete="current-password"
+                style={{ display: 'block', width: '100%', boxSizing: 'border-box', padding: 10, marginTop: 4, color: '#212529', background: '#fff' }}
+              />
+            </label>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+              <button type="submit" disabled={busy} style={{ padding: '10px 16px' }}>Accedi</button>
+              <button type="button" disabled={busy || !email || password.length < 8} onClick={signUp} style={{ padding: '10px 16px' }}>
+                Crea account Beta
+              </button>
+            </div>
+          </form>
+        ) : (
+          <section style={{ marginTop: 24 }}>
+            <h2>Sessione autenticata</h2>
+            <dl>
+              <dt>Email</dt><dd>{session.user.email ?? '—'}</dd>
+              <dt>User ID</dt><dd><code>{session.user.id}</code></dd>
+            </dl>
 
-          <h2>Membership server-backed</h2>
-          {memberships.length === 0 ? (
-            <p>Nessuna membership disponibile: nessuna autorità istituzionale viene attribuita.</p>
-          ) : (
-            <ul>
-              {memberships.map((membership) => (
-                <li key={`${membership.workspace_id}:${membership.user_id}`}>
-                  workspace <code>{membership.workspace_id}</code> · ruolo <strong>{membership.role}</strong> · stato <strong>{membership.status}</strong>
-                </li>
-              ))}
-            </ul>
-          )}
+            <h2>Membership server-backed</h2>
+            {memberships.length === 0 ? (
+              <p>Nessuna membership disponibile: nessuna autorità istituzionale viene attribuita.</p>
+            ) : (
+              <ul>
+                {memberships.map((membership) => (
+                  <li key={`${membership.workspace_id}:${membership.user_id}`}>
+                    workspace <code>{membership.workspace_id}</code> · ruolo <strong>{membership.role}</strong> · stato <strong>{membership.status}</strong>
+                  </li>
+                ))}
+              </ul>
+            )}
 
-          <button type="button" disabled={busy} onClick={signOut} style={{ padding: '10px 16px', marginTop: 16 }}>Esci</button>
-        </section>
-      )}
+            <button type="button" disabled={busy} onClick={signOut} style={{ padding: '10px 16px', marginTop: 16 }}>Esci</button>
+          </section>
+        )}
 
-      {message && <p role="status" style={{ marginTop: 20 }}>{message}</p>}
+        {message && <p role="status" style={{ marginTop: 20 }}>{message}</p>}
+      </section>
     </main>
   );
 }
