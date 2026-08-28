@@ -24,10 +24,22 @@ describe('KX-1 plain-language knowledge shell', () => {
     expect(shellSource).toContain('decisione istituzionale');
   });
 
-  it('does not expose implementation vocabulary in the public shell', () => {
+  it('does not expose implementation vocabulary in the public shell source', () => {
     for (const term of FORBIDDEN_PUBLIC_TERMS) {
       expect(shellSource).not.toContain(term);
     }
+  });
+
+  it('fails closed instead of rendering the legacy technical graph', () => {
+    expect(shellSource).toContain("secondBrainTab === 'graph' ?");
+    expect(shellSource).toContain('Relazioni in preparazione');
+    expect(shellSource).toContain('La vecchia mappa tecnica non viene mostrata');
+    expect(shellSource).not.toContain('<LegacySecondBrainTab {...props} />\n        </div>\n      )}\n    </div>');
+  });
+
+  it('hides the internal legacy workspace selector in ordinary brain tasks', () => {
+    expect(shellSource).toContain('data-kx-task={secondBrainTab}');
+    expect(shellSource).toContain('[class*="xl:col-span-8"] > div:first-child');
   });
 
   it('preserves the legacy implementation behind a compatibility layer', () => {
