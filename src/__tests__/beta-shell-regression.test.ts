@@ -24,6 +24,10 @@ const revisionSource = firstSource(import.meta.glob('../features/curriculum/comp
   query: '?raw', import: 'default', eager: true,
 }) as Record<string, string>);
 
+const globalCssSource = firstSource(import.meta.glob('../index.css', {
+  query: '?raw', import: 'default', eager: true,
+}) as Record<string, string>);
+
 const navigationIndexSource = firstSource(import.meta.glob('../features/navigation/index.ts', {
   query: '?raw', import: 'default', eager: true,
 }) as Record<string, string>);
@@ -33,9 +37,11 @@ const appSource = firstSource(import.meta.glob('../App.tsx', {
 }) as Record<string, string>);
 
 describe('Arena Beta canonical shell regression guard', () => {
-  it('keeps the runtime header independent from the legacy image logo and primary AI jargon', () => {
+  it('keeps a stable vector brand mark without returning to the fragile image asset', () => {
     expect(headerSource).not.toContain('curmanlight_v20_logo.png');
     expect(headerSource).not.toContain('<img');
+    expect(headerSource).toContain('data-brand-mark="curmanlight"');
+    expect(headerSource).toContain('Layers3');
     expect(headerSource).not.toMatch(/Co-pilota Chat|Baseline d['’]Aula|Connettore LLM|Pubblicazione SCORM|Importazione studenti/i);
     expect(headerSource).toContain('data-beta-shell="canonical"');
     expect(headerSource).toContain('Curricolo d’istituto');
@@ -72,6 +78,12 @@ describe('Arena Beta canonical shell regression guard', () => {
     expect(revisionSource).not.toContain('Passo-Passo (Monoscheda)');
     expect(revisionSource).not.toContain('Elenco Completo');
     expect(revisionSource).not.toContain('Istruzioni operative:');
+  });
+
+  it('reserves mobile reading space so sticky actions cannot cover comparison text', () => {
+    expect(globalCssSource).toContain('[data-revision-current-card] > div:nth-child(2)');
+    expect(globalCssSource).toContain('padding-bottom: 15rem');
+    expect(globalCssSource).toContain('[data-revision-sticky-actions]');
   });
 
   it('preserves structured proposal and institutional-decision boundaries in the focused revision flow', () => {
