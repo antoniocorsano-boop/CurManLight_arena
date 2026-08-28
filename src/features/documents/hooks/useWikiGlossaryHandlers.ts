@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { SchoolOrder } from '../../../types/curriculum';
 import { volumesKB } from '../../../data/volumesKB';
 import { safeLocalStorageGetGlossary, safeLocalStorageSetItem } from '../../../lib/consolidatedStorage';
 import type { CustomKbDoc } from './useKnowledgeBaseHandlers';
 import { generateWikiResponse } from '../../../lib/wikiLLM';
+import { readAssistantKnowledgeView } from '../../copilot/assistantKnowledgeNavigation';
 
 type GlossaryItem = { term: string; definition: string; source: string };
 
@@ -22,11 +23,21 @@ export function useWikiGlossaryHandlers({
  getVolumeTitleWithCustom,
  showToast
 }: UseWikiGlossaryHandlersArgs) {
+ const requestedKnowledgeView = readAssistantKnowledgeView();
  const [wikiQuery, setWikiQuery] = useState('');
- const [secondBrainTab, setSecondBrainTab] = useState<'brain' | 'graph' | 'glossary'>('brain');
+ const [secondBrainTab, setSecondBrainTab] = useState<'brain' | 'graph' | 'glossary'>(requestedKnowledgeView === 'graph' ? 'graph' : 'brain');
  const [wikiWorkspaceTab, setWikiWorkspaceTab] = useState<'read' | 'chat'>('read');
  const [wikiResponse, setWikiResponse] = useState<string | null>(null);
  const [wikiLoading, setWikiLoading] = useState(false);
+
+ useEffect(() => {
+  if (requestedKnowledgeView === 'graph') {
+   setSecondBrainTab('graph');
+  } else if (requestedKnowledgeView === 'source') {
+   setSecondBrainTab('brain');
+   setWikiWorkspaceTab('read');
+  }
+ }, [requestedKnowledgeView]);
 
  // Glossary States with localStorage persistence
  const [glossary, setGlossary] = useState<GlossaryItem[]>(() => {
