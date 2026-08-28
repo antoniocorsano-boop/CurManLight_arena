@@ -45,14 +45,14 @@ const ROLE_EYEBROW: HcmTermSpec = {
 
 const ROLE_TITLE: HcmTermSpec = {
   id: 'home.role.title',
-  human: 'Scegli il tuo contesto di lavoro',
+  human: 'Scegli cosa vuoi fare',
   roleVariants: {
-    insegnante: 'Riprendi la progettazione',
-    dipartimento: 'Confronta il lavoro del dipartimento',
-    referente: 'Raccogli il lavoro dei dipartimenti',
-    dirigente: 'Controlli e materiali da seguire',
-    collegio: 'Materiali per il lavoro collegiale',
-    amministratore: 'Dati, aggiornamenti e copie',
+    insegnante: 'Riprendi il tuo lavoro',
+    dipartimento: 'Confronta le proposte del dipartimento',
+    referente: 'Metti insieme i contributi ricevuti',
+    dirigente: 'Controlla ciò che richiede attenzione',
+    collegio: 'Prepara il lavoro collegiale',
+    amministratore: 'Gestisci dati e copie locali',
   },
 };
 
@@ -98,25 +98,25 @@ export function getHomeRoleCommunication(role: UserRole): HomeRoleCommunication 
     case 'insegnante':
       return {
         ...base,
-        summary: 'Consulta il curricolo, prepara le UDA e riprendi il lavoro didattico dal punto in cui lo hai lasciato.',
+        summary: 'Apri il curricolo, prepara le attività e continua dal punto in cui avevi lasciato.',
         details: [],
       };
     case 'dipartimento':
       return {
         ...base,
-        summary: 'Confronta le proposte e prepara una sintesi di lavoro. Le scelte registrate qui restano preparatorie e non producono effetti istituzionali.',
+        summary: 'Confronta le proposte dei colleghi e prepara una sintesi. Qui stai ancora preparando il lavoro: nessuna decisione viene presa automaticamente.',
         details: [technicalDetail(TECHNICAL_TERMS.exchange, role, 'Usato solo per trasferire una copia del lavoro.')],
       };
     case 'referente':
       return {
         ...base,
-        summary: 'Raccogli e confronta i contributi ricevuti. Il quadro complessivo si forma solo dai dati effettivamente importati.',
+        summary: 'Raccogli i contributi ricevuti, confrontali e individua ciò che richiede un passaggio successivo.',
         details: [technicalDetail(TECHNICAL_TERMS.exchange, role, 'Formato locale usato per importare i contributi.')],
       };
     case 'dirigente':
       return {
         ...base,
-        summary: 'Consulta le fonti e prepara le verifiche che richiedono conferma esterna. Questa Home non certifica conformità.',
+        summary: 'Consulta i materiali e individua le verifiche ancora da completare. Questa schermata non certifica da sola alcuna conformità.',
         details: [
           technicalDetail(TECHNICAL_TERMS.accessibility, role, 'Verifica non disponibile in questa vista.'),
           technicalDetail(TECHNICAL_TERMS.privacy, role, 'Verifica non disponibile in questa vista.'),
@@ -125,7 +125,7 @@ export function getHomeRoleCommunication(role: UserRole): HomeRoleCommunication 
     case 'collegio':
       return {
         ...base,
-        summary: 'Consulta le fonti e prepara il lavoro collegiale. Gli effetti istituzionali restano nel percorso autenticato di decisione.',
+        summary: 'Consulta i materiali e prepara il lavoro collegiale. Una decisione ufficiale richiede sempre il percorso dedicato.',
         details: [
           technicalDetail(TECHNICAL_TERMS.accessibility, role, 'Verifica non disponibile in questa vista.'),
           technicalDetail(TECHNICAL_TERMS.privacy, role, 'Verifica non disponibile in questa vista.'),
@@ -134,7 +134,7 @@ export function getHomeRoleCommunication(role: UserRole): HomeRoleCommunication 
     case 'amministratore':
       return {
         ...base,
-        summary: 'Controlla come il browser conserva i dati e gestisci le copie locali. Le verifiche tecniche restano separate dallo stato di lavoro.',
+        summary: 'Controlla dove sono salvati i dati e gestisci le copie locali. Le verifiche tecniche restano separate dal lavoro quotidiano.',
         details: [
           technicalDetail(TECHNICAL_TERMS.storage, role, 'Stato da verificare nel browser corrente.'),
           technicalDetail(TECHNICAL_TERMS.offline, role, 'Stato da verificare nel browser corrente.'),
@@ -144,7 +144,7 @@ export function getHomeRoleCommunication(role: UserRole): HomeRoleCommunication 
     case 'non-dichiarato':
       return {
         ...base,
-        summary: 'Il ruolo serve a organizzare linguaggio e strumenti. Non attribuisce autorità istituzionale.',
+        summary: 'Scegli il ruolo che descrive meglio ciò che devi fare. Questa scelta organizza l’interfaccia, ma non assegna autorizzazioni istituzionali.',
         details: [],
       };
   }
