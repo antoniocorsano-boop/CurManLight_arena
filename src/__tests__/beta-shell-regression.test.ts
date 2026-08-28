@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import globalCssSource from '../index.css?raw';
 
 function firstSource(modules: Record<string, string>): string {
   return Object.values(modules)[0] ?? '';
@@ -21,10 +22,6 @@ const homeSource = firstSource(import.meta.glob('../features/session/components/
 }) as Record<string, string>);
 
 const revisionSource = firstSource(import.meta.glob('../features/curriculum/components/RevisioneTab.tsx', {
-  query: '?raw', import: 'default', eager: true,
-}) as Record<string, string>);
-
-const globalCssSource = firstSource(import.meta.glob('../index.css', {
   query: '?raw', import: 'default', eager: true,
 }) as Record<string, string>);
 
