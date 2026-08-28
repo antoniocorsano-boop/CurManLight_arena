@@ -1,4 +1,4 @@
-import { DownloadCloud, Menu, RotateCcw, Save, ServerCog, ShieldAlert } from 'lucide-react';
+import { DownloadCloud, Layers3, Menu, RotateCcw, Save, ServerCog, ShieldAlert } from 'lucide-react';
 import { useState } from 'react';
 import { UiConfirmDialog } from '../../../ui/components/UiConfirmDialog';
 
@@ -29,9 +29,8 @@ interface AppHeaderProps {
  * Canonical Arena Beta header.
  *
  * The first-level header is intentionally limited to orientation and session
- * continuity. Experimental AI controls and unavailable integrations do not
- * belong in the primary Beta shell: the certified journey is institutional
- * curriculum review, decision and handoff.
+ * continuity. The brand mark is rendered as an inline vector so it cannot
+ * disappear because of a broken asset path on GitHub Pages.
  */
 export function AppHeader(props: AppHeaderProps) {
   const [showResetConfirm, setShowResetConfirm] = useState(false);
@@ -52,6 +51,14 @@ export function AppHeader(props: AppHeaderProps) {
               >
                 <Menu className="h-5 w-5" aria-hidden="true" />
               </button>
+
+              <div
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-indigo-400/40 bg-gradient-to-br from-indigo-500 to-violet-600 text-white shadow-sm"
+                data-brand-mark="curmanlight"
+                aria-hidden="true"
+              >
+                <Layers3 className="h-5 w-5" strokeWidth={2.2} />
+              </div>
 
               <div className="min-w-0">
                 <div className="truncate text-lg font-extrabold tracking-tight">CurManLight</div>
