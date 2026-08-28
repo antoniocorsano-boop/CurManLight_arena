@@ -52,10 +52,16 @@ export function useAppStartupEffects({
    }
   };
 
-  // An explicit assistant interaction wins over deferred automatic onboarding.
-  // This does not persist or complete the profile; it only prevents the startup
-  // timer from reopening the onboarding modal over the active assistant surface.
+  const deferAutomaticOnboardingForFocusedTask = () => {
+   cancelPendingOnboarding();
+   setShowOnboardingModal(false);
+  };
+
+  // An explicit focused interaction wins over deferred automatic onboarding.
+  // This does not persist or complete the profile; it only prevents startup
+  // onboarding from interrupting the task the user explicitly opened.
   window.addEventListener('arena:assistant-open', cancelPendingOnboarding);
+  window.addEventListener('arena:knowledge-open', deferAutomaticOnboardingForFocusedTask);
 
   try {
    if (!window.indexedDB) {
@@ -166,6 +172,7 @@ export function useAppStartupEffects({
   return () => {
    cancelPendingOnboarding();
    window.removeEventListener('arena:assistant-open', cancelPendingOnboarding);
+   window.removeEventListener('arena:knowledge-open', deferAutomaticOnboardingForFocusedTask);
   };
  }, []);
 }
