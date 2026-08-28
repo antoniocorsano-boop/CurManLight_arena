@@ -1,14 +1,9 @@
-import React from 'react';
 import { ChevronLeft, ChevronRight, FileSearch, History, Info, Layers, Milestone } from 'lucide-react';
 import { useCurriculumStore } from '../../../store/useCurriculumStore';
 import { UiEmptyState } from '../../../ui/components/UiEmptyState';
 import type { DecisionStatus, Proposal } from '../../../types/curriculum';
 import type { AppViewsLayerProps } from '../../session';
-import {
-  PROPOSAL_STATUS_LABELS,
-  DECISION_OUTCOME_LABELS,
-  DECISION_STATUS_LABELS,
-} from '../../../domain/revision/vocabularies';
+import { PROPOSAL_STATUS_LABELS } from '../../../domain/revision/vocabularies';
 import { findDecisionsByProposal, getEventsByProposal, getLatestProposalVersion } from '../../../domain/revision';
 import type { RevisionProposal } from '../../../domain/revision';
 import { addProposal, transitionProposalStatus } from '../../../domain/revision/repository';
@@ -65,8 +60,8 @@ function CanonicalProposalsSection() {
       <div className="space-y-3 border-t border-slate-100 p-3 sm:p-4">
         {proposals.map((proposal) => {
           const version = getLatestProposalVersion(revisionArchive, proposal);
-          const decisions = findDecisionsByProposal(revisionArchive, proposal.id);
-          const latestDecision = decisions.at(-1);
+          const proposalDecisions = findDecisionsByProposal(revisionArchive, proposal.id);
+          const latestDecision = proposalDecisions.length > 0 ? proposalDecisions[proposalDecisions.length - 1] : undefined;
           const events = getEventsByProposal(revisionArchive, proposal.id);
           const nodeLabel = proposal.targetNodeRef.snapshotLabel || proposal.targetNodeRef.id;
 
@@ -96,7 +91,7 @@ function CanonicalProposalsSection() {
 
                 {latestDecision && (
                   <div className="rounded-xl border border-emerald-100 bg-emerald-50 p-3 text-slate-700">
-                    <strong>{DECISION_STATUS_LABELS[latestDecision.status]}:</strong> {DECISION_OUTCOME_LABELS[latestDecision.outcome]}
+                    <strong>Decisione registrata:</strong> {String(latestDecision.outcome)}
                     {latestDecision.rationale ? ` — ${latestDecision.rationale}` : ''}
                   </div>
                 )}
