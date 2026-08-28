@@ -43,18 +43,36 @@ export interface CurriculumAuthorityAssessment {
   reason: string;
 }
 
+function isSourceNatureVerified(provenance: CurriculumBaselineProvenance): boolean {
+  return (
+    provenance.sourceStatus === 'active' &&
+    provenance.sourceType !== 'demonstration' &&
+    provenance.sourceType !== 'legacy'
+  );
+}
+
+/**
+ * Valuta l'autorita' senza inferire livelli piu' alti dai soli metadati.
+ *
+ * Le combinazioni incoerenti falliscono chiuse. Esempio: una fonte `active`
+ * dichiarata `DEMONSTRATION_UNVERIFIED` resta non verificata; allo stesso modo
+ * `INSTITUTIONALLY_ADOPTED` senza attestazione di adozione non viene degradata
+ * automaticamente a fonte verificata.
+ */
 export function assessCurriculumAuthority(
   provenance: CurriculumBaselineProvenance,
 ): CurriculumAuthorityAssessment {
-  const sourceVerified =
-    provenance.sourceStatus === 'active' &&
-    provenance.sourceType !== 'demonstration' &&
-    provenance.sourceType !== 'legacy';
+  const sourceNatureVerified = isSourceNatureVerified(provenance);
 
   const institutionallyAdopted =
-    sourceVerified &&
-    provenance.institutionallyAdopted &&
-    provenance.authorityLevel === 'INSTITUTIONALLY_ADOPTED';
+    sourceNatureVerified &&
+    provenance.authorityLevel === 'INSTITUTIONALLY_ADOPTED' &&
+    provenance.institutionallyAdopted === true;
+
+  const sourceVerifiedOnly =
+    sourceNatureVerified &&
+    provenance.authorityLevel === 'SOURCE_VERIFIED' &&
+    provenance.institutionallyAdopted === false;
 
   if (institutionallyAdopted) {
     return {
@@ -62,17 +80,17 @@ export function assessCurriculumAuthority(
       canPresentAsInstitutionallyAdopted: true,
       authorityLevel: 'INSTITUTIONALLY_ADOPTED',
       humanLabel: 'Curricolo d’istituto adottato',
-      reason: 'La fonte e’ verificata e l’adozione istituzionale e’ attestata.',
+      reason: 'La fonte è verificata e l’adozione istituzionale è attestata.',
     };
   }
 
-  if (sourceVerified) {
+  if (sourceVerifiedOnly) {
     return {
       canPresentAsVerifiedSource: true,
       canPresentAsInstitutionallyAdopted: false,
       authorityLevel: 'SOURCE_VERIFIED',
       humanLabel: 'Fonte verificata, non ancora adottata',
-      reason: 'La fonte e’ verificata, ma manca un’adozione istituzionale attestata.',
+      reason: 'La fonte è verificata, ma manca un’adozione istituzionale attestata.',
     };
   }
 
@@ -82,7 +100,7 @@ export function assessCurriculumAuthority(
     authorityLevel: 'DEMONSTRATION_UNVERIFIED',
     humanLabel: 'Contenuti di lavoro non verificati',
     reason:
-      'La sorgente corrente e’ dimostrativa o non verificata: puo’ essere consultata e revisionata, ma non presentata come curricolo istituzionale autorevole.',
+      'La provenienza non dimostra in modo coerente un livello di autorità superiore: il contenuto può essere consultato e revisionato, ma non presentato come fonte verificata o curricolo istituzionale adottato.',
   };
 }
 
