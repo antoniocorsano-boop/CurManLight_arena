@@ -1,0 +1,46 @@
+name: Live Beta Assistant Browser Audit
+
+on:
+  workflow_run:
+    workflows: ["Deploy Arena Beta"]
+    types: [completed]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  live-beta-assistant:
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout deployed main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Navigate published Beta
+        env:
+          BETA_URL: https://antoniocorsano-boop.github.io/CurManLight_arena/
+        run: node scripts/audit-live-beta-assistant.cjs
+
+      - name: Upload browser evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: live-beta-assistant-audit
+          path: artifacts/live-beta-assistant/
+          if-no-files-found: warn

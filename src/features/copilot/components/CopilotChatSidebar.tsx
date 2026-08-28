@@ -1,5 +1,5 @@
 import { useRef, useCallback } from 'react';
-import { Sparkles, X, Eye, Send, Ban, Loader2 } from 'lucide-react';
+import { Sparkles, X, Eye, Send, Ban, Loader2, Library, Share2 } from 'lucide-react';
 import { useLocalAiSessionStore } from '../../../features/ai/localAiSessionStore';
 import { LocalAiExecutionService } from '../../../features/ai/localAiExecutionService';
 import { LocalAiConfiguration } from '../../../features/ai/components/LocalAiConfiguration';
@@ -7,6 +7,7 @@ import { LocalAiRequestPreview } from '../../../features/ai/components/LocalAiRe
 import { LocalAiResponseDraft } from '../../../features/ai/components/LocalAiResponseDraft';
 import { createRequestPreview } from '../../../domain/ai/requestPreview';
 import type { AiResponse } from '../../../domain/ai/types';
+import { openAssistantKnowledge } from '../assistantKnowledgeNavigation';
 
 interface CopilotChatSidebarProps {
   isCopilotChatOpen: boolean;
@@ -203,6 +204,11 @@ export function CopilotChatSidebar({
     }
   };
 
+  const handleOpenKnowledge = (view: 'source' | 'graph') => {
+    setIsCopilotChatOpen(false);
+    openAssistantKnowledge(view);
+  };
+
   if (!isCopilotChatOpen) return null;
 
   const isAiConfigured = configurationStatus === 'ready';
@@ -220,7 +226,7 @@ export function CopilotChatSidebar({
 
   return (
     <div
-      className="fixed top-20 bottom-4 right-4 left-4 md:left-auto md:w-80 z-[150] bg-white border border-slate-200 rounded-2xl shadow-2xl flex flex-col overflow-hidden fade-in text-slate-700 text-left"
+      className="fixed top-20 bottom-4 right-4 left-4 md:left-auto md:w-80 z-[170] bg-white border border-slate-200 rounded-2xl shadow-2xl flex flex-col overflow-hidden fade-in text-slate-700 text-left"
       aria-busy={isRunning}
     >
       <div className="bg-slate-900 text-white px-4 py-3 flex justify-between items-center shrink-0 border-b border-slate-800">
@@ -228,12 +234,38 @@ export function CopilotChatSidebar({
         <Sparkles className="w-3.5 h-3.5 text-indigo-400 animate-pulse" />
         <span>Assistente locale non verificato</span>
        </span>
-       <button onClick={() => setIsCopilotChatOpen(false)} className="text-slate-400 hover:text-white transition cursor-pointer">
+       <button onClick={() => setIsCopilotChatOpen(false)} className="text-slate-400 hover:text-white transition cursor-pointer" aria-label="Chiudi Assistente Arena">
         <X className="w-4 h-4" />
        </button>
       </div>
 
       <div className="flex-1 overflow-y-auto p-4 space-y-3 text-[10px] leading-relaxed font-semibold" role="region" aria-label="Area contenuto assistente">
+        <div className="rounded-xl border border-indigo-100 bg-indigo-50/60 p-3 space-y-2" data-assistant-knowledge-actions="always-visible">
+          <div>
+            <p className="text-[10px] font-black text-slate-800">Esplora le fonti dell'Arena</p>
+            <p className="text-[9px] text-slate-500 font-medium mt-0.5">Puoi consultare la conoscenza e le relazioni anche senza configurare un modello AI.</p>
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={() => handleOpenKnowledge('source')}
+              className="flex items-center justify-center gap-1.5 rounded-lg border border-indigo-200 bg-white px-2 py-2 text-[9px] font-black text-indigo-700 hover:bg-indigo-50 transition"
+            >
+              <Library className="w-3.5 h-3.5" />
+              <span>Apri conoscenza</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => handleOpenKnowledge('graph')}
+              className="flex items-center justify-center gap-1.5 rounded-lg border border-indigo-200 bg-white px-2 py-2 text-[9px] font-black text-indigo-700 hover:bg-indigo-50 transition"
+            >
+              <Share2 className="w-3.5 h-3.5" />
+              <span>Mostra connessioni</span>
+            </button>
+          </div>
+          <p className="text-[8px] text-slate-400 font-bold">Consultare fonti o connessioni non approva, modifica o promuove contenuti istituzionali.</p>
+        </div>
+
         {!isAiConfigured && (
           <LocalAiConfiguration />
         )}
@@ -435,4 +467,3 @@ export function CopilotChatSidebar({
     </div>
   );
 }
-
