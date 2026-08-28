@@ -15,6 +15,10 @@ export interface DisciplineSourceWorkItem {
   verifiedByHuman: false;
 }
 
+function isFirstCycleOrder(order: string): order is 'primaria' | 'secondaria' {
+  return order === 'primaria' || order === 'secondaria';
+}
+
 /**
  * Coda di indicizzazione delle discipline del primo ciclo.
  *
@@ -29,7 +33,7 @@ export const DM221_DISCIPLINE_SOURCE_WORK_QUEUE: readonly DisciplineSourceWorkIt
   .map((segment) => ({
     segmentId: segment.id,
     label: segment.label,
-    schoolOrders: segment.schoolOrders,
+    schoolOrders: segment.schoolOrders.filter(isFirstCycleOrder),
     sourceBindingStatus: 'LOCATOR_REQUIRED' as const,
     sourceLocator: {
       sourceId: DM221_2025_SOURCE_ID,
