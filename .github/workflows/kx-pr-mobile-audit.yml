@@ -1,0 +1,64 @@
+name: KX Mobile Browser Audit
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'src/features/documents/components/SecondBrainTab.tsx'
+      - 'src/features/documents/components/SecondBrainTabLegacy.tsx'
+      - 'src/__tests__/knowledge-experience-shell.test.ts'
+      - 'scripts/audit-kx-mobile.cjs'
+      - '.github/workflows/kx-pr-mobile-audit.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  kx-mobile-browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build candidate
+        run: npm run build
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Start candidate preview
+        run: |
+          npx vite preview --host 127.0.0.1 --port 4173 > /tmp/kx-vite.log 2>&1 &
+          echo $! > /tmp/kx-vite.pid
+          for i in {1..30}; do
+            if curl --fail --silent http://127.0.0.1:4173/ > /dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat /tmp/kx-vite.log
+          exit 1
+
+      - name: Audit KX at 390x844
+        env:
+          KX_URL: http://127.0.0.1:4173/
+          AUDIT_OUT_DIR: artifacts/kx-mobile
+        run: node scripts/audit-kx-mobile.cjs
+
+      - name: Upload KX mobile evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: kx-mobile-audit
+          path: artifacts/kx-mobile
+          if-no-files-found: warn
