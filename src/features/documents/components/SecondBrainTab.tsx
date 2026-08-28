@@ -59,6 +59,7 @@ export default function SecondBrainTab(props: SecondBrainTabProps) {
       <style>{`
         .kx-legacy-shell > div > div:nth-child(1),
         .kx-legacy-shell > div > div:nth-child(2),
+        /* Archive is read-only in the public KX journey: hide the legacy read/chat selector. */
         .kx-legacy-shell[data-kx-task="archive"] [class*="xl:col-span-8"] > div:first-child {
           display: none;
         }
