@@ -19,8 +19,8 @@ export type EsportazioniTabProps = Pick<AppViewsLayerProps,
 
 /**
  * Arena Beta exposes only outputs that belong to the institutional curriculum
- * journey. Teacher-operational documents, AI layout tools and local reset
- * utilities remain outside this primary surface.
+ * journey. Teacher-operational documentation and other legacy utilities remain
+ * outside this primary surface.
  */
 export function EsportazioniTab({
   handleDownloadWordDocx,
@@ -102,7 +102,7 @@ export function EsportazioniTab({
       <details className="rounded-ui-panel border border-ui-border bg-ui-surface" data-hcm-technical-details>
         <summary className="cursor-pointer px-4 py-3 text-[12px] font-semibold text-ui-text-muted">Dettagli sul perimetro Beta</summary>
         <div className="border-t border-ui-border px-4 py-3 text-[12px] leading-relaxed text-ui-text-secondary">
-          Questa superficie contiene solo documenti del curricolo e copie di lavoro. Programmazioni di classe, relazioni didattiche, programma svolto, strumenti di impaginazione con IA e operazioni di reset non fanno parte del percorso istituzionale primario di Arena Beta.
+          Questa superficie contiene solo documenti del curricolo e copie di lavoro. La documentazione didattica operativa e gli strumenti non collegati al percorso curricolare istituzionale restano fuori dalla superficie primaria di Arena Beta.
         </div>
       </details>
     </div>
