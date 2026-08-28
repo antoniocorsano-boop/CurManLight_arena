@@ -92,6 +92,22 @@
   opacity: 1;
 }
 
+/*
+ * Mobile revision safety area.
+ * The sticky decision controls remain reachable, but they are allowed to
+ * overlap only reserved whitespace — never the ministerial/local text being
+ * compared. This keeps the focused flow without hiding readable content.
+ */
+@media (max-width: 639px) {
+  [data-revision-current-card] > div:nth-child(2) {
+    padding-bottom: 15rem;
+  }
+
+  [data-revision-sticky-actions] {
+    box-shadow: 0 -10px 24px rgba(15, 23, 42, 0.08);
+  }
+}
+
 /* Media query per la stampa professionale dei PDF d'Istituto */
 @media print {
   body {
