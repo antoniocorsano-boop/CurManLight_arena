@@ -31,6 +31,26 @@ export default function SecondBrainTab(props: SecondBrainTabProps) {
         .kx-legacy-shell[data-kx-task="brain"] [class*="xl:col-span-8"] > div:first-child {
           display: none;
         }
+
+        @media (max-width: 1279px) {
+          .kx-legacy-shell [class*="h-[580px]"] {
+            height: auto !important;
+            overflow: visible !important;
+          }
+
+          .kx-legacy-shell [class*="overflow-y-auto"] {
+            overflow-y: visible !important;
+            max-height: none !important;
+          }
+
+          .kx-legacy-shell [class*="overflow-hidden"] {
+            overflow: visible !important;
+          }
+
+          .kx-legacy-shell [class*="max-h-"] {
+            max-height: none !important;
+          }
+        }
       `}</style>
 
       <header className="space-y-3 border-b border-slate-200 pb-4">
