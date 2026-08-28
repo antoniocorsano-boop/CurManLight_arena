@@ -25,7 +25,12 @@ export default defineConfig({
       'src/__tests__/docente-feedback-intake.test.ts',
       'src/__tests__/revision-domain.test.ts',
       'src/__tests__/identity.test.ts',
-      'src/__tests__/beta-identity-authority.test.ts'
+      'src/__tests__/beta-identity-authority.test.ts',
+      'src/__tests__/curriculum-foundation-authority.test.ts',
+      'src/__tests__/curriculum-foundation-completeness.test.ts',
+      'src/__tests__/dm221-canonical-structure.test.ts',
+      'src/__tests__/dm221-requirement-profile.test.ts',
+      'src/__tests__/dm221-legacy-structure-audit.test.ts'
     ],
     exclude: ['**/node_modules/**', '**/.git/**'],
     pool: 'threads',
