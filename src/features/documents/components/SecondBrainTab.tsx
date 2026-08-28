@@ -5,9 +5,11 @@ import LegacySecondBrainTab, { type SecondBrainTabProps } from './SecondBrainTab
 export type { SecondBrainTabProps } from './SecondBrainTabLegacy';
 
 const normalizePublicText = (value: string) => value
+  .replace(/Compito di Realt�/g, 'Compito di Realtà')
   .replace(/Unit�/g, 'Unità')
   .replace(/Capacit�/g, 'Capacità')
   .replace(/abilit�/g, 'abilità')
+  .replace(/ � /g, ' — ')
   .replace(/�/g, '');
 
 export default function SecondBrainTab(props: SecondBrainTabProps) {
