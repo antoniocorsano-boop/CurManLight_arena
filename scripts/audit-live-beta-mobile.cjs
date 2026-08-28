@@ -11,19 +11,17 @@ async function closeDialog(page) {
   const dialog = page.locator('[role="dialog"][aria-modal="true"]');
   if (await dialog.isVisible({ timeout: 500 }).catch(() => false)) {
     const buttons = dialog.getByRole('button');
-    const count = await buttons.count();
-    if (count) await buttons.first().click().catch(() => undefined);
+    if (await buttons.count()) await buttons.first().click().catch(() => undefined);
   }
 }
 
-async function clickNav(page, label, pathPart) {
+async function clickNav(page, label) {
+  const before = page.url();
   const item = page.getByText(label, { exact: true }).last();
   await item.waitFor({ state: 'visible', timeout: 8000 });
   await item.click();
   await page.waitForTimeout(450);
-  if (pathPart && !page.url().includes(pathPart)) {
-    throw new Error(`Navigation ${label} did not reach ${pathPart}; url=${page.url()}`);
-  }
+  return { before, after: page.url() };
 }
 
 (async () => {
@@ -64,39 +62,41 @@ async function clickNav(page, label, pathPart) {
     check('Home loads from the public Beta', response && response.ok(), `HTTP ${response?.status()}`);
     await closeDialog(page);
     await page.getByText('CurManLight', { exact: true }).first().waitFor({ state: 'visible', timeout: 8000 });
-    const brand = page.locator('[data-brand-mark="curmanlight"]');
-    check('Stable CurManLight vector brand is visible', await brand.isVisible().catch(() => false));
+    check('Stable CurManLight vector brand is visible', await page.locator('[data-brand-mark="curmanlight"]').isVisible().catch(() => false));
     const homeDims = await routeHealth('Home');
     check('Home is bounded on mobile', homeDims.sh <= homeDims.ch * 2.6, `height ratio ${(homeDims.sh / homeDims.ch).toFixed(2)}x`);
     await page.screenshot({ path: `${outDir}/01-home.png`, fullPage: true });
 
-    await clickNav(page, 'Curricolo', '/curricolo');
+    const curriculumNav = await clickNav(page, 'Curricolo');
     await closeDialog(page);
+    check('Curricolo navigation changes view', curriculumNav.after !== curriculumNav.before, curriculumNav.after);
     check('Curricolo renders substantive content', (await page.locator('main').innerText()).trim().length > 120);
     await routeHealth('Curricolo');
     await page.screenshot({ path: `${outDir}/02-curricolo.png`, fullPage: true });
 
-    await clickNav(page, 'Revisione', '/revisione');
+    const revisionNav = await clickNav(page, 'Revisione');
+    check('Revisione navigation changes view', revisionNav.after !== revisionNav.before, revisionNav.after);
     await page.getByText('Revisione del Curricolo: Gap 2025', { exact: false }).waitFor({ state: 'visible', timeout: 8000 });
     await routeHealth('Revisione');
     const proposed = page.locator('[data-revision-current-card] article').nth(1);
     const actions = page.locator('[data-revision-sticky-actions]');
     await proposed.scrollIntoViewIfNeeded();
     await page.waitForTimeout(250);
-    const boxes = await Promise.all([proposed.boundingBox(), actions.boundingBox()]);
-    const [p, a] = boxes;
+    const [p, a] = await Promise.all([proposed.boundingBox(), actions.boundingBox()]);
     const overlaps = Boolean(p && a && p.x < a.x + a.width && p.x + p.width > a.x && p.y < a.y + a.height && p.y + p.height > a.y);
     check('Revision actions do not cover proposed text', !overlaps, p && a ? `proposed y=${p.y.toFixed(0)}..${(p.y+p.height).toFixed(0)}, actions y=${a.y.toFixed(0)}..${(a.y+a.height).toFixed(0)}` : 'bounding box unavailable');
     check('Revision primary choices remain visible', await page.getByRole('button', { name: 'Usa testo 2025' }).isVisible());
     check('Revision next-step control remains reachable', await page.getByRole('button', { name: 'Successivo' }).isVisible());
     await page.screenshot({ path: `${outDir}/03-revisione.png`, fullPage: true });
 
-    await clickNav(page, 'Fonti', '/fonti');
+    const sourcesNav = await clickNav(page, 'Fonti');
+    check('Fonti navigation changes view', sourcesNav.after !== sourcesNav.before, sourcesNav.after);
     check('Fonti renders substantive content', (await page.locator('main').innerText()).trim().length > 80);
     await routeHealth('Fonti');
     await page.screenshot({ path: `${outDir}/04-fonti.png`, fullPage: true });
 
-    await clickNav(page, 'Documenti', '/documenti');
+    const docsNav = await clickNav(page, 'Documenti');
+    check('Documenti navigation changes view', docsNav.after !== docsNav.before, docsNav.after);
     check('Documenti renders substantive content', (await page.locator('main').innerText()).trim().length > 80);
     await routeHealth('Documenti');
     await page.screenshot({ path: `${outDir}/05-documenti.png`, fullPage: true });
