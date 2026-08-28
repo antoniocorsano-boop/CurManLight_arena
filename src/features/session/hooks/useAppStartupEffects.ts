@@ -43,6 +43,20 @@ export function useAppStartupEffects({
  handleWorkspaceAutoPull
 }: UseAppStartupEffectsArgs) {
  useEffect(() => {
+  let onboardingTimer: ReturnType<typeof setTimeout> | null = null;
+
+  const cancelPendingOnboarding = () => {
+   if (onboardingTimer !== null) {
+    clearTimeout(onboardingTimer);
+    onboardingTimer = null;
+   }
+  };
+
+  // An explicit assistant interaction wins over deferred automatic onboarding.
+  // This does not persist or complete the profile; it only prevents the startup
+  // timer from reopening the onboarding modal over the active assistant surface.
+  window.addEventListener('arena:assistant-open', cancelPendingOnboarding);
+
   try {
    if (!window.indexedDB) {
     setIsDatabaseVolatile(true);
@@ -119,7 +133,8 @@ export function useAppStartupEffects({
 
   const isNew = !safeLocalStorageGetItem('curmanlight-react-db-state-v1.4.0', '');
   if (isNew) {
-   setTimeout(() => {
+   onboardingTimer = setTimeout(() => {
+    onboardingTimer = null;
     setOnboardingRoleLocal(role);
     setOnboardingDiscLocal(discipline);
     setOnboardingOrdLocal(order);
@@ -147,5 +162,10 @@ export function useAppStartupEffects({
   } catch (e) {
    console.warn('[OIV Garbage Collector] Errore di pulizia:', e);
   }
+
+  return () => {
+   cancelPendingOnboarding();
+   window.removeEventListener('arena:assistant-open', cancelPendingOnboarding);
+  };
  }, []);
 }
