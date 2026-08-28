@@ -51,7 +51,7 @@ const art2 = (note: string): NationalSourceLocator => ({
 const annexInfanzia = (section: string): NationalSourceLocator => ({
   sourceId: DM221_2025_SOURCE_ID,
   section,
-  page: 56,
+  note: 'Sezione canonica dell’allegato; il locator di dettaglio per competenze e obiettivi sarà aggiunto elemento per elemento.',
 });
 
 export const DM221_INFANZIA_FIELDS: Readonly<Record<InfanziaFieldId, CanonicalNationalSegment>> = {
@@ -119,7 +119,7 @@ export const DM221_SPECIAL_SEGMENTS: readonly CanonicalNationalSegment[] = [
     label: 'Educazione integrata matematico-scientifico-tecnologica (STEM)',
     schoolOrders: ['primaria', 'secondaria'],
     universalRequirement: false,
-    sourceLocator: { sourceId: DM221_2025_SOURCE_ID, section: 'Educazione integrata matematico-scientifico-tecnologica (STEM)', page: 35 },
+    sourceLocator: { sourceId: DM221_2025_SOURCE_ID, section: 'Educazione integrata matematico-scientifico-tecnologica (STEM)', page: 83 },
     notes: 'Sezione integrata dell’allegato; non viene trasformata in una disciplina autonoma dell’art. 2, comma 1.',
   },
   {
