@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import fs from 'node:fs';
-import path from 'node:path';
 
-const root = process.cwd();
-const sidebar = fs.readFileSync(
-  path.join(root, 'src/features/copilot/components/CopilotChatSidebar.tsx'),
-  'utf8',
-);
+function firstSource(modules: Record<string, string>): string {
+  return Object.values(modules)[0] ?? '';
+}
+
+const sidebar = firstSource(import.meta.glob('../features/copilot/components/CopilotChatSidebar.tsx', {
+  query: '?raw', import: 'default', eager: true,
+}) as Record<string, string>);
 
 describe('G5 assistant discoverability boundary', () => {
   it('keeps knowledge actions visible independently of local AI readiness', () => {
