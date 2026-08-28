@@ -6,21 +6,44 @@ import { UiPanel } from '../../../ui/components/UiPanel';
 import { UiSectionHeader } from '../../../ui/components/UiSectionHeader';
 
 export type EsportazioniTabProps = Pick<AppViewsLayerProps,
+  | 'esportazioniTab'
+  | 'setEsportazioniTab'
+  | 'templateDocType'
+  | 'setTemplateDocType'
+  | 'templateJsonState'
+  | 'setTemplateJsonState'
+  | 'templateChatInput'
+  | 'setTemplateChatInput'
+  | 'templateChatHistory'
+  | 'handleSendTemplateInstruction'
+  | 'handleDownloadWordDefinitivo'
   | 'handleDownloadWordDocx'
   | 'handleDownloadODF'
   | 'handleDownloadCurricoloPDF'
   | 'handleCopyToClipboardFormatted'
   | 'handleDownloadTxt'
   | 'handleDownloadCml'
+  | 'handleDownloadWordConfronto'
+  | 'handleDownloadRichMarkdown'
+  | 'handleDownloadPdfDirect'
+  | 'handleClearLocalStorageWithReset'
+  | 'handleGenerateProgrammazioneAnnualeDoc'
+  | 'handleGenerateRelazioneDoc'
+  | 'handleGenerateSpecificoGradoDoc'
+  | 'targetClass'
+  | 'targetSection'
+  | 'showToast'
   | 'documentExportHistory'
   | 'clearDocumentExportHistory'
   | 'institutionalProfile'
+  | 'resetTemplateState'
 >;
 
 /**
  * Arena Beta exposes only outputs that belong to the institutional curriculum
  * journey. Teacher-operational documentation and other legacy utilities remain
- * outside this primary surface.
+ * outside this primary surface. The wider prop contract is retained only for
+ * compatibility with the existing application boundary while migration proceeds.
  */
 export function EsportazioniTab({
   handleDownloadWordDocx,
