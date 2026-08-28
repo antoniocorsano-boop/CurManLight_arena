@@ -1,0 +1,17 @@
+{
+  "contract": "DOCENTE_FEEDBACK_TRIAGE_V1",
+  "inputStatus": "READY_FOR_HUMAN_TRIAGE",
+  "authority": "NON_AUTHORITATIVE_PROFESSIONAL_EVIDENCE",
+  "outcomes": [
+    "NOT_RELEVANT",
+    "NEEDS_CONTEXT",
+    "CANDIDATE_FOR_PROPOSAL_AUTHORING"
+  ],
+  "candidateOutputStatus": "AWAITING_HUMAN_PROPOSAL_AUTHORING",
+  "automaticProposalAllowed": false,
+  "automaticDecisionAllowed": false,
+  "requiresHumanRationale": true,
+  "requiresExplicitTargetForCandidate": true,
+  "createsRevisionProposal": false,
+  "writesCurriculumBaseline": false
+}
