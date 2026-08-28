@@ -63,6 +63,9 @@ fs.mkdirSync(OUT_DIR, { recursive: true });
 
     await taskButton('Archivio storico').click(); await page.waitForTimeout(250);
     check('Archivio storico attivo', await taskButton('Archivio storico').getAttribute('aria-current') === 'page');
+    const archiveText = await shell.innerText();
+    const archiveForbidden = ['WikiLLM', 'Chiedi al Co-Pilota'];
+    check('Nessun leakage tecnico in Archivio', archiveForbidden.every((term) => !archiveText.includes(term)), archiveForbidden.filter((term) => archiveText.includes(term)).join(', '));
     check('Nessun overflow orizzontale in Archivio', await noHorizontalOverflow());
     const archiveScrollers = await visibleNestedScrollers();
     check('Nessuno scroll annidato nel task Archivio', archiveScrollers.length === 0, JSON.stringify(archiveScrollers));
