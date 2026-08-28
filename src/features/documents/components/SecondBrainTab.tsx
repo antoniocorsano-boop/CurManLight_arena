@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { Archive, BookOpen, Network, Search, Sparkles } from 'lucide-react';
 import LegacySecondBrainTab, { type SecondBrainTabProps } from './SecondBrainTabLegacy';
 
@@ -7,6 +8,10 @@ export default function SecondBrainTab(props: SecondBrainTabProps) {
   const { secondBrainTab, setSecondBrainTab, wikiWorkspaceTab, setWikiWorkspaceTab } = props;
   const isSearchActive = secondBrainTab === 'brain' && wikiWorkspaceTab === 'chat';
   const isArchiveActive = secondBrainTab === 'brain' && wikiWorkspaceTab === 'read';
+
+  useEffect(() => {
+    window.dispatchEvent(new CustomEvent('arena:knowledge-open'));
+  }, []);
 
   const openSearch = () => {
     setSecondBrainTab('brain');
