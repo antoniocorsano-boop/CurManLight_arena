@@ -6,19 +6,22 @@ export const CURRICULUM_INSTITUTIONAL_EXPORT_BLOCKED_MESSAGE =
   'Questo curricolo non è ancora attestato come curricolo d’istituto adottato. Puoi continuare a lavorare ed esportare una copia di lavoro, ma non un documento che lo presenti come ufficiale.';
 
 type LegacyArgs = Parameters<typeof useLegacyDocumentExportHandlers>[0];
-type VoidHandler = () => void;
+type AnyHandler = (...args: any[]) => any;
 
-function guardInstitutionalExport(handler: VoidHandler, showToast: LegacyArgs['showToast']): VoidHandler {
-  return () => {
+function guardInstitutionalExport<THandler extends AnyHandler>(
+  handler: THandler,
+  showToast: LegacyArgs['showToast'],
+): THandler {
+  return ((...handlerArgs: Parameters<THandler>): ReturnType<THandler> | undefined => {
     try {
       assertInstitutionalCurriculumProjection(getCurriculumBaselineProvenance());
     } catch {
       showToast(CURRICULUM_INSTITUTIONAL_EXPORT_BLOCKED_MESSAGE, false);
-      return;
+      return undefined;
     }
 
-    handler();
-  };
+    return handler(...handlerArgs);
+  }) as THandler;
 }
 
 /**
@@ -33,7 +36,8 @@ function guardInstitutionalExport(handler: VoidHandler, showToast: LegacyArgs['s
  */
 export function useGuardedDocumentExportHandlers(args: LegacyArgs) {
   const handlers = useLegacyDocumentExportHandlers(args);
-  const guard = (handler: VoidHandler) => guardInstitutionalExport(handler, args.showToast);
+  const guard = <THandler extends AnyHandler>(handler: THandler) =>
+    guardInstitutionalExport(handler, args.showToast);
 
   return {
     ...handlers,
