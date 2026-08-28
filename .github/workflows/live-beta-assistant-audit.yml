@@ -1,0 +1,46 @@
+name: Live Beta Assistant Browser Audit
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'src/features/copilot/**'
+      - 'scripts/audit-live-beta-assistant.cjs'
+      - '.github/workflows/live-beta-assistant-audit.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  live-beta-assistant:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Navigate published Beta
+        env:
+          BETA_URL: https://antoniocorsano-boop.github.io/CurManLight_arena/
+        run: node scripts/audit-live-beta-assistant.cjs
+
+      - name: Upload browser evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: live-beta-assistant-audit
+          path: artifacts/live-beta-assistant/
+          if-no-files-found: warn
