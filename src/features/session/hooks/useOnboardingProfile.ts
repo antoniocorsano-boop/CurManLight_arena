@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { SchoolOrder, UserRole } from '../../../types/curriculum';
 import { safeLocalStorageGetItem, safeLocalStorageSetItem } from '../../../lib/consolidatedStorage';
 
@@ -46,6 +46,12 @@ export const useOnboardingProfile = ({
   const [, setIsSostegno] = useState(() => safeLocalStorageGetItem('curman_isSostegno', 'false') === 'true');
   const [onboardingIsSostegno, setOnboardingIsSostegno] = useState(() => safeLocalStorageGetItem('curman_isSostegno', 'false') === 'true');
   const [onboardingCombinations, setOnboardingCombinations] = useState<string[]>([]);
+
+  useEffect(() => {
+    const handleAssistantOpen = () => setShowOnboardingModal(false);
+    window.addEventListener('arena:assistant-open', handleAssistantOpen);
+    return () => window.removeEventListener('arena:assistant-open', handleAssistantOpen);
+  }, [setShowOnboardingModal]);
 
   const handleSetOnboardingOrdLocal = (ord: SchoolOrder) => {
     setOnboardingOrdLocal(ord);
