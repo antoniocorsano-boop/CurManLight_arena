@@ -39,6 +39,14 @@ export function AppHeader(props: AppHeaderProps) {
   const assistantReady = props.localAgentStatus === 'ready'
     || (props.localAgentType === 'ollama' && props.ollamaStatus === 'connected');
 
+  const handleAssistantToggle = () => {
+    const nextOpen = !props.isCopilotChatOpen;
+    if (nextOpen) {
+      window.dispatchEvent(new CustomEvent('arena:assistant-open'));
+    }
+    props.setIsCopilotChatOpen(nextOpen);
+  };
+
   return (
     <>
       <header className="sticky top-0 z-50 shrink-0 border-b border-slate-800 bg-slate-900 text-white shadow-md" data-beta-shell="canonical">
@@ -73,7 +81,7 @@ export function AppHeader(props: AppHeaderProps) {
             <div className="flex shrink-0 items-center gap-2">
               <button
                 type="button"
-                onClick={() => props.setIsCopilotChatOpen(!props.isCopilotChatOpen)}
+                onClick={handleAssistantToggle}
                 className={`relative flex h-9 w-9 items-center justify-center rounded-xl border transition focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300 ${
                   props.isCopilotChatOpen
                     ? 'border-indigo-300 bg-indigo-500 text-white'

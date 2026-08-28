@@ -51,18 +51,14 @@ fs.mkdirSync(OUT_DIR, { recursive: true });
     await page.waitForTimeout(700);
   };
 
-  const closeOnboardingIfPresent = async () => {
+  const onboardingVisible = async () => {
     const dialogs = page.locator('[role="dialog"][aria-modal="true"]');
     const count = await dialogs.count();
     for (let i = 0; i < count; i++) {
       const dialog = dialogs.nth(i);
-      const visible = await dialog.isVisible().catch(() => false);
-      if (!visible) continue;
+      if (!await dialog.isVisible().catch(() => false)) continue;
       const text = await dialog.innerText().catch(() => '');
-      if (!/Profilo personale locale/i.test(text)) continue;
-      finding('ONBOARDING_MODAL_OVERLAPS_ASSISTANT', 'Il wizard Profilo personale locale compare insieme all’Assistente.');
-      await screenshot('02a-onboarding-over-assistant.png');
-      return true;
+      if (/Profilo personale locale/i.test(text)) return true;
     }
     return false;
   };
@@ -88,7 +84,12 @@ fs.mkdirSync(OUT_DIR, { recursive: true });
       await page.waitForTimeout(600);
     }
 
-    await closeOnboardingIfPresent();
+    const onboardingStillVisible = await onboardingVisible();
+    if (onboardingStillVisible) {
+      finding('ONBOARDING_MODAL_OVERLAPS_ASSISTANT', 'Il wizard Profilo personale locale resta visibile insieme all’Assistente.');
+      await screenshot('02a-onboarding-over-assistant.png');
+    }
+    check('Onboarding e Assistente non si sovrappongono', !onboardingStillVisible);
 
     const assistantPanel = page.locator('[aria-label="Area contenuto assistente"]');
     const panelVisible = await assistantPanel.isVisible({ timeout: 5000 }).catch(() => false);
@@ -103,6 +104,7 @@ fs.mkdirSync(OUT_DIR, { recursive: true });
     if (!knowledgeActionVisible || !graphActionVisible) {
       finding('ASSISTANT_KNOWLEDGE_ACTIONS_NOT_DISCOVERABLE', 'Le azioni di conoscenza devono essere disponibili appena l’Assistente si apre.');
     }
+    check('Azioni Conoscenza e Connessioni subito disponibili', knowledgeActionVisible && graphActionVisible);
 
     if (knowledgeActionVisible) {
       await page.getByText('Apri conoscenza', { exact: true }).click({ force: true });
@@ -140,6 +142,7 @@ fs.mkdirSync(OUT_DIR, { recursive: true });
       releaseIdentity,
       knowledgeActionVisible,
       graphActionVisible,
+      onboardingStillVisible,
       checks,
       findings,
       consoleErrors,
