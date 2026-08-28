@@ -43,6 +43,11 @@ describe('KX-1 knowledge experience shell', () => {
     expect(archiveFallback).toContain('<LegacySecondBrainTab {...props} />');
   });
 
+  it('hides the legacy workspace selector inside Archive', () => {
+    expect(shellSource).toContain('.kx-legacy-shell[data-kx-task="archive"] [class*="xl:col-span-8"] > div:first-child');
+    expect(shellSource).not.toContain('.kx-legacy-shell[data-kx-task="brain"] [class*="xl:col-span-8"] > div:first-child');
+  });
+
   it('preserves focused-task onboarding exclusion', () => {
     expect(shellSource).toContain("new CustomEvent('arena:knowledge-open')");
   });
