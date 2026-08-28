@@ -1,7 +1,7 @@
 import { useAppContext } from '../components/layout/AppContext';
-import { EsportazioniTab } from '../features/documents';
+import { HumanExportTab } from '../features/documents/components/HumanExportTab';
 
 export default function DocumentsPage() {
  const ctx = useAppContext();
- return <EsportazioniTab {...ctx} />;
+ return <HumanExportTab {...ctx} />;
 }
