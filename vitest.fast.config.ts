@@ -32,7 +32,8 @@ export default defineConfig({
       'src/__tests__/dm221-requirement-profile.test.ts',
       'src/__tests__/dm221-legacy-structure-audit.test.ts',
       'src/__tests__/dm221-element-bindings.test.ts',
-      'src/__tests__/dm221-binding-coverage.test.ts'
+      'src/__tests__/dm221-binding-coverage.test.ts',
+      'src/__tests__/dm221-technology-source-index.test.ts'
     ],
     exclude: ['**/node_modules/**', '**/.git/**'],
     pool: 'threads',
