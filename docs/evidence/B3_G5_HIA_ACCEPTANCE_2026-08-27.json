@@ -5,10 +5,16 @@
   "himProfile": "HIM-L2",
   "himVersion": "1.0.0",
   "canonicalPublishedRelease": {
-    "sha": "5ed2a995cc3fbaa50ba9e5ee314a56d36f5a170e",
+    "sha": "127a31023faada5fb56186f535cbb71c03ddc541",
     "url": "https://antoniocorsano-boop.github.io/CurManLight_arena/",
-    "deploymentRun": 33086955515,
+    "deploymentRun": 33141248448,
     "publishedIdentitySmoke": "PASS"
+  },
+  "currentReviewCandidate": {
+    "sha": "6d4b5be2f6fa38717485b3ba33596a5f86920662",
+    "published": false,
+    "automatedGateStatus": "PASS",
+    "changeClass": "HUMAN_COMMUNICATION_CONSOLIDATION"
   },
   "humanTasks": [
     {
@@ -43,8 +49,8 @@
     {
       "id": "HT-BETA-PLANNING-HANDOFF",
       "requiredHumanEvidence": [
-        "preview-only meaning is understood",
-        "provisional baseline warning is understood",
+        "teacher understands what will happen before confirming",
+        "provisional curriculum warning is understood",
         "teacher acceptance requirement is understood",
         "validation failure recovery is understandable",
         "desktop and mobile requirements inspection is comfortable"
@@ -61,13 +67,14 @@
       "desktop structured proposal entry",
       "desktop proposal-ready state",
       "desktop authority-blocked decision state",
-      "desktop planning-handoff surface when reachable",
+      "desktop planning-handoff surface",
       "mobile authority-blocked decision state",
-      "mobile planning-handoff surface when reachable",
+      "mobile planning-handoff surface",
       "zero consequential decision RPC during non-authorized capture",
       "uncaught page-error detection"
     ]
   },
+  "communicationRule": "Primary UI copy must state the user's concrete action, its understandable consequence, the recovery path when blocked, and defer technical terminology to secondary detail.",
   "humanAcceptanceBoundary": {
     "automationMayPassStructuralChecks": true,
     "automationMayPassSubjectiveUsability": false,
@@ -81,5 +88,5 @@
     "touch-target acceptance",
     "manual WCAG AA review"
   ],
-  "nextAction": "Run the HIA evidence workflow on the review SHA, inspect the artifact and published Beta with a human reviewer, record findings, remediate significant findings, and only then consider BETA-G5 PASS."
+  "nextAction": "Publish currentReviewCandidate exactly, inspect the real Beta on desktop and mobile, record the human judgment, remediate significant findings, and only then consider BETA-G5 PASS."
 }
