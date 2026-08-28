@@ -77,4 +77,41 @@ describe('curriculum foundation authority', () => {
     });
     expect(() => assertInstitutionalCurriculumProjection(adopted)).not.toThrow();
   });
+
+  it('does not upgrade active metadata when the declared authority remains unverified', () => {
+    const inconsistent: CurriculumBaselineProvenance = {
+      ...LEGACY_CURRICULUM_KB_PROVENANCE,
+      sourceType: 'normative-national',
+      sourceStatus: 'active',
+      authorityLevel: 'DEMONSTRATION_UNVERIFIED',
+      sourceLocator: 'dm221-source',
+      institutionallyAdopted: false,
+    };
+
+    expect(assessCurriculumAuthority(inconsistent)).toMatchObject({
+      canPresentAsVerifiedSource: false,
+      canPresentAsInstitutionallyAdopted: false,
+      authorityLevel: 'DEMONSTRATION_UNVERIFIED',
+    });
+  });
+
+  it('fails closed when adoption metadata and declared authority disagree', () => {
+    const inconsistent: CurriculumBaselineProvenance = {
+      ...LEGACY_CURRICULUM_KB_PROVENANCE,
+      sourceType: 'institute-curriculum',
+      sourceStatus: 'active',
+      authorityLevel: 'INSTITUTIONALLY_ADOPTED',
+      sourceLocator: 'institutional-curriculum-version-id',
+      institutionallyAdopted: false,
+    };
+
+    expect(assessCurriculumAuthority(inconsistent)).toMatchObject({
+      canPresentAsVerifiedSource: false,
+      canPresentAsInstitutionallyAdopted: false,
+      authorityLevel: 'DEMONSTRATION_UNVERIFIED',
+    });
+    expect(() => assertInstitutionalCurriculumProjection(inconsistent)).toThrow(
+      /CURRICULUM_AUTHORITY_BLOCKED/,
+    );
+  });
 });
