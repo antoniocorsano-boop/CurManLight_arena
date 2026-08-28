@@ -1,34 +1,22 @@
-import React from 'react';
-import { Milestone, Info, Sparkles, ChevronLeft, ChevronRight, FileSearch, Layers, History } from 'lucide-react';
+import { ChevronLeft, ChevronRight, FileSearch, History, Info, Layers, Milestone } from 'lucide-react';
 import { useCurriculumStore } from '../../../store/useCurriculumStore';
 import { UiEmptyState } from '../../../ui/components/UiEmptyState';
 import type { DecisionStatus, Proposal } from '../../../types/curriculum';
 import type { AppViewsLayerProps } from '../../session';
-import {
-  PROPOSAL_STATUS_LABELS,
-  DECISION_OUTCOME_LABELS,
-  DECISION_STATUS_LABELS,
-} from '../../../domain/revision/vocabularies';
-import { getLatestProposalVersion, findDecisionsByProposal, getEventsByProposal } from '../../../domain/revision';
+import { PROPOSAL_STATUS_LABELS } from '../../../domain/revision/vocabularies';
+import { findDecisionsByProposal, getEventsByProposal, getLatestProposalVersion } from '../../../domain/revision';
 import type { RevisionProposal } from '../../../domain/revision';
-import { transitionProposalStatus } from '../../../domain/revision/repository';
-import { addProposal } from '../../../domain/revision/repository';
+import { addProposal, transitionProposalStatus } from '../../../domain/revision/repository';
 import { createEntityReference } from '../../../domain/curriculum/identity';
 import type { EntityId } from '../../../domain/curriculum/identity/types';
-import { HumanTaskSummary, evaluateRevisionHumanTask } from '../../guided-workflow';
 import { InstitutionalDecisionPanel, StructuredProposalStarter } from '../../beta';
-
-// ─── Canonical Proposal Actions (no double-write) ────────────────────────
 
 function useCanonicalRevisionActions() {
   const { revisionArchive, replaceRevisionArchive } = useCurriculumStore();
 
   const transitionProposal = (proposalId: string, newStatus: RevisionProposal['status'], rationale?: string) => {
-    const prev = revisionArchive;
-    const result = transitionProposalStatus(prev, proposalId as EntityId, newStatus, undefined, rationale);
-    if (result.success) {
-      replaceRevisionArchive(result.archive);
-    }
+    const result = transitionProposalStatus(revisionArchive, proposalId as EntityId, newStatus, undefined, rationale);
+    if (result.success) replaceRevisionArchive(result.archive);
     return result;
   };
 
@@ -40,244 +28,121 @@ function useCanonicalRevisionActions() {
       proposedText: currentText,
       rationale: '',
     });
-    if (result.success) {
-      replaceRevisionArchive(result.archive);
-    }
+    if (result.success) replaceRevisionArchive(result.archive);
     return result;
   };
 
   return { transitionProposal, createDraft };
 }
 
-// ─── Canonical Proposals Section ─────────────────────────────────────────
-
 function CanonicalProposalsSection() {
   const { revisionArchive } = useCurriculumStore();
   const { transitionProposal } = useCanonicalRevisionActions();
-  const proposals = revisionArchive.proposals.filter(p => p.status !== 'legacy');
+  const proposals = revisionArchive.proposals.filter((proposal) => proposal.status !== 'legacy');
 
-  if (proposals.length === 0) {
-    return (
-      <div className="space-y-2">
-        <h2 className="text-sm font-extrabold text-slate-800 flex items-center space-x-2">
-          <Layers className="w-4 h-4 text-indigo-500" />
-          <span>Proposte strutturate</span>
-          <span className="text-[10px] font-normal text-slate-500">— Registro locale, non protocollo ufficiale</span>
-        </h2>
-        <UiEmptyState
-          icon={Layers}
-          title="Nessuna proposta canonica"
-          description="Le proposte di revisione create con il nuovo modello appariranno qui. Le valutazioni personali precedenti sono nella sezione sottostante."
-        />
-      </div>
-    );
-  }
+  if (proposals.length === 0) return null;
 
   return (
-    <div className="space-y-3">
-      <h2 className="text-sm font-extrabold text-slate-800 flex items-center space-x-2">
-        <Layers className="w-4 h-4 text-indigo-500" />
-        <span>Proposte strutturate</span>
-        <span className="text-[10px] font-normal text-slate-500">— Registro locale, non protocollo ufficiale</span>
-      </h2>
-
-      {proposals.map(proposal => {
-        const version = getLatestProposalVersion(revisionArchive, proposal);
-        const decisions = findDecisionsByProposal(revisionArchive, proposal.id);
-        const latestDecision = decisions.length > 0 ? decisions[decisions.length - 1] : undefined;
-        const events = getEventsByProposal(revisionArchive, proposal.id);
-
-        const statusLabel = PROPOSAL_STATUS_LABELS[proposal.status];
-        const nodeLabel = proposal.targetNodeRef.snapshotLabel || proposal.targetNodeRef.id;
-        const humanTask = evaluateRevisionHumanTask(proposal);
-
-        return (
-          <div key={proposal.id} className="bg-white border-2 border-indigo-200 rounded-xl overflow-hidden">
-            {/* Header */}
-            <div className="bg-indigo-50 border-b border-indigo-100 px-4 py-2.5 flex items-center justify-between text-xs font-bold">
-              <span className="flex items-center space-x-2">
-                <span className="bg-indigo-100 text-indigo-700 text-[10px] font-extrabold px-1.5 py-0.5 rounded">{nodeLabel}</span>
-                <span className="text-slate-600">{statusLabel}</span>
-              </span>
-              <span className="text-slate-400 text-[10px]">
-                v{version?.versionNumber ?? 1} | {proposal.metadata.createdAt.slice(0, 10)}
-              </span>
-            </div>
-
-            <HumanTaskSummary
-              projection={humanTask.projection}
-              receipt={humanTask.receipt}
-            />
-
-            {/* Comparison */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 p-4 text-xs leading-relaxed">
-              <div className="space-y-1">
-                <strong className="text-slate-400 block text-[9px] uppercase">Testo vigente</strong>
-                <p className="bg-slate-50 p-2.5 border rounded-lg italic">"{proposal.currentTextSnapshot}"</p>
-              </div>
-              <div className="space-y-1">
-                <strong className="text-slate-400 block text-[9px] uppercase">Testo proposto</strong>
-                <p className="bg-indigo-50/30 p-2.5 border border-indigo-100 rounded-lg">"{version?.proposedText ?? proposal.proposedText}"</p>
-              </div>
-            </div>
-
-            {/* Rationale */}
-            {proposal.rationale && (
-              <div className="px-4 pb-3">
-                <strong className="text-[9px] uppercase text-slate-400">Motivazione</strong>
-                <p className="text-xs text-slate-600 mt-0.5">{proposal.rationale}</p>
-              </div>
-            )}
-
-            {/* Decisions */}
-            {latestDecision && (
-              <div className="px-4 pb-3 text-xs">
-                <strong className="text-[9px] uppercase text-slate-400">
-                  Decisione: {DECISION_STATUS_LABELS[latestDecision.status]}
-                </strong>
-                <p className="text-slate-600 mt-0.5">
-                  {DECISION_OUTCOME_LABELS[latestDecision.outcome]} — {latestDecision.authority.declaredRole}
-                  {latestDecision.rationale && ` — ${latestDecision.rationale}`}
-                </p>
-              </div>
-            )}
-
-            {/* Event history (minimal) */}
-            {events.length > 0 && (
-              <details className="px-4 pb-3">
-                <summary className="text-[10px] text-slate-400 cursor-pointer hover:text-slate-600">
-                  <History className="w-3 h-3 inline mr-1" />
-                  Registro locale ({events.length} eventi)
-                </summary>
-                <div className="mt-1 space-y-0.5 max-h-32 overflow-y-auto text-[10px] text-slate-500">
-                  {events.slice(-5).reverse().map(e => (
-                    <div key={e.id} className="flex space-x-2">
-                      <span className="text-slate-400 shrink-0">{e.timestamp.slice(11, 19)}</span>
-                      <span>{e.eventType}{e.rationale ? ` — ${e.rationale.slice(0, 60)}` : ''}</span>
-                    </div>
-                  ))}
-                </div>
-              </details>
-            )}
-
-            {/* State-aware actions */}
-            <div className="bg-slate-50 border-t border-slate-100 px-4 py-2 flex flex-wrap gap-1.5">
-              {proposal.status === 'draft' && (
-                <>
-                  <button
-                    onClick={() => transitionProposal(proposal.id, 'ready-for-review', proposal.rationale || undefined)}
-                    className="px-2.5 py-1 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded text-xs transition"
-                    disabled={!proposal.rationale}
-                    title={!proposal.rationale ? 'Motivazione richiesta' : undefined}
-                  >
-                    Prepara per revisione
-                  </button>
-                  <button
-                    onClick={() => transitionProposal(proposal.id, 'archived')}
-                    className="px-2.5 py-1 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded text-xs transition"
-                  >
-                    Archivia
-                  </button>
-                  {!proposal.rationale && (
-                    <span className="text-[10px] text-amber-600 self-center">⚠ Motivazione obbligatoria</span>
-                  )}
-                </>
-              )}
-              {proposal.status === 'ready-for-review' && (
-                <button
-                  onClick={() => transitionProposal(proposal.id, 'submitted')}
-                  className="px-2.5 py-1 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded text-xs transition"
-                >
-                  Invia
-                </button>
-              )}
-              {proposal.status === 'submitted' && (
-                <>
-                  <button
-                    onClick={() => transitionProposal(proposal.id, 'under-review')}
-                    className="px-2.5 py-1 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded text-xs transition"
-                  >
-                    Prendi in carico
-                  </button>
-                  <button
-                    onClick={() => transitionProposal(proposal.id, 'withdrawn')}
-                    className="px-2.5 py-1 bg-rose-100 hover:bg-rose-200 text-rose-700 font-bold rounded text-xs transition"
-                  >
-                    Ritira
-                  </button>
-                </>
-              )}
-              {proposal.status === 'under-review' && (
-                <>
-                  <button
-                    onClick={() => transitionProposal(proposal.id, 'changes-requested', 'Modifiche richieste dal revisore')}
-                    className="px-2.5 py-1 bg-amber-500 hover:bg-amber-400 text-white font-bold rounded text-xs transition"
-                  >
-                    Richiedi modifiche
-                  </button>
-                  <button
-                    onClick={() => transitionProposal(proposal.id, 'accepted-for-decision')}
-                    className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded text-xs transition"
-                  >
-                    Ammetti alla decisione
-                  </button>
-                  <button
-                    onClick={() => transitionProposal(proposal.id, 'rejected')}
-                    className="px-2.5 py-1 bg-rose-200 hover:bg-rose-300 text-rose-700 font-bold rounded text-xs transition"
-                  >
-                    Rigetta
-                  </button>
-                </>
-              )}
-              {proposal.status === 'changes-requested' && (
-                <>
-                  <button
-                    onClick={() => transitionProposal(proposal.id, 'ready-for-review')}
-                    className="px-2.5 py-1 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded text-xs transition"
-                  >
-                    Nuova versione pronta
-                  </button>
-                  <button
-                    onClick={() => transitionProposal(proposal.id, 'withdrawn')}
-                    className="px-2.5 py-1 bg-rose-100 hover:bg-rose-200 text-rose-700 font-bold rounded text-xs transition"
-                  >
-                    Ritira
-                  </button>
-                </>
-              )}
-              {proposal.status === 'accepted-for-decision' && (
-                <>
-                  <span className="text-[10px] text-slate-500 self-center">
-                    In attesa di decisione istituzionale autenticata
-                  </span>
-                  {version && <InstitutionalDecisionPanel proposal={proposal} version={version} />}
-                </>
-              )}
-              {proposal.status === 'rejected' && (
-                <button
-                  onClick={() => transitionProposal(proposal.id, 'archived')}
-                  className="px-2.5 py-1 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded text-xs transition"
-                >
-                  Archivia
-                </button>
-              )}
-              {proposal.status === 'withdrawn' && (
-                <button
-                  onClick={() => transitionProposal(proposal.id, 'archived')}
-                  className="px-2.5 py-1 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded text-xs transition"
-                >
-                  Archivia
-                </button>
-              )}
+    <details open className="rounded-2xl border border-indigo-100 bg-white" data-revision-secondary="structured-proposals">
+      <summary className="cursor-pointer list-none p-4">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex min-w-0 items-center gap-2">
+            <Layers className="h-4 w-4 shrink-0 text-indigo-600" aria-hidden="true" />
+            <div className="min-w-0">
+              <strong className="block text-sm text-slate-900">Proposte strutturate</strong>
+              <span className="block text-xs text-slate-500">{proposals.length} nel registro locale</span>
             </div>
           </div>
-        );
-      })}
-    </div>
+          <span className="text-xs font-semibold text-indigo-700">Apri / chiudi</span>
+        </div>
+      </summary>
+
+      <div className="space-y-3 border-t border-slate-100 p-3 sm:p-4">
+        {proposals.map((proposal) => {
+          const version = getLatestProposalVersion(revisionArchive, proposal);
+          const proposalDecisions = findDecisionsByProposal(revisionArchive, proposal.id);
+          const latestDecision = proposalDecisions.length > 0 ? proposalDecisions[proposalDecisions.length - 1] : undefined;
+          const events = getEventsByProposal(revisionArchive, proposal.id);
+          const nodeLabel = proposal.targetNodeRef.snapshotLabel || proposal.targetNodeRef.id;
+
+          return (
+            <article key={proposal.id} className="overflow-hidden rounded-xl border border-slate-200 bg-white">
+              <header className="flex items-start justify-between gap-3 bg-slate-50 px-3 py-3">
+                <div className="min-w-0">
+                  <strong className="block truncate text-sm text-slate-900">{nodeLabel}</strong>
+                  <span className="mt-0.5 block text-xs text-slate-500">{PROPOSAL_STATUS_LABELS[proposal.status]}</span>
+                </div>
+                <span className="shrink-0 rounded-full bg-white px-2 py-1 text-[10px] font-bold text-slate-500">v{version?.versionNumber ?? 1}</span>
+              </header>
+
+              <div className="space-y-3 p-3 text-xs leading-relaxed sm:p-4">
+                <div className="grid gap-2 sm:grid-cols-2">
+                  <div className="rounded-xl bg-slate-50 p-3">
+                    <span className="text-[10px] font-bold uppercase text-slate-400">Testo vigente</span>
+                    <p className="mt-1 text-slate-700">{proposal.currentTextSnapshot}</p>
+                  </div>
+                  <div className="rounded-xl border border-indigo-100 bg-indigo-50/30 p-3">
+                    <span className="text-[10px] font-bold uppercase text-indigo-500">Testo proposto</span>
+                    <p className="mt-1 text-slate-800">{version?.proposedText ?? proposal.proposedText}</p>
+                  </div>
+                </div>
+
+                {proposal.rationale && <p className="text-slate-600"><strong>Motivazione:</strong> {proposal.rationale}</p>}
+
+                {latestDecision && (
+                  <div className="rounded-xl border border-emerald-100 bg-emerald-50 p-3 text-slate-700">
+                    <strong>Decisione registrata:</strong> {String(latestDecision.outcome)}
+                    {latestDecision.rationale ? ` — ${latestDecision.rationale}` : ''}
+                  </div>
+                )}
+
+                {events.length > 0 && (
+                  <details>
+                    <summary className="cursor-pointer text-xs font-semibold text-slate-500"><History className="mr-1 inline h-3 w-3" aria-hidden="true" />Cronologia locale</summary>
+                    <div className="mt-2 space-y-1 rounded-xl bg-slate-50 p-3 text-[11px] text-slate-500">
+                      {events.slice(-5).reverse().map((event) => <div key={event.id}>{event.eventType}{event.rationale ? ` — ${event.rationale.slice(0, 80)}` : ''}</div>)}
+                    </div>
+                  </details>
+                )}
+              </div>
+
+              <div className="flex flex-wrap gap-2 border-t border-slate-100 bg-slate-50 px-3 py-3">
+                {proposal.status === 'draft' && (
+                  <>
+                    <button disabled={!proposal.rationale} onClick={() => transitionProposal(proposal.id, 'ready-for-review', proposal.rationale || undefined)} className="rounded-lg bg-indigo-700 px-3 py-2 text-xs font-bold text-white disabled:cursor-not-allowed disabled:opacity-40">Prepara per revisione</button>
+                    <button onClick={() => transitionProposal(proposal.id, 'archived')} className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-700">Archivia</button>
+                  </>
+                )}
+                {proposal.status === 'ready-for-review' && <button onClick={() => transitionProposal(proposal.id, 'submitted')} className="rounded-lg bg-indigo-700 px-3 py-2 text-xs font-bold text-white">Invia</button>}
+                {proposal.status === 'submitted' && (
+                  <>
+                    <button onClick={() => transitionProposal(proposal.id, 'under-review')} className="rounded-lg bg-indigo-700 px-3 py-2 text-xs font-bold text-white">Prendi in carico</button>
+                    <button onClick={() => transitionProposal(proposal.id, 'withdrawn')} className="rounded-lg border border-rose-200 bg-white px-3 py-2 text-xs font-bold text-rose-700">Ritira</button>
+                  </>
+                )}
+                {proposal.status === 'under-review' && (
+                  <>
+                    <button onClick={() => transitionProposal(proposal.id, 'changes-requested', 'Modifiche richieste dal revisore')} className="rounded-lg border border-amber-200 bg-white px-3 py-2 text-xs font-bold text-amber-800">Richiedi modifiche</button>
+                    <button onClick={() => transitionProposal(proposal.id, 'accepted-for-decision')} className="rounded-lg bg-emerald-700 px-3 py-2 text-xs font-bold text-white">Ammetti alla decisione</button>
+                    <button onClick={() => transitionProposal(proposal.id, 'rejected')} className="rounded-lg border border-rose-200 bg-white px-3 py-2 text-xs font-bold text-rose-700">Rigetta</button>
+                  </>
+                )}
+                {proposal.status === 'changes-requested' && <button onClick={() => transitionProposal(proposal.id, 'ready-for-review')} className="rounded-lg bg-indigo-700 px-3 py-2 text-xs font-bold text-white">Nuova versione pronta</button>}
+                {(proposal.status === 'rejected' || proposal.status === 'withdrawn') && <button onClick={() => transitionProposal(proposal.id, 'archived')} className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-700">Archivia</button>}
+              </div>
+
+              {proposal.status === 'accepted-for-decision' && version && (
+                <div className="border-t border-emerald-100 p-3 sm:p-4">
+                  <InstitutionalDecisionPanel proposal={proposal} version={version} />
+                </div>
+              )}
+            </article>
+          );
+        })}
+      </div>
+    </details>
   );
 }
-
-// ─── Main RevisioneTab ───────────────────────────────────────────────────
 
 export type RevisioneTabProps = Pick<AppViewsLayerProps,
   | 'currentDisciplineProps'
@@ -288,44 +153,129 @@ export type RevisioneTabProps = Pick<AppViewsLayerProps,
   | 'setRevisioneWizardIndex'
 >;
 
+function filterProposals(items: Proposal[], decisions: Record<string, DecisionStatus>, filter: string) {
+  return items.filter((proposal) => {
+    const state = decisions[proposal.id];
+    if (filter === 'pending') return !state;
+    if (filter === 'approved') return state === 'approved' || state === 'custom';
+    if (filter === 'rejected') return state === 'rejected';
+    return true;
+  });
+}
+
 export function RevisioneTab({
   currentDisciplineProps,
   currentDisciplineDecided,
-  revisioneMode,
-  setRevisioneMode,
   revisioneWizardIndex,
   setRevisioneWizardIndex,
 }: RevisioneTabProps) {
-  const { decisions, customTexts, activeRevisionFilter, setActiveRevisionFilter, setDecision, resetDecision, setCustomText, discipline, order } = useCurriculumStore();
+  const {
+    decisions,
+    customTexts,
+    activeRevisionFilter,
+    setActiveRevisionFilter,
+    setDecision,
+    resetDecision,
+    setCustomText,
+    discipline,
+    order,
+  } = useCurriculumStore();
+
+  const filtered = filterProposals(currentDisciplineProps, decisions, activeRevisionFilter);
+  const safeIndex = Math.max(0, Math.min(revisioneWizardIndex, Math.max(0, filtered.length - 1)));
+  const current = filtered[safeIndex];
+  const currentDecision = current ? decisions[current.id] : undefined;
+  const currentCustomText = current ? customTexts[current.id] || '' : '';
+
+  const moveTo = (next: number) => {
+    setRevisioneWizardIndex(Math.max(0, Math.min(filtered.length - 1, next)));
+    if (typeof window !== 'undefined') window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   return (
-    <div className="space-y-6 fade-in text-left">
-      <div className="border-b border-slate-100 pb-3 flex justify-between items-center">
-        <div>
-          <h1 className="text-base font-extrabold text-slate-800 flex items-center space-x-2">
-            <Milestone className="w-5 h-5 text-amber-500" />
-            <span>Revisione del Curricolo: Gap 2025</span>
-          </h1>
-          <p className="text-[11px] text-slate-500">Confronta i testi e registra proposte locali non autoritative.</p>
+    <div className="space-y-4 fade-in pb-24 text-left sm:pb-6" data-revision-flow="focused">
+      <header className="sticky top-16 z-30 -mx-3 border-b border-slate-200 bg-white/95 px-3 py-3 backdrop-blur sm:static sm:mx-0 sm:rounded-2xl sm:border sm:p-4" data-revision-sticky-context>
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <div className="flex items-center gap-2">
+              <Milestone className="h-4 w-4 shrink-0 text-amber-500" aria-hidden="true" />
+              <h1 className="truncate text-sm font-extrabold text-slate-900 sm:text-base">Revisione del Curricolo: Gap 2025</h1>
+            </div>
+            <p className="mt-1 text-xs text-slate-500">Confronta una scheda alla volta. La scelta locale non è una decisione ufficiale.</p>
+          </div>
+          <span className="shrink-0 rounded-full bg-slate-100 px-2.5 py-1 text-[10px] font-bold text-slate-600">{currentDisciplineDecided}/{currentDisciplineProps.length}</span>
         </div>
-        <span className="font-extrabold text-slate-700 text-xs">{currentDisciplineDecided}/{currentDisciplineProps.length} scelte locali</span>
-      </div>
 
-      <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-xs text-amber-900 flex items-start space-x-3 leading-relaxed">
-        <Info className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
-        <div>
-          <strong>Istruzioni operative:</strong> registra una scelta locale tra <strong>Usa testo 2025</strong>, <strong>Mantieni testo 2012</strong> o una proposta personalizzata. Nessuna scelta costituisce voto o approvazione.
+        <div className="mt-3 flex gap-1 overflow-x-auto pb-1 text-xs font-semibold" aria-label="Filtra revisioni">
+          {(['all', 'pending', 'approved', 'rejected'] as const).map((filter) => (
+            <button
+              key={filter}
+              type="button"
+              onClick={() => { setActiveRevisionFilter(filter); setRevisioneWizardIndex(0); }}
+              className={`shrink-0 rounded-full px-3 py-1.5 transition ${activeRevisionFilter === filter ? 'bg-indigo-700 text-white' : 'bg-slate-100 text-slate-600'}`}
+            >
+              {filter === 'all' ? 'Tutte' : filter === 'pending' ? 'Da rivedere' : filter === 'approved' ? 'Proposte' : 'Precedenti'}
+            </button>
+          ))}
         </div>
-      </div>
+      </header>
 
-      {/* Gradual Transition Banner */}
-      <div className="bg-indigo-50 border border-indigo-150 rounded-xl p-4 text-xs text-indigo-950 flex items-start space-x-3 leading-relaxed shadow-sm">
-        <Sparkles className="w-5 h-5 text-indigo-600 shrink-0 mt-0.5 animate-pulse" />
-        <div className="space-y-1">
-          <strong className="text-indigo-950 font-black block uppercase text-[10px] tracking-wider">Scelte locali di confronto</strong>
-          <p className="font-semibold text-slate-700 leading-normal">Le scelte registrate sono note di lavoro non obbligatorie e non determinano applicabilità o adozione.</p>
-        </div>
-      </div>
+      {current ? (
+        <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm" aria-labelledby="current-revision-title" data-revision-current-card>
+          <header className="flex items-start justify-between gap-3 border-b border-slate-100 bg-slate-50 p-4">
+            <div className="min-w-0">
+              <span className="text-[10px] font-black uppercase tracking-wide text-indigo-600">Scheda {safeIndex + 1} di {filtered.length}</span>
+              <h2 id="current-revision-title" className="mt-1 text-base font-extrabold leading-tight text-slate-900">{current.focus}</h2>
+              <span className="mt-1 block text-[11px] text-slate-500">{current.id.toUpperCase()}</span>
+            </div>
+            <span className={`shrink-0 rounded-full px-2.5 py-1 text-[10px] font-bold ${currentDecision ? 'bg-indigo-100 text-indigo-800' : 'bg-amber-100 text-amber-800'}`}>
+              {currentDecision === 'approved' ? 'Testo 2025' : currentDecision === 'rejected' ? 'Testo 2012' : currentDecision === 'custom' ? 'Personalizzato' : 'Da rivedere'}
+            </span>
+          </header>
+
+          <div className="space-y-3 p-4">
+            <article className="rounded-xl bg-slate-50 p-3">
+              <strong className="text-[10px] uppercase tracking-wide text-slate-500">Testo precedente · D.M. 254/2012</strong>
+              <p className="mt-2 text-sm leading-relaxed text-slate-700">{current.oldText}</p>
+            </article>
+            <article className="rounded-xl border border-indigo-100 bg-indigo-50/30 p-3">
+              <strong className="text-[10px] uppercase tracking-wide text-indigo-600">Testo proposto · D.M. 221/2025</strong>
+              <p className="mt-2 text-sm leading-relaxed text-slate-800">{current.newText}</p>
+            </article>
+
+            {currentDecision === 'custom' && (
+              <div>
+                <label htmlFor={`custom-${current.id}`} className="text-xs font-bold text-slate-700">La tua proposta locale</label>
+                <textarea
+                  id={`custom-${current.id}`}
+                  value={currentCustomText}
+                  onChange={(event) => setCustomText(current.id, event.target.value)}
+                  rows={4}
+                  className="mt-2 w-full rounded-xl border border-amber-200 bg-white p-3 text-sm leading-relaxed outline-none focus:ring-2 focus:ring-amber-400/30"
+                  placeholder="Scrivi una proposta da sottoporre a revisione…"
+                />
+              </div>
+            )}
+          </div>
+
+          <div className="sticky bottom-16 z-20 border-t border-slate-200 bg-white/95 p-3 backdrop-blur sm:static" data-revision-sticky-actions>
+            <p className="mb-2 text-xs font-semibold text-slate-600">Quale testo vuoi portare avanti come scelta locale?</p>
+            <div className="grid grid-cols-3 gap-2">
+              <button type="button" onClick={() => setDecision(current.id, 'approved')} className={`rounded-xl px-2 py-2.5 text-xs font-bold ${currentDecision === 'approved' ? 'bg-emerald-700 text-white' : 'border border-slate-200 bg-white text-slate-700'}`}>Usa testo 2025</button>
+              <button type="button" onClick={() => setDecision(current.id, 'rejected')} className={`rounded-xl px-2 py-2.5 text-xs font-bold ${currentDecision === 'rejected' ? 'bg-rose-700 text-white' : 'border border-slate-200 bg-white text-slate-700'}`}>Mantieni 2012</button>
+              <button type="button" onClick={() => setDecision(current.id, 'custom')} className={`rounded-xl px-2 py-2.5 text-xs font-bold ${currentDecision === 'custom' ? 'bg-amber-500 text-white' : 'border border-slate-200 bg-white text-slate-700'}`}>Personalizza</button>
+            </div>
+
+            <div className="mt-3 flex items-center gap-2">
+              <button type="button" disabled={safeIndex === 0} onClick={() => moveTo(safeIndex - 1)} className="flex flex-1 items-center justify-center gap-1 rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-xs font-bold text-slate-700 disabled:opacity-30"><ChevronLeft className="h-4 w-4" aria-hidden="true" />Precedente</button>
+              {currentDecision && <button type="button" onClick={() => resetDecision(current.id)} className="px-2 py-2 text-xs font-semibold text-slate-500">Annulla</button>}
+              <button type="button" disabled={safeIndex === filtered.length - 1} onClick={() => moveTo(safeIndex + 1)} className="flex flex-1 items-center justify-center gap-1 rounded-xl bg-indigo-700 px-3 py-2.5 text-xs font-bold text-white disabled:bg-slate-200 disabled:text-slate-400">Successivo<ChevronRight className="h-4 w-4" aria-hidden="true" /></button>
+            </div>
+          </div>
+        </section>
+      ) : (
+        <UiEmptyState icon={FileSearch} title="Nessuna variazione da mostrare" description="Non ci sono schede corrispondenti al filtro selezionato." />
+      )}
 
       <StructuredProposalStarter
         proposals={currentDisciplineProps}
@@ -335,246 +285,16 @@ export function RevisioneTab({
         order={order}
       />
 
-      {/* Canonical Proposals Section */}
       <CanonicalProposalsSection />
 
-      {/* Layout selector */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-white p-3.5 border border-slate-200 rounded-2xl shadow-sm gap-3">
-        <div className="space-y-0.5">
-          <div className="text-xs font-black text-slate-800 uppercase tracking-wider flex items-center space-x-1">
-            <Sparkles className="w-4 h-4 text-amber-500 animate-pulse" />
-            <span>Riepilogo delle scelte locali</span>
-          </div>
-          <div className="text-[10px] text-slate-500 font-semibold">Scegli come esaminare le proposte e registrare note locali</div>
+      <details className="rounded-2xl border border-slate-200 bg-white" data-revision-secondary="help">
+        <summary className="cursor-pointer list-none p-4">
+          <div className="flex items-center gap-2 text-sm font-bold text-slate-700"><Info className="h-4 w-4 text-amber-500" aria-hidden="true" />Come funziona questa revisione</div>
+        </summary>
+        <div className="border-t border-slate-100 p-4 text-xs leading-relaxed text-slate-600">
+          Le tre scelte servono a preparare il lavoro. Non sono voti né approvazioni. Una proposta strutturata segue poi il proprio percorso di revisione; l’eventuale decisione istituzionale è separata e richiede identità e autorità verificate.
         </div>
-        <div className="bg-slate-100 p-1 rounded-xl flex space-x-1 text-xs font-bold shadow-sm self-stretch sm:self-auto">
-          <button onClick={() => setRevisioneMode('list')} className={`px-3 py-1.5 rounded-lg transition ${revisioneMode === 'list' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500'}`}>Elenco Completo</button>
-          <button onClick={() => { setRevisioneMode('wizard'); setRevisioneWizardIndex(0); }} className={`px-3 py-1.5 rounded-lg transition ${revisioneMode === 'wizard' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500'}`}>Passo-Passo (Monoscheda)</button>
-        </div>
-      </div>
-
-      {/* Revision Filters */}
-      <div className="flex items-center space-x-1 bg-slate-50 p-1.5 rounded-xl border border-slate-200 text-xs font-semibold text-slate-600">
-        <span className="mx-2">Filtro:</span>
-        {(['all', 'pending', 'approved', 'rejected'] as const).map(f => (
-          <button key={f} onClick={() => { setActiveRevisionFilter(f); setRevisioneWizardIndex(0); }} className={`px-2.5 py-1 rounded-lg transition ${activeRevisionFilter === f ? 'bg-slate-200 text-slate-800' : 'hover:bg-slate-100'}`}>
-            {f === 'all' ? 'Tutte' : f === 'pending' ? 'Senza scelta' : f === 'approved' ? 'Testo proposto' : 'Testo precedente'}
-          </button>
-        ))}
-      </div>
-
-      {revisioneMode === 'list' ? (
-        /* Stack comparison cards */
-        (() => {
-          const filteredList = currentDisciplineProps.filter(p => {
-            const s = decisions[p.id];
-            if (activeRevisionFilter === 'pending' && s) return false;
-            if (activeRevisionFilter === 'approved' && s !== 'approved' && s !== 'custom') return false;
-            if (activeRevisionFilter === 'rejected' && s !== 'rejected') return false;
-            return true;
-          });
-          if (filteredList.length === 0) {
-            return (
-              <UiEmptyState
-                icon={FileSearch}
-                title="Nessuna variazione da mostrare"
-                description="Non ci sono schede corrispondenti alla categoria selezionata."
-              />
-            );
-          }
-          return (
-          <div id="gap-comparison-container" className="space-y-4">
-          {filteredList.map(p => {
-            const s = decisions[p.id];
-            const cText = customTexts[p.id] || "";
-            let cardBorder = "border-slate-200";
-            if (s === 'approved') cardBorder = "border-emerald-500 shadow-md shadow-emerald-500/5";
-            else if (s === 'rejected') cardBorder = "border-rose-400";
-            else if (s === 'custom') cardBorder = "border-amber-500 shadow-md shadow-amber-500/5";
-
-            return (
-              <div key={p.id} className={`bg-white border-2 ${cardBorder} rounded-xl overflow-hidden transition-all duration-200`}>
-                <div className="bg-slate-50 border-b border-slate-100 px-4 py-2.5 flex items-center justify-between text-xs font-bold text-slate-700">
-                  <span className="flex items-center space-x-2">
-                    <span className="bg-indigo-50 border border-indigo-100 text-indigo-700 text-[10px] font-extrabold px-1.5 py-0.5 rounded">{p.id.toUpperCase()}</span>
-                    <span>{p.focus}</span>
-                  </span>
-                  <span>{s === 'approved' ? 'Scelta: testo proposto' : s === 'rejected' ? 'Scelta: testo precedente' : s === 'custom' ? 'Scelta: personalizzato' : 'Senza scelta'}</span>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 text-xs leading-relaxed">
-                  <div className="space-y-1">
-                    <strong className="text-slate-400 block text-[9px] uppercase">DM 254/2012 (Vigente)</strong>
-                    <p className="bg-slate-50 p-2.5 border rounded-lg italic">"{p.oldText}"</p>
-                  </div>
-                  <div className="space-y-1">
-                    <strong className="text-slate-400 block text-[9px] uppercase">DM 221/2025 (Proposta)</strong>
-                    <p className="bg-indigo-50/30 p-2.5 border border-indigo-100 rounded-lg">"{p.newText}"</p>
-                  </div>
-                </div>
-                {s === 'custom' && (
-                  <div className="p-4 border-t border-slate-100 bg-amber-50/20">
-                    <textarea value={cText} onChange={(e) => setCustomText(p.id, e.target.value)} className="w-full border border-amber-200 rounded-lg p-2.5 text-xs bg-white" rows={2} placeholder="Scrivi la tua proposta personalizzata..." />
-                  </div>
-                )}
-                <div className="bg-slate-50/50 border-t border-slate-100 px-4 py-2 flex justify-between items-center gap-2">
-                  <div className="flex space-x-1.5">
-                    <button onClick={() => setDecision(p.id, 'approved')} className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded text-xs transition">Usa testo 2025</button>
-                    <button onClick={() => setDecision(p.id, 'rejected')} className="px-2.5 py-1 bg-rose-600 hover:bg-rose-500 text-white font-bold rounded text-xs transition">Mantieni 2012</button>
-                    <button onClick={() => setDecision(p.id, 'custom')} className="px-2.5 py-1 bg-amber-500 hover:bg-amber-400 text-white font-bold rounded text-xs transition">Modifica</button>
-                  </div>
-                  {s && <button onClick={() => resetDecision(p.id)} className="text-slate-400 hover:text-slate-600 text-xs">Annulla</button>}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-          );
-        })()
-      ) : (
-        /* Step-by-Step Wizard */
-        <RevisioneWizard
-          currentDisciplineProps={currentDisciplineProps}
-          activeRevisionFilter={activeRevisionFilter}
-          decisions={decisions}
-          customTexts={customTexts}
-          revisioneWizardIndex={revisioneWizardIndex}
-          setRevisioneWizardIndex={setRevisioneWizardIndex}
-          setDecision={setDecision}
-          resetDecision={resetDecision}
-          setCustomText={setCustomText}
-        />
-      )}
-    </div>
-  );
-}
-
-interface RevisioneWizardProps {
-  currentDisciplineProps: Proposal[];
-  activeRevisionFilter: string;
-  decisions: Record<string, DecisionStatus>;
-  customTexts: Record<string, string>;
-  revisioneWizardIndex: number;
-  setRevisioneWizardIndex: React.Dispatch<React.SetStateAction<number>>;
-  setDecision: (id: string, status: DecisionStatus) => void;
-  resetDecision: (id: string) => void;
-  setCustomText: (id: string, text: string) => void;
-}
-
-function RevisioneWizard({
-  currentDisciplineProps,
-  activeRevisionFilter,
-  decisions,
-  customTexts,
-  revisioneWizardIndex,
-  setRevisioneWizardIndex,
-  setDecision,
-  resetDecision,
-  setCustomText,
-}: RevisioneWizardProps) {
-  const filteredProps = currentDisciplineProps.filter(p => {
-    const s = decisions[p.id];
-    if (activeRevisionFilter === 'pending' && s) return false;
-    if (activeRevisionFilter === 'approved' && s !== 'approved' && s !== 'custom') return false;
-    if (activeRevisionFilter === 'rejected' && s !== 'rejected') return false;
-    return true;
-  });
-
-  if (filteredProps.length === 0) {
-    return (
-      <div className="bg-slate-50 border border-dashed rounded-3xl p-8 text-center space-y-3.5">
-        <div className="space-y-1">
-          <h4 className="font-extrabold text-slate-800 text-sm">Nessuna variazione da mostrare</h4>
-          <p className="text-[11px] text-slate-500 leading-relaxed font-semibold max-w-sm mx-auto">Non ci sono schede corrispondenti alla categoria selezionata.</p>
-        </div>
-      </div>
-    );
-  }
-
-  const safeIndex = Math.max(0, Math.min(revisioneWizardIndex, filteredProps.length - 1));
-  const p = filteredProps[safeIndex];
-  const s = decisions[p.id];
-  const cText = customTexts[p.id] || "";
-
-  let cardBorder = "border-slate-200";
-  if (s === 'approved') cardBorder = "border-emerald-500 shadow-md shadow-emerald-500/10";
-  else if (s === 'rejected') cardBorder = "border-rose-400 shadow-md shadow-rose-400/5";
-  else if (s === 'custom') cardBorder = "border-amber-500 shadow-md shadow-amber-500/10";
-
-  return (
-    <div className={`bg-white border-2 ${cardBorder} rounded-3xl overflow-hidden shadow-sm flex flex-col justify-between`}>
-      {/* Header */}
-      <div className="bg-slate-50 border-b border-slate-150 px-6 py-4 flex justify-between items-center text-xs font-bold text-slate-700">
-        <span className="flex items-center space-x-2.5">
-          <span className="bg-indigo-600 text-white text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider">{p.id.toUpperCase()}</span>
-          <span className="font-black text-slate-800 text-xs">{p.focus}</span>
-        </span>
-        <span className="bg-slate-200 px-2.5 py-1 rounded-full text-[10px]">
-          Scheda {safeIndex + 1} di {filteredProps.length}
-        </span>
-      </div>
-
-      {/* Comparative body */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-5 p-6 text-xs leading-relaxed">
-        <div className="space-y-1.5">
-          <strong className="text-slate-400 block text-[9px] uppercase font-bold tracking-wider">DM 254/2012 (Ordinamento Previgente)</strong>
-          <p className="bg-slate-50 p-4 border rounded-2xl italic text-slate-700">"{p.oldText}"</p>
-        </div>
-        <div className="space-y-1.5">
-          <strong className="text-slate-400 block text-[9px] uppercase font-bold tracking-wider">DM 221/2025 (Ordinamento Riformato)</strong>
-          <p className="bg-indigo-50/20 p-4 border border-indigo-100 rounded-2xl text-slate-800 font-medium">"{p.newText}"</p>
-        </div>
-      </div>
-
-      {/* Custom text area */}
-      {s === 'custom' && (
-        <div className="p-6 border-t border-slate-100 bg-amber-50/10 text-xs">
-          <label className="text-[10px] font-black uppercase text-amber-800 block mb-2">Inserisci una proposta personale locale:</label>
-          <textarea value={cText} onChange={(e) => setCustomText(p.id, e.target.value)} className="w-full border border-amber-200 rounded-xl p-3 text-xs bg-white focus:ring-2 focus:ring-amber-500/20 outline-none leading-relaxed" rows={3} placeholder="Digita una modifica locale non verificata..." />
-        </div>
-      )}
-
-      {/* Local choices and navigation */}
-      <div className="bg-slate-50 border-t border-slate-150 px-6 py-4 flex flex-col sm:flex-row justify-between items-center gap-4">
-        <div className="flex flex-wrap gap-2">
-          <button onClick={() => setDecision(p.id, 'approved')} className={`px-4 py-2 rounded-xl font-bold text-xs transition flex items-center space-x-1.5 ${s === 'approved' ? 'bg-emerald-600 text-white shadow-md' : 'bg-white hover:bg-slate-100 border text-slate-700'}`}>
-            <span>Usa testo 2025</span>
-          </button>
-          <button onClick={() => setDecision(p.id, 'rejected')} className={`px-4 py-2 rounded-xl font-bold text-xs transition flex items-center space-x-1.5 ${s === 'rejected' ? 'bg-rose-600 text-white shadow-md' : 'bg-white hover:bg-slate-100 border text-slate-700'}`}>
-            <span>Mantieni 2012</span>
-          </button>
-          <button onClick={() => setDecision(p.id, 'custom')} className={`px-4 py-2 rounded-xl font-bold text-xs transition flex items-center space-x-1.5 ${s === 'custom' ? 'bg-amber-500 text-white shadow-md' : 'bg-white hover:bg-slate-100 border text-slate-700'}`}>
-            <span>Personalizza</span>
-          </button>
-          {s && (
-            <button onClick={() => resetDecision(p.id)} className="px-3 py-2 text-slate-400 hover:text-slate-600 font-bold text-xs">
-              Resetta
-            </button>
-          )}
-        </div>
-
-        <div className="flex space-x-2 self-stretch sm:self-auto w-full sm:w-auto">
-          <button
-            onClick={() => setRevisioneWizardIndex(prev => Math.max(0, prev - 1))}
-            disabled={safeIndex === 0}
-            className={`flex-1 sm:flex-initial px-4 py-2 border rounded-xl flex items-center justify-center space-x-1 font-bold text-xs transition ${
-              safeIndex === 0 ? 'border-slate-200 text-slate-300 bg-slate-50 cursor-not-allowed' : 'border-slate-200 hover:bg-slate-100 text-slate-700 bg-white'
-            }`}
-          >
-            <ChevronLeft className="w-4 h-4" />
-            <span>Precedente</span>
-          </button>
-          <button
-            onClick={() => setRevisioneWizardIndex(prev => Math.min(filteredProps.length - 1, prev + 1))}
-            disabled={safeIndex === filteredProps.length - 1}
-            className={`flex-1 sm:flex-initial px-4 py-2 border rounded-xl flex items-center justify-center space-x-1 font-bold text-xs transition ${
-              safeIndex === filteredProps.length - 1 ? 'border-slate-200 text-slate-300 bg-slate-50 cursor-not-allowed' : 'border-slate-200 hover:bg-slate-100 text-slate-700 bg-white'
-            }`}
-          >
-            <span>Successivo</span>
-            <ChevronRight className="w-4 h-4" />
-          </button>
-        </div>
-      </div>
+      </details>
     </div>
   );
 }

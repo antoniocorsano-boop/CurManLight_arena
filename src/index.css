@@ -92,6 +92,17 @@
   opacity: 1;
 }
 
+/*
+ * The mobile revision actions use CSS sticky positioning while remaining in
+ * normal document flow. No fixed safety spacer is required: content remains
+ * readable and the page height reflects only the real content and controls.
+ */
+@media (max-width: 639px) {
+  [data-revision-sticky-actions] {
+    box-shadow: 0 -8px 18px rgba(15, 23, 42, 0.08);
+  }
+}
+
 /* Media query per la stampa professionale dei PDF d'Istituto */
 @media print {
   body {
