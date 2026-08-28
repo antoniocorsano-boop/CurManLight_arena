@@ -22,6 +22,18 @@ describe('Arena Beta canonical AppHeader', () => {
     expect(screen.getByText('Curricolo d’istituto')).toBeInTheDocument();
   });
 
+  it('exposes a bounded assistant entry without making it a primary navigation area', () => {
+    const setIsCopilotChatOpen = vi.fn();
+    render(<AppHeader {...props({ setIsCopilotChatOpen })} />);
+
+    const assistant = screen.getByRole('button', { name: 'Apri Assistente Arena' });
+    expect(assistant).toHaveAttribute('data-assistant-entry', 'bounded');
+    expect(assistant).toHaveAttribute('aria-pressed', 'false');
+
+    fireEvent.click(assistant);
+    expect(setIsCopilotChatOpen).toHaveBeenCalledWith(true);
+  });
+
   it('exposes session continuity without claiming institutional authority', () => {
     const setRoleDropdownOpen = vi.fn();
     render(<AppHeader {...props({ roleDropdownOpen: true, setRoleDropdownOpen })} />);
