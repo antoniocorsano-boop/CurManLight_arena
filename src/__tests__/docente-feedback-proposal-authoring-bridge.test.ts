@@ -28,7 +28,7 @@ function request(): DocenteFeedbackProposalAuthoringRequest {
 
 const author = {
   displayName: 'Referente curricolo',
-  role: 'referente-curricolo' as const,
+  role: 'referente' as const,
   assertion: 'self-declared' as const,
 };
 
