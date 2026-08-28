@@ -4,7 +4,9 @@ import LegacySecondBrainTab, { type SecondBrainTabProps } from './SecondBrainTab
 export type { SecondBrainTabProps } from './SecondBrainTabLegacy';
 
 export default function SecondBrainTab(props: SecondBrainTabProps) {
-  const { secondBrainTab, setSecondBrainTab, setWikiWorkspaceTab } = props;
+  const { secondBrainTab, setSecondBrainTab, wikiWorkspaceTab, setWikiWorkspaceTab } = props;
+  const isSearchActive = secondBrainTab === 'brain' && wikiWorkspaceTab === 'chat';
+  const isArchiveActive = secondBrainTab === 'brain' && wikiWorkspaceTab === 'read';
 
   const openSearch = () => {
     setSecondBrainTab('brain');
@@ -35,8 +37,8 @@ export default function SecondBrainTab(props: SecondBrainTabProps) {
           <button
             type="button"
             onClick={openSearch}
-            aria-current={secondBrainTab === 'brain' ? 'page' : undefined}
-            className={`min-h-12 rounded-xl border px-3 py-2 text-left text-sm font-bold transition ${secondBrainTab === 'brain' ? 'border-indigo-500 bg-indigo-50 text-indigo-950' : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'}`}
+            aria-current={isSearchActive ? 'page' : undefined}
+            className={`min-h-12 rounded-xl border px-3 py-2 text-left text-sm font-bold transition ${isSearchActive ? 'border-indigo-500 bg-indigo-50 text-indigo-950' : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'}`}
           >
             <span className="flex items-center gap-2"><Search className="h-4 w-4" aria-hidden="true" />Cerca e chiedi</span>
           </button>
@@ -59,7 +61,8 @@ export default function SecondBrainTab(props: SecondBrainTabProps) {
           <button
             type="button"
             onClick={openArchive}
-            className="min-h-12 rounded-xl border border-slate-200 bg-white px-3 py-2 text-left text-sm font-bold text-slate-700 transition hover:bg-slate-50"
+            aria-current={isArchiveActive ? 'page' : undefined}
+            className={`min-h-12 rounded-xl border px-3 py-2 text-left text-sm font-bold transition ${isArchiveActive ? 'border-indigo-500 bg-indigo-50 text-indigo-950' : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'}`}
           >
             <span className="flex items-center gap-2"><Archive className="h-4 w-4" aria-hidden="true" />Archivio storico</span>
           </button>
