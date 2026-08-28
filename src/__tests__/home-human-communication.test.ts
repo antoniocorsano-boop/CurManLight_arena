@@ -33,11 +33,12 @@ describe('Home HCM projection', () => {
     const department = getHomeRoleCommunication('dipartimento');
     const collegio = getHomeRoleCommunication('collegio');
 
-    expect(department.title).toBe('Confronta il lavoro del dipartimento');
-    expect(department.summary).toMatch(/preparatorie/);
-    expect(department.summary).toMatch(/non producono effetti istituzionali/);
-    expect(collegio.title).toBe('Materiali per il lavoro collegiale');
-    expect(collegio.summary).toMatch(/percorso autenticato/);
+    expect(department.title).toBe('Confronta le proposte del dipartimento');
+    expect(department.summary).toMatch(/preparando il lavoro/);
+    expect(department.summary).toMatch(/nessuna decisione viene presa automaticamente/);
+    expect(collegio.title).toBe('Prepara il lavoro collegiale');
+    expect(collegio.summary).toMatch(/decisione ufficiale/);
+    expect(collegio.summary).toMatch(/percorso dedicato/);
   });
 
   it('keeps implementation-specific storage vocabulary out of administrator primary language', () => {
