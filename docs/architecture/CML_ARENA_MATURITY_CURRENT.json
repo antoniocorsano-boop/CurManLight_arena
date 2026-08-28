@@ -1,0 +1,47 @@
+{
+  "asOf": "2026-08-28",
+  "canonicalMainSha": "e8958406c6fb8e3a191ed705de7f3229e13439b6",
+  "maturity": {
+    "level": "M3.3",
+    "classification": "ADVANCED_CONTROLLED_BETA"
+  },
+  "beta": {
+    "phase": "B3",
+    "status": "IN_PROGRESS",
+    "gates": {
+      "BETA-G4": "PASS",
+      "BETA-G5": "PENDING_HUMAN",
+      "BETA-G6": "PENDING_HUMAN"
+    }
+  },
+  "institutionalAuthority": {
+    "serverAuthoritativeDecisionBoundary": true,
+    "appendOnlyReceipts": true,
+    "proposalVersionFingerprintBinding": true,
+    "failClosedNoLocalFallback": true,
+    "automaticCurriculumMutation": false
+  },
+  "docenteOsFeedbackLoop": {
+    "intake": "READY_FOR_HUMAN_TRIAGE",
+    "authority": "NON_AUTHORITATIVE_PROFESSIONAL_EVIDENCE",
+    "humanTriage": true,
+    "humanProposalAuthoring": true,
+    "explicitConfirmationBeforeDraftProposal": true,
+    "automaticProposal": false,
+    "automaticDecision": false,
+    "automaticSubmit": false,
+    "baselineMutation": false,
+    "runtimeCrossProductTransport": false
+  },
+  "readinessBlockers": [
+    "BETA-G5 Human Interaction Acceptance",
+    "BETA-G6 Accessibility Acceptance"
+  ],
+  "nextSequence": [
+    "BETA-G5",
+    "BETA-G6",
+    "sustained-beta-evidence",
+    "controlled-interop-e2e-if-required"
+  ],
+  "auditRef": "docs/architecture/SYSTEM_MATURITY_AUDIT_2026-08-28.md"
+}
