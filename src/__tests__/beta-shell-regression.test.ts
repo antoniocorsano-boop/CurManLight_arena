@@ -24,6 +24,14 @@ const revisionSource = firstSource(import.meta.glob('../features/curriculum/comp
   query: '?raw', import: 'default', eager: true,
 }) as Record<string, string>);
 
+const documentsSource = firstSource(import.meta.glob('../features/documents/components/EsportazioniTab.tsx', {
+  query: '?raw', import: 'default', eager: true,
+}) as Record<string, string>);
+
+const routingSource = firstSource(import.meta.glob('../features/navigation/appRouting.ts', {
+  query: '?raw', import: 'default', eager: true,
+}) as Record<string, string>);
+
 const navigationIndexSource = firstSource(import.meta.glob('../features/navigation/index.ts', {
   query: '?raw', import: 'default', eager: true,
 }) as Record<string, string>);
@@ -82,6 +90,20 @@ describe('Arena Beta canonical shell regression guard', () => {
     expect(revisionSource).toContain('Prepara per revisione');
     expect(revisionSource).toContain('Ammetti alla decisione');
     expect(revisionSource).toContain('Le tre scelte servono a preparare il lavoro. Non sono voti né approvazioni.');
+  });
+
+  it('keeps Documents inside the institutional curriculum scope', () => {
+    expect(documentsSource).toContain('data-beta-documents-scope="institutional-curriculum"');
+    expect(documentsSource).toContain('Condividi il curricolo');
+    expect(documentsSource).toContain('Continua il lavoro');
+    expect(documentsSource).toContain('Copia di lavoro .cml');
+    expect(documentsSource).not.toMatch(/Modelli con IA|Sicurezza e reset|Programmazione su Due Quadrimestri|Relazione Intermedia|Programma Svolto|Genera Programmazione Annuale|Genera Relazione Scolastica/i);
+  });
+
+  it('emits /fonti as the canonical source route while retaining legacy /settings compatibility', () => {
+    expect(routingSource).toContain("case 'fonti': return '/fonti'");
+    expect(routingSource).toContain("pathname.startsWith('/settings')");
+    expect(routingSource).not.toContain("case 'fonti': return '/settings'");
   });
 
   it('exposes only one navigation shell from the navigation package', () => {
