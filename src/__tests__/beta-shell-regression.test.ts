@@ -20,6 +20,10 @@ const homeSource = firstSource(import.meta.glob('../features/session/components/
   query: '?raw', import: 'default', eager: true,
 }) as Record<string, string>);
 
+const revisionSource = firstSource(import.meta.glob('../features/curriculum/components/RevisioneTab.tsx', {
+  query: '?raw', import: 'default', eager: true,
+}) as Record<string, string>);
+
 const navigationIndexSource = firstSource(import.meta.glob('../features/navigation/index.ts', {
   query: '?raw', import: 'default', eager: true,
 }) as Record<string, string>);
@@ -50,11 +54,32 @@ describe('Arena Beta canonical shell regression guard', () => {
     expect(mobileSource).toContain('Documenti');
   });
 
-  it('does not present local state as votes, consensus or technical compliance on the Home', () => {
+  it('keeps Home compact and moves authority explanation behind progressive disclosure', () => {
     expect(homeSource).not.toMatch(/Votazione|Voti Registrati|Unione Consensi|Merger|\.cml|IndexedDB|Dexie|Service Worker|WCAG|GDPR/i);
-    expect(homeSource).toContain('Preparare, controllare e decidere non sono la stessa azione');
-    expect(homeSource).toContain('Decidi solo con autorità verificata');
-    expect(homeSource).toContain('non attribuisce l’autorizzazione a decidere');
+    expect(homeSource).toContain('4 passaggi');
+    expect(homeSource).toContain('data-hcm-secondary-content');
+    expect(homeSource).toContain('Perché questi passaggi sono separati');
+    expect(homeSource).not.toContain('TaskCard');
+  });
+
+  it('makes revision a focused mobile flow with nearby context and actions', () => {
+    expect(revisionSource).toContain('data-revision-flow="focused"');
+    expect(revisionSource).toContain('data-revision-sticky-context');
+    expect(revisionSource).toContain('data-revision-current-card');
+    expect(revisionSource).toContain('data-revision-sticky-actions');
+    expect(revisionSource).toContain("window.scrollTo({ top: 0, behavior: 'smooth' })");
+    expect(revisionSource).toContain('Confronta una scheda alla volta');
+    expect(revisionSource).not.toContain('Passo-Passo (Monoscheda)');
+    expect(revisionSource).not.toContain('Elenco Completo');
+    expect(revisionSource).not.toContain('Istruzioni operative:');
+  });
+
+  it('preserves structured proposal and institutional-decision boundaries in the focused revision flow', () => {
+    expect(revisionSource).toContain('StructuredProposalStarter');
+    expect(revisionSource).toContain('InstitutionalDecisionPanel');
+    expect(revisionSource).toContain('Prepara per revisione');
+    expect(revisionSource).toContain('Ammetti alla decisione');
+    expect(revisionSource).toContain('Le tre scelte servono a preparare il lavoro. Non sono voti né approvazioni.');
   });
 
   it('exposes only one navigation shell from the navigation package', () => {
