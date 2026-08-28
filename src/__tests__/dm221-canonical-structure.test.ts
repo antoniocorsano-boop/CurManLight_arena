@@ -51,12 +51,52 @@ describe('DM 221/2025 canonical curriculum structure', () => {
     expect(DM221_SPECIAL_SEGMENTS.find((segment) => segment.label === 'Religione cattolica')?.kind).toBe('EXTERNAL_AUTHORITY_SUBJECT');
   });
 
+  it('preserves the explicit activation conditions for LEL and musical instrument', () => {
+    const lel = DM221_SPECIAL_SEGMENTS.find((segment) => segment.id === 'dm221-offering-lel');
+    const instrument = DM221_SPECIAL_SEGMENTS.find((segment) => segment.id === 'dm221-offering-strumento-musicale');
+
+    expect(lel?.activation).toMatchObject({
+      academicYear: '2026/2027',
+      classYears: [2, 3],
+    });
+    expect(instrument?.activation).toMatchObject({
+      academicYear: '2026/2027',
+      classYears: [1],
+    });
+  });
+
+  it('represents infancy citizenship as a cross-cutting framework, not a sixth field or discipline', () => {
+    const citizenship = DM221_SPECIAL_SEGMENTS.find(
+      (segment) => segment.id === 'dm221-framework-cittadinanza-infanzia',
+    );
+
+    expect(Object.values(DM221_INFANZIA_FIELDS)).toHaveLength(5);
+    expect(citizenship).toMatchObject({
+      kind: 'CROSS_DISCIPLINARY_FRAMEWORK',
+      schoolOrders: ['infanzia'],
+      universalRequirement: false,
+    });
+  });
+
   it('encodes the 2026/27 transition without upgrading intermediate classes to DM221', () => {
-    expect(resolveExplicit2026Regime('infanzia')).toMatchObject({ regime: 'DM221_2025', evidenceLevel: 'NORMATIVE_EXPLICIT' });
-    expect(resolveExplicit2026Regime('primaria', 1)?.regime).toBe('DM221_2025');
-    expect(resolveExplicit2026Regime('primaria', 2)?.regime).toBe('DM254_2012_CONTINUES');
+    expect(resolveExplicit2026Regime('infanzia')).toMatchObject({
+      regime: 'DM221_2025',
+      collegialRemodeling: 'NOT_APPLICABLE',
+      evidenceLevel: 'NORMATIVE_EXPLICIT',
+    });
+    expect(resolveExplicit2026Regime('primaria', 1)).toMatchObject({
+      regime: 'DM221_2025',
+      collegialRemodeling: 'NOT_APPLICABLE',
+    });
+    expect(resolveExplicit2026Regime('primaria', 2)).toMatchObject({
+      regime: 'DM254_2012_CONTINUES',
+      collegialRemodeling: 'WHEN_TEMPORAL_SCANS_DIFFER',
+    });
     expect(resolveExplicit2026Regime('secondaria', 1)?.regime).toBe('DM221_2025');
-    expect(resolveExplicit2026Regime('secondaria', 2)?.regime).toBe('DM254_2012_CONTINUES');
+    expect(resolveExplicit2026Regime('secondaria', 2)).toMatchObject({
+      regime: 'DM254_2012_CONTINUES',
+      collegialRemodeling: 'WHEN_TEMPORAL_SCANS_DIFFER',
+    });
     expect(resolveExplicit2026Regime('secondaria', 3)?.regime).toBe('DM254_2012_CONTINUES');
   });
 });
