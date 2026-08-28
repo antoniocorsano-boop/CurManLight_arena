@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import shellSource from '../features/documents/components/SecondBrainTab.tsx?raw';
+import storageSource from '../lib/consolidatedStorage.ts?raw';
 
 describe('KX-1 knowledge experience shell', () => {
   it('uses the canonical task-first labels', () => {
@@ -29,12 +30,20 @@ describe('KX-1 knowledge experience shell', () => {
     expect(shellSource).toContain('La risposta comparirà qui');
   });
 
-  it('renders the glossary as a dedicated public surface and normalizes known mojibake', () => {
+  it('renders the glossary as a dedicated public surface and normalizes saved legacy mojibake', () => {
     expect(shellSource).toContain("secondBrainTab === 'glossary' ? (");
+    expect(shellSource).toContain(".replace(/Compito di Realt�/g, 'Compito di Realtà')");
     expect(shellSource).toContain(".replace(/Unit�/g, 'Unità')");
     expect(shellSource).toContain(".replace(/Capacit�/g, 'Capacità')");
     expect(shellSource).toContain(".replace(/abilit�/g, 'abilità')");
     expect(shellSource).toContain('Definizione locale');
+  });
+
+  it('keeps the default glossary UTF-8 clean at the source', () => {
+    expect(storageSource).not.toContain('�');
+    expect(storageSource).toContain('Compito di Realtà');
+    expect(storageSource).toContain('Unità di Apprendimento');
+    expect(storageSource).toContain('Capacità di utilizzare conoscenze e abilità');
   });
 
   it('keeps the compatibility implementation behind Archive only', () => {
