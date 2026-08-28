@@ -1,12 +1,9 @@
 name: Live Beta Assistant Browser Audit
 
 on:
-  pull_request:
-    branches: [main]
-    paths:
-      - 'src/features/copilot/**'
-      - 'scripts/audit-live-beta-assistant.cjs'
-      - '.github/workflows/live-beta-assistant-audit.yml'
+  workflow_run:
+    workflows: ["Deploy Arena Beta"]
+    types: [completed]
   workflow_dispatch:
 
 permissions:
@@ -14,11 +11,14 @@ permissions:
 
 jobs:
   live-beta-assistant:
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - name: Checkout
+      - name: Checkout deployed main
         uses: actions/checkout@v4
+        with:
+          ref: main
 
       - name: Setup Node
         uses: actions/setup-node@v4
