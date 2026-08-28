@@ -31,13 +31,25 @@ export type FirstCycleDisciplineId =
 
 export type FirstCycleSchoolOrder = 'primaria' | 'secondaria';
 
+export interface SegmentActivationRule {
+  academicYear?: string;
+  classYears?: readonly (1 | 2 | 3 | 4 | 5)[];
+  condition: string;
+}
+
 export interface CanonicalNationalSegment {
   id: string;
   kind: NationalCurriculumSegmentKind;
   label: string;
   schoolOrders: readonly ('infanzia' | FirstCycleSchoolOrder)[];
+  /**
+   * Indica che il segmento fa parte della struttura curricolare universale
+   * quando il regime D.M. 221/2025 è applicabile. Non sostituisce le regole di
+   * transizione per coorte.
+   */
   universalRequirement: boolean;
   sourceLocator: NationalSourceLocator;
+  activation?: SegmentActivationRule;
   notes?: string;
 }
 
@@ -128,7 +140,12 @@ export const DM221_SPECIAL_SEGMENTS: readonly CanonicalNationalSegment[] = [
     label: 'Latino per l’educazione linguistica (LEL)',
     schoolOrders: ['secondaria'],
     universalRequirement: false,
-    sourceLocator: art2('Art. 2, c. 3 — avvio possibile in prima applicazione per classi seconde e terze 2026/27'),
+    sourceLocator: art2('Art. 2, c. 3'),
+    activation: {
+      academicYear: '2026/2027',
+      classYears: [2, 3],
+      condition: 'Avvio possibile in prima applicazione usando gli spazi di autonomia, flessibilità e ampliamento dell’offerta formativa.',
+    },
   },
   {
     id: 'dm221-offering-strumento-musicale',
@@ -136,7 +153,12 @@ export const DM221_SPECIAL_SEGMENTS: readonly CanonicalNationalSegment[] = [
     label: 'Strumento musicale',
     schoolOrders: ['secondaria'],
     universalRequirement: false,
-    sourceLocator: art2('Art. 2, c. 5 — percorsi ad indirizzo musicale'),
+    sourceLocator: art2('Art. 2, c. 5'),
+    activation: {
+      academicYear: '2026/2027',
+      classYears: [1],
+      condition: 'Applicabile ai percorsi ad indirizzo musicale.',
+    },
   },
   {
     id: 'dm221-external-irc',
@@ -146,6 +168,15 @@ export const DM221_SPECIAL_SEGMENTS: readonly CanonicalNationalSegment[] = [
     universalRequirement: false,
     sourceLocator: art2('Art. 2, c. 6 — rinvio al D.P.R. 11 febbraio 2010'),
     notes: 'Il contenuto curricolare IRC richiede la fonte concordataria richiamata; non va auto-popolato dal D.M. 221/2025.',
+  },
+  {
+    id: 'dm221-framework-cittadinanza-infanzia',
+    kind: 'CROSS_DISCIPLINARY_FRAMEWORK',
+    label: 'Sensibilizzazione alla cittadinanza nella scuola dell’infanzia',
+    schoolOrders: ['infanzia'],
+    universalRequirement: false,
+    sourceLocator: { sourceId: DM221_2025_SOURCE_ID, section: 'I campi di esperienza — iniziative di sensibilizzazione alla cittadinanza', page: 56 },
+    notes: 'Nell’infanzia la cittadinanza è promossa attraverso i campi di esperienza, non come disciplina autonoma.',
   },
   {
     id: 'dm221-framework-educazione-civica',
