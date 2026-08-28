@@ -1,4 +1,4 @@
-import { DownloadCloud, Layers3, Menu, RotateCcw, Save, ServerCog, ShieldAlert } from 'lucide-react';
+import { Bot, DownloadCloud, Layers3, Menu, RotateCcw, Save, ServerCog, ShieldAlert } from 'lucide-react';
 import { useState } from 'react';
 import { UiConfirmDialog } from '../../../ui/components/UiConfirmDialog';
 
@@ -28,12 +28,16 @@ interface AppHeaderProps {
 /**
  * Canonical Arena Beta header.
  *
- * The first-level header is intentionally limited to orientation and session
- * continuity. The brand mark is rendered as an inline vector so it cannot
- * disappear because of a broken asset path on GitHub Pages.
+ * The first-level header is intentionally limited to orientation, the bounded
+ * assistant entry point and session continuity. The assistant can explain and
+ * analyse user-selected material, but it does not represent institutional
+ * authority and does not promote curriculum changes by itself.
  */
 export function AppHeader(props: AppHeaderProps) {
   const [showResetConfirm, setShowResetConfirm] = useState(false);
+
+  const assistantReady = props.localAgentStatus === 'ready'
+    || (props.localAgentType === 'ollama' && props.ollamaStatus === 'connected');
 
   return (
     <>
@@ -67,6 +71,26 @@ export function AppHeader(props: AppHeaderProps) {
             </div>
 
             <div className="flex shrink-0 items-center gap-2">
+              <button
+                type="button"
+                onClick={() => props.setIsCopilotChatOpen(!props.isCopilotChatOpen)}
+                className={`relative flex h-9 w-9 items-center justify-center rounded-xl border transition focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300 ${
+                  props.isCopilotChatOpen
+                    ? 'border-indigo-300 bg-indigo-500 text-white'
+                    : 'border-slate-700 bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white'
+                }`}
+                title="Assistente Arena"
+                aria-label={props.isCopilotChatOpen ? 'Chiudi Assistente Arena' : 'Apri Assistente Arena'}
+                aria-pressed={props.isCopilotChatOpen}
+                data-assistant-entry="bounded"
+              >
+                <Bot className="h-4 w-4" aria-hidden="true" />
+                <span
+                  className={`absolute right-1 top-1 h-1.5 w-1.5 rounded-full ${assistantReady ? 'bg-emerald-300' : 'bg-slate-500'}`}
+                  aria-hidden="true"
+                />
+              </button>
+
               <button
                 type="button"
                 onClick={() => props.setShowSaveModal(true)}
