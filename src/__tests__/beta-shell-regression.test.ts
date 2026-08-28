@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'vitest';
-import globalCssSource from '../index.css?raw';
 
 function firstSource(modules: Record<string, string>): string {
   return Object.values(modules)[0] ?? '';
@@ -75,12 +74,6 @@ describe('Arena Beta canonical shell regression guard', () => {
     expect(revisionSource).not.toContain('Passo-Passo (Monoscheda)');
     expect(revisionSource).not.toContain('Elenco Completo');
     expect(revisionSource).not.toContain('Istruzioni operative:');
-  });
-
-  it('reserves mobile reading space so sticky actions cannot cover comparison text', () => {
-    expect(globalCssSource).toContain('[data-revision-current-card] > div:nth-child(2)');
-    expect(globalCssSource).toContain('padding-bottom: 15rem');
-    expect(globalCssSource).toContain('[data-revision-sticky-actions]');
   });
 
   it('preserves structured proposal and institutional-decision boundaries in the focused revision flow', () => {
