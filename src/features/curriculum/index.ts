@@ -1,4 +1,5 @@
-export { CurriculumTab, RevisioneTab } from './components';
+export { CurriculumWorkspace as CurriculumTab } from './CurriculumWorkspace';
+export { RevisioneTab } from './components';
 export type { CurriculumTabProps, RevisioneTabProps } from './components';
 export { useCurriculumImportHandlers } from './hooks/useCurriculumImportHandlers';
 export { useCurriculumProgressStats } from './hooks/useCurriculumProgressStats';

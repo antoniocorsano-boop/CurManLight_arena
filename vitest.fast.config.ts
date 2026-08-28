@@ -35,7 +35,8 @@ export default defineConfig({
       'src/__tests__/dm221-binding-coverage.test.ts',
       'src/__tests__/dm221-technology-source-index.test.ts',
       'src/__tests__/dm221-technology-element-inventory.test.ts',
-      'src/__tests__/dm221-technology-human-verification.test.ts'
+      'src/__tests__/dm221-technology-human-verification.test.ts',
+      'src/__tests__/dm221-technology-source-review-ui.test.tsx'
     ],
     exclude: ['**/node_modules/**', '**/.git/**'],
     pool: 'threads',
