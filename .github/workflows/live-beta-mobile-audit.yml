@@ -1,0 +1,39 @@
+name: Live Beta Mobile Audit
+
+on:
+  push:
+    branches:
+      - audit/live-beta-mobile-d5c1993
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  live-mobile-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout audit harness
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Navigate published Beta on mobile
+        env:
+          BETA_BASE_URL: https://antoniocorsano-boop.github.io/CurManLight_arena
+          EXPECTED_SHA: d5c1993d15bb124648c5557b9edc0ca4f7e1b4dd
+        run: node scripts/audit-live-beta-mobile.cjs
+      - name: Upload audit screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: live-beta-mobile-audit
+          path: artifacts/live-beta-mobile
+          if-no-files-found: warn
