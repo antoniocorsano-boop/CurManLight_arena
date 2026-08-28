@@ -17,6 +17,7 @@ fs.mkdirSync(OUT_DIR, { recursive: true });
   const page = await context.newPage();
   const consoleErrors = [];
   const checks = [];
+  const findings = [];
 
   page.on('console', (msg) => {
     if (msg.type() === 'error') consoleErrors.push(msg.text());
@@ -26,6 +27,11 @@ fs.mkdirSync(OUT_DIR, { recursive: true });
   const check = (name, pass, detail = '') => {
     checks.push({ name, pass: Boolean(pass), detail });
     console.log(`${pass ? 'PASS' : 'FAIL'} — ${name}${detail ? ` — ${detail}` : ''}`);
+  };
+
+  const finding = (code, detail) => {
+    findings.push({ code, detail });
+    console.log(`PRODUCT_FINDING=${code} — ${detail}`);
   };
 
   const screenshot = async (name) => {
@@ -43,6 +49,27 @@ fs.mkdirSync(OUT_DIR, { recursive: true });
       window.dispatchEvent(new PopStateEvent('popstate'));
     }, target);
     await page.waitForTimeout(700);
+  };
+
+  const closeOnboardingIfPresent = async () => {
+    const dialogs = page.locator('[role="dialog"][aria-modal="true"]');
+    const count = await dialogs.count();
+    for (let i = 0; i < count; i++) {
+      const dialog = dialogs.nth(i);
+      const visible = await dialog.isVisible().catch(() => false);
+      if (!visible) continue;
+      const text = await dialog.innerText().catch(() => '');
+      if (!/Profilo personale locale/i.test(text)) continue;
+      finding('ONBOARDING_MODAL_OVERLAPS_ASSISTANT', 'Il wizard Profilo personale locale compare sopra l’Assistente e intercetta i tocchi.');
+      await screenshot('02a-onboarding-over-assistant.png');
+      const closeButton = dialog.locator('button').first();
+      if (await closeButton.isVisible().catch(() => false)) {
+        await closeButton.click({ force: true });
+        await page.waitForTimeout(400);
+      }
+      return true;
+    }
+    return false;
   };
 
   try {
@@ -63,8 +90,10 @@ fs.mkdirSync(OUT_DIR, { recursive: true });
 
     if (await assistantEntry.isVisible().catch(() => false)) {
       await assistantEntry.click();
-      await page.waitForTimeout(500);
+      await page.waitForTimeout(600);
     }
+
+    await closeOnboardingIfPresent();
 
     const assistantPanel = page.locator('[aria-label="Area contenuto assistente"]');
     const panelVisible = await assistantPanel.isVisible({ timeout: 5000 }).catch(() => false);
@@ -91,12 +120,15 @@ fs.mkdirSync(OUT_DIR, { recursive: true });
     console.log(`KNOWLEDGE_ACTION_VISIBLE=${knowledgeActionVisible}`);
     console.log(`GRAPH_ACTION_VISIBLE=${graphActionVisible}`);
 
-    if (assistantState === 'LOCAL_AI_CONFIGURATION_REQUIRED' && !knowledgeActionVisible && !graphActionVisible) {
-      console.log('PRODUCT_FINDING=Le azioni Conoscenza/Connessioni sono nascoste dietro la configurazione e una risposta AI riuscita.');
+    if (!knowledgeActionVisible && !graphActionVisible) {
+      finding('ASSISTANT_KNOWLEDGE_ACTIONS_NOT_DISCOVERABLE', 'Apri conoscenza e Mostra connessioni non sono disponibili nell’esperienza iniziale dell’Assistente.');
+    }
+    if (assistantState === 'LOCAL_AI_CONFIGURATION_REQUIRED') {
+      finding('LOCAL_AI_CONFIGURATION_GATES_ASSISTANT', 'L’Assistente richiede configurazione Ollama locale prima dell’uso conversazionale.');
     }
 
     if (await assistantEntry.isVisible().catch(() => false)) {
-      await assistantEntry.click();
+      await assistantEntry.click({ force: true });
       await page.waitForTimeout(300);
     }
 
@@ -114,6 +146,8 @@ fs.mkdirSync(OUT_DIR, { recursive: true });
     check('Deep-link Assistente → Mappa Connessioni raggiunge il grafo', graphReached);
     check('Nessun overflow orizzontale nel grafo', await hasNoHorizontalOverflow());
 
+    check('Nessun errore JavaScript non gestito', consoleErrors.length === 0, consoleErrors.join(' | '));
+
     const report = {
       betaUrl: BETA_URL,
       releaseIdentity,
@@ -121,15 +155,11 @@ fs.mkdirSync(OUT_DIR, { recursive: true });
       knowledgeActionVisible,
       graphActionVisible,
       checks,
+      findings,
       consoleErrors,
-      productFinding: assistantState === 'LOCAL_AI_CONFIGURATION_REQUIRED' && !knowledgeActionVisible && !graphActionVisible
-        ? 'ASSISTANT_KNOWLEDGE_ACTIONS_BLOCKED_BY_LOCAL_AI_CONFIGURATION'
-        : null,
     };
 
     fs.writeFileSync(path.join(OUT_DIR, 'report.json'), JSON.stringify(report, null, 2));
-
-    check('Nessun errore JavaScript non gestito', consoleErrors.length === 0, consoleErrors.join(' | '));
 
     const hardFailures = checks.filter((item) => !item.pass && !item.name.startsWith('Identità release'));
     process.exitCode = hardFailures.length === 0 && consoleErrors.length === 0 ? 0 : 1;
