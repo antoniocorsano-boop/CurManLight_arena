@@ -111,7 +111,7 @@ fs.mkdirSync(OUT_DIR, { recursive: true });
       await page.waitForTimeout(700);
       await screenshot('03-knowledge-source.png');
       const sourceText = await page.locator('body').innerText();
-      check('Assistente → Conoscenza raggiunge la vista esistente', /Biblioteca|Conoscenza|Glossario/i.test(sourceText));
+      check('Assistente → Conoscenza raggiunge la vista esistente', /Conoscenza e fonti|Cerca e chiedi|Termini chiave|Archivio storico/i.test(sourceText));
       check('Nessun overflow orizzontale in Conoscenza', await hasNoHorizontalOverflow());
     } else {
       await pushAssistantView('source');
@@ -130,10 +130,16 @@ fs.mkdirSync(OUT_DIR, { recursive: true });
     } else {
       await pushAssistantView('graph');
     }
-    await screenshot('04-knowledge-graph.png');
-    const graphText = await page.locator('body').innerText();
-    check('Assistente → Mappa Connessioni raggiunge il grafo', /Mappa Connessioni/i.test(graphText));
-    check('Nessun overflow orizzontale nel grafo', await hasNoHorizontalOverflow());
+    await screenshot('04-knowledge-relations.png');
+    const relationsText = await page.locator('body').innerText();
+    const relationsVisible = /Relazioni in preparazione/i.test(relationsText);
+    const failClosedVisible = /La vecchia mappa tecnica non viene mostrata/i.test(relationsText);
+    const technicalLeakage = /Graphify|Mappa Connessioni|WikiLLM|SecondBrainTab|\.tsx\b|\.ts\b/i.test(relationsText);
+
+    check('Assistente → Relazioni raggiunge la vista KX', relationsVisible);
+    check('Relazioni resta fail-closed senza grafo tecnico', relationsVisible && failClosedVisible);
+    check('Nessun leakage tecnico nella vista Relazioni', !technicalLeakage, technicalLeakage ? 'Rilevato lessico tecnico legacy' : '');
+    check('Nessun overflow orizzontale in Relazioni', await hasNoHorizontalOverflow());
 
     check('Nessun errore JavaScript non gestito', consoleErrors.length === 0, consoleErrors.join(' | '));
 
@@ -143,6 +149,9 @@ fs.mkdirSync(OUT_DIR, { recursive: true });
       knowledgeActionVisible,
       graphActionVisible,
       onboardingStillVisible,
+      relationsVisible,
+      failClosedVisible,
+      technicalLeakage,
       checks,
       findings,
       consoleErrors,
