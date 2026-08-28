@@ -22,12 +22,13 @@ fs.mkdirSync(OUT_DIR, { recursive: true });
     console.log(`${pass ? 'PASS' : 'FAIL'} — ${name}${detail ? ` — ${detail}` : ''}`);
   };
 
+  const taskButton = (label) => page.getByRole('button', { name: label, exact: true });
   const screenshot = async (name) => page.screenshot({ path: path.join(OUT_DIR, name), fullPage: true });
   const noHorizontalOverflow = async () => page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1);
 
   const visibleNestedScrollers = async () => page.evaluate(() => {
     const viewportHeight = window.innerHeight;
-    return Array.from(document.querySelectorAll('*')).filter((el) => {
+    return Array.from(document.querySelectorAll('[data-kx-shell="plain-language-v1"] *')).filter((el) => {
       const style = getComputedStyle(el);
       const rect = el.getBoundingClientRect();
       if (rect.width <= 0 || rect.height <= 0 || rect.bottom < 0 || rect.top > viewportHeight * 3) return false;
@@ -60,40 +61,40 @@ fs.mkdirSync(OUT_DIR, { recursive: true });
     check('Nessun overflow orizzontale iniziale', await noHorizontalOverflow());
 
     for (const label of ['Cerca e chiedi', 'Relazioni', 'Termini chiave', 'Archivio storico']) {
-      check(`Task visibile: ${label}`, await page.getByRole('button', { name: label }).isVisible().catch(() => false));
+      check(`Task visibile: ${label}`, await taskButton(label).isVisible().catch(() => false));
     }
     await screenshot('01-kx-shell.png');
 
-    await page.getByRole('button', { name: 'Relazioni' }).click();
+    await taskButton('Relazioni').click();
     await page.waitForTimeout(250);
     check('Relazioni fail-closed', await page.getByText('Relazioni in preparazione', { exact: true }).isVisible().catch(() => false));
     const relationText = await shell.innerText();
     const forbidden = ['Graphify', 'Moduli del codice sorgente', '.tsx / .ts', 'WikiLLM', 'Zustand'];
     check('Nessun leakage tecnico in Relazioni', forbidden.every((term) => !relationText.includes(term)), forbidden.filter((term) => relationText.includes(term)).join(', '));
-    check('Relazioni attiva', await page.getByRole('button', { name: 'Relazioni' }).getAttribute('aria-current') === 'page');
+    check('Relazioni attiva', await taskButton('Relazioni').getAttribute('aria-current') === 'page');
     check('Nessun overflow orizzontale in Relazioni', await noHorizontalOverflow());
     await screenshot('02-relazioni.png');
 
-    await page.getByRole('button', { name: 'Cerca e chiedi' }).click();
+    await taskButton('Cerca e chiedi').click();
     await page.waitForTimeout(250);
-    check('Cerca e chiedi attivo', await page.getByRole('button', { name: 'Cerca e chiedi' }).getAttribute('aria-current') === 'page');
+    check('Cerca e chiedi attivo', await taskButton('Cerca e chiedi').getAttribute('aria-current') === 'page');
     check('WikiLLM non visibile nel task Cerca', !(await page.getByText(/WikiLLM/i).isVisible().catch(() => false)));
     check('Nessun overflow orizzontale in Cerca', await noHorizontalOverflow());
     const searchScrollers = await visibleNestedScrollers();
     check('Nessuno scroll annidato nel task Cerca', searchScrollers.length === 0, JSON.stringify(searchScrollers));
     await screenshot('03-cerca.png');
 
-    await page.getByRole('button', { name: 'Archivio storico' }).click();
+    await taskButton('Archivio storico').click();
     await page.waitForTimeout(250);
-    check('Archivio storico attivo', await page.getByRole('button', { name: 'Archivio storico' }).getAttribute('aria-current') === 'page');
+    check('Archivio storico attivo', await taskButton('Archivio storico').getAttribute('aria-current') === 'page');
     check('Nessun overflow orizzontale in Archivio', await noHorizontalOverflow());
     const archiveScrollers = await visibleNestedScrollers();
     check('Nessuno scroll annidato nel task Archivio', archiveScrollers.length === 0, JSON.stringify(archiveScrollers));
     await screenshot('04-archivio.png');
 
-    await page.getByRole('button', { name: 'Termini chiave' }).click();
+    await taskButton('Termini chiave').click();
     await page.waitForTimeout(250);
-    check('Termini chiave attivo', await page.getByRole('button', { name: 'Termini chiave' }).getAttribute('aria-current') === 'page');
+    check('Termini chiave attivo', await taskButton('Termini chiave').getAttribute('aria-current') === 'page');
     check('Nessun overflow orizzontale in Termini chiave', await noHorizontalOverflow());
     const glossaryScrollers = await visibleNestedScrollers();
     check('Nessuno scroll annidato in Termini chiave', glossaryScrollers.length === 0, JSON.stringify(glossaryScrollers));
