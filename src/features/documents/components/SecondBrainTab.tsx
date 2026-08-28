@@ -20,7 +20,13 @@ export default function SecondBrainTab(props: SecondBrainTabProps) {
 
   return (
     <div className="space-y-5 text-left" data-kx-shell="plain-language-v1">
-      <style>{`.kx-legacy-shell > div > div:nth-child(1), .kx-legacy-shell > div > div:nth-child(2) { display: none; }`}</style>
+      <style>{`
+        .kx-legacy-shell > div > div:nth-child(1),
+        .kx-legacy-shell > div > div:nth-child(2),
+        .kx-legacy-shell[data-kx-task="brain"] [class*="xl:col-span-8"] > div:first-child {
+          display: none;
+        }
+      `}</style>
 
       <header className="space-y-3 border-b border-slate-200 pb-4">
         <div className="space-y-1">
@@ -69,9 +75,23 @@ export default function SecondBrainTab(props: SecondBrainTabProps) {
         </nav>
       </header>
 
-      <div className="kx-legacy-shell">
-        <LegacySecondBrainTab {...props} />
-      </div>
+      {secondBrainTab === 'graph' ? (
+        <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm" aria-labelledby="kx-relations-title">
+          <div className="max-w-2xl space-y-2">
+            <h2 id="kx-relations-title" className="text-base font-black text-slate-900">Relazioni in preparazione</h2>
+            <p className="text-sm leading-6 text-slate-600">
+              La vecchia mappa tecnica non viene mostrata nella fruizione ordinaria. Questa vista sarà riaperta quando potrà rappresentare relazioni verificabili tra fonti, documenti, concetti, traguardi, obiettivi, proposte e decisioni.
+            </p>
+            <p className="text-sm leading-6 text-slate-600">
+              Nel frattempo puoi usare Cerca e chiedi, Termini chiave o Archivio storico senza perdere il contesto.
+            </p>
+          </div>
+        </section>
+      ) : (
+        <div className="kx-legacy-shell" data-kx-task={secondBrainTab}>
+          <LegacySecondBrainTab {...props} />
+        </div>
+      )}
     </div>
   );
 }
