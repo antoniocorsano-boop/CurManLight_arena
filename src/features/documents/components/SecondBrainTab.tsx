@@ -59,7 +59,7 @@ export default function SecondBrainTab(props: SecondBrainTabProps) {
       <style>{`
         .kx-legacy-shell > div > div:nth-child(1),
         .kx-legacy-shell > div > div:nth-child(2),
-        .kx-legacy-shell[data-kx-task="brain"] [class*="xl:col-span-8"] > div:first-child {
+        .kx-legacy-shell[data-kx-task="archive"] [class*="xl:col-span-8"] > div:first-child {
           display: none;
         }
 
