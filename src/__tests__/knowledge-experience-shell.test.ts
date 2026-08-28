@@ -43,7 +43,8 @@ describe('KX-1 knowledge experience shell', () => {
     expect(archiveFallback).toContain('<LegacySecondBrainTab {...props} />');
   });
 
-  it('hides the legacy workspace selector inside Archive', () => {
+  it('keeps Archive read-only by hiding the legacy read/chat selector', () => {
+    expect(shellSource).toContain('Archive is read-only in the public KX journey');
     expect(shellSource).toContain('.kx-legacy-shell[data-kx-task="archive"] [class*="xl:col-span-8"] > div:first-child');
     expect(shellSource).not.toContain('.kx-legacy-shell[data-kx-task="brain"] [class*="xl:col-span-8"] > div:first-child');
   });
