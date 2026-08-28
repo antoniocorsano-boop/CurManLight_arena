@@ -1,4 +1,4 @@
-import { FolderOpen, HelpCircle, ShieldCheck, Sparkles } from 'lucide-react';
+import { BookOpenCheck, FileText, FolderOpen, HelpCircle, Layers, RotateCcw, ShieldCheck } from 'lucide-react';
 
 interface AppSidebarProps {
   sidebarCollapsed: boolean;
@@ -11,230 +11,97 @@ interface AppSidebarProps {
   setActiveProgTab: (value: string) => void;
 }
 
-export function AppSidebar({
-  sidebarCollapsed,
-  activeTab,
-  activeCurricoloView,
-  activeProgTab,
-  pendingCount,
-  handleTabSwitch,
-  setActiveCurricoloView,
-  setActiveProgTab,
-}: AppSidebarProps) {
+/**
+ * Primary navigation for the controlled Arena Beta.
+ *
+ * It follows the canonical institutional journey rather than exposing the
+ * historical feature inventory. Classroom, social, generic AI and broad UDA
+ * authoring remain outside the first Beta navigation surface.
+ */
+export function AppSidebar(props: AppSidebarProps) {
+  if (props.sidebarCollapsed) return null;
+
+  const itemClass = (active: boolean) =>
+    `flex w-full items-center gap-2.5 rounded-xl px-3.5 py-2.5 text-left text-sm font-bold transition ${
+      active
+        ? 'border border-indigo-100 bg-indigo-50 text-indigo-700 shadow-sm'
+        : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+    }`;
+
   return (
-    <aside id="sidebar" className={`${sidebarCollapsed ? 'hidden' : 'hidden md:block'} w-full md:w-64 shrink-0 space-y-4 transition-all duration-300`}>
-     <nav className="space-y-1 text-left">
-      {/* 1. SEZIONE COMUNE: HOME */}
-      <p className="px-3 text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1.5 mt-2 text-left">Navigazione Globale</p>
-      <button onClick={() => handleTabSwitch('dashboard')} className={`w-full flex items-center justify-between px-3.5 py-2 rounded-xl text-xs font-bold transition ${activeTab === 'dashboard' ? 'bg-primary-50 text-primary-600 border border-primary-100 shadow-sm' : 'text-slate-600 hover:bg-slate-50'}`}>
-       <span className="flex items-center space-x-2.5"><FolderOpen className="w-4 h-4 text-slate-500" /> <span>Home Dashboard</span></span>
-      </button>
+    <aside id="sidebar" className="hidden w-full shrink-0 space-y-5 transition-all duration-300 md:block md:w-64" data-beta-navigation="canonical">
+      <nav className="space-y-5 text-left" aria-label="Navigazione principale">
+        <section aria-labelledby="nav-orientamento">
+          <p id="nav-orientamento" className="mb-1.5 px-3 text-[10px] font-black uppercase tracking-wider text-slate-400">Orientamento</p>
+          <button type="button" onClick={() => props.handleTabSwitch('dashboard')} className={itemClass(props.activeTab === 'dashboard')}>
+            <FolderOpen className="h-4 w-4 shrink-0" aria-hidden="true" />
+            <span>Home</span>
+          </button>
+        </section>
 
-      {/* 2. AMBIENTE: CURRICOLO */}
-      <div className="pt-2 border-t border-slate-100 mt-2">
-       <button
-        onClick={() => { handleTabSwitch('curricolo'); setActiveCurricoloView(typeof navigator !== 'undefined' && navigator.webdriver ? 'albero' : 'home'); }}
-        className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition ${
-          (activeTab === 'curricolo' || activeTab === 'revisione' || activeTab === 'fonti') 
-            ? 'text-primary-600 font-extrabold bg-slate-50' 
-            : 'text-slate-700 hover:bg-slate-50'
-        }`}
-       >
-        <span>Consulta Curricolo</span>
-       </button>
+        <section aria-labelledby="nav-curricolo" className="border-t border-slate-100 pt-4">
+          <p id="nav-curricolo" className="mb-1.5 px-3 text-[10px] font-black uppercase tracking-wider text-slate-400">Curricolo d’istituto</p>
+          <div className="space-y-1">
+            <button
+              type="button"
+              onClick={() => { props.handleTabSwitch('curricolo'); props.setActiveCurricoloView('home'); }}
+              className={itemClass(props.activeTab === 'curricolo')}
+            >
+              <Layers className="h-4 w-4 shrink-0" aria-hidden="true" />
+              <span>Consulta il curricolo</span>
+            </button>
 
-       {/* Dynamic Contextual Sub-menu for Curricolo */}
-       {((typeof navigator !== 'undefined' && navigator.webdriver) || activeTab === 'curricolo' || activeTab === 'revisione' || activeTab === 'fonti') && (
-        <div className="pl-3.5 mt-1.5 space-y-1 border-l-2 border-indigo-100 ml-3.5">
-         <div
-          role="button"
-          onClick={() => { handleTabSwitch('curricolo'); setActiveCurricoloView('albero'); }}
-          className={`w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer transition ${
-            activeTab === 'curricolo' && activeCurricoloView === 'albero' ? 'bg-indigo-50 text-indigo-700 font-bold' : 'text-slate-500 hover:text-slate-800'
-          }`}
-         >
-          <span>Vista Strutturata (Albero)</span>
-         </div>
+            <button
+              type="button"
+              onClick={() => props.handleTabSwitch('revisione')}
+              className={itemClass(props.activeTab === 'revisione')}
+            >
+              <RotateCcw className="h-4 w-4 shrink-0" aria-hidden="true" />
+              <span className="min-w-0 flex-1">Rivedi le proposte</span>
+              {props.pendingCount > 0 && (
+                <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-black text-amber-800" aria-label={`${props.pendingCount} elementi da rivedere`}>
+                  {props.pendingCount}
+                </span>
+              )}
+            </button>
 
-         <div
-          role="button"
-          onClick={() => { handleTabSwitch('curricolo'); setActiveCurricoloView('mappa'); }}
-          className={`w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer transition ${
-            activeTab === 'curricolo' && activeCurricoloView === 'mappa' ? 'bg-indigo-50 text-indigo-700 font-bold' : 'text-slate-500 hover:text-slate-800'
-          }`}
-         >
-          <span>Raccordo Diacronico (Mappa)</span>
-         </div>
+            <button type="button" onClick={() => props.handleTabSwitch('fonti')} className={itemClass(props.activeTab === 'fonti')}>
+              <BookOpenCheck className="h-4 w-4 shrink-0" aria-hidden="true" />
+              <span>Controlla le fonti</span>
+            </button>
 
-         <div
-          role="button"
-          onClick={() => { handleTabSwitch('curricolo'); setActiveCurricoloView('popolamento'); }}
-          className={`w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer transition ${
-            activeTab === 'curricolo' && activeCurricoloView === 'popolamento' ? 'bg-indigo-50 text-indigo-700 font-bold' : 'text-slate-500 hover:text-slate-800'
-          }`}
-         >
-          <span>Integrazione & Popolamento</span>
-         </div>
+            <button type="button" onClick={() => props.handleTabSwitch('esportazioni')} className={itemClass(props.activeTab === 'esportazioni')}>
+              <FileText className="h-4 w-4 shrink-0" aria-hidden="true" />
+              <span>Crea un documento</span>
+            </button>
+          </div>
 
-         <div
-          role="button"
-          onClick={() => handleTabSwitch('revisione')}
-          className={`w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer transition ${
-            activeTab === 'revisione' ? 'bg-indigo-50 text-indigo-700 font-bold' : 'text-slate-500 hover:text-slate-800'
-          }`}
-         >
-          <span>Revisione (Gap 2025)</span>
-          {pendingCount > 0 && <span className="bg-amber-100 text-amber-800 text-[8px] px-1.5 py-0.2 rounded-full font-black">{pendingCount}</span>}
-         </div>
+          {props.activeTab === 'curricolo' && (
+            <details className="mt-2 rounded-xl border border-slate-100 bg-slate-50" data-beta-secondary-navigation>
+              <summary className="cursor-pointer px-3 py-2 text-xs font-semibold text-slate-600">Altre viste del curricolo</summary>
+              <div className="space-y-1 border-t border-slate-100 p-2">
+                <button type="button" onClick={() => props.setActiveCurricoloView('albero')} className="w-full rounded-lg px-3 py-2 text-left text-xs font-semibold text-slate-600 hover:bg-white">Struttura</button>
+                <button type="button" onClick={() => props.setActiveCurricoloView('mappa')} className="w-full rounded-lg px-3 py-2 text-left text-xs font-semibold text-slate-600 hover:bg-white">Confronto nel tempo</button>
+                <button type="button" onClick={() => props.setActiveCurricoloView('popolamento')} className="w-full rounded-lg px-3 py-2 text-left text-xs font-semibold text-slate-600 hover:bg-white">Aggiornamento</button>
+              </div>
+            </details>
+          )}
+        </section>
 
-         <div
-          role="button"
-          onClick={() => handleTabSwitch('fonti')}
-          className={`w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer transition ${
-            activeTab === 'fonti' ? 'bg-indigo-50 text-indigo-700 font-bold' : 'text-slate-500 hover:text-slate-800'
-          }`}
-         >
-          <span>Fonti locali</span>
-         </div>
-
-         <div
-          role="button"
-          onClick={() => { handleTabSwitch('curricolo'); setActiveCurricoloView('pilota'); }}
-          className={`w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer transition ${
-            activeTab === 'curricolo' && activeCurricoloView === 'pilota' ? 'bg-indigo-50 text-indigo-700 font-bold' : 'text-slate-500 hover:text-slate-800'
-          }`}
-         >
-          <span>★ Pilota Sperimentale</span>
-         </div>
-        </div>
-       )}
-      </div>
-
-      {/* 3. AMBIENTE: PROGETTAZIONE UDA */}
-      <div className="pt-2 border-t border-slate-100 mt-2">
-       <button
-        onClick={() => { handleTabSwitch('progetta-annuale'); setActiveProgTab(typeof navigator !== 'undefined' && navigator.webdriver ? 'annuale' : 'home'); }}
-        className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition ${
-          ((activeTab === 'progetta-annuale' && (activeProgTab === 'annuale' || activeProgTab === 'uda' || activeProgTab === 'certificazione')) || activeTab === 'processo' || activeTab === 'esportazioni')
-            ? 'text-primary-600 font-extrabold bg-slate-50' 
-            : 'text-slate-700 hover:bg-slate-50'
-        }`}
-       >
-        <span>Progettazione UDA</span>
-       </button>
-
-       {/* Dynamic Contextual Sub-menu for Progettazione */}
-       {((typeof navigator !== 'undefined' && navigator.webdriver) || (activeTab === 'progetta-annuale' && (activeProgTab === 'annuale' || activeProgTab === 'uda' || activeProgTab === 'certificazione')) || activeTab === 'processo' || activeTab === 'esportazioni') && (
-        <div className="pl-3.5 mt-1.5 space-y-1 border-l-2 border-indigo-100 ml-3.5">
-         <div
-          role="button"
-          onClick={() => { handleTabSwitch('progetta-annuale'); setActiveProgTab('annuale'); }}
-          className={`w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer transition ${
-            activeTab === 'progetta-annuale' && activeProgTab === 'annuale' ? 'bg-indigo-50 text-indigo-700 font-bold' : 'text-slate-500 hover:text-slate-800'
-          }`}
-         >
-          <span>Compilatore UDA (Wizard)</span>
-         </div>
-
-         <div
-          role="button"
-          onClick={() => { handleTabSwitch('progetta-annuale'); setActiveProgTab('uda'); }}
-          className={`w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer transition ${
-            activeTab === 'progetta-annuale' && activeProgTab === 'uda' ? 'bg-indigo-50 text-indigo-700 font-bold' : 'text-slate-500 hover:text-slate-800'
-          }`}
-         >
-          <span>Archivio locale</span>
-         </div>
-
-         <div
-          role="button"
-          onClick={() => { handleTabSwitch('progetta-annuale'); setActiveProgTab('certificazione'); }}
-          className={`w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer transition ${
-            activeTab === 'progetta-annuale' && activeProgTab === 'certificazione' ? 'bg-indigo-50 text-indigo-700 font-bold' : 'text-slate-500 hover:text-slate-800'
-          }`}
-         >
-          <span>Matrice delle Competenze</span>
-         </div>
-
-         <div
-          role="button"
-          onClick={() => handleTabSwitch('processo')}
-          className={`w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer transition ${
-            activeTab === 'processo' ? 'bg-indigo-50 text-indigo-700 font-bold' : 'text-slate-500 hover:text-slate-800'
-          }`}
-         >
-          <span>Processo & Consenso</span>
-         </div>
-
-         <div
-          role="button"
-          onClick={() => handleTabSwitch('esportazioni')}
-          className={`w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer transition ${
-            activeTab === 'esportazioni' ? 'bg-indigo-50 text-indigo-700 font-bold' : 'text-slate-500 hover:text-slate-800'
-          }`}
-         >
-          <span>Esportazione File d'Ufficio</span>
-         </div>
-        </div>
-       )}
-      </div>
-
-      {/* 4. AMBIENTE: CLASSE */}
-      <div className="pt-2 border-t border-slate-100 mt-2">
-       <button
-        onClick={() => { handleTabSwitch('progetta-annuale'); setActiveProgTab(typeof navigator !== 'undefined' && navigator.webdriver ? 'classe' : 'classe-home'); }}
-        className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition ${
-          (activeTab === 'progetta-annuale' && (activeProgTab === 'classe' || activeProgTab === 'social'))
-            ? 'text-primary-600 font-extrabold bg-slate-50' 
-            : 'text-slate-700 hover:bg-slate-50'
-        }`}
-       >
-        <span>Spazio d'Aula e Classe</span>
-       </button>
-
-       {/* Dynamic Contextual Sub-menu for Classe */}
-       {((typeof navigator !== 'undefined' && navigator.webdriver) || (activeTab === 'progetta-annuale' && (activeProgTab === 'classe' || activeProgTab === 'social'))) && (
-        <div className="pl-3.5 mt-1.5 space-y-1 border-l-2 border-indigo-100 ml-3.5">
-         <div
-          role="button"
-          onClick={() => { handleTabSwitch('progetta-annuale'); setActiveProgTab('classe'); }}
-          className={`w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer transition ${
-            activeTab === 'progetta-annuale' && activeProgTab === 'classe' ? 'bg-indigo-50 text-indigo-700 font-bold' : 'text-slate-500 hover:text-slate-800'
-          }`}
-         >
-          <span>Ambiente & Esiti Classe</span>
-         </div>
-
-         <div
-          role="button"
-          onClick={() => { handleTabSwitch('progetta-annuale'); setActiveProgTab('social'); }}
-          className={`w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer transition ${
-            activeTab === 'progetta-annuale' && activeProgTab === 'social' ? 'bg-indigo-50 text-indigo-700 font-bold' : 'text-slate-500 hover:text-slate-800'
-          }`}
-         >
-          <span>Osservatorio dei Riusi d'UDA</span>
-         </div>
-        </div>
-       )}
-      </div>
-
-      {/* 5. SEZIONE COMUNE: SUPPORTO & CERTIFICAZIONE */}
-      <p className="px-3 text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1.5 mt-3 pt-1 border-t border-slate-100 text-left">Supporto e checklist non certificate</p>
-      
-      <button onClick={() => handleTabSwitch('certificazione-pa')} className={`w-full flex items-center justify-between px-3.5 py-2 rounded-xl text-xs font-semibold transition ${activeTab === 'certificazione-pa' ? 'bg-primary-50 text-primary-600 border border-primary-100 shadow-sm' : 'text-slate-600 hover:bg-slate-50'}`}>
-       <span className="flex items-center space-x-2.5"><ShieldCheck className="w-4 h-4 text-emerald-600" /> <span className="font-extrabold text-indigo-950">Checklist accessibilità e conformità (non certificata)</span></span>
-      </button>
-      
-      <button onClick={() => handleTabSwitch('second-brain')} className={`w-full flex items-center justify-between px-3.5 py-2 rounded-xl text-xs font-semibold transition ${activeTab === 'second-brain' ? 'bg-primary-50 text-primary-600 border border-primary-100 shadow-sm' : 'text-slate-600 hover:bg-slate-50'}`}>
-       <span className="flex items-center space-x-2.5"><Sparkles className="w-4 h-4 text-indigo-500" /> <span className="font-extrabold text-indigo-950">WikiLLM e archivio locale</span></span>
-      </button>
-      
-      <button onClick={() => handleTabSwitch('guida')} className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition ${activeTab === 'guida' ? 'bg-primary-50 text-primary-600 border border-primary-100 shadow-sm' : 'text-slate-600 hover:bg-slate-50'}`}>
-       <span className="flex items-center space-x-2.5"><HelpCircle className="w-4 h-4 text-blue-500" /> <span>Guida Operativa</span></span>
-      </button>
-     </nav>
+        <section aria-labelledby="nav-supporto" className="border-t border-slate-100 pt-4">
+          <p id="nav-supporto" className="mb-1.5 px-3 text-[10px] font-black uppercase tracking-wider text-slate-400">Supporto</p>
+          <div className="space-y-1">
+            <button type="button" onClick={() => props.handleTabSwitch('certificazione-pa')} className={itemClass(props.activeTab === 'certificazione-pa')}>
+              <ShieldCheck className="h-4 w-4 shrink-0" aria-hidden="true" />
+              <span>Controlli e checklist</span>
+            </button>
+            <button type="button" onClick={() => props.handleTabSwitch('guida')} className={itemClass(props.activeTab === 'guida')}>
+              <HelpCircle className="h-4 w-4 shrink-0" aria-hidden="true" />
+              <span>Guida</span>
+            </button>
+          </div>
+        </section>
+      </nav>
     </aside>
-
   );
 }
-
