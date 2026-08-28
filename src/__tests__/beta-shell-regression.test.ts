@@ -1,53 +1,66 @@
-import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 
-function source(path: string): string {
-  return readFileSync(path, 'utf8');
+function firstSource(modules: Record<string, string>): string {
+  return Object.values(modules)[0] ?? '';
 }
+
+const headerSource = firstSource(import.meta.glob('../features/navigation/components/AppHeader.tsx', {
+  query: '?raw', import: 'default', eager: true,
+}) as Record<string, string>);
+
+const sidebarSource = firstSource(import.meta.glob('../features/navigation/components/AppSidebar.tsx', {
+  query: '?raw', import: 'default', eager: true,
+}) as Record<string, string>);
+
+const mobileSource = firstSource(import.meta.glob('../features/navigation/components/MobileBottomNav.tsx', {
+  query: '?raw', import: 'default', eager: true,
+}) as Record<string, string>);
+
+const homeSource = firstSource(import.meta.glob('../features/session/components/DashboardView.tsx', {
+  query: '?raw', import: 'default', eager: true,
+}) as Record<string, string>);
+
+const navigationIndexSource = firstSource(import.meta.glob('../features/navigation/index.ts', {
+  query: '?raw', import: 'default', eager: true,
+}) as Record<string, string>);
+
+const appSource = firstSource(import.meta.glob('../App.tsx', {
+  query: '?raw', import: 'default', eager: true,
+}) as Record<string, string>);
 
 describe('Arena Beta canonical shell regression guard', () => {
   it('keeps the runtime header independent from the legacy image logo and primary AI jargon', () => {
-    const header = source('src/features/navigation/components/AppHeader.tsx');
-
-    expect(header).not.toContain('curmanlight_v20_logo.png');
-    expect(header).not.toContain('<img');
-    expect(header).not.toMatch(/Co-pilota Chat|Baseline d['’]Aula|Connettore LLM|Pubblicazione SCORM|Importazione studenti/i);
-    expect(header).toContain('data-beta-shell="canonical"');
-    expect(header).toContain('Curricolo d’istituto');
+    expect(headerSource).not.toContain('curmanlight_v20_logo.png');
+    expect(headerSource).not.toContain('<img');
+    expect(headerSource).not.toMatch(/Co-pilota Chat|Baseline d['’]Aula|Connettore LLM|Pubblicazione SCORM|Importazione studenti/i);
+    expect(headerSource).toContain('data-beta-shell="canonical"');
+    expect(headerSource).toContain('Curricolo d’istituto');
   });
 
   it('keeps primary navigation aligned with the institutional Beta journey', () => {
-    const sidebar = source('src/features/navigation/components/AppSidebar.tsx');
-    const mobile = source('src/features/navigation/components/MobileBottomNav.tsx');
-
     for (const text of ['Consulta il curricolo', 'Rivedi le proposte', 'Controlla le fonti', 'Crea un documento']) {
-      expect(sidebar).toContain(text);
+      expect(sidebarSource).toContain(text);
     }
 
-    expect(sidebar).not.toMatch(/Spazio d['’]Aula|UDA condivise|WikiLLM|Compilatore UDA|Progettazione UDA|Pilota Sperimentale/i);
-    expect(mobile).not.toMatch(/Progetta|Classe|Social|Copilot/i);
-    expect(mobile).toContain('Curricolo');
-    expect(mobile).toContain('Revisione');
-    expect(mobile).toContain('Fonti');
-    expect(mobile).toContain('Documenti');
+    expect(sidebarSource).not.toMatch(/Spazio d['’]Aula|UDA condivise|WikiLLM|Compilatore UDA|Progettazione UDA|Pilota Sperimentale/i);
+    expect(mobileSource).not.toMatch(/Progetta|Classe|Social|Copilot/i);
+    expect(mobileSource).toContain('Curricolo');
+    expect(mobileSource).toContain('Revisione');
+    expect(mobileSource).toContain('Fonti');
+    expect(mobileSource).toContain('Documenti');
   });
 
   it('does not present local state as votes, consensus or technical compliance on the Home', () => {
-    const home = source('src/features/session/components/DashboardView.tsx');
-
-    expect(home).not.toMatch(/Votazione|Voti Registrati|Unione Consensi|Merger|\.cml|IndexedDB|Dexie|Service Worker|WCAG|GDPR/i);
-    expect(home).toContain('Preparare, controllare e decidere non sono la stessa azione');
-    expect(home).toContain('Decidi solo con autorità verificata');
-    expect(home).toContain('non attribuisce l’autorizzazione a decidere');
+    expect(homeSource).not.toMatch(/Votazione|Voti Registrati|Unione Consensi|Merger|\.cml|IndexedDB|Dexie|Service Worker|WCAG|GDPR/i);
+    expect(homeSource).toContain('Preparare, controllare e decidere non sono la stessa azione');
+    expect(homeSource).toContain('Decidi solo con autorità verificata');
+    expect(homeSource).toContain('non attribuisce l’autorizzazione a decidere');
   });
 
   it('exposes only one navigation shell from the navigation package', () => {
-    const barrel = source('src/features/navigation/index.ts');
-    const app = source('src/App.tsx');
-
-    expect(barrel).not.toMatch(/AppShell|TopBar|components\/Sidebar/);
-    expect(app).toContain('AppHeader');
-    expect(app).toContain('AppSidebar');
-    expect(app).toContain('MobileBottomNav');
+    expect(navigationIndexSource).not.toMatch(/AppShell|TopBar|components\/Sidebar/);
+    expect(appSource).toContain('AppHeader');
+    expect(appSource).toContain('AppSidebar');
+    expect(appSource).toContain('MobileBottomNav');
   });
 });
