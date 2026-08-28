@@ -7,13 +7,22 @@ import {
 } from '../domain/curriculum/national/requirementProfile';
 
 describe('DM221 national requirement profile', () => {
-  it('is explicitly versioned and bound to the official source registry', () => {
+  it('is explicitly versioned, source-bound and transition-aware', () => {
     expect(DM221_REQUIREMENT_PROFILE).toMatchObject({
       id: 'dm221-requirements-2026-v1',
       structureVersion: 'dm221-structure-v1',
       sourceId: 'dm-221-2025-indicazioni-nazionali',
       academicStart: '2026/2027',
+      regimeScope: 'DM221_2025',
+      transitionResolutionRequired: true,
     });
+    expect(
+      DM221_REQUIREMENT_PROFILE.requirements.every(
+        (requirement) =>
+          requirement.regimeScope === 'DM221_2025' &&
+          requirement.transitionResolutionRequired === true,
+      ),
+    ).toBe(true);
   });
 
   it('contains the five infancy fields as universal requirements', () => {
@@ -34,12 +43,14 @@ describe('DM221 national requirement profile', () => {
     expect(invalid).toHaveLength(0);
   });
 
-  it('keeps LEL and musical instrument conditional rather than universal', () => {
-    const conditionalLabels = getConditionalNationalRequirements().map((requirement) => requirement.label);
+  it('keeps LEL and musical instrument conditional and preserves their activation rules', () => {
+    const conditional = getConditionalNationalRequirements();
     const universalLabels = getUniversalNationalRequirements().map((requirement) => requirement.label);
+    const lel = conditional.find((requirement) => requirement.label === 'Latino per l’educazione linguistica (LEL)');
+    const instrument = conditional.find((requirement) => requirement.label === 'Strumento musicale');
 
-    expect(conditionalLabels).toContain('Latino per l’educazione linguistica (LEL)');
-    expect(conditionalLabels).toContain('Strumento musicale');
+    expect(lel?.activation).toMatchObject({ academicYear: '2026/2027', classYears: [2, 3] });
+    expect(instrument?.activation).toMatchObject({ academicYear: '2026/2027', classYears: [1] });
     expect(universalLabels).not.toContain('Latino per l’educazione linguistica (LEL)');
     expect(universalLabels).not.toContain('Strumento musicale');
   });
