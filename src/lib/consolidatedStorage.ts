@@ -59,20 +59,20 @@ export const safeLocalStorageRemoveItem = (key: string): void => {
 // Safe LocalStorage Get Glossary helper
 export const safeLocalStorageGetGlossary = (): { term: string; definition: string; source: string }[] => {
  const defaultGlossary = [
-  { term: "UDA", definition: "Unit� di Apprendimento � Possibile percorso didattico interdisciplinare centrato su un tema e un prodotto finale.", source: "Glossario locale non verificato" },
-  { term: "Competenza", definition: "Capacit� di utilizzare conoscenze e abilit� in contesti di vita e di studio.", source: "Glossario locale non verificato" },
+  { term: "UDA", definition: "Unità di Apprendimento — Possibile percorso didattico interdisciplinare centrato su un tema e un prodotto finale.", source: "Glossario locale non verificato" },
+  { term: "Competenza", definition: "Capacità di utilizzare conoscenze e abilità in contesti di vita e di studio.", source: "Glossario locale non verificato" },
   { term: "Diacronia Curricolare", definition: "Rappresentazione progressiva di saperi e obiettivi nel tempo.", source: "Glossario locale non verificato" },
   { term: "Evidenza Comportamentale", definition: "Comportamento osservabile associato localmente a un traguardo o a una competenza.", source: "Glossario locale non verificato" },
-  { term: "Compito di Realt�", definition: "Situazione-problema reale o verosimile con un elaborato finale.", source: "Glossario locale non verificato" },
+  { term: "Compito di Realtà", definition: "Situazione-problema reale o verosimile con un elaborato finale.", source: "Glossario locale non verificato" },
   { term: "Didattica Orientativa", definition: "Approccio educativo che sostiene la riflessione su interessi e possibili percorsi.", source: "Glossario locale non verificato" },
-  { term: "PEI", definition: "Piano Educativo Individualizzato � Descrizione sintetica da verificare sulle fonti applicabili.", source: "Glossario locale non verificato" },
-  { term: "PDP", definition: "Piano Didattico Personalizzato � Descrizione sintetica da verificare sulle fonti applicabili.", source: "Glossario locale non verificato" },
-  { term: "UDL", definition: "Universal Design for Learning � Approccio metodologico orientato a percorsi flessibili.", source: "Glossario locale non verificato" },
-  { term: "PTOF", definition: "Piano Triennale dell'Offerta Formativa � Definizione generale da verificare nel contesto effettivo.", source: "Glossario locale non verificato" },
-  { term: "RAV", definition: "Rapporto di Autovalutazione � Definizione generale da verificare nel contesto effettivo.", source: "Glossario locale non verificato" },
-  { term: "NIV", definition: "Nucleo Interno di Valutazione � Definizione generale da verificare nel contesto effettivo.", source: "Glossario locale non verificato" },
-  { term: "PdM", definition: "Piano di Miglioramento � Definizione generale da verificare nel contesto effettivo.", source: "Glossario locale non verificato" },
-  { term: "LEL", definition: "Lingua ed Elementi di Latino � Possibile laboratorio linguistico da verificare nel contesto effettivo.", source: "Glossario locale non verificato" }
+  { term: "PEI", definition: "Piano Educativo Individualizzato — Descrizione sintetica da verificare sulle fonti applicabili.", source: "Glossario locale non verificato" },
+  { term: "PDP", definition: "Piano Didattico Personalizzato — Descrizione sintetica da verificare sulle fonti applicabili.", source: "Glossario locale non verificato" },
+  { term: "UDL", definition: "Universal Design for Learning — Approccio metodologico orientato a percorsi flessibili.", source: "Glossario locale non verificato" },
+  { term: "PTOF", definition: "Piano Triennale dell'Offerta Formativa — Definizione generale da verificare nel contesto effettivo.", source: "Glossario locale non verificato" },
+  { term: "RAV", definition: "Rapporto di Autovalutazione — Definizione generale da verificare nel contesto effettivo.", source: "Glossario locale non verificato" },
+  { term: "NIV", definition: "Nucleo Interno di Valutazione — Definizione generale da verificare nel contesto effettivo.", source: "Glossario locale non verificato" },
+  { term: "PdM", definition: "Piano di Miglioramento — Definizione generale da verificare nel contesto effettivo.", source: "Glossario locale non verificato" },
+  { term: "LEL", definition: "Lingua ed Elementi di Latino — Possibile laboratorio linguistico da verificare nel contesto effettivo.", source: "Glossario locale non verificato" }
  ];
  try {
   const saved = localStorage.getItem('curman_glossary');
