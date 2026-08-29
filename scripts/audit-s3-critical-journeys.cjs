@@ -91,10 +91,14 @@ async function noHorizontalOverflow(page) {
       check('curriculum context route is reachable', page.url().includes('/curriculum'));
       check('curriculum context is visibly identified', await contextHeader.isVisible());
 
-      const bodyText = await page.locator('body').innerText();
+      const authorityNotice = page.locator('[data-human-task="curriculum-authority-context"]').first();
+      await authorityNotice.waitFor({ state: 'visible', timeout: 5000 });
+      const authorityText = await authorityNotice.innerText();
       check(
-        'curriculum copy does not silently claim institutional adoption',
-        bodyText.includes('non verificata') || bodyText.includes('prive di valore deliberativo') || bodyText.includes('non attestano')
+        'curriculum authority state is persistently visible',
+        authorityText.includes('copia locale di consultazione') &&
+          authorityText.includes('non attesta configurazione o adozione istituzionale') &&
+          authorityText.includes('fonti, applicabilità e stato')
       );
       check('curriculum context has no material horizontal overflow', await noHorizontalOverflow(page));
 
