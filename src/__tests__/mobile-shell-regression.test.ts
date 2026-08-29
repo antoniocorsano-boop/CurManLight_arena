@@ -65,6 +65,9 @@ describe('MOBILE-SHELL regression contract', () => {
       expect(mobileSource).toContain(icon);
     }
     expect(mobileSource).toContain('data-mobile-dock="floating"');
+    expect(mobileSource).toContain('data-mobile-dock-reserved-space="canonical"');
+    expect(mobileSource).toContain('h-[calc(5.75rem+env(safe-area-inset-bottom))]');
+    expect(mobileSource).toContain('left-4 right-4');
     expect(mobileSource).toContain('rounded-[1.4rem]');
     expect(mobileSource).toContain("aria-current={activeTab === 'dashboard' ? 'page' : undefined}");
     expect(mobileSource).toContain('env(safe-area-inset-bottom)');
