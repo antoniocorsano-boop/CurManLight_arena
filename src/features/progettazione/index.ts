@@ -1,7 +1,6 @@
-export { CertificazioneTab, OutcomesModal, ProgettazioneTab, UdaDetailModal } from './components';
+export { CertificazioneTab, ProgettazioneTab, UdaDetailModal } from './components';
 export type {
   CertificazioneTabProps,
-  OutcomesModalProps,
   ProgettazioneTabProps,
   UdaDetailModalProps
 } from './components';
