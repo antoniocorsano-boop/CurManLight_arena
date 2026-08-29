@@ -48,8 +48,10 @@ describe('MOBILE-SHELL regression contract', () => {
     expect(headerSource).toContain('Profilo e accesso');
     expect(headerSource).toContain('data-profile-scope="personal"');
     expect(headerSource).toContain('data-profile-scope="institutional"');
-    expect(headerSource).toContain('Accesso scolastico separato dall’autorità decisionale.');
-    expect(headerSource).toContain('Collega un account');
+    expect(headerSource).toContain('data-development-no-institution="explicit"');
+    expect(headerSource).toContain('Puoi continuare a lavorare senza collegare una scuola.');
+    expect(headerSource).toContain('Le decisioni istituzionali restano non disponibili.');
+    expect(headerSource).toContain('Collega un account (facoltativo)');
     expect(headerSource).toContain('Sincronizza i file');
     expect(headerSource).toContain('Disconnetti account');
     expect(headerSource).not.toContain('data-session-identity="status"');
@@ -65,6 +67,9 @@ describe('MOBILE-SHELL regression contract', () => {
       expect(mobileSource).toContain(icon);
     }
     expect(mobileSource).toContain('data-mobile-dock="floating"');
+    expect(mobileSource).toContain('data-mobile-dock-reserved-space="canonical"');
+    expect(mobileSource).toContain('h-[calc(5.75rem+env(safe-area-inset-bottom))]');
+    expect(mobileSource).toContain('left-4 right-4');
     expect(mobileSource).toContain('rounded-[1.4rem]');
     expect(mobileSource).toContain("aria-current={activeTab === 'dashboard' ? 'page' : undefined}");
     expect(mobileSource).toContain('env(safe-area-inset-bottom)');
@@ -80,5 +85,13 @@ describe('MOBILE-SHELL regression contract', () => {
     expect(cssSource).toContain('#main-content pre');
     expect(cssSource).toContain('overflow-x: auto');
     expect(cssSource).toContain('-webkit-overflow-scrolling: touch');
+  });
+
+  it('enforces one mobile gutter and section rhythm for teacher-facing surfaces', () => {
+    expect(cssSource).toContain('--ui-mobile-gutter: 16px');
+    expect(cssSource).toContain('--ui-mobile-section-gap: 12px');
+    expect(cssSource).toContain('[data-teacher-surface]');
+    expect(cssSource).toContain('padding: var(--ui-mobile-gutter)');
+    expect(cssSource).toContain('margin-top: var(--ui-mobile-section-gap)');
   });
 });

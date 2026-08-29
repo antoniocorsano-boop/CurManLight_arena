@@ -33,31 +33,47 @@ export function AppViewsLayer(props: AppViewsLayerProps) {
       />
 
       {props.activeTab === 'curricolo' && (
-        <div className="space-y-3">
+        <div className="space-y-3" data-teacher-surface="curriculum">
           <aside
             data-human-task="curriculum-authority-context"
             role="note"
-            className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs font-semibold leading-relaxed text-amber-950"
+            className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-relaxed text-amber-950"
           >
-            <strong className="block text-[10px] uppercase tracking-wider text-amber-800">Stato del contesto curricolare</strong>
+            <strong className="block font-bold text-amber-950">Prima di usare questo curricolo</strong>
             <span>
-              Questa è una copia locale di consultazione: non attesta configurazione o adozione istituzionale. Verifica sempre fonti, applicabilità e stato prima di usarla come baseline autorevole.
+              Stai consultando una copia locale. Per sapere se è valida per la scuola, controlla Fonti, Applicabilità e Stato.
             </span>
           </aside>
           <CurriculumTab {...props} />
         </div>
       )}
-      {props.activeTab === 'revisione' && <RevisioneTab {...props} />}
 
-      {props.activeTab === 'progetta-annuale' && (
-        <ProgettazioneTab
-          {...props}
-          handleTabSwitch={safeHandleTabSwitch}
-        />
+      {props.activeTab === 'revisione' && (
+        <div data-teacher-surface="revision">
+          <RevisioneTab {...props} />
+        </div>
       )}
 
-      {props.activeTab === 'processo' && <ProcessoTab {...props} />}
-      {props.activeTab === 'esportazioni' && <EsportazioniTab {...props} />}
+      {props.activeTab === 'progetta-annuale' && (
+        <div data-teacher-surface="planning">
+          <ProgettazioneTab
+            {...props}
+            handleTabSwitch={safeHandleTabSwitch}
+          />
+        </div>
+      )}
+
+      {props.activeTab === 'processo' && (
+        <div data-teacher-surface="process">
+          <ProcessoTab {...props} />
+        </div>
+      )}
+
+      {props.activeTab === 'esportazioni' && (
+        <div data-teacher-surface="documents">
+          <EsportazioniTab {...props} />
+        </div>
+      )}
 
       <InfoViews
         activeTab={props.activeTab}
@@ -65,7 +81,11 @@ export function AppViewsLayer(props: AppViewsLayerProps) {
         setActiveGeneralSubtab={props.setActiveGeneralSubtab}
       />
 
-      {props.activeTab === 'second-brain' && <SecondBrainTab {...props} />}
+      {props.activeTab === 'second-brain' && (
+        <div data-teacher-surface="knowledge">
+          <SecondBrainTab {...props} />
+        </div>
+      )}
     </>
   );
 }

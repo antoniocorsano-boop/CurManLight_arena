@@ -201,12 +201,16 @@ export function AppHeader(props: AppHeaderProps) {
 
                       <div className="rounded-xl border border-slate-700 bg-slate-900/45 px-3 py-2.5" data-profile-scope="institutional">
                         <div className="flex items-center justify-between gap-2">
-                          <span className="font-extrabold text-slate-100">Istituzionale</span>
+                          <span className="font-extrabold text-slate-100">Scuola</span>
                           <span className="rounded-full bg-slate-700 px-2 py-0.5 text-[10px] font-bold text-slate-300">
-                            {props.isWorkspaceLoggedIn && props.cloudAccountType === 'scolastica' ? 'collegato' : 'non collegato'}
+                            {props.isWorkspaceLoggedIn && props.cloudAccountType === 'scolastica' ? 'collegata' : 'non collegata'}
                           </span>
                         </div>
-                        <p className="mt-1 leading-relaxed text-slate-400">Accesso scolastico separato dall’autorità decisionale.</p>
+                        <p className="mt-1 leading-relaxed text-slate-400" data-development-no-institution="explicit">
+                          {props.isWorkspaceLoggedIn && props.cloudAccountType === 'scolastica'
+                            ? 'Account scolastico collegato. Le decisioni restano disponibili solo a chi ha l’autorizzazione prevista.'
+                            : 'Puoi continuare a lavorare senza collegare una scuola. Le decisioni istituzionali restano non disponibili.'}
+                        </p>
                       </div>
                     </div>
 
@@ -237,7 +241,7 @@ export function AppHeader(props: AppHeaderProps) {
                           className="flex w-full items-center gap-2.5 px-4 py-2.5 text-left font-bold text-indigo-300 hover:bg-slate-700"
                         >
                           <DownloadCloud className="h-4 w-4" aria-hidden="true" />
-                          <span>Collega un account</span>
+                          <span>Collega un account (facoltativo)</span>
                         </button>
                       )}
                     </div>

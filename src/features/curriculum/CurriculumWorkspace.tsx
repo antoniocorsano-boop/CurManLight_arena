@@ -8,32 +8,32 @@ export function CurriculumWorkspace(props: CurriculumTabProps) {
   const [reviewOpen, setReviewOpen] = useState(false);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4" data-teacher-surface="curriculum-workspace">
       <CurriculumTabBase {...props} />
 
       {activeCurricoloView === 'home' && (
-        <section className="rounded-2xl border border-indigo-200 bg-indigo-50/30 p-5 shadow-sm space-y-4">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <div className="space-y-2 max-w-3xl">
-              <span className="text-[10px] font-black uppercase tracking-wider text-indigo-600">Fonte nazionale · Tecnologia</span>
-              <h3 className="text-base font-black text-slate-900">Verifica ciò che arriva dalle Indicazioni 2025</h3>
-              <p className="text-sm text-slate-600 leading-relaxed">
-                Controlla uno alla volta i 61 elementi già localizzati nel D.M. 221/2025. La verifica resta distinta dalla copia locale e da qualsiasi decisione della scuola.
+        <section className="space-y-3 rounded-2xl border border-indigo-200 bg-indigo-50/30 p-4 shadow-sm sm:p-5">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="max-w-3xl">
+              <span className="text-xs font-bold text-indigo-700">Indicazioni 2025 · Tecnologia</span>
+              <h3 className="mt-1 text-base font-extrabold text-slate-900">Vuoi controllare la fonte nazionale?</h3>
+              <p className="mt-1 text-sm leading-relaxed text-slate-600">
+                Apri una scheda alla volta e verifica i contenuti già individuati nel D.M. 221/2025.
               </p>
             </div>
             <button
               type="button"
               onClick={() => setReviewOpen((open) => !open)}
               aria-expanded={reviewOpen}
-              className="shrink-0 rounded-xl bg-indigo-600 px-4 py-3 text-sm font-black text-white hover:bg-indigo-700"
+              className="w-full shrink-0 rounded-xl bg-indigo-600 px-4 py-3 text-sm font-bold text-white hover:bg-indigo-700 sm:w-auto"
             >
-              {reviewOpen ? 'Chiudi verifica' : 'Inizia la verifica'}
+              {reviewOpen ? 'Chiudi' : 'Controlla la fonte'}
             </button>
           </div>
 
           {!reviewOpen && (
-            <p className="text-xs font-semibold text-slate-500">
-              Non viene modificato nulla finché non apri il compito e registri una decisione esplicita per il singolo elemento.
+            <p className="text-xs text-slate-500" data-hcm-secondary-content>
+              Nulla viene modificato finché non registri una scelta esplicita sulla singola scheda.
             </p>
           )}
 
