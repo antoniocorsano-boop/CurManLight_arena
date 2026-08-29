@@ -36,7 +36,6 @@ type WindowWithSpeechRecognition = Window & {
 
 type UseCopilotInteractionHandlersArgs = {
  activeTab: string;
- activeProgTab: string;
  detectedDeviceType: 'desktop' | 'mobile';
  discipline: string;
  order: SchoolOrder;
@@ -45,11 +44,20 @@ type UseCopilotInteractionHandlersArgs = {
  setRealTaskInput: (value: string) => void;
  setProgNotes: (value: string) => void;
  showToast: (msg: string, success?: boolean) => void;
+ /**
+  * Temporary S2B-3A compatibility inputs. They are accepted only so the
+  * monolithic App composition can be detached in the next isolated cut.
+  * The Arena Copilot MUST NOT read, inspect or transform these values.
+  */
+ activeProgTab?: unknown;
+ selectedStudentForFeedback?: unknown;
+ classroomStudentFeedback?: unknown;
+ setClassroomStudentFeedback?: unknown;
+ setSelectedStudentForFeedback?: unknown;
 };
 
 export function useCopilotInteractionHandlers({
  activeTab,
- activeProgTab,
  detectedDeviceType,
  discipline,
  order,
