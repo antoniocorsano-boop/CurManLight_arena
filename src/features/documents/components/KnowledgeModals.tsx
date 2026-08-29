@@ -1,4 +1,4 @@
-import { Check, Copy, X } from 'lucide-react';
+import { Check, Copy, FileText, X } from 'lucide-react';
 import { useState } from 'react';
 import { UiConfirmDialog } from '../../../ui/components/UiConfirmDialog';
 
@@ -28,57 +28,55 @@ export function WikiReaderModal({
 
   return (
     <>
-    <div role="dialog" aria-modal="true" className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[180] flex items-center justify-center p-4">
-      <div className="bg-white border border-slate-200 max-w-4xl w-full rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[95vh] md:max-h-[90vh] h-auto fade-in text-left">
-        <div className="bg-slate-900 text-white px-6 py-4 flex justify-between items-center shrink-0">
-          <div className="flex items-center space-x-2">
-            <span className="text-xl"></span>
-            <h3 className="text-sm font-black text-slate-100 uppercase tracking-wider">Lettore di fonti locali e archiviate</h3>
+      <div role="dialog" aria-modal="true" className="fixed inset-0 z-[180] flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm">
+        <div className="flex max-h-[92vh] w-full max-w-4xl flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white text-left shadow-2xl fade-in">
+          <div className="flex shrink-0 items-center justify-between bg-slate-900 px-5 py-4 text-white">
+            <div>
+              <h3 className="text-base font-black text-slate-100">Leggi la fonte</h3>
+              <p className="mt-1 text-xs text-slate-300">Controlla il contenuto prima di usarlo in una decisione.</p>
+            </div>
+            <button onClick={() => setShowWikiReaderModal(false)} className="rounded-lg p-2 text-slate-300 hover:bg-white/10 hover:text-white" aria-label="Chiudi"><X className="h-5 w-5" /></button>
           </div>
-          <button onClick={() => setShowWikiReaderModal(false)} className="text-slate-400 hover:text-white transition"><X className="w-5 h-5" /></button>
-        </div>
 
-        <div className="bg-slate-50 border-b px-6 py-3 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 shrink-0 text-xs font-semibold">
-          <div>
-            <span className="text-slate-500 uppercase tracking-wider block text-[9px] font-black">Volume Attivo</span>
-            <span className="text-slate-800 font-extrabold text-xs">{getVolumeTitleWithCustom(selectedBrainDoc)}</span>
-          </div>
-          <div className="flex space-x-2 w-full sm:w-auto">
-            <button
-              onClick={() => {
-                navigator.clipboard.writeText(getVolumePlainTxtWithCustom(selectedBrainDoc));
-                showToast('Testo del volume copiato negli appunti!', true);
-              }}
-              className="px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl transition text-[10px] shadow-sm shadow-indigo-600/10 flex items-center space-x-1"
-            >
-              <Copy className="w-3.5 h-3.5" />
-              <span>Copia Testo Volume</span>
-            </button>
-            {selectedBrainDoc.startsWith('vol-custom-') && (
-              <button onClick={() => setDocToDelete(selectedBrainDoc)} className="px-3.5 py-1.5 bg-rose-600 hover:bg-rose-500 text-white font-bold rounded-xl transition text-[10px] flex items-center space-x-1">
-                <X className="w-3.5 h-3.5" />
-                <span>Elimina Volume</span>
+          <div className="flex shrink-0 flex-col gap-3 border-b bg-slate-50 px-5 py-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <span className="block text-xs font-bold text-slate-500">Fonte selezionata</span>
+              <span className="text-sm font-extrabold text-slate-800">{getVolumeTitleWithCustom(selectedBrainDoc)}</span>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(getVolumePlainTxtWithCustom(selectedBrainDoc));
+                  showToast('Testo copiato negli appunti.', true);
+                }}
+                className="inline-flex min-h-10 items-center gap-2 rounded-lg bg-indigo-600 px-3 py-2 text-xs font-bold text-white hover:bg-indigo-500"
+              >
+                <Copy className="h-4 w-4" />
+                Copia testo
               </button>
-            )}
-            <button onClick={() => setShowWikiReaderModal(false)} className="px-3.5 py-1.5 border border-slate-200 hover:bg-slate-100 text-slate-700 font-bold rounded-xl transition text-[10px] bg-white">Chiudi Lettore</button>
+              {selectedBrainDoc.startsWith('vol-custom-') && (
+                <button onClick={() => setDocToDelete(selectedBrainDoc)} className="min-h-10 rounded-lg border border-rose-200 bg-white px-3 py-2 text-xs font-bold text-rose-700 hover:bg-rose-50">
+                  Elimina fonte
+                </button>
+              )}
+            </div>
           </div>
-        </div>
 
-        <div className="p-6 md:p-8 overflow-y-auto flex-1 bg-white text-slate-800 leading-relaxed max-w-none text-xs space-y-4">
-          <div className="prose prose-slate max-w-none" dangerouslySetInnerHTML={{ __html: getVolumeFullHtmlWithCustom(selectedBrainDoc) }} />
-          <div className="h-6 shrink-0" />
+          <div className="flex-1 overflow-y-auto bg-white p-5 text-sm leading-7 text-slate-800 md:p-7">
+            <div className="prose prose-slate max-w-3xl" dangerouslySetInnerHTML={{ __html: getVolumeFullHtmlWithCustom(selectedBrainDoc) }} />
+            <div className="h-8" />
+          </div>
         </div>
       </div>
-    </div>
-    <UiConfirmDialog
-      open={docToDelete !== null}
-      title="Elimina volume"
-      message="Vuoi davvero eliminare questo volume dalla Second Brain? L'operazione non può essere annullata."
-      confirmLabel="Elimina"
-      variant="danger"
-      onConfirm={() => { if (docToDelete) handleDeleteCustomKbDoc(docToDelete); setDocToDelete(null); }}
-      onCancel={() => setDocToDelete(null)}
-    />
+      <UiConfirmDialog
+        open={docToDelete !== null}
+        title="Elimina fonte"
+        message="Vuoi eliminare questa fonte locale? L’operazione non può essere annullata."
+        confirmLabel="Elimina"
+        variant="danger"
+        onConfirm={() => { if (docToDelete) handleDeleteCustomKbDoc(docToDelete); setDocToDelete(null); }}
+        onCancel={() => setDocToDelete(null)}
+      />
     </>
   );
 }
@@ -111,103 +109,104 @@ export function AddKbDocumentModal({
   if (!showAddKbModal) return null;
 
   return (
-    <div role="dialog" aria-modal="true" className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[180] flex items-center justify-center p-4">
-      <div className="bg-white border border-slate-200 max-w-lg w-full rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] md:max-h-[85vh] h-auto fade-in text-left font-medium text-xs text-slate-700">
-        <div className="bg-gradient-to-r from-indigo-600 to-indigo-800 text-white px-6 py-4 flex justify-between items-center shrink-0">
-          <span className="flex items-center space-x-2 font-black uppercase tracking-wider text-xs">
-            <span></span> <span>Aggiungi documento alla base locale</span>
-          </span>
-          <button onClick={() => setShowAddKbModal(false)} className="text-slate-400 hover:text-white"><X className="w-5 h-5" /></button>
+    <div role="dialog" aria-modal="true" className="fixed inset-0 z-[180] flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm">
+      <div className="flex max-h-[92vh] w-full max-w-xl flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white text-left shadow-2xl fade-in">
+        <div className="flex shrink-0 items-start justify-between bg-slate-900 px-5 py-4 text-white">
+          <div className="max-w-md">
+            <h3 className="text-base font-black">Aggiungi una fonte</h3>
+            <p className="mt-1 text-xs leading-5 text-slate-300">Aggiungi un materiale alla conoscenza locale. Resterà separato dalle fonti istituzionali finché non viene verificato.</p>
+          </div>
+          <button onClick={() => setShowAddKbModal(false)} className="rounded-lg p-2 text-slate-300 hover:bg-white/10 hover:text-white" aria-label="Chiudi"><X className="h-5 w-5" /></button>
         </div>
 
-        <div className="p-6 space-y-4 overflow-y-auto">
-          <div className="space-y-1.5 p-4 bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl flex flex-col items-center justify-center text-center">
-            <span className="text-xl"></span>
-            <div>
-              <strong className="text-[10px] text-slate-700 font-extrabold block">Caricamento rapido di un file locale</strong>
-              <span className="text-[8px] text-slate-400 block font-semibold leading-relaxed">Seleziona un file di testo (.txt o .md) per estrarne il contenuto all'istante in modo offline.</span>
+        <div className="space-y-5 overflow-y-auto p-5">
+          <section className="rounded-xl border border-slate-200 bg-slate-50 p-4" aria-labelledby="kb-import-title">
+            <div className="flex items-start gap-3">
+              <FileText className="mt-0.5 h-5 w-5 shrink-0 text-indigo-600" aria-hidden="true" />
+              <div className="min-w-0">
+                <h4 id="kb-import-title" className="font-black text-slate-900">Hai già un file di testo?</h4>
+                <p className="mt-1 text-sm leading-6 text-slate-600">Puoi importare file .txt, .md, .csv o .json. Per PDF e Word, per ora copia e incolla il testo nel campo più sotto.</p>
+                <input
+                  type="file"
+                  accept=".txt,.md,.csv,.json,text/plain,text/markdown,text/csv,application/json"
+                  onChange={(event) => {
+                    const file = event.target.files?.[0];
+                    if (!file) return;
+                    const reader = new FileReader();
+                    reader.onload = (loadEvent) => {
+                      const text = loadEvent.target?.result as string;
+                      const cleanName = file.name.replace(/\.[^/.]+$/, '').replace(/_/g, ' ');
+                      setNewKbDocTitle(cleanName);
+                      setNewKbDocSubtitle('Materiale aggiunto localmente');
+                      setNewKbDocContent(text);
+                      showToast(`Materiale “${file.name}” pronto da aggiungere.`, true);
+                    };
+                    reader.readAsText(file);
+                  }}
+                  className="hidden"
+                  id="kb-file-upload-input"
+                />
+                <label htmlFor="kb-file-upload-input" className="mt-3 inline-flex min-h-10 cursor-pointer items-center justify-center rounded-lg border border-indigo-200 bg-white px-3 py-2 text-sm font-bold text-indigo-700 hover:bg-indigo-50">
+                  Scegli un file
+                </label>
+              </div>
             </div>
-            <input
-              type="file"
-              accept=".txt,.md"
-              onChange={(e) => {
-                const file = e.target.files?.[0];
-                if (!file) return;
-                const reader = new FileReader();
-                reader.onload = (event) => {
-                  const text = event.target?.result as string;
-                  const cleanName = file.name.replace(/\.[^/.]+$/, '').replace(/_/g, ' ');
-                  setNewKbDocTitle(cleanName);
-                  setNewKbDocSubtitle('Documento caricato in locale');
-                  setNewKbDocContent(text);
-                  showToast(`File '${file.name}' caricato ed estratto con successo!`, true);
-                };
-                reader.readAsText(file);
-              }}
-              className="hidden"
-              id="kb-file-upload-input"
-            />
-            <label
-              htmlFor="kb-file-upload-input"
-              className="px-3 py-1 bg-white hover:bg-slate-100 text-indigo-700 font-black border border-indigo-100 rounded-lg text-[9px] cursor-pointer transition shadow-sm"
-            >
-              Seleziona File (.txt / .md)
+          </section>
+
+          <section className="space-y-4" aria-labelledby="kb-describe-title">
+            <div>
+              <h4 id="kb-describe-title" className="font-black text-slate-900">Descrivi la fonte</h4>
+              <p className="mt-1 text-sm leading-6 text-slate-600">Bastano un titolo chiaro e il contenuto. La descrizione è facoltativa.</p>
+            </div>
+
+            <label className="block space-y-2">
+              <span className="text-sm font-bold text-slate-800">Titolo</span>
+              <input
+                type="text"
+                value={newKbDocTitle}
+                onChange={(event) => setNewKbDocTitle(event.target.value)}
+                className="w-full rounded-xl border border-slate-300 bg-white p-3 text-sm outline-none focus:border-indigo-500"
+                placeholder="Per esempio: Atto di indirizzo 2026"
+              />
             </label>
-          </div>
 
-          <div className="space-y-1">
-            <label className="text-[10px] font-black uppercase text-slate-500">Titolo del Documento (es. Atto di indirizzo 2026)</label>
-            <input
-              type="text"
-              value={newKbDocTitle}
-              onChange={(e) => setNewKbDocTitle(e.target.value)}
-              className="w-full border border-slate-200 rounded-xl p-2.5 bg-slate-50 focus:bg-white text-xs font-semibold focus:ring-1 focus:ring-indigo-500 outline-none"
-              placeholder="Es. Atto di indirizzo del Dirigente..."
-            />
-          </div>
+            <label className="block space-y-2">
+              <span className="text-sm font-bold text-slate-800">Descrizione <span className="font-normal text-slate-500">(facoltativa)</span></span>
+              <input
+                type="text"
+                value={newKbDocSubtitle}
+                onChange={(event) => setNewKbDocSubtitle(event.target.value)}
+                className="w-full rounded-xl border border-slate-300 bg-white p-3 text-sm outline-none focus:border-indigo-500"
+                placeholder="Per esempio: indicazioni per il PTOF"
+              />
+            </label>
 
-          <div className="space-y-1">
-            <label className="text-[10px] font-black uppercase text-slate-500">Sottotitolo o Descrizione Breve</label>
-            <input
-              type="text"
-              value={newKbDocSubtitle}
-              onChange={(e) => setNewKbDocSubtitle(e.target.value)}
-              className="w-full border border-slate-200 rounded-xl p-2.5 bg-slate-50 focus:bg-white text-xs font-semibold focus:ring-1 focus:ring-indigo-500 outline-none"
-              placeholder="Es. Linee strategiche per l'allineamento del PTOF..."
-            />
-          </div>
+            <label className="block space-y-2">
+              <span className="text-sm font-bold text-slate-800">Testo della fonte</span>
+              <textarea
+                value={newKbDocContent}
+                onChange={(event) => setNewKbDocContent(event.target.value)}
+                rows={8}
+                className="w-full rounded-xl border border-slate-300 bg-white p-3 text-sm leading-6 outline-none focus:border-indigo-500"
+                placeholder="Incolla qui il testo di un documento oppure importa un file dal riquadro sopra."
+              />
+            </label>
+          </section>
 
-          <div className="space-y-1">
-            <label className="text-[10px] font-black uppercase text-slate-500">Contenuto Esteso del Documento (Testo o Markdown)</label>
-            <textarea
-              value={newKbDocContent}
-              onChange={(e) => setNewKbDocContent(e.target.value)}
-              rows={8}
-              className="w-full border border-slate-200 rounded-xl p-2.5 bg-slate-50 focus:bg-white text-xs font-semibold focus:ring-1 focus:ring-indigo-500 outline-none leading-relaxed"
-              placeholder="Incolla o scrivi il testo da aggiungere alla base locale non verificata..."
-            />
-          </div>
-
-          <div className="h-6 shrink-0" />
+          <details className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-600">
+            <summary className="cursor-pointer font-bold text-slate-800">Che cosa succede dopo?</summary>
+            <p className="mt-2 leading-6">La fonte viene salvata localmente nella base di conoscenza del browser. Non diventa automaticamente una fonte istituzionale e non modifica il curricolo approvato.</p>
+          </details>
         </div>
 
-        <div className="bg-slate-50 px-6 py-3.5 border-t flex justify-end space-x-3 shrink-0">
-          <button
-            onClick={handleAddCustomKbDoc}
-            className="bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs px-5 py-2.5 rounded-xl transition shadow-md shadow-indigo-600/10 flex items-center space-x-1.5"
-          >
-            <Check className="w-4 h-4" />
-            <span>Aggiungi a Second Brain</span>
-          </button>
-          <button
-            onClick={() => setShowAddKbModal(false)}
-            className="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold text-xs px-4 py-2.5 rounded-xl transition"
-          >
-            Annulla
+        <div className="flex shrink-0 flex-col-reverse gap-2 border-t bg-slate-50 px-5 py-4 sm:flex-row sm:justify-end">
+          <button onClick={() => setShowAddKbModal(false)} className="min-h-11 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-bold text-slate-700 hover:bg-slate-100">Annulla</button>
+          <button onClick={handleAddCustomKbDoc} disabled={!newKbDocTitle.trim() || !newKbDocContent.trim()} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-bold text-white hover:bg-indigo-500 disabled:cursor-not-allowed disabled:bg-slate-300">
+            <Check className="h-4 w-4" />
+            Aggiungi alla conoscenza
           </button>
         </div>
       </div>
     </div>
   );
 }
-
