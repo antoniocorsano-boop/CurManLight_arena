@@ -6,7 +6,7 @@ import type { A07InstitutionalDocumentRead } from '../../../domain/institution';
 
 export type ActiveCurricoloView = 'home' | 'albero' | 'mappa' | 'popolamento' | 'pilota';
 export type ActiveProcessoTab = 'flusso' | 'verifica';
-export type ActiveProgTab = 'home' | 'annuale' | 'uda' | 'certificazione' | 'social' | 'classe-home' | 'classe';
+export type ActiveProgTab = 'home' | 'annuale' | 'uda' | 'certificazione';
 export type ClasseSubTab = 'registro' | 'strumenti' | 'pianificazione';
 export type ProgettazioneMode = 'grid' | 'wizard';
 export type RevisioneMode = 'list' | 'wizard';

@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { pathnameToAppTab } from '../features/navigation/appRouting';
 import { useCurriculumStore } from '../store/useCurriculumStore';
+import type { UserState } from '../types/curriculum';
 
 describe('Arena product-boundary runtime containment', () => {
   beforeEach(() => {
@@ -9,15 +10,12 @@ describe('Arena product-boundary runtime containment', () => {
 
   it('normalizes legacy classroom/social planning modes away from canonical Arena state', () => {
     const setActiveProgTab = useCurriculumStore.getState().setActiveProgTab;
+    const legacyValues = ['social', 'classe-home', 'classe'] as const;
 
-    setActiveProgTab('social');
-    expect(useCurriculumStore.getState().activeProgTab).toBe('annuale');
-
-    setActiveProgTab('classe-home');
-    expect(useCurriculumStore.getState().activeProgTab).toBe('annuale');
-
-    setActiveProgTab('classe');
-    expect(useCurriculumStore.getState().activeProgTab).toBe('annuale');
+    legacyValues.forEach((legacyValue) => {
+      setActiveProgTab(legacyValue as unknown as UserState['activeProgTab']);
+      expect(useCurriculumStore.getState().activeProgTab).toBe('annuale');
+    });
   });
 
   it('normalizes legacy planning state during backup restore', () => {

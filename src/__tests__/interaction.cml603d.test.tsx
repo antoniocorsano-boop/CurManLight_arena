@@ -135,7 +135,6 @@ function NavigationExportImportHarness({
    <output aria-label="active-tab">{navigation.activeTab}</output>
    <output aria-label="active-prog">{activeProgTab}</output>
    <button onClick={() => navigation.handleTabSwitch('curricolo')}>Curricolo</button>
-   <button onClick={() => setActiveProgTab('classe')}>Classe</button>
    <button onClick={() => {
     setActiveProgTab('uda');
     navigation.handleTabSwitch('progetta-annuale');
@@ -302,7 +301,7 @@ function WorkspaceHarness({
 }
 
 describe('CML-603D TS-001 interaction flows', () => {
- it('covers Home -> Curricolo -> Classe -> UDA -> Export -> Import without real network', async () => {
+ it('covers Home -> Curricolo -> UDA -> Export -> Import without real network', async () => {
   const user = userEvent.setup();
   const clickSpy = installDownloadMocks();
   const onDecision = vi.fn<(id: string, status: DecisionStatus) => void>();
@@ -312,8 +311,6 @@ describe('CML-603D TS-001 interaction flows', () => {
   expect(screen.getByLabelText('active-tab')).toHaveTextContent('dashboard');
   await user.click(screen.getByRole('button', { name: 'Curricolo' }));
   expect(screen.getByLabelText('active-tab')).toHaveTextContent('curricolo');
-  await user.click(screen.getByRole('button', { name: 'Classe' }));
-  expect(screen.getByLabelText('active-prog')).toHaveTextContent('classe');
   await user.click(screen.getByRole('button', { name: 'UDA' }));
   expect(screen.getByLabelText('active-tab')).toHaveTextContent('progetta-annuale');
   expect(screen.getByLabelText('active-prog')).toHaveTextContent('uda');

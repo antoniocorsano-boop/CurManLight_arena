@@ -73,7 +73,7 @@ export interface UserState {
   selectedTraguardi: number[];
   selectedObiettivi: number[];
   selectedEvidenze: string[];
-  activeProgTab: 'home' | 'annuale' | 'uda' | 'certificazione' | 'social' | 'classe-home' | 'classe';
+  activeProgTab: 'home' | 'annuale' | 'uda' | 'certificazione';
   activeCurricoloView: 'home' | 'albero' | 'mappa' | 'popolamento' | 'pilota';
   activeProcessoTab: 'flusso' | 'verifica';
   activeGeneralSubtab: 'premessa' | 'riforma' | 'obiettivi' | 'livelli';
