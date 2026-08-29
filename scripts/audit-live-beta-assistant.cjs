@@ -9,19 +9,13 @@ fs.mkdirSync(OUT_DIR, { recursive: true });
 
 (async () => {
   const browser = await chromium.launch({ headless: true });
-  const context = await browser.newContext({
-    viewport: { width: 390, height: 844 },
-    deviceScaleFactor: 1,
-    locale: 'it-IT',
-  });
+  const context = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 1, locale: 'it-IT' });
   const page = await context.newPage();
   const consoleErrors = [];
   const checks = [];
   const findings = [];
 
-  page.on('console', (msg) => {
-    if (msg.type() === 'error') consoleErrors.push(msg.text());
-  });
+  page.on('console', (msg) => { if (msg.type() === 'error') consoleErrors.push(msg.text()); });
   page.on('pageerror', (error) => consoleErrors.push(error.message));
 
   const check = (name, pass, detail = '') => {
@@ -34,13 +28,8 @@ fs.mkdirSync(OUT_DIR, { recursive: true });
     console.log(`PRODUCT_FINDING=${code} — ${detail}`);
   };
 
-  const screenshot = async (name) => {
-    await page.screenshot({ path: path.join(OUT_DIR, name), fullPage: true });
-  };
-
-  const hasNoHorizontalOverflow = async () => page.evaluate(() =>
-    document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1
-  );
+  const screenshot = async (name) => page.screenshot({ path: path.join(OUT_DIR, name), fullPage: true });
+  const hasNoHorizontalOverflow = async () => page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1);
 
   const pushAssistantView = async (view) => {
     const target = new URL(`knowledge?assistantView=${view}`, BETA_URL).toString();
@@ -63,9 +52,56 @@ fs.mkdirSync(OUT_DIR, { recursive: true });
     return false;
   };
 
-  try {
-    const response = await page.goto(BETA_URL, { waitUntil: 'networkidle', timeout: 45000 });
+  const openAssistantFromSettings = async () => {
+    const settingsEntry = page.locator('[data-settings-entry="canonical"]');
+    const settingsVisible = await settingsEntry.isVisible({ timeout: 2000 }).catch(() => false);
+    check('Impostazioni canoniche disponibili nell’header', settingsVisible);
+    if (!settingsVisible) return false;
+
+    try {
+      await settingsEntry.click({ timeout: 1200 });
+    } catch (error) {
+      if (await onboardingVisible()) {
+        finding('ONBOARDING_MODAL_BLOCKS_ASSISTANT_ENTRY', 'Il wizard Profilo personale locale blocca l’accesso a Impostazioni → Assistente Arena.');
+        check('Onboarding non blocca l’apertura dell’Assistente', false, 'Il modal onboarding intercetta l’azione Impostazioni.');
+        await screenshot('02a-onboarding-blocks-settings.png');
+        return false;
+      }
+      throw error;
+    }
+
+    const assistantEntry = page.locator('[data-assistant-entry="bounded"]');
+    const assistantVisible = await assistantEntry.isVisible({ timeout: 1500 }).catch(() => false);
+    check('Assistente disponibile nel menu Impostazioni', assistantVisible);
+    if (!assistantVisible) return false;
+
+    try {
+      await assistantEntry.click({ timeout: 1200 });
+    } catch (error) {
+      if (await onboardingVisible()) {
+        finding('ONBOARDING_MODAL_BLOCKS_ASSISTANT_ENTRY', 'Il wizard Profilo personale locale blocca l’apertura dell’Assistente dal menu Impostazioni.');
+        check('Onboarding non blocca l’apertura dell’Assistente', false, 'Il modal onboarding intercetta l’azione Assistente Arena.');
+        await screenshot('02b-onboarding-blocks-assistant.png');
+        return false;
+      }
+      throw error;
+    }
+
+    await page.waitForTimeout(500);
+    return true;
+  };
+
+  const navigateAndOpenAssistant = async () => {
+    const response = await page.goto(BETA_URL, { waitUntil: 'domcontentloaded', timeout: 45000 });
     check('Beta pubblica raggiungibile', Boolean(response && response.ok()), response ? `HTTP ${response.status()}` : 'nessuna risposta');
+    const assistantOpened = await openAssistantFromSettings();
+    await page.waitForLoadState('networkidle', { timeout: 10000 }).catch(() => undefined);
+    return assistantOpened;
+  };
+
+  try {
+    const assistantOpened = await navigateAndOpenAssistant();
+
     await screenshot('01-beta-mobile.png');
     check('Nessun overflow orizzontale iniziale', await hasNoHorizontalOverflow());
 
@@ -76,28 +112,20 @@ fs.mkdirSync(OUT_DIR, { recursive: true });
     }
     check('Identità release disponibile', releaseResponse.ok(), releaseIdentity ? JSON.stringify(releaseIdentity) : `HTTP ${releaseResponse.status()}`);
 
-    const assistantEntry = page.locator('[data-assistant-entry="bounded"]');
-    check('Icona Assistente presente nell’header', await assistantEntry.isVisible({ timeout: 5000 }).catch(() => false));
-
-    if (await assistantEntry.isVisible().catch(() => false)) {
-      await assistantEntry.click();
-      await page.waitForTimeout(600);
-    }
-
     const onboardingStillVisible = await onboardingVisible();
-    if (onboardingStillVisible) {
+    if (onboardingStillVisible && assistantOpened) {
       finding('ONBOARDING_MODAL_OVERLAPS_ASSISTANT', 'Il wizard Profilo personale locale resta visibile insieme all’Assistente.');
-      await screenshot('02a-onboarding-over-assistant.png');
+      await screenshot('02c-onboarding-over-assistant.png');
     }
-    check('Onboarding e Assistente non si sovrappongono', !onboardingStillVisible);
+    check('Onboarding e Assistente non si sovrappongono', !(onboardingStillVisible && assistantOpened));
 
     const assistantPanel = page.locator('[aria-label="Area contenuto assistente"]');
-    const panelVisible = await assistantPanel.isVisible({ timeout: 5000 }).catch(() => false);
+    const panelVisible = assistantOpened && await assistantPanel.isVisible({ timeout: 3000 }).catch(() => false);
     check('Pannello Assistente si apre', panelVisible);
     await screenshot('02-assistant-open.png');
 
-    const knowledgeActionVisible = await page.getByText('Apri conoscenza', { exact: true }).isVisible({ timeout: 500 }).catch(() => false);
-    const graphActionVisible = await page.getByText('Mostra connessioni', { exact: true }).isVisible({ timeout: 500 }).catch(() => false);
+    const knowledgeActionVisible = await page.getByText('Apri conoscenza', { exact: true }).isVisible({ timeout: 1000 }).catch(() => false);
+    const graphActionVisible = await page.getByText('Mostra connessioni', { exact: true }).isVisible({ timeout: 1000 }).catch(() => false);
     console.log(`KNOWLEDGE_ACTION_VISIBLE=${knowledgeActionVisible}`);
     console.log(`GRAPH_ACTION_VISIBLE=${graphActionVisible}`);
 
@@ -117,19 +145,17 @@ fs.mkdirSync(OUT_DIR, { recursive: true });
       await pushAssistantView('source');
     }
 
-    await page.goto(BETA_URL, { waitUntil: 'networkidle', timeout: 45000 });
-    const entryAgain = page.locator('[data-assistant-entry="bounded"]');
-    if (await entryAgain.isVisible({ timeout: 5000 }).catch(() => false)) {
-      await entryAgain.click();
-      await page.waitForTimeout(500);
-    }
+    const assistantOpenedAgain = await navigateAndOpenAssistant();
+    check('Assistente si riapre dopo re-entry', assistantOpenedAgain);
+
     const graphActionAgain = page.getByText('Mostra connessioni', { exact: true });
-    if (await graphActionAgain.isVisible({ timeout: 500 }).catch(() => false)) {
+    if (await graphActionAgain.isVisible({ timeout: 1000 }).catch(() => false)) {
       await graphActionAgain.click({ force: true });
       await page.waitForTimeout(700);
     } else {
       await pushAssistantView('graph');
     }
+
     await screenshot('04-knowledge-relations.png');
     const relationsText = await page.locator('body').innerText();
     const relationsVisible = /Relazioni in preparazione/i.test(relationsText);
@@ -140,7 +166,6 @@ fs.mkdirSync(OUT_DIR, { recursive: true });
     check('Relazioni resta fail-closed senza grafo tecnico', relationsVisible && failClosedVisible);
     check('Nessun leakage tecnico nella vista Relazioni', !technicalLeakage, technicalLeakage ? 'Rilevato lessico tecnico legacy' : '');
     check('Nessun overflow orizzontale in Relazioni', await hasNoHorizontalOverflow());
-
     check('Nessun errore JavaScript non gestito', consoleErrors.length === 0, consoleErrors.join(' | '));
 
     fs.writeFileSync(path.join(OUT_DIR, 'report.json'), JSON.stringify({
