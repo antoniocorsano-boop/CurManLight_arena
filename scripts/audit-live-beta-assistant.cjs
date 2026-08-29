@@ -54,26 +54,54 @@ fs.mkdirSync(OUT_DIR, { recursive: true });
 
   const openAssistantFromSettings = async () => {
     const settingsEntry = page.locator('[data-settings-entry="canonical"]');
-    const settingsVisible = await settingsEntry.isVisible({ timeout: 5000 }).catch(() => false);
+    const settingsVisible = await settingsEntry.isVisible({ timeout: 2000 }).catch(() => false);
     check('Impostazioni canoniche disponibili nell’header', settingsVisible);
     if (!settingsVisible) return false;
 
-    await settingsEntry.click();
-    await page.waitForTimeout(250);
+    try {
+      await settingsEntry.click({ timeout: 1200 });
+    } catch (error) {
+      if (await onboardingVisible()) {
+        finding('ONBOARDING_MODAL_BLOCKS_ASSISTANT_ENTRY', 'Il wizard Profilo personale locale blocca l’accesso a Impostazioni → Assistente Arena.');
+        check('Onboarding non blocca l’apertura dell’Assistente', false, 'Il modal onboarding intercetta l’azione Impostazioni.');
+        await screenshot('02a-onboarding-blocks-settings.png');
+        return false;
+      }
+      throw error;
+    }
 
     const assistantEntry = page.locator('[data-assistant-entry="bounded"]');
-    const assistantVisible = await assistantEntry.isVisible({ timeout: 3000 }).catch(() => false);
+    const assistantVisible = await assistantEntry.isVisible({ timeout: 1500 }).catch(() => false);
     check('Assistente disponibile nel menu Impostazioni', assistantVisible);
     if (!assistantVisible) return false;
 
-    await assistantEntry.click();
-    await page.waitForTimeout(600);
+    try {
+      await assistantEntry.click({ timeout: 1200 });
+    } catch (error) {
+      if (await onboardingVisible()) {
+        finding('ONBOARDING_MODAL_BLOCKS_ASSISTANT_ENTRY', 'Il wizard Profilo personale locale blocca l’apertura dell’Assistente dal menu Impostazioni.');
+        check('Onboarding non blocca l’apertura dell’Assistente', false, 'Il modal onboarding intercetta l’azione Assistente Arena.');
+        await screenshot('02b-onboarding-blocks-assistant.png');
+        return false;
+      }
+      throw error;
+    }
+
+    await page.waitForTimeout(500);
     return true;
   };
 
-  try {
-    const response = await page.goto(BETA_URL, { waitUntil: 'networkidle', timeout: 45000 });
+  const navigateAndOpenAssistant = async () => {
+    const response = await page.goto(BETA_URL, { waitUntil: 'domcontentloaded', timeout: 45000 });
     check('Beta pubblica raggiungibile', Boolean(response && response.ok()), response ? `HTTP ${response.status()}` : 'nessuna risposta');
+    const assistantOpened = await openAssistantFromSettings();
+    await page.waitForLoadState('networkidle', { timeout: 10000 }).catch(() => undefined);
+    return assistantOpened;
+  };
+
+  try {
+    const assistantOpened = await navigateAndOpenAssistant();
+
     await screenshot('01-beta-mobile.png');
     check('Nessun overflow orizzontale iniziale', await hasNoHorizontalOverflow());
 
@@ -84,17 +112,15 @@ fs.mkdirSync(OUT_DIR, { recursive: true });
     }
     check('Identità release disponibile', releaseResponse.ok(), releaseIdentity ? JSON.stringify(releaseIdentity) : `HTTP ${releaseResponse.status()}`);
 
-    const assistantOpened = await openAssistantFromSettings();
-
     const onboardingStillVisible = await onboardingVisible();
-    if (onboardingStillVisible) {
+    if (onboardingStillVisible && assistantOpened) {
       finding('ONBOARDING_MODAL_OVERLAPS_ASSISTANT', 'Il wizard Profilo personale locale resta visibile insieme all’Assistente.');
-      await screenshot('02a-onboarding-over-assistant.png');
+      await screenshot('02c-onboarding-over-assistant.png');
     }
-    check('Onboarding e Assistente non si sovrappongono', !onboardingStillVisible);
+    check('Onboarding e Assistente non si sovrappongono', !(onboardingStillVisible && assistantOpened));
 
     const assistantPanel = page.locator('[aria-label="Area contenuto assistente"]');
-    const panelVisible = assistantOpened && await assistantPanel.isVisible({ timeout: 5000 }).catch(() => false);
+    const panelVisible = assistantOpened && await assistantPanel.isVisible({ timeout: 3000 }).catch(() => false);
     check('Pannello Assistente si apre', panelVisible);
     await screenshot('02-assistant-open.png');
 
@@ -119,8 +145,9 @@ fs.mkdirSync(OUT_DIR, { recursive: true });
       await pushAssistantView('source');
     }
 
-    await page.goto(BETA_URL, { waitUntil: 'networkidle', timeout: 45000 });
-    await openAssistantFromSettings();
+    const assistantOpenedAgain = await navigateAndOpenAssistant();
+    check('Assistente si riapre dopo re-entry', assistantOpenedAgain);
+
     const graphActionAgain = page.getByText('Mostra connessioni', { exact: true });
     if (await graphActionAgain.isVisible({ timeout: 1000 }).catch(() => false)) {
       await graphActionAgain.click({ force: true });
