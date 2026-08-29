@@ -48,8 +48,10 @@ describe('MOBILE-SHELL regression contract', () => {
     expect(headerSource).toContain('Profilo e accesso');
     expect(headerSource).toContain('data-profile-scope="personal"');
     expect(headerSource).toContain('data-profile-scope="institutional"');
-    expect(headerSource).toContain('Accesso scolastico separato dall’autorità decisionale.');
-    expect(headerSource).toContain('Collega un account');
+    expect(headerSource).toContain('data-development-no-institution="explicit"');
+    expect(headerSource).toContain('Puoi continuare a lavorare senza collegare una scuola.');
+    expect(headerSource).toContain('Le decisioni istituzionali restano non disponibili.');
+    expect(headerSource).toContain('Collega un account (facoltativo)');
     expect(headerSource).toContain('Sincronizza i file');
     expect(headerSource).toContain('Disconnetti account');
     expect(headerSource).not.toContain('data-session-identity="status"');
