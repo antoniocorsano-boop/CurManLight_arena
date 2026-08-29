@@ -7,13 +7,18 @@ const forbiddenPersonalOrClassroomCopy = [
   'Area di progettazione personale e locale',
   'bozza UDA personale',
   'nella tua programmazione annuale',
+  'Assistente Ergonomico d\'Aula',
+  'schermo d\'aula',
+  'criteri personali',
+  'Quadro generale personale',
+  'per la tua classe',
+  'Non hai ancora pianificato Unità di Apprendimento per questa classe',
 ] as const;
 
 describe('Arena S2C institutional planning language', () => {
   it('keeps the canonical planning surface institutional/curricular rather than personal/classroom-owned', () => {
-    for (const phrase of forbiddenPersonalOrClassroomCopy) {
-      expect(progettazioneSource, `Forbidden Arena planning copy still present: ${phrase}`).not.toContain(phrase);
-    }
+    const violations = forbiddenPersonalOrClassroomCopy.filter((phrase) => progettazioneSource.includes(phrase));
+    expect(violations, `Forbidden Arena planning copy still present: ${violations.join(' | ')}`).toEqual([]);
   });
 
   it('retains curriculum-design vocabulary in the canonical planning surface', () => {
