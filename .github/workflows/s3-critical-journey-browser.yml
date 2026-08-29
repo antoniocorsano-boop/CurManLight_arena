@@ -7,6 +7,7 @@ on:
       - 'src/main.tsx'
       - 'src/App.tsx'
       - 'src/features/navigation/**'
+      - 'src/features/session/components/AppViewsLayer.tsx'
       - 'src/features/curriculum/**'
       - 'src/features/beta/**'
       - 'src/domain/revision/**'
@@ -24,6 +25,7 @@ on:
       - 'src/main.tsx'
       - 'src/App.tsx'
       - 'src/features/navigation/**'
+      - 'src/features/session/components/AppViewsLayer.tsx'
       - 'src/features/curriculum/**'
       - 'src/features/beta/**'
       - 'src/domain/revision/**'
@@ -60,7 +62,7 @@ jobs:
         env:
           BETA_BASE_URL: http://127.0.0.1:4173/CurManLight_arena
         run: |
-          set -euo pipefail
+          set -u
           node scripts/serve-beta-pages-preview.cjs > /tmp/cml-s3-preview.log 2>&1 &
           preview_pid=$!
           trap 'kill "$preview_pid" 2>/dev/null || true; cat /tmp/cml-s3-preview.log' EXIT
@@ -70,9 +72,18 @@ jobs:
             fi
             sleep 1
           done
-          curl --fail --silent --show-error http://127.0.0.1:4173/CurManLight_arena/ > /dev/null
-          node scripts/audit-s3-critical-journeys.cjs
-          node scripts/verify-beta-g4-browser.cjs
+          curl --fail --silent --show-error http://127.0.0.1:4173/CurManLight_arena/ > /dev/null || exit 1
+
+          curriculum_status=0
+          g4_status=0
+          node scripts/audit-s3-critical-journeys.cjs || curriculum_status=$?
+          node scripts/verify-beta-g4-browser.cjs || g4_status=$?
+
+          if [ "$curriculum_status" -ne 0 ] || [ "$g4_status" -ne 0 ]; then
+            echo "S3B_BROWSER_EVIDENCE_FAIL curriculum=$curriculum_status g4=$g4_status"
+            exit 1
+          fi
+          echo 'S3B_BROWSER_EVIDENCE_PASS'
 
       - name: Upload S3B browser evidence
         if: always()
