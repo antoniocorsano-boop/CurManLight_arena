@@ -1,7 +1,7 @@
 import type { ChangeEvent, Dispatch, MutableRefObject, SetStateAction } from 'react';
 import type { AppTab } from '../../navigation';
 import type { SchoolOrder, UdaModel, UserRole } from '../../../types/curriculum';
-import type { CurriculumMap, SocialUda, ToastHandler } from './appViewContracts';
+import type { CurriculumMap, ToastHandler } from './appViewContracts';
 import type { A07InstitutionalDocumentRead } from '../../../domain/institution';
 
 export type DetectedDeviceType = 'mobile' | 'desktop';
@@ -85,22 +85,6 @@ export interface AppModalsLayerProps {
   handleDownloadScormManifest: (id: string) => void;
   copyUdaForRegister: (id: string) => void;
   copyUdaTextLocal: (id: string) => void;
-  showOutcomesModal: boolean;
-  setShowOutcomesModal: (value: boolean) => void;
-  selectedUdaForOutcomes: SocialUda | null;
-  selfEvaluationStars: number;
-  setSelfEvaluationStars: (value: number) => void;
-  outcomesAvanzato: number;
-  setOutcomesAvanzato: (value: number) => void;
-  outcomesIntermedio: number;
-  setOutcomesIntermedio: (value: number) => void;
-  outcomesBase: number;
-  setOutcomesBase: (value: number) => void;
-  outcomesIniziale: number;
-  setOutcomesIniziale: (value: number) => void;
-  criticalReflectionsInput: string;
-  setCriticalReflectionsInput: (value: string) => void;
-  handleSaveOutcomes: () => void;
   showSaveModal: boolean;
   setShowSaveModal: (value: boolean) => void;
   saveProgDraft: () => void;
