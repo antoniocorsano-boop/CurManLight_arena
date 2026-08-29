@@ -43,7 +43,6 @@ const getCurriculumBaselineData = () => {
   return getCurriculumBaseline();
 };
 
-// Configure Dexie for Local IndexedDB storage bypassing localStorage limits!
 type PersistedStateRecord = {
   key: string;
   value: string;
@@ -58,7 +57,6 @@ try {
   console.warn("[CurManLight Storage Guard] Impossibile configurare Dexie/IndexedDB:", e);
 }
 
-// Memory fallback for environments where IndexedDB is blocked (sandboxed iframes, private browsing)
 const memoryStore: Record<string, string> = {};
 
 const indexedDBStorage = {
@@ -123,6 +121,19 @@ const USER_STATE_KEYS: readonly (keyof UserState)[] = [
   'documentExportHistory',
 ];
 
+const ARENA_OWNED_PROG_TABS = new Set<UserState['activeProgTab']>([
+  'home',
+  'annuale',
+  'uda',
+  'certificazione',
+]);
+
+function normalizeArenaProgTab(value: unknown): UserState['activeProgTab'] {
+  return typeof value === 'string' && ARENA_OWNED_PROG_TABS.has(value as UserState['activeProgTab'])
+    ? value as UserState['activeProgTab']
+    : 'annuale';
+}
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
@@ -131,7 +142,10 @@ function sanitizeUserState(value: unknown): Partial<UserState> {
   if (!isRecord(value)) return {};
   const sanitized: Record<string, unknown> = {};
   for (const key of USER_STATE_KEYS) {
-    if (Object.prototype.hasOwnProperty.call(value, key)) sanitized[key] = value[key];
+    if (!Object.prototype.hasOwnProperty.call(value, key)) continue;
+    sanitized[key] = key === 'activeProgTab'
+      ? normalizeArenaProgTab(value[key])
+      : value[key];
   }
   return sanitized as Partial<UserState>;
 }
@@ -163,7 +177,6 @@ interface StoreActions extends CurriculumStoreState {
   replaceDesignArchive: (archive: DesignArchive) => void;
   addDocumentExportEvent: (event: DocumentExportEvent) => void;
   clearDocumentExportHistory: () => void;
-  // Guided workflow actions
   setGuidedWorkflowState: (state: GuidedTeacherWorkflowState) => void;
   resetGuidedWorkflowState: () => void;
 }
@@ -173,7 +186,6 @@ export const useCurriculumStore = create<StoreActions>()(
     (set) => ({
       role: 'non-dichiarato',
       discipline: 'italiano',
-      // Personal consultation choice only; institutional availability comes from A04/A07.
       order: 'secondaria',
       schoolYear: '',
       decisions: {},
@@ -197,76 +209,61 @@ export const useCurriculumStore = create<StoreActions>()(
       setRole: (role) => set({ role }),
       setDiscipline: (discipline) => set((state) => {
         const data = getCurriculumBaselineData()[discipline]?.[state.order] || { traguardi: [], obiettivi: [], evidenze: [] };
-        const selTrag = data.traguardi?.length > 0 ? [0] : [];
-        const selObj = data.obiettivi?.length > 0 ? [0] : [];
-        const selEv = data.evidenze?.length > 0 ? [data.evidenze[0]] : [];
         return {
           discipline,
-          selectedTraguardi: selTrag,
-          selectedObiettivi: selObj,
-          selectedEvidenze: selEv
+          selectedTraguardi: data.traguardi?.length > 0 ? [0] : [],
+          selectedObiettivi: data.obiettivi?.length > 0 ? [0] : [],
+          selectedEvidenze: data.evidenze?.length > 0 ? [data.evidenze[0]] : []
         };
       }),
       setOrder: (order) => set((state) => {
         const data = getCurriculumBaselineData()[state.discipline]?.[order] || { traguardi: [], obiettivi: [], evidenze: [] };
-        const selTrag = data.traguardi?.length > 0 ? [0] : [];
-        const selObj = data.obiettivi?.length > 0 ? [0] : [];
-        const selEv = data.evidenze?.length > 0 ? [data.evidenze[0]] : [];
         return {
           order,
-          selectedTraguardi: selTrag,
-          selectedObiettivi: selObj,
-          selectedEvidenze: selEv
+          selectedTraguardi: data.traguardi?.length > 0 ? [0] : [],
+          selectedObiettivi: data.obiettivi?.length > 0 ? [0] : [],
+          selectedEvidenze: data.evidenze?.length > 0 ? [data.evidenze[0]] : []
         };
       }),
       setSchoolYear: (schoolYear) => set({ schoolYear }),
-      setDecision: (id, status) =>
-        set((state) => ({ decisions: { ...state.decisions, [id]: status } })),
-      setCustomText: (id, text) =>
-        set((state) => ({ customTexts: { ...state.customTexts, [id]: text } })),
-      resetDecision: (id) =>
-        set((state) => {
-          const decisions = { ...state.decisions };
-          const customTexts = { ...state.customTexts };
-          delete decisions[id];
-          delete customTexts[id];
-          return { decisions, customTexts };
-        }),
+      setDecision: (id, status) => set((state) => ({ decisions: { ...state.decisions, [id]: status } })),
+      setCustomText: (id, text) => set((state) => ({ customTexts: { ...state.customTexts, [id]: text } })),
+      resetDecision: (id) => set((state) => {
+        const decisions = { ...state.decisions };
+        const customTexts = { ...state.customTexts };
+        delete decisions[id];
+        delete customTexts[id];
+        return { decisions, customTexts };
+      }),
       addUda: (uda) => set((state) => ({ savedUda: [...state.savedUda, uda] })),
       deleteUda: (id) => set((state) => ({ savedUda: state.savedUda.filter(u => u.id !== id) })),
       clearUdaLibrary: () => set({ savedUda: [] }),
       setActiveRevisionFilter: (activeRevisionFilter) => set({ activeRevisionFilter }),
-      
-      toggleTraguardoSelection: (index) =>
-        set((state) => {
-          const list = [...state.selectedTraguardi];
-          const idx = list.indexOf(index);
-          if (idx > -1) list.splice(idx, 1);
-          else list.push(index);
-          return { selectedTraguardi: list };
-        }),
-      toggleObiettivoSelection: (index) =>
-        set((state) => {
-          const list = [...state.selectedObiettivi];
-          const idx = list.indexOf(index);
-          if (idx > -1) list.splice(idx, 1);
-          else list.push(index);
-          return { selectedObiettivi: list };
-        }),
-      toggleEvidenceSelection: (evText) =>
-        set((state) => {
-          const list = [...state.selectedEvidenze];
-          const idx = list.indexOf(evText);
-          if (idx > -1) list.splice(idx, 1);
-          else list.push(evText);
-          return { selectedEvidenze: list };
-        }),
-      
-      setActiveProgTab: (activeProgTab) => set({ activeProgTab }),
+      toggleTraguardoSelection: (index) => set((state) => {
+        const list = [...state.selectedTraguardi];
+        const idx = list.indexOf(index);
+        if (idx > -1) list.splice(idx, 1);
+        else list.push(index);
+        return { selectedTraguardi: list };
+      }),
+      toggleObiettivoSelection: (index) => set((state) => {
+        const list = [...state.selectedObiettivi];
+        const idx = list.indexOf(index);
+        if (idx > -1) list.splice(idx, 1);
+        else list.push(index);
+        return { selectedObiettivi: list };
+      }),
+      toggleEvidenceSelection: (evText) => set((state) => {
+        const list = [...state.selectedEvidenze];
+        const idx = list.indexOf(evText);
+        if (idx > -1) list.splice(idx, 1);
+        else list.push(evText);
+        return { selectedEvidenze: list };
+      }),
+      setActiveProgTab: (activeProgTab) => set({ activeProgTab: normalizeArenaProgTab(activeProgTab) }),
       setActiveCurricoloView: (activeCurricoloView) => set({ activeCurricoloView }),
       setActiveProcessoTab: (activeProcessoTab) => set({ activeProcessoTab }),
       setActiveGeneralSubtab: (activeGeneralSubtab) => set({ activeGeneralSubtab }),
-      
       resetAll: () => set({ decisions: {}, customTexts: {}, savedUda: [], selectedTraguardi: [], selectedObiettivi: [], selectedEvidenze: [], documentExportHistory: [] }),
       restoreBackupState: (newState) => {
         if (!isRecord(newState)) {
@@ -302,13 +299,10 @@ export const useCurriculumStore = create<StoreActions>()(
         if (!verifyDesignIntegrity(designArchive)) return;
         set({ designArchive: cloneDesignArchive(designArchive) });
       },
-      addDocumentExportEvent: (event) =>
-        set((state) => {
-          const history = [event, ...state.documentExportHistory].slice(0, 5);
-          return { documentExportHistory: history };
-        }),
+      addDocumentExportEvent: (event) => set((state) => ({
+        documentExportHistory: [event, ...state.documentExportHistory].slice(0, 5)
+      })),
       clearDocumentExportHistory: () => set({ documentExportHistory: [] }),
-      // Guided workflow actions
       setGuidedWorkflowState: (state) => set({ guidedWorkflowState: state }),
       resetGuidedWorkflowState: () => set({ guidedWorkflowState: undefined }),
     }),
@@ -320,16 +314,13 @@ export const useCurriculumStore = create<StoreActions>()(
         const institutionalArchive = validateArchiveIntegrity(persisted.institutionalArchive).valid
           ? cloneInstitutionalValue(persisted.institutionalArchive as InstitutionalArchive)
           : createEmptyInstitutionalArchive();
-        const documentArchive = persisted.documentArchive &&
-          validateDocumentArchiveIntegrity(persisted.documentArchive as DocumentArchive).valid
-          ? (persisted.documentArchive as DocumentArchive)
+        const documentArchive = persisted.documentArchive && validateDocumentArchiveIntegrity(persisted.documentArchive as DocumentArchive).valid
+          ? persisted.documentArchive as DocumentArchive
           : createEmptyDocumentArchive();
-        const revisionArchive = persisted.revisionArchive &&
-          verifyRevisionArchiveIntegrity(persisted.revisionArchive as RevisionArchive)
+        const revisionArchive = persisted.revisionArchive && verifyRevisionArchiveIntegrity(persisted.revisionArchive as RevisionArchive)
           ? cloneRevisionArchiveStore(persisted.revisionArchive as RevisionArchive)
           : createEmptyRevisionStore();
-        const designArchive = persisted.designArchive &&
-          verifyDesignIntegrity(persisted.designArchive as DesignArchive)
+        const designArchive = persisted.designArchive && verifyDesignIntegrity(persisted.designArchive as DesignArchive)
           ? cloneDesignArchive(persisted.designArchive as DesignArchive)
           : createEmptyDesignStore();
         const guidedWorkflowState = (persisted.guidedWorkflowState ?? undefined) as GuidedTeacherWorkflowState | undefined;
@@ -338,4 +329,5 @@ export const useCurriculumStore = create<StoreActions>()(
     }
   )
 );
+
 export type { StoreActions };
