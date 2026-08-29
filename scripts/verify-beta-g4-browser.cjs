@@ -37,6 +37,19 @@ async function printRuntimeDiagnostics(page, consoleMessages, pageErrors) {
   for (const error of pageErrors.slice(-20)) console.error(`PAGEERROR: ${error}`);
 }
 
+async function readPlanningHandoffState(page) {
+  const handoff = page.getByRole('region', { name: 'Anteprima passaggio alla progettazione' }).first();
+  await handoff.waitFor({ state: 'visible', timeout: 8000 });
+  const text = await handoff.innerText();
+  const blocked = text.includes('Anteprima non disponibile');
+  const validPreview =
+    text.includes('Docente OS') &&
+    text.includes('PREVIEW_ONLY') &&
+    text.includes('Accettazione docente') &&
+    text.includes('Nessuna scrittura downstream');
+  return { handoff, text, blocked, validPreview };
+}
+
 (async () => {
   const browser = await chromium.launch({ headless: true });
   const context = await browser.newContext({
@@ -63,7 +76,7 @@ async function printRuntimeDiagnostics(page, consoleMessages, pageErrors) {
   };
 
   try {
-    console.log('=== BETA-G4 BROWSER — BLOCKED INSTITUTIONAL DECISION JOURNEY ===');
+    console.log('=== BETA-G4/S3B BROWSER — REVISION, AUTHORITY AND PLANNING HANDOFF ===');
 
     const initialResponse = await page.goto(revisionUrl, { waitUntil: 'domcontentloaded', timeout: 30000 });
     console.log(`Initial navigation status: ${initialResponse?.status() ?? 'unknown'} ${page.url()}`);
@@ -80,6 +93,13 @@ async function printRuntimeDiagnostics(page, consoleMessages, pageErrors) {
     await starter.waitFor({ state: 'visible', timeout: 5000 });
     check('2. A local comparison choice exposes the structured-proposal bridge', true);
 
+    const initialHandoff = await readPlanningHandoffState(page);
+    check(
+      '3. Planning handoff preview is explicit and either valid PREVIEW_ONLY or meaningfully blocked',
+      initialHandoff.validPreview || (initialHandoff.blocked && initialHandoff.text.length > 'Anteprima non disponibile'.length + 20)
+    );
+    check('4. Planning handoff does not present an automatic downstream write action', !initialHandoff.text.includes('Sincronizza automaticamente'));
+
     const proposalSelect = starter.locator('select');
     await proposalSelect.selectOption({ index: 1 });
     const proposalRationale = starter.locator('textarea');
@@ -88,7 +108,13 @@ async function printRuntimeDiagnostics(page, consoleMessages, pageErrors) {
 
     const prepareButton = page.getByRole('button', { name: 'Prepara per revisione' }).first();
     await prepareButton.waitFor({ state: 'visible', timeout: 5000 });
-    check('3. Local choice becomes a structured proposal without becoming a decision', true);
+    check('5. Local choice becomes a structured proposal without becoming a decision', true);
+
+    const proposalHandoff = await readPlanningHandoffState(page);
+    check(
+      '6. Planning handoff remains observable after structured proposal creation',
+      proposalHandoff.validPreview || proposalHandoff.blocked
+    );
 
     await prepareButton.click();
     const submitButton = page.getByRole('button', { name: 'Invia', exact: true }).first();
@@ -106,8 +132,8 @@ async function printRuntimeDiagnostics(page, consoleMessages, pageErrors) {
     const decisionPanel = page.getByRole('region', { name: 'Decisione istituzionale Beta' }).first();
     await decisionPanel.waitFor({ state: 'visible', timeout: 5000 });
     await expectVisibleText(decisionPanel, 'Nessuna identità Beta autenticata');
-    check('4. Consequential decision is blocked without an authenticated Beta identity', true);
-    check('5. No institutional-decision RPC is called while blocked', decisionRpcCalls === 0);
+    check('7. Consequential decision is blocked without an authenticated Beta identity', true);
+    check('8. No institutional-decision RPC is called while blocked', decisionRpcCalls === 0);
 
     await page.waitForTimeout(1200);
     const refreshResponse = await page.reload({ waitUntil: 'domcontentloaded', timeout: 30000 });
@@ -118,20 +144,35 @@ async function printRuntimeDiagnostics(page, consoleMessages, pageErrors) {
     const reenteredPanel = page.getByRole('region', { name: 'Decisione istituzionale Beta' }).first();
     await reenteredPanel.waitFor({ state: 'visible', timeout: 8000 });
     await expectVisibleText(reenteredPanel, 'Nessuna identità Beta autenticata');
-    check('6. Refresh/re-entry preserves the proposal state and the authority block', true);
-    check('7. Refresh/re-entry still performs no institutional write', decisionRpcCalls === 0);
+    check('9. Refresh/re-entry preserves the proposal state and the authority block', true);
+    check('10. Refresh/re-entry still performs no institutional write', decisionRpcCalls === 0);
+
+    const reenteredHandoff = await readPlanningHandoffState(page);
+    check(
+      '11. Refresh/re-entry preserves an observable planning-handoff state',
+      reenteredHandoff.validPreview || reenteredHandoff.blocked
+    );
 
     await page.setViewportSize({ width: 390, height: 844 });
     await reenteredPanel.scrollIntoViewIfNeeded();
-    check('8. Blocked decision state remains reachable at a mobile viewport', await reenteredPanel.isVisible());
+    check('12. Blocked decision state remains reachable at a mobile viewport', await reenteredPanel.isVisible());
 
-    check('9. No uncaught page errors in the bounded journey', pageErrors.length === 0);
+    const mobileHandoff = await readPlanningHandoffState(page);
+    await mobileHandoff.handoff.scrollIntoViewIfNeeded();
+    check('13. Planning handoff remains reachable at a 390x844 mobile viewport', await mobileHandoff.handoff.isVisible());
+    check(
+      '14. Mobile planning handoff still exposes preview/block semantics without downstream mutation',
+      mobileHandoff.validPreview || mobileHandoff.blocked
+    );
+
+    check('15. No uncaught page errors in the bounded journey', pageErrors.length === 0);
     if (pageErrors.length > 0) {
       pageErrors.forEach((error) => console.error(`PAGE ERROR: ${error}`));
     }
 
     const failed = checks.filter((item) => !item.condition);
     console.log(`=== RESULT: ${checks.length - failed.length}/${checks.length} checks passed ===`);
+    console.log('Browser verification collected evidence only; it did not issue a human-acceptance verdict.');
     if (failed.length > 0) process.exitCode = 1;
   } catch (error) {
     console.error(error);

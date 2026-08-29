@@ -1,0 +1,98 @@
+name: S3 Critical Journey Browser Evidence
+
+on:
+  pull_request:
+    paths:
+      - '.human/**'
+      - 'src/main.tsx'
+      - 'src/App.tsx'
+      - 'src/features/navigation/**'
+      - 'src/features/session/components/AppViewsLayer.tsx'
+      - 'src/features/curriculum/**'
+      - 'src/features/beta/**'
+      - 'src/domain/revision/**'
+      - 'src/domain/transfer/**'
+      - 'scripts/audit-s3-critical-journeys.cjs'
+      - 'scripts/verify-beta-g4-browser.cjs'
+      - 'scripts/serve-beta-pages-preview.cjs'
+      - 'docs/evidence/BETA_G5_HUMAN_ACCEPTANCE_PROTOCOL_v2.md'
+      - 'docs/evidence/BETA_G5_HUMAN_ACCEPTANCE_RECEIPT_TEMPLATE_v2.json'
+      - '.github/workflows/s3-critical-journey-browser.yml'
+  push:
+    branches: [main]
+    paths:
+      - '.human/**'
+      - 'src/main.tsx'
+      - 'src/App.tsx'
+      - 'src/features/navigation/**'
+      - 'src/features/session/components/AppViewsLayer.tsx'
+      - 'src/features/curriculum/**'
+      - 'src/features/beta/**'
+      - 'src/domain/revision/**'
+      - 'src/domain/transfer/**'
+      - 'scripts/audit-s3-critical-journeys.cjs'
+      - 'scripts/verify-beta-g4-browser.cjs'
+      - 'scripts/serve-beta-pages-preview.cjs'
+      - 'docs/evidence/BETA_G5_HUMAN_ACCEPTANCE_PROTOCOL_v2.md'
+      - 'docs/evidence/BETA_G5_HUMAN_ACCEPTANCE_RECEIPT_TEMPLATE_v2.json'
+      - '.github/workflows/s3-critical-journey-browser.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  critical-journey-evidence:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+
+      - name: Build Beta candidate
+        run: npm run build:beta
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Collect S3B desktop/mobile browser evidence
+        env:
+          BETA_BASE_URL: http://127.0.0.1:4173/CurManLight_arena
+        run: |
+          set -u
+          node scripts/serve-beta-pages-preview.cjs > /tmp/cml-s3-preview.log 2>&1 &
+          preview_pid=$!
+          trap 'kill "$preview_pid" 2>/dev/null || true; cat /tmp/cml-s3-preview.log' EXIT
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent --show-error http://127.0.0.1:4173/CurManLight_arena/ > /dev/null; then
+              break
+            fi
+            sleep 1
+          done
+          curl --fail --silent --show-error http://127.0.0.1:4173/CurManLight_arena/ > /dev/null || exit 1
+
+          curriculum_status=0
+          g4_status=0
+          node scripts/audit-s3-critical-journeys.cjs || curriculum_status=$?
+          node scripts/verify-beta-g4-browser.cjs || g4_status=$?
+
+          if [ "$curriculum_status" -ne 0 ] || [ "$g4_status" -ne 0 ]; then
+            echo "S3B_BROWSER_EVIDENCE_FAIL curriculum=$curriculum_status g4=$g4_status"
+            exit 1
+          fi
+          echo 'S3B_BROWSER_EVIDENCE_PASS'
+
+      - name: Upload S3B browser evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: s3-critical-journey-browser-evidence
+          path: artifacts/s3-critical-journeys
+          if-no-files-found: warn
+
+      - name: Non-claim
+        if: always()
+        run: echo 'S3B collected automated browser evidence only; BETA_HIA_PASS still requires actual human review on the published immutable release.'
