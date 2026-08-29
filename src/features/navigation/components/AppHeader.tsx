@@ -29,9 +29,16 @@ interface AppHeaderProps {
 export function AppHeader(props: AppHeaderProps) {
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [mobileNavigationOpen, setMobileNavigationOpen] = useState(false);
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
 
   const assistantReady = props.localAgentStatus === 'ready'
     || (props.localAgentType === 'ollama' && props.ollamaStatus === 'connected');
+
+  const activeProfileLabel = !props.isWorkspaceLoggedIn
+    ? 'Sessione locale'
+    : props.cloudAccountType === 'scolastica'
+      ? 'Profilo istituzionale'
+      : 'Profilo personale';
 
   useEffect(() => {
     const closeMobileNavigation = () => setMobileNavigationOpen(false);
@@ -41,6 +48,8 @@ export function AppHeader(props: AppHeaderProps) {
 
   const handleNavigationToggle = () => {
     props.toggleSidebar();
+    setProfileMenuOpen(false);
+    props.setRoleDropdownOpen(false);
     if (window.innerWidth < 768) {
       setMobileNavigationOpen((open) => !open);
     }
@@ -53,6 +62,17 @@ export function AppHeader(props: AppHeaderProps) {
     }
     props.setIsCopilotChatOpen(nextOpen);
     props.setRoleDropdownOpen(false);
+    setProfileMenuOpen(false);
+  };
+
+  const toggleSettings = () => {
+    setProfileMenuOpen(false);
+    props.setRoleDropdownOpen(!props.roleDropdownOpen);
+  };
+
+  const toggleProfile = () => {
+    props.setRoleDropdownOpen(false);
+    setProfileMenuOpen((open) => !open);
   };
 
   return (
@@ -87,7 +107,7 @@ export function AppHeader(props: AppHeaderProps) {
               <div className="relative">
                 <button
                   type="button"
-                  onClick={() => props.setRoleDropdownOpen(!props.roleDropdownOpen)}
+                  onClick={toggleSettings}
                   className={`flex h-10 w-10 items-center justify-center rounded-xl border transition focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300 ${
                     props.roleDropdownOpen
                       ? 'border-indigo-300 bg-indigo-500 text-white'
@@ -102,17 +122,11 @@ export function AppHeader(props: AppHeaderProps) {
                 </button>
 
                 {props.roleDropdownOpen && (
-                  <div className="absolute right-0 z-[180] mt-2 w-[min(18rem,calc(100vw-1.5rem))] divide-y divide-slate-700 rounded-xl border border-slate-700 bg-slate-800 py-1 text-left text-xs shadow-xl" data-settings-menu="canonical">
-                    <div className="px-4 py-3 text-slate-400">
-                      <p className="font-extrabold text-slate-100">Impostazioni e sessione</p>
-                      <p className="mt-1 leading-relaxed">
-                        {props.isWorkspaceLoggedIn
-                          ? (props.workspaceUserEmail || 'Identità account non disponibile')
-                          : 'Sessione locale. Nessun accesso istituzionale verificato da questa voce.'}
-                      </p>
+                  <div className="absolute right-0 z-[180] mt-2 w-[min(17rem,calc(100vw-1.5rem))] overflow-hidden rounded-2xl border border-slate-700 bg-slate-800 text-left text-xs shadow-2xl" data-settings-menu="canonical">
+                    <div className="px-4 py-2.5">
+                      <p className="font-extrabold text-slate-100">Strumenti e impostazioni</p>
                     </div>
-
-                    <div className="py-1">
+                    <div className="border-t border-slate-700 py-1">
                       <button
                         type="button"
                         onClick={handleAssistantToggle}
@@ -131,33 +145,10 @@ export function AppHeader(props: AppHeaderProps) {
                         className="flex w-full items-center gap-2.5 px-4 py-2.5 text-left font-bold text-slate-200 hover:bg-slate-700"
                       >
                         <Save className="h-4 w-4" aria-hidden="true" />
-                        <span>Gestisci una copia della sessione</span>
+                        <span>Copia della sessione</span>
                       </button>
                     </div>
-
-                    <div className="py-1">
-                      {props.isWorkspaceLoggedIn ? (
-                        <button
-                          type="button"
-                          onClick={() => { props.handleWorkspaceSync(); props.setRoleDropdownOpen(false); }}
-                          className="flex w-full items-center gap-2.5 px-4 py-2.5 text-left font-bold text-slate-200 hover:bg-slate-700"
-                        >
-                          <RotateCcw className="h-4 w-4" aria-hidden="true" />
-                          <span>Sincronizza i file</span>
-                        </button>
-                      ) : (
-                        <button
-                          type="button"
-                          onClick={() => { props.setShowCloudAccountModal(true); props.setRoleDropdownOpen(false); }}
-                          className="flex w-full items-center gap-2.5 px-4 py-2.5 text-left font-bold text-indigo-300 hover:bg-slate-700"
-                        >
-                          <DownloadCloud className="h-4 w-4" aria-hidden="true" />
-                          <span>Collega un account</span>
-                        </button>
-                      )}
-                    </div>
-
-                    <div className="py-1">
+                    <div className="border-t border-slate-700 py-1">
                       <button
                         type="button"
                         onClick={() => { setShowResetConfirm(true); props.setRoleDropdownOpen(false); }}
@@ -166,29 +157,92 @@ export function AppHeader(props: AppHeaderProps) {
                         <ShieldAlert className="h-4 w-4" aria-hidden="true" />
                         <span>Azzera i dati locali</span>
                       </button>
-
-                      {props.isWorkspaceLoggedIn && (
-                        <button
-                          type="button"
-                          onClick={() => { props.handleWorkspaceLogout(); props.setRoleDropdownOpen(false); }}
-                          className="flex w-full items-center gap-2.5 px-4 py-2.5 text-left font-semibold text-slate-400 hover:bg-slate-700"
-                        >
-                          <ServerCog className="h-4 w-4" aria-hidden="true" />
-                          <span>Disconnetti account</span>
-                        </button>
-                      )}
                     </div>
                   </div>
                 )}
               </div>
 
-              <div
-                className="flex h-10 w-10 items-center justify-center rounded-full border border-indigo-400 bg-indigo-600 text-xs font-black text-white shadow-sm"
-                title={props.isWorkspaceLoggedIn ? 'Account collegato' : 'Sessione locale'}
-                aria-label={props.isWorkspaceLoggedIn ? 'Account collegato' : 'Sessione locale'}
-                data-session-identity="status"
-              >
-                {props.isWorkspaceLoggedIn ? 'CL' : 'U'}
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={toggleProfile}
+                  className={`flex h-10 min-w-10 items-center justify-center rounded-full border px-2 text-xs font-black text-white shadow-sm transition focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300 ${
+                    profileMenuOpen ? 'border-indigo-200 bg-indigo-500' : 'border-indigo-400 bg-indigo-600 hover:bg-indigo-500'
+                  }`}
+                  title={activeProfileLabel}
+                  aria-label={`Profilo: ${activeProfileLabel}`}
+                  aria-expanded={profileMenuOpen}
+                  data-profile-entry="canonical"
+                >
+                  {props.isWorkspaceLoggedIn ? 'CL' : 'U'}
+                </button>
+
+                {profileMenuOpen && (
+                  <div className="absolute right-0 z-[180] mt-2 w-[min(18rem,calc(100vw-1.5rem))] overflow-hidden rounded-2xl border border-slate-700 bg-slate-800 text-left text-xs shadow-2xl" data-profile-menu="canonical">
+                    <div className="px-4 py-3">
+                      <p className="font-extrabold text-slate-100">Profilo e accesso</p>
+                      <p className="mt-1 truncate text-slate-400">
+                        {props.isWorkspaceLoggedIn
+                          ? (props.workspaceUserEmail || 'Account collegato')
+                          : 'Stai lavorando in locale su questo dispositivo.'}
+                      </p>
+                    </div>
+
+                    <div className="grid gap-2 border-t border-slate-700 p-3">
+                      <div className="rounded-xl border border-slate-700 bg-slate-900/45 px-3 py-2.5" data-profile-scope="personal">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="font-extrabold text-slate-100">Personale</span>
+                          <span className="rounded-full bg-slate-700 px-2 py-0.5 text-[10px] font-bold text-slate-300">
+                            {props.isWorkspaceLoggedIn && props.cloudAccountType === 'personale' ? 'collegato' : 'locale'}
+                          </span>
+                        </div>
+                        <p className="mt-1 leading-relaxed text-slate-400">Spazio e copie di lavoro personali.</p>
+                      </div>
+
+                      <div className="rounded-xl border border-slate-700 bg-slate-900/45 px-3 py-2.5" data-profile-scope="institutional">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="font-extrabold text-slate-100">Istituzionale</span>
+                          <span className="rounded-full bg-slate-700 px-2 py-0.5 text-[10px] font-bold text-slate-300">
+                            {props.isWorkspaceLoggedIn && props.cloudAccountType === 'scolastica' ? 'collegato' : 'non collegato'}
+                          </span>
+                        </div>
+                        <p className="mt-1 leading-relaxed text-slate-400">Accesso scolastico separato dall’autorità decisionale.</p>
+                      </div>
+                    </div>
+
+                    <div className="border-t border-slate-700 py-1">
+                      {props.isWorkspaceLoggedIn ? (
+                        <>
+                          <button
+                            type="button"
+                            onClick={() => { props.handleWorkspaceSync(); setProfileMenuOpen(false); }}
+                            className="flex w-full items-center gap-2.5 px-4 py-2.5 text-left font-bold text-slate-200 hover:bg-slate-700"
+                          >
+                            <RotateCcw className="h-4 w-4" aria-hidden="true" />
+                            <span>Sincronizza i file</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => { props.handleWorkspaceLogout(); setProfileMenuOpen(false); }}
+                            className="flex w-full items-center gap-2.5 px-4 py-2.5 text-left font-semibold text-slate-400 hover:bg-slate-700"
+                          >
+                            <ServerCog className="h-4 w-4" aria-hidden="true" />
+                            <span>Disconnetti account</span>
+                          </button>
+                        </>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => { props.setShowCloudAccountModal(true); setProfileMenuOpen(false); }}
+                          className="flex w-full items-center gap-2.5 px-4 py-2.5 text-left font-bold text-indigo-300 hover:bg-slate-700"
+                        >
+                          <DownloadCloud className="h-4 w-4" aria-hidden="true" />
+                          <span>Collega un account</span>
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>
