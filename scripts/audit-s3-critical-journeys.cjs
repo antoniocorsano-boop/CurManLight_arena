@@ -27,8 +27,13 @@ async function gotoRoute(page, route) {
     waitUntil: 'domcontentloaded',
     timeout: 30000,
   });
-  if (!response || response.status() >= 400) {
-    throw new Error(`Navigation failed for ${route}: ${response?.status() ?? 'no response'}`);
+  const status = response?.status();
+  // GitHub Pages returns the repository 404 document for deep SPA routes;
+  // dist/404.html intentionally mirrors index.html so BrowserRouter can
+  // rehydrate the requested pathname. Treat only missing responses and 5xx
+  // results as transport failures; route correctness is asserted in-page.
+  if (!response || (typeof status === 'number' && status >= 500)) {
+    throw new Error(`Navigation failed for ${route}: ${status ?? 'no response'}`);
   }
   await closeLocalProfileIfPresent(page);
 }
