@@ -16,7 +16,8 @@ fs.mkdirSync(OUT_DIR, { recursive: true });
     checks.push({ name, pass: Boolean(pass), detail });
     console.log(`${pass ? 'PASS' : 'FAIL'} — ${name}${detail ? ` — ${detail}` : ''}`);
   };
-  const taskButton = (label) => page.getByRole('button', { name: label, exact: true });
+  const knowledgeNav = () => page.getByRole('navigation', { name: 'Cosa vuoi fare nella conoscenza', exact: true });
+  const taskButton = (label) => knowledgeNav().getByRole('button', { name: label, exact: true });
   const screenshot = async (name) => page.screenshot({ path: path.join(OUT_DIR, name), fullPage: true });
   const noHorizontalOverflow = async () => page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1);
   const visibleNestedScrollers = async () => page.evaluate(() => {
@@ -38,6 +39,7 @@ fs.mkdirSync(OUT_DIR, { recursive: true });
 
     const shell = page.locator('[data-kx-shell="teacher-first-v2"]');
     check('Shell KX teacher-first visibile', await shell.isVisible({ timeout: 5000 }).catch(() => false));
+    check('Navigazione task Conoscenza visibile', await knowledgeNav().isVisible({ timeout: 5000 }).catch(() => false));
     check('Nessun overflow orizzontale iniziale', await noHorizontalOverflow());
     for (const label of ['Cerca', 'Fonti', 'Termini', 'Relazioni']) check(`Task visibile: ${label}`, await taskButton(label).isVisible().catch(() => false));
     await screenshot('01-kx-shell.png');
