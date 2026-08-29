@@ -18,7 +18,7 @@ describe('KX-2 teacher-first knowledge experience', () => {
     expect(shellSource).toContain('controlla sempre la fonte');
     expect(shellSource).toContain('decisione della scuola');
     expect(shellSource).toContain('Risposta da verificare');
-    expect(modalSource).toContain('non diventa automaticamente una fonte istituzionale');
+    expect(modalSource).toContain('Non diventa automaticamente una fonte istituzionale');
   });
 
   it('fails closed instead of exposing an unfinished relationship map', () => {
