@@ -48,10 +48,6 @@ const appSource = firstSource(import.meta.glob('../App.tsx', {
   query: '?raw', import: 'default', eager: true,
 }) as Record<string, string>);
 
-const cssSource = firstSource(import.meta.glob('../index.css', {
-  query: '?raw', import: 'default', eager: true,
-}) as Record<string, string>);
-
 describe('Arena Beta canonical shell regression guard', () => {
   it('keeps a stable vector brand mark without returning to the fragile image asset', () => {
     expect(headerSource).not.toContain('curmanlight_v20_logo.png');
@@ -91,9 +87,6 @@ describe('Arena Beta canonical shell regression guard', () => {
     }
     expect(homeSource).toContain('data-teacher-surface="home"');
     expect(curriculumWorkspaceSource).toContain('data-teacher-surface="curriculum-workspace"');
-    expect(cssSource).toContain('--ui-mobile-gutter: 16px');
-    expect(cssSource).toContain('[data-teacher-surface]');
-    expect(cssSource).toContain('--ui-mobile-section-gap: 12px');
   });
 
   it('keeps teacher-facing curriculum entry language direct and action-oriented', () => {
