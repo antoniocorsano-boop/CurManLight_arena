@@ -37,11 +37,11 @@ export function AppViewsLayer(props: AppViewsLayerProps) {
           <aside
             data-human-task="curriculum-authority-context"
             role="note"
-            className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs font-semibold leading-relaxed text-amber-950"
+            className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-relaxed text-amber-950"
           >
-            <strong className="block text-[10px] uppercase tracking-wider text-amber-800">Stato del contesto curricolare</strong>
+            <strong className="block font-bold text-amber-950">Prima di usare questo curricolo</strong>
             <span>
-              Questa è una copia locale di consultazione: non attesta configurazione o adozione istituzionale. Verifica sempre fonti, applicabilità e stato prima di usarla come baseline autorevole.
+              Stai consultando una copia locale. Per sapere se è quella valida per la scuola, controlla Fonti, Applicabilità e Stato.
             </span>
           </aside>
           <CurriculumTab {...props} />
