@@ -11,7 +11,6 @@ import { AppContext, type AppContextValue } from './components/layout/AppContext
 import { initialEdges, initialNodes } from './lib/architectureGraph';
 import { safeLocalStorageSetItem } from './lib/consolidatedStorage';
 import { getDisciplineIcon, getDisciplineLabel, orderLabelsForMap } from './lib/disciplineLabels';
-import { useClassroomSocialHandlers, useClassroomSocialState } from './features/classroom';
 import { useBackupHandlers, useDocumentExportHandlers, useDocumentContinuity, useKnowledgeBaseHandlers, useResetSpeechOnContextChange, useTemplateEngine, useUdaPackageHandlers, useWikiGlossaryHandlers } from './features/documents';
 import { useCurriculumImportHandlers, useCurriculumProgressStats, useLocalCurriculum } from './features/curriculum';
 import { useProgettazioneAssistiveHandlers, useUdaProgrammingHandlers } from './features/progettazione';
@@ -21,7 +20,6 @@ import { getRoleLabel } from './lib/roleLabels';
 import { getA07InstitutionalDocumentRead } from './domain/institution';
 
 export default function App() {
- // Store actions and state
  const {
   role, discipline, order, schoolYear, decisions, customTexts, savedUda, institutionalArchive,
   selectedTraguardi, selectedObiettivi, selectedEvidenze,
@@ -62,6 +60,7 @@ export default function App() {
   workspaceClientId,
   setWorkspaceClientId
  } = useWorkspaceState();
+
  const {
   showOnlyProfileCurriculum,
   setShowOnlyProfileCurriculum,
@@ -98,89 +97,12 @@ export default function App() {
  } = useSessionUiState({ order });
 
  const {
-  socialUdas,
-  updateSocialUdas,
-  newAnnotationInputs,
-  setNewAnnotationInputs,
-  classroomStudents,
-  setClassroomStudents,
-  showAiSimulatedResponse,
-  setShowAiSimulatedResponse,
-  isClassroomLoading,
-  setIsClassroomLoading,
-  weeklyHoursItaliano,
-  setWeeklyHoursItaliano,
-  weeklyHoursStoria,
-  setWeeklyHoursStoria,
-  weeklyHoursGeografia,
-  setWeeklyHoursGeografia,
-  weeklyHoursMatematica,
-  setWeeklyHoursMatematica,
-  weeklyHoursScienze,
-  setWeeklyHoursScienze,
-  bufferCoefficient,
-  setBufferCoefficient,
-  shuffledStudentMap,
-  setShuffledStudentMap,
-  exclusionsList,
-  setExclusionsList,
-  exclusionInputS1,
-  setExclusionInputS1,
-  exclusionInputS2,
-  setExclusionInputS2,
-  isAulaConfigOpen,
-  setIsAulaConfigOpen,
-  selectedClassCombination,
-  setSelectedClassCombination,
-  activeClassTheme,
-  setActiveClassTheme,
-  classroomLayout,
-  setClassroomLayout,
-  activeCooperativeMethod,
-  setActiveCooperativeMethod,
-  cooperativeGroups,
-  setCooperativeGroups,
-  classroomStudentFeedback,
-  setClassroomStudentFeedback,
-  selectedStudentForFeedback,
-  setSelectedStudentForFeedback,
-  classroomTopicInput,
-  setClassroomTopicInput,
-  isAnalyzingTopic,
-  setIsAnalyzingTopic,
-  classroomTopicAnalysisResult,
-  setClassroomTopicAnalysisResult,
-  showClassroomReport,
-  setShowClassroomReport,
-  activeTaughtUdaId,
-  setActiveTaughtUdaId,
-  showOutcomesModal,
-  setShowOutcomesModal,
-  selectedUdaForOutcomes,
-  setSelectedUdaForOutcomes,
-  selfEvaluationStars,
-  setSelfEvaluationStars,
-  outcomesAvanzato,
-  setOutcomesAvanzato,
-  outcomesIntermedio,
-  setOutcomesIntermedio,
-  outcomesBase,
-  setOutcomesBase,
-  outcomesIniziale,
-  setOutcomesIniziale,
-  criticalReflectionsInput,
-  setCriticalReflectionsInput
- } = useClassroomSocialState();
-
- const {
   toastMessage,
   toastSuccess,
   showToast
  } = useToast();
 
  const {
-  classeSubTab,
-  setClasseSubTab,
   progettazioneMode,
   setProgettazioneMode,
   wizardStep,
@@ -401,6 +323,7 @@ export default function App() {
   getVolumeFullHtmlWithCustom,
   getVolumePlainTxtWithCustom
  } = useKnowledgeBaseHandlers({ showToast });
+
  const {
   wikiQuery,
   setWikiQuery,
@@ -428,10 +351,8 @@ export default function App() {
   showToast
  });
 
- // Derive activeTab from URL (React Router)
  const location = useLocation();
  const navigate = useNavigate();
-
  const activeTab = pathnameToAppTab(location.pathname);
  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
@@ -452,14 +373,10 @@ export default function App() {
 
  const handleTabSwitch = (tab: AppTab) => {
   navigate(appTabToPath(tab));
-  // Close mobile sidebar
   if (window.innerWidth < 768) {
    const sidebar = document.getElementById('sidebar');
-   if (sidebar) {
-    sidebar.className = "hidden md:block w-full md:w-64 shrink-0 space-y-4 transition-all duration-300";
-   }
+   if (sidebar) sidebar.className = "hidden md:block w-full md:w-64 shrink-0 space-y-4 transition-all duration-300";
   }
-  // Reset scroll
   const mainEl = document.getElementById('main-content');
   if (mainEl) mainEl.scrollTop = 0;
   window.scrollTo({ top: 0, behavior: 'auto' });
@@ -498,7 +415,6 @@ export default function App() {
   handleSelectCopilotChip
  } = useCopilotInteractionHandlers({
   activeTab,
-  activeProgTab,
   detectedDeviceType,
   discipline,
   order,
@@ -506,10 +422,6 @@ export default function App() {
   setProgTitle,
   setRealTaskInput,
   setProgNotes,
-  selectedStudentForFeedback,
-  classroomStudentFeedback,
-  setClassroomStudentFeedback,
-  setSelectedStudentForFeedback,
   showToast
  });
 
@@ -523,52 +435,6 @@ export default function App() {
   targetSection,
   showToast,
   institutionalProfile
- });
- const {
-  getThemedStudentName,
-  handleShufflePseudonyms,
-  handleGenerateCooperativeGroups,
-  handleAnalyzeClassroomTopic,
-  handleApproveAndInjectUda,
-  handleShareUdaToSocial,
-  handleReuseUda,
-  handleLikeUda,
-  handleAddAnnotation,
-  handleSaveOutcomes
- } = useClassroomSocialHandlers({
-  activeClassTheme,
-  shuffledStudentMap,
-  setShuffledStudentMap,
-  showToast,
-  exclusionsList,
-  activeCooperativeMethod,
-  setCooperativeGroups,
-  classroomTopicInput,
-  setClassroomTopicInput,
-  setIsAnalyzingTopic,
-  classroomTopicAnalysisResult,
-  setClassroomTopicAnalysisResult,
-  savedUda,
-  localCurriculum,
-  discipline,
-  order,
-  addUda,
-  setActiveTaughtUdaId,
-  socialUdas,
-  updateSocialUdas,
-  role,
-  newAnnotationInputs,
-  setNewAnnotationInputs,
-  selectedUdaForOutcomes,
-  outcomesAvanzato,
-  outcomesIntermedio,
-  outcomesBase,
-  outcomesIniziale,
-  criticalReflectionsInput,
-  selfEvaluationStars,
-  setSelectedUdaForOutcomes,
-  setShowOutcomesModal,
-  setCriticalReflectionsInput
  });
 
  const {
@@ -623,6 +489,7 @@ export default function App() {
   showToast,
   handleWorkspaceAutoPull
  });
+
  const {
   totalDecisions,
   approvedCount,
@@ -708,6 +575,7 @@ export default function App() {
   setShowSaveModal,
   showToast
  });
+
  const appViewsLayerProps: AppViewsLayerProps = {
   activeTab,
   role,
@@ -788,7 +656,6 @@ export default function App() {
   handleLoadSuggestedUda,
   handleCloneUdaAdaptive,
   copyUdaTextLocal,
-  handleShareUdaToSocial,
   handleApplyLibFilters,
   handleSortUdaList,
   handleClearLibFilters,
@@ -803,77 +670,12 @@ export default function App() {
   libSorting,
   setLibSorting,
   setSelectedUda,
-  classeSubTab,
-  setClasseSubTab,
   selectedEvidenze,
   activeCompetencyExplorer,
   setActiveCompetencyExplorer,
   showToast,
   getDisciplineIcon,
   getDisciplineLabel,
-  selectedClassCombination,
-  setSelectedClassCombination,
-  classroomStudents,
-  setClassroomStudents,
-  showAiSimulatedResponse,
-  setShowAiSimulatedResponse,
-  isClassroomLoading,
-  setIsClassroomLoading,
-  classroomStudentFeedback,
-  setClassroomStudentFeedback,
-  selectedStudentForFeedback,
-  setSelectedStudentForFeedback,
-  showClassroomReport,
-  setShowClassroomReport,
-  activeClassTheme,
-  setActiveClassTheme,
-  classroomLayout,
-  setClassroomLayout,
-  isAulaConfigOpen,
-  setIsAulaConfigOpen,
-  shuffledStudentMap,
-  setShuffledStudentMap,
-  handleShufflePseudonyms,
-  exclusionsList,
-  setExclusionsList,
-  exclusionInputS1,
-  setExclusionInputS1,
-  exclusionInputS2,
-  setExclusionInputS2,
-  activeCooperativeMethod,
-  setActiveCooperativeMethod,
-  cooperativeGroups,
-  setCooperativeGroups,
-  handleGenerateCooperativeGroups,
-  getThemedStudentName,
-  classroomTopicInput,
-  setClassroomTopicInput,
-  isAnalyzingTopic,
-  classroomTopicAnalysisResult,
-  handleAnalyzeClassroomTopic,
-  handleApproveAndInjectUda,
-  weeklyHoursItaliano,
-  setWeeklyHoursItaliano,
-  weeklyHoursStoria,
-  setWeeklyHoursStoria,
-  weeklyHoursGeografia,
-  setWeeklyHoursGeografia,
-  weeklyHoursMatematica,
-  setWeeklyHoursMatematica,
-  weeklyHoursScienze,
-  setWeeklyHoursScienze,
-  bufferCoefficient,
-  setBufferCoefficient,
-  activeTaughtUdaId,
-  socialUdas,
-  newAnnotationInputs,
-  setNewAnnotationInputs,
-  handleLikeUda,
-  handleReuseUda,
-  updateSocialUdas,
-  setSelectedUdaForOutcomes,
-  setShowOutcomesModal,
-  handleAddAnnotation,
   activeProcessoTab,
   setActiveProcessoTab,
   handleImportMergeCml,
@@ -901,7 +703,7 @@ export default function App() {
   handleDownloadWordDocx: () => { handleDownloadWordDocx(); recordExport({ documentType: 'curricolo', format: 'DOCX', label: `Curricolo Verticale ${schoolYear}`, sourceKind: 'curriculum', discipline, order, sourceSignature: computeCurrentCurriculumSignature(), sourceView: 'esportazioni' }); },
   handleDownloadODF: () => { handleDownloadODF(); recordExport({ documentType: 'curricolo', format: 'ODF', label: `Curricolo Verticale ${schoolYear}`, sourceKind: 'curriculum', discipline, order, sourceSignature: computeCurrentCurriculumSignature(), sourceView: 'esportazioni' }); },
   handleDownloadCurricoloPDF: () => { handleDownloadCurricoloPDF(); recordExport({ documentType: 'curricolo', format: 'PDF', label: `Curricolo Verticale ${schoolYear}`, sourceKind: 'curriculum', discipline, order, sourceSignature: computeCurrentCurriculumSignature(), sourceView: 'esportazioni' }); },
-  handleCopyToClipboardFormatted: handleCopyToClipboardFormatted,
+  handleCopyToClipboardFormatted,
   handleDownloadTxt: () => { handleDownloadTxt(); recordExport({ documentType: 'curricolo', format: 'TXT', label: `Bozza ${discipline} ${order}`, sourceKind: 'curriculum', discipline, order, sourceSignature: computeCurrentCurriculumSignature(), sourceView: 'esportazioni' }); },
   handleDownloadWordConfronto: () => { handleDownloadWordConfronto(); recordExport({ documentType: 'confronto', format: 'DOC', label: `Tavola Confronto ${schoolYear}`, sourceKind: 'curriculum', discipline, order, sourceSignature: computeCurrentCurriculumSignature(), sourceView: 'esportazioni' }); },
   handleDownloadRichMarkdown: () => { handleDownloadRichMarkdown(); recordExport({ documentType: 'curricolo', format: 'Markdown', label: `Curricolo Verticale ${schoolYear}`, sourceKind: 'curriculum', discipline, order, sourceSignature: computeCurrentCurriculumSignature(), sourceView: 'esportazioni' }); },
@@ -1022,22 +824,6 @@ export default function App() {
   handleDownloadScormManifest,
   copyUdaForRegister,
   copyUdaTextLocal,
-  showOutcomesModal,
-  setShowOutcomesModal,
-  selectedUdaForOutcomes,
-  selfEvaluationStars,
-  setSelfEvaluationStars,
-  outcomesAvanzato,
-  setOutcomesAvanzato,
-  outcomesIntermedio,
-  setOutcomesIntermedio,
-  outcomesBase,
-  setOutcomesBase,
-  outcomesIniziale,
-  setOutcomesIniziale,
-  criticalReflectionsInput,
-  setCriticalReflectionsInput,
-  handleSaveOutcomes,
   showSaveModal,
   setShowSaveModal,
   saveProgDraft,
@@ -1087,102 +873,93 @@ export default function App() {
 
  return (
   <AppContext.Provider value={appContextValue}>
-  <div className="flex-1 flex flex-col">
-   {/* Dynamic Toast */}
-   {toastMessage && (
-    <div className="fixed bottom-6 right-6 bg-slate-950 text-white px-4 py-3 rounded-2xl shadow-2xl border border-slate-800 z-[200] flex items-center space-x-3 text-xs max-w-sm transition-all duration-300">
-     <div className={`${toastSuccess ? 'bg-emerald-500/20 text-emerald-400' : 'bg-rose-500/20 text-rose-400'} p-1 rounded-lg`}>
-      <Check className="w-4 h-4" />
+   <div className="flex-1 flex flex-col">
+    {toastMessage && (
+     <div className="fixed bottom-6 right-6 bg-slate-950 text-white px-4 py-3 rounded-2xl shadow-2xl border border-slate-800 z-[200] flex items-center space-x-3 text-xs max-w-sm transition-all duration-300">
+      <div className={`${toastSuccess ? 'bg-emerald-500/20 text-emerald-400' : 'bg-rose-500/20 text-rose-400'} p-1 rounded-lg`}>
+       <Check className="w-4 h-4" />
+      </div>
+      <div className="font-semibold">{toastMessage}</div>
      </div>
-     <div className="font-semibold">{toastMessage}</div>
-    </div>
-   )}
+    )}
 
-   {/* TOP HEADER */}
-   <AppHeader
-    toggleSidebar={toggleSidebar}
-    isCopilotChatOpen={isCopilotChatOpen}
-    setIsCopilotChatOpen={setIsCopilotChatOpen}
-    setShowAgentSetupModal={setShowAgentSetupModal}
-    localAgentStatus={localAgentStatus}
-    localAgentType={localAgentType}
-    ollamaStatus={ollamaStatus}
-    ollamaModelName={ollamaModelName}
-    localAgentSize={localAgentSize}
-    setShowSaveModal={setShowSaveModal}
-    roleDropdownOpen={roleDropdownOpen}
-    setRoleDropdownOpen={setRoleDropdownOpen}
-    isWorkspaceLoggedIn={isWorkspaceLoggedIn}
-    cloudAccountType={cloudAccountType}
-    workspaceUserEmail={workspaceUserEmail}
-    handleWorkspaceSync={handleWorkspaceSync}
-    showToast={showToast}
-    handleClearLocalStorageWithReset={handleClearLocalStorageWithReset}
-    handleWorkspaceLogout={handleWorkspaceLogout}
-    setShowCloudAccountModal={setShowCloudAccountModal}
-   />
-   {/* MAIN CONTAINER */}
-   <div className="flex-1 w-full px-4 sm:px-6 lg:px-8 py-6 flex flex-col md:flex-row gap-6 overflow-hidden">
-
-    {/* COLLAPSIBLE SIDEBAR PANEL (Azione UX - Semplificata) */}
-    <AppSidebar
-     sidebarCollapsed={sidebarCollapsed}
-     activeTab={activeTab}
-     activeCurricoloView={activeCurricoloView}
-     activeProgTab={activeProgTab}
-     pendingCount={pendingCount}
-     handleTabSwitch={(tab) => handleTabSwitch(tab as AppTab)}
-     setActiveCurricoloView={(view) => setActiveCurricoloView(view as any)}
-     setActiveProgTab={(tab) => setActiveProgTab(tab as any)}
-    />
-    {/* MAIN BODY AREA WITH TRANS-TAB WARNING BANNERS (Azione IV) */}
-    <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
-
-     {/* SOTTO-HEADER DI ALLERTA GLOBALE (Visibile sempre se attivo, trans-tab) */}
-     <GlobalAlerts
-      isDatabaseVolatile={isDatabaseVolatile}
-      isFileProtocol={isFileProtocol}
-      isWorkspaceLoggedIn={isWorkspaceLoggedIn}
-      workspaceTokenExpiry={workspaceTokenExpiry}
-      cloudAccountType={cloudAccountType}
-      handleWorkspaceLogin={handleWorkspaceLogin}
-     />
-     <main id="main-content" className="flex-1 bg-white border border-slate-200 rounded-2xl shadow-sm p-6 overflow-y-auto relative">
-
-      {/* VIEW LAYER - Application views rendered via AppViewsLayer */}
-      <Suspense fallback={<div className="flex items-center justify-center h-32"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div></div>}>
-       <AppViewsLayer {...appViewsLayerProps} />
-      </Suspense>
-     </main>
-    </div>
-    {/* CONTEXTUAL COPILOT CHAT SIDEBAR (OIV ERGONOMIC ENHANCEMENT) */}
-    <CopilotChatSidebar
+    <AppHeader
+     toggleSidebar={toggleSidebar}
      isCopilotChatOpen={isCopilotChatOpen}
      setIsCopilotChatOpen={setIsCopilotChatOpen}
-     copilotChatHistory={copilotChatHistory}
-     isCopilotResponding={isCopilotResponding}
-     copilotChatInput={copilotChatInput}
-     setCopilotChatInput={setCopilotChatInput}
-     handleSendCopilotMessage={handleSendCopilotMessage}
-     handleSelectCopilotChip={handleSelectCopilotChip}
-     handleToggleVoiceTyping={handleToggleVoiceTyping}
-     isVoiceListening={isVoiceListening}
-     handleSpeakController={handleSpeakController}
-     ttsActiveMsgIndex={ttsActiveMsgIndex}
-     ttsPlayingState={ttsPlayingState}
-     activeTab={activeTab}
-     activeProgTab={activeProgTab}
+     setShowAgentSetupModal={setShowAgentSetupModal}
+     localAgentStatus={localAgentStatus}
+     localAgentType={localAgentType}
+     ollamaStatus={ollamaStatus}
+     ollamaModelName={ollamaModelName}
+     localAgentSize={localAgentSize}
+     setShowSaveModal={setShowSaveModal}
+     roleDropdownOpen={roleDropdownOpen}
+     setRoleDropdownOpen={setRoleDropdownOpen}
+     isWorkspaceLoggedIn={isWorkspaceLoggedIn}
+     cloudAccountType={cloudAccountType}
+     workspaceUserEmail={workspaceUserEmail}
+     handleWorkspaceSync={handleWorkspaceSync}
+     showToast={showToast}
+     handleClearLocalStorageWithReset={handleClearLocalStorageWithReset}
+     handleWorkspaceLogout={handleWorkspaceLogout}
+     setShowCloudAccountModal={setShowCloudAccountModal}
     />
-   </div>
 
-   {/* MODAL LAYER */}
-   <AppModalsLayer {...appModalsLayerProps} />
-   {/* MOBILE BOTTOM NAV */}
+    <div className="flex-1 w-full px-4 sm:px-6 lg:px-8 py-6 flex flex-col md:flex-row gap-6 overflow-hidden">
+     <AppSidebar
+      sidebarCollapsed={sidebarCollapsed}
+      activeTab={activeTab}
+      activeCurricoloView={activeCurricoloView}
+      activeProgTab={activeProgTab}
+      pendingCount={pendingCount}
+      handleTabSwitch={(tab) => handleTabSwitch(tab as AppTab)}
+      setActiveCurricoloView={(view) => setActiveCurricoloView(view as any)}
+      setActiveProgTab={(tab) => setActiveProgTab(tab as any)}
+     />
+
+     <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
+      <GlobalAlerts
+       isDatabaseVolatile={isDatabaseVolatile}
+       isFileProtocol={isFileProtocol}
+       isWorkspaceLoggedIn={isWorkspaceLoggedIn}
+       workspaceTokenExpiry={workspaceTokenExpiry}
+       cloudAccountType={cloudAccountType}
+       handleWorkspaceLogin={handleWorkspaceLogin}
+      />
+      <main id="main-content" className="flex-1 bg-white border border-slate-200 rounded-2xl shadow-sm p-6 overflow-y-auto relative">
+       <Suspense fallback={<div className="flex items-center justify-center h-32"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div></div>}>
+        <AppViewsLayer {...appViewsLayerProps} />
+       </Suspense>
+      </main>
+     </div>
+
+     <CopilotChatSidebar
+      isCopilotChatOpen={isCopilotChatOpen}
+      setIsCopilotChatOpen={setIsCopilotChatOpen}
+      copilotChatHistory={copilotChatHistory}
+      isCopilotResponding={isCopilotResponding}
+      copilotChatInput={copilotChatInput}
+      setCopilotChatInput={setCopilotChatInput}
+      handleSendCopilotMessage={handleSendCopilotMessage}
+      handleSelectCopilotChip={handleSelectCopilotChip}
+      handleToggleVoiceTyping={handleToggleVoiceTyping}
+      isVoiceListening={isVoiceListening}
+      handleSpeakController={handleSpeakController}
+      ttsActiveMsgIndex={ttsActiveMsgIndex}
+      ttsPlayingState={ttsPlayingState}
+      activeTab={activeTab}
+      activeProgTab={activeProgTab}
+     />
+    </div>
+
+    <AppModalsLayer {...appModalsLayerProps} />
     <MobileBottomNav
      activeTab={activeTab}
      pendingCount={pendingCount}
      handleTabSwitch={(tab) => handleTabSwitch(tab as AppTab)}
-   />  </div>
+    />
+   </div>
   </AppContext.Provider>
  );
 }
