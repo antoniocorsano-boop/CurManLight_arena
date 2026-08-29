@@ -6,7 +6,7 @@ import type { A07InstitutionalDocumentRead } from '../../../domain/institution';
 
 export type ActiveCurricoloView = 'home' | 'albero' | 'mappa' | 'popolamento' | 'pilota';
 export type ActiveProcessoTab = 'flusso' | 'verifica';
-export type ActiveProgTab = 'home' | 'annuale' | 'uda' | 'certificazione' | 'social' | 'classe-home' | 'classe';
+export type ActiveProgTab = 'home' | 'annuale' | 'uda' | 'certificazione';
 export type ClasseSubTab = 'registro' | 'strumenti' | 'pianificazione';
 export type ProgettazioneMode = 'grid' | 'wizard';
 export type RevisioneMode = 'list' | 'wizard';
@@ -64,6 +64,9 @@ export interface GlossaryEntry {
   source: string;
 }
 
+// Legacy compatibility types remain exported until S2B-4 deletes the retired
+// Classroom/Social feature modules. They are intentionally absent from the
+// canonical AppViewsLayerProps contract below.
 export interface ClassroomFeedback {
   id: string;
   name: string;
@@ -233,7 +236,6 @@ export interface AppViewsLayerProps {
   handleLoadSuggestedUda: (id: string) => void;
   handleCloneUdaAdaptive: (uda: UdaModel) => void;
   copyUdaTextLocal: (id: string) => void;
-  handleShareUdaToSocial: (id: string) => void;
   handleApplyLibFilters: (uda: UdaModel) => boolean;
   handleSortUdaList: (a: UdaModel, b: UdaModel) => number;
   handleClearLibFilters: () => void;
@@ -248,77 +250,12 @@ export interface AppViewsLayerProps {
   libSorting: LibrarySorting;
   setLibSorting: Dispatch<SetStateAction<LibrarySorting>>;
   setSelectedUda: (uda: UdaModel | null) => void;
-  classeSubTab: ClasseSubTab;
-  setClasseSubTab: (value: ClasseSubTab) => void;
   selectedEvidenze: string[];
   activeCompetencyExplorer: string | null;
   setActiveCompetencyExplorer: (value: string | null) => void;
   showToast: ToastHandler;
   getDisciplineIcon: (discipline: string) => string;
   getDisciplineLabel: (discipline: string, order?: SchoolOrder) => string;
-  selectedClassCombination: string;
-  setSelectedClassCombination: (value: string) => void;
-  classroomStudents: ClassroomStudent[];
-  setClassroomStudents: Dispatch<SetStateAction<ClassroomStudent[]>>;
-  showAiSimulatedResponse: boolean;
-  setShowAiSimulatedResponse: (value: boolean) => void;
-  isClassroomLoading: boolean;
-  setIsClassroomLoading: (value: boolean) => void;
-  classroomStudentFeedback: ClassroomFeedback[];
-  setClassroomStudentFeedback: (value: ClassroomFeedback[]) => void;
-  selectedStudentForFeedback: ClassroomFeedback | null;
-  setSelectedStudentForFeedback: (value: ClassroomFeedback | null) => void;
-  showClassroomReport: boolean;
-  setShowClassroomReport: (value: boolean) => void;
-  activeClassTheme: ClassTheme;
-  setActiveClassTheme: (value: ClassTheme) => void;
-  classroomLayout: ClassroomLayout;
-  setClassroomLayout: (value: ClassroomLayout) => void;
-  isAulaConfigOpen: boolean;
-  setIsAulaConfigOpen: (value: boolean) => void;
-  shuffledStudentMap: Record<string, string> | null;
-  setShuffledStudentMap: Dispatch<SetStateAction<Record<string, string> | null>>;
-  handleShufflePseudonyms: () => void;
-  exclusionsList: ExclusionPair[];
-  setExclusionsList: Dispatch<SetStateAction<ExclusionPair[]>>;
-  exclusionInputS1: string;
-  setExclusionInputS1: (value: string) => void;
-  exclusionInputS2: string;
-  setExclusionInputS2: (value: string) => void;
-  activeCooperativeMethod: CooperativeMethod;
-  setActiveCooperativeMethod: (value: CooperativeMethod) => void;
-  cooperativeGroups: CooperativeGroup | null;
-  setCooperativeGroups: (value: CooperativeGroup | null) => void;
-  handleGenerateCooperativeGroups: () => void;
-  getThemedStudentName: (studentId: string) => string;
-  classroomTopicInput: string;
-  setClassroomTopicInput: (value: string) => void;
-  isAnalyzingTopic: boolean;
-  classroomTopicAnalysisResult: ClassroomTopicAnalysisResult | null;
-  handleAnalyzeClassroomTopic: () => void;
-  handleApproveAndInjectUda: () => void;
-  weeklyHoursItaliano: number;
-  setWeeklyHoursItaliano: (value: number) => void;
-  weeklyHoursStoria: number;
-  setWeeklyHoursStoria: (value: number) => void;
-  weeklyHoursGeografia: number;
-  setWeeklyHoursGeografia: (value: number) => void;
-  weeklyHoursMatematica: number;
-  setWeeklyHoursMatematica: (value: number) => void;
-  weeklyHoursScienze: number;
-  setWeeklyHoursScienze: (value: number) => void;
-  bufferCoefficient: number;
-  setBufferCoefficient: (value: number) => void;
-  activeTaughtUdaId: string;
-  socialUdas: SocialUda[];
-  newAnnotationInputs: AnnotationInputs;
-  setNewAnnotationInputs: Dispatch<SetStateAction<AnnotationInputs>>;
-  handleLikeUda: (id: string) => void;
-  handleReuseUda: (sharedUda: SocialUda) => void;
-  updateSocialUdas: (newList: SocialUda[]) => void;
-  setSelectedUdaForOutcomes: (uda: SocialUda | null) => void;
-  setShowOutcomesModal: (value: boolean) => void;
-  handleAddAnnotation: (udaId: string) => void;
   activeProcessoTab: ActiveProcessoTab;
   setActiveProcessoTab: (tab: ActiveProcessoTab) => void;
   handleImportMergeCml: (event: ChangeEvent<HTMLInputElement>) => void;
