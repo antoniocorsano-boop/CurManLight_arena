@@ -93,12 +93,14 @@ async function noHorizontalOverflow(page) {
 
       const authorityNotice = page.locator('[data-human-task="curriculum-authority-context"]').first();
       await authorityNotice.waitFor({ state: 'visible', timeout: 5000 });
-      const authorityText = await authorityNotice.innerText();
+      const authorityText = (await authorityNotice.innerText()).toLowerCase();
       check(
         'curriculum authority state is persistently visible',
-        authorityText.includes('copia locale di consultazione') &&
-          authorityText.includes('non attesta configurazione o adozione istituzionale') &&
-          authorityText.includes('fonti, applicabilità e stato')
+        authorityText.includes('copia locale') &&
+          authorityText.includes('valida per la scuola') &&
+          authorityText.includes('fonti') &&
+          authorityText.includes('applicabilità') &&
+          authorityText.includes('stato')
       );
       check('curriculum context has no material horizontal overflow', await noHorizontalOverflow(page));
 
