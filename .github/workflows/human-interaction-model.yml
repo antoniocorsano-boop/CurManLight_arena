@@ -7,6 +7,16 @@ on:
       - 'tools/human-interaction-model/**'
       - 'agent_skills/human-interaction-model/**'
       - 'src/features/guided-workflow/humanTask.ts'
+      - 'src/App.tsx'
+      - 'src/features/navigation/**'
+      - 'src/features/curriculum/**'
+      - 'src/features/progettazione/**'
+      - 'src/features/documents/components/EsportazioniTab.tsx'
+      - 'src/domain/revision/**'
+      - 'src/domain/transfer/**'
+      - 'docs/evidence/BETA_G5_HUMAN_ACCEPTANCE_PROTOCOL_v2.md'
+      - 'docs/evidence/BETA_G5_HUMAN_ACCEPTANCE_RECEIPT_TEMPLATE_v2.json'
+      - 'src/__tests__/arena-s3-human-validation-contract.test.ts'
       - '.github/workflows/human-interaction-model.yml'
   workflow_dispatch:
 
