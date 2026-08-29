@@ -51,6 +51,8 @@
   --ui-space-5: 20px;
   --ui-space-6: 24px;
   --ui-page-gutter: 24px;
+  --ui-mobile-gutter: 16px;
+  --ui-mobile-section-gap: 12px;
 
   /* Layout */
   --ui-content-max: 1200px;
@@ -93,6 +95,18 @@
 }
 
 /*
+ * Teacher-facing surface invariant: every primary Arena workspace follows the
+ * same readable content width and spacing rhythm. Feature cards may retain
+ * their semantics, but the page gutter is owned by the shell, not by each
+ * feature independently.
+ */
+[data-teacher-surface] {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+}
+
+/*
  * Mobile shell invariant: the application viewport never becomes the horizontal
  * scrolling surface. Wide content scrolls only inside the object that needs it.
  */
@@ -104,12 +118,26 @@
 @media (max-width: 767px) {
   #main-content {
     overflow-x: hidden;
-    padding: 1rem;
+    padding: var(--ui-mobile-gutter);
   }
 
-  #main-content > * {
+  #main-content > *,
+  [data-teacher-surface],
+  [data-teacher-surface] > * {
     min-width: 0;
     max-width: 100%;
+  }
+
+  [data-teacher-surface] {
+    margin-inline: 0;
+  }
+
+  [data-teacher-surface] > * + * {
+    margin-top: var(--ui-mobile-section-gap);
+  }
+
+  [data-teacher-surface] p {
+    max-width: 68ch;
   }
 
   #main-content table,
@@ -119,6 +147,11 @@
     overflow-x: auto;
     overscroll-behavior-inline: contain;
     -webkit-overflow-scrolling: touch;
+  }
+
+  /* Secondary explanations remain available without dominating the task. */
+  [data-hcm-secondary-content] {
+    margin-top: var(--ui-mobile-section-gap);
   }
 }
 
