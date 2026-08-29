@@ -32,7 +32,21 @@ export function AppViewsLayer(props: AppViewsLayerProps) {
         setActiveProgTab={safeSetActiveProgTab}
       />
 
-      {props.activeTab === 'curricolo' && <CurriculumTab {...props} />}
+      {props.activeTab === 'curricolo' && (
+        <div className="space-y-3">
+          <aside
+            data-human-task="curriculum-authority-context"
+            role="note"
+            className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs font-semibold leading-relaxed text-amber-950"
+          >
+            <strong className="block text-[10px] uppercase tracking-wider text-amber-800">Stato del contesto curricolare</strong>
+            <span>
+              Questa è una copia locale di consultazione: non attesta configurazione o adozione istituzionale. Verifica sempre fonti, applicabilità e stato prima di usarla come baseline autorevole.
+            </span>
+          </aside>
+          <CurriculumTab {...props} />
+        </div>
+      )}
       {props.activeTab === 'revisione' && <RevisioneTab {...props} />}
 
       {props.activeTab === 'progetta-annuale' && (
