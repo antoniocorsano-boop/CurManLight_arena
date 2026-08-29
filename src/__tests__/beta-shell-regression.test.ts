@@ -94,10 +94,33 @@ describe('Arena Beta canonical shell regression guard', () => {
 
   it('keeps Documents inside the institutional curriculum scope', () => {
     expect(documentsSource).toContain('data-beta-documents-scope="institutional-curriculum"');
+    expect(documentsSource).toContain('data-human-task="export-curriculum"');
     expect(documentsSource).toContain('Condividi il curricolo');
     expect(documentsSource).toContain('Continua il lavoro');
-    expect(documentsSource).toContain('Copia di lavoro .cml');
+    expect(documentsSource).toContain('Scarica il documento');
+    expect(documentsSource).toContain('Salva una copia di lavoro');
+    expect(documentsSource).toContain('data-export-intent="share-readable-document"');
+    expect(documentsSource).toContain('data-export-intent="continue-work"');
+    expect(documentsSource).toContain('data-export-format-options');
     expect(documentsSource).not.toMatch(/Modelli con IA|Sicurezza e reset|Programmazione su Due Quadrimestri|Relazione Intermedia|Programma Svolto|Genera Programmazione Annuale|Genera Relazione Scolastica/i);
+  });
+
+  it('keeps export formats subordinate without changing the existing export capabilities', () => {
+    for (const handler of [
+      'handleDownloadWordDocx',
+      'handleDownloadODF',
+      'handleDownloadCurricoloPDF',
+      'handleCopyToClipboardFormatted',
+      'handleDownloadCml',
+      'handleDownloadTxt',
+    ]) {
+      expect(documentsSource).toContain(handler);
+    }
+
+    expect(documentsSource).toContain('Altri modi per condividere');
+    expect(documentsSource).toContain('Serve solo il testo?');
+    expect(documentsSource).toContain('w-full sm:w-auto');
+    expect(documentsSource).not.toContain('handleClearLocalStorageWithReset()');
   });
 
   it('emits /fonti as the canonical source route while retaining legacy /settings compatibility', () => {
