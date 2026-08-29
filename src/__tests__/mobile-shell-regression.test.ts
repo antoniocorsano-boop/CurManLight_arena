@@ -86,4 +86,12 @@ describe('MOBILE-SHELL regression contract', () => {
     expect(cssSource).toContain('overflow-x: auto');
     expect(cssSource).toContain('-webkit-overflow-scrolling: touch');
   });
+
+  it('enforces one mobile gutter and section rhythm for teacher-facing surfaces', () => {
+    expect(cssSource).toContain('--ui-mobile-gutter: 16px');
+    expect(cssSource).toContain('--ui-mobile-section-gap: 12px');
+    expect(cssSource).toContain('[data-teacher-surface]');
+    expect(cssSource).toContain('padding: var(--ui-mobile-gutter)');
+    expect(cssSource).toContain('margin-top: var(--ui-mobile-section-gap)');
+  });
 });
