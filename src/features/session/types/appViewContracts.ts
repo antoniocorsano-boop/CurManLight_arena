@@ -15,9 +15,6 @@ export type TemplateTab = 'standard' | 'template';
 export type TemplateDocType = 'relazione' | 'uda' | 'greci';
 export type SecondBrainTab = 'brain' | 'graph' | 'glossary';
 export type WikiWorkspaceTab = 'read' | 'chat';
-export type ClassTheme = 'scientists' | 'classico' | 'miti';
-export type ClassroomLayout = 'frontale' | 'isole' | 'circle';
-export type CooperativeMethod = 'jigsaw' | 'peertutoring' | 'laboratorio';
 
 export type CurriculumMap = Record<string, Record<SchoolOrder, CurricularLevel>>;
 
@@ -64,94 +61,6 @@ export interface GlossaryEntry {
   source: string;
 }
 
-// Legacy compatibility types remain exported until S2B-4 deletes the retired
-// Classroom/Social feature modules. They are intentionally absent from the
-// canonical AppViewsLayerProps contract below.
-export interface ClassroomFeedback {
-  id: string;
-  name: string;
-  level: 'avanzato' | 'intermedio' | 'base' | 'iniziale';
-  stars: number;
-  obs: string;
-}
-
-export interface ClassroomStudent {
-  id: string;
-  name: string;
-  nome?: string;
-  token?: string;
-  diagnosis?: string;
-  maskedDiagnosis?: string;
-  osiLevel?: string;
-}
-
-export interface ExclusionPair {
-  s1: string;
-  s2: string;
-}
-
-export interface CooperatmvePeerPamr {
-  name: string;
-  tutor: string;
-  tutee: string;
-  task: string;
-}
-
-export interface CooperatmveGroupMember {
-  id: string;
-  role: string;
-  task: string;
-}
-
-export interface CooperatmveLearnmngGroup {
-  name: string;
-  members: CooperatmveGroupMember[];
-}
-
-export type CooperativeGroup =
-  | { method: 'peertutoring'; list: CooperatmvePeerPamr[] }
-  | { method: Exclude<CooperativeMethod, 'peertutoring'>; list: CooperatmveLearnmngGroup[] };
-
-export type ClassroomTopicAnalysisResult =
-  | {
-      type: 'link';
-      uda: UdaModel;
-      title?: string;
-      summary?: string;
-    }
-  | {
-      type: 'proposal';
-      id: string;
-      title: string;
-      discipline: string;
-      order: SchoolOrder;
-      period: string;
-      hours: number;
-      traguardi: string[];
-      obiettivi: string[];
-      evidenze: string[];
-      realTask: string;
-      notes: string;
-      summary?: string;
-      suggestedUda?: Partial<UdaModel>;
-    };
-
-export type SocialUda = Omit<UdaModel, 'status' | 'createdAt'> & {
-  author: string;
-  likes: number;
-  likedByMe: boolean;
-  annotations: Array<{ author: string; text: string }>;
-  reusedCount?: number;
-  selfEvaluation?: number;
-  studentOutcomes?: {
-    avanzato: number;
-    intermedio: number;
-    base: number;
-    iniziale: number;
-  };
-};
-
-export type AnnotationInputs = Record<string, string>;
 export type ToastHandler = (msg: string, success?: boolean) => void;
 export type ProgStatus = 'bozza' | 'in revisione' | 'pronta per confronto';
 export type LibrarySorting = 'recenti' | 'meno_recenti' | 'az' | 'disc_az';
