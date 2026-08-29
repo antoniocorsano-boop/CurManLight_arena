@@ -2,12 +2,23 @@
 
 This repository uses a shared, file-backed memory protocol so terminal agents and VS Code chat agents can resume work without reloading the whole conversation.
 
+## Mandatory integrated-project memory
+
+Before any work that can affect product ownership, curriculum authority, Docente OS interoperability, Human Task/HIM, cross-system UI semantics, roadmap order, external frameworks or promotion/deploy decisions, read:
+
+`docs/architecture/INTEGRATED_PROJECT_GOVERNED_MEMORY_V1.md`
+
+Memory ID: `CML-DOS-INTEGRATED-GOVERNANCE-V1`.
+
+This file is the canonical shared logical memory for CurManLight Arena + Docente OS. It overrides stale conversation summaries, old PR descriptions and local assumptions on cross-system boundaries. Do not change the Arena/Docente OS ownership boundary, authority model, handoff contract or governed execution order without an explicit governance change mirrored in both repositories.
+
 ## Load Order
 
 1. Read this file first.
-2. If `session/` exists, read the latest relevant `session/*/handoff.md`.
-3. Read that session's `session_state.md`, then only the timeline entries needed for the current task.
-4. Read `docs/AGENT_MEMORY.md` only when you need the full protocol or templates.
+2. Read `docs/architecture/INTEGRATED_PROJECT_GOVERNED_MEMORY_V1.md` whenever the task can affect the integrated Arena + Docente OS system.
+3. If `session/` exists, read the latest relevant `session/*/handoff.md`.
+4. Read that session's `session_state.md`, then only the timeline entries needed for the current task.
+5. Read `docs/AGENT_MEMORY.md` only when you need the full protocol or templates.
 
 ## Session Rules
 
