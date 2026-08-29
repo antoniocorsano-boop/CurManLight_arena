@@ -160,7 +160,7 @@ export function ProgettazioneTab(props: ProgettazioneTabProps) {
     <div className="space-y-6 fade-in text-left">
       <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4 transition duration-200">
         <div className="space-y-1">
-          <span className="text-[9px] font-black text-indigo-600 uppercase tracking-wider block">Area di progettazione personale</span>
+          <span className="text-[9px] font-black text-indigo-600 uppercase tracking-wider block">Area di progettazione curricolare</span>
           <h2 className="text-sm font-black text-slate-800 uppercase tracking-wide">
             {activeProgTab === 'annuale'
               ? "Compilatore Unità di Apprendimento"
@@ -176,12 +176,12 @@ export function ProgettazioneTab(props: ProgettazioneTabProps) {
                 return `Compilazione assistita per ${getDisciplineLabel(discipline, order).toUpperCase()} (${order === 'infanzia' ? "Campo d'Esperienza" : "Classe " + targetClass + "^ " + orderLabelsForMap[order]?.split(" (")[0]}). Selezionati ${selectedTraguardi.length} traguardi e ${selectedObiettivi.length} obiettivi.`;
               }
               if (activeProgTab === 'uda') {
-                return `Gestione dell'archivio delle Unità di Apprendimento. Attualmente memorizzate ${savedUda.length} bozze su questo dispositivo d'aula.`;
+                return `Gestione dell'archivio delle Unità di Apprendimento. Attualmente memorizzate ${savedUda.length} bozze in questo archivio di progettazione.`;
               }
               if (activeProgTab === 'certificazione') {
                 return "Matrice locale non validata tra competenze europee ed evidenze selezionate.";
               }
-              return "Area di progettazione personale e locale.";
+              return "Area di progettazione curricolare e riuso istituzionale.";
             })()}
           </p>
         </div>
@@ -209,7 +209,7 @@ export function ProgettazioneTab(props: ProgettazioneTabProps) {
             <button onClick={() => setActiveProgTab('annuale')} className="bg-white border border-slate-200 hover:border-indigo-400 p-5 rounded-2xl shadow-sm hover:shadow-md transition text-left space-y-2">
               <span className="text-[10px] font-black text-indigo-600 uppercase tracking-wider block">Azione 1</span>
               <h4 className="text-xs font-bold text-slate-800 uppercase">Compilatore UDA (Wizard)</h4>
-              <p className="text-[11px] text-slate-500 font-semibold leading-normal">Prepara una bozza UDA personale collegando traguardi, obiettivi ed evidenze.</p>
+              <p className="text-[11px] text-slate-500 font-semibold leading-normal">Prepara una bozza UDA curricolare collegando traguardi, obiettivi ed evidenze.</p>
             </button>
             <button onClick={() => setActiveProgTab('uda')} className="bg-white border border-slate-200 hover:border-indigo-400 p-5 rounded-2xl shadow-sm hover:shadow-md transition text-left space-y-2">
               <span className="text-[10px] font-black text-indigo-600 uppercase tracking-wider block">Azione 2</span>
@@ -254,7 +254,7 @@ export function ProgettazioneTab(props: ProgettazioneTabProps) {
             ) : (
               <div className="space-y-4">
                 <div className="p-6 text-center border-2 border-dashed border-slate-200 rounded-2xl text-slate-400 italic text-xs font-semibold">
-                  Nessuna Unità di Apprendimento inserita nella tua programmazione annuale.
+                  Nessuna Unità di Apprendimento inserita nella programmazione curricolare annuale.
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   {[
@@ -446,8 +446,8 @@ function ProgettazioneAnnualeView({
       {tepBannerVisible && (
         <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 fade-in">
           <div className="space-y-1 text-left">
-            <span className="text-[9px] font-black text-amber-700 uppercase tracking-wider block">Assistente Ergonomico d'Aula</span>
-            <p className="text-xs font-bold text-amber-950 leading-relaxed">Rilevate difficoltà di puntamento su questo schermo d'aula. Desideri passare all'Assistente Guidato (Wizard)?</p>
+            <span className="text-[9px] font-black text-amber-700 uppercase tracking-wider block">Assistente Ergonomico di Progettazione</span>
+            <p className="text-xs font-bold text-amber-950 leading-relaxed">Rilevate difficoltà di puntamento in questo ambiente di progettazione. Desideri passare all'Assistente Guidato (Wizard)?</p>
           </div>
           <div className="flex flex-wrap gap-2 shrink-0 text-[10px] font-black uppercase tracking-wider">
             <button onClick={handleTepSwitchToWizard} className="px-3 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl transition shadow-sm">Passa al Wizard</button>
@@ -471,7 +471,7 @@ function ProgettazioneAnnualeView({
       {progettazioneMode === 'grid' ? (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
           <div className="lg:col-span-4 bg-white border border-slate-200 rounded-2xl shadow-sm p-4 space-y-4">
-            <div><span className="text-[9px] font-black text-indigo-600 uppercase tracking-wider block">Passo 1: criteri personali</span><h3 className="text-xs font-bold text-slate-800">Traguardi & Obiettivi</h3></div>
+            <div><span className="text-[9px] font-black text-indigo-600 uppercase tracking-wider block">Passo 1: criteri curricolari</span><h3 className="text-xs font-bold text-slate-800">Traguardi & Obiettivi</h3></div>
             <div className={`p-2.5 rounded-xl border text-[10px] leading-tight font-bold ${showsLegacyCurriculum ? 'bg-amber-50 border-amber-200 text-amber-900' : 'bg-emerald-50 border-emerald-200 text-emerald-900'}`}>
               {showsLegacyCurriculum ? <div className="space-y-0.5"><div className="font-extrabold text-amber-800">CURRICOLO 2012 (PREVIGENTE)</div><p className="text-[9px] text-slate-500 font-medium">La Classe {targetClass}^ concluderà il ciclo mantenendo il vecchio standard.</p></div> : <div className="space-y-0.5"><div className="font-extrabold text-emerald-800">CURRICOLO 2025 (RIFORMATO)</div><p className="text-[9px] text-slate-500 font-medium">Questa classe adotta il nuovo standard d'allineamento 2025.</p></div>}
             </div>
@@ -577,10 +577,10 @@ function ArchivioUdaView({
   return (
     <div className="space-y-6">
       <div className="bg-white border border-slate-200 rounded-3xl p-5 shadow-sm space-y-4 text-left">
-        <div className="border-b border-slate-150 pb-3"><span className="text-[9px] font-black text-indigo-600 uppercase tracking-wider block">Quadro generale personale</span><h3 className="text-sm font-black text-slate-800 uppercase tracking-wide">Programmazione annuale locale per classi</h3><p className="text-[11px] text-slate-500 font-medium">Visualizza la linea temporale dei moduli registrati per la tua classe in {getDisciplineLabel(discipline, order)} ({getRoleLabel(role)}).</p></div>
+        <div className="border-b border-slate-150 pb-3"><span className="text-[9px] font-black text-indigo-600 uppercase tracking-wider block">Quadro generale di progettazione</span><h3 className="text-sm font-black text-slate-800 uppercase tracking-wide">Programmazione annuale locale per classi</h3><p className="text-[11px] text-slate-500 font-medium">Visualizza la linea temporale dei moduli registrati per la classe selezionata in {getDisciplineLabel(discipline, order)} ({getRoleLabel(role)}).</p></div>
         <div className="grid grid-cols-1 md:grid-cols-12 gap-5 items-start">
           <div className="md:col-span-3 space-y-1.5"><strong className="text-[9px] font-black text-slate-400 uppercase tracking-wider block">Filtro Classe & Sezione:</strong><div className="flex flex-col space-y-1 bg-slate-50 p-2 border rounded-2xl max-h-[220px] overflow-y-auto">{assignedCombinations.map(combo => { const isActive = order === 'infanzia' ? targetSection === combo : targetClass === combo.split('^')[0] && targetSection === combo.split('^')[1]; return <button key={combo} onClick={() => { if (order === 'infanzia') { setTargetClass('Fascia Unica 3-5 anni'); setTargetSection(combo); } else { setTargetClass(combo.split('^')[0]); setTargetSection(combo.split('^')[1]); } }} className={`p-2.5 rounded-xl text-left font-black text-[10px] transition flex justify-between items-center ${isActive ? 'bg-indigo-600 text-white shadow-sm' : 'hover:bg-slate-200 text-slate-700'}`}><span>{order === 'infanzia' ? ` ${combo}` : ` Classe ${combo}`}</span>{isActive && <span className="w-1.5 h-1.5 bg-white rounded-full"></span>}</button>; })}</div></div>
-          <div className="md:col-span-9 space-y-4"><strong className="text-[9px] font-black text-slate-400 uppercase tracking-wider block">Linea Temporale:</strong>{savedUda.filter(u => u.discipline === discipline && (order === 'infanzia' ? (u.title.includes(`Sezione ${targetSection}`) || u.id.includes('suggested')) : (u.title.includes(`Target: ${targetClass}^${targetSection}`) || u.id.includes('suggested')))).length > 0 ? <div className="relative border-l-2 border-indigo-150 pl-5 ml-2.5 space-y-4">{savedUda.filter(u => u.discipline === discipline && (order === 'infanzia' ? (u.title.includes(`Sezione ${targetSection}`) || u.id.includes('suggested')) : (u.title.includes(`Target: ${targetClass}^${targetSection}`) || u.id.includes('suggested')))).map((u, index) => <div key={u.id} className="relative"><div className="absolute -left-[27px] top-1 w-3.5 h-3.5 bg-indigo-600 text-white rounded-full flex items-center justify-center text-[8px] font-black border-2 border-white shadow-sm">{index + 1}</div><div className="bg-slate-50 border hover:border-indigo-200 p-3 rounded-2xl space-y-2 text-xs transition"><div className="flex items-center justify-between font-bold"><h4 className="font-extrabold text-indigo-950 leading-tight">{u.title}</h4><span className="bg-indigo-100 text-indigo-800 text-[8px] px-2 py-0.5 rounded-full uppercase shrink-0">{u.period}</span></div><div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[10px] text-slate-500 font-semibold"><div><strong>Ore:</strong> {u.hours} ore</div><div><strong>Stato:</strong> {u.status}</div><div className="col-span-2"><strong>Compito:</strong> {u.realTask}</div></div><div className="flex justify-end space-x-3 pt-1 border-t border-slate-100"><button onClick={() => setSelectedUda(u)} className="text-primary-600 hover:text-primary-800 font-bold text-[10px] flex items-center space-x-1"><Eye className="w-3.5 h-3.5" /> <span>Esamina</span></button><button onClick={() => copyUdaTextLocal(u.id)} className="text-indigo-600 hover:text-indigo-800 font-bold text-[10px] flex items-center space-x-1"><Copy className="w-3.5 h-3.5" /> <span>Copia</span></button><button onClick={() => handleCloneUdaAdaptive(u)} className="text-emerald-600 hover:text-emerald-800 font-bold text-[10px] flex items-center space-x-1"><RefreshCw className="w-3.5 h-3.5" /> <span>Clona ed Adatta</span></button></div></div></div>)}</div> : <div className="p-5 border border-dashed rounded-2xl bg-slate-50/50 text-center space-y-2.5"><div className="space-y-1"><h4 className="font-extrabold text-slate-800">Nessun modulo caricato per la Classe {targetClass}</h4><p className="text-[10px] text-slate-500 leading-relaxed font-semibold max-w-sm mx-auto">Non hai ancora pianificato Unità di Apprendimento per questa classe.</p></div><button onClick={() => handleTabSwitch('progetta-annuale')} className="px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl text-[10px] shadow-sm transition">Apri Progettatore</button></div>}</div>
+          <div className="md:col-span-9 space-y-4"><strong className="text-[9px] font-black text-slate-400 uppercase tracking-wider block">Linea Temporale:</strong>{savedUda.filter(u => u.discipline === discipline && (order === 'infanzia' ? (u.title.includes(`Sezione ${targetSection}`) || u.id.includes('suggested')) : (u.title.includes(`Target: ${targetClass}^${targetSection}`) || u.id.includes('suggested')))).length > 0 ? <div className="relative border-l-2 border-indigo-150 pl-5 ml-2.5 space-y-4">{savedUda.filter(u => u.discipline === discipline && (order === 'infanzia' ? (u.title.includes(`Sezione ${targetSection}`) || u.id.includes('suggested')) : (u.title.includes(`Target: ${targetClass}^${targetSection}`) || u.id.includes('suggested')))).map((u, index) => <div key={u.id} className="relative"><div className="absolute -left-[27px] top-1 w-3.5 h-3.5 bg-indigo-600 text-white rounded-full flex items-center justify-center text-[8px] font-black border-2 border-white shadow-sm">{index + 1}</div><div className="bg-slate-50 border hover:border-indigo-200 p-3 rounded-2xl space-y-2 text-xs transition"><div className="flex items-center justify-between font-bold"><h4 className="font-extrabold text-indigo-950 leading-tight">{u.title}</h4><span className="bg-indigo-100 text-indigo-800 text-[8px] px-2 py-0.5 rounded-full uppercase shrink-0">{u.period}</span></div><div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[10px] text-slate-500 font-semibold"><div><strong>Ore:</strong> {u.hours} ore</div><div><strong>Stato:</strong> {u.status}</div><div className="col-span-2"><strong>Compito:</strong> {u.realTask}</div></div><div className="flex justify-end space-x-3 pt-1 border-t border-slate-100"><button onClick={() => setSelectedUda(u)} className="text-primary-600 hover:text-primary-800 font-bold text-[10px] flex items-center space-x-1"><Eye className="w-3.5 h-3.5" /> <span>Esamina</span></button><button onClick={() => copyUdaTextLocal(u.id)} className="text-indigo-600 hover:text-indigo-800 font-bold text-[10px] flex items-center space-x-1"><Copy className="w-3.5 h-3.5" /> <span>Copia</span></button><button onClick={() => handleCloneUdaAdaptive(u)} className="text-emerald-600 hover:text-emerald-800 font-bold text-[10px] flex items-center space-x-1"><RefreshCw className="w-3.5 h-3.5" /> <span>Clona ed Adatta</span></button></div></div></div>)}</div> : <div className="p-5 border border-dashed rounded-2xl bg-slate-50/50 text-center space-y-2.5"><div className="space-y-1"><h4 className="font-extrabold text-slate-800">Nessun modulo caricato per la Classe {targetClass}</h4><p className="text-[10px] text-slate-500 leading-relaxed font-semibold max-w-sm mx-auto">Non risultano ancora Unità di Apprendimento pianificate per la classe selezionata.</p></div><button onClick={() => handleTabSwitch('progetta-annuale')} className="px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl text-[10px] shadow-sm transition">Apri Progettatore</button></div>}</div>
         </div>
       </div>
 
