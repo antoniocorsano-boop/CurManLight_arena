@@ -1,0 +1,53 @@
+name: S2C One-shot Copy Remediation
+
+on:
+  push:
+    branches:
+      - stabilization/arena-s2c-institutional-planning-language
+
+permissions:
+  contents: write
+
+jobs:
+  remediate-copy:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: stabilization/arena-s2c-institutional-planning-language
+          fetch-depth: 0
+      - name: Apply exact S2C copy replacements
+        shell: python
+        run: |
+          from pathlib import Path
+
+          path = Path('src/features/progettazione/components/ProgettazioneTab.tsx')
+          text = path.read_text(encoding='utf-8')
+          replacements = {
+              'Area di progettazione personale': 'Area di progettazione curricolare',
+              "questo dispositivo d'aula": 'questo archivio di progettazione',
+              'Area di progettazione personale e locale.': 'Area di progettazione curricolare e riuso istituzionale.',
+              'bozza UDA personale': 'bozza UDA curricolare',
+              'nella tua programmazione annuale': 'nella programmazione curricolare annuale',
+              "Assistente Ergonomico d'Aula": 'Assistente Ergonomico di Progettazione',
+              "schermo d'aula": 'ambiente di progettazione',
+              'criteri personali': 'criteri curricolari',
+              'Quadro generale personale': 'Quadro generale di progettazione',
+              'per la tua classe': 'per la classe selezionata',
+              'Non hai ancora pianificato Unità di Apprendimento per questa classe': 'Non risultano ancora Unità di Apprendimento pianificate per la classe selezionata',
+          }
+          missing = [old for old in replacements if old not in text]
+          if missing:
+              raise SystemExit(f'Expected S2C source phrases missing: {missing}')
+          for old, new in replacements.items():
+              text = text.replace(old, new)
+          path.write_text(text, encoding='utf-8')
+      - name: Commit remediation
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/features/progettazione/components/ProgettazioneTab.tsx
+          git diff --cached --quiet && exit 0
+          git commit -m "fix(s2c): institutionalize Arena planning copy"
+          git push origin HEAD:stabilization/arena-s2c-institutional-planning-language
