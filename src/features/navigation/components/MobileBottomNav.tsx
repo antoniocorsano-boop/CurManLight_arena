@@ -1,4 +1,4 @@
-import { BookOpenCheck, ClipboardCheck, FileText, House, Layers } from 'lucide-react';
+import { BookOpenCheck, ClipboardCheck, FileText, Home, Layers } from 'lucide-react';
 
 interface MobileBottomNavProps {
   activeTab: string;
@@ -25,7 +25,7 @@ export function MobileBottomNav({ activeTab, pendingCount, handleTabSwitch }: Mo
       data-beta-mobile-navigation="canonical"
     >
       <button type="button" onClick={() => handleTabSwitch('dashboard')} className={itemClass(activeTab === 'dashboard')} aria-current={activeTab === 'dashboard' ? 'page' : undefined}>
-        <House className={iconClass} aria-hidden="true" />
+        <Home className={iconClass} aria-hidden="true" />
         <span>Home</span>
       </button>
 
