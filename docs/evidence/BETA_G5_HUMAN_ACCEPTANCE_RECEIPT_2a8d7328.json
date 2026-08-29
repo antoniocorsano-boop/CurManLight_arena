@@ -1,0 +1,99 @@
+{
+  "schema": "CML_ARENA_BETA_G5_HUMAN_ACCEPTANCE_V2",
+  "protocol": "BETA_G5_HUMAN_ACCEPTANCE_PROTOCOL_v2",
+  "status": "PREPARED_BLOCKED_DEPLOY",
+  "releaseSha": "2a8d73283d7d7b07af2347b7fd4606719710d3fe",
+  "betaUrl": "https://antoniocorsano-boop.github.io/CurManLight_arena/",
+  "releaseIdentityVerified": false,
+  "reviewedAt": null,
+  "reviewerAttestation": {
+    "humanReviewActuallyPerformed": false,
+    "desktopReviewed": false,
+    "mobileReviewed": false,
+    "noFabricatedAuthority": false,
+    "proposalDecisionBoundaryUnderstood": false,
+    "planningHandoffBoundaryUnderstood": false
+  },
+  "tasks": {
+    "HT-BETA-CURRICULUM-CONTEXT": {
+      "desktop": "PENDING",
+      "mobile": "PENDING",
+      "observations": {
+        "validContext": "PENDING",
+        "provenance": "PENDING",
+        "invalidOrIncompleteContext": "PENDING",
+        "recovery": "PENDING"
+      },
+      "notes": ""
+    },
+    "HT-BETA-REVISION-PREPARE": {
+      "desktop": "PENDING",
+      "mobile": "PENDING",
+      "observations": {
+        "proposalInspection": "PENDING",
+        "evidenceDisclosure": "PENDING",
+        "missingRequirementBlocked": "PENDING",
+        "unauthorizedReadOnly": "PENDING",
+        "staleOrReentryRecovery": "PENDING"
+      },
+      "notes": ""
+    },
+    "HT-REVISION-DECISION": {
+      "desktop": "PENDING",
+      "mobile": "PENDING",
+      "observations": {
+        "noAuthorityBlocked": "PENDING",
+        "evidenceAndConsequence": "PENDING",
+        "explicitOutcomeChoice": "PENDING",
+        "explicitHumanConfirmation": "PENDING",
+        "receiptRefreshReentry": "PENDING"
+      },
+      "notObservableReason": "",
+      "notes": ""
+    },
+    "HT-BETA-PLANNING-HANDOFF": {
+      "desktop": "PENDING",
+      "mobile": "PENDING",
+      "observations": {
+        "validPreview": "PENDING",
+        "provisionalWarning": "PENDING",
+        "validationFailure": "PENDING",
+        "consequenceExplanation": "PENDING",
+        "explicitHandoff": "PENDING",
+        "recovery": "PENDING"
+      },
+      "notes": ""
+    }
+  },
+  "crossStates": {
+    "empty": "PENDING",
+    "loading": "PENDING",
+    "success": "PENDING",
+    "blocked": "PENDING",
+    "error": "PENDING",
+    "recovery": "PENDING"
+  },
+  "supplementalKnowledgeExperience": {
+    "searchAndAsk": "PENDING",
+    "relationsFailClosed": "PENDING",
+    "keyTerms": "PENDING",
+    "historicalArchive": "PENDING",
+    "notes": ""
+  },
+  "findings": [],
+  "severity1Open": 0,
+  "severity2Open": 0,
+  "verdict": "PENDING_HUMAN",
+  "allowedVerdicts": [
+    "BETA_HIA_PASS",
+    "PARTIAL_HUMAN_EVIDENCE",
+    "BETA_HIA_BLOCK"
+  ],
+  "nonClaims": [
+    "This receipt does not satisfy BETA-G6 accessibility acceptance.",
+    "Automated browser evidence is not a substitute for this human review.",
+    "A revoked or missing institutional membership must not be fabricated to obtain an authorized decision path.",
+    "BETA_HIA_PASS must not be written before the human observations are complete.",
+    "The receipt remains blocked until the published beta-release.json is verified against releaseSha."
+  ]
+}
