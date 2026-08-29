@@ -33,7 +33,7 @@ export function AppViewsLayer(props: AppViewsLayerProps) {
       />
 
       {props.activeTab === 'curricolo' && (
-        <div className="space-y-3">
+        <div className="space-y-3" data-teacher-surface="curriculum">
           <aside
             data-human-task="curriculum-authority-context"
             role="note"
@@ -41,23 +41,39 @@ export function AppViewsLayer(props: AppViewsLayerProps) {
           >
             <strong className="block font-bold text-amber-950">Prima di usare questo curricolo</strong>
             <span>
-              Stai consultando una copia locale. Per sapere se è quella valida per la scuola, controlla Fonti, Applicabilità e Stato.
+              Stai consultando una copia locale. Per sapere se è valida per la scuola, controlla Fonti, Applicabilità e Stato.
             </span>
           </aside>
           <CurriculumTab {...props} />
         </div>
       )}
-      {props.activeTab === 'revisione' && <RevisioneTab {...props} />}
 
-      {props.activeTab === 'progetta-annuale' && (
-        <ProgettazioneTab
-          {...props}
-          handleTabSwitch={safeHandleTabSwitch}
-        />
+      {props.activeTab === 'revisione' && (
+        <div data-teacher-surface="revision">
+          <RevisioneTab {...props} />
+        </div>
       )}
 
-      {props.activeTab === 'processo' && <ProcessoTab {...props} />}
-      {props.activeTab === 'esportazioni' && <EsportazioniTab {...props} />}
+      {props.activeTab === 'progetta-annuale' && (
+        <div data-teacher-surface="planning">
+          <ProgettazioneTab
+            {...props}
+            handleTabSwitch={safeHandleTabSwitch}
+          />
+        </div>
+      )}
+
+      {props.activeTab === 'processo' && (
+        <div data-teacher-surface="process">
+          <ProcessoTab {...props} />
+        </div>
+      )}
+
+      {props.activeTab === 'esportazioni' && (
+        <div data-teacher-surface="documents">
+          <EsportazioniTab {...props} />
+        </div>
+      )}
 
       <InfoViews
         activeTab={props.activeTab}
@@ -65,7 +81,11 @@ export function AppViewsLayer(props: AppViewsLayerProps) {
         setActiveGeneralSubtab={props.setActiveGeneralSubtab}
       />
 
-      {props.activeTab === 'second-brain' && <SecondBrainTab {...props} />}
+      {props.activeTab === 'second-brain' && (
+        <div data-teacher-surface="knowledge">
+          <SecondBrainTab {...props} />
+        </div>
+      )}
     </>
   );
 }
