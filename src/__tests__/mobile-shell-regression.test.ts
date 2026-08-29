@@ -20,7 +20,7 @@ const cssSource = firstSource(import.meta.glob('../index.css', {
   query: '?raw', import: 'default', eager: true,
 }) as Record<string, string>);
 
-describe('MOBILE-SHELL-1 regression contract', () => {
+describe('MOBILE-SHELL regression contract', () => {
   it('uses the CurManLight brand mark as the single mobile navigation trigger', () => {
     expect(headerSource).toContain('data-mobile-navigation-trigger="brand"');
     expect(headerSource).toContain('data-brand-mark="curmanlight"');
@@ -30,29 +30,45 @@ describe('MOBILE-SHELL-1 regression contract', () => {
     expect(headerSource).not.toContain('<Menu ');
   });
 
-  it('keeps settings, assistant and session actions semantically distinct', () => {
+  it('keeps settings focused on tools and maintenance', () => {
     expect(headerSource).toContain('data-settings-entry="canonical"');
     expect(headerSource).toContain('aria-label="Impostazioni"');
     expect(headerSource).toContain('<Settings className="h-5 w-5"');
     expect(headerSource).toContain('data-settings-menu="canonical"');
+    expect(headerSource).toContain('Strumenti e impostazioni');
     expect(headerSource).toContain('data-assistant-entry="bounded"');
     expect(headerSource).toContain('Apri Assistente Arena');
-    expect(headerSource).toContain('Gestisci una copia della sessione');
-    expect(headerSource).toContain('data-session-identity="status"');
+    expect(headerSource).toContain('Copia della sessione');
+    expect(headerSource).toContain('Azzera i dati locali');
+  });
+
+  it('turns the avatar into a dedicated personal and institutional profile entry', () => {
+    expect(headerSource).toContain('data-profile-entry="canonical"');
+    expect(headerSource).toContain('data-profile-menu="canonical"');
+    expect(headerSource).toContain('Profilo e accesso');
+    expect(headerSource).toContain('data-profile-scope="personal"');
+    expect(headerSource).toContain('data-profile-scope="institutional"');
+    expect(headerSource).toContain('Accesso scolastico separato dall’autorità decisionale.');
+    expect(headerSource).toContain('Collega un account');
+    expect(headerSource).toContain('Sincronizza i file');
+    expect(headerSource).toContain('Disconnetti account');
+    expect(headerSource).not.toContain('data-session-identity="status"');
   });
 
   it('synchronizes the visual mobile-menu state when navigation closes', () => {
-    expect(headerSource).toContain("arena:mobile-navigation-closed");
+    expect(headerSource).toContain('arena:mobile-navigation-closed');
     expect(sidebarSource).toContain("window.dispatchEvent(new CustomEvent('arena:mobile-navigation-closed'))");
   });
 
-  it('uses modern semantic mobile navigation states and safe-area spacing', () => {
-    for (const icon of ['House', 'Layers', 'ClipboardCheck', 'BookOpenCheck', 'FileText']) {
+  it('uses a floating mobile dock with semantic navigation states and safe-area spacing', () => {
+    for (const icon of ['Home', 'Layers', 'ClipboardCheck', 'BookOpenCheck', 'FileText']) {
       expect(mobileSource).toContain(icon);
     }
+    expect(mobileSource).toContain('data-mobile-dock="floating"');
+    expect(mobileSource).toContain('rounded-[1.4rem]');
     expect(mobileSource).toContain("aria-current={activeTab === 'dashboard' ? 'page' : undefined}");
-    expect(mobileSource).toContain("env(safe-area-inset-bottom)");
-    expect(mobileSource).toContain("bg-indigo-50 font-extrabold text-indigo-700");
+    expect(mobileSource).toContain('env(safe-area-inset-bottom)');
+    expect(mobileSource).toContain('bg-indigo-600 text-white');
     expect(mobileSource).not.toContain('right-[22%]');
     expect(mobileSource).not.toContain('text-[9px]');
   });
