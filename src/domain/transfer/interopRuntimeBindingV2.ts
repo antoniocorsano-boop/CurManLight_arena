@@ -22,6 +22,18 @@ import type {
 const ARENA_NAMESPACE = 'curmanlight.arena';
 const TRANSITION_START_YEAR = 2026;
 
+/**
+ * Explicit evidence that the complete projected curriculum version has been
+ * institutionally approved. Proposal-level revision decisions are deliberately
+ * not accepted as substitutes for this evidence.
+ */
+export interface CompleteCurriculumApprovalEvidence {
+  readonly approvalDecisionRef: CmlCanonicalRef;
+  readonly curriculumRef: CmlCanonicalRef;
+  readonly curriculumVersionRef: CmlCanonicalRef;
+  readonly approvedAt: string;
+}
+
 export interface ArenaRuntimeCurriculumBindingInput {
   readonly institutionId: string;
   readonly schoolYearRef: string;
@@ -34,6 +46,8 @@ export interface ArenaRuntimeCurriculumBindingInput {
   readonly curriculumMap: CurriculumMap;
   /** The exact institutional revision archive currently persisted by Arena. */
   readonly revisionArchive: RevisionArchive;
+  /** Explicit complete-curriculum approval only; never inferred from proposal decisions. */
+  readonly completeCurriculumApproval?: CompleteCurriculumApprovalEvidence;
   readonly sourceVersion?: string;
   readonly emittedAt?: string;
 }
@@ -54,6 +68,38 @@ function ref(entityType: string, entityId: string, versionId?: string): CmlCanon
     entityId,
     ...(versionId ? { versionId } : {}),
   };
+}
+
+function sameCanonicalRef(a: CmlCanonicalRef, b: CmlCanonicalRef): boolean {
+  return a.namespace === b.namespace
+    && a.entityType === b.entityType
+    && a.entityId === b.entityId
+    && (a.versionId ?? null) === (b.versionId ?? null);
+}
+
+function validateCompleteCurriculumApproval(
+  evidence: CompleteCurriculumApprovalEvidence | undefined,
+  curriculumRef: CmlCanonicalRef,
+  curriculumVersionRef: CmlCanonicalRef,
+): CompleteCurriculumApprovalEvidence | undefined {
+  if (!evidence) return undefined;
+
+  if (!nonEmpty(evidence.approvalDecisionRef.namespace)
+    || !nonEmpty(evidence.approvalDecisionRef.entityType)
+    || !nonEmpty(evidence.approvalDecisionRef.entityId)) {
+    throw new Error('Complete curriculum approval evidence requires a valid approvalDecisionRef.');
+  }
+  if (!nonEmpty(evidence.approvedAt) || Number.isNaN(Date.parse(evidence.approvedAt))) {
+    throw new Error('Complete curriculum approval evidence requires approvedAt as an ISO-compatible date.');
+  }
+  if (!sameCanonicalRef(evidence.curriculumRef, curriculumRef)) {
+    throw new Error('Complete curriculum approval evidence does not match the projected curriculumRef.');
+  }
+  if (!sameCanonicalRef(evidence.curriculumVersionRef, curriculumVersionRef)) {
+    throw new Error('Complete curriculum approval evidence does not match the projected curriculumVersionRef.');
+  }
+
+  return evidence;
 }
 
 function stableId(prefix: string, material: unknown): string {
@@ -367,12 +413,18 @@ export function projectArenaRuntimeCurriculumV2(
     `${input.institutionId}:${input.disciplineRef}:${input.schoolOrder}:grade-${input.classLevel}`,
     fnv1a(canonicalSerialize(projectedVersionMaterial)),
   );
+  const completeApproval = validateCompleteCurriculumApproval(
+    input.completeCurriculumApproval,
+    curriculumRef,
+    curriculumVersionRef,
+  );
 
   const contextIdMaterial = {
     curriculumVersionRef,
     schoolYearRef: input.schoolYearRef,
     ...(nonEmpty(input.sectionRef) ? { sectionRef: input.sectionRef } : {}),
     ...(nonEmpty(input.cohortRef) ? { cohortRef: input.cohortRef } : {}),
+    ...(completeApproval ? { approvalDecisionRef: completeApproval.approvalDecisionRef } : {}),
   };
   const contextId = stableId('ctx', contextIdMaterial);
   const sourceRefs = deduplicateRefs([
@@ -380,6 +432,7 @@ export function projectArenaRuntimeCurriculumV2(
     legacyLevelRef,
     approvalProcessRef,
     ...transitionRemodulation.sourceRefs,
+    ...(completeApproval ? [completeApproval.approvalDecisionRef] : []),
   ]);
 
   const curricularContext: CurriculumContextForClassV1 = {
@@ -393,8 +446,9 @@ export function projectArenaRuntimeCurriculumV2(
     ...(input.cohortRef ? { cohortRef: input.cohortRef } : {}),
     curriculumRef,
     curriculumVersionRef,
-    curriculumState: 'PROVISIONAL_COMPLETE',
+    curriculumState: completeApproval ? 'APPROVED' : 'PROVISIONAL_COMPLETE',
     approvalProcessRef,
+    ...(completeApproval ? { approvalDecisionRef: completeApproval.approvalDecisionRef } : {}),
     applicabilityStatus: transitionalLegacyCohort ? 'TRANSITIONAL' : 'APPLICABLE',
     transitionRuleRef: ref('NationalTransitionRule', 'DM-221-2025-art-5'),
     completeForPlanning: true,
@@ -410,13 +464,15 @@ export function projectArenaRuntimeCurriculumV2(
       description: 'Il Piano annuale deve dimostrare la copertura di tutti i requisiti curricolari obbligatori forniti da Arena.',
       sourceRef: curriculumVersionRef,
     },
-    {
+  ];
+  if (!completeApproval) {
+    constraints.push({
       id: 'provisional-baseline-revalidation',
       kind: 'REQUIRED',
       description: 'La baseline è provvisoria e deve essere rivalidata quando Arena registra l’approvazione istituzionale del curricolo.',
       sourceRef: approvalProcessRef,
-    },
-  ];
+    });
+  }
   if (transitionalLegacyCohort) {
     constraints.push({
       id: 'transition-remodulation-hypothesis',
@@ -438,8 +494,10 @@ export function projectArenaRuntimeCurriculumV2(
     provenance: {
       sourceRefs,
       generatedBy: 'SYSTEM_DERIVED',
-      humanConfirmed: false,
-      note: 'Framework derivato dal curricolo runtime corrente di Arena. Baseline provvisoria fino all’approvazione istituzionale.',
+      humanConfirmed: Boolean(completeApproval),
+      note: completeApproval
+        ? 'Framework derivato dal curricolo runtime corrente di Arena e collegato a un’approvazione istituzionale esplicita dell’intera versione curricolare.'
+        : 'Framework derivato dal curricolo runtime corrente di Arena. Baseline provvisoria fino all’approvazione istituzionale.',
     },
     payload: {
       curriculumVersionRef,

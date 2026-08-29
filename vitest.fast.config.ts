@@ -27,6 +27,7 @@ export default defineConfig({
       'src/__tests__/identity.test.ts',
       'src/__tests__/beta-identity-authority.test.ts',
       'src/__tests__/beta-shell-regression.test.ts',
+      'src/__tests__/arena-product-boundary-runtime.test.ts',
       'src/__tests__/curriculum-foundation-authority.test.ts',
       'src/__tests__/curriculum-foundation-completeness.test.ts',
       'src/__tests__/dm221-canonical-structure.test.ts',
@@ -37,7 +38,8 @@ export default defineConfig({
       'src/__tests__/dm221-technology-source-index.test.ts',
       'src/__tests__/dm221-technology-element-inventory.test.ts',
       'src/__tests__/dm221-technology-human-verification.test.ts',
-      'src/__tests__/dm221-technology-source-review-ui.test.tsx'
+      'src/__tests__/dm221-technology-source-review-ui.test.tsx',
+      'src/__tests__/interop-runtime-context-scope.test.ts'
     ],
     exclude: ['**/node_modules/**', '**/.git/**'],
     pool: 'threads',
