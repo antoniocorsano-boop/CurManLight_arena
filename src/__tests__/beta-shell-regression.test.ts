@@ -20,6 +20,14 @@ const homeSource = firstSource(import.meta.glob('../features/session/components/
   query: '?raw', import: 'default', eager: true,
 }) as Record<string, string>);
 
+const viewsSource = firstSource(import.meta.glob('../features/session/components/AppViewsLayer.tsx', {
+  query: '?raw', import: 'default', eager: true,
+}) as Record<string, string>);
+
+const curriculumWorkspaceSource = firstSource(import.meta.glob('../features/curriculum/CurriculumWorkspace.tsx', {
+  query: '?raw', import: 'default', eager: true,
+}) as Record<string, string>);
+
 const revisionSource = firstSource(import.meta.glob('../features/curriculum/components/RevisioneTab.tsx', {
   query: '?raw', import: 'default', eager: true,
 }) as Record<string, string>);
@@ -37,6 +45,10 @@ const navigationIndexSource = firstSource(import.meta.glob('../features/navigati
 }) as Record<string, string>);
 
 const appSource = firstSource(import.meta.glob('../App.tsx', {
+  query: '?raw', import: 'default', eager: true,
+}) as Record<string, string>);
+
+const cssSource = firstSource(import.meta.glob('../index.css', {
   query: '?raw', import: 'default', eager: true,
 }) as Record<string, string>);
 
@@ -69,7 +81,27 @@ describe('Arena Beta canonical shell regression guard', () => {
     expect(homeSource).toContain('4 passaggi');
     expect(homeSource).toContain('data-hcm-secondary-content');
     expect(homeSource).toContain('Perché questi passaggi sono separati');
+    expect(homeSource).toContain('Un passaggio alla volta.');
     expect(homeSource).not.toContain('TaskCard');
+  });
+
+  it('uses one teacher-facing surface contract across primary workspaces', () => {
+    for (const surface of ['curriculum', 'revision', 'planning', 'process', 'documents', 'knowledge']) {
+      expect(viewsSource).toContain(`data-teacher-surface="${surface}"`);
+    }
+    expect(homeSource).toContain('data-teacher-surface="home"');
+    expect(curriculumWorkspaceSource).toContain('data-teacher-surface="curriculum-workspace"');
+    expect(cssSource).toContain('--ui-mobile-gutter: 16px');
+    expect(cssSource).toContain('[data-teacher-surface]');
+    expect(cssSource).toContain('--ui-mobile-section-gap: 12px');
+  });
+
+  it('keeps teacher-facing curriculum entry language direct and action-oriented', () => {
+    expect(viewsSource).toContain('Prima di usare questo curricolo');
+    expect(viewsSource).toContain('controlla Fonti, Applicabilità e Stato');
+    expect(curriculumWorkspaceSource).toContain('Vuoi controllare la fonte nazionale?');
+    expect(curriculumWorkspaceSource).toContain('Controlla la fonte');
+    expect(curriculumWorkspaceSource).not.toContain('Fonte nazionale · Tecnologia');
   });
 
   it('makes revision a focused mobile flow with nearby context and actions', () => {
