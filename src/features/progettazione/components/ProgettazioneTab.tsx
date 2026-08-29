@@ -1,9 +1,7 @@
-import { Save, Zap, Eye, Copy, Users, Search, RefreshCw, Filter } from 'lucide-react';
+import { Save, Zap, Eye, Copy, Search, RefreshCw, Filter } from 'lucide-react';
 import { useState } from 'react';
 import { useCurriculumStore } from '../../../store/useCurriculumStore';
 import { UiConfirmDialog } from '../../../ui/components/UiConfirmDialog';
-import { ClasseTab } from '../../classroom';
-import { SocialTab } from '../../social';
 import { CertificazioneTab } from './CertificazioneTab';
 import { KnowledgeCompanionPanel, VolumeReaderOverlay } from './KnowledgeCompanionPanel';
 import { useKnowledgeCompanion } from '../hooks/useKnowledgeCompanion';
@@ -208,7 +206,6 @@ export function ProgettazioneTab(props: ProgettazioneTabProps) {
     handleLoadSuggestedUda,
     handleCloneUdaAdaptive,
     copyUdaTextLocal,
-    handleShareUdaToSocial,
     handleApplyLibFilters,
     handleSortUdaList,
     handleClearLibFilters,
@@ -238,9 +235,7 @@ export function ProgettazioneTab(props: ProgettazioneTabProps) {
                 ? "Archivio delle Unità Progettate"
                 : activeProgTab === 'certificazione'
                   ? "Matrice locale delle competenze (non validata)"
-                  : activeProgTab === 'social'
-                    ? "Bacheca dei Riusi d'UDA"
-                    : "Registro & Spazio Classe"}
+                  : "Area di progettazione"}
           </h2>
           <p className="text-xs text-slate-600 font-semibold leading-relaxed max-w-2xl">
             {(() => {
@@ -253,12 +248,6 @@ export function ProgettazioneTab(props: ProgettazioneTabProps) {
               if (activeProgTab === 'certificazione') {
                 return "Matrice locale non validata tra competenze europee ed evidenze selezionate.";
               }
-              if (activeProgTab === 'social') {
-                return "Vista locale degli esiti, della co-progettazione e del riuso UDA.";
-              }
-              if (activeProgTab === 'classe') {
-                return "Ambiente di lavoro per il tracciamento didattico qualitativo degli studenti e la configurazione dei gruppi di studio.";
-              }
               return "Area di progettazione personale e locale.";
             })()}
           </p>
@@ -266,9 +255,9 @@ export function ProgettazioneTab(props: ProgettazioneTabProps) {
 
         {typeof navigator !== 'undefined' && navigator.webdriver && (
           <div className="bg-slate-100 p-1 rounded-xl flex flex-wrap gap-1 border border-slate-200 shrink-0 text-[10px] sm:text-xs font-bold shadow-sm self-end sm:self-auto">
-            {(['annuale', 'uda', 'certificazione', 'social', 'classe'] as const).map(tab => (
+            {(['annuale', 'uda', 'certificazione'] as const).map(tab => (
               <button key={tab} onClick={() => setActiveProgTab(tab)} className={`px-2.5 py-1 rounded-lg transition ${activeProgTab === tab ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500'}`}>
-                {tab === 'annuale' ? 'Progettatore' : tab === 'uda' ? 'Archivio UDA' : tab === 'certificazione' ? 'Matrice Competenze (DM 14/24)' : tab === 'social' ? 'Bacheca locale' : 'Registro & Ambiente Classe'}
+                {tab === 'annuale' ? 'Progettatore' : tab === 'uda' ? 'Archivio UDA' : 'Matrice Competenze (DM 14/24)'}
               </button>
             ))}
           </div>
@@ -276,7 +265,7 @@ export function ProgettazioneTab(props: ProgettazioneTabProps) {
       </div>
 
       {/* Home View (default when activeProgTab is set externally) */}
-      {!(activeProgTab === 'annuale' || activeProgTab === 'uda' || activeProgTab === 'certificazione' || activeProgTab === 'social' || activeProgTab === 'classe-home' || activeProgTab === 'classe') && (
+      {!(activeProgTab === 'annuale' || activeProgTab === 'uda' || activeProgTab === 'certificazione') && (
         <div className="space-y-6 fade-in text-left">
           <div className="bg-slate-50 border rounded-2xl p-5 space-y-2 text-left">
             <span className="text-[9px] font-black text-indigo-600 uppercase tracking-wider block">Ambito di Progettazione Didattica</span>
@@ -421,7 +410,6 @@ export function ProgettazioneTab(props: ProgettazioneTabProps) {
           handleTabSwitch={handleTabSwitch}
           handleCloneUdaAdaptive={handleCloneUdaAdaptive}
           copyUdaTextLocal={copyUdaTextLocal}
-          handleShareUdaToSocial={handleShareUdaToSocial}
           handleApplyLibFilters={handleApplyLibFilters}
           handleSortUdaList={handleSortUdaList}
           handleClearLibFilters={handleClearLibFilters}
@@ -440,36 +428,6 @@ export function ProgettazioneTab(props: ProgettazioneTabProps) {
       )}
       {activeProgTab === 'certificazione' && (
         <CertificazioneTab localCurriculum={localCurriculum} discipline={discipline} selectedTraguardi={selectedTraguardi} selectedEvidenze={props.selectedEvidenze} activeCompetencyExplorer={props.activeCompetencyExplorer} setActiveCompetencyExplorer={props.setActiveCompetencyExplorer} showToast={props.showToast} handleLoadSuggestedUda={handleLoadSuggestedUda} getDisciplineIcon={props.getDisciplineIcon} getDisciplineLabel={props.getDisciplineLabel} />
-      )}
-
-      {activeProgTab === 'classe-home' && (
-        <div className="space-y-6 fade-in text-left">
-          <div className="bg-slate-50 border rounded-2xl p-5 space-y-2 text-left">
-            <span className="text-[9px] font-black text-indigo-600 uppercase tracking-wider block">Ambito Spazio d'Aula e Classe</span>
-            <h3 className="text-sm font-black text-slate-800 uppercase tracking-wide">Spazio Classe: Home d'Area</h3>
-            <p className="text-xs text-slate-500 font-medium leading-relaxed">Seleziona lo strumento di gestione didattica d'aula:</p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <button onClick={() => setActiveProgTab('classe')} className="bg-white border border-slate-200 hover:border-indigo-400 p-5 rounded-2xl shadow-sm hover:shadow-md transition text-left space-y-2">
-              <span className="text-[10px] font-black text-indigo-600 uppercase tracking-wider block">Azione 1</span>
-              <h4 className="text-xs font-bold text-slate-800 uppercase">Ambiente & Esiti Classe</h4>
-              <p className="text-[11px] text-slate-500 font-semibold leading-normal">Mappa i banchi, gestisci vincoli cooperativi e inserisci osservazioni qualitative locali. La vista non verifica conformità normativa.</p>
-            </button>
-            <button onClick={() => setActiveProgTab('social')} className="bg-white border border-slate-200 hover:border-indigo-400 p-5 rounded-2xl shadow-sm hover:shadow-md transition text-left space-y-2">
-              <span className="text-[10px] font-black text-indigo-600 uppercase tracking-wider block">Azione 2</span>
-              <h4 className="text-xs font-bold text-slate-800 uppercase">Osservatorio dei Riusi d'UDA</h4>
-              <p className="text-[11px] text-slate-500 font-semibold leading-normal">Esplora esempi UDA presenti nell'archivio locale e duplicali come bozze personali non verificate.</p>
-            </button>
-          </div>
-        </div>
-      )}
-
-      {activeProgTab === 'classe' && (
-        <ClasseTab classeSubTab={props.classeSubTab} setClasseSubTab={props.setClasseSubTab} selectedClassCombination={props.selectedClassCombination} setSelectedClassCombination={props.setSelectedClassCombination} assignedCombinations={assignedCombinations} classroomStudents={props.classroomStudents} setClassroomStudents={props.setClassroomStudents} showAiSimulatedResponse={props.showAiSimulatedResponse} setShowAiSimulatedResponse={props.setShowAiSimulatedResponse} isClassroomLoading={props.isClassroomLoading} setIsClassroomLoading={props.setIsClassroomLoading} classroomStudentFeedback={props.classroomStudentFeedback} setClassroomStudentFeedback={props.setClassroomStudentFeedback} selectedStudentForFeedback={props.selectedStudentForFeedback} setSelectedStudentForFeedback={props.setSelectedStudentForFeedback} showClassroomReport={props.showClassroomReport} setShowClassroomReport={props.setShowClassroomReport} activeClassTheme={props.activeClassTheme} setActiveClassTheme={props.setActiveClassTheme} classroomLayout={props.classroomLayout} setClassroomLayout={props.setClassroomLayout} isAulaConfigOpen={props.isAulaConfigOpen} setIsAulaConfigOpen={props.setIsAulaConfigOpen} shuffledStudentMap={props.shuffledStudentMap} setShuffledStudentMap={props.setShuffledStudentMap} handleShufflePseudonyms={props.handleShufflePseudonyms} exclusionsList={props.exclusionsList} setExclusionsList={props.setExclusionsList} exclusionInputS1={props.exclusionInputS1} setExclusionInputS1={props.setExclusionInputS1} exclusionInputS2={props.exclusionInputS2} setExclusionInputS2={props.setExclusionInputS2} activeCooperativeMethod={props.activeCooperativeMethod} setActiveCooperativeMethod={props.setActiveCooperativeMethod} cooperativeGroups={props.cooperativeGroups} setCooperativeGroups={props.setCooperativeGroups} handleGenerateCooperativeGroups={props.handleGenerateCooperativeGroups} getThemedStudentName={props.getThemedStudentName} classroomTopicInput={props.classroomTopicInput} setClassroomTopicInput={props.setClassroomTopicInput} isAnalyzingTopic={props.isAnalyzingTopic} classroomTopicAnalysisResult={props.classroomTopicAnalysisResult} handleAnalyzeClassroomTopic={props.handleAnalyzeClassroomTopic} handleApproveAndInjectUda={props.handleApproveAndInjectUda} weeklyHoursItaliano={props.weeklyHoursItaliano} setWeeklyHoursItaliano={props.setWeeklyHoursItaliano} weeklyHoursStoria={props.weeklyHoursStoria} setWeeklyHoursStoria={props.setWeeklyHoursStoria} weeklyHoursGeografia={props.weeklyHoursGeografia} setWeeklyHoursGeografia={props.setWeeklyHoursGeografia} weeklyHoursMatematica={props.weeklyHoursMatematica} setWeeklyHoursMatematica={props.setWeeklyHoursMatematica} weeklyHoursScienze={props.weeklyHoursScienze} setWeeklyHoursScienze={props.setWeeklyHoursScienze} bufferCoefficient={props.bufferCoefficient} setBufferCoefficient={props.setBufferCoefficient} savedUda={savedUda} discipline={discipline} showToast={props.showToast} confirmAnticipatedField={confirmAnticipatedField} handleTriggerGemSuggestion={handleTriggerGemSuggestion} activeTaughtUdaId={props.activeTaughtUdaId} order={order} />
-      )}
-
-      {activeProgTab === 'social' && (
-        <SocialTab selectedClassCombination={props.selectedClassCombination} setSelectedClassCombination={props.setSelectedClassCombination} classroomStudents={props.classroomStudents} assignedCombinations={assignedCombinations} showToast={props.showToast} socialUdas={props.socialUdas} newAnnotationInputs={props.newAnnotationInputs} setNewAnnotationInputs={props.setNewAnnotationInputs} handleLikeUda={props.handleLikeUda} handleReuseUda={props.handleReuseUda} updateSocialUdas={props.updateSocialUdas} setSelectedUdaForOutcomes={props.setSelectedUdaForOutcomes} setShowOutcomesModal={props.setShowOutcomesModal} handleAddAnnotation={props.handleAddAnnotation} />
       )}
     </div>
   );
@@ -861,7 +819,6 @@ interface ArchivioUdaViewProps {
   handleTabSwitch: AppViewsLayerProps['handleTabSwitch'];
   handleCloneUdaAdaptive: (uda: UdaModel) => void;
   copyUdaTextLocal: (id: string) => void;
-  handleShareUdaToSocial: (id: string) => void;
   handleApplyLibFilters: (u: UdaModel) => boolean;
   handleSortUdaList: (a: UdaModel, b: UdaModel) => number;
   handleClearLibFilters: () => void;
@@ -890,7 +847,6 @@ function ArchivioUdaView({
   handleTabSwitch,
   handleCloneUdaAdaptive,
   copyUdaTextLocal,
-  handleShareUdaToSocial,
   handleApplyLibFilters,
   handleSortUdaList,
   handleClearLibFilters,
@@ -1058,7 +1014,6 @@ function ArchivioUdaView({
               <span className="bg-indigo-50 text-indigo-800 px-2 py-0.5 rounded-full">{u.status.toUpperCase()}</span>
               <div className="flex space-x-3">
                 <button onClick={() => setSelectedUda(u)} className="text-primary-600 hover:text-primary-800 flex items-center space-x-1"><Eye className="w-3.5 h-3.5" /> <span>Dettaglio</span></button>
-                <button onClick={() => handleShareUdaToSocial(u.id)} className="text-indigo-600 hover:text-indigo-800 flex items-center space-x-1"><Users className="w-3.5 h-3.5" /> <span>Condividi</span></button>
                 <button onClick={() => setUdaToDelete(u.id)} className="text-rose-600 hover:text-rose-800 font-bold">Rimuovi</button>
               </div>
             </div>
