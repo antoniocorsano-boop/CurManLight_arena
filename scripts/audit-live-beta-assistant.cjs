@@ -138,8 +138,9 @@ fs.mkdirSync(OUT_DIR, { recursive: true });
       await page.getByText('Apri conoscenza', { exact: true }).click({ force: true });
       await page.waitForTimeout(700);
       await screenshot('03-knowledge-source.png');
-      const sourceText = await page.locator('body').innerText();
-      check('Assistente → Conoscenza raggiunge la vista esistente', /Conoscenza e fonti|Cerca e chiedi|Termini chiave|Archivio storico/i.test(sourceText));
+      const teacherFirstShellVisible = await page.locator('[data-kx-shell="teacher-first-v2"]').isVisible({ timeout: 3000 }).catch(() => false);
+      const knowledgeNavVisible = await page.getByRole('navigation', { name: 'Cosa vuoi fare nella conoscenza', exact: true }).isVisible({ timeout: 3000 }).catch(() => false);
+      check('Assistente → Conoscenza raggiunge la shell teacher-first', teacherFirstShellVisible && knowledgeNavVisible);
       check('Nessun overflow orizzontale in Conoscenza', await hasNoHorizontalOverflow());
     } else {
       await pushAssistantView('source');
@@ -159,7 +160,7 @@ fs.mkdirSync(OUT_DIR, { recursive: true });
     await screenshot('04-knowledge-relations.png');
     const relationsText = await page.locator('body').innerText();
     const relationsVisible = /Relazioni in preparazione/i.test(relationsText);
-    const failClosedVisible = /La vecchia mappa tecnica non viene mostrata/i.test(relationsText);
+    const failClosedVisible = /quando potrà mostrare collegamenti verificabili/i.test(relationsText);
     const technicalLeakage = /Graphify|Mappa Connessioni|WikiLLM|SecondBrainTab|\.tsx\b|\.ts\b/i.test(relationsText);
 
     check('Assistente → Relazioni raggiunge la vista KX', relationsVisible);
