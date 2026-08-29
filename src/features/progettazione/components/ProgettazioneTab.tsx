@@ -72,7 +72,6 @@ export type ProgettazioneTabProps = Pick<AppViewsLayerProps,
   | 'handleLoadSuggestedUda'
   | 'handleCloneUdaAdaptive'
   | 'copyUdaTextLocal'
-  | 'handleShareUdaToSocial'
   | 'handleApplyLibFilters'
   | 'handleSortUdaList'
   | 'handleClearLibFilters'
@@ -87,77 +86,12 @@ export type ProgettazioneTabProps = Pick<AppViewsLayerProps,
   | 'libSorting'
   | 'setLibSorting'
   | 'setSelectedUda'
-  | 'classeSubTab'
-  | 'setClasseSubTab'
   | 'selectedEvidenze'
   | 'activeCompetencyExplorer'
   | 'setActiveCompetencyExplorer'
   | 'showToast'
   | 'getDisciplineIcon'
   | 'getDisciplineLabel'
-  | 'selectedClassCombination'
-  | 'setSelectedClassCombination'
-  | 'classroomStudents'
-  | 'setClassroomStudents'
-  | 'showAiSimulatedResponse'
-  | 'setShowAiSimulatedResponse'
-  | 'isClassroomLoading'
-  | 'setIsClassroomLoading'
-  | 'classroomStudentFeedback'
-  | 'setClassroomStudentFeedback'
-  | 'selectedStudentForFeedback'
-  | 'setSelectedStudentForFeedback'
-  | 'showClassroomReport'
-  | 'setShowClassroomReport'
-  | 'activeClassTheme'
-  | 'setActiveClassTheme'
-  | 'classroomLayout'
-  | 'setClassroomLayout'
-  | 'isAulaConfigOpen'
-  | 'setIsAulaConfigOpen'
-  | 'shuffledStudentMap'
-  | 'setShuffledStudentMap'
-  | 'handleShufflePseudonyms'
-  | 'exclusionsList'
-  | 'setExclusionsList'
-  | 'exclusionInputS1'
-  | 'setExclusionInputS1'
-  | 'exclusionInputS2'
-  | 'setExclusionInputS2'
-  | 'activeCooperativeMethod'
-  | 'setActiveCooperativeMethod'
-  | 'cooperativeGroups'
-  | 'setCooperativeGroups'
-  | 'handleGenerateCooperativeGroups'
-  | 'getThemedStudentName'
-  | 'classroomTopicInput'
-  | 'setClassroomTopicInput'
-  | 'isAnalyzingTopic'
-  | 'classroomTopicAnalysisResult'
-  | 'handleAnalyzeClassroomTopic'
-  | 'handleApproveAndInjectUda'
-  | 'weeklyHoursItaliano'
-  | 'setWeeklyHoursItaliano'
-  | 'weeklyHoursStoria'
-  | 'setWeeklyHoursStoria'
-  | 'weeklyHoursGeografia'
-  | 'setWeeklyHoursGeografia'
-  | 'weeklyHoursMatematica'
-  | 'setWeeklyHoursMatematica'
-  | 'weeklyHoursScienze'
-  | 'setWeeklyHoursScienze'
-  | 'bufferCoefficient'
-  | 'setBufferCoefficient'
-  | 'activeTaughtUdaId'
-  | 'socialUdas'
-  | 'newAnnotationInputs'
-  | 'setNewAnnotationInputs'
-  | 'handleLikeUda'
-  | 'handleReuseUda'
-  | 'updateSocialUdas'
-  | 'setSelectedUdaForOutcomes'
-  | 'setShowOutcomesModal'
-  | 'handleAddAnnotation'
 >;
 
 export function ProgettazioneTab(props: ProgettazioneTabProps) {
@@ -224,7 +158,6 @@ export function ProgettazioneTab(props: ProgettazioneTabProps) {
 
   return (
     <div className="space-y-6 fade-in text-left">
-      {/* Dynamic Contextual Header Panel */}
       <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4 transition duration-200">
         <div className="space-y-1">
           <span className="text-[9px] font-black text-indigo-600 uppercase tracking-wider block">Area di progettazione personale</span>
@@ -264,7 +197,6 @@ export function ProgettazioneTab(props: ProgettazioneTabProps) {
         )}
       </div>
 
-      {/* Home View (default when activeProgTab is set externally) */}
       {!(activeProgTab === 'annuale' || activeProgTab === 'uda' || activeProgTab === 'certificazione') && (
         <div className="space-y-6 fade-in text-left">
           <div className="bg-slate-50 border rounded-2xl p-5 space-y-2 text-left">
@@ -291,7 +223,6 @@ export function ProgettazioneTab(props: ProgettazioneTabProps) {
             </button>
           </div>
 
-          {/* Programmazione Annuale Timeline */}
           <div className="bg-white border rounded-3xl p-5 shadow-sm space-y-4">
             <div className="border-b pb-2.5 flex justify-between items-center flex-wrap gap-2 text-left">
               <div>
@@ -353,7 +284,6 @@ export function ProgettazioneTab(props: ProgettazioneTabProps) {
         </div>
       )}
 
-      {/* Annuale (Progettatore) View */}
       {activeProgTab === 'annuale' && (
         <ProgettazioneAnnualeView
           localCurriculum={localCurriculum}
@@ -396,7 +326,6 @@ export function ProgettazioneTab(props: ProgettazioneTabProps) {
         />
       )}
 
-      {/* UDA Library View */}
       {activeProgTab === 'uda' && (
         <ArchivioUdaView
           discipline={discipline}
@@ -433,8 +362,6 @@ export function ProgettazioneTab(props: ProgettazioneTabProps) {
   );
 }
 
-
-/* ─── Annuale (Progettatore) View ─── */
 interface ProgettazioneAnnualeViewProps {
   localCurriculum: CurriculumMap;
   targetClass: string;
@@ -511,14 +438,11 @@ function ProgettazioneAnnualeView({
   const { discipline, order, schoolYear, selectedTraguardi, selectedObiettivi, selectedEvidenze, savedUda, toggleTraguardoSelection, toggleObiettivoSelection, toggleEvidenceSelection } = useCurriculumStore();
 
   const shownFramework = resolveShownFrameworkForCurriculum({ schoolYear, order, targetClass });
-
   const showsLegacyCurriculum = shownFramework === 'IN2012';
-
   const kc = useKnowledgeCompanion(wizardStep, discipline, order);
 
   return (
     <div className="space-y-6">
-      {/* TEP Banner */}
       {tepBannerVisible && (
         <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 fade-in">
           <div className="space-y-1 text-left">
@@ -533,20 +457,10 @@ function ProgettazioneAnnualeView({
         </div>
       )}
 
-      {/* Layout selector */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-white p-3.5 border border-slate-200 rounded-2xl shadow-sm gap-3">
-        <div className="space-y-0.5">
-          <div className="text-xs font-black text-slate-800 uppercase tracking-wider flex items-center space-x-1">
-              <span>Layout di compilazione locale</span>
-          </div>
-        </div>
+        <div className="space-y-0.5"><div className="text-xs font-black text-slate-800 uppercase tracking-wider flex items-center space-x-1"><span>Layout di compilazione locale</span></div></div>
         <div className="flex items-center gap-2 flex-wrap self-stretch sm:self-auto">
-          <button
-            onClick={toggleBranchFocusHighlight}
-            className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider border transition ${branchFocusHighlight ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm' : 'bg-white text-slate-500 border-slate-200 hover:bg-slate-50'}`}
-          >
-            Focus Disciplina {branchFocusHighlight ? 'Attivo' : 'Off'}
-          </button>
+          <button onClick={toggleBranchFocusHighlight} className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider border transition ${branchFocusHighlight ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm' : 'bg-white text-slate-500 border-slate-200 hover:bg-slate-50'}`}>Focus Disciplina {branchFocusHighlight ? 'Attivo' : 'Off'}</button>
           <div className="bg-slate-100 p-1 rounded-xl flex space-x-1 text-xs font-bold shadow-sm">
             <button onClick={() => setProgettazioneMode('grid')} className={`px-3 py-1.5 rounded-lg transition ${progettazioneMode === 'grid' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500'}`}>Griglia 3 Colonne</button>
             <button onClick={() => setProgettazioneMode('wizard')} className={`px-3 py-1.5 rounded-lg transition ${progettazioneMode === 'wizard' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500'}`}>Procedura Guidata Wizard</button>
@@ -555,249 +469,43 @@ function ProgettazioneAnnualeView({
       </div>
 
       {progettazioneMode === 'grid' ? (
-        /* Grid Layout */
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-          {/* Col 1: Traguardi & Obiettivi */}
           <div className="lg:col-span-4 bg-white border border-slate-200 rounded-2xl shadow-sm p-4 space-y-4">
-            <div>
-              <span className="text-[9px] font-black text-indigo-600 uppercase tracking-wider block">Passo 1: criteri personali</span>
-              <h3 className="text-xs font-bold text-slate-800">Traguardi & Obiettivi</h3>
+            <div><span className="text-[9px] font-black text-indigo-600 uppercase tracking-wider block">Passo 1: criteri personali</span><h3 className="text-xs font-bold text-slate-800">Traguardi & Obiettivi</h3></div>
+            <div className={`p-2.5 rounded-xl border text-[10px] leading-tight font-bold ${showsLegacyCurriculum ? 'bg-amber-50 border-amber-200 text-amber-900' : 'bg-emerald-50 border-emerald-200 text-emerald-900'}`}>
+              {showsLegacyCurriculum ? <div className="space-y-0.5"><div className="font-extrabold text-amber-800">CURRICOLO 2012 (PREVIGENTE)</div><p className="text-[9px] text-slate-500 font-medium">La Classe {targetClass}^ concluderà il ciclo mantenendo il vecchio standard.</p></div> : <div className="space-y-0.5"><div className="font-extrabold text-emerald-800">CURRICOLO 2025 (RIFORMATO)</div><p className="text-[9px] text-slate-500 font-medium">Questa classe adotta il nuovo standard d'allineamento 2025.</p></div>}
             </div>
-
-            <div className={`p-2.5 rounded-xl border text-[10px] leading-tight font-bold ${
-              showsLegacyCurriculum
-                ? 'bg-amber-50 border-amber-200 text-amber-900'
-                : 'bg-emerald-50 border-emerald-200 text-emerald-900'
-            }`}>
-              {showsLegacyCurriculum ? (
-                <div className="space-y-0.5">
-                  <div className="font-extrabold text-amber-800">CURRICOLO 2012 (PREVIGENTE)</div>
-                  <p className="text-[9px] text-slate-500 font-medium">La Classe {targetClass}^ concluderà il ciclo mantenendo il vecchio standard.</p>
-                </div>
-              ) : (
-                <div className="space-y-0.5">
-                  <div className="font-extrabold text-emerald-800">CURRICOLO 2025 (RIFORMATO)</div>
-                  <p className="text-[9px] text-slate-500 font-medium">Questa classe adotta il nuovo standard d'allineamento 2025.</p>
-                </div>
-              )}
-            </div>
-
-            <div className="space-y-3">
-              <strong className="text-slate-400 uppercase text-[9px] tracking-wide block">Traguardi di Competenza</strong>
-              <div className="space-y-1.5 bg-slate-50 p-2.5 border rounded-xl max-h-[160px] overflow-y-auto">
-                {localCurriculum[discipline]?.[order]?.traguardi?.map((t: string, idx: number) => (
-                  <label key={idx} className="flex items-start space-x-2 p-1.5 bg-white rounded border hover:bg-slate-100 cursor-pointer text-[10px] font-semibold text-slate-700 leading-normal">
-                    <input type="checkbox" checked={selectedTraguardi.includes(idx)} onChange={() => toggleTraguardoSelection(idx)} className="rounded border-slate-300 text-primary-600 mt-0.5" />
-                    <span>T{idx + 1}. {t}</span>
-                  </label>
-                ))}
-              </div>
-            </div>
-
-            <div className="space-y-3">
-              <strong className="text-slate-400 uppercase text-[9px] tracking-wide block">Obiettivi di Apprendimento</strong>
-              <div className="space-y-1.5 bg-slate-50 p-2.5 border rounded-xl max-h-[160px] overflow-y-auto">
-                {localCurriculum[discipline]?.[order]?.obiettivi?.map((o: string, idx: number) => (
-                  <label key={idx} className="flex items-start space-x-2 p-1.5 bg-white rounded border hover:bg-slate-100 cursor-pointer text-[10px] font-semibold text-slate-700 leading-normal">
-                    <input type="checkbox" checked={selectedObiettivi.includes(idx)} onChange={() => toggleObiettivoSelection(idx)} className="rounded border-slate-300 text-primary-600 mt-0.5" />
-                    <span>O{idx + 1}. {o}</span>
-                  </label>
-                ))}
-              </div>
-            </div>
+            <div className="space-y-3"><strong className="text-slate-400 uppercase text-[9px] tracking-wide block">Traguardi di Competenza</strong><div className="space-y-1.5 bg-slate-50 p-2.5 border rounded-xl max-h-[160px] overflow-y-auto">{localCurriculum[discipline]?.[order]?.traguardi?.map((t: string, idx: number) => <label key={idx} className="flex items-start space-x-2 p-1.5 bg-white rounded border hover:bg-slate-100 cursor-pointer text-[10px] font-semibold text-slate-700 leading-normal"><input type="checkbox" checked={selectedTraguardi.includes(idx)} onChange={() => toggleTraguardoSelection(idx)} className="rounded border-slate-300 text-primary-600 mt-0.5" /><span>T{idx + 1}. {t}</span></label>)}</div></div>
+            <div className="space-y-3"><strong className="text-slate-400 uppercase text-[9px] tracking-wide block">Obiettivi di Apprendimento</strong><div className="space-y-1.5 bg-slate-50 p-2.5 border rounded-xl max-h-[160px] overflow-y-auto">{localCurriculum[discipline]?.[order]?.obiettivi?.map((o: string, idx: number) => <label key={idx} className="flex items-start space-x-2 p-1.5 bg-white rounded border hover:bg-slate-100 cursor-pointer text-[10px] font-semibold text-slate-700 leading-normal"><input type="checkbox" checked={selectedObiettivi.includes(idx)} onChange={() => toggleObiettivoSelection(idx)} className="rounded border-slate-300 text-primary-600 mt-0.5" /><span>O{idx + 1}. {o}</span></label>)}</div></div>
           </div>
 
-          {/* Col 2: Parametri */}
           <div className="lg:col-span-4 bg-white border border-slate-200 rounded-2xl shadow-sm p-4 space-y-4">
-            <div>
-              <span className="text-[9px] font-black text-emerald-600 uppercase tracking-wider block">Passo 2: Didattica & Evidenze</span>
-              <h3 className="text-xs font-bold text-slate-800">Parametri Operativi</h3>
-            </div>
-
-            <div className="space-y-3">
-              <strong className="text-slate-400 uppercase text-[9px] tracking-wide block">Parametri UDA & Gradualità</strong>
-              <div className="grid grid-cols-2 gap-2 text-[10px] font-bold text-slate-700">
-                <div className="space-y-1">
-                  <label className="text-slate-500">Titolo UDA</label>
-                  <input type="text" value={progTitle} onChange={(e) => setProgTitle(e.target.value)} className="w-full border rounded-lg p-1.5 bg-white text-xs font-semibold" />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-slate-500">Periodo</label>
-                  <select value={progPeriod} onChange={(e) => setProgPeriod(e.target.value)} className="w-full border rounded-lg p-1.5 bg-white text-xs font-semibold">
-                    <option value="Primo Quadrimestre">Primo Quadrimestre</option>
-                    <option value="Secondo Quadrimestre">Secondo Quadrimestre</option>
-                  </select>
-                </div>
-                <div className="space-y-1">
-                  <label className="text-slate-500">Ore Previste</label>
-                  <input type="number" value={progHours} onChange={(e) => setProgHours(Number(e.target.value))} className="w-full border rounded-lg p-1.5 bg-white text-xs font-semibold" />
-                </div>
-              </div>
-            </div>
-
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <strong className="text-slate-400 uppercase text-[9px] tracking-wide block">Compito di Realtà</strong>
-                {anticipatedFields.includes('realTaskInput') && (
-                  <button type="button" onClick={() => confirmAnticipatedField('realTaskInput')} className="px-2 py-0.5 bg-amber-100 hover:bg-amber-200 text-amber-800 border border-amber-300 rounded-lg text-[8px] font-black uppercase tracking-wider transition">Conferma</button>
-                )}
-              </div>
-              <textarea value={realTaskInput} onChange={(e) => { setRealTaskInput(e.target.value); confirmAnticipatedField('realTaskInput'); }} rows={2} className="w-full border rounded-lg p-2 text-xs font-semibold bg-slate-50" placeholder="E.g. Realizzazione di un opuscolo illustrato..." />
-            </div>
+            <div><span className="text-[9px] font-black text-emerald-600 uppercase tracking-wider block">Passo 2: Didattica & Evidenze</span><h3 className="text-xs font-bold text-slate-800">Parametri Operativi</h3></div>
+            <div className="space-y-3"><strong className="text-slate-400 uppercase text-[9px] tracking-wide block">Parametri UDA & Gradualità</strong><div className="grid grid-cols-2 gap-2 text-[10px] font-bold text-slate-700"><div className="space-y-1"><label className="text-slate-500">Titolo UDA</label><input type="text" value={progTitle} onChange={(e) => setProgTitle(e.target.value)} className="w-full border rounded-lg p-1.5 bg-white text-xs font-semibold" /></div><div className="space-y-1"><label className="text-slate-500">Periodo</label><select value={progPeriod} onChange={(e) => setProgPeriod(e.target.value)} className="w-full border rounded-lg p-1.5 bg-white text-xs font-semibold"><option value="Primo Quadrimestre">Primo Quadrimestre</option><option value="Secondo Quadrimestre">Secondo Quadrimestre</option></select></div><div className="space-y-1"><label className="text-slate-500">Ore Previste</label><input type="number" value={progHours} onChange={(e) => setProgHours(Number(e.target.value))} className="w-full border rounded-lg p-1.5 bg-white text-xs font-semibold" /></div></div></div>
+            <div className="space-y-3"><div className="flex items-center justify-between"><strong className="text-slate-400 uppercase text-[9px] tracking-wide block">Compito di Realtà</strong>{anticipatedFields.includes('realTaskInput') && <button type="button" onClick={() => confirmAnticipatedField('realTaskInput')} className="px-2 py-0.5 bg-amber-100 hover:bg-amber-200 text-amber-800 border border-amber-300 rounded-lg text-[8px] font-black uppercase tracking-wider transition">Conferma</button>}</div><textarea value={realTaskInput} onChange={(e) => { setRealTaskInput(e.target.value); confirmAnticipatedField('realTaskInput'); }} rows={2} className="w-full border rounded-lg p-2 text-xs font-semibold bg-slate-50" placeholder="E.g. Realizzazione di un opuscolo illustrato..." /></div>
           </div>
 
-          {/* Col 3: Preview & Actions */}
           <div className="lg:col-span-4 bg-white border border-slate-200 rounded-2xl shadow-sm p-4 space-y-4">
-            <div>
-              <span className="text-[9px] font-black text-indigo-600 uppercase tracking-wider block">Passo 3: Risultato & Generazione</span>
-              <h3 className="text-xs font-bold text-slate-800">Anteprima Report UDA</h3>
-            </div>
-
-            <div className="bg-slate-950 text-slate-100 p-3 rounded-xl font-mono text-[9px] h-[250px] overflow-y-auto leading-relaxed select-all border border-slate-800 text-left shadow-inner">
-              <pre>{compileProgPreviewText()}</pre>
-            </div>
-
-            <div className="space-y-2">
-              <strong className="text-slate-400 uppercase text-[9px] tracking-wide block">Note Metodologiche d'Inclusione (BES/DSA)</strong>
-              <textarea value={progNotes} onChange={(e) => setProgNotes(e.target.value)} rows={2} className="w-full border rounded-lg p-2 text-xs font-semibold bg-slate-50" placeholder="Scrivi note d'inclusione o adattamenti..." />
-            </div>
-
-            {savedUda.length > 0 && anticipatedFields.length === 0 && (
-              <button type="button" onClick={applyAnticipatoryPrefill} className="w-full px-3 py-2 bg-violet-50 hover:bg-violet-100 text-violet-800 border border-violet-200 rounded-xl text-[9px] font-black uppercase tracking-wider transition">Pre-compila da storico</button>
-            )}
-
-            <div className="flex gap-2">
-              <button onClick={saveProgDraft} className="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2 rounded-xl transition flex items-center justify-center space-x-1 shadow-md text-xs"><Save className="w-4 h-4" /> <span>Salva Bozza</span></button>
-              <button onClick={handleGenerateUda} className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 rounded-xl transition flex items-center justify-center space-x-1 shadow-md text-xs"><Zap className="w-4 h-4" /> <span>Genera UDA</span></button>
-            </div>
+            <div><span className="text-[9px] font-black text-indigo-600 uppercase tracking-wider block">Passo 3: Risultato & Generazione</span><h3 className="text-xs font-bold text-slate-800">Anteprima Report UDA</h3></div>
+            <div className="bg-slate-950 text-slate-100 p-3 rounded-xl font-mono text-[9px] h-[250px] overflow-y-auto leading-relaxed select-all border border-slate-800 text-left shadow-inner"><pre>{compileProgPreviewText()}</pre></div>
+            <div className="space-y-2"><strong className="text-slate-400 uppercase text-[9px] tracking-wide block">Note Metodologiche d'Inclusione (BES/DSA)</strong><textarea value={progNotes} onChange={(e) => setProgNotes(e.target.value)} rows={2} className="w-full border rounded-lg p-2 text-xs font-semibold bg-slate-50" placeholder="Scrivi note d'inclusione o adattamenti..." /></div>
+            {savedUda.length > 0 && anticipatedFields.length === 0 && <button type="button" onClick={applyAnticipatoryPrefill} className="w-full px-3 py-2 bg-violet-50 hover:bg-violet-100 text-violet-800 border border-violet-200 rounded-xl text-[9px] font-black uppercase tracking-wider transition">Pre-compila da storico</button>}
+            <div className="flex gap-2"><button onClick={saveProgDraft} className="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2 rounded-xl transition flex items-center justify-center space-x-1 shadow-md text-xs"><Save className="w-4 h-4" /> <span>Salva Bozza</span></button><button onClick={handleGenerateUda} className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 rounded-xl transition flex items-center justify-center space-x-1 shadow-md text-xs"><Zap className="w-4 h-4" /> <span>Genera UDA</span></button></div>
           </div>
         </div>
       ) : (
-        /* Wizard Layout */
         <div className="bg-white border border-slate-200 rounded-3xl shadow-sm overflow-hidden text-left">
-          <div className="bg-slate-50 border-b border-slate-200 px-6 py-5 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-            <div>
-              <div className="flex items-center space-x-2">
-                <span className="bg-indigo-600 text-white text-[10px] font-black px-2 py-0.5 rounded-full uppercase">Passo {wizardStep} di 5</span>
-                <h2 className="text-sm font-black text-indigo-950 uppercase tracking-wider">Procedura Guidata Progettazione UDA</h2>
-              </div>
-              <p className="text-[11px] text-slate-500 mt-1">
-                {wizardStep === 1 && "Dati Generali dell'Unità di Apprendimento"}
-                {wizardStep === 2 && "Selezione Traguardi & Obiettivi"}
-                {wizardStep === 3 && "Associazione Evidenze di Certificazione"}
-                {wizardStep === 4 && "Definizione Compito di Realtà & Note BES"}
-                {wizardStep === 5 && "Anteprima Finale, Salvataggio ed Esportazione"}
-              </p>
-            </div>
-            <span className="text-xs bg-indigo-100 text-indigo-800 font-extrabold px-3 py-1 rounded-full">{Math.round((wizardStep / 5) * 100)}% Completato</span>
-          </div>
-
-          <div className="flex items-center space-x-2 px-6 py-3 bg-slate-50/50 border-b border-slate-100">
-            {[1, 2, 3, 4, 5].map((stepNum) => (
-              <button key={stepNum} onClick={() => setWizardStep(stepNum)} className="flex-1 flex flex-col space-y-1 text-left group">
-                <div className={`h-1.5 rounded-full transition-all duration-300 ${stepNum <= wizardStep ? 'bg-indigo-600' : 'bg-slate-200'}`} />
-                <span className={`text-[9px] font-bold ${stepNum === wizardStep ? 'text-indigo-600 font-black' : 'text-slate-400 group-hover:text-slate-600'} hidden sm:inline`}>
-                  {stepNum === 1 && "1. Dati Generali"}
-                  {stepNum === 2 && "2. Traguardi"}
-                  {stepNum === 3 && "3. Evidenze"}
-                  {stepNum === 4 && "4. Compito & BES"}
-                  {stepNum === 5 && "5. Riepilogo"}
-                </span>
-              </button>
-            ))}
-          </div>
-
+          <div className="bg-slate-50 border-b border-slate-200 px-6 py-5 flex flex-col md:flex-row justify-between items-start md:items-center gap-4"><div><div className="flex items-center space-x-2"><span className="bg-indigo-600 text-white text-[10px] font-black px-2 py-0.5 rounded-full uppercase">Passo {wizardStep} di 5</span><h2 className="text-sm font-black text-indigo-950 uppercase tracking-wider">Procedura Guidata Progettazione UDA</h2></div><p className="text-[11px] text-slate-500 mt-1">{wizardStep === 1 && "Dati Generali dell'Unità di Apprendimento"}{wizardStep === 2 && "Selezione Traguardi & Obiettivi"}{wizardStep === 3 && "Associazione Evidenze di Certificazione"}{wizardStep === 4 && "Definizione Compito di Realtà & Note BES"}{wizardStep === 5 && "Anteprima Finale, Salvataggio ed Esportazione"}</p></div><span className="text-xs bg-indigo-100 text-indigo-800 font-extrabold px-3 py-1 rounded-full">{Math.round((wizardStep / 5) * 100)}% Completato</span></div>
+          <div className="flex items-center space-x-2 px-6 py-3 bg-slate-50/50 border-b border-slate-100">{[1, 2, 3, 4, 5].map((stepNum) => <button key={stepNum} onClick={() => setWizardStep(stepNum)} className="flex-1 flex flex-col space-y-1 text-left group"><div className={`h-1.5 rounded-full transition-all duration-300 ${stepNum <= wizardStep ? 'bg-indigo-600' : 'bg-slate-200'}`} /><span className={`text-[9px] font-bold ${stepNum === wizardStep ? 'text-indigo-600 font-black' : 'text-slate-400 group-hover:text-slate-600'} hidden sm:inline`}>{stepNum === 1 && "1. Dati Generali"}{stepNum === 2 && "2. Traguardi"}{stepNum === 3 && "3. Evidenze"}{stepNum === 4 && "4. Compito & BES"}{stepNum === 5 && "5. Riepilogo"}</span></button>)}</div>
           <div className="p-6 min-h-[320px]">
-            {wizardStep === 1 && (
-              <div className="space-y-4 fade-in">
-                <div className="bg-indigo-50 border border-indigo-100 rounded-2xl p-4 text-xs text-indigo-950 leading-relaxed font-bold">
-                  <p>Allineamento Curricolo 2012 / 2025: La classe target selezionata si allinea automaticamente al regime programmatorio corretto.</p>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-bold text-slate-700">
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-black uppercase text-slate-500">Titolo Modulo UDA</label>
-                    <input type="text" value={progTitle} onChange={(e) => setProgTitle(e.target.value)} className="w-full border border-slate-200 rounded-xl p-2.5 bg-slate-50 focus:bg-white text-xs font-semibold" placeholder="Es. Modulo 1: Ascolto e Sintesi..." />
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-black uppercase text-slate-500">Periodo di Svolgimento</label>
-                    <select value={progPeriod} onChange={(e) => setProgPeriod(e.target.value)} className="w-full border border-slate-200 rounded-xl p-2.5 bg-slate-50 focus:bg-white text-xs font-semibold">
-                      <option value="Primo Quadrimestre">Primo Quadrimestre</option>
-                      <option value="Secondo Quadrimestre">Secondo Quadrimestre</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {wizardStep === 2 && (
-              <div className="space-y-4 fade-in">
-                <strong className="text-slate-400 uppercase text-[9px] tracking-wide block">Traguardi di Competenza</strong>
-                <div className="space-y-1.5 bg-slate-50 p-2.5 border rounded-xl max-h-[200px] overflow-y-auto">
-                  {localCurriculum[discipline]?.[order]?.traguardi?.map((t: string, idx: number) => (
-                    <label key={idx} className="flex items-start space-x-2 p-1.5 bg-white rounded border hover:bg-slate-100 cursor-pointer text-[10px] font-semibold text-slate-700 leading-normal">
-                      <input type="checkbox" checked={selectedTraguardi.includes(idx)} onChange={() => toggleTraguardoSelection(idx)} className="rounded border-slate-300 text-primary-600 mt-0.5" />
-                      <span>T{idx + 1}. {t}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {wizardStep === 3 && (
-              <div className="space-y-4 fade-in">
-                <strong className="text-slate-400 uppercase text-[9px] tracking-wide block">Evidenze di Certificazione (DM 14/2024)</strong>
-                <div className="space-y-1.5 bg-slate-50 p-2.5 border rounded-xl max-h-[200px] overflow-y-auto">
-                  {localCurriculum[discipline]?.[order]?.evidenze?.map((ev: string, idx: number) => (
-                    <label key={idx} className="flex items-start space-x-2 p-1.5 bg-white rounded border hover:bg-slate-100 cursor-pointer text-[10px] font-semibold text-slate-700 leading-normal">
-                      <input type="checkbox" checked={selectedEvidenze.includes(ev)} onChange={() => toggleEvidenceSelection(ev)} className="rounded border-slate-300 text-primary-600 mt-0.5" />
-                      <span>{ev}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {wizardStep === 4 && (
-              <div className="space-y-4 fade-in">
-                <div className="space-y-3">
-                  <strong className="text-slate-400 uppercase text-[9px] tracking-wide block">Compito di Realtà</strong>
-                  <textarea value={realTaskInput} onChange={(e) => setRealTaskInput(e.target.value)} rows={3} className="w-full border rounded-lg p-2 text-xs font-semibold bg-slate-50" placeholder="E.g. Realizzazione di un opuscolo illustrato..." />
-                </div>
-                <div className="space-y-3">
-                  <strong className="text-slate-400 uppercase text-[9px] tracking-wide block">Note Metodologiche d'Inclusione (BES/DSA)</strong>
-                  <textarea value={progNotes} onChange={(e) => setProgNotes(e.target.value)} rows={3} className="w-full border rounded-lg p-2 text-xs font-semibold bg-slate-50" placeholder="Scrivi note d'inclusione o adattamenti..." />
-                </div>
-              </div>
-            )}
-
-            {kc.visible && (
-              <KnowledgeCompanionPanel
-                intro={kc.intro}
-                mainRef={kc.mainRef}
-                additionalRefs={kc.additionalRefs}
-                expanded={kc.expanded}
-                onToggleExpand={kc.toggleExpand}
-                onOpenVolume={kc.openOverlay}
-              />
-            )}
-
-            {wizardStep === 5 && (
-              <div className="space-y-4 fade-in">
-                <div className="bg-slate-950 text-slate-100 p-3 rounded-xl font-mono text-[9px] h-[250px] overflow-y-auto leading-relaxed select-all border border-slate-800 text-left shadow-inner">
-                  <pre>{compileProgPreviewText()}</pre>
-                </div>
-                <div className="flex gap-2">
-                  <button onClick={saveProgDraft} className="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2 rounded-xl transition flex items-center justify-center space-x-1 shadow-md text-xs"><Save className="w-4 h-4" /> <span>Salva Bozza</span></button>
-                  <button onClick={handleGenerateUda} className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 rounded-xl transition flex items-center justify-center space-x-1 shadow-md text-xs"><Zap className="w-4 h-4" /> <span>Genera UDA</span></button>
-                </div>
-              </div>
-            )}
+            {wizardStep === 1 && <div className="space-y-4 fade-in"><div className="bg-indigo-50 border border-indigo-100 rounded-2xl p-4 text-xs text-indigo-950 leading-relaxed font-bold"><p>Allineamento Curricolo 2012 / 2025: La classe target selezionata si allinea automaticamente al regime programmatorio corretto.</p></div><div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-bold text-slate-700"><div className="space-y-1"><label className="text-[10px] font-black uppercase text-slate-500">Titolo Modulo UDA</label><input type="text" value={progTitle} onChange={(e) => setProgTitle(e.target.value)} className="w-full border border-slate-200 rounded-xl p-2.5 bg-slate-50 focus:bg-white text-xs font-semibold" placeholder="Es. Modulo 1: Ascolto e Sintesi..." /></div><div className="space-y-1"><label className="text-[10px] font-black uppercase text-slate-500">Periodo di Svolgimento</label><select value={progPeriod} onChange={(e) => setProgPeriod(e.target.value)} className="w-full border border-slate-200 rounded-xl p-2.5 bg-slate-50 focus:bg-white text-xs font-semibold"><option value="Primo Quadrimestre">Primo Quadrimestre</option><option value="Secondo Quadrimestre">Secondo Quadrimestre</option></select></div></div></div>}
+            {wizardStep === 2 && <div className="space-y-4 fade-in"><strong className="text-slate-400 uppercase text-[9px] tracking-wide block">Traguardi di Competenza</strong><div className="space-y-1.5 bg-slate-50 p-2.5 border rounded-xl max-h-[200px] overflow-y-auto">{localCurriculum[discipline]?.[order]?.traguardi?.map((t: string, idx: number) => <label key={idx} className="flex items-start space-x-2 p-1.5 bg-white rounded border hover:bg-slate-100 cursor-pointer text-[10px] font-semibold text-slate-700 leading-normal"><input type="checkbox" checked={selectedTraguardi.includes(idx)} onChange={() => toggleTraguardoSelection(idx)} className="rounded border-slate-300 text-primary-600 mt-0.5" /><span>T{idx + 1}. {t}</span></label>)}</div></div>}
+            {wizardStep === 3 && <div className="space-y-4 fade-in"><strong className="text-slate-400 uppercase text-[9px] tracking-wide block">Evidenze di Certificazione (DM 14/2024)</strong><div className="space-y-1.5 bg-slate-50 p-2.5 border rounded-xl max-h-[200px] overflow-y-auto">{localCurriculum[discipline]?.[order]?.evidenze?.map((ev: string, idx: number) => <label key={idx} className="flex items-start space-x-2 p-1.5 bg-white rounded border hover:bg-slate-100 cursor-pointer text-[10px] font-semibold text-slate-700 leading-normal"><input type="checkbox" checked={selectedEvidenze.includes(ev)} onChange={() => toggleEvidenceSelection(ev)} className="rounded border-slate-300 text-primary-600 mt-0.5" /><span>{ev}</span></label>)}</div></div>}
+            {wizardStep === 4 && <div className="space-y-4 fade-in"><div className="space-y-3"><strong className="text-slate-400 uppercase text-[9px] tracking-wide block">Compito di Realtà</strong><textarea value={realTaskInput} onChange={(e) => setRealTaskInput(e.target.value)} rows={3} className="w-full border rounded-lg p-2 text-xs font-semibold bg-slate-50" placeholder="E.g. Realizzazione di un opuscolo illustrato..." /></div><div className="space-y-3"><strong className="text-slate-400 uppercase text-[9px] tracking-wide block">Note Metodologiche d'Inclusione (BES/DSA)</strong><textarea value={progNotes} onChange={(e) => setProgNotes(e.target.value)} rows={3} className="w-full border rounded-lg p-2 text-xs font-semibold bg-slate-50" placeholder="Scrivi note d'inclusione o adattamenti..." /></div></div>}
+            {kc.visible && <KnowledgeCompanionPanel intro={kc.intro} mainRef={kc.mainRef} additionalRefs={kc.additionalRefs} expanded={kc.expanded} onToggleExpand={kc.toggleExpand} onOpenVolume={kc.openOverlay} />}
+            {wizardStep === 5 && <div className="space-y-4 fade-in"><div className="bg-slate-950 text-slate-100 p-3 rounded-xl font-mono text-[9px] h-[250px] overflow-y-auto leading-relaxed select-all border border-slate-800 text-left shadow-inner"><pre>{compileProgPreviewText()}</pre></div><div className="flex gap-2"><button onClick={saveProgDraft} className="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2 rounded-xl transition flex items-center justify-center space-x-1 shadow-md text-xs"><Save className="w-4 h-4" /> <span>Salva Bozza</span></button><button onClick={handleGenerateUda} className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 rounded-xl transition flex items-center justify-center space-x-1 shadow-md text-xs"><Zap className="w-4 h-4" /> <span>Genera UDA</span></button></div></div>}
           </div>
-
-          <div className="bg-slate-50 border-t border-slate-200 px-6 py-4 flex justify-between items-center">
-            <button onClick={handleBack} disabled={wizardStep === 1} className={`px-4 py-2 rounded-xl text-xs font-bold transition ${wizardStep === 1 ? 'text-slate-300 cursor-not-allowed' : 'text-slate-700 hover:bg-slate-200'}`}>Indietro</button>
-            <button onClick={handleNext} disabled={wizardStep === 5} className={`px-4 py-2 rounded-xl text-xs font-bold transition ${wizardStep === 5 ? 'text-slate-300 cursor-not-allowed' : 'bg-indigo-600 text-white hover:bg-indigo-500'}`}>Avanti</button>
-          </div>
+          <div className="bg-slate-50 border-t border-slate-200 px-6 py-4 flex justify-between items-center"><button onClick={handleBack} disabled={wizardStep === 1} className={`px-4 py-2 rounded-xl text-xs font-bold transition ${wizardStep === 1 ? 'text-slate-300 cursor-not-allowed' : 'text-slate-700 hover:bg-slate-200'}`}>Indietro</button><button onClick={handleNext} disabled={wizardStep === 5} className={`px-4 py-2 rounded-xl text-xs font-bold transition ${wizardStep === 5 ? 'text-slate-300 cursor-not-allowed' : 'bg-indigo-600 text-white hover:bg-indigo-500'}`}>Avanti</button></div>
         </div>
       )}
 
@@ -806,7 +514,6 @@ function ProgettazioneAnnualeView({
   );
 }
 
-/* ─── Archivio UDA View ─── */
 interface ArchivioUdaViewProps {
   discipline: string;
   order: SchoolOrder;
@@ -865,192 +572,34 @@ function ArchivioUdaView({
   const { role, deleteUda, clearUdaLibrary } = useCurriculumStore();
   const [udaToDelete, setUdaToDelete] = useState<string | null>(null);
   const [showClearAllConfirm, setShowClearAllConfirm] = useState(false);
-
   const getRoleLabel = (r: string) => r === 'non-dichiarato' ? 'Ruolo non dichiarato' : r === 'insegnante' ? 'Docente' : r === 'dirigente' ? 'Dirigente' : 'CT';
 
   return (
     <div className="space-y-6">
-      {/* Timeline */}
       <div className="bg-white border border-slate-200 rounded-3xl p-5 shadow-sm space-y-4 text-left">
-        <div className="border-b border-slate-150 pb-3">
-          <span className="text-[9px] font-black text-indigo-600 uppercase tracking-wider block">Quadro generale personale</span>
-          <h3 className="text-sm font-black text-slate-800 uppercase tracking-wide">Programmazione annuale locale per classi</h3>
-          <p className="text-[11px] text-slate-500 font-medium">
-            Visualizza la linea temporale dei moduli registrati per la tua classe in {getDisciplineLabel(discipline, order)} ({getRoleLabel(role)}).
-          </p>
-        </div>
-
+        <div className="border-b border-slate-150 pb-3"><span className="text-[9px] font-black text-indigo-600 uppercase tracking-wider block">Quadro generale personale</span><h3 className="text-sm font-black text-slate-800 uppercase tracking-wide">Programmazione annuale locale per classi</h3><p className="text-[11px] text-slate-500 font-medium">Visualizza la linea temporale dei moduli registrati per la tua classe in {getDisciplineLabel(discipline, order)} ({getRoleLabel(role)}).</p></div>
         <div className="grid grid-cols-1 md:grid-cols-12 gap-5 items-start">
-          <div className="md:col-span-3 space-y-1.5">
-            <strong className="text-[9px] font-black text-slate-400 uppercase tracking-wider block">Filtro Classe & Sezione:</strong>
-            <div className="flex flex-col space-y-1 bg-slate-50 p-2 border rounded-2xl max-h-[220px] overflow-y-auto">
-              {assignedCombinations.map(combo => {
-                const isActive = order === 'infanzia' ? (targetSection === combo) : (targetClass === combo.split('^')[0] && targetSection === combo.split('^')[1]);
-                return (
-                  <button
-                    key={combo}
-                    onClick={() => {
-                      if (order === 'infanzia') {
-                        setTargetClass('Fascia Unica 3-5 anni');
-                        setTargetSection(combo);
-                      } else {
-                        setTargetClass(combo.split('^')[0]);
-                        setTargetSection(combo.split('^')[1]);
-                      }
-                    }}
-                    className={`p-2.5 rounded-xl text-left font-black text-[10px] transition flex justify-between items-center ${isActive ? 'bg-indigo-600 text-white shadow-sm' : 'hover:bg-slate-200 text-slate-700'}`}
-                  >
-                    <span>{order === 'infanzia' ? ` ${combo}` : ` Classe ${combo}`}</span>
-                    {isActive && <span className="w-1.5 h-1.5 bg-white rounded-full"></span>}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          <div className="md:col-span-9 space-y-4">
-            <strong className="text-[9px] font-black text-slate-400 uppercase tracking-wider block">Linea Temporale:</strong>
-            {savedUda.filter(u => u.discipline === discipline && (order === 'infanzia' ? (u.title.includes(`Sezione ${targetSection}`) || u.id.includes("suggested")) : (u.title.includes(`Target: ${targetClass}^${targetSection}`) || u.id.includes("suggested")))).length > 0 ? (
-              <div className="relative border-l-2 border-indigo-150 pl-5 ml-2.5 space-y-4">
-                {savedUda.filter(u => u.discipline === discipline && (order === 'infanzia' ? (u.title.includes(`Sezione ${targetSection}`) || u.id.includes("suggested")) : (u.title.includes(`Target: ${targetClass}^${targetSection}`) || u.id.includes("suggested")))).map((u, index) => (
-                  <div key={u.id} className="relative">
-                    <div className="absolute -left-[27px] top-1 w-3.5 h-3.5 bg-indigo-600 text-white rounded-full flex items-center justify-center text-[8px] font-black border-2 border-white shadow-sm">{index + 1}</div>
-                    <div className="bg-slate-50 border hover:border-indigo-200 p-3 rounded-2xl space-y-2 text-xs transition">
-                      <div className="flex items-center justify-between font-bold">
-                        <h4 className="font-extrabold text-indigo-950 leading-tight">{u.title}</h4>
-                        <span className="bg-indigo-100 text-indigo-800 text-[8px] px-2 py-0.5 rounded-full uppercase shrink-0">{u.period}</span>
-                      </div>
-                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[10px] text-slate-500 font-semibold">
-                        <div><strong>Ore:</strong> {u.hours} ore</div>
-                        <div><strong>Stato:</strong> {u.status}</div>
-                        <div className="col-span-2"><strong>Compito:</strong> {u.realTask}</div>
-                      </div>
-                      <div className="flex justify-end space-x-3 pt-1 border-t border-slate-100">
-                        <button onClick={() => setSelectedUda(u)} className="text-primary-600 hover:text-primary-800 font-bold text-[10px] flex items-center space-x-1"><Eye className="w-3.5 h-3.5" /> <span>Esamina</span></button>
-                        <button onClick={() => copyUdaTextLocal(u.id)} className="text-indigo-600 hover:text-indigo-800 font-bold text-[10px] flex items-center space-x-1"><Copy className="w-3.5 h-3.5" /> <span>Copia</span></button>
-                        <button onClick={() => handleCloneUdaAdaptive(u)} className="text-emerald-600 hover:text-emerald-800 font-bold text-[10px] flex items-center space-x-1"><RefreshCw className="w-3.5 h-3.5" /> <span>Clona ed Adatta</span></button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="p-5 border border-dashed rounded-2xl bg-slate-50/50 text-center space-y-2.5">
-                <div className="space-y-1">
-                  <h4 className="font-extrabold text-slate-800">Nessun modulo caricato per la Classe {targetClass}</h4>
-                  <p className="text-[10px] text-slate-500 leading-relaxed font-semibold max-w-sm mx-auto">Non hai ancora pianificato Unità di Apprendimento per questa classe.</p>
-                </div>
-                <button onClick={() => handleTabSwitch('progetta-annuale')} className="px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl text-[10px] shadow-sm transition">Apri Progettatore</button>
-              </div>
-            )}
-          </div>
+          <div className="md:col-span-3 space-y-1.5"><strong className="text-[9px] font-black text-slate-400 uppercase tracking-wider block">Filtro Classe & Sezione:</strong><div className="flex flex-col space-y-1 bg-slate-50 p-2 border rounded-2xl max-h-[220px] overflow-y-auto">{assignedCombinations.map(combo => { const isActive = order === 'infanzia' ? targetSection === combo : targetClass === combo.split('^')[0] && targetSection === combo.split('^')[1]; return <button key={combo} onClick={() => { if (order === 'infanzia') { setTargetClass('Fascia Unica 3-5 anni'); setTargetSection(combo); } else { setTargetClass(combo.split('^')[0]); setTargetSection(combo.split('^')[1]); } }} className={`p-2.5 rounded-xl text-left font-black text-[10px] transition flex justify-between items-center ${isActive ? 'bg-indigo-600 text-white shadow-sm' : 'hover:bg-slate-200 text-slate-700'}`}><span>{order === 'infanzia' ? ` ${combo}` : ` Classe ${combo}`}</span>{isActive && <span className="w-1.5 h-1.5 bg-white rounded-full"></span>}</button>; })}</div></div>
+          <div className="md:col-span-9 space-y-4"><strong className="text-[9px] font-black text-slate-400 uppercase tracking-wider block">Linea Temporale:</strong>{savedUda.filter(u => u.discipline === discipline && (order === 'infanzia' ? (u.title.includes(`Sezione ${targetSection}`) || u.id.includes('suggested')) : (u.title.includes(`Target: ${targetClass}^${targetSection}`) || u.id.includes('suggested')))).length > 0 ? <div className="relative border-l-2 border-indigo-150 pl-5 ml-2.5 space-y-4">{savedUda.filter(u => u.discipline === discipline && (order === 'infanzia' ? (u.title.includes(`Sezione ${targetSection}`) || u.id.includes('suggested')) : (u.title.includes(`Target: ${targetClass}^${targetSection}`) || u.id.includes('suggested')))).map((u, index) => <div key={u.id} className="relative"><div className="absolute -left-[27px] top-1 w-3.5 h-3.5 bg-indigo-600 text-white rounded-full flex items-center justify-center text-[8px] font-black border-2 border-white shadow-sm">{index + 1}</div><div className="bg-slate-50 border hover:border-indigo-200 p-3 rounded-2xl space-y-2 text-xs transition"><div className="flex items-center justify-between font-bold"><h4 className="font-extrabold text-indigo-950 leading-tight">{u.title}</h4><span className="bg-indigo-100 text-indigo-800 text-[8px] px-2 py-0.5 rounded-full uppercase shrink-0">{u.period}</span></div><div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[10px] text-slate-500 font-semibold"><div><strong>Ore:</strong> {u.hours} ore</div><div><strong>Stato:</strong> {u.status}</div><div className="col-span-2"><strong>Compito:</strong> {u.realTask}</div></div><div className="flex justify-end space-x-3 pt-1 border-t border-slate-100"><button onClick={() => setSelectedUda(u)} className="text-primary-600 hover:text-primary-800 font-bold text-[10px] flex items-center space-x-1"><Eye className="w-3.5 h-3.5" /> <span>Esamina</span></button><button onClick={() => copyUdaTextLocal(u.id)} className="text-indigo-600 hover:text-indigo-800 font-bold text-[10px] flex items-center space-x-1"><Copy className="w-3.5 h-3.5" /> <span>Copia</span></button><button onClick={() => handleCloneUdaAdaptive(u)} className="text-emerald-600 hover:text-emerald-800 font-bold text-[10px] flex items-center space-x-1"><RefreshCw className="w-3.5 h-3.5" /> <span>Clona ed Adatta</span></button></div></div></div>)}</div> : <div className="p-5 border border-dashed rounded-2xl bg-slate-50/50 text-center space-y-2.5"><div className="space-y-1"><h4 className="font-extrabold text-slate-800">Nessun modulo caricato per la Classe {targetClass}</h4><p className="text-[10px] text-slate-500 leading-relaxed font-semibold max-w-sm mx-auto">Non hai ancora pianificato Unità di Apprendimento per questa classe.</p></div><button onClick={() => handleTabSwitch('progetta-annuale')} className="px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl text-[10px] shadow-sm transition">Apri Progettatore</button></div>}</div>
         </div>
       </div>
 
-      {/* Library Filters */}
       <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs leading-relaxed font-semibold">
-        <div className="space-y-1">
-          <label className="text-[10px] font-black text-slate-400 uppercase block">Filtro Classe/Fascia</label>
-          <select value={libFilterClass} onChange={(e) => setLibFilterClass(e.target.value)} className="w-full border rounded p-1.5 bg-white">
-            <option value="all">Tutte le classi</option>
-            <option value="infanzia">Infanzia</option>
-            <option value="primaria">Primaria</option>
-            <option value="secondaria">Secondaria</option>
-          </select>
-        </div>
-        <div className="space-y-1">
-          <label className="text-[10px] font-black text-slate-400 uppercase block">Filtro Periodo</label>
-          <select value={libFilterPeriod} onChange={(e) => setLibFilterClassPeriod(e.target.value)} className="w-full border rounded p-1.5 bg-white">
-            <option value="all">Tutti i periodi</option>
-            <option value="Primo Quadrimestre">Primo Quadrimestre</option>
-            <option value="Secondo Quadrimestre">Secondo Quadrimestre</option>
-          </select>
-        </div>
-        <div className="space-y-1">
-          <label className="text-[10px] font-black text-slate-400 uppercase block">Filtro Stato UDA</label>
-          <select value={libFilterStatus} onChange={(e) => setLibFilterClassStatus(e.target.value)} className="w-full border rounded p-1.5 bg-white">
-            <option value="all">Tutti gli stati</option>
-            <option value="bozza">Bozza</option>
-            <option value="in revisione">In revisione</option>
-            <option value="pronta per confronto">Pronta per confronto</option>
-          </select>
-        </div>
-        <div className="space-y-1">
-          <label className="text-[10px] font-black text-slate-400 uppercase block">Ordinamento</label>
-          <select value={libSorting} onChange={(e) => setLibSorting(e.target.value as LibrarySorting)} className="w-full border rounded p-1.5 bg-white">
-            <option value="recenti">Più recenti</option>
-            <option value="meno_recenti">Meno recenti</option>
-            <option value="az">Titolo A-Z</option>
-            <option value="disc_az">Disciplina A-Z</option>
-          </select>
-        </div>
-        <div className="col-span-1 sm:col-span-2 lg:col-span-3 space-y-1">
-          <label className="text-[10px] font-black text-slate-400 uppercase block">Ricerca testo libero</label>
-          <div className="relative">
-            <Search className="absolute left-2.5 top-2.5 w-4 h-4 text-slate-400" />
-            <input type="text" value={libSearchText} onChange={(e) => setLibSearchText(e.target.value)} className="w-full pl-9 pr-4 py-2 border rounded-xl bg-white" placeholder="Cerca termine..." />
-          </div>
-        </div>
-        <div className="flex items-end justify-end space-x-2 pt-4">
-          <button onClick={handleClearLibFilters} className="px-3 py-2 bg-slate-100 hover:bg-slate-200 border rounded-xl font-bold transition">Pulisci filtri</button>
-          <button onClick={() => setShowClearAllConfirm(true)} className="px-3 py-2 bg-rose-50 border border-rose-200 text-rose-600 hover:bg-rose-100 rounded-xl font-bold transition">Svuota tutto</button>
-        </div>
+        <div className="space-y-1"><label className="text-[10px] font-black text-slate-400 uppercase block">Filtro Classe/Fascia</label><select value={libFilterClass} onChange={(e) => setLibFilterClass(e.target.value)} className="w-full border rounded p-1.5 bg-white"><option value="all">Tutte le classi</option><option value="infanzia">Infanzia</option><option value="primaria">Primaria</option><option value="secondaria">Secondaria</option></select></div>
+        <div className="space-y-1"><label className="text-[10px] font-black text-slate-400 uppercase block">Filtro Periodo</label><select value={libFilterPeriod} onChange={(e) => setLibFilterClassPeriod(e.target.value)} className="w-full border rounded p-1.5 bg-white"><option value="all">Tutti i periodi</option><option value="Primo Quadrimestre">Primo Quadrimestre</option><option value="Secondo Quadrimestre">Secondo Quadrimestre</option></select></div>
+        <div className="space-y-1"><label className="text-[10px] font-black text-slate-400 uppercase block">Filtro Stato UDA</label><select value={libFilterStatus} onChange={(e) => setLibFilterClassStatus(e.target.value)} className="w-full border rounded p-1.5 bg-white"><option value="all">Tutti gli stati</option><option value="bozza">Bozza</option><option value="in revisione">In revisione</option><option value="pronta per confronto">Pronta per confronto</option></select></div>
+        <div className="space-y-1"><label className="text-[10px] font-black text-slate-400 uppercase block">Ordinamento</label><select value={libSorting} onChange={(e) => setLibSorting(e.target.value as LibrarySorting)} className="w-full border rounded p-1.5 bg-white"><option value="recenti">Più recenti</option><option value="meno_recenti">Meno recenti</option><option value="az">Titolo A-Z</option><option value="disc_az">Disciplina A-Z</option></select></div>
+        <div className="col-span-1 sm:col-span-2 lg:col-span-3 space-y-1"><label className="text-[10px] font-black text-slate-400 uppercase block">Ricerca testo libero</label><div className="relative"><Search className="absolute left-2.5 top-2.5 w-4 h-4 text-slate-400" /><input type="text" value={libSearchText} onChange={(e) => setLibSearchText(e.target.value)} className="w-full pl-9 pr-4 py-2 border rounded-xl bg-white" placeholder="Cerca termine..." /></div></div>
+        <div className="flex items-end justify-end space-x-2 pt-4"><button onClick={handleClearLibFilters} className="px-3 py-2 bg-slate-100 hover:bg-slate-200 border rounded-xl font-bold transition">Pulisci filtri</button><button onClick={() => setShowClearAllConfirm(true)} className="px-3 py-2 bg-rose-50 border border-rose-200 text-rose-600 hover:bg-rose-100 rounded-xl font-bold transition">Svuota tutto</button></div>
       </div>
 
-      {/* UDA Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {savedUda.filter(handleApplyLibFilters).sort(handleSortUdaList).map(u => (
-          <div key={u.id} className="bg-white border hover:border-primary-400 rounded-xl p-4 shadow-sm transition space-y-3 flex flex-col justify-between">
-            <div className="space-y-1.5 text-left text-xs leading-relaxed">
-              <div className="flex items-center justify-between font-bold">
-                <span className="px-2 py-0.5 bg-primary-100 text-primary-800 text-[8px] rounded uppercase">{u.discipline.toUpperCase()} · {u.order.toUpperCase()}</span>
-                <span className="text-[10px] text-slate-400">{u.createdAt}</span>
-              </div>
-              <h4 className="font-extrabold text-slate-800">{u.title}</h4>
-              <p className="text-slate-500"><strong>Ore:</strong> {u.hours} ore | <strong>Periodo:</strong> {u.period}</p>
-              <p className="text-slate-500 truncate"><strong>Compito:</strong> {u.realTask}</p>
-            </div>
-            <div className="flex items-center justify-between pt-2 border-t border-slate-100 text-[10px] font-bold">
-              <span className="bg-indigo-50 text-indigo-800 px-2 py-0.5 rounded-full">{u.status.toUpperCase()}</span>
-              <div className="flex space-x-3">
-                <button onClick={() => setSelectedUda(u)} className="text-primary-600 hover:text-primary-800 flex items-center space-x-1"><Eye className="w-3.5 h-3.5" /> <span>Dettaglio</span></button>
-                <button onClick={() => setUdaToDelete(u.id)} className="text-rose-600 hover:text-rose-800 font-bold">Rimuovi</button>
-              </div>
-            </div>
-          </div>
-        ))}
-        {savedUda.filter(handleApplyLibFilters).length === 0 && (
-          <UiEmptyState
-            icon={Filter}
-            title="Nessun elemento corrispondente ai filtri"
-            description="Prova a modificare i filtri di ricerca o a ripristinare l'elenco completo."
-            action={
-              <button onClick={handleClearLibFilters} className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-lg text-xs font-bold transition">
-                Pulisci filtri
-              </button>
-            }
-          />
-        )}
+        {savedUda.filter(handleApplyLibFilters).sort(handleSortUdaList).map(u => <div key={u.id} className="bg-white border hover:border-primary-400 rounded-xl p-4 shadow-sm transition space-y-3 flex flex-col justify-between"><div className="space-y-1.5 text-left text-xs leading-relaxed"><div className="flex items-center justify-between font-bold"><span className="px-2 py-0.5 bg-primary-100 text-primary-800 text-[8px] rounded uppercase">{u.discipline.toUpperCase()} · {u.order.toUpperCase()}</span><span className="text-[10px] text-slate-400">{u.createdAt}</span></div><h4 className="font-extrabold text-slate-800">{u.title}</h4><p className="text-slate-500"><strong>Ore:</strong> {u.hours} ore | <strong>Periodo:</strong> {u.period}</p><p className="text-slate-500 truncate"><strong>Compito:</strong> {u.realTask}</p></div><div className="flex items-center justify-between pt-2 border-t border-slate-100 text-[10px] font-bold"><span className="bg-indigo-50 text-indigo-800 px-2 py-0.5 rounded-full">{u.status.toUpperCase()}</span><div className="flex space-x-3"><button onClick={() => setSelectedUda(u)} className="text-primary-600 hover:text-primary-800 flex items-center space-x-1"><Eye className="w-3.5 h-3.5" /> <span>Dettaglio</span></button><button onClick={() => setUdaToDelete(u.id)} className="text-rose-600 hover:text-rose-800 font-bold">Rimuovi</button></div></div></div>)}
+        {savedUda.filter(handleApplyLibFilters).length === 0 && <UiEmptyState icon={Filter} title="Nessun elemento corrispondente ai filtri" description="Prova a modificare i filtri di ricerca o a ripristinare l'elenco completo." action={<button onClick={handleClearLibFilters} className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-lg text-xs font-bold transition">Pulisci filtri</button>} />}
       </div>
 
-      <UiConfirmDialog
-        open={udaToDelete !== null}
-        title="Rimuovi UDA"
-        message="Vuoi davvero rimuovere questa UDA dall'archivio? L'operazione non può essere annullata."
-        confirmLabel="Rimuovi"
-        variant="danger"
-        onConfirm={() => { if (udaToDelete) deleteUda(udaToDelete); setUdaToDelete(null); }}
-        onCancel={() => setUdaToDelete(null)}
-      />
-      <UiConfirmDialog
-        open={showClearAllConfirm}
-        title="Svuota archivio UDA"
-        message="Questa operazione cancellerà tutte le UDA salvate. L'operazione non può essere annullata."
-        confirmLabel="Svuota tutto"
-        variant="danger"
-        onConfirm={() => { clearUdaLibrary(); setShowClearAllConfirm(false); }}
-        onCancel={() => setShowClearAllConfirm(false)}
-      />
+      <UiConfirmDialog open={udaToDelete !== null} title="Rimuovi UDA" message="Vuoi davvero rimuovere questa UDA dall'archivio? L'operazione non può essere annullata." confirmLabel="Rimuovi" variant="danger" onConfirm={() => { if (udaToDelete) deleteUda(udaToDelete); setUdaToDelete(null); }} onCancel={() => setUdaToDelete(null)} />
+      <UiConfirmDialog open={showClearAllConfirm} title="Svuota archivio UDA" message="Questa operazione cancellerà tutte le UDA salvate. L'operazione non può essere annullata." confirmLabel="Svuota tutto" variant="danger" onConfirm={() => { clearUdaLibrary(); setShowClearAllConfirm(false); }} onCancel={() => setShowClearAllConfirm(false)} />
     </div>
   );
 }
