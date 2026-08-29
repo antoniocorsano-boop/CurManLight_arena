@@ -1,7 +1,6 @@
 import { useEffect, useRef } from 'react';
-import { X, Code, Copy, Users } from 'lucide-react';
+import { X, Code, Copy } from 'lucide-react';
 import type { UdaModel } from '../../../types/curriculum';
-import type { SocialUda } from '../../session';
 import type { A07InstitutionalDocumentRead } from '../../../domain/institution';
 
 export interface UdaDetailModalProps {
@@ -104,168 +103,12 @@ export function UdaDetailModal({
          <span> = Dato curricolare locale</span>
         <span> = Esempio didattico personalizzabile</span>
        </div>
-       
        <div className="h-6 shrink-0" />
       </div>
       <div className="bg-slate-50 px-6 py-3 border-t flex flex-wrap justify-end gap-2 shrink-0">
        <button onClick={() => handleDownloadScormManifest(selectedUda.id)} className="bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs px-4 py-2 rounded-xl transition flex items-center space-x-1.5 shadow-md"><Code className="w-4 h-4" /> <span>Scarica SCORM (.zip)</span></button>
        <button onClick={() => copyUdaForRegister(selectedUda.id)} className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs px-4 py-2 rounded-xl transition flex items-center space-x-1.5 shadow-md"><Code className="w-4 h-4" /> <span>Copia per Registro (Argo/ClasseViva)</span></button>
        <button onClick={() => copyUdaTextLocal(selectedUda.id)} className="bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs px-4 py-2 rounded-xl transition flex items-center space-x-1.5 shadow-md"><Copy className="w-4 h-4" /> <span>Copia Testo UDA</span></button>
-      </div>
-     </div>
-    </div>
-  );
-}
-
-export interface OutcomesModalProps {
-  showOutcomesModal: boolean;
-  setShowOutcomesModal: (v: boolean) => void;
-  selectedUdaForOutcomes: SocialUda | null;
-  selfEvaluationStars: number;
-  setSelfEvaluationStars: (v: number) => void;
-  outcomesAvanzato: number;
-  setOutcomesAvanzato: (v: number) => void;
-  outcomesIntermedio: number;
-  setOutcomesIntermedio: (v: number) => void;
-  outcomesBase: number;
-  setOutcomesBase: (v: number) => void;
-  outcomesIniziale: number;
-  setOutcomesIniziale: (v: number) => void;
-  criticalReflectionsInput: string;
-  setCriticalReflectionsInput: (v: string) => void;
-  handleSaveOutcomes: () => void;
-}
-
-export function OutcomesModal({
-  showOutcomesModal,
-  setShowOutcomesModal,
-  selectedUdaForOutcomes,
-  selfEvaluationStars,
-  setSelfEvaluationStars,
-  outcomesAvanzato,
-  setOutcomesAvanzato,
-  outcomesIntermedio,
-  setOutcomesIntermedio,
-  outcomesBase,
-  setOutcomesBase,
-  outcomesIniziale,
-  setOutcomesIniziale,
-  criticalReflectionsInput,
-  setCriticalReflectionsInput,
-  handleSaveOutcomes,
-}: OutcomesModalProps) {
-  if (!showOutcomesModal || !selectedUdaForOutcomes) return null;
-  return (
-    <div role="dialog" aria-modal="true" className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[150] flex items-center justify-center p-4">
-     <div className="bg-white border border-slate-200 max-w-lg w-full rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] md:max-h-[85vh] h-auto fade-in text-left">
-      <div className="bg-slate-900 text-white px-6 py-4 flex justify-between items-center shrink-0">
-       <span className="flex items-center space-x-2 font-black uppercase tracking-wider text-xs">
-        <Users className="w-5 h-5 text-indigo-400" />
-        <span> REGISTRAZIONE ESITI DIDATTICI D'AULA</span>
-       </span>
-       <button onClick={() => setShowOutcomesModal(false)} className="text-slate-400 hover:text-white transition"><X className="w-5 h-5" /></button>
-      </div>
-      
-      <div className="p-6 overflow-y-auto space-y-4 text-xs text-slate-700 flex-1 leading-relaxed">
-       <div className="space-y-1 text-left">
-        <p className="text-[10px] text-slate-400 uppercase font-black">UDA locale selezionata:</p>
-        <h4 className="font-extrabold text-sm text-slate-800 leading-snug">{selectedUdaForOutcomes.title}</h4>
-        <p className="text-slate-500 font-semibold">Autore: {selectedUdaForOutcomes.author} | Disciplina: {selectedUdaForOutcomes.discipline.toUpperCase()}</p>
-       </div>
-
-       <hr className="border-slate-150" />
-
-       <div className="space-y-1.5 text-left font-bold">
-        <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider block">Valutazione Efficacia Didattica (1-5 Stelle):</label>
-        <div className="flex space-x-1">
-         {[1, 2, 3, 4, 5].map((star) => (
-           <button 
-            key={star} 
-            type="button" 
-            onClick={() => setSelfEvaluationStars(star)} 
-            aria-pressed={star <= selfEvaluationStars}
-            className="text-lg transition focus:outline-none"
-           >
-            {star <= selfEvaluationStars ? "★" : "☆"}
-           </button>
-         ))}
-        </div>
-       </div>
-
-       <div className="space-y-2 text-left">
-        <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider block">Percentuale Livelli di Competenza degli Studenti (%):</label>
-        <p className="text-[9px] text-slate-400 leading-normal mb-1">Inserisci la percentuale di alunni della classe che hanno raggiunto ciascun livello di padronanza (D.M. 14/2024 unificato). La somma deve essere esattamente 100%.</p>
-        
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-         <div className="space-y-1">
-          <span className="text-[9px] font-bold text-slate-500 block">Avanzato (%):</span>
-          <input 
-           type="number" 
-           value={outcomesAvanzato} 
-           onChange={(e) => setOutcomesAvanzato(Math.max(0, Math.min(100, Number(e.target.value))))} 
-           className="w-full border rounded-lg p-2 text-xs font-bold bg-slate-50" 
-           min="0" max="100" 
-          />
-         </div>
-         <div className="space-y-1">
-          <span className="text-[9px] font-bold text-slate-500 block">Intermedio (%):</span>
-          <input 
-           type="number" 
-           value={outcomesIntermedio} 
-           onChange={(e) => setOutcomesIntermedio(Math.max(0, Math.min(100, Number(e.target.value))))} 
-           className="w-full border rounded-lg p-2 text-xs font-bold bg-slate-50" 
-           min="0" max="100" 
-          />
-         </div>
-         <div className="space-y-1">
-          <span className="text-[9px] font-bold text-slate-500 block">Base (%):</span>
-          <input 
-           type="number" 
-           value={outcomesBase} 
-           onChange={(e) => setOutcomesBase(Math.max(0, Math.min(100, Number(e.target.value))))} 
-           className="w-full border rounded-lg p-2 text-xs font-bold bg-slate-50" 
-           min="0" max="100" 
-          />
-         </div>
-         <div className="space-y-1">
-          <span className="text-[9px] font-bold text-slate-500 block">Iniziale (%):</span>
-          <input 
-           type="number" 
-           value={outcomesIniziale} 
-           onChange={(e) => setOutcomesIniziale(Math.max(0, Math.min(100, Number(e.target.value))))} 
-           className="w-full border rounded-lg p-2 text-xs font-bold bg-slate-50" 
-           min="0" max="100" 
-          />
-         </div>
-        </div>
-       </div>
-
-       <div className="space-y-1 text-left">
-        <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider block">Riflessioni e annotazioni locali:</label>
-        <p className="text-[9px] text-amber-700 font-semibold">Non inserire nomi o altri dati personali. L'app non garantisce anonimizzazione automatica.</p>
-        <textarea 
-         value={criticalReflectionsInput} 
-         onChange={(e) => setCriticalReflectionsInput(e.target.value)} 
-         className="w-full border rounded-lg p-2 text-xs font-semibold placeholder-slate-400 outline-none bg-slate-50" 
-         rows={3} 
-         placeholder="Inserisci solo osservazioni metodologiche prive di dati personali."
-        />
-       </div>
-      </div>
-      
-      <div className="bg-slate-50 px-6 py-3.5 border-t flex justify-between shrink-0">
-       <button 
-        onClick={() => setShowOutcomesModal(false)} 
-        className="px-4 py-2 border rounded-xl font-bold text-xs bg-white text-slate-700 hover:bg-slate-50 transition"
-       >
-        Annulla
-       </button>
-       <button 
-        onClick={handleSaveOutcomes} 
-        className="bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs px-5 py-2.5 rounded-xl transition shadow-md shadow-indigo-600/10"
-       >
-        Salva ed Elabora Esiti
-       </button>
       </div>
      </div>
     </div>
