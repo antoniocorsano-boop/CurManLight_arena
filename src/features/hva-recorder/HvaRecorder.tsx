@@ -87,6 +87,7 @@ export default function HvaRecorder() {
       const identity = await readPublishedReleaseIdentity({
         baseUrl: import.meta.env.BASE_URL,
         origin: window.location.origin,
+        pageUrl: window.location.href,
       });
       setReleaseSha(identity.releaseSha);
       setReleaseStatus('ready');
@@ -94,8 +95,7 @@ export default function HvaRecorder() {
     } catch (releaseError) {
       console.warn('[Arena HVA Recorder] Release identity unavailable:', releaseError);
       setReleaseStatus('error');
-      setError('Identità della Beta non disponibile. La registrazione HVA canonica resta bloccata finché lo SHA non è verificato.');
-      setExpanded(true);
+      setError('Identità Beta non disponibile. Apri HVA e usa Riprova.');
     }
   };
 
@@ -284,7 +284,7 @@ export default function HvaRecorder() {
         <button
           type="button"
           onClick={() => setExpanded(true)}
-          className="flex h-9 min-w-9 items-center justify-center gap-1 rounded-full border border-slate-300 bg-white/95 px-2 text-[10px] font-bold text-slate-800 shadow-md backdrop-blur"
+          className="flex h-8 min-w-8 items-center justify-center gap-1 rounded-full border border-slate-300 bg-white/95 px-2 text-[9px] font-bold text-slate-800 shadow-md backdrop-blur"
           aria-label="Apri controlli registratore HVA"
         >
           <span aria-hidden="true" className={isActive ? 'text-rose-600' : releaseReady ? 'text-emerald-600' : 'text-amber-600'}>●</span>
@@ -297,72 +297,72 @@ export default function HvaRecorder() {
 
   return (
     <aside
-      className="fixed top-20 right-1 z-[300] w-[min(17rem,calc(100vw-0.5rem))] rounded-xl border border-slate-300 bg-white/98 p-2.5 shadow-xl backdrop-blur"
+      className="fixed top-20 right-1 z-[300] w-[min(13rem,calc(100vw-0.5rem))] rounded-lg border border-slate-300 bg-white/98 p-2 shadow-xl backdrop-blur"
       data-hva-recorder
       data-recording={isActive ? 'true' : 'false'}
       aria-label="Arena HVA Recorder"
     >
       <div className="flex items-start justify-between gap-2">
         <div>
-          <div className="flex items-center gap-1.5 text-xs font-bold text-slate-900">
-            <Mic className="h-3.5 w-3.5" /> HVA Recorder
+          <div className="flex items-center gap-1 text-[11px] font-bold text-slate-900">
+            <Mic className="h-3 w-3" /> HVA Recorder
           </div>
-          <p className="mt-0.5 text-[10px] leading-3.5 text-slate-600">Solo locale · nessun upload.</p>
-          <p className="mt-1 text-[10px] leading-3.5 text-slate-700">
+          <p className="mt-0.5 text-[9px] leading-3 text-slate-600">Locale · nessun upload.</p>
+          <p className="mt-1 text-[9px] leading-3 text-slate-700">
             Release: <span className="font-mono font-semibold">{releaseReady ? releaseSha?.slice(0, 10) : releaseStatus === 'checking' ? 'verifica…' : 'non disponibile'}</span>
           </p>
         </div>
-        <button type="button" onClick={() => setExpanded(false)} className="rounded-md p-1 text-slate-500 hover:bg-slate-100" aria-label="Riduci registratore HVA">
-          <ChevronUp className="h-3.5 w-3.5" />
+        <button type="button" onClick={() => setExpanded(false)} className="rounded p-1 text-slate-500 hover:bg-slate-100" aria-label="Riduci registratore HVA">
+          <ChevronUp className="h-3 w-3" />
         </button>
       </div>
 
       {releaseStatus === 'error' && (
-        <button type="button" onClick={() => void refreshReleaseIdentity()} className="mt-2 inline-flex items-center gap-1 rounded-lg border border-amber-300 px-2 py-1.5 text-[10px] font-semibold text-amber-900">
-          <RefreshCw className="h-3 w-3" /> Riprova identità release
+        <button type="button" onClick={() => void refreshReleaseIdentity()} className="mt-1.5 inline-flex items-center gap-1 rounded-md border border-amber-300 px-2 py-1 text-[9px] font-semibold text-amber-900">
+          <RefreshCw className="h-3 w-3" /> Riprova release
         </button>
       )}
 
-      <div className="mt-2 flex flex-wrap gap-1.5" role="status" aria-live="polite">
+      <div className="mt-1.5 flex flex-wrap gap-1" role="status" aria-live="polite">
         {(status === 'idle' || status === 'error') && (
           <button
             type="button"
             onClick={() => void startRecording()}
             disabled={!releaseReady}
-            className="inline-flex items-center gap-1.5 rounded-lg bg-slate-950 px-2.5 py-1.5 text-[11px] font-semibold text-white disabled:cursor-not-allowed disabled:opacity-40"
+            className="inline-flex items-center gap-1 rounded-md bg-slate-950 px-2 py-1 text-[10px] font-semibold text-white disabled:cursor-not-allowed disabled:opacity-40"
           >
-            <Mic className="h-3.5 w-3.5" /> Registra
+            <Mic className="h-3 w-3" /> Registra
           </button>
         )}
-        {status === 'requesting' && <span className="text-[11px] font-semibold text-slate-700">Richiesta microfono…</span>}
+        {status === 'requesting' && <span className="text-[10px] font-semibold text-slate-700">Microfono…</span>}
         {status === 'recording' && (
           <>
-            <button type="button" onClick={pauseRecording} className="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 px-2.5 py-1.5 text-[11px] font-semibold text-slate-800"><Pause className="h-3.5 w-3.5" /> Pausa</button>
-            <button type="button" onClick={stopRecording} className="inline-flex items-center gap-1.5 rounded-lg bg-slate-950 px-2.5 py-1.5 text-[11px] font-semibold text-white"><Square className="h-3.5 w-3.5" /> Termina</button>
+            <button type="button" onClick={pauseRecording} className="inline-flex items-center gap-1 rounded-md border border-slate-300 px-2 py-1 text-[10px] font-semibold text-slate-800"><Pause className="h-3 w-3" /> Pausa</button>
+            <button type="button" onClick={stopRecording} className="inline-flex items-center gap-1 rounded-md bg-slate-950 px-2 py-1 text-[10px] font-semibold text-white"><Square className="h-3 w-3" /> Termina</button>
           </>
         )}
         {status === 'paused' && (
           <>
-            <button type="button" onClick={resumeRecording} className="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 px-2.5 py-1.5 text-[11px] font-semibold text-slate-800"><Play className="h-3.5 w-3.5" /> Riprendi</button>
-            <button type="button" onClick={stopRecording} className="inline-flex items-center gap-1.5 rounded-lg bg-slate-950 px-2.5 py-1.5 text-[11px] font-semibold text-white"><Square className="h-3.5 w-3.5" /> Termina</button>
+            <button type="button" onClick={resumeRecording} className="inline-flex items-center gap-1 rounded-md border border-slate-300 px-2 py-1 text-[10px] font-semibold text-slate-800"><Play className="h-3 w-3" /> Riprendi</button>
+            <button type="button" onClick={stopRecording} className="inline-flex items-center gap-1 rounded-md bg-slate-950 px-2 py-1 text-[10px] font-semibold text-white"><Square className="h-3 w-3" /> Termina</button>
           </>
         )}
       </div>
 
-      {error && <p className="mt-2 rounded-lg bg-amber-50 p-2 text-[10px] leading-4 text-amber-900">{error}</p>}
+      {error && expanded && <p className="mt-1.5 rounded-md bg-amber-50 p-1.5 text-[9px] leading-3 text-amber-900">{error}</p>}
 
       {status === 'stopped' && manifest && audioBlob && (
-        <div className="mt-2 space-y-2 border-t border-slate-200 pt-2">
-          {audioUrl && <audio className="h-8 w-full" controls src={audioUrl} preload="metadata" />}
-          <div className="text-[10px] leading-3.5 text-slate-600">
+        <div className="mt-1.5 space-y-1.5 border-t border-slate-200 pt-1.5">
+          {audioUrl && <audio className="h-7 w-full" controls src={audioUrl} preload="metadata" />}
+          <div className="text-[9px] leading-3 text-slate-600">
             <div>SHA: <span className="font-mono">{manifest.releaseSha?.slice(0, 10) ?? 'non rilevato'}</span></div>
-            <div>{manifest.timeline.length} route · IndexedDB locale</div>
+            <div>{manifest.timeline.length} route · IndexedDB</div>
           </div>
-          <div className="grid grid-cols-2 gap-1.5">
-            <button type="button" onClick={() => void exportWav()} disabled={wavExporting} className="inline-flex items-center justify-center gap-1 rounded-lg border border-slate-300 px-2 py-1.5 text-[10px] font-semibold text-slate-800 disabled:opacity-60"><Download className="h-3.5 w-3.5" /> {wavExporting ? 'WAV…' : 'WAV compatibile'}</button>
-            <button type="button" onClick={exportManifest} className="inline-flex items-center justify-center gap-1 rounded-lg border border-slate-300 px-2 py-1.5 text-[10px] font-semibold text-slate-800"><Download className="h-3.5 w-3.5" /> Manifest</button>
-            <button type="button" onClick={exportAudio} className="inline-flex items-center justify-center gap-1 rounded-lg border border-slate-300 px-2 py-1.5 text-[10px] font-semibold text-slate-700"><Download className="h-3.5 w-3.5" /> Originale</button>
-            <button type="button" onClick={() => void deleteLocal()} className="inline-flex items-center justify-center gap-1 rounded-lg border border-slate-300 px-2 py-1.5 text-[10px] font-semibold text-slate-700"><Trash2 className="h-3.5 w-3.5" /> Elimina</button>
+          <div className="grid grid-cols-2 gap-1">
+            <button type="button" onClick={() => void exportWav()} disabled={wavExporting} className="inline-flex items-center justify-center gap-1 rounded-md border border-slate-300 px-1.5 py-1 text-[9px] font-semibold text-slate-800 disabled:opacity-60"><Download className="h-3 w-3" /> {wavExporting ? 'WAV…' : 'WAV'}</button>
+            <button type="button" onClick={exportManifest} className="inline-flex items-center justify-center gap-1 rounded-md border border-slate-300 px-1.5 py-1 text-[9px] font-semibold text-slate-800"><Download className="h-3 w-3" /> Manifest</button>
+            <button type="button" onClick={exportAudio} className="inline-flex items-center justify-center gap-1 rounded-md border border-slate-300 px-1.5 py-1 text-[9px] font-semibold text-slate-700"><Download className="h-3 w-3" /> Originale</button>
+            <button type="button" onClick={() => void deleteLocal()} className="inline-flex items-center justify-center gap-1 rounded-md border border-slate-300 px-1.5 py-1 text-[9px] font-semibold text-slate-700"><Trash2 className="h-3 w-3" /> Elimina</button>
           </div>
         </div>
       )}
