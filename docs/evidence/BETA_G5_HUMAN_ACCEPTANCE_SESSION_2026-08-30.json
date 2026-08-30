@@ -3,15 +3,15 @@
   "protocol": "BETA_G5_HUMAN_ACCEPTANCE_PROTOCOL_v2",
   "sessionId": "ARENA-S3C-2026-08-30-01",
   "candidateRef": "evidence/arena-s3c-human-acceptance-session",
-  "status": "PENDING_HUMAN",
+  "status": "HUMAN_REVIEW_BLOCKED",
   "releaseSha": "e957c7f7074e9a18da4fe9a8085dfc23be3a3ac9",
   "betaUrl": "https://antoniocorsano-boop.github.io/CurManLight_arena/",
   "releaseIdentityVerified": true,
-  "reviewedAt": null,
+  "reviewedAt": "2026-08-30T11:40:00.898Z",
   "reviewerAttestation": {
-    "humanReviewActuallyPerformed": false,
+    "humanReviewActuallyPerformed": true,
     "desktopReviewed": false,
-    "mobileReviewed": false,
+    "mobileReviewed": true,
     "noFabricatedAuthority": false,
     "proposalDecisionBoundaryUnderstood": false,
     "planningHandoffBoundaryUnderstood": false
@@ -19,78 +19,79 @@
   "tasks": {
     "HT-BETA-CURRICULUM-CONTEXT": {
       "desktop": "PENDING",
-      "mobile": "PENDING",
+      "mobile": "BLOCK",
       "observations": {
-        "validContext": "PENDING",
-        "provenance": "PENDING",
-        "invalidOrIncompleteContext": "PENDING",
-        "recovery": "PENDING"
+        "validContext": "PASS",
+        "provenance": "BLOCK",
+        "invalidOrIncompleteContext": "NOT_OBSERVABLE",
+        "recovery": "NOT_OBSERVABLE"
       },
-      "notes": ""
+      "notes": "Reviewer recognized the local-copy state and curriculum context, but did not complete a successful provenance inspection and explicitly described Fonti as unclear. Invalid/incomplete curriculum context was not deliberately produced during this session, so its fail-closed behavior was not observed; because that state was not entered, recovery from it was also not observed. The mobile view was additionally reported as list-heavy with excessively small text."
     },
     "HT-BETA-REVISION-PREPARE": {
       "desktop": "PENDING",
-      "mobile": "PENDING",
+      "mobile": "BLOCK",
       "observations": {
-        "proposalInspection": "PENDING",
-        "evidenceDisclosure": "PENDING",
-        "missingRequirementBlocked": "PENDING",
-        "unauthorizedReadOnly": "PENDING",
-        "staleOrReentryRecovery": "PENDING"
+        "proposalInspection": "BLOCK",
+        "evidenceDisclosure": "NOT_OBSERVABLE",
+        "missingRequirementBlocked": "NOT_OBSERVABLE",
+        "unauthorizedReadOnly": "NOT_OBSERVABLE",
+        "staleOrReentryRecovery": "NOT_OBSERVABLE"
       },
-      "notes": ""
+      "notes": "Reviewer explicitly reported not understanding the local choice/proposal/simulation/approval cycle and also reported incorrect upper spacing/margins in Revision. The transcript does not establish successful evidence disclosure, deliberately missing requirements, a distinct unauthorized read-only state, or stale/re-entry recovery, so those observations remain NOT_OBSERVABLE."
     },
     "HT-REVISION-DECISION": {
       "desktop": "PENDING",
-      "mobile": "PENDING",
+      "mobile": "BLOCK",
       "observations": {
-        "noAuthorityBlocked": "PENDING",
-        "evidenceAndConsequence": "PENDING",
-        "explicitOutcomeChoice": "PENDING",
-        "explicitHumanConfirmation": "PENDING",
-        "receiptRefreshReentry": "PENDING"
+        "noAuthorityBlocked": "BLOCK",
+        "evidenceAndConsequence": "BLOCK",
+        "explicitOutcomeChoice": "NOT_OBSERVABLE",
+        "explicitHumanConfirmation": "NOT_OBSERVABLE",
+        "receiptRefreshReentry": "NOT_OBSERVABLE"
       },
-      "notObservableReason": "",
-      "notes": ""
+      "notObservableReason": "The mobile session did not expose a genuine bounded authorized decision path, and none was fabricated. Therefore explicit outcome choice, explicit human confirmation and authorized receipt/re-entry were not observable. The reviewer nevertheless found the observable simulation/approval semantics and consequence boundary unclear, so the no-authority/decision boundary remains BLOCK.",
+      "notes": "The reviewer could not understand what the simulated approval cycle was for or what should happen to the local proposal."
     },
     "HT-BETA-PLANNING-HANDOFF": {
       "desktop": "PENDING",
-      "mobile": "PENDING",
+      "mobile": "BLOCK",
       "observations": {
-        "validPreview": "PENDING",
-        "provisionalWarning": "PENDING",
-        "validationFailure": "PENDING",
-        "consequenceExplanation": "PENDING",
-        "explicitHandoff": "PENDING",
-        "recovery": "PENDING"
+        "validPreview": "NOT_OBSERVABLE",
+        "provisionalWarning": "BLOCK",
+        "validationFailure": "NOT_OBSERVABLE",
+        "consequenceExplanation": "BLOCK",
+        "explicitHandoff": "NOT_OBSERVABLE",
+        "recovery": "NOT_OBSERVABLE"
       },
-      "notes": ""
+      "notes": "Documents was described as too verbose, difficult to understand and dominated by small text. The reviewer could not derive the downstream consequence/handoff clearly from the mobile presentation. A valid preview, deliberate validation failure, explicit handoff action and recovery from a blocked handoff were not exercised in the transcript and remain NOT_OBSERVABLE."
     }
   },
   "crossStates": {
-    "empty": "PENDING",
-    "loading": "PENDING",
-    "success": "PENDING",
-    "blocked": "PENDING",
-    "error": "PENDING",
-    "recovery": "PENDING"
+    "empty": "PASS",
+    "loading": "NOT_OBSERVABLE",
+    "success": "PASS",
+    "blocked": "BLOCK",
+    "error": "PASS",
+    "recovery": "NOT_OBSERVABLE"
   },
   "supplementalKnowledgeExperience": {
-    "searchAndAsk": "PENDING",
-    "relationsFailClosed": "PENDING",
-    "keyTerms": "PENDING",
-    "historicalArchive": "PENDING",
-    "notes": "KX-4 source verification has separate release-specific human evidence; this session does not silently reuse it as proof for the four frozen G5 tasks."
+    "searchAndAsk": "NOT_OBSERVABLE",
+    "relationsFailClosed": "BLOCK",
+    "keyTerms": "BLOCK",
+    "historicalArchive": "NOT_OBSERVABLE",
+    "notes": "Knowledge loaded the latest local file successfully and the local-assistant unavailable-server error was understandable. The reviewer selected retry, but the server remained unavailable, so recovery to a valid state was not observed. The Knowledge surface is too vertically long on mobile; Relations remains visibly 'in preparation'; Termini/glossary is sparse and inconsistent, including repeated 'Vedi la fonte' and 'Glossario locale non verificato'."
   },
   "evidenceCaptures": [
     {
       "kind": "MOBILE_AUDIO_ROUTE_CAPTURE",
       "source": "docs/evidence/ARENA_S3C_MOBILE_AUDIO_CAPTURE_5280a450.json",
+      "transcriptSource": "docs/evidence/ARENA_S3C_MOBILE_TRANSCRIPT_5280a450.md",
       "captureSessionId": "5280a450-155d-40da-8947-2e93d8e24fea",
       "releaseSha": "e957c7f7074e9a18da4fe9a8085dfc23be3a3ac9",
       "viewport": "406x791",
       "routeCoverageVerified": true,
-      "spokenContentInterpretation": "PENDING"
+      "spokenContentInterpretation": "HUMAN_SUPPLIED_TRANSCRIPT_REVIEWED"
     }
   ],
   "priorHumanReviewSource": "docs/evidence/ARENA_S3C_HUMAN_REVIEW_FINDINGS_feef8b87.md",
@@ -98,35 +99,60 @@
     {
       "id": "HVA-S3C-01",
       "severity": "S2",
-      "status": "OPEN_RETEST_REQUIRED",
+      "status": "OPEN_CONFIRMED",
       "title": "Mobile terminal content can be obscured",
-      "retest": "PENDING"
+      "retest": "REPRODUCED_BLOCKING",
+      "evidence": "Reviewer reported a card clipped at the top and bottom and excessive scrolling on mobile."
     },
     {
       "id": "HVA-S3C-02",
       "severity": "S2",
-      "status": "OPEN_RETEST_REQUIRED",
+      "status": "OPEN_CONFIRMED",
       "title": "Inconsistent horizontal spacing across cards and text areas",
-      "retest": "PENDING"
+      "retest": "REPRODUCED_BLOCKING",
+      "evidence": "Reviewer reported Curriculum margins as good but the upper Revision margins as incorrect."
     },
     {
       "id": "HVA-S3C-03",
       "severity": "S2",
-      "status": "OPEN_RETEST_REQUIRED",
+      "status": "OPEN_CONFIRMED",
       "title": "Teacher-facing language and information architecture are too cerebral",
-      "retest": "PENDING"
+      "retest": "REPRODUCED_BLOCKING",
+      "evidence": "Reviewer repeatedly described Documents and other surfaces as too verbose, difficult to scan and using excessively small mobile text."
     },
     {
       "id": "HVA-S3C-04",
       "severity": "S2",
-      "status": "OPEN_RETEST_REQUIRED",
+      "status": "OPEN_CONFIRMED",
       "title": "Institutional Beta simulation is too heavy for development-time review",
-      "retest": "PENDING"
+      "retest": "REPRODUCED_BLOCKING",
+      "evidence": "Reviewer explicitly did not understand the local proposal/simulation/approval cycle or what should happen to it."
+    },
+    {
+      "id": "HVA-S3C-OBS-05",
+      "severity": "UNASSESSED",
+      "status": "NEW_HUMAN_OBSERVATION",
+      "title": "Fonti purpose and destination remain unclear",
+      "evidence": "Reviewer reported Fonti as unchanged and questioned what the surface is supposed to become."
+    },
+    {
+      "id": "HVA-S3C-OBS-06",
+      "severity": "UNASSESSED",
+      "status": "NEW_HUMAN_OBSERVATION",
+      "title": "Knowledge mobile length and incomplete supporting tabs",
+      "evidence": "Reviewer reported excessive vertical length, Relations in preparation and an inconsistent/sparse Termini glossary experience."
+    },
+    {
+      "id": "HVA-S3C-OBS-07",
+      "severity": "UNASSESSED",
+      "status": "NEW_HUMAN_OBSERVATION",
+      "title": "Accessibility information and user manual appear non-responsive",
+      "evidence": "Reviewer attempted both actions and reported that nothing appeared."
     }
   ],
   "severity1Open": 0,
   "severity2Open": 4,
-  "verdict": "PENDING_HUMAN",
+  "verdict": "BETA_HIA_BLOCK",
   "allowedVerdicts": [
     "BETA_HIA_PASS",
     "PARTIAL_HUMAN_EVIDENCE",
@@ -139,6 +165,6 @@
     "BETA_HIA_PASS must not be written before the human observations are complete.",
     "BETA_HIA_PASS must not be written until HVA-S3C-01 through HVA-S3C-04 are explicitly retested and closed on the same deployed release.",
     "A completed receipt must identify the exact immutable SHA exposed by the published beta-release.json.",
-    "The recorded mobile route traversal is evidence of capture coverage only; it does not close findings or set reviewer attestations until the spoken observations are reliably interpreted."
+    "Desktop human review remains pending; this is not needed to establish that the current release is blocked because the mobile review already contains BLOCK items and four open S2 findings."
   ]
 }
