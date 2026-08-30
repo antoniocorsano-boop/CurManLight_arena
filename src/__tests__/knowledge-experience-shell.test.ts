@@ -37,10 +37,10 @@ describe('KX teacher-first knowledge experience', () => {
     expect(addSourceModalSource).toContain('Aggiungi una fonte');
     expect(addSourceModalSource).toContain('.pdf,.txt,.md,.csv,.json');
     expect(addSourceModalSource).toContain('fino a');
-    expect(addSourceModalSource).toContain('20');
     expect(addSourceModalSource).toContain('serve OCR');
     expect(addSourceModalSource).toContain('il file originale non viene inviato a un server');
     expect(addSourceModalSource).toContain('Aggiungi alla conoscenza');
+    expect(extractionSource).toContain('20 * 1024 * 1024');
   });
 
   it('extracts PDF text page by page and preserves a cryptographic source identity', () => {
