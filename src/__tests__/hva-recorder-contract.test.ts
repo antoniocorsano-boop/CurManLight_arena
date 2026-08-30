@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { appendHvaRouteEvent, createHvaRecorderManifest, HVA_RECORDER_SCHEMA } from '../features/hva-recorder/contract';
+import { encodeMonoPcm16Wav } from '../features/hva-recorder/wav';
 
 describe('Arena HVA recorder contract', () => {
   it('creates a local-only manifest bound to the observed release', () => {
@@ -38,5 +39,27 @@ describe('Arena HVA recorder contract', () => {
       { tMs: 0, route: '/', kind: 'route' },
       { tMs: 1250, route: '/revisione', kind: 'route' },
     ]);
+  });
+
+  it('encodes a standard mono PCM16 WAV for compatibility export', () => {
+    const wav = encodeMonoPcm16Wav([
+      new Float32Array([0, 0.5, -0.5, 1, -1]),
+      new Float32Array([0, 0.5, -0.5, 1, -1]),
+    ], 48000);
+    const view = new DataView(wav);
+    const ascii = (offset: number, length: number) => String.fromCharCode(
+      ...Array.from({ length }, (_, index) => view.getUint8(offset + index)),
+    );
+
+    expect(ascii(0, 4)).toBe('RIFF');
+    expect(ascii(8, 4)).toBe('WAVE');
+    expect(ascii(12, 4)).toBe('fmt ');
+    expect(ascii(36, 4)).toBe('data');
+    expect(view.getUint16(20, true)).toBe(1);
+    expect(view.getUint16(22, true)).toBe(1);
+    expect(view.getUint32(24, true)).toBe(48000);
+    expect(view.getUint16(34, true)).toBe(16);
+    expect(view.getUint32(40, true)).toBe(10);
+    expect(wav.byteLength).toBe(54);
   });
 });
