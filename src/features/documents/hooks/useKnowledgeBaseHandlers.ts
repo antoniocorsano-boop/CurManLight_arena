@@ -23,6 +23,12 @@ const escapeHtml = (value: string): string => value
  .replace(/"/g, '&quot;')
  .replace(/'/g, '&#039;');
 
+const isKnowledgeImportMetadata = (value: unknown): value is KnowledgeImportMetadata => {
+ if (!value || typeof value !== 'object') return false;
+ const candidate = value as Partial<KnowledgeImportMetadata>;
+ return typeof candidate.ingestionMethod === 'string' && typeof candidate.extractionStatus === 'string';
+};
+
 function readLegacyCustomDocs(): CustomKbDoc[] {
  const saved = safeLocalStorageGetItem('curman_customKbDocs', '[]');
  try {
@@ -106,7 +112,8 @@ export function useKnowledgeBaseHandlers({ showToast }: UseKnowledgeBaseHandlers
   }
  };
 
- const handleAddCustomKbDoc = async (metadata?: KnowledgeImportMetadata): Promise<boolean> => {
+ const handleAddCustomKbDoc = async (input?: unknown): Promise<boolean> => {
+  const metadata = isKnowledgeImportMetadata(input) ? input : undefined;
   if (!newKbDocTitle.trim() || !newKbDocContent.trim()) {
    showToast('Inserisci almeno un titolo e il contenuto del documento!', false);
    return false;
