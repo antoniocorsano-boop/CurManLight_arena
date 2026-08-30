@@ -3,6 +3,7 @@ import { useLocation } from 'react-router-dom';
 import { Mic, Pause, Play, Square, Trash2, Download, ChevronDown, ChevronUp } from 'lucide-react';
 import { appendHvaRouteEvent, createHvaRecorderManifest, type HvaRecorderManifest } from './contract';
 import { deleteHvaSession, saveHvaSession } from './storage';
+import { encodeMonoPcm16Wav } from './wav';
 
 const ACTIVATION_KEY = 'cml:hva-recorder:enabled';
 
@@ -57,14 +58,30 @@ function downloadBlob(blob: Blob, fileName: string): void {
   window.setTimeout(() => URL.revokeObjectURL(url), 0);
 }
 
+async function convertAudioBlobToWav(blob: Blob): Promise<Blob> {
+  const AudioContextCtor = window.AudioContext ?? (window as typeof window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+  if (!AudioContextCtor) throw new Error('AudioContext unavailable');
+  const context = new AudioContextCtor();
+  try {
+    const source = await blob.arrayBuffer();
+    const decoded = await context.decodeAudioData(source.slice(0));
+    const channels = Array.from({ length: decoded.numberOfChannels }, (_, index) => decoded.getChannelData(index));
+    const wav = encodeMonoPcm16Wav(channels, decoded.sampleRate);
+    return new Blob([wav], { type: 'audio/wav' });
+  } finally {
+    await context.close().catch(() => undefined);
+  }
+}
+
 export default function HvaRecorder() {
   const location = useLocation();
   const [enabled] = useState(resolveExplicitActivation);
   const [status, setStatus] = useState<RecorderStatus>('idle');
-  const [expanded, setExpanded] = useState(true);
+  const [expanded, setExpanded] = useState(false);
   const [error, setError] = useState('');
   const [manifest, setManifest] = useState<HvaRecorderManifest | null>(null);
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
+  const [wavExporting, setWavExporting] = useState(false);
 
   const recorderRef = useRef<MediaRecorder | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -197,6 +214,7 @@ export default function HvaRecorder() {
     if (!recorder || recorder.state !== 'paused') return;
     recorder.resume();
     setStatus('recording');
+    setExpanded(false);
   };
 
   const stopRecording = () => {
@@ -210,6 +228,21 @@ export default function HvaRecorder() {
     if (!audioBlob || !manifest) return;
     const extension = manifest.mimeType.includes('mp4') ? 'm4a' : 'webm';
     downloadBlob(audioBlob, `arena-hva-${manifest.sessionId}.${extension}`);
+  };
+
+  const exportWav = async () => {
+    if (!audioBlob || !manifest || wavExporting) return;
+    setWavExporting(true);
+    setError('');
+    try {
+      const wavBlob = await convertAudioBlobToWav(audioBlob);
+      downloadBlob(wavBlob, `arena-hva-${manifest.sessionId}.wav`);
+    } catch (wavError) {
+      console.warn('[Arena HVA Recorder] WAV export failed:', wavError);
+      setError('Il browser non riesce a convertire questa registrazione in WAV. Il file audio originale resta disponibile.');
+    } finally {
+      setWavExporting(false);
+    }
   };
 
   const exportManifest = () => {
@@ -234,22 +267,23 @@ export default function HvaRecorder() {
     startPerfRef.current = null;
     setError('');
     setStatus('idle');
+    setExpanded(false);
   };
 
   const isActive = status === 'recording' || status === 'paused';
 
   if (!expanded) {
     return (
-      <div className="fixed top-20 right-2 z-[300]" data-hva-recorder data-recording={isActive ? 'true' : 'false'}>
+      <div className="fixed top-20 right-1 z-[300]" data-hva-recorder data-recording={isActive ? 'true' : 'false'}>
         <button
           type="button"
           onClick={() => setExpanded(true)}
-          className="flex items-center gap-2 rounded-full border border-slate-300 bg-white/95 px-3 py-2 text-xs font-semibold text-slate-800 shadow-lg backdrop-blur"
+          className="flex h-9 min-w-9 items-center justify-center gap-1 rounded-full border border-slate-300 bg-white/95 px-2 text-[10px] font-bold text-slate-800 shadow-md backdrop-blur"
           aria-label="Apri controlli registratore HVA"
         >
           <span aria-hidden="true" className={isActive ? 'text-rose-600' : 'text-slate-500'}>●</span>
-          {status === 'paused' ? 'HVA in pausa' : 'HVA REC'}
-          <ChevronDown className="h-3.5 w-3.5" />
+          <span>{status === 'paused' ? 'PAUSA' : isActive ? 'REC' : 'HVA'}</span>
+          <ChevronDown className="h-3 w-3" />
         </button>
       </div>
     );
@@ -257,84 +291,84 @@ export default function HvaRecorder() {
 
   return (
     <aside
-      className="fixed top-20 right-2 z-[300] w-[min(22rem,calc(100vw-1rem))] rounded-2xl border border-slate-300 bg-white/98 p-3 shadow-2xl backdrop-blur"
+      className="fixed top-20 right-1 z-[300] w-[min(17rem,calc(100vw-0.5rem))] rounded-xl border border-slate-300 bg-white/98 p-2.5 shadow-xl backdrop-blur"
       data-hva-recorder
       data-recording={isActive ? 'true' : 'false'}
       aria-label="Arena HVA Recorder"
     >
-      <div className="flex items-start justify-between gap-3">
+      <div className="flex items-start justify-between gap-2">
         <div>
-          <div className="flex items-center gap-2 text-sm font-bold text-slate-900">
-            <Mic className="h-4 w-4" /> Arena HVA Recorder
+          <div className="flex items-center gap-1.5 text-xs font-bold text-slate-900">
+            <Mic className="h-3.5 w-3.5" /> HVA Recorder
           </div>
-          <p className="mt-1 text-[11px] leading-4 text-slate-600">
-            Solo locale · nessun upload automatico · route annotate durante la registrazione.
+          <p className="mt-0.5 text-[10px] leading-3.5 text-slate-600">
+            Solo locale · nessun upload.
           </p>
         </div>
-        {isActive && (
-          <button
-            type="button"
-            onClick={() => setExpanded(false)}
-            className="rounded-lg p-1.5 text-slate-500 hover:bg-slate-100"
-            aria-label="Riduci registratore HVA"
-          >
-            <ChevronUp className="h-4 w-4" />
-          </button>
-        )}
+        <button
+          type="button"
+          onClick={() => setExpanded(false)}
+          className="rounded-md p-1 text-slate-500 hover:bg-slate-100"
+          aria-label="Riduci registratore HVA"
+        >
+          <ChevronUp className="h-3.5 w-3.5" />
+        </button>
       </div>
 
-      <div className="mt-3 flex flex-wrap gap-2" role="status" aria-live="polite">
+      <div className="mt-2 flex flex-wrap gap-1.5" role="status" aria-live="polite">
         {(status === 'idle' || status === 'error') && (
           <button
             type="button"
             onClick={() => void startRecording()}
-            className="inline-flex items-center gap-2 rounded-xl bg-slate-950 px-3 py-2 text-xs font-semibold text-white"
+            className="inline-flex items-center gap-1.5 rounded-lg bg-slate-950 px-2.5 py-1.5 text-[11px] font-semibold text-white"
           >
-            <Mic className="h-4 w-4" /> Registra osservazioni
+            <Mic className="h-3.5 w-3.5" /> Registra
           </button>
         )}
-        {status === 'requesting' && <span className="text-xs font-semibold text-slate-700">Richiesta microfono…</span>}
+        {status === 'requesting' && <span className="text-[11px] font-semibold text-slate-700">Richiesta microfono…</span>}
         {status === 'recording' && (
           <>
-            <button type="button" onClick={pauseRecording} className="inline-flex items-center gap-2 rounded-xl border border-slate-300 px-3 py-2 text-xs font-semibold text-slate-800">
-              <Pause className="h-4 w-4" /> Pausa
+            <button type="button" onClick={pauseRecording} className="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 px-2.5 py-1.5 text-[11px] font-semibold text-slate-800">
+              <Pause className="h-3.5 w-3.5" /> Pausa
             </button>
-            <button type="button" onClick={stopRecording} className="inline-flex items-center gap-2 rounded-xl bg-slate-950 px-3 py-2 text-xs font-semibold text-white">
-              <Square className="h-4 w-4" /> Termina
+            <button type="button" onClick={stopRecording} className="inline-flex items-center gap-1.5 rounded-lg bg-slate-950 px-2.5 py-1.5 text-[11px] font-semibold text-white">
+              <Square className="h-3.5 w-3.5" /> Termina
             </button>
           </>
         )}
         {status === 'paused' && (
           <>
-            <button type="button" onClick={resumeRecording} className="inline-flex items-center gap-2 rounded-xl border border-slate-300 px-3 py-2 text-xs font-semibold text-slate-800">
-              <Play className="h-4 w-4" /> Riprendi
+            <button type="button" onClick={resumeRecording} className="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 px-2.5 py-1.5 text-[11px] font-semibold text-slate-800">
+              <Play className="h-3.5 w-3.5" /> Riprendi
             </button>
-            <button type="button" onClick={stopRecording} className="inline-flex items-center gap-2 rounded-xl bg-slate-950 px-3 py-2 text-xs font-semibold text-white">
-              <Square className="h-4 w-4" /> Termina
+            <button type="button" onClick={stopRecording} className="inline-flex items-center gap-1.5 rounded-lg bg-slate-950 px-2.5 py-1.5 text-[11px] font-semibold text-white">
+              <Square className="h-3.5 w-3.5" /> Termina
             </button>
           </>
         )}
       </div>
 
-      {error && <p className="mt-3 rounded-xl bg-amber-50 p-2 text-xs leading-5 text-amber-900">{error}</p>}
+      {error && <p className="mt-2 rounded-lg bg-amber-50 p-2 text-[10px] leading-4 text-amber-900">{error}</p>}
 
       {status === 'stopped' && manifest && audioBlob && (
-        <div className="mt-3 space-y-3 border-t border-slate-200 pt-3">
-          {audioUrl && <audio className="w-full" controls src={audioUrl} preload="metadata" />}
-          <div className="text-[11px] leading-4 text-slate-600">
-            <div>SHA Beta: <span className="font-mono">{manifest.releaseSha ?? 'non rilevato'}</span></div>
-            <div>Route annotate: {manifest.timeline.length}</div>
-            <div>Salvataggio: IndexedDB locale</div>
+        <div className="mt-2 space-y-2 border-t border-slate-200 pt-2">
+          {audioUrl && <audio className="h-8 w-full" controls src={audioUrl} preload="metadata" />}
+          <div className="text-[10px] leading-3.5 text-slate-600">
+            <div>SHA: <span className="font-mono">{manifest.releaseSha?.slice(0, 10) ?? 'non rilevato'}</span></div>
+            <div>{manifest.timeline.length} route · IndexedDB locale</div>
           </div>
-          <div className="flex flex-wrap gap-2">
-            <button type="button" onClick={exportAudio} className="inline-flex items-center gap-2 rounded-xl border border-slate-300 px-3 py-2 text-xs font-semibold text-slate-800">
-              <Download className="h-4 w-4" /> Audio
+          <div className="grid grid-cols-2 gap-1.5">
+            <button type="button" onClick={() => void exportWav()} disabled={wavExporting} className="inline-flex items-center justify-center gap-1 rounded-lg border border-slate-300 px-2 py-1.5 text-[10px] font-semibold text-slate-800 disabled:opacity-60">
+              <Download className="h-3.5 w-3.5" /> {wavExporting ? 'WAV…' : 'WAV compatibile'}
             </button>
-            <button type="button" onClick={exportManifest} className="inline-flex items-center gap-2 rounded-xl border border-slate-300 px-3 py-2 text-xs font-semibold text-slate-800">
-              <Download className="h-4 w-4" /> Manifest
+            <button type="button" onClick={exportManifest} className="inline-flex items-center justify-center gap-1 rounded-lg border border-slate-300 px-2 py-1.5 text-[10px] font-semibold text-slate-800">
+              <Download className="h-3.5 w-3.5" /> Manifest
             </button>
-            <button type="button" onClick={() => void deleteLocal()} className="inline-flex items-center gap-2 rounded-xl border border-slate-300 px-3 py-2 text-xs font-semibold text-slate-700">
-              <Trash2 className="h-4 w-4" /> Elimina locale
+            <button type="button" onClick={exportAudio} className="inline-flex items-center justify-center gap-1 rounded-lg border border-slate-300 px-2 py-1.5 text-[10px] font-semibold text-slate-700">
+              <Download className="h-3.5 w-3.5" /> Originale
+            </button>
+            <button type="button" onClick={() => void deleteLocal()} className="inline-flex items-center justify-center gap-1 rounded-lg border border-slate-300 px-2 py-1.5 text-[10px] font-semibold text-slate-700">
+              <Trash2 className="h-3.5 w-3.5" /> Elimina
             </button>
           </div>
         </div>
