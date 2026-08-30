@@ -138,7 +138,7 @@ fs.mkdirSync(OUT_DIR, { recursive: true });
       await page.getByText('Apri conoscenza', { exact: true }).click({ force: true });
       await page.waitForTimeout(700);
       await screenshot('03-knowledge-source.png');
-      const teacherFirstShellVisible = await page.locator('[data-kx-shell="teacher-first-v2"]').isVisible({ timeout: 3000 }).catch(() => false);
+      const teacherFirstShellVisible = await page.locator('[data-kx-shell="teacher-first-v3"]').isVisible({ timeout: 3000 }).catch(() => false);
       const knowledgeNavVisible = await page.getByRole('navigation', { name: 'Cosa vuoi fare nella conoscenza', exact: true }).isVisible({ timeout: 3000 }).catch(() => false);
       check('Assistente → Conoscenza raggiunge la shell teacher-first', teacherFirstShellVisible && knowledgeNavVisible);
       check('Nessun overflow orizzontale in Conoscenza', await hasNoHorizontalOverflow());
