@@ -63,10 +63,14 @@ describe('Arena HVA recorder contract', () => {
 
   it('accepts only an immutable published SHA for canonical recorder binding', async () => {
     const releaseSha = '50ba5a2c09b947e273ec0ab600e68ef3c8223e5d';
-    const fetchImpl = vi.fn(async () => new Response(
-      JSON.stringify({ releaseSha }),
-      { status: 200, headers: { 'content-type': 'application/json' } },
-    )) as unknown as typeof fetch;
+    const requestedUrls: string[] = [];
+    const fetchImpl = vi.fn(async (input: RequestInfo | URL) => {
+      requestedUrls.push(String(input));
+      return new Response(JSON.stringify({ releaseSha }), {
+        status: 200,
+        headers: { 'content-type': 'application/json' },
+      });
+    }) as unknown as typeof fetch;
 
     const identity = await readPublishedReleaseIdentity({
       baseUrl: '/CurManLight_arena/',
@@ -78,6 +82,32 @@ describe('Arena HVA recorder contract', () => {
     expect(identity.releaseSha).toBe(releaseSha);
     expect(identity.manifestUrl).toBe('https://example.test/CurManLight_arena/beta-release.json');
     expect(fetchImpl).toHaveBeenCalledTimes(1);
+    expect(new URL(requestedUrls[0]).pathname).toBe('/CurManLight_arena/beta-release.json');
+    expect(new URL(requestedUrls[0]).searchParams.get('hvaReleaseCheck')).toBeTruthy();
+  });
+
+  it('uses a fresh cache-busting request key for every release check', async () => {
+    const releaseSha = '50ba5a2c09b947e273ec0ab600e68ef3c8223e5d';
+    const requestedUrls: string[] = [];
+    const fetchImpl = vi.fn(async (input: RequestInfo | URL) => {
+      requestedUrls.push(String(input));
+      return new Response(JSON.stringify({ releaseSha }), {
+        status: 200,
+        headers: { 'content-type': 'application/json' },
+      });
+    }) as unknown as typeof fetch;
+
+    const options = {
+      baseUrl: '/CurManLight_arena/',
+      origin: 'https://example.test',
+      pageUrl: 'https://example.test/CurManLight_arena/?hvaRecorder=1',
+      fetchImpl,
+    };
+    await readPublishedReleaseIdentity(options);
+    await readPublishedReleaseIdentity(options);
+
+    expect(requestedUrls).toHaveLength(2);
+    expect(requestedUrls[0]).not.toBe(requestedUrls[1]);
   });
 
   it('falls back to the build base if the page-relative manifest cannot be read', async () => {
