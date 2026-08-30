@@ -1,5 +1,5 @@
 import { CurriculumTab, RevisioneTab } from '../../curriculum';
-import { EsportazioniTab, SecondBrainTab } from '../../documents';
+import { EsportazioniTab, FontiTab, SecondBrainTab } from '../../documents';
 import { ProcessoTab } from '../../processo';
 import { ProgettazioneTab } from '../../progettazione';
 import { DashboardView } from './DashboardView';
@@ -49,7 +49,22 @@ export function AppViewsLayer(props: AppViewsLayerProps) {
       )}
 
       {props.activeTab === 'revisione' && (
-        <div data-teacher-surface="revision">
+        <div className="space-y-3" data-teacher-surface="revision">
+          <aside
+            data-hva-revision-guide
+            role="note"
+            className="rounded-2xl border border-indigo-200 bg-indigo-50/70 p-4 text-sm leading-6 text-slate-700"
+          >
+            <strong className="block text-base text-slate-900">Qui prepari una proposta. Non approvi il curricolo.</strong>
+            <ol className="mt-2 grid gap-1 pl-5 text-sm list-decimal">
+              <li>Confronta il testo precedente con quello proposto.</li>
+              <li>Scegli quale testo portare avanti come proposta locale.</li>
+              <li>Solo dopo, se serve, la proposta può entrare in un percorso di revisione separato.</li>
+            </ol>
+            <p className="mt-2 font-semibold text-indigo-950">
+              La decisione della scuola è un passaggio diverso e richiede identità e autorità verificate. Senza quel contesto, Arena resta in consultazione e preparazione.
+            </p>
+          </aside>
           <RevisioneTab {...props} />
         </div>
       )}
@@ -75,11 +90,15 @@ export function AppViewsLayer(props: AppViewsLayerProps) {
         </div>
       )}
 
-      <InfoViews
-        activeTab={props.activeTab}
-        activeGeneralSubtab={props.activeGeneralSubtab}
-        setActiveGeneralSubtab={props.setActiveGeneralSubtab}
-      />
+      {props.activeTab === 'fonti' && <FontiTab {...props} />}
+
+      {props.activeTab !== 'fonti' && (
+        <InfoViews
+          activeTab={props.activeTab}
+          activeGeneralSubtab={props.activeGeneralSubtab}
+          setActiveGeneralSubtab={props.setActiveGeneralSubtab}
+        />
+      )}
 
       {props.activeTab === 'second-brain' && (
         <div data-teacher-surface="knowledge">

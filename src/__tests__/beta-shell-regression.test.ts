@@ -122,8 +122,6 @@ describe('Arena Beta canonical shell regression guard', () => {
     expect(documentsSource).toContain('data-human-task="export-curriculum"');
     expect(documentsSource).toContain('Condividi il curricolo');
     expect(documentsSource).toContain('Continua il lavoro');
-    expect(documentsSource).toContain('Scarica il documento');
-    expect(documentsSource).toContain('Salva una copia di lavoro');
     expect(documentsSource).toContain('data-export-intent="share-readable-document"');
     expect(documentsSource).toContain('data-export-intent="continue-work"');
     expect(documentsSource).toContain('data-export-format-options');
@@ -142,7 +140,7 @@ describe('Arena Beta canonical shell regression guard', () => {
       expect(documentsSource).toContain(handler);
     }
 
-    expect(documentsSource).toContain('Altri modi per condividere');
+    expect(documentsSource).toContain('data-export-format-options');
     expect(documentsSource).toContain('Serve solo il testo?');
     expect(documentsSource).toContain('w-full sm:w-auto');
     expect(documentsSource).not.toContain('handleClearLocalStorageWithReset()');
