@@ -1,6 +1,6 @@
 import Dexie, { type Table } from 'dexie';
 
-export type KnowledgeAuthorityStatus = 'LOCAL_UNVERIFIED';
+export type KnowledgeAuthorityStatus = 'LOCAL_UNVERIFIED' | 'LOCAL_VERIFIED';
 export type KnowledgeIngestionMethod = 'PASTE' | 'TEXT_FILE' | 'PDF_TEXT_EXTRACTION' | 'LEGACY_LOCAL_STORAGE';
 export type KnowledgeExtractionStatus = 'NOT_REQUIRED' | 'READY' | 'PARTIAL' | 'OCR_REQUIRED';
 
@@ -22,6 +22,7 @@ export type CustomKbDoc = KnowledgeImportMetadata & {
   content: string;
   importedAt: string;
   authorityStatus: KnowledgeAuthorityStatus;
+  verifiedAt?: string;
 };
 
 class LocalKnowledgeDatabase extends Dexie {
@@ -56,6 +57,20 @@ export async function putLocalKnowledgeSource(source: CustomKbDoc): Promise<void
 export async function putLocalKnowledgeSources(sources: CustomKbDoc[]): Promise<void> {
   if (sources.length === 0) return;
   await getKnowledgeDb().sources.bulkPut(sources);
+}
+
+export async function verifyLocalKnowledgeSource(id: string, verifiedAt = new Date().toISOString()): Promise<CustomKbDoc> {
+  const db = getKnowledgeDb();
+  const source = await db.sources.get(id);
+  if (!source) throw new Error('Fonte locale non trovata.');
+
+  const verifiedSource: CustomKbDoc = {
+    ...source,
+    authorityStatus: 'LOCAL_VERIFIED',
+    verifiedAt,
+  };
+  await db.sources.put(verifiedSource);
+  return verifiedSource;
 }
 
 export async function deleteLocalKnowledgeSource(id: string): Promise<void> {
