@@ -83,7 +83,7 @@ fs.mkdirSync(OUT_DIR, { recursive: true });
     check('Limite 20 MB visibile', await addSourceDialog.getByText(/20 MB/i).isVisible().catch(() => false));
     const fileAccept = await page.locator('#kb-file-upload-input').getAttribute('accept');
     check('File picker accetta PDF', Boolean(fileAccept && fileAccept.includes('.pdf')), fileAccept || 'accept mancante');
-    check('Confine locale non istituzionale visibile', await addSourceDialog.getByText(/Non diventa automaticamente una fonte istituzionale/i).isVisible().catch(() => false));
+    check('Confine locale non istituzionale visibile', await addSourceDialog.getByText(/Resterà separato dalle fonti istituzionali/i).isVisible().catch(() => false));
     check('Nessun overflow orizzontale nella modale di ingestione', await noHorizontalOverflow());
     await screenshot('05-aggiungi-fonte.png');
     await addSourceDialog.getByRole('button', { name: 'Chiudi', exact: true }).click(); await page.waitForTimeout(150);
