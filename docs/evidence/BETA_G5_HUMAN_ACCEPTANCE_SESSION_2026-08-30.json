@@ -82,9 +82,39 @@
     "historicalArchive": "PENDING",
     "notes": "KX-4 source verification has separate release-specific human evidence; this session does not silently reuse it as proof for the four frozen G5 tasks."
   },
-  "findings": [],
+  "priorHumanReviewSource": "docs/evidence/ARENA_S3C_HUMAN_REVIEW_FINDINGS_feef8b87.md",
+  "findings": [
+    {
+      "id": "HVA-S3C-01",
+      "severity": "S2",
+      "status": "OPEN_RETEST_REQUIRED",
+      "title": "Mobile terminal content can be obscured",
+      "retest": "PENDING"
+    },
+    {
+      "id": "HVA-S3C-02",
+      "severity": "S2",
+      "status": "OPEN_RETEST_REQUIRED",
+      "title": "Inconsistent horizontal spacing across cards and text areas",
+      "retest": "PENDING"
+    },
+    {
+      "id": "HVA-S3C-03",
+      "severity": "S2",
+      "status": "OPEN_RETEST_REQUIRED",
+      "title": "Teacher-facing language and information architecture are too cerebral",
+      "retest": "PENDING"
+    },
+    {
+      "id": "HVA-S3C-04",
+      "severity": "S2",
+      "status": "OPEN_RETEST_REQUIRED",
+      "title": "Institutional Beta simulation is too heavy for development-time review",
+      "retest": "PENDING"
+    }
+  ],
   "severity1Open": 0,
-  "severity2Open": 0,
+  "severity2Open": 4,
   "verdict": "PENDING_HUMAN",
   "allowedVerdicts": [
     "BETA_HIA_PASS",
@@ -96,6 +126,7 @@
     "Automated browser evidence is not a substitute for this human review.",
     "A revoked or missing institutional membership must not be fabricated to obtain an authorized decision path.",
     "BETA_HIA_PASS must not be written before the human observations are complete.",
+    "BETA_HIA_PASS must not be written until HVA-S3C-01 through HVA-S3C-04 are explicitly retested and closed on the same deployed release.",
     "A completed receipt must identify the exact immutable SHA exposed by the published beta-release.json."
   ]
 }
