@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Archive, BookOpen, FilePlus2, FileText, Network, Search, Sparkles } from 'lucide-react';
+import { Archive, BookOpen, CheckCircle2, FilePlus2, FileText, Network, Search, Sparkles } from 'lucide-react';
 import LegacySecondBrainTab, { type SecondBrainTabProps } from './SecondBrainTabLegacy';
+import { verifyLocalKnowledgeSource } from '../lib/localKnowledgeStore';
 
 export type { SecondBrainTabProps } from './SecondBrainTabLegacy';
 
@@ -42,6 +43,7 @@ export default function SecondBrainTab(props: SecondBrainTabProps) {
     selectedBrainDoc,
     setSelectedBrainDoc,
     customKbDocs,
+    setCustomKbDocs,
     setShowAddKbModal,
     wikiWorkspaceTab,
     setWikiWorkspaceTab,
@@ -53,9 +55,12 @@ export default function SecondBrainTab(props: SecondBrainTabProps) {
     glossary,
     glossarySearch,
     setGlossarySearch,
+    showToast,
   } = props;
 
   const [sourceSearch, setSourceSearch] = useState('');
+  const [verificationCandidateId, setVerificationCandidateId] = useState<string | null>(null);
+  const [isVerifyingSource, setIsVerifyingSource] = useState(false);
 
   const isSearchActive = secondBrainTab === 'brain' && wikiWorkspaceTab === 'chat';
   const isSourcesActive = secondBrainTab === 'brain' && wikiWorkspaceTab === 'read';
@@ -80,6 +85,10 @@ export default function SecondBrainTab(props: SecondBrainTabProps) {
     return customKbDocs.filter((doc) => !query || `${doc.title} ${doc.subtitle}`.toLocaleLowerCase('it').includes(query));
   }, [customKbDocs, sourceSearch]);
 
+  const verificationCandidate = verificationCandidateId
+    ? customKbDocs.find((doc) => doc.id === verificationCandidateId) ?? null
+    : null;
+
   const openSearch = () => {
     setSecondBrainTab('brain');
     setWikiWorkspaceTab('chat');
@@ -94,6 +103,27 @@ export default function SecondBrainTab(props: SecondBrainTabProps) {
     setSelectedBrainDoc(id);
     setSecondBrainTab('brain');
     setWikiWorkspaceTab('read');
+  };
+
+  const beginSourceVerification = (id: string) => {
+    openSource(id);
+    setVerificationCandidateId(id);
+  };
+
+  const confirmSourceVerification = async () => {
+    if (!verificationCandidate || isVerifyingSource) return;
+    setIsVerifyingSource(true);
+    try {
+      const verified = await verifyLocalKnowledgeSource(verificationCandidate.id);
+      setCustomKbDocs((current) => current.map((doc) => doc.id === verified.id ? verified : doc));
+      setVerificationCandidateId(null);
+      showToast(`Fonte “${verified.title}” verificata localmente. Non è stata resa fonte istituzionale.`, true);
+    } catch (error) {
+      console.warn('[KX-4] Local source verification failed:', error);
+      showToast('Non riesco a registrare la verifica di questa fonte nel browser.', false);
+    } finally {
+      setIsVerifyingSource(false);
+    }
   };
 
   const submitQuestion = () => {
@@ -249,18 +279,53 @@ export default function SecondBrainTab(props: SecondBrainTabProps) {
             <section className="space-y-3" aria-labelledby="kx-added-sources-title">
               <h3 id="kx-added-sources-title" className="text-sm font-black text-slate-900">Aggiunte da te</h3>
               <div className="grid gap-3 md:grid-cols-2">
-                {visibleCustomSources.map((doc) => (
-                  <button key={doc.id} type="button" onClick={() => openSource(doc.id)} className={`rounded-xl border p-4 text-left transition hover:border-indigo-300 hover:bg-indigo-50/30 ${selectedBrainDoc === doc.id ? 'border-indigo-500 bg-indigo-50/40' : 'border-slate-200 bg-white'}`}>
-                    <span className="flex items-start gap-3">
-                      <FileText className="mt-0.5 h-5 w-5 shrink-0 text-indigo-600" aria-hidden="true" />
-                      <span className="min-w-0">
-                        <span className="block font-black text-slate-900">{normalizePublicText(doc.title)}</span>
-                        <span className="mt-1 block text-sm leading-5 text-slate-600">{normalizePublicText(doc.subtitle || 'Materiale aggiunto localmente')}</span>
-                        <span className="mt-2 block text-xs font-bold text-amber-700">Da verificare prima dell’uso istituzionale</span>
-                      </span>
-                    </span>
-                  </button>
-                ))}
+                {visibleCustomSources.map((doc) => {
+                  const isVerified = doc.authorityStatus === 'LOCAL_VERIFIED';
+                  return (
+                    <article key={doc.id} className={`rounded-xl border p-4 transition ${selectedBrainDoc === doc.id ? 'border-indigo-500 bg-indigo-50/40' : 'border-slate-200 bg-white'}`}>
+                      <button type="button" onClick={() => openSource(doc.id)} className="w-full text-left">
+                        <span className="flex items-start gap-3">
+                          <FileText className="mt-0.5 h-5 w-5 shrink-0 text-indigo-600" aria-hidden="true" />
+                          <span className="min-w-0">
+                            <span className="block font-black text-slate-900">{normalizePublicText(doc.title)}</span>
+                            <span className="mt-1 block text-sm leading-5 text-slate-600">{normalizePublicText(doc.subtitle || 'Materiale aggiunto localmente')}</span>
+                            <span className={`mt-2 flex items-center gap-1.5 text-xs font-bold ${isVerified ? 'text-emerald-700' : 'text-amber-700'}`}>
+                              {isVerified && <CheckCircle2 className="h-3.5 w-3.5" aria-hidden="true" />}
+                              {isVerified ? 'Fonte locale verificata' : 'Da verificare prima dell’uso istituzionale'}
+                            </span>
+                          </span>
+                        </span>
+                      </button>
+                      {!isVerified && (
+                        <button type="button" onClick={() => beginSourceVerification(doc.id)} className="mt-3 min-h-11 w-full rounded-lg border border-indigo-200 bg-white px-3 py-2 text-sm font-black text-indigo-800 hover:bg-indigo-50">
+                          Apri e verifica
+                        </button>
+                      )}
+                    </article>
+                  );
+                })}
+              </div>
+            </section>
+          )}
+
+          {verificationCandidate && verificationCandidate.authorityStatus === 'LOCAL_UNVERIFIED' && (
+            <section className="rounded-2xl border border-amber-200 bg-amber-50/60 p-5" aria-labelledby="kx-source-verification-title" data-kx-task="source-verification">
+              <div className="max-w-2xl space-y-2">
+                <h3 id="kx-source-verification-title" className="text-base font-black text-slate-900">Conferma la verifica della fonte</h3>
+                <p className="text-sm leading-6 text-slate-700">
+                  Prima di confermare, controlla nel lettore il contenuto estratto e la provenienza disponibile{verificationCandidate.originalFileName ? ` dal file “${normalizePublicText(verificationCandidate.originalFileName)}”` : ''}.
+                </p>
+                <p className="text-sm font-bold leading-6 text-amber-900">
+                  Questa conferma registra soltanto una verifica locale umana: non rende il documento una fonte normativa o istituzionale e non modifica il curricolo approvato.
+                </p>
+              </div>
+              <div className="mt-4 flex flex-col gap-2 sm:flex-row">
+                <button type="button" onClick={() => void confirmSourceVerification()} disabled={isVerifyingSource} className="min-h-12 rounded-xl bg-indigo-600 px-4 py-3 text-sm font-black text-white disabled:cursor-not-allowed disabled:bg-slate-300">
+                  {isVerifyingSource ? 'Registrazione…' : 'Conferma come fonte locale verificata'}
+                </button>
+                <button type="button" onClick={() => setVerificationCandidateId(null)} disabled={isVerifyingSource} className="min-h-12 rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm font-black text-slate-700 disabled:cursor-not-allowed disabled:text-slate-400">
+                  Annulla
+                </button>
               </div>
             </section>
           )}
