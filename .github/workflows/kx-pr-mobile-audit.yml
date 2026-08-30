@@ -6,6 +6,10 @@ on:
     paths:
       - 'src/features/documents/components/SecondBrainTab.tsx'
       - 'src/features/documents/components/SecondBrainTabLegacy.tsx'
+      - 'src/features/documents/components/KnowledgeModals.tsx'
+      - 'src/features/documents/components/AddKnowledgeSourceModal.tsx'
+      - 'src/features/documents/hooks/useKnowledgeBaseHandlers.ts'
+      - 'src/features/documents/lib/**'
       - 'src/__tests__/knowledge-experience-shell.test.ts'
       - 'scripts/audit-kx-mobile.cjs'
       - '.github/workflows/kx-pr-mobile-audit.yml'
