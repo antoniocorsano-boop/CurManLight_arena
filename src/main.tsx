@@ -39,6 +39,7 @@ import ReactDOM from 'react-dom/client'
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import App from './App.tsx'
 import BetaIdentityPage from './features/beta/BetaIdentityPage.tsx'
+import HvaRecorder from './features/hva-recorder/HvaRecorder.tsx'
 import { resolveRouterBasename } from './features/navigation/routerBasename'
 import './index.css'
 
@@ -90,6 +91,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
       <Route path="/beta-identity" element={<BetaIdentityPage />} />
       <Route path="*" element={<App />} />
      </Routes>
+     <HvaRecorder />
     </BrowserRouter>
    )}
   </ErrorBoundary>
