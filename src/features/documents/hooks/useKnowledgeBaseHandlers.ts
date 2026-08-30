@@ -16,6 +16,13 @@ type UseKnowledgeBaseHandlersArgs = {
  showToast: (msg: string, success?: boolean) => void;
 };
 
+const escapeHtml = (value: string): string => value
+ .replace(/&/g, '&amp;')
+ .replace(/</g, '&lt;')
+ .replace(/>/g, '&gt;')
+ .replace(/"/g, '&quot;')
+ .replace(/'/g, '&#039;');
+
 function readLegacyCustomDocs(): CustomKbDoc[] {
  const saved = safeLocalStorageGetItem('curman_customKbDocs', '[]');
  try {
@@ -163,19 +170,23 @@ export function useKnowledgeBaseHandlers({ showToast }: UseKnowledgeBaseHandlers
   if (id.startsWith('vol-custom-')) {
    const doc = customKbDocs.find((item) => item.id === id);
    if (!doc) return '<p>Nessun contenuto disponibile.</p>';
-   const sourceIdentity = doc.originalFileName
-    ? `<p class="text-xs text-slate-500"><strong>File:</strong> ${doc.originalFileName}${doc.pageCount ? ` · ${doc.pageCount} pagine` : ''}</p>`
+   const safeTitle = escapeHtml(doc.title);
+   const safeSubtitle = escapeHtml(doc.subtitle);
+   const safeContent = escapeHtml(doc.content);
+   const safeOriginalFileName = doc.originalFileName ? escapeHtml(doc.originalFileName) : '';
+   const sourceIdentity = safeOriginalFileName
+    ? `<p class="text-xs text-slate-500"><strong>File:</strong> ${safeOriginalFileName}${doc.pageCount ? ` · ${doc.pageCount} pagine` : ''}</p>`
     : '';
    return `
     <div class="space-y-4">
-     <h1 class="text-lg font-black text-indigo-950 uppercase border-b pb-2">${doc.title}</h1>
-     <p class="text-xs font-bold text-slate-500">${doc.subtitle}</p>
+     <h1 class="text-lg font-black text-indigo-950 uppercase border-b pb-2">${safeTitle}</h1>
+     <p class="text-xs font-bold text-slate-500">${safeSubtitle}</p>
      ${sourceIdentity}
      <div class="bg-amber-50/20 border border-amber-100 rounded-xl p-4 space-y-2">
        <strong class="text-xs text-amber-900 block font-black">Fonte locale non verificata</strong>
        <p class="text-slate-700 leading-relaxed font-semibold">Il materiale resta separato dalle fonti istituzionali e richiede controllo prima dell'uso.</p>
      </div>
-     <div class="text-slate-700 leading-relaxed text-xs whitespace-pre-wrap font-semibold">${doc.content}</div>
+     <div class="text-slate-700 leading-relaxed text-xs whitespace-pre-wrap font-semibold">${safeContent}</div>
     </div>
    `;
   }
