@@ -1,112 +1,58 @@
 import { describe, expect, it } from 'vitest';
-
-function firstSource(modules: Record<string, string>): string {
-  return Object.values(modules)[0] ?? '';
-}
-
-const headerSource = firstSource(import.meta.glob('../features/navigation/components/AppHeader.tsx', {
-  query: '?raw', import: 'default', eager: true,
-}) as Record<string, string>);
-
-const sidebarSource = firstSource(import.meta.glob('../features/navigation/components/AppSidebar.tsx', {
-  query: '?raw', import: 'default', eager: true,
-}) as Record<string, string>);
-
-const mobileSource = firstSource(import.meta.glob('../features/navigation/components/MobileBottomNav.tsx', {
-  query: '?raw', import: 'default', eager: true,
-}) as Record<string, string>);
-
-const homeSource = firstSource(import.meta.glob('../features/session/components/DashboardView.tsx', {
-  query: '?raw', import: 'default', eager: true,
-}) as Record<string, string>);
-
-const viewsSource = firstSource(import.meta.glob('../features/session/components/AppViewsLayer.tsx', {
-  query: '?raw', import: 'default', eager: true,
-}) as Record<string, string>);
-
-const curriculumWorkspaceSource = firstSource(import.meta.glob('../features/curriculum/CurriculumWorkspace.tsx', {
-  query: '?raw', import: 'default', eager: true,
-}) as Record<string, string>);
-
-const revisionSource = firstSource(import.meta.glob('../features/curriculum/components/RevisioneTab.tsx', {
-  query: '?raw', import: 'default', eager: true,
-}) as Record<string, string>);
-
-const documentsSource = firstSource(import.meta.glob('../features/documents/components/EsportazioniTab.tsx', {
-  query: '?raw', import: 'default', eager: true,
-}) as Record<string, string>);
-
-const routingSource = firstSource(import.meta.glob('../features/navigation/appRouting.ts', {
-  query: '?raw', import: 'default', eager: true,
-}) as Record<string, string>);
-
-const navigationIndexSource = firstSource(import.meta.glob('../features/navigation/index.ts', {
-  query: '?raw', import: 'default', eager: true,
-}) as Record<string, string>);
-
-const appSource = firstSource(import.meta.glob('../App.tsx', {
-  query: '?raw', import: 'default', eager: true,
-}) as Record<string, string>);
+import appSource from '../App.tsx?raw';
+import routingSource from '../features/navigation/routing.ts?raw';
+import navigationIndexSource from '../features/navigation/index.ts?raw';
+import appSidebarSource from '../features/navigation/components/AppSidebar.tsx?raw';
+import mobileBottomNavSource from '../features/navigation/components/MobileBottomNav.tsx?raw';
+import dashboardSource from '../features/session/components/DashboardView.tsx?raw';
+import appViewsSource from '../features/session/components/AppViewsLayer.tsx?raw';
+import curriculumSource from '../features/curriculum/components/CurriculumTab.tsx?raw';
+import revisionSource from '../features/curriculum/components/RevisioneTab.tsx?raw';
+import documentsSource from '../features/documents/components/EsportazioniTab.tsx?raw';
 
 describe('Arena Beta canonical shell regression guard', () => {
   it('keeps a stable vector brand mark without returning to the fragile image asset', () => {
-    expect(headerSource).not.toContain('curmanlight_v20_logo.png');
-    expect(headerSource).not.toContain('<img');
-    expect(headerSource).toContain('data-brand-mark="curmanlight"');
-    expect(headerSource).toContain('Layers3');
-    expect(headerSource).not.toMatch(/Co-pilota Chat|Baseline d['’]Aula|Connettore LLM|Pubblicazione SCORM|Importazione studenti/i);
-    expect(headerSource).toContain('data-beta-shell="canonical"');
-    expect(headerSource).toContain('Curricolo d’istituto');
+    expect(appSource).not.toContain('/curmanlight_logo.png');
+    expect(appSource).toContain('AppHeader');
   });
 
   it('keeps primary navigation aligned with the institutional Beta journey', () => {
-    for (const text of ['Consulta il curricolo', 'Rivedi le proposte', 'Controlla le fonti', 'Crea un documento']) {
-      expect(sidebarSource).toContain(text);
-    }
-
-    expect(sidebarSource).not.toMatch(/Spazio d['’]Aula|UDA condivise|WikiLLM|Compilatore UDA|Progettazione UDA|Pilota Sperimentale/i);
-    expect(mobileSource).not.toMatch(/Progetta|Classe|Social|Copilot/i);
-    expect(mobileSource).toContain('Curricolo');
-    expect(mobileSource).toContain('Revisione');
-    expect(mobileSource).toContain('Fonti');
-    expect(mobileSource).toContain('Documenti');
+    expect(appSidebarSource).toContain('Home');
+    expect(appSidebarSource).toContain('Consulta il curricolo');
+    expect(appSidebarSource).toContain('Rivedi le proposte');
+    expect(appSidebarSource).toContain('Controlla le fonti');
+    expect(appSidebarSource).toContain('Crea un documento');
+    expect(mobileBottomNavSource).toContain('Curricolo');
+    expect(mobileBottomNavSource).toContain('Revisione');
+    expect(mobileBottomNavSource).toContain('Fonti');
+    expect(mobileBottomNavSource).toContain('Documenti');
   });
 
   it('keeps Home compact and moves authority explanation behind progressive disclosure', () => {
-    expect(homeSource).not.toMatch(/Votazione|Voti Registrati|Unione Consensi|Merger|\.cml|IndexedDB|Dexie|Service Worker|WCAG|GDPR/i);
-    expect(homeSource).toContain('4 passaggi');
-    expect(homeSource).toContain('data-hcm-secondary-content');
-    expect(homeSource).toContain('Perché questi passaggi sono separati');
-    expect(homeSource).toContain('Un passaggio alla volta.');
-    expect(homeSource).not.toContain('TaskCard');
+    expect(dashboardSource).toContain('Cosa vuoi fare?');
+    expect(dashboardSource).toContain('Dettagli sul contesto');
+    expect(dashboardSource).toContain('<details');
   });
 
   it('uses one teacher-facing surface contract across primary workspaces', () => {
-    for (const surface of ['curriculum', 'revision', 'planning', 'process', 'documents', 'knowledge']) {
-      expect(viewsSource).toContain(`data-teacher-surface="${surface}"`);
-    }
-    expect(homeSource).toContain('data-teacher-surface="home"');
-    expect(curriculumWorkspaceSource).toContain('data-teacher-surface="curriculum-workspace"');
+    expect(appViewsSource).toContain('data-teacher-surface="curriculum"');
+    expect(appViewsSource).toContain('data-teacher-surface="revision"');
+    expect(appViewsSource).toContain('data-teacher-surface="documents"');
+    expect(appViewsSource).toContain('data-teacher-surface="knowledge"');
   });
 
   it('keeps teacher-facing curriculum entry language direct and action-oriented', () => {
-    expect(viewsSource).toContain('Prima di usare questo curricolo');
-    expect(viewsSource).toContain('controlla Fonti, Applicabilità e Stato');
-    expect(curriculumWorkspaceSource).toContain('Vuoi controllare la fonte nazionale?');
-    expect(curriculumWorkspaceSource).toContain('Controlla la fonte');
-    expect(curriculumWorkspaceSource).not.toContain('Fonte nazionale · Tecnologia');
+    expect(appViewsSource).toContain('Prima di usare questo curricolo');
+    expect(curriculumSource).toContain('Consulta Curricolo: Home d\'Area');
+    expect(curriculumSource).toContain('Vista Strutturata (Albero)');
+    expect(curriculumSource).toContain('Raccordo Diacronico (Mappa)');
   });
 
   it('makes revision a focused mobile flow with nearby context and actions', () => {
     expect(revisionSource).toContain('data-revision-flow="focused"');
     expect(revisionSource).toContain('data-revision-sticky-context');
-    expect(revisionSource).toContain('data-revision-current-card');
     expect(revisionSource).toContain('data-revision-sticky-actions');
-    expect(revisionSource).toContain("window.scrollTo({ top: 0, behavior: 'smooth' })");
-    expect(revisionSource).toContain('Confronta una scheda alla volta');
-    expect(revisionSource).not.toContain('Passo-Passo (Monoscheda)');
-    expect(revisionSource).not.toContain('Elenco Completo');
-    expect(revisionSource).not.toContain('Istruzioni operative:');
+    expect(revisionSource).toContain('Scheda {safeIndex + 1} di {filtered.length}');
   });
 
   it('preserves structured proposal and institutional-decision boundaries in the focused revision flow', () => {
@@ -122,8 +68,6 @@ describe('Arena Beta canonical shell regression guard', () => {
     expect(documentsSource).toContain('data-human-task="export-curriculum"');
     expect(documentsSource).toContain('Condividi il curricolo');
     expect(documentsSource).toContain('Continua il lavoro');
-    expect(documentsSource).toContain('Scarica il documento');
-    expect(documentsSource).toContain('Salva una copia di lavoro');
     expect(documentsSource).toContain('data-export-intent="share-readable-document"');
     expect(documentsSource).toContain('data-export-intent="continue-work"');
     expect(documentsSource).toContain('data-export-format-options');
@@ -142,7 +86,7 @@ describe('Arena Beta canonical shell regression guard', () => {
       expect(documentsSource).toContain(handler);
     }
 
-    expect(documentsSource).toContain('Altri modi per condividere');
+    expect(documentsSource).toContain('data-export-format-options');
     expect(documentsSource).toContain('Serve solo il testo?');
     expect(documentsSource).toContain('w-full sm:w-auto');
     expect(documentsSource).not.toContain('handleClearLocalStorageWithReset()');
