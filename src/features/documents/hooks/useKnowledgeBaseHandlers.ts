@@ -20,7 +20,7 @@ const escapeHtml = (value: string): string => value
  .replace(/&/g, '&amp;')
  .replace(/</g, '&lt;')
  .replace(/>/g, '&gt;')
- .replace(/"/g, '&quot;')
+ .replace(/\"/g, '&quot;')
  .replace(/'/g, '&#039;');
 
 const isKnowledgeImportMetadata = (value: unknown): value is KnowledgeImportMetadata => {
@@ -182,18 +182,24 @@ export function useKnowledgeBaseHandlers({ showToast }: UseKnowledgeBaseHandlers
    const safeContent = escapeHtml(doc.content);
    const safeOriginalFileName = doc.originalFileName ? escapeHtml(doc.originalFileName) : '';
    const sourceIdentity = safeOriginalFileName
-    ? `<p class="text-xs text-slate-500"><strong>File:</strong> ${safeOriginalFileName}${doc.pageCount ? ` · ${doc.pageCount} pagine` : ''}</p>`
+    ? `<p class=\"text-xs text-slate-500\"><strong>File:</strong> ${safeOriginalFileName}${doc.pageCount ? ` · ${doc.pageCount} pagine` : ''}</p>`
     : '';
+   const authorityNotice = doc.authorityStatus === 'LOCAL_VERIFIED'
+    ? `<div class=\"bg-emerald-50/30 border border-emerald-200 rounded-xl p-4 space-y-2\">
+       <strong class=\"text-xs text-emerald-900 block font-black\">Fonte locale verificata</strong>
+       <p class=\"text-slate-700 leading-relaxed font-semibold\">Hai controllato questa fonte. Resta separata dalle fonti normative e istituzionali e non modifica il curricolo approvato.</p>
+      </div>`
+    : `<div class=\"bg-amber-50/20 border border-amber-100 rounded-xl p-4 space-y-2\">
+       <strong class=\"text-xs text-amber-900 block font-black\">Fonte locale non verificata</strong>
+       <p class=\"text-slate-700 leading-relaxed font-semibold\">Il materiale resta separato dalle fonti istituzionali e richiede controllo prima dell'uso.</p>
+      </div>`;
    return `
-    <div class="space-y-4">
-     <h1 class="text-lg font-black text-indigo-950 uppercase border-b pb-2">${safeTitle}</h1>
-     <p class="text-xs font-bold text-slate-500">${safeSubtitle}</p>
+    <div class=\"space-y-4\">
+     <h1 class=\"text-lg font-black text-indigo-950 uppercase border-b pb-2\">${safeTitle}</h1>
+     <p class=\"text-xs font-bold text-slate-500\">${safeSubtitle}</p>
      ${sourceIdentity}
-     <div class="bg-amber-50/20 border border-amber-100 rounded-xl p-4 space-y-2">
-       <strong class="text-xs text-amber-900 block font-black">Fonte locale non verificata</strong>
-       <p class="text-slate-700 leading-relaxed font-semibold">Il materiale resta separato dalle fonti istituzionali e richiede controllo prima dell'uso.</p>
-     </div>
-     <div class="text-slate-700 leading-relaxed text-xs whitespace-pre-wrap font-semibold">${safeContent}</div>
+     ${authorityNotice}
+     <div class=\"text-slate-700 leading-relaxed text-xs whitespace-pre-wrap font-semibold\">${safeContent}</div>
     </div>
    `;
   }
@@ -205,7 +211,8 @@ export function useKnowledgeBaseHandlers({ showToast }: UseKnowledgeBaseHandlers
    const doc = customKbDocs.find((item) => item.id === id);
    if (!doc) return 'Nessun contenuto disponibile.';
    const provenance = doc.originalFileName ? `File originale: ${doc.originalFileName}\n` : '';
-   return `${doc.title}\n${doc.subtitle}\n${provenance}\n${doc.content}`;
+   const authority = doc.authorityStatus === 'LOCAL_VERIFIED' ? 'Fonte locale verificata' : 'Fonte locale non verificata';
+   return `${doc.title}\n${doc.subtitle}\n${authority}\n${provenance}\n${doc.content}`;
   }
   return getVolumePlainTxt(id);
  };
