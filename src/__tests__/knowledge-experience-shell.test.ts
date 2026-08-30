@@ -5,11 +5,12 @@ import readerModalSource from '../features/documents/components/KnowledgeModals.
 import knowledgeHandlerSource from '../features/documents/hooks/useKnowledgeBaseHandlers.ts?raw';
 import extractionSource from '../features/documents/lib/extractLocalKnowledgeFile.ts?raw';
 import localKnowledgeStoreSource from '../features/documents/lib/localKnowledgeStore.ts?raw';
+import presentationSource from '../features/documents/lib/knowledgeSourcePresentation.ts?raw';
 import storageSource from '../lib/consolidatedStorage.ts?raw';
 
 describe('KX teacher-first knowledge experience', () => {
   it('starts from teacher tasks rather than the technical archive structure', () => {
-    expect(shellSource).toContain('data-kx-shell="teacher-first-v2"');
+    expect(shellSource).toContain('data-kx-shell="teacher-first-v3"');
     expect(shellSource).toContain('>Conoscenza</h1>');
     expect(shellSource).toContain('Cerca');
     expect(shellSource).toContain('Fonti');
@@ -21,7 +22,7 @@ describe('KX teacher-first knowledge experience', () => {
   it('keeps the human authority boundary visible in plain language', () => {
     expect(shellSource).toContain('controlla sempre la fonte');
     expect(shellSource).toContain('decisione della scuola');
-    expect(shellSource).toContain('Risposta da verificare');
+    expect(shellSource).toContain('Risposta locale da verificare');
     expect(addSourceModalSource).toContain('Non diventa automaticamente una fonte istituzionale');
     expect(addSourceModalSource).toContain('non modifica il curricolo approvato');
   });
@@ -55,11 +56,12 @@ describe('KX teacher-first knowledge experience', () => {
 
   it('stores local knowledge in IndexedDB with explicit provenance and authority state', () => {
     expect(localKnowledgeStoreSource).toContain("super('curmanlight-local-knowledge-v1')");
-    expect(localKnowledgeStoreSource).toContain("authorityStatus: KnowledgeAuthorityStatus");
+    expect(localKnowledgeStoreSource).toContain('authorityStatus: KnowledgeAuthorityStatus');
     expect(localKnowledgeStoreSource).toContain('originalFileName?: string');
     expect(localKnowledgeStoreSource).toContain('sha256?: string');
     expect(localKnowledgeStoreSource).toContain('pageCount?: number');
-    expect(localKnowledgeStoreSource).toContain("'LOCAL_UNVERIFIED'");
+    expect(localKnowledgeStoreSource).toContain("'LOCAL_UNVERIFIED' | 'LOCAL_VERIFIED'");
+    expect(localKnowledgeStoreSource).toContain('verifiedAt?: string');
     expect(knowledgeHandlerSource).toContain('putLocalKnowledgeSource(newDoc)');
     expect(knowledgeHandlerSource).not.toContain("safeLocalStorageSetItem('curman_customKbDocs'");
   });
@@ -71,19 +73,20 @@ describe('KX teacher-first knowledge experience', () => {
     expect(knowledgeHandlerSource).toContain("'LEGACY_LOCAL_STORAGE'");
   });
 
-  it('escapes imported content before it reaches the legacy HTML reader', () => {
+  it('escapes imported content in compatibility helpers while the canonical custom reader renders text directly', () => {
     expect(knowledgeHandlerSource).toContain('const escapeHtml');
     expect(knowledgeHandlerSource).toContain(".replace(/</g, '&lt;')");
     expect(knowledgeHandlerSource).toContain('const safeContent = escapeHtml(doc.content)');
     expect(readerModalSource).toContain('dangerouslySetInnerHTML');
+    expect(shellSource).toContain('{selectedCustomSource.content}');
   });
 
-  it('uses human source titles and keeps development documents secondary', () => {
+  it('uses human source titles and keeps development documents outside the ordinary catalogue', () => {
     expect(shellSource).toContain('Curricolo della scuola');
     expect(shellSource).toContain('Normativa e riferimenti');
     expect(shellSource).toContain('Scuola e miglioramento');
-    expect(shellSource).toContain('Materiali tecnici del sistema');
-    expect(shellSource).toContain('Non fanno parte del percorso ordinario del docente');
+    expect(shellSource).toContain("technical: true");
+    expect(shellSource).toContain('BUILT_IN_SOURCES.filter((source) => !source.technical)');
   });
 
   it('does not expose repository filenames in the teacher-facing source catalogue', () => {
@@ -93,10 +96,9 @@ describe('KX teacher-first knowledge experience', () => {
     expect(shellSource).not.toContain('11_STATO_SVILUPPO.MD');
   });
 
-  it('keeps long secondary explanations progressively disclosed', () => {
+  it('keeps secondary source explanations progressively disclosed where useful', () => {
     expect(shellSource).toContain('<details');
     expect(shellSource).toContain('Vedi la fonte');
-    expect(shellSource).toContain('Materiali tecnici del sistema');
     expect(addSourceModalSource).toContain('Che cosa succede dopo?');
   });
 
@@ -115,11 +117,13 @@ describe('KX teacher-first knowledge experience', () => {
     expect(storageSource).toContain('Capacità di utilizzare conoscenze e abilità');
   });
 
-  it('keeps the compatibility reader behind the human source catalogue', () => {
+  it('uses one canonical reader and one derived authority presentation path', () => {
     expect(shellSource).toContain('data-kx-task="source-reader"');
-    const readerFallback = shellSource.slice(shellSource.indexOf('data-kx-task="source-reader"'));
-    expect(readerFallback).toContain('<LegacySecondBrainTab {...props} />');
-    expect(shellSource).toContain('[class*="xl:grid-cols-12"] > div:first-child');
+    expect(shellSource).toContain('deriveKnowledgeSourcePresentation');
+    expect(presentationSource).toContain('deriveKnowledgeSourcePresentation');
+    expect(shellSource).not.toContain('LegacySecondBrainTab');
+    expect(shellSource).not.toContain('SecondBrainTabLegacy');
+    expect(shellSource).not.toContain('[class*="xl:grid-cols-12"] > div:first-child');
   });
 
   it('preserves focused-task onboarding exclusion', () => {
