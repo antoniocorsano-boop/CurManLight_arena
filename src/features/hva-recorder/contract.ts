@@ -57,7 +57,7 @@ export function appendHvaRouteEvent(
   route: string,
   tMs: number,
 ): HvaRecorderManifest {
-  const last = manifest.timeline.at(-1);
+  const last = manifest.timeline[manifest.timeline.length - 1];
   if (last?.route === route) return manifest;
   return {
     ...manifest,
