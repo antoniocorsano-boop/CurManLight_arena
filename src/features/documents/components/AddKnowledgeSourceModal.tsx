@@ -12,7 +12,7 @@ export interface AddKnowledgeSourceModalProps {
   setNewKbDocSubtitle: (value: string) => void;
   newKbDocContent: string;
   setNewKbDocContent: (value: string) => void;
-  handleAddCustomKbDoc: (metadata?: KnowledgeImportMetadata) => Promise<boolean> | boolean;
+  handleAddCustomKbDoc: (metadata?: KnowledgeImportMetadata) => void | boolean | Promise<void | boolean>;
   showToast: (message: string, success?: boolean) => void;
 }
 
@@ -103,13 +103,7 @@ export function AddKnowledgeSourceModal({
     const metadata: KnowledgeImportMetadata = pendingMetadata
       ? { ...pendingMetadata, textEditedAfterExtraction: textEditedAfterImport }
       : { ingestionMethod: 'PASTE', extractionStatus: 'NOT_REQUIRED' };
-    const saved = await handleAddCustomKbDoc(metadata);
-    if (saved) {
-      setImportState('IDLE');
-      setImportMessage('');
-      setPendingMetadata(null);
-      setTextEditedAfterImport(false);
-    }
+    await handleAddCustomKbDoc(metadata);
   };
 
   const blockedByExtraction = importState === 'READING' || importState === 'OCR_REQUIRED' || importState === 'ERROR';
