@@ -22,7 +22,7 @@ fs.mkdirSync(OUT_DIR, { recursive: true });
   const noHorizontalOverflow = async () => page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1);
   const visibleNestedScrollers = async () => page.evaluate(() => {
     const viewportHeight = window.innerHeight;
-    return Array.from(document.querySelectorAll('[data-kx-shell="teacher-first-v2"] *')).filter((el) => {
+    return Array.from(document.querySelectorAll('[data-kx-shell="teacher-first-v3"] *')).filter((el) => {
       const style = getComputedStyle(el);
       const rect = el.getBoundingClientRect();
       if (rect.width <= 0 || rect.height <= 0 || rect.bottom < 0 || rect.top > viewportHeight * 3) return false;
@@ -37,7 +37,7 @@ fs.mkdirSync(OUT_DIR, { recursive: true });
     await page.evaluate(() => { window.history.pushState({}, '', 'knowledge'); window.dispatchEvent(new PopStateEvent('popstate')); });
     await page.waitForTimeout(800);
 
-    const shell = page.locator('[data-kx-shell="teacher-first-v2"]');
+    const shell = page.locator('[data-kx-shell="teacher-first-v3"]');
     check('Shell KX teacher-first visibile', await shell.isVisible({ timeout: 5000 }).catch(() => false));
     check('Navigazione task Conoscenza visibile', await knowledgeNav().isVisible({ timeout: 5000 }).catch(() => false));
     check('Nessun overflow orizzontale iniziale', await noHorizontalOverflow());
