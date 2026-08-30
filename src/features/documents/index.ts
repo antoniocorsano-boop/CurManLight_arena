@@ -1,6 +1,6 @@
-export { AddKbDocumentModal, EsportazioniTab, SecondBrainTab, WikiReaderModal } from './components';
+export { AddKbDocumentModal, EsportazioniTab, FontiTab, SecondBrainTab, WikiReaderModal } from './components';
 export { DocumentExportHistory } from './components/DocumentExportHistory';
-export type { EsportazioniTabProps, SecondBrainTabProps } from './components';
+export type { EsportazioniTabProps, FontiTabProps, SecondBrainTabProps } from './components';
 export { useBackupHandlers } from './hooks/useBackupHandlers';
 export { useGuardedDocumentExportHandlers as useDocumentExportHandlers } from './hooks/useGuardedDocumentExportHandlers';
 export { useDocumentContinuity } from './hooks/useDocumentContinuity';
