@@ -1,5 +1,6 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { appendHvaRouteEvent, createHvaRecorderManifest, HVA_RECORDER_SCHEMA } from '../features/hva-recorder/contract';
+import { buildPublishedReleaseManifestUrl, readPublishedReleaseIdentity } from '../features/hva-recorder/releaseIdentity';
 import { encodeMonoPcm16Wav } from '../features/hva-recorder/wav';
 
 describe('Arena HVA recorder contract', () => {
@@ -39,6 +40,43 @@ describe('Arena HVA recorder contract', () => {
       { tMs: 0, route: '/', kind: 'route' },
       { tMs: 1250, route: '/revisione', kind: 'route' },
     ]);
+  });
+
+  it('resolves the published release manifest from the beta base path', () => {
+    expect(buildPublishedReleaseManifestUrl('/CurManLight_arena/', 'https://example.test')).toBe(
+      'https://example.test/CurManLight_arena/beta-release.json',
+    );
+  });
+
+  it('accepts only an immutable published SHA for canonical recorder binding', async () => {
+    const releaseSha = '50ba5a2c09b947e273ec0ab600e68ef3c8223e5d';
+    const fetchImpl = vi.fn(async () => new Response(
+      JSON.stringify({ releaseSha }),
+      { status: 200, headers: { 'content-type': 'application/json' } },
+    )) as unknown as typeof fetch;
+
+    const identity = await readPublishedReleaseIdentity({
+      baseUrl: '/CurManLight_arena/',
+      origin: 'https://example.test',
+      fetchImpl,
+    });
+
+    expect(identity.releaseSha).toBe(releaseSha);
+    expect(identity.manifestUrl).toBe('https://example.test/CurManLight_arena/beta-release.json');
+    expect(fetchImpl).toHaveBeenCalledTimes(1);
+  });
+
+  it('fails closed when the published release SHA is missing', async () => {
+    const fetchImpl = vi.fn(async () => new Response(
+      JSON.stringify({ releaseSha: null }),
+      { status: 200, headers: { 'content-type': 'application/json' } },
+    )) as unknown as typeof fetch;
+
+    await expect(readPublishedReleaseIdentity({
+      baseUrl: '/CurManLight_arena/',
+      origin: 'https://example.test',
+      fetchImpl,
+    })).rejects.toThrow('release manifest missing immutable SHA');
   });
 
   it('encodes a standard mono PCM16 WAV for compatibility export', () => {
