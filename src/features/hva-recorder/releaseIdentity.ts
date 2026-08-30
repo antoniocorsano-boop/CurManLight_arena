@@ -16,8 +16,14 @@ export function buildPageRelativeReleaseManifestUrl(pageUrl: string): string {
   return new URL(`${repositoryBase}beta-release.json`, page.origin).toString();
 }
 
+function withCacheBust(manifestUrl: string): string {
+  const requestUrl = new URL(manifestUrl);
+  requestUrl.searchParams.set('hvaReleaseCheck', `${Date.now()}-${Math.random().toString(16).slice(2)}`);
+  return requestUrl.toString();
+}
+
 async function fetchReleaseIdentity(fetchImpl: typeof fetch, manifestUrl: string): Promise<PublishedReleaseIdentity> {
-  const response = await fetchImpl(manifestUrl, {
+  const response = await fetchImpl(withCacheBust(manifestUrl), {
     method: 'GET',
     cache: 'no-store',
     credentials: 'same-origin',
