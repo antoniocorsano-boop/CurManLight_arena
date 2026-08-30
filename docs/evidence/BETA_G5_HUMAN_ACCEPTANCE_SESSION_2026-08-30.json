@@ -4,9 +4,9 @@
   "sessionId": "ARENA-S3C-2026-08-30-01",
   "candidateRef": "evidence/arena-s3c-human-acceptance-session",
   "status": "PENDING_HUMAN",
-  "releaseSha": null,
+  "releaseSha": "e957c7f7074e9a18da4fe9a8085dfc23be3a3ac9",
   "betaUrl": "https://antoniocorsano-boop.github.io/CurManLight_arena/",
-  "releaseIdentityVerified": false,
+  "releaseIdentityVerified": true,
   "reviewedAt": null,
   "reviewerAttestation": {
     "humanReviewActuallyPerformed": false,
@@ -82,6 +82,17 @@
     "historicalArchive": "PENDING",
     "notes": "KX-4 source verification has separate release-specific human evidence; this session does not silently reuse it as proof for the four frozen G5 tasks."
   },
+  "evidenceCaptures": [
+    {
+      "kind": "MOBILE_AUDIO_ROUTE_CAPTURE",
+      "source": "docs/evidence/ARENA_S3C_MOBILE_AUDIO_CAPTURE_5280a450.json",
+      "captureSessionId": "5280a450-155d-40da-8947-2e93d8e24fea",
+      "releaseSha": "e957c7f7074e9a18da4fe9a8085dfc23be3a3ac9",
+      "viewport": "406x791",
+      "routeCoverageVerified": true,
+      "spokenContentInterpretation": "PENDING"
+    }
+  ],
   "priorHumanReviewSource": "docs/evidence/ARENA_S3C_HUMAN_REVIEW_FINDINGS_feef8b87.md",
   "findings": [
     {
@@ -127,6 +138,7 @@
     "A revoked or missing institutional membership must not be fabricated to obtain an authorized decision path.",
     "BETA_HIA_PASS must not be written before the human observations are complete.",
     "BETA_HIA_PASS must not be written until HVA-S3C-01 through HVA-S3C-04 are explicitly retested and closed on the same deployed release.",
-    "A completed receipt must identify the exact immutable SHA exposed by the published beta-release.json."
+    "A completed receipt must identify the exact immutable SHA exposed by the published beta-release.json.",
+    "The recorded mobile route traversal is evidence of capture coverage only; it does not close findings or set reviewer attestations until the spoken observations are reliably interpreted."
   ]
 }

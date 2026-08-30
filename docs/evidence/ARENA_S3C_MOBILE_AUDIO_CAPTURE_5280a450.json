@@ -1,0 +1,53 @@
+{
+  "schema": "CML_ARENA_HVA_AUDIO_CAPTURE_EVIDENCE_V1",
+  "sessionId": "5280a450-155d-40da-8947-2e93d8e24fea",
+  "releaseSha": "e957c7f7074e9a18da4fe9a8085dfc23be3a3ac9",
+  "captureStartedAt": "2026-08-30T11:36:02.847Z",
+  "captureStoppedAt": "2026-08-30T11:40:00.898Z",
+  "captureDurationMs": 238051,
+  "device": {
+    "platform": "Android / Chrome mobile",
+    "viewport": {
+      "width": 406,
+      "height": 791
+    }
+  },
+  "audio": {
+    "mimeType": "audio/webm;codecs=opus",
+    "sizeBytes": 2983421,
+    "sha256": "cfea033ea6a287255690465f4e94e1bc91a06085018bff62681d1770d246d117",
+    "repositoryStored": false,
+    "automaticUpload": false,
+    "interpretationStatus": "TRANSCRIPTION_PENDING"
+  },
+  "manifest": {
+    "sha256": "ad2453f30a4492b53505d77707d0efcefea1e6d48aa135faf3ba00dbbbf6cd99",
+    "storageMode": "LOCAL_INDEXEDDB",
+    "automaticUpload": false
+  },
+  "timeline": [
+    { "tMs": 0, "route": "/revisione" },
+    { "tMs": 30367, "route": "/fonti" },
+    { "tMs": 38885, "route": "/documents" },
+    { "tMs": 91416, "route": "/knowledge?assistantView=source" },
+    { "tMs": 170461, "route": "/" },
+    { "tMs": 172434, "route": "/curriculum" },
+    { "tMs": 211873, "route": "/revisione" },
+    { "tMs": 224008, "route": "/fonti" },
+    { "tMs": 224942, "route": "/documents" }
+  ],
+  "routeCoverage": [
+    "/",
+    "/curriculum",
+    "/revisione",
+    "/fonti",
+    "/documents",
+    "/knowledge?assistantView=source"
+  ],
+  "evidenceClaims": [
+    "The capture is bound to the same immutable SHA deployed by Deploy Arena Beta #47 and checked by Live Beta Assistant Browser Audit #21.",
+    "The route timeline demonstrates a real mobile traversal across the principal S3C surfaces during the recording window.",
+    "No human observation, finding closure, reviewer attestation or BETA_HIA verdict is inferred from the audio until the spoken content is transcribed or otherwise reliably reviewed.",
+    "The audio binary remains outside the repository; only integrity metadata and route evidence are recorded here."
+  ]
+}
