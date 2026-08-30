@@ -3,6 +3,7 @@ import type { AppTab } from '../../navigation';
 import type { GraphEdge, GraphNode } from '../../../lib/architectureGraph';
 import type { CurricularLevel, DecisionStatus, Proposal, SchoolOrder, UdaModel, UserRole } from '../../../types/curriculum';
 import type { A07InstitutionalDocumentRead } from '../../../domain/institution';
+import type { CustomKbDoc } from '../../documents/lib/localKnowledgeStore';
 
 export type ActiveCurricoloView = 'home' | 'albero' | 'mappa' | 'popolamento' | 'pilota';
 export type ActiveProcessoTab = 'flusso' | 'verifica';
@@ -48,12 +49,7 @@ export interface TemplateChatMessage {
   text: string;
 }
 
-export interface KnowledgeDocument {
-  id: string;
-  title: string;
-  subtitle: string;
-  content: string;
-}
+export type KnowledgeDocument = CustomKbDoc;
 
 export interface GlossaryEntry {
   term: string;
