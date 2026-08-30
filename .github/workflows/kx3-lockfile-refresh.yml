@@ -1,0 +1,54 @@
+name: KX3 Temporary Lockfile Refresh
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/kx3-lockfile-refresh.yml'
+      - 'package.json'
+      - 'package-lock.json'
+
+permissions:
+  contents: write
+
+jobs:
+  refresh-lockfile:
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout PR head
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Check whether refresh is required
+        id: check
+        shell: bash
+        run: |
+          if grep -q '"pdfjs-dist": "6.2.108"' package.json && grep -q '"node_modules/pdfjs-dist"' package-lock.json; then
+            echo "needed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "needed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Regenerate deterministic npm lock
+        if: steps.check.outputs.needed == 'true'
+        run: npm install pdfjs-dist@6.2.108 --save-exact --package-lock-only
+
+      - name: Commit generated package metadata to PR branch
+        if: steps.check.outputs.needed == 'true'
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add package.json package-lock.json
+          git diff --cached --quiet && exit 0
+          git commit -m "chore(kx3): lock pdfjs-dist 6.2.108"
+          git push origin "HEAD:${{ github.event.pull_request.head.ref }}"
