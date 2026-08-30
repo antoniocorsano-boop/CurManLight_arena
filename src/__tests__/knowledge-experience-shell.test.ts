@@ -1,9 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import shellSource from '../features/documents/components/SecondBrainTab.tsx?raw';
-import modalSource from '../features/documents/components/KnowledgeModals.tsx?raw';
+import addSourceModalSource from '../features/documents/components/AddKnowledgeSourceModal.tsx?raw';
+import readerModalSource from '../features/documents/components/KnowledgeModals.tsx?raw';
+import knowledgeHandlerSource from '../features/documents/hooks/useKnowledgeBaseHandlers.ts?raw';
+import extractionSource from '../features/documents/lib/extractLocalKnowledgeFile.ts?raw';
+import localKnowledgeStoreSource from '../features/documents/lib/localKnowledgeStore.ts?raw';
 import storageSource from '../lib/consolidatedStorage.ts?raw';
 
-describe('KX-2 teacher-first knowledge experience', () => {
+describe('KX teacher-first knowledge experience', () => {
   it('starts from teacher tasks rather than the technical archive structure', () => {
     expect(shellSource).toContain('data-kx-shell="teacher-first-v2"');
     expect(shellSource).toContain('>Conoscenza</h1>');
@@ -18,7 +22,8 @@ describe('KX-2 teacher-first knowledge experience', () => {
     expect(shellSource).toContain('controlla sempre la fonte');
     expect(shellSource).toContain('decisione della scuola');
     expect(shellSource).toContain('Risposta da verificare');
-    expect(modalSource).toContain('Non diventa automaticamente una fonte istituzionale');
+    expect(addSourceModalSource).toContain('Non diventa automaticamente una fonte istituzionale');
+    expect(addSourceModalSource).toContain('non modifica il curricolo approvato');
   });
 
   it('fails closed instead of exposing an unfinished relationship map', () => {
@@ -27,12 +32,49 @@ describe('KX-2 teacher-first knowledge experience', () => {
     expect(shellSource).toContain('quando potrà mostrare collegamenti verificabili');
   });
 
-  it('supports a real local knowledge intake path without requiring institutional connection', () => {
+  it('supports PDF as a first-class local intake format without pretending OCR exists', () => {
     expect(shellSource).toContain('setShowAddKbModal(true)');
-    expect(modalSource).toContain('Aggiungi una fonte');
-    expect(modalSource).toContain('.txt,.md,.csv,.json');
-    expect(modalSource).toContain('Per PDF e Word, per ora copia e incolla il testo');
-    expect(modalSource).toContain('Aggiungi alla conoscenza');
+    expect(addSourceModalSource).toContain('Aggiungi una fonte');
+    expect(addSourceModalSource).toContain('.pdf,.txt,.md,.csv,.json');
+    expect(addSourceModalSource).toContain('fino a');
+    expect(addSourceModalSource).toContain('20');
+    expect(addSourceModalSource).toContain('serve OCR');
+    expect(addSourceModalSource).toContain('il file originale non viene inviato a un server');
+    expect(addSourceModalSource).toContain('Aggiungi alla conoscenza');
+  });
+
+  it('extracts PDF text page by page and preserves a cryptographic source identity', () => {
+    expect(extractionSource).toContain("from 'pdfjs-dist/legacy/build/pdf.mjs'");
+    expect(extractionSource).toContain("pdf.worker.min.mjs?url");
+    expect(extractionSource).toContain("globalThis.crypto.subtle.digest('SHA-256'");
+    expect(extractionSource).toContain('--- Pagina ${pageNumber} ---');
+    expect(extractionSource).toContain("extractionStatus: 'OCR_REQUIRED'");
+    expect(extractionSource).toContain("extractionStatus: partial ? 'PARTIAL' : 'READY'");
+  });
+
+  it('stores local knowledge in IndexedDB with explicit provenance and authority state', () => {
+    expect(localKnowledgeStoreSource).toContain("super('curmanlight-local-knowledge-v1')");
+    expect(localKnowledgeStoreSource).toContain("authorityStatus: KnowledgeAuthorityStatus");
+    expect(localKnowledgeStoreSource).toContain('originalFileName?: string');
+    expect(localKnowledgeStoreSource).toContain('sha256?: string');
+    expect(localKnowledgeStoreSource).toContain('pageCount?: number');
+    expect(localKnowledgeStoreSource).toContain("'LOCAL_UNVERIFIED'");
+    expect(knowledgeHandlerSource).toContain('putLocalKnowledgeSource(newDoc)');
+    expect(knowledgeHandlerSource).not.toContain("safeLocalStorageSetItem('curman_customKbDocs'");
+  });
+
+  it('migrates legacy localStorage knowledge instead of silently losing it', () => {
+    expect(knowledgeHandlerSource).toContain("safeLocalStorageGetItem('curman_customKbDocs', '[]')");
+    expect(knowledgeHandlerSource).toContain('putLocalKnowledgeSources(missingLegacy)');
+    expect(knowledgeHandlerSource).toContain("safeLocalStorageRemoveItem('curman_customKbDocs')");
+    expect(knowledgeHandlerSource).toContain("'LEGACY_LOCAL_STORAGE'");
+  });
+
+  it('escapes imported content before it reaches the legacy HTML reader', () => {
+    expect(knowledgeHandlerSource).toContain('const escapeHtml');
+    expect(knowledgeHandlerSource).toContain(".replace(/</g, '&lt;')");
+    expect(knowledgeHandlerSource).toContain('const safeContent = escapeHtml(doc.content)');
+    expect(readerModalSource).toContain('dangerouslySetInnerHTML');
   });
 
   it('uses human source titles and keeps development documents secondary', () => {
@@ -54,7 +96,7 @@ describe('KX-2 teacher-first knowledge experience', () => {
     expect(shellSource).toContain('<details');
     expect(shellSource).toContain('Vedi la fonte');
     expect(shellSource).toContain('Materiali tecnici del sistema');
-    expect(modalSource).toContain('Che cosa succede dopo?');
+    expect(addSourceModalSource).toContain('Che cosa succede dopo?');
   });
 
   it('renders the glossary as a dedicated public surface and normalizes saved legacy mojibake', () => {
