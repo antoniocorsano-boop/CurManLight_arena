@@ -65,7 +65,8 @@ fs.mkdirSync(OUT_DIR, { recursive: true });
 
     await taskButton('Fonti').click(); await page.waitForTimeout(250);
     check('Fonti attivo', await taskButton('Fonti').getAttribute('aria-current') === 'page');
-    check('Azione Aggiungi una fonte visibile', await page.getByRole('button', { name: 'Aggiungi una fonte', exact: true }).isVisible().catch(() => false));
+    const addSourceButton = page.getByRole('button', { name: 'Aggiungi una fonte', exact: true });
+    check('Azione Aggiungi una fonte visibile', await addSourceButton.isVisible().catch(() => false));
     check('Titolo Le tue fonti visibile', await page.getByText('Le tue fonti', { exact: true }).isVisible().catch(() => false));
     const sourcesText = await shell.innerText();
     const sourceForbidden = ['01_RACCOLTA_DOCUMENTI.MD', '03_QUADRO_NORMATIVO.MD', '05_WIKI_SISTEMA_CML.MD', '11_STATO_SVILUPPO.MD', 'WikiLLM', 'Chiedi al Co-Pilota'];
@@ -75,6 +76,18 @@ fs.mkdirSync(OUT_DIR, { recursive: true });
     check('Nessuno scroll annidato nel task Fonti', sourceScrollers.length === 0, JSON.stringify(sourceScrollers));
     await screenshot('04-fonti.png');
 
+    await addSourceButton.click(); await page.waitForTimeout(250);
+    const addSourceDialog = page.getByRole('dialog');
+    check('Modale Aggiungi una fonte visibile', await addSourceDialog.getByText('Aggiungi una fonte', { exact: true }).isVisible().catch(() => false));
+    check('PDF dichiarato come formato supportato', await addSourceDialog.getByText(/PDF testuali/i).isVisible().catch(() => false));
+    check('Limite 20 MB visibile', await addSourceDialog.getByText(/20 MB/i).isVisible().catch(() => false));
+    const fileAccept = await page.locator('#kb-file-upload-input').getAttribute('accept');
+    check('File picker accetta PDF', Boolean(fileAccept && fileAccept.includes('.pdf')), fileAccept || 'accept mancante');
+    check('Confine locale non istituzionale visibile', await addSourceDialog.getByText(/Non diventa automaticamente una fonte istituzionale/i).isVisible().catch(() => false));
+    check('Nessun overflow orizzontale nella modale di ingestione', await noHorizontalOverflow());
+    await screenshot('05-aggiungi-fonte.png');
+    await addSourceDialog.getByRole('button', { name: 'Chiudi', exact: true }).click(); await page.waitForTimeout(150);
+
     await taskButton('Termini').click(); await page.waitForTimeout(250);
     check('Termini attivo', await taskButton('Termini').getAttribute('aria-current') === 'page');
     check('Ricerca termine visibile', await page.getByLabel('Quale termine cerchi?').isVisible().catch(() => false));
@@ -83,7 +96,7 @@ fs.mkdirSync(OUT_DIR, { recursive: true });
     check('Nessun overflow orizzontale in Termini', await noHorizontalOverflow());
     const glossaryScrollers = await visibleNestedScrollers();
     check('Nessuno scroll annidato in Termini', glossaryScrollers.length === 0, JSON.stringify(glossaryScrollers));
-    await screenshot('05-termini.png');
+    await screenshot('06-termini.png');
 
     check('Nessun errore JavaScript non gestito', consoleErrors.length === 0, consoleErrors.join(' | '));
     fs.writeFileSync(path.join(OUT_DIR, 'report.json'), JSON.stringify({ baseUrl: BASE_URL, checks, consoleErrors }, null, 2));
