@@ -1,6 +1,8 @@
 {
   "schema": "CML_ARENA_BETA_G5_HUMAN_ACCEPTANCE_V2",
   "protocol": "BETA_G5_HUMAN_ACCEPTANCE_PROTOCOL_v2",
+  "sessionId": null,
+  "candidateRef": null,
   "status": "PENDING_HUMAN",
   "releaseSha": null,
   "betaUrl": "https://antoniocorsano-boop.github.io/CurManLight_arena/",
