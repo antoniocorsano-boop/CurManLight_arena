@@ -1,0 +1,139 @@
+{
+  "schema": "CML_ARENA_BETA_G5_HUMAN_ACCEPTANCE_V2",
+  "protocol": "BETA_G5_HUMAN_ACCEPTANCE_PROTOCOL_v2",
+  "status": "PENDING_HUMAN",
+  "releaseSha": "0f627bbe7b0ee26202a5ef09f44d96ca3ad06729",
+  "betaUrl": "https://antoniocorsano-boop.github.io/CurManLight_arena/",
+  "releaseIdentityVerified": true,
+  "reviewedAt": null,
+  "automatedEvidence": {
+    "deployRun": "Deploy Arena Beta #41",
+    "liveBetaAssistantAudit": "Live Beta Assistant Browser Audit #15 attempt 2 PASS",
+    "note": "Automation prepares evidence only and does not issue the human verdict."
+  },
+  "reviewerAttestation": {
+    "humanReviewActuallyPerformed": false,
+    "desktopReviewed": false,
+    "mobileReviewed": false,
+    "noFabricatedAuthority": false,
+    "proposalDecisionBoundaryUnderstood": false,
+    "planningHandoffBoundaryUnderstood": false
+  },
+  "tasks": {
+    "HT-BETA-CURRICULUM-CONTEXT": {
+      "desktop": "PENDING",
+      "mobile": "PENDING",
+      "observations": {
+        "validContext": "PENDING",
+        "provenance": "PENDING",
+        "invalidOrIncompleteContext": "PENDING",
+        "recovery": "PENDING"
+      },
+      "notes": ""
+    },
+    "HT-BETA-REVISION-PREPARE": {
+      "desktop": "PENDING",
+      "mobile": "PENDING",
+      "observations": {
+        "proposalInspection": "PENDING",
+        "evidenceDisclosure": "PENDING",
+        "missingRequirementBlocked": "PENDING",
+        "unauthorizedReadOnly": "PENDING",
+        "staleOrReentryRecovery": "PENDING"
+      },
+      "notes": ""
+    },
+    "HT-REVISION-DECISION": {
+      "desktop": "PENDING",
+      "mobile": "PENDING",
+      "observations": {
+        "noAuthorityBlocked": "PENDING",
+        "evidenceAndConsequence": "PENDING",
+        "explicitOutcomeChoice": "PENDING",
+        "explicitHumanConfirmation": "PENDING",
+        "receiptRefreshReentry": "PENDING"
+      },
+      "notObservableReason": "",
+      "notes": ""
+    },
+    "HT-BETA-PLANNING-HANDOFF": {
+      "desktop": "PENDING",
+      "mobile": "PENDING",
+      "observations": {
+        "validPreview": "PENDING",
+        "provisionalWarning": "PENDING",
+        "validationFailure": "PENDING",
+        "consequenceExplanation": "PENDING",
+        "explicitHandoff": "PENDING",
+        "recovery": "PENDING"
+      },
+      "notes": ""
+    }
+  },
+  "crossStates": {
+    "empty": "PENDING",
+    "loading": "PENDING",
+    "success": "PENDING",
+    "blocked": "PENDING",
+    "error": "PENDING",
+    "recovery": "PENDING"
+  },
+  "supplementalKnowledgeExperience": {
+    "desktop": {
+      "orientation": "PENDING",
+      "taskLanguage": "PENDING",
+      "density": "PENDING",
+      "search": "PENDING",
+      "sources": "PENDING",
+      "addSource": "PENDING",
+      "terms": "PENDING",
+      "relationsFailClosed": "PENDING"
+    },
+    "mobile": {
+      "orientation": "PENDING",
+      "taskLanguage": "PENDING",
+      "density": "PENDING",
+      "bottomDockClearance": "PENDING",
+      "consistentMargins": "PENDING",
+      "noNestedScrollBurden": "PENDING",
+      "search": "PENDING",
+      "sources": "PENDING",
+      "addSource": "PENDING",
+      "terms": "PENDING",
+      "relationsFailClosed": "PENDING"
+    },
+    "teacherUsefulness": {
+      "findKnowledgeWithoutTechnicalVocabulary": "PENDING",
+      "understandWhatEachSourceIsFor": "PENDING",
+      "addLocalKnowledgeWithoutInstitutionConnection": "PENDING",
+      "understandLocalNonInstitutionalStatus": "PENDING",
+      "technicalRepositoryFilenamesNotExposed": "PENDING"
+    },
+    "notes": ""
+  },
+  "focusedHumanReviewTasks": [
+    "Apri Conoscenza e identifica senza esitazione cosa puoi fare.",
+    "Usa Cerca per formulare una domanda e valuta se il flusso è comprensibile e non tecnico.",
+    "Apri Fonti e verifica se i materiali hanno nomi e descrizioni comprensibili per un insegnante.",
+    "Usa Aggiungi una fonte senza collegare un istituto e verifica che sia chiaro che il materiale resta locale/non istituzionale finché non verificato.",
+    "Apri Termini e valuta leggibilità, densità e utilità.",
+    "Apri Relazioni e verifica che lo stato non pronto sia comprensibile, utile e privo di grafo tecnico legacy.",
+    "Su mobile percorri tutte le viste fino in fondo e verifica che nessun contenuto sia coperto dalla dock, che i margini siano coerenti e che non servano scroll annidati o eccessivi."
+  ],
+  "findings": [],
+  "severity1Open": 0,
+  "severity2Open": 0,
+  "verdict": "PENDING_HUMAN",
+  "allowedVerdicts": [
+    "BETA_HIA_PASS",
+    "PARTIAL_HUMAN_EVIDENCE",
+    "BETA_HIA_BLOCK"
+  ],
+  "nonClaims": [
+    "This receipt does not satisfy BETA-G6 accessibility acceptance.",
+    "Automated browser evidence is not a substitute for this human review.",
+    "A revoked or missing institutional membership must not be fabricated to obtain an authorized decision path.",
+    "BETA_HIA_PASS must not be written before the human observations are complete.",
+    "A completed receipt must identify the exact immutable SHA exposed by the published beta-release.json."
+  ]
+}
