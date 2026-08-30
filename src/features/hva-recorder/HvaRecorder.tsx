@@ -1,13 +1,15 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
-import { Mic, Pause, Play, Square, Trash2, Download, ChevronDown, ChevronUp } from 'lucide-react';
+import { Mic, Pause, Play, Square, Trash2, Download, ChevronDown, ChevronUp, RefreshCw } from 'lucide-react';
 import { appendHvaRouteEvent, createHvaRecorderManifest, type HvaRecorderManifest } from './contract';
 import { deleteHvaSession, saveHvaSession } from './storage';
 import { encodeMonoPcm16Wav } from './wav';
+import { readPublishedReleaseIdentity } from './releaseIdentity';
 
 const ACTIVATION_KEY = 'cml:hva-recorder:enabled';
 
 type RecorderStatus = 'idle' | 'requesting' | 'recording' | 'paused' | 'stopped' | 'error';
+type ReleaseStatus = 'checking' | 'ready' | 'error';
 
 function resolveExplicitActivation(): boolean {
   const params = new URLSearchParams(window.location.search);
@@ -24,27 +26,8 @@ function createSessionId(): string {
 }
 
 function selectMimeType(): string {
-  const candidates = [
-    'audio/webm;codecs=opus',
-    'audio/webm',
-    'audio/mp4',
-  ];
+  const candidates = ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4'];
   return candidates.find((candidate) => MediaRecorder.isTypeSupported(candidate)) ?? '';
-}
-
-async function readPublishedReleaseSha(): Promise<string | null> {
-  try {
-    const response = await fetch(`${import.meta.env.BASE_URL}beta-release.json`, {
-      method: 'GET',
-      cache: 'no-store',
-      credentials: 'same-origin',
-    });
-    if (!response.ok) return null;
-    const data = await response.json() as { releaseSha?: unknown };
-    return typeof data.releaseSha === 'string' ? data.releaseSha : null;
-  } catch {
-    return null;
-  }
 }
 
 function downloadBlob(blob: Blob, fileName: string): void {
@@ -59,15 +42,18 @@ function downloadBlob(blob: Blob, fileName: string): void {
 }
 
 async function convertAudioBlobToWav(blob: Blob): Promise<Blob> {
-  const AudioContextCtor = window.AudioContext ?? (window as typeof window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+  const AudioContextCtor = window.AudioContext
+    ?? (window as typeof window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
   if (!AudioContextCtor) throw new Error('AudioContext unavailable');
   const context = new AudioContextCtor();
   try {
     const source = await blob.arrayBuffer();
     const decoded = await context.decodeAudioData(source.slice(0));
-    const channels = Array.from({ length: decoded.numberOfChannels }, (_, index) => decoded.getChannelData(index));
-    const wav = encodeMonoPcm16Wav(channels, decoded.sampleRate);
-    return new Blob([wav], { type: 'audio/wav' });
+    const channels = Array.from(
+      { length: decoded.numberOfChannels },
+      (_, index) => decoded.getChannelData(index),
+    );
+    return new Blob([encodeMonoPcm16Wav(channels, decoded.sampleRate)], { type: 'audio/wav' });
   } finally {
     await context.close().catch(() => undefined);
   }
@@ -79,6 +65,8 @@ export default function HvaRecorder() {
   const [status, setStatus] = useState<RecorderStatus>('idle');
   const [expanded, setExpanded] = useState(false);
   const [error, setError] = useState('');
+  const [releaseStatus, setReleaseStatus] = useState<ReleaseStatus>('checking');
+  const [releaseSha, setReleaseSha] = useState<string | null>(null);
   const [manifest, setManifest] = useState<HvaRecorderManifest | null>(null);
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
   const [wavExporting, setWavExporting] = useState(false);
@@ -92,10 +80,34 @@ export default function HvaRecorder() {
   const currentRoute = `${location.pathname}${location.search}${location.hash}`;
   const audioUrl = useMemo(() => audioBlob ? URL.createObjectURL(audioBlob) : null, [audioBlob]);
 
+  const refreshReleaseIdentity = async () => {
+    setReleaseStatus('checking');
+    setReleaseSha(null);
+    try {
+      const identity = await readPublishedReleaseIdentity({
+        baseUrl: import.meta.env.BASE_URL,
+        origin: window.location.origin,
+      });
+      setReleaseSha(identity.releaseSha);
+      setReleaseStatus('ready');
+      setError('');
+    } catch (releaseError) {
+      console.warn('[Arena HVA Recorder] Release identity unavailable:', releaseError);
+      setReleaseStatus('error');
+      setError('Identità della Beta non disponibile. La registrazione HVA canonica resta bloccata finché lo SHA non è verificato.');
+      setExpanded(true);
+    }
+  };
+
   useEffect(() => {
-    return () => {
-      if (audioUrl) URL.revokeObjectURL(audioUrl);
-    };
+    if (!enabled) return;
+    void refreshReleaseIdentity();
+    // Release identity is intentionally checked once on activation and explicitly on retry.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [enabled]);
+
+  useEffect(() => () => {
+    if (audioUrl) URL.revokeObjectURL(audioUrl);
   }, [audioUrl]);
 
   useEffect(() => {
@@ -111,10 +123,8 @@ export default function HvaRecorder() {
     setManifest(next);
   }, [currentRoute, enabled, status]);
 
-  useEffect(() => {
-    return () => {
-      streamRef.current?.getTracks().forEach((track) => track.stop());
-    };
+  useEffect(() => () => {
+    streamRef.current?.getTracks().forEach((track) => track.stop());
   }, []);
 
   if (!enabled) return null;
@@ -122,24 +132,26 @@ export default function HvaRecorder() {
   const finishLocalSession = async (blob: Blob) => {
     const current = manifestRef.current;
     if (!current) return;
-    const completed: HvaRecorderManifest = {
-      ...current,
-      stoppedAt: new Date().toISOString(),
-    };
+    const completed: HvaRecorderManifest = { ...current, stoppedAt: new Date().toISOString() };
     manifestRef.current = completed;
     setManifest(completed);
     setAudioBlob(blob);
     try {
       await saveHvaSession({ sessionId: completed.sessionId, manifest: completed, audio: blob });
-      setStatus('stopped');
     } catch (storageError) {
       console.warn('[Arena HVA Recorder] Local persistence failed:', storageError);
       setError('Registrazione acquisita, ma il salvataggio locale permanente non è riuscito. Scaricala prima di chiudere la pagina.');
+    } finally {
       setStatus('stopped');
     }
   };
 
   const startRecording = async () => {
+    if (releaseStatus !== 'ready' || !releaseSha) {
+      setError('Prima di registrare devo verificare lo SHA della Beta pubblicata.');
+      setExpanded(true);
+      return;
+    }
     if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === 'undefined') {
       setError('Questo browser non supporta la registrazione audio locale richiesta dal collaudo HVA.');
       setStatus('error');
@@ -149,18 +161,13 @@ export default function HvaRecorder() {
     setError('');
     setStatus('requesting');
     try {
-      const [stream, releaseSha] = await Promise.all([
-        navigator.mediaDevices.getUserMedia({ audio: true }),
-        readPublishedReleaseSha(),
-      ]);
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       const mimeType = selectMimeType();
       const recorder = mimeType ? new MediaRecorder(stream, { mimeType }) : new MediaRecorder(stream);
-      const sessionId = createSessionId();
-      const startedAt = new Date().toISOString();
       const initialManifest = createHvaRecorderManifest({
-        sessionId,
+        sessionId: createSessionId(),
         releaseSha,
-        startedAt,
+        startedAt: new Date().toISOString(),
         mimeType: recorder.mimeType || mimeType || 'audio/unknown',
         userAgent: navigator.userAgent,
         viewport: { width: window.innerWidth, height: window.innerHeight },
@@ -203,16 +210,14 @@ export default function HvaRecorder() {
   };
 
   const pauseRecording = () => {
-    const recorder = recorderRef.current;
-    if (!recorder || recorder.state !== 'recording') return;
-    recorder.pause();
+    if (recorderRef.current?.state !== 'recording') return;
+    recorderRef.current.pause();
     setStatus('paused');
   };
 
   const resumeRecording = () => {
-    const recorder = recorderRef.current;
-    if (!recorder || recorder.state !== 'paused') return;
-    recorder.resume();
+    if (recorderRef.current?.state !== 'paused') return;
+    recorderRef.current.resume();
     setStatus('recording');
     setExpanded(false);
   };
@@ -235,8 +240,7 @@ export default function HvaRecorder() {
     setWavExporting(true);
     setError('');
     try {
-      const wavBlob = await convertAudioBlobToWav(audioBlob);
-      downloadBlob(wavBlob, `arena-hva-${manifest.sessionId}.wav`);
+      downloadBlob(await convertAudioBlobToWav(audioBlob), `arena-hva-${manifest.sessionId}.wav`);
     } catch (wavError) {
       console.warn('[Arena HVA Recorder] WAV export failed:', wavError);
       setError('Il browser non riesce a convertire questa registrazione in WAV. Il file audio originale resta disponibile.');
@@ -247,15 +251,16 @@ export default function HvaRecorder() {
 
   const exportManifest = () => {
     if (!manifest) return;
-    const blob = new Blob([`${JSON.stringify(manifest, null, 2)}\n`], { type: 'application/json' });
-    downloadBlob(blob, `arena-hva-${manifest.sessionId}.json`);
+    downloadBlob(
+      new Blob([`${JSON.stringify(manifest, null, 2)}\n`], { type: 'application/json' }),
+      `arena-hva-${manifest.sessionId}.json`,
+    );
   };
 
   const deleteLocal = async () => {
-    const sessionId = manifest?.sessionId;
-    if (sessionId) {
+    if (manifest?.sessionId) {
       try {
-        await deleteHvaSession(sessionId);
+        await deleteHvaSession(manifest.sessionId);
       } catch (deleteError) {
         console.warn('[Arena HVA Recorder] Local delete failed:', deleteError);
       }
@@ -271,6 +276,7 @@ export default function HvaRecorder() {
   };
 
   const isActive = status === 'recording' || status === 'paused';
+  const releaseReady = releaseStatus === 'ready' && Boolean(releaseSha);
 
   if (!expanded) {
     return (
@@ -281,7 +287,7 @@ export default function HvaRecorder() {
           className="flex h-9 min-w-9 items-center justify-center gap-1 rounded-full border border-slate-300 bg-white/95 px-2 text-[10px] font-bold text-slate-800 shadow-md backdrop-blur"
           aria-label="Apri controlli registratore HVA"
         >
-          <span aria-hidden="true" className={isActive ? 'text-rose-600' : 'text-slate-500'}>●</span>
+          <span aria-hidden="true" className={isActive ? 'text-rose-600' : releaseReady ? 'text-emerald-600' : 'text-amber-600'}>●</span>
           <span>{status === 'paused' ? 'PAUSA' : isActive ? 'REC' : 'HVA'}</span>
           <ChevronDown className="h-3 w-3" />
         </button>
@@ -301,26 +307,29 @@ export default function HvaRecorder() {
           <div className="flex items-center gap-1.5 text-xs font-bold text-slate-900">
             <Mic className="h-3.5 w-3.5" /> HVA Recorder
           </div>
-          <p className="mt-0.5 text-[10px] leading-3.5 text-slate-600">
-            Solo locale · nessun upload.
+          <p className="mt-0.5 text-[10px] leading-3.5 text-slate-600">Solo locale · nessun upload.</p>
+          <p className="mt-1 text-[10px] leading-3.5 text-slate-700">
+            Release: <span className="font-mono font-semibold">{releaseReady ? releaseSha?.slice(0, 10) : releaseStatus === 'checking' ? 'verifica…' : 'non disponibile'}</span>
           </p>
         </div>
-        <button
-          type="button"
-          onClick={() => setExpanded(false)}
-          className="rounded-md p-1 text-slate-500 hover:bg-slate-100"
-          aria-label="Riduci registratore HVA"
-        >
+        <button type="button" onClick={() => setExpanded(false)} className="rounded-md p-1 text-slate-500 hover:bg-slate-100" aria-label="Riduci registratore HVA">
           <ChevronUp className="h-3.5 w-3.5" />
         </button>
       </div>
+
+      {releaseStatus === 'error' && (
+        <button type="button" onClick={() => void refreshReleaseIdentity()} className="mt-2 inline-flex items-center gap-1 rounded-lg border border-amber-300 px-2 py-1.5 text-[10px] font-semibold text-amber-900">
+          <RefreshCw className="h-3 w-3" /> Riprova identità release
+        </button>
+      )}
 
       <div className="mt-2 flex flex-wrap gap-1.5" role="status" aria-live="polite">
         {(status === 'idle' || status === 'error') && (
           <button
             type="button"
             onClick={() => void startRecording()}
-            className="inline-flex items-center gap-1.5 rounded-lg bg-slate-950 px-2.5 py-1.5 text-[11px] font-semibold text-white"
+            disabled={!releaseReady}
+            className="inline-flex items-center gap-1.5 rounded-lg bg-slate-950 px-2.5 py-1.5 text-[11px] font-semibold text-white disabled:cursor-not-allowed disabled:opacity-40"
           >
             <Mic className="h-3.5 w-3.5" /> Registra
           </button>
@@ -328,22 +337,14 @@ export default function HvaRecorder() {
         {status === 'requesting' && <span className="text-[11px] font-semibold text-slate-700">Richiesta microfono…</span>}
         {status === 'recording' && (
           <>
-            <button type="button" onClick={pauseRecording} className="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 px-2.5 py-1.5 text-[11px] font-semibold text-slate-800">
-              <Pause className="h-3.5 w-3.5" /> Pausa
-            </button>
-            <button type="button" onClick={stopRecording} className="inline-flex items-center gap-1.5 rounded-lg bg-slate-950 px-2.5 py-1.5 text-[11px] font-semibold text-white">
-              <Square className="h-3.5 w-3.5" /> Termina
-            </button>
+            <button type="button" onClick={pauseRecording} className="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 px-2.5 py-1.5 text-[11px] font-semibold text-slate-800"><Pause className="h-3.5 w-3.5" /> Pausa</button>
+            <button type="button" onClick={stopRecording} className="inline-flex items-center gap-1.5 rounded-lg bg-slate-950 px-2.5 py-1.5 text-[11px] font-semibold text-white"><Square className="h-3.5 w-3.5" /> Termina</button>
           </>
         )}
         {status === 'paused' && (
           <>
-            <button type="button" onClick={resumeRecording} className="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 px-2.5 py-1.5 text-[11px] font-semibold text-slate-800">
-              <Play className="h-3.5 w-3.5" /> Riprendi
-            </button>
-            <button type="button" onClick={stopRecording} className="inline-flex items-center gap-1.5 rounded-lg bg-slate-950 px-2.5 py-1.5 text-[11px] font-semibold text-white">
-              <Square className="h-3.5 w-3.5" /> Termina
-            </button>
+            <button type="button" onClick={resumeRecording} className="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 px-2.5 py-1.5 text-[11px] font-semibold text-slate-800"><Play className="h-3.5 w-3.5" /> Riprendi</button>
+            <button type="button" onClick={stopRecording} className="inline-flex items-center gap-1.5 rounded-lg bg-slate-950 px-2.5 py-1.5 text-[11px] font-semibold text-white"><Square className="h-3.5 w-3.5" /> Termina</button>
           </>
         )}
       </div>
@@ -358,18 +359,10 @@ export default function HvaRecorder() {
             <div>{manifest.timeline.length} route · IndexedDB locale</div>
           </div>
           <div className="grid grid-cols-2 gap-1.5">
-            <button type="button" onClick={() => void exportWav()} disabled={wavExporting} className="inline-flex items-center justify-center gap-1 rounded-lg border border-slate-300 px-2 py-1.5 text-[10px] font-semibold text-slate-800 disabled:opacity-60">
-              <Download className="h-3.5 w-3.5" /> {wavExporting ? 'WAV…' : 'WAV compatibile'}
-            </button>
-            <button type="button" onClick={exportManifest} className="inline-flex items-center justify-center gap-1 rounded-lg border border-slate-300 px-2 py-1.5 text-[10px] font-semibold text-slate-800">
-              <Download className="h-3.5 w-3.5" /> Manifest
-            </button>
-            <button type="button" onClick={exportAudio} className="inline-flex items-center justify-center gap-1 rounded-lg border border-slate-300 px-2 py-1.5 text-[10px] font-semibold text-slate-700">
-              <Download className="h-3.5 w-3.5" /> Originale
-            </button>
-            <button type="button" onClick={() => void deleteLocal()} className="inline-flex items-center justify-center gap-1 rounded-lg border border-slate-300 px-2 py-1.5 text-[10px] font-semibold text-slate-700">
-              <Trash2 className="h-3.5 w-3.5" /> Elimina
-            </button>
+            <button type="button" onClick={() => void exportWav()} disabled={wavExporting} className="inline-flex items-center justify-center gap-1 rounded-lg border border-slate-300 px-2 py-1.5 text-[10px] font-semibold text-slate-800 disabled:opacity-60"><Download className="h-3.5 w-3.5" /> {wavExporting ? 'WAV…' : 'WAV compatibile'}</button>
+            <button type="button" onClick={exportManifest} className="inline-flex items-center justify-center gap-1 rounded-lg border border-slate-300 px-2 py-1.5 text-[10px] font-semibold text-slate-800"><Download className="h-3.5 w-3.5" /> Manifest</button>
+            <button type="button" onClick={exportAudio} className="inline-flex items-center justify-center gap-1 rounded-lg border border-slate-300 px-2 py-1.5 text-[10px] font-semibold text-slate-700"><Download className="h-3.5 w-3.5" /> Originale</button>
+            <button type="button" onClick={() => void deleteLocal()} className="inline-flex items-center justify-center gap-1 rounded-lg border border-slate-300 px-2 py-1.5 text-[10px] font-semibold text-slate-700"><Trash2 className="h-3.5 w-3.5" /> Elimina</button>
           </div>
         </div>
       )}
