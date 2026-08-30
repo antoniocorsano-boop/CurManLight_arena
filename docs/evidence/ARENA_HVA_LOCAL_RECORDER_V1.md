@@ -22,6 +22,8 @@ The recorder is absent from normal Arena use.
 
 No new Arena route or navigation item is introduced.
 
+The recorder opens in a compact floating state. It expands only on explicit user action and automatically returns to the compact state when recording starts or resumes. The compact control must remain small enough not to obscure the Arena surface under review.
+
 ## Privacy and storage
 
 - microphone access starts only after explicit user action;
@@ -29,7 +31,24 @@ No new Arena route or navigation item is introduced.
 - completed sessions are stored only in local IndexedDB (`curmanlight-hva-recorder`);
 - there is no automatic upload and no recording backend;
 - the only network read performed by the recorder is `GET beta-release.json` to bind evidence to the published release SHA;
-- the user can listen locally, export the audio, export the JSON manifest, and delete the local session.
+- the user can listen locally, export the original browser audio, export a compatibility WAV, export the JSON manifest, and delete the local session.
+
+## Audio compatibility export
+
+The browser-native recording remains the stored source audio. Depending on the browser it can be WebM/Opus or MP4/AAC.
+
+After recording, the user may explicitly request `WAV compatibile`. The recorder then decodes the already-local browser audio in the browser and creates a derived WAV with these properties:
+
+- RIFF/WAVE container;
+- linear PCM;
+- 16-bit samples;
+- mono downmix;
+- source sample rate preserved;
+- generated only for download;
+- never uploaded automatically;
+- not persisted as a second IndexedDB copy.
+
+The WAV exists to maximize interoperability with review and transcription tooling. It does not replace or mutate the native source recording.
 
 ## Automatic context evidence
 
@@ -38,7 +57,7 @@ While recording, route changes are timestamped automatically. The manifest inclu
 - session id;
 - published release SHA when available;
 - start/stop timestamps;
-- audio MIME type;
+- native audio MIME type;
 - user agent and viewport dimensions;
 - timestamped route timeline;
 - explicit `LOCAL_INDEXEDDB` / `automaticUpload=false` declaration.
@@ -54,6 +73,7 @@ Its small persistent recording indicator is required to make microphone activity
 ## Non-claims
 
 - Audio capture is not transcription.
+- WAV conversion is a compatibility transformation, not interpretation of the recording.
 - Recorder availability is not G5 acceptance.
 - Recorder output is supporting evidence; the human reviewer remains the only source of the HVA verdict.
 - No institutional membership or authority may be simulated to complete a review.
