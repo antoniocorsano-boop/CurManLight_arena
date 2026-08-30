@@ -1,8 +1,8 @@
 import { GlobalWorkerOptions, getDocument } from 'pdfjs-dist/legacy/build/pdf.mjs';
-import pdfWorkerUrl from 'pdfjs-dist/legacy/build/pdf.worker.min.mjs?url';
+import PdfWorker from 'pdfjs-dist/legacy/build/pdf.worker.min.mjs?worker';
 import type { KnowledgeImportMetadata } from './localKnowledgeStore';
 
-GlobalWorkerOptions.workerSrc = pdfWorkerUrl;
+GlobalWorkerOptions.workerPort = new PdfWorker();
 
 export const MAX_LOCAL_KNOWLEDGE_FILE_BYTES = 20 * 1024 * 1024;
 

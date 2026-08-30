@@ -12,6 +12,7 @@ on:
       - 'src/features/documents/lib/**'
       - 'src/__tests__/knowledge-experience-shell.test.ts'
       - 'scripts/audit-kx-mobile.cjs'
+      - 'scripts/audit-kx-pdf-ingestion.cjs'
       - '.github/workflows/kx-pr-mobile-audit.yml'
 
 permissions:
@@ -58,6 +59,11 @@ jobs:
           KX_URL: http://127.0.0.1:4173/
           AUDIT_OUT_DIR: artifacts/kx-mobile
         run: node scripts/audit-kx-mobile.cjs
+
+      - name: Exercise real PDF ingestion
+        env:
+          KX_URL: http://127.0.0.1:4173/
+        run: node scripts/audit-kx-pdf-ingestion.cjs
 
       - name: Upload KX mobile evidence
         if: always()

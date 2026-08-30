@@ -45,7 +45,8 @@ describe('KX teacher-first knowledge experience', () => {
 
   it('extracts PDF text page by page and preserves a cryptographic source identity', () => {
     expect(extractionSource).toContain("from 'pdfjs-dist/legacy/build/pdf.mjs'");
-    expect(extractionSource).toContain("pdf.worker.min.mjs?url");
+    expect(extractionSource).toContain("pdf.worker.min.mjs?worker");
+    expect(extractionSource).toContain('GlobalWorkerOptions.workerPort = new PdfWorker()');
     expect(extractionSource).toContain("globalThis.crypto.subtle.digest('SHA-256'");
     expect(extractionSource).toContain('--- Pagina ${pageNumber} ---');
     expect(extractionSource).toContain("extractionStatus: 'OCR_REQUIRED'");
