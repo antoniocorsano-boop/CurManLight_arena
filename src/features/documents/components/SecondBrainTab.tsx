@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Archive, BookOpen, CheckCircle2, FilePlus2, FileText, Network, Search, Sparkles } from 'lucide-react';
 import { getVolumeFullHtml, getVolumePlainTxt, getVolumeTitle } from '../../../data/volumesKB';
 import { copyText } from '../../../lib/clipboard';
@@ -105,6 +105,7 @@ export default function SecondBrainTab(props: SecondBrainTabProps) {
   const [sourceSearch, setSourceSearch] = useState('');
   const [verificationCandidateId, setVerificationCandidateId] = useState<string | null>(null);
   const [isVerifyingSource, setIsVerifyingSource] = useState(false);
+  const verificationPanelRef = useRef<HTMLElement | null>(null);
 
   const isSearchActive = secondBrainTab === 'brain' && wikiWorkspaceTab === 'chat';
   const isSourcesActive = secondBrainTab === 'brain' && wikiWorkspaceTab === 'read';
@@ -118,6 +119,17 @@ export default function SecondBrainTab(props: SecondBrainTabProps) {
   useEffect(() => {
     window.dispatchEvent(new CustomEvent('arena:knowledge-open'));
   }, []);
+
+  useEffect(() => {
+    if (!verificationCandidateId) return;
+    const frame = window.requestAnimationFrame(() => {
+      const panel = verificationPanelRef.current;
+      if (!panel) return;
+      panel.scrollIntoView({ block: 'center', inline: 'nearest' });
+      panel.focus({ preventScroll: true });
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [verificationCandidateId]);
 
   const filteredGlossary = useMemo(() => {
     const query = glossarySearch.trim().toLocaleLowerCase('it');
@@ -297,7 +309,7 @@ export default function SecondBrainTab(props: SecondBrainTabProps) {
           </div>
 
           {verificationCandidate && (
-            <section data-kx-task="source-verification" className="space-y-4 rounded-2xl border-2 border-indigo-300 bg-indigo-50/40 p-5" aria-labelledby="kx-verification-title">
+            <section ref={verificationPanelRef} tabIndex={-1} data-kx-task="source-verification" className="space-y-4 rounded-2xl border-2 border-indigo-300 bg-indigo-50/40 p-5 outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2" aria-labelledby="kx-verification-title">
               <div className="max-w-2xl space-y-2">
                 <h3 id="kx-verification-title" className="text-base font-black text-slate-900">Conferma la verifica della fonte</h3>
                 <p className="text-sm leading-6 text-slate-700">Controlla titolo, provenienza e contenuto. La conferma registra soltanto una verifica locale: non rende la fonte normativa o istituzionale e non modifica il curricolo approvato.</p>

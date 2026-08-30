@@ -9,12 +9,12 @@ const openKnowledgeSources = async (page) => {
     window.dispatchEvent(new PopStateEvent('popstate'));
   });
   const knowledgeNav = page.getByRole('navigation', { name: 'Cosa vuoi fare nella conoscenza', exact: true });
-  await knowledgeNav.getByRole('button', { name: 'Fonti', exact: true }).click();
+  await knowledgeNav.getByRole('button', { name: 'Fonti', exact: true }).tap();
 };
 
 (async () => {
   const browser = await chromium.launch({ headless: true });
-  const context = await browser.newContext({ viewport: { width: 390, height: 844 }, locale: 'it-IT' });
+  const context = await browser.newContext({ viewport: { width: 390, height: 844 }, locale: 'it-IT', hasTouch: true, isMobile: true });
   const page = await context.newPage();
   const consoleErrors = [];
   page.on('console', (msg) => { if (msg.type() === 'error') consoleErrors.push(msg.text()); });
@@ -23,7 +23,7 @@ const openKnowledgeSources = async (page) => {
   try {
     await page.goto(BASE_URL, { waitUntil: 'networkidle', timeout: 45000 });
     await openKnowledgeSources(page);
-    await page.getByRole('button', { name: 'Aggiungi una fonte', exact: true }).click();
+    await page.getByRole('button', { name: 'Aggiungi una fonte', exact: true }).tap();
 
     const input = page.locator('#kb-file-upload-input');
     await input.setInputFiles({
@@ -43,14 +43,20 @@ const openKnowledgeSources = async (page) => {
       throw new Error(`pdf.js worker error: ${consoleErrors.join(' | ')}`);
     }
 
-    await dialog.getByRole('button', { name: 'Aggiungi alla conoscenza', exact: true }).click();
+    await dialog.getByRole('button', { name: 'Aggiungi alla conoscenza', exact: true }).tap();
     await dialog.waitFor({ state: 'hidden', timeout: 10000 });
     const sourceCard = page.getByRole('heading', { name: 'kx3 worker fixture', exact: true }).locator('xpath=ancestor::article[1]');
-    await sourceCard.getByRole('button', { name: 'Apri e verifica', exact: true }).click();
+    await sourceCard.getByRole('button', { name: 'Apri e verifica', exact: true }).tap();
 
     const verification = page.locator('[data-kx-task="source-verification"]');
-    await verification.getByRole('heading', { name: 'Conferma la verifica della fonte', exact: true }).waitFor({ state: 'visible' });
-    await verification.getByRole('button', { name: 'Conferma come fonte locale verificata', exact: true }).click();
+    const verificationHeading = verification.getByRole('heading', { name: 'Conferma la verifica della fonte', exact: true });
+    await verificationHeading.waitFor({ state: 'visible' });
+    const headingBox = await verificationHeading.boundingBox();
+    const viewport = page.viewportSize();
+    if (!headingBox || !viewport || headingBox.y < 0 || headingBox.y + headingBox.height > viewport.height) {
+      throw new Error(`Verification task is not in the mobile viewport after touch: ${JSON.stringify({ headingBox, viewport })}`);
+    }
+    await verification.getByRole('button', { name: 'Conferma come fonte locale verificata', exact: true }).tap();
     await sourceCard.getByText('Fonte locale verificata', { exact: true }).waitFor({ state: 'visible', timeout: 10000 });
 
     const reader = page.locator('[data-kx-task="source-reader"]');
@@ -68,13 +74,14 @@ const openKnowledgeSources = async (page) => {
       throw new Error('Verified source lost its authority state after refresh.');
     }
 
-    await persistedCard.getByRole('button', { name: 'Apri', exact: true }).click();
+    await persistedCard.getByRole('button', { name: 'Apri', exact: true }).tap();
     const persistedReader = page.locator('[data-kx-task="source-reader"]');
     await persistedReader.getByText('Fonte locale verificata', { exact: true }).waitFor({ state: 'visible', timeout: 10000 });
 
     console.log('KX_PDF_INGESTION_PASS worker=explicit text=extracted');
     console.log('KX_SOURCE_VERIFICATION_PASS authority=local-only explicit-human-confirmation');
     console.log('KX_SOURCE_VERIFICATION_PERSISTENCE_PASS storage=indexeddb refresh=verified');
+    console.log('KX_SOURCE_VERIFICATION_MOBILE_VISIBILITY_PASS input=touch panel=in-viewport');
   } finally {
     await browser.close();
   }
