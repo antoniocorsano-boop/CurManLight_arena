@@ -22,11 +22,11 @@
       "mobile": "BLOCK",
       "observations": {
         "validContext": "PASS",
-        "provenance": "PASS",
+        "provenance": "BLOCK",
         "invalidOrIncompleteContext": "NOT_OBSERVABLE",
         "recovery": "NOT_OBSERVABLE"
       },
-      "notes": "Reviewer recognized the local-copy state and curriculum context, but reported the mobile view as hard to use because it is list-heavy and text is excessively small. Mobile comfort therefore blocks acceptance."
+      "notes": "Reviewer recognized the local-copy state and curriculum context, but did not complete a successful provenance inspection and explicitly described Fonti as unclear. Invalid/incomplete curriculum context was not deliberately produced during this session, so its fail-closed behavior was not observed; because that state was not entered, recovery from it was also not observed. The mobile view was additionally reported as list-heavy with excessively small text."
     },
     "HT-BETA-REVISION-PREPARE": {
       "desktop": "PENDING",
@@ -38,7 +38,7 @@
         "unauthorizedReadOnly": "NOT_OBSERVABLE",
         "staleOrReentryRecovery": "NOT_OBSERVABLE"
       },
-      "notes": "Reviewer explicitly reported not understanding the local choice/proposal/simulation/approval cycle and also reported incorrect upper spacing/margins in Revision."
+      "notes": "Reviewer explicitly reported not understanding the local choice/proposal/simulation/approval cycle and also reported incorrect upper spacing/margins in Revision. The transcript does not establish successful evidence disclosure, deliberately missing requirements, a distinct unauthorized read-only state, or stale/re-entry recovery, so those observations remain NOT_OBSERVABLE."
     },
     "HT-REVISION-DECISION": {
       "desktop": "PENDING",
@@ -46,11 +46,11 @@
       "observations": {
         "noAuthorityBlocked": "BLOCK",
         "evidenceAndConsequence": "BLOCK",
-        "explicitOutcomeChoice": "BLOCK",
+        "explicitOutcomeChoice": "NOT_OBSERVABLE",
         "explicitHumanConfirmation": "NOT_OBSERVABLE",
         "receiptRefreshReentry": "NOT_OBSERVABLE"
       },
-      "notObservableReason": "The mobile session did not expose a genuine bounded authorized decision path, and none was fabricated. The reviewer nevertheless found the simulation/approval semantics unclear, so the observable no-authority/decision boundary is BLOCK rather than PASS.",
+      "notObservableReason": "The mobile session did not expose a genuine bounded authorized decision path, and none was fabricated. Therefore explicit outcome choice, explicit human confirmation and authorized receipt/re-entry were not observable. The reviewer nevertheless found the observable simulation/approval semantics and consequence boundary unclear, so the no-authority/decision boundary remains BLOCK.",
       "notes": "The reviewer could not understand what the simulated approval cycle was for or what should happen to the local proposal."
     },
     "HT-BETA-PLANNING-HANDOFF": {
@@ -64,7 +64,7 @@
         "explicitHandoff": "NOT_OBSERVABLE",
         "recovery": "NOT_OBSERVABLE"
       },
-      "notes": "Documents was described as too verbose, difficult to understand and dominated by small text. The reviewer could not derive the downstream consequence/handoff clearly from the mobile presentation."
+      "notes": "Documents was described as too verbose, difficult to understand and dominated by small text. The reviewer could not derive the downstream consequence/handoff clearly from the mobile presentation. A valid preview, deliberate validation failure, explicit handoff action and recovery from a blocked handoff were not exercised in the transcript and remain NOT_OBSERVABLE."
     }
   },
   "crossStates": {
@@ -73,14 +73,14 @@
     "success": "PASS",
     "blocked": "BLOCK",
     "error": "PASS",
-    "recovery": "PASS"
+    "recovery": "NOT_OBSERVABLE"
   },
   "supplementalKnowledgeExperience": {
     "searchAndAsk": "NOT_OBSERVABLE",
     "relationsFailClosed": "BLOCK",
     "keyTerms": "BLOCK",
     "historicalArchive": "NOT_OBSERVABLE",
-    "notes": "Knowledge loaded the latest local file successfully and the local-assistant unavailable-server error/retry state was understandable. However the Knowledge surface is too vertically long on mobile; Relations remains visibly 'in preparation'; Termini/glossary is sparse and inconsistent, including repeated 'Vedi la fonte' and 'Glossario locale non verificato'."
+    "notes": "Knowledge loaded the latest local file successfully and the local-assistant unavailable-server error was understandable. The reviewer selected retry, but the server remained unavailable, so recovery to a valid state was not observed. The Knowledge surface is too vertically long on mobile; Relations remains visibly 'in preparation'; Termini/glossary is sparse and inconsistent, including repeated 'Vedi la fonte' and 'Glossario locale non verificato'."
   },
   "evidenceCaptures": [
     {
