@@ -93,7 +93,7 @@ describe('Arena Beta canonical shell regression guard', () => {
     expect(viewsSource).toContain('Adesso: controlla se puoi usare questo curricolo');
     expect(viewsSource).toContain('verifica Fonti, Applicabilità e Stato');
     expect(viewsSource).toContain('data-human-next-action="verify-curriculum-validity"');
-    expect(viewsSource).toContain('Controlla validità e fonti');
+    expect(viewsSource).toContain('Verifica se puoi usarlo');
     expect(viewsSource).toContain("safeHandleTabSwitch('fonti')");
     expect(viewsSource).toContain('Se vuoi solo leggerlo, puoi continuare a consultare i contenuti qui sotto.');
     expect(curriculumWorkspaceSource).toContain('Vuoi controllare la fonte nazionale?');
