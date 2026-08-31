@@ -1,0 +1,35 @@
+[profiles.arena-auditor]
+extends = "strict"
+restrict_network = true
+deny = [
+  "**/.env",
+  "**/.env.*",
+  "**/*.pem",
+  "**/*.key",
+  "**/*.p12",
+  "**/*.pfx"
+]
+
+[profiles.arena-implementer]
+extends = "strict"
+restrict_network = true
+deny = [
+  "**/.env",
+  "**/.env.*",
+  "**/*.pem",
+  "**/*.key",
+  "**/*.p12",
+  "**/*.pfx"
+]
+
+[profiles.arena-untrusted]
+extends = "strict"
+restrict_network = true
+deny = [
+  "**/.env",
+  "**/.env.*",
+  "**/*.pem",
+  "**/*.key",
+  "**/*.p12",
+  "**/*.pfx"
+]

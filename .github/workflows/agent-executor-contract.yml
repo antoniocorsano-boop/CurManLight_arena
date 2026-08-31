@@ -1,0 +1,47 @@
+name: Agent Executor Contract
+
+on:
+  pull_request:
+    paths:
+      - '.grok/**'
+      - '.github/workflows/agent-executor-contract.yml'
+      - 'docs/GROK_BUILD_ARENA_RUNBOOK.md'
+      - 'docs/architecture/ARENA_GROK_BUILD_EXTERNAL_EXECUTOR_DECISION_V1.md'
+      - 'docs/architecture/CML_ARENA_AGENT_EXECUTION_EVIDENCE_SCHEMA_V1.json'
+      - 'docs/architecture/CML_ARENA_AGENT_EXECUTOR_REGISTRY_V1.json'
+      - 'scripts/grok-arena.mjs'
+      - 'scripts/agent-benchmark.mjs'
+      - 'scripts/validate-grok-integration.mjs'
+      - 'package.json'
+      - '.gitignore'
+  push:
+    branches: [main]
+    paths:
+      - '.grok/**'
+      - '.github/workflows/agent-executor-contract.yml'
+      - 'docs/GROK_BUILD_ARENA_RUNBOOK.md'
+      - 'docs/architecture/ARENA_GROK_BUILD_EXTERNAL_EXECUTOR_DECISION_V1.md'
+      - 'docs/architecture/CML_ARENA_AGENT_EXECUTION_EVIDENCE_SCHEMA_V1.json'
+      - 'docs/architecture/CML_ARENA_AGENT_EXECUTOR_REGISTRY_V1.json'
+      - 'scripts/grok-arena.mjs'
+      - 'scripts/agent-benchmark.mjs'
+      - 'scripts/validate-grok-integration.mjs'
+      - 'package.json'
+      - '.gitignore'
+
+permissions:
+  contents: read
+
+jobs:
+  validate-agent-executor-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate governed external executor contract
+        run: node scripts/validate-grok-integration.mjs

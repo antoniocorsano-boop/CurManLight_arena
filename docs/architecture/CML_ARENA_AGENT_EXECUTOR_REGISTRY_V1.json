@@ -1,0 +1,81 @@
+{
+  "schemaVersion": "CML-ARENA-AGENT-EXECUTOR-REGISTRY-V1",
+  "status": "DEVELOPMENT_TOOLING_ONLY",
+  "authorityModel": {
+    "externalExecutorAuthority": "NONE",
+    "promotionAllowed": false,
+    "humanVerdictAllowed": false
+  },
+  "upstream": {
+    "repository": "xai-org/grok-build",
+    "license": "Apache-2.0",
+    "integrationMode": "INSTALLED_BINARY_ONLY",
+    "vendoredCode": false,
+    "nativeWindowsGovernedWrapper": "REFUSED_FAIL_CLOSED"
+  },
+  "executors": [
+    {
+      "id": "GROK_BUILD_AUDITOR",
+      "runtime": "GROK_BUILD",
+      "mode": "AUDIT",
+      "availability": "AVAILABLE_IF_INSTALLED_ON_SUPPORTED_SANDBOX_PLATFORM",
+      "sandboxProfile": "arena-auditor",
+      "toolPolicy": {
+        "allowlist": ["read_file", "grep", "list_dir"],
+        "denylist": ["search_replace", "run_terminal_cmd", "web_search", "web_fetch", "Agent", "MCPTool(*)"],
+        "permissionMode": "defaultMode"
+      },
+      "mayMutateRepository": false,
+      "mayMerge": false,
+      "mayDeploy": false,
+      "mayPromote": false,
+      "mayIssueHumanVerdict": false
+    },
+    {
+      "id": "GROK_BUILD_IMPLEMENTER",
+      "runtime": "GROK_BUILD",
+      "mode": "CODE",
+      "availability": "AVAILABLE_IF_INSTALLED_ON_SUPPORTED_SANDBOX_PLATFORM",
+      "sandboxProfile": "arena-implementer",
+      "toolPolicy": {
+        "allowlist": [],
+        "denylist": [
+          "Bash(git*)",
+          "Bash(gh*)",
+          "Bash(surge*)",
+          "Bash(vercel*)",
+          "Bash(npx surge*)",
+          "Bash(npx vercel*)",
+          "Bash(npm publish*)",
+          "MCPTool(*)",
+          "Edit(docs/architecture/INTEGRATED_PROJECT_GOVERNED_MEMORY_V1.md)",
+          "Write(docs/architecture/INTEGRATED_PROJECT_GOVERNED_MEMORY_V1.md)"
+        ],
+        "permissionMode": "defaultMode"
+      },
+      "mayMutateRepository": true,
+      "requiresNonMainBranch": true,
+      "mayMerge": false,
+      "mayDeploy": false,
+      "mayPromote": false,
+      "mayIssueHumanVerdict": false
+    },
+    {
+      "id": "GROK_BUILD_UNTRUSTED_REVIEWER",
+      "runtime": "GROK_BUILD",
+      "mode": "UNTRUSTED_REVIEW",
+      "availability": "AVAILABLE_IF_INSTALLED_ON_SUPPORTED_SANDBOX_PLATFORM",
+      "sandboxProfile": "arena-untrusted",
+      "toolPolicy": {
+        "allowlist": ["read_file", "grep", "list_dir"],
+        "denylist": ["search_replace", "run_terminal_cmd", "web_search", "web_fetch", "Agent", "MCPTool(*)"],
+        "permissionMode": "defaultMode"
+      },
+      "mayMutateRepository": false,
+      "mayMerge": false,
+      "mayDeploy": false,
+      "mayPromote": false,
+      "mayIssueHumanVerdict": false
+    }
+  ]
+}

@@ -8,6 +8,7 @@ coverage/
 .env.*
 !.env.example
 .worktrees/
+.agent-runs/
 
 storybook-static/
 report/cml-*-screenshots/

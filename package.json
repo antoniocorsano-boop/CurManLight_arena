@@ -18,6 +18,11 @@
     "memory:checkpoint": "powershell -ExecutionPolicy Bypass -File scripts/agent-memory.ps1 checkpoint",
     "memory:status": "powershell -ExecutionPolicy Bypass -File scripts/agent-memory.ps1 status",
     "memory:handoff": "powershell -ExecutionPolicy Bypass -File scripts/agent-memory.ps1 handoff",
+    "agent:grok:audit": "node scripts/grok-arena.mjs audit",
+    "agent:grok:code": "node scripts/grok-arena.mjs code",
+    "agent:grok:untrusted": "node scripts/grok-arena.mjs untrusted",
+    "agent:benchmark": "node scripts/agent-benchmark.mjs",
+    "agent:integration:verify": "node scripts/validate-grok-integration.mjs",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build"
   },
