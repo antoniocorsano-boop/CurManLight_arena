@@ -99,6 +99,10 @@ fs.mkdirSync(OUT_DIR, { recursive: true });
     return assistantOpened;
   };
 
+  const assistantKnowledgeAction = (name) => page
+    .locator('[data-assistant-knowledge-actions="always-visible"]')
+    .getByRole('button', { name, exact: true });
+
   try {
     const assistantOpened = await navigateAndOpenAssistant();
 
@@ -124,18 +128,23 @@ fs.mkdirSync(OUT_DIR, { recursive: true });
     check('Pannello Assistente si apre', panelVisible);
     await screenshot('02-assistant-open.png');
 
-    const knowledgeActionVisible = await page.getByText('Apri conoscenza', { exact: true }).isVisible({ timeout: 1000 }).catch(() => false);
-    const graphActionVisible = await page.getByText('Mostra connessioni', { exact: true }).isVisible({ timeout: 1000 }).catch(() => false);
+    const knowledgeAction = assistantKnowledgeAction('Apri conoscenza');
+    const graphAction = assistantKnowledgeAction('Mostra connessioni');
+    const knowledgeActionVisible = await knowledgeAction.isVisible({ timeout: 1000 }).catch(() => false);
+    const graphActionVisible = await graphAction.isVisible({ timeout: 1000 }).catch(() => false);
+    const localContextActionsVisible = await page.locator('[data-assistant-local-context-actions="available-only"]').isVisible({ timeout: 1000 }).catch(() => false);
     console.log(`KNOWLEDGE_ACTION_VISIBLE=${knowledgeActionVisible}`);
     console.log(`GRAPH_ACTION_VISIBLE=${graphActionVisible}`);
+    console.log(`LOCAL_CONTEXT_ACTIONS_VISIBLE=${localContextActionsVisible}`);
 
     if (!knowledgeActionVisible || !graphActionVisible) {
-      finding('ASSISTANT_KNOWLEDGE_ACTIONS_NOT_DISCOVERABLE', 'Le azioni di conoscenza devono essere disponibili appena l’Assistente si apre.');
+      finding('ASSISTANT_KNOWLEDGE_ACTIONS_NOT_DISCOVERABLE', 'Le azioni canoniche di conoscenza devono essere disponibili appena l’Assistente si apre.');
     }
-    check('Azioni Conoscenza e Connessioni subito disponibili', knowledgeActionVisible && graphActionVisible);
+    check('Azioni canoniche Conoscenza e Connessioni subito disponibili', knowledgeActionVisible && graphActionVisible);
+    check('Azioni locali contestuali disponibili senza modello', localContextActionsVisible);
 
     if (knowledgeActionVisible) {
-      await page.getByText('Apri conoscenza', { exact: true }).click({ force: true });
+      await knowledgeAction.click({ force: true });
       await page.waitForTimeout(700);
       await screenshot('03-knowledge-source.png');
       const teacherFirstShellVisible = await page.locator('[data-kx-shell="teacher-first-v3"]').isVisible({ timeout: 3000 }).catch(() => false);
@@ -149,7 +158,7 @@ fs.mkdirSync(OUT_DIR, { recursive: true });
     const assistantOpenedAgain = await navigateAndOpenAssistant();
     check('Assistente si riapre dopo re-entry', assistantOpenedAgain);
 
-    const graphActionAgain = page.getByText('Mostra connessioni', { exact: true });
+    const graphActionAgain = assistantKnowledgeAction('Mostra connessioni');
     if (await graphActionAgain.isVisible({ timeout: 1000 }).catch(() => false)) {
       await graphActionAgain.click({ force: true });
       await page.waitForTimeout(700);
@@ -174,6 +183,7 @@ fs.mkdirSync(OUT_DIR, { recursive: true });
       releaseIdentity,
       knowledgeActionVisible,
       graphActionVisible,
+      localContextActionsVisible,
       onboardingStillVisible,
       relationsVisible,
       failClosedVisible,
