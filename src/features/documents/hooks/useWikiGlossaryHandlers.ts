@@ -5,6 +5,7 @@ import { safeLocalStorageGetGlossary, safeLocalStorageSetItem } from '../../../l
 import type { CustomKbDoc } from './useKnowledgeBaseHandlers';
 import { generateWikiResponse } from '../../../lib/wikiLLM';
 import { readAssistantKnowledgeView } from '../../copilot/assistantKnowledgeNavigation';
+import { applyLocalRetrievalContract } from '../lib/localRetrievalContract';
 
 type GlossaryItem = { term: string; definition: string; source: string };
 
@@ -48,7 +49,7 @@ export function useWikiGlossaryHandlers({
  const [isGlossaryLoading, setIsGlossaryLoading] = useState(false);
  const [glossarySearch, setGlossarySearch] = useState('');
 
- // Simulated WikiLLM Query Processor
+ // Local retrieval processor. Legacy matching is always gated by the R1 evidence contract.
  const triggerWikiLLMQuery = (query: string) => {
   if (!query || !query.trim()) return;
   setWikiQuery(query);
@@ -56,7 +57,7 @@ export function useWikiGlossaryHandlers({
   setWikiResponse(null);
   
   setTimeout(() => {
-   const response = generateWikiResponse({
+   const legacyResponse = generateWikiResponse({
     query,
     discipline,
     order,
@@ -64,10 +65,13 @@ export function useWikiGlossaryHandlers({
     volumes: Object.values(volumesKB),
     getVolumeTitle: getVolumeTitleWithCustom,
    });
+   const outcome = applyLocalRetrievalContract(query, legacyResponse);
    
-   setWikiResponse(response);
+   setWikiResponse(outcome.text);
    setWikiLoading(false);
-  showToast("Risposta locale generata; contenuto non verificato.");
+   showToast(outcome.kind === 'EVIDENCE_FOUND'
+    ? 'Ricerca locale completata: controlla il passaggio nella fonte.'
+    : 'Nessuna evidenza sufficientemente pertinente trovata.');
   }, 1500);
  };
 
