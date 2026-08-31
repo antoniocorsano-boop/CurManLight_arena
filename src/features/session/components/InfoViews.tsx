@@ -74,29 +74,29 @@ export function InfoViews({ activeTab, activeGeneralSubtab, setActiveGeneralSubt
 
      {/* VIEW: GUIDA */}
      {activeTab === 'guida' && (
-      <div className="space-y-8 fade-in text-left text-xs leading-relaxed text-slate-700">
+      <div data-hva-guide-readability className="space-y-8 fade-in text-left text-sm leading-6 text-slate-700">
        {/* Header */}
        <div className="border-b border-slate-150 pb-4">
-        <h1 className="text-base font-black text-slate-800 flex items-center space-x-2">
+        <h1 className="text-lg font-black text-slate-800 flex items-center space-x-2">
          <HelpCircle className="w-5 h-5 text-indigo-600 animate-pulse" />
          <span>Guida Utente e Manuale d'Uso della Piattaforma</span>
         </h1>
-         <p className="text-[11px] text-slate-500 font-medium">Manuale operativo per la programmazione, l'allineamento dei curricoli e l'esportazione dei documenti.</p>
+         <p className="text-sm text-slate-500 font-medium leading-6">Manuale operativo per la programmazione, l'allineamento dei curricoli e l'esportazione dei documenti.</p>
        </div>
 
        {/* GUIDA UTENTE SECTIONS */}
        <div className="space-y-6">
-        
+
         {/* 1. CONFIGURAZIONE PROFILO */}
         <div className="bg-slate-50 p-5 rounded-2xl border border-slate-200 space-y-3 shadow-sm">
-         <h3 className="font-extrabold text-indigo-950 text-xs flex items-center space-x-2.5">
-          <span className="bg-indigo-600 text-white h-5 w-5 rounded-full flex items-center justify-center text-[10px] font-mono font-black">1</span>
-          <span className="uppercase tracking-wide text-[11px]">Profilo personale e contesto di lavoro</span>
+         <h3 className="font-extrabold text-indigo-950 text-sm flex items-center space-x-2.5">
+          <span className="bg-indigo-600 text-white h-5 w-5 rounded-full flex items-center justify-center text-xs font-mono font-black">1</span>
+          <span className="uppercase tracking-wide text-xs">Profilo personale e contesto di lavoro</span>
          </h3>
-         <p className="text-[11px] text-slate-600 font-semibold leading-relaxed">
+         <p className="text-sm text-slate-600 font-semibold leading-6">
            Al primo avvio puoi dichiarare un contesto personale di consultazione. Le scelte non sono autenticate e non attribuiscono ruoli o autorità:
          </p>
-         <ul className="list-disc pl-4 space-y-2 text-[10px] text-slate-500 font-bold leading-relaxed">
+         <ul className="list-disc pl-5 space-y-2 text-sm text-slate-600 font-medium leading-6">
            <li><strong>Ruolo dichiarato</strong>: è un'etichetta personale non verificata.</li>
            <li><strong>Ordine di consultazione</strong>: seleziona l'ordine utile alla sessione senza configurare l'offerta della scuola.</li>
            <li><strong>Classi e sezioni</strong>: aggiungi solo combinazioni utili al lavoro locale.</li>
@@ -105,14 +105,14 @@ export function InfoViews({ activeTab, activeGeneralSubtab, setActiveGeneralSubt
 
         {/* 2. CONSULTAZIONE CURRICOLO */}
         <div className="bg-slate-50 p-5 rounded-2xl border border-slate-200 space-y-3 shadow-sm">
-         <h3 className="font-extrabold text-indigo-950 text-xs flex items-center space-x-2.5">
-          <span className="bg-indigo-600 text-white h-5 w-5 rounded-full flex items-center justify-center text-[10px] font-mono font-black">2</span>
-          <span className="uppercase tracking-wide text-[11px]">Consultazione dei contenuti curriculari locali</span>
+         <h3 className="font-extrabold text-indigo-950 text-sm flex items-center space-x-2.5">
+          <span className="bg-indigo-600 text-white h-5 w-5 rounded-full flex items-center justify-center text-xs font-mono font-black">2</span>
+          <span className="uppercase tracking-wide text-xs">Consultazione dei contenuti curriculari locali</span>
          </h3>
-         <p className="text-[11px] text-slate-600 font-semibold leading-relaxed">
+         <p className="text-sm text-slate-600 font-semibold leading-6">
            Nel tab <strong>"Consulta Curricolo"</strong> puoi esplorare i contenuti disponibili. La vista non ne verifica completezza o adozione:
          </p>
-         <ul className="list-disc pl-4 space-y-2 text-[10px] text-slate-500 font-bold leading-relaxed">
+         <ul className="list-disc pl-5 space-y-2 text-sm text-slate-600 font-medium leading-6">
            <li><strong>Mappe di senso e albero disciplinare</strong>: esplora traguardi e obiettivi disponibili per la selezione corrente.</li>
           <li><strong>Filtro Termini Rapido</strong>: Digita parole chiave (es. <em>corsivo</em> o <em>Blender</em>) per estrarre istantaneamente gli obiettivi e traguardi associati.</li>
           <li><strong>Traduzione Olistica per l'Infanzia</strong>: Se selezioni l'Infanzia come ordine, il sistema traduce all'istante le materie nei relativi 5 Campi di Esperienza ministeriali (es. <em>Italiano</em> diventa <em> I discorsi e le parole</em>), prevenendo errori terminologici.</li>
@@ -121,14 +121,14 @@ export function InfoViews({ activeTab, activeGeneralSubtab, setActiveGeneralSubt
 
         {/* 3. REVISIONI DEI GAP */}
         <div className="bg-slate-50 p-5 rounded-2xl border border-slate-200 space-y-3 shadow-sm">
-         <h3 className="font-extrabold text-indigo-950 text-xs flex items-center space-x-2.5">
-          <span className="bg-indigo-600 text-white h-5 w-5 rounded-full flex items-center justify-center text-[10px] font-mono font-black">3</span>
-          <span className="uppercase tracking-wide text-[11px]">Confronto locale dei testi 2012-2025</span>
+         <h3 className="font-extrabold text-indigo-950 text-sm flex items-center space-x-2.5">
+          <span className="bg-indigo-600 text-white h-5 w-5 rounded-full flex items-center justify-center text-xs font-mono font-black">3</span>
+          <span className="uppercase tracking-wide text-xs">Confronto locale dei testi 2012-2025</span>
          </h3>
-         <p className="text-[11px] text-slate-600 font-semibold leading-relaxed">
+         <p className="text-sm text-slate-600 font-semibold leading-6">
            Il tab <strong>"Revisione (Gap 2025)"</strong> registra scelte personali di lavoro prive di valore deliberativo:
          </p>
-         <ul className="list-disc pl-4 space-y-2 text-[10px] text-slate-500 font-bold leading-relaxed">
+         <ul className="list-disc pl-5 space-y-2 text-sm text-slate-600 font-medium leading-6">
           <li><strong>Carousel Monoscheda</strong>: Esamina ciascun gap ordinamentale (DM 254/2012 vs DM 221/2025) focalizzandoti su una singola scheda comparativa alla volta per azzerare l'affaticamento visivo.</li>
            <li><strong>Scelta locale</strong>: usa il testo 2025, mantieni il testo 2012 o scrivi una proposta personale.</li>
            <li><strong>Esportazione tecnica</strong>: scarica un file `.cml` locale; l'esportazione non costituisce invio o approvazione.</li>
@@ -137,14 +137,14 @@ export function InfoViews({ activeTab, activeGeneralSubtab, setActiveGeneralSubt
 
         {/* 4. PROGETTAZIONE UDA */}
         <div className="bg-slate-50 p-5 rounded-2xl border border-slate-200 space-y-3 shadow-sm">
-         <h3 className="font-extrabold text-indigo-950 text-xs flex items-center space-x-2.5">
-          <span className="bg-indigo-600 text-white h-5 w-5 rounded-full flex items-center justify-center text-[10px] font-mono font-black">4</span>
-          <span className="uppercase tracking-wide text-[11px]">Progettazione Guidata Unità di Apprendimento (UDA)</span>
+         <h3 className="font-extrabold text-indigo-950 text-sm flex items-center space-x-2.5">
+          <span className="bg-indigo-600 text-white h-5 w-5 rounded-full flex items-center justify-center text-xs font-mono font-black">4</span>
+          <span className="uppercase tracking-wide text-xs">Progettazione Guidata Unità di Apprendimento (UDA)</span>
          </h3>
-         <p className="text-[11px] text-slate-600 font-semibold leading-relaxed">
+         <p className="text-sm text-slate-600 font-semibold leading-6">
            L'area di progettazione consente di preparare una bozza UDA locale tramite un wizard a cinque passi:
          </p>
-         <ul className="list-disc pl-4 space-y-2 text-[10px] text-slate-500 font-bold leading-relaxed">
+         <ul className="list-disc pl-5 space-y-2 text-sm text-slate-600 font-medium leading-6">
            <li><strong>Dati introduttivi (Step 1)</strong>: inserisci titolo, monte ore, periodo e discipline coinvolte nella bozza personale.</li>
            <li><strong>Traguardi &amp; Obiettivi (Step 2)</strong>: seleziona i contenuti disponibili nella copia locale non validata.</li>
           <li><strong>Evidenze d'Inclusione (Step 3)</strong>: Associa le evidenze di comportamento osservabili per la certificazione delle competenze.</li>
@@ -155,14 +155,14 @@ export function InfoViews({ activeTab, activeGeneralSubtab, setActiveGeneralSubt
 
         {/* 5. ESPORTAZIONI */}
         <div className="bg-slate-50 p-5 rounded-2xl border border-slate-200 space-y-3 shadow-sm">
-         <h3 className="font-extrabold text-indigo-950 text-xs flex items-center space-x-2.5">
-          <span className="bg-indigo-600 text-white h-5 w-5 rounded-full flex items-center justify-center text-[10px] font-mono font-black">5</span>
-          <span className="uppercase tracking-wide text-[11px]">Esportazione File, PDF, ODF e Tracciato Registro Elettronico</span>
+         <h3 className="font-extrabold text-indigo-950 text-sm flex items-center space-x-2.5">
+          <span className="bg-indigo-600 text-white h-5 w-5 rounded-full flex items-center justify-center text-xs font-mono font-black">5</span>
+          <span className="uppercase tracking-wide text-xs">Esportazione File, PDF, ODF e Tracciato Registro Elettronico</span>
          </h3>
-         <p className="text-[11px] text-slate-600 font-semibold leading-relaxed">
+         <p className="text-sm text-slate-600 font-semibold leading-6">
            Nel tab <strong>"Esportazione File"</strong> puoi generare copie tecniche locali, da verificare prima dell'uso:
          </p>
-         <ul className="list-disc pl-4 space-y-2 text-[10px] text-slate-500 font-bold leading-relaxed">
+         <ul className="list-disc pl-5 space-y-2 text-sm text-slate-600 font-medium leading-6">
            <li><strong>Documenti di lavoro</strong>: genera bozze di programmazione o relazione di classe.</li>
            <li><strong>ODF (.odt)</strong>: esporta una copia in formato aperto; l'app non certifica conformità CAD o PA.</li>
           <li><strong>Stampa e Salva in PDF</strong>: Esporta ed impagina i tuoi documenti in formato PDF pulito esente da pulsanti web.</li>
