@@ -1,0 +1,53 @@
+name: Live Beta Support Browser Audit
+
+on:
+  workflow_run:
+    workflows: ['Deploy Arena Beta']
+    types: [completed]
+  push:
+    branches: [validation/arena-s3c-live-support-audit]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  live-support-evidence:
+    if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Checkout audit code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || github.sha }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Audit published mobile support journey
+        env:
+          BETA_URL: https://antoniocorsano-boop.github.io/CurManLight_arena
+          EXPECTED_RELEASE_SHA: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || '' }}
+        run: node scripts/audit-live-beta-support.cjs
+
+      - name: Upload support evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: live-beta-support-evidence
+          path: artifacts/live-beta-support
+          if-no-files-found: warn
+
+      - name: Non-claim
+        if: always()
+        run: echo 'Automated support evidence only. BETA_HIA_PASS and accessibility acceptance still require actual human review.'
