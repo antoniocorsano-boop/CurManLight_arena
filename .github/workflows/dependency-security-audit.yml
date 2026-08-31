@@ -1,0 +1,78 @@
+name: Dependency Security Audit
+
+on:
+  pull_request:
+    paths:
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/dependency-security-audit.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/dependency-security-audit.yml'
+  schedule:
+    - cron: '17 4 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  dependency-security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+
+      - name: Collect runtime audit evidence
+        run: npm audit --omit=dev --json > runtime-audit.json || true
+
+      - name: Collect full-graph audit evidence
+        run: npm audit --json > full-audit.json || true
+
+      - name: Enforce Arena dependency security policy
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+
+          const runtime = JSON.parse(fs.readFileSync('runtime-audit.json', 'utf8'));
+          const full = JSON.parse(fs.readFileSync('full-audit.json', 'utf8'));
+          const rc = runtime.metadata?.vulnerabilities || {};
+          const fc = full.metadata?.vulnerabilities || {};
+
+          console.log(`RUNTIME_AUDIT ${JSON.stringify(rc)}`);
+          console.log(`FULL_GRAPH_AUDIT ${JSON.stringify(fc)}`);
+
+          const runtimeBlocking = (rc.moderate || 0) + (rc.high || 0) + (rc.critical || 0);
+          const fullBlocking = (fc.high || 0) + (fc.critical || 0);
+
+          if (runtimeBlocking > 0 || fullBlocking > 0) {
+            console.error('DEPENDENCY_SECURITY_AUDIT_FAIL');
+            console.error(`runtime moderate+ = ${runtimeBlocking}`);
+            console.error(`full graph high/critical = ${fullBlocking}`);
+            process.exit(1);
+          }
+
+          console.log('DEPENDENCY_SECURITY_AUDIT_PASS');
+          console.log('Policy: runtime moderate/high/critical block; full-graph high/critical block; lower-severity tooling findings remain reviewable evidence.');
+          NODE
+
+      - name: Upload dependency audit evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: dependency-security-audit
+          path: |
+            runtime-audit.json
+            full-audit.json
+          if-no-files-found: error
+
+      - name: Non-claim
+        if: always()
+        run: echo 'Dependency Security Audit is a technical gate only; it does not issue human acceptance or promote Arena milestones.'
