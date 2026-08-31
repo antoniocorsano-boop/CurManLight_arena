@@ -1,0 +1,102 @@
+{
+  "schema": "CML_ARENA_BETA_G5_HUMAN_ACCEPTANCE_V2",
+  "protocol": "BETA_G5_HUMAN_ACCEPTANCE_PROTOCOL_v2",
+  "sessionId": "ARENA-S3C-2026-08-31-FINAL-01",
+  "candidateRef": "evidence/arena-s3c-final-hva-f4018f7",
+  "status": "PENDING_HUMAN",
+  "releaseSha": "f4018f7ffcd87bbee133e0c24a22d581f8b1fc07",
+  "betaUrl": "https://antoniocorsano-boop.github.io/CurManLight_arena/",
+  "releaseIdentityVerified": true,
+  "reviewedAt": null,
+  "reviewerAttestation": {
+    "humanReviewActuallyPerformed": false,
+    "desktopReviewed": false,
+    "mobileReviewed": false,
+    "noFabricatedAuthority": false,
+    "proposalDecisionBoundaryUnderstood": false,
+    "planningHandoffBoundaryUnderstood": false
+  },
+  "tasks": {
+    "HT-BETA-CURRICULUM-CONTEXT": {
+      "desktop": "PENDING",
+      "mobile": "PENDING",
+      "observations": {
+        "validContext": "PENDING",
+        "provenance": "PENDING",
+        "invalidOrIncompleteContext": "PENDING",
+        "recovery": "PENDING"
+      },
+      "notes": "Final S3C retest on immutable deployed release f4018f7. Confirm that curriculum context, provenance and the next action are understandable without implying institutional authority that is not present."
+    },
+    "HT-BETA-REVISION-PREPARE": {
+      "desktop": "PENDING",
+      "mobile": "PENDING",
+      "observations": {
+        "proposalInspection": "PENDING",
+        "evidenceDisclosure": "PENDING",
+        "missingRequirementBlocked": "PENDING",
+        "unauthorizedReadOnly": "PENDING",
+        "staleOrReentryRecovery": "PENDING"
+      },
+      "notes": "Final S3C retest. Confirm that preparing a revision proposal is understandable and remains distinct from an institutional decision."
+    },
+    "HT-REVISION-DECISION": {
+      "desktop": "PENDING",
+      "mobile": "PENDING",
+      "observations": {
+        "noAuthorityBlocked": "PENDING",
+        "evidenceAndConsequence": "PENDING",
+        "explicitOutcomeChoice": "PENDING",
+        "explicitHumanConfirmation": "PENDING",
+        "receiptRefreshReentry": "PENDING"
+      },
+      "notObservableReason": "",
+      "notes": "Final S3C retest. Do not fabricate institutional membership or authority. A correctly blocked no-authority path is valid evidence."
+    },
+    "HT-BETA-PLANNING-HANDOFF": {
+      "desktop": "PENDING",
+      "mobile": "PENDING",
+      "observations": {
+        "validPreview": "PENDING",
+        "provisionalWarning": "PENDING",
+        "validationFailure": "PENDING",
+        "consequenceExplanation": "PENDING",
+        "explicitHandoff": "PENDING",
+        "recovery": "PENDING"
+      },
+      "notes": "Final S3C retest. Confirm that the planning handoff is understandable as a preview/versioned transfer toward Docente OS and not as an automatic downstream mutation."
+    }
+  },
+  "crossStates": {
+    "empty": "PENDING",
+    "loading": "PENDING",
+    "success": "PENDING",
+    "blocked": "PENDING",
+    "error": "PENDING",
+    "recovery": "PENDING"
+  },
+  "supplementalKnowledgeExperience": {
+    "searchAndAsk": "PENDING",
+    "relationsFailClosed": "PENDING",
+    "keyTerms": "PENDING",
+    "historicalArchive": "PENDING",
+    "notes": "Focused R1.1 check: an abstention must read 'Non ho trovato evidenze sufficienti'; a supported retrieval must read 'Passaggi trovati nelle fonti'. The UI must not imply that retrieval guarantees a certain answer."
+  },
+  "findings": [],
+  "severity1Open": 0,
+  "severity2Open": 0,
+  "verdict": "PENDING_HUMAN",
+  "allowedVerdicts": [
+    "BETA_HIA_PASS",
+    "PARTIAL_HUMAN_EVIDENCE",
+    "BETA_HIA_BLOCK"
+  ],
+  "nonClaims": [
+    "This receipt does not satisfy BETA-G6 accessibility acceptance.",
+    "Automated browser evidence is not a substitute for this human review.",
+    "A revoked or missing institutional membership must not be fabricated to obtain an authorized decision path.",
+    "BETA_HIA_PASS must not be written before the human observations are complete.",
+    "A completed receipt must identify the exact immutable SHA exposed by the published beta-release.json.",
+    "The final retest must explicitly revisit the previously blocking S3C findings on mobile content visibility, spacing/readability, teacher-facing language/information architecture and proposal/decision semantics."
+  ]
+}
