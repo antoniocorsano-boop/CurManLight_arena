@@ -22,7 +22,9 @@ describe('KX teacher-first knowledge experience', () => {
   it('keeps the human authority boundary visible in plain language', () => {
     expect(shellSource).toContain('controlla sempre la fonte');
     expect(shellSource).toContain('decisione della scuola');
-    expect(shellSource).toContain('Risposta locale da verificare');
+    expect(shellSource).toContain('Non ho trovato evidenze sufficienti');
+    expect(shellSource).toContain('Passaggi trovati nelle fonti');
+    expect(shellSource).not.toContain('Risposta locale da verificare');
     expect(addSourceModalSource).toContain('Non diventa automaticamente una fonte istituzionale');
     expect(addSourceModalSource).toContain('non modifica il curricolo approvato');
   });
