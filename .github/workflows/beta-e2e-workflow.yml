@@ -84,8 +84,8 @@ jobs:
   revision-journey:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
@@ -149,10 +149,11 @@ jobs:
           preview_pid=$!
           trap 'kill "$preview_pid" 2>/dev/null || true; cat /tmp/cml-beta-preview.log' EXIT
           for attempt in $(seq 1 30); do
-            if curl --fail --silent --show-error http://127.0.0.1:4173/CurManLight_arena/ > /dev/null; then
+            if curl --fail --silent http://127.0.0.1:4173/CurManLight_arena/ > /dev/null 2>&1; then
               break
             fi
             sleep 1
           done
           curl --fail --silent --show-error http://127.0.0.1:4173/CurManLight_arena/ > /dev/null
+          echo 'BETA_PAGES_DEEP_LINK_NOTE: HTTP 404 on direct SPA routes is expected in this preview because it mirrors GitHub Pages 404.html rehydration.'
           node scripts/verify-beta-g4-browser.cjs
