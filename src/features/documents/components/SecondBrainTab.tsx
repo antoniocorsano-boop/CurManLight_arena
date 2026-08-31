@@ -52,6 +52,12 @@ const normalizePublicText = (value: string) => value
   .replace(/ � /g, ' — ')
   .replace(/�/g, '');
 
+const INSUFFICIENT_EVIDENCE_PREFIX = 'Non trovo nelle fonti disponibili elementi sufficientemente pertinenti';
+
+const resolveSearchResultPresentation = (response: string) => response.startsWith(INSUFFICIENT_EVIDENCE_PREFIX)
+  ? { kind: 'INSUFFICIENT_EVIDENCE' as const, title: 'Non ho trovato evidenze sufficienti' }
+  : { kind: 'EVIDENCE_FOUND' as const, title: 'Passaggi trovati nelle fonti' };
+
 type SourceCard = {
   id: string;
   title: string;
@@ -194,6 +200,7 @@ export default function SecondBrainTab(props: SecondBrainTabProps) {
   const readerPlainText = selectedCustomSource
     ? `${selectedCustomSource.title}\n${selectedCustomSource.subtitle}\n\n${selectedCustomSource.content}`
     : getVolumePlainTxt(selectedBrainDoc);
+  const searchResultPresentation = wikiResponse ? resolveSearchResultPresentation(wikiResponse) : null;
 
   return (
     <div className="space-y-5 text-left" data-kx-shell="teacher-first-v3" data-govuk-task-page="knowledge">
@@ -253,14 +260,14 @@ export default function SecondBrainTab(props: SecondBrainTabProps) {
         <section className="space-y-5 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm" aria-labelledby="kx-search-title">
           <div className="max-w-2xl space-y-1">
             <h2 id="kx-search-title" className="text-base font-black text-slate-900">Cerca nella conoscenza</h2>
-            <p className="text-sm leading-6 text-slate-600">Scrivi una domanda concreta. La risposta resta da verificare nelle fonti.</p>
+            <p className="text-sm leading-6 text-slate-600">Scrivi una domanda concreta. Arena mostra soltanto passaggi supportati dalle fonti oppure segnala quando l'evidenza non basta.</p>
           </div>
           <div className="max-w-2xl space-y-3">
             <label htmlFor="kx-question" className="block text-sm font-bold text-slate-900">Che cosa vuoi capire?</label>
             <textarea id="kx-question" value={wikiQuery} onChange={(event) => setWikiQuery(event.target.value)} rows={3} placeholder="Per esempio: quali fonti sostengono questo traguardo?" className="w-full rounded-xl border border-slate-300 px-3 py-3 text-sm leading-6 outline-none focus:border-indigo-500" />
             <button type="button" onClick={submitQuestion} disabled={!wikiQuery.trim() || wikiLoading} className="min-h-12 rounded-xl bg-indigo-600 px-4 py-3 text-sm font-black text-white disabled:cursor-not-allowed disabled:bg-slate-300">{wikiLoading ? 'Ricerca in corso…' : 'Cerca nelle fonti'}</button>
           </div>
-          {wikiResponse && <div className="max-w-3xl rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm leading-6 text-slate-700"><strong className="block text-slate-900">Risposta locale da verificare</strong><p className="mt-2">{wikiResponse}</p></div>}
+          {wikiResponse && searchResultPresentation && <div data-kx-search-outcome={searchResultPresentation.kind} className="max-w-3xl rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm leading-6 text-slate-700"><strong className="block text-slate-900">{searchResultPresentation.title}</strong><p className="mt-2">{wikiResponse}</p></div>}
         </section>
       ) : (
         <section className="space-y-5" aria-labelledby="kx-sources-title">
