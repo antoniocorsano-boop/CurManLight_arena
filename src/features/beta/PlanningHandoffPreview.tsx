@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { ArrowRight, CheckCircle2, ShieldCheck, TriangleAlert } from 'lucide-react';
+import { ArrowRight, CheckCircle2, Download, ShieldCheck, TriangleAlert } from 'lucide-react';
 import { useAppContext } from '../../components/layout/AppContext';
 import { getA04InstitutionalRead } from '../../domain/institution';
 import { useCurriculumStore } from '../../store/useCurriculumStore';
@@ -64,58 +64,82 @@ export function PlanningHandoffPreview() {
     ? `${targetClass}${targetSection ? ` · Sezione ${targetSection}` : ''}`
     : `Classe ${targetClass}${targetSection}`;
 
+  const downloadHandoff = () => {
+    if (preview.status !== 'ready' || !preview.valid || typeof document === 'undefined') return;
+
+    const blob = new Blob([JSON.stringify(preview.handoff, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = `curmanlight-docente-os-${discipline}-${order}-${targetClass}${targetSection || ''}.cml-handoff.json`;
+    document.body.appendChild(anchor);
+    anchor.click();
+    anchor.remove();
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <section
-      aria-label="Anteprima passaggio alla progettazione"
-      className="rounded-2xl border border-slate-200 bg-white p-4 text-xs text-slate-700 space-y-3"
+      aria-label="Passaggio alla progettazione"
+      data-human-task="planning-handoff"
+      data-human-handoff-status={preview.status}
+      className="space-y-4 rounded-2xl border border-indigo-200 bg-indigo-50/30 p-4 text-sm leading-6 text-slate-700"
     >
       <div className="flex items-start gap-3">
-        <div className="rounded-lg bg-slate-100 p-2 text-slate-700">
-          <ArrowRight className="h-4 w-4" aria-hidden="true" />
+        <div className="rounded-lg bg-indigo-100 p-2 text-indigo-700">
+          <ArrowRight className="h-5 w-5" aria-hidden="true" />
         </div>
         <div className="min-w-0 flex-1">
-          <strong className="block text-[10px] uppercase tracking-wider text-slate-600">
-            Beta · anteprima passaggio alla progettazione
-          </strong>
-          <p className="mt-1 leading-relaxed">
-            Arena prepara il contesto curricolare che potrà essere consegnato a Docente OS. Questa vista è solo un’anteprima: non sincronizza, non importa e non modifica il lavoro operativo del docente.
+          <h2 className="text-base font-semibold text-slate-900">Passaggio alla progettazione</h2>
+          <p className="mt-1">
+            Qui vedi cosa Arena prepara per Docente OS. Il passaggio è esplicito e versionato: non sincronizza automaticamente e non modifica il lavoro del docente.
           </p>
         </div>
       </div>
 
       {preview.status === 'blocked' ? (
-        <div role="status" className="flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 p-3 text-amber-900">
-          <TriangleAlert className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
-          <div>
-            <strong className="block">Anteprima non disponibile</strong>
-            <span>{preview.reason}</span>
+        <>
+          <div role="status" className="flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 p-3 text-amber-900">
+            <TriangleAlert className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+            <div>
+              <strong className="block">Il passaggio non è ancora pronto</strong>
+              <span>{preview.reason}</span>
+            </div>
           </div>
-        </div>
+          <div className="rounded-xl border border-slate-200 bg-white p-3">
+            <strong className="block text-slate-900">Quando sarà pronto</strong>
+            <ul className="mt-1 list-disc space-y-1 pl-5">
+              <li>Arena prepara il contesto curricolare da consegnare a Docente OS.</li>
+              <li>Docente OS dovrà controllarlo e accettarlo prima di usarlo.</li>
+              <li>Nessuna classe, UDA o lezione viene modificata automaticamente.</li>
+            </ul>
+          </div>
+        </>
       ) : (
         <>
           <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
-            <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
-              <strong className="block text-[10px] uppercase text-slate-500">Contesto</strong>
+            <div className="rounded-xl border border-slate-200 bg-white p-3">
+              <strong className="block text-xs uppercase tracking-wide text-slate-500">Contesto</strong>
               <div className="mt-1">{institutionalProfile.instituteName}</div>
               <div>{classLabel} · {discipline} · {order}</div>
               <div>Anno {resolvedSchoolYear}</div>
             </div>
-            <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
-              <strong className="block text-[10px] uppercase text-slate-500">Baseline risultante</strong>
+            <div className="rounded-xl border border-slate-200 bg-white p-3">
+              <strong className="block text-xs uppercase tracking-wide text-slate-500">Baseline risultante</strong>
               <div className="mt-1">{curriculumStateLabel(preview.handoff.curricularContext.curriculumState)}</div>
               <div>{preview.handoff.curricularContext.applicabilityStatus === 'TRANSITIONAL' ? 'Coorte in transizione' : 'Quadro direttamente applicabile'}</div>
               <div>{preview.mandatoryRequirements}/{preview.totalRequirements} requisiti obbligatori</div>
             </div>
           </div>
 
-          <div className="rounded-xl border border-indigo-200 bg-indigo-50/40 p-3 space-y-1">
+          <div className="space-y-1 rounded-xl border border-indigo-200 bg-white p-3">
             <div className="flex items-center gap-2 font-semibold text-indigo-950">
               <ShieldCheck className="h-4 w-4" aria-hidden="true" />
-              <span>Contratto di passaggio controllato</span>
+              <span>Cosa viene consegnato</span>
             </div>
             <div><strong>Formato:</strong> {preview.handoff.format}</div>
             <div><strong>Destinazione:</strong> Docente OS</div>
-            <div><strong>Modalità:</strong> PREVIEW_ONLY</div>
+            <div><strong>Modalità:</strong> trasferimento esplicito, non sincronizzazione automatica</div>
             <div><strong>Accettazione docente:</strong> obbligatoria</div>
             <div><strong>Rimodulazione:</strong> {preview.handoff.curricularContext.transitionRemodulation.state}</div>
           </div>
@@ -127,19 +151,26 @@ export function PlanningHandoffPreview() {
               <TriangleAlert className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
             )}
             <div className="min-w-0">
-              <strong className="block">{preview.valid ? 'Contratto verificato' : 'Contratto non valido'}</strong>
+              <strong className="block">{preview.valid ? 'Passaggio verificato' : 'Passaggio non valido'}</strong>
               {preview.valid ? (
-                <>
-                  <span>Nessuna scrittura downstream è stata eseguita.</span>
-                  <div className="mt-1 break-all text-[10px] text-slate-600">
-                    Footprint: {preview.handoff.structuralFootprint.hash}
-                  </div>
-                </>
+                <span>Il file può essere preparato. Nessuna scrittura in Docente OS è stata eseguita.</span>
               ) : (
                 <span>{preview.validationErrors.join(' · ')}</span>
               )}
             </div>
           </div>
+
+          {preview.valid && (
+            <button
+              type="button"
+              data-human-next-action="download-planning-handoff"
+              onClick={downloadHandoff}
+              className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-indigo-700 px-4 py-2.5 font-semibold text-white transition hover:bg-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:w-auto"
+            >
+              <Download className="h-4 w-4" aria-hidden="true" />
+              Scarica passaggio per Docente OS
+            </button>
+          )}
         </>
       )}
     </section>
