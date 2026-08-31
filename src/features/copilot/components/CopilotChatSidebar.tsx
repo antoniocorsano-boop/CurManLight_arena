@@ -27,6 +27,69 @@ interface CopilotChatSidebarProps {
   activeProgTab: string;
 }
 
+type LocalContextAction = {
+  label: string;
+  view: 'source' | 'graph';
+};
+
+function resolveLocalContextActions(activeTab: string, activeProgTab: string): LocalContextAction[] {
+  if (activeTab === 'curricolo') {
+    return [
+      { label: 'Controlla le fonti del curricolo', view: 'source' },
+      { label: 'Esplora le relazioni', view: 'graph' },
+    ];
+  }
+
+  if (activeTab === 'revisione') {
+    return [
+      { label: 'Controlla le evidenze', view: 'source' },
+      { label: 'Vedi le connessioni', view: 'graph' },
+    ];
+  }
+
+  if (activeTab === 'fonti') {
+    return [
+      { label: 'Apri la conoscenza collegata', view: 'source' },
+      { label: 'Mostra connessioni', view: 'graph' },
+    ];
+  }
+
+  if (activeTab === 'documenti') {
+    return [
+      { label: 'Controlla le fonti collegate', view: 'source' },
+      { label: 'Esplora connessioni', view: 'graph' },
+    ];
+  }
+
+  if (activeProgTab === 'classe' || activeProgTab === 'classe-home') {
+    return [
+      { label: 'Apri la conoscenza', view: 'source' },
+      { label: 'Mostra relazioni', view: 'graph' },
+    ];
+  }
+
+  return [
+    { label: 'Apri conoscenza', view: 'source' },
+    { label: 'Mostra connessioni', view: 'graph' },
+  ];
+}
+
+function resolveModelSuggestions(activeTab: string, activeProgTab: string): string[] {
+  if (activeTab === 'dashboard') {
+    return ["Sintetizza i volumi dell'indagine", "Quali sono le priorità del PdM?"];
+  }
+  if (activeTab === 'curricolo' || activeTab === 'revisione') {
+    return ['Spiega la diacronia verticale', 'Quali scadenze ha il D.M. 221/2025?'];
+  }
+  if (activeTab === 'progetta-annuale') {
+    return ['Suggerisci un compito di realtà', 'Proponi misure inclusive per DSA'];
+  }
+  if (activeProgTab === 'classe' || activeProgTab === 'classe-home') {
+    return ['Spiega la metodologia Jigsaw', 'Consigli banchi a isole'];
+  }
+  return ["Informazioni sull'accessibilità", "Manuale d'uso"];
+}
+
 export function CopilotChatSidebar({
   isCopilotChatOpen,
   setIsCopilotChatOpen,
@@ -35,7 +98,7 @@ export function CopilotChatSidebar({
   copilotChatInput: _copilotChatInput,
   setCopilotChatInput: _setCopilotChatInput,
   handleSendCopilotMessage: _handleSendCopilotMessage,
-  handleSelectCopilotChip,
+  handleSelectCopilotChip: _handleSelectCopilotChip,
   handleToggleVoiceTyping: _handleToggleVoiceTyping,
   isVoiceListening: _isVoiceListening,
   handleSpeakController: _handleSpeakController,
@@ -223,6 +286,8 @@ export function CopilotChatSidebar({
   const canPreview = isAiConfigured && activeText.length > 0 && !isRunning;
   const canExecute = isPreviewing && preview !== null && consentGiven;
   const canCancel = isRunning && activeRequestId !== null;
+  const localContextActions = resolveLocalContextActions(activeTab, activeProgTab);
+  const modelSuggestions = resolveModelSuggestions(activeTab, activeProgTab);
 
   return (
     <div
@@ -422,47 +487,50 @@ export function CopilotChatSidebar({
       </div>
 
       <div className="p-3 border-t bg-slate-50 shrink-0 space-y-1.5">
-       <span className="text-[8px] font-black text-slate-400 uppercase tracking-wider block">Suggerimenti contestuali:</span>
-       <div className="flex flex-wrap gap-1">
-        {(() => {
-          let chips: string[] = [];
-          if (activeTab === 'dashboard') {
-            chips = ["Sintetizza i volumi dell'indagine", "Quali sono le priorità del PdM?"];
-          } else if (activeTab === 'curricolo' || activeTab === 'revisione') {
-            chips = ["Spiega la diacronia verticale", "Quali scadenze ha il D.M. 221/2025?"];
-          } else if (activeTab === 'progetta-annuale') {
-            chips = ["Suggerisci un compito di realtà", "Proponi misure inclusive per DSA"];
-          } else if (activeProgTab === 'classe' || activeProgTab === 'classe-home') {
-            chips = ["Spiega la metodologia Jigsaw", "Consigli banchi a isole"];
-          } else {
-            chips = ["Informazioni sull'accessibilità", "Manuale d'uso"];
-          }
-          return chips.map((c, i) => (
-            <button
-              key={i}
-              onClick={() => {
-                if (isAiConfigured) {
-                  setDraftText(c);
-                  if (preview || executionStatus === 'preview') {
-                    invalidateConsent();
-                  }
-                  setPreview(null);
-                  setResponse(null);
-                  setErrorMessage(null);
-                  setExecutionStatus('idle');
-                  setTimeout(() => draftTextareaRef.current?.focus(), 0);
-                } else {
-                  handleSelectCopilotChip(c);
-                }
-              }}
-              disabled={_isCopilotResponding}
-              className="text-[9px] font-bold bg-white hover:bg-indigo-50 hover:text-indigo-700 border hover:border-indigo-200 px-2 py-1 rounded-lg transition text-slate-600 text-left cursor-pointer truncate max-w-full"
-            >
-              {c}
-            </button>
-          ));
-        })()}
-       </div>
+        {!isAiConfigured ? (
+          <div data-assistant-local-context-actions="available-only">
+            <span className="text-[8px] font-black text-slate-400 uppercase tracking-wider block">Azioni disponibili qui:</span>
+            <div className="flex flex-wrap gap-1 mt-1.5">
+              {localContextActions.map((action) => (
+                <button
+                  key={`${action.view}-${action.label}`}
+                  type="button"
+                  onClick={() => handleOpenKnowledge(action.view)}
+                  className="text-[9px] font-bold bg-white hover:bg-indigo-50 hover:text-indigo-700 border hover:border-indigo-200 px-2 py-1.5 rounded-lg transition text-slate-600 text-left cursor-pointer max-w-full"
+                >
+                  {action.label}
+                </button>
+              ))}
+            </div>
+            <p className="text-[8px] text-slate-400 font-medium mt-1.5">Queste azioni consultano contenuti già presenti nell'Arena. Nessuna risposta AI viene simulata.</p>
+          </div>
+        ) : (
+          <div data-assistant-model-suggestions="model-required">
+            <span className="text-[8px] font-black text-slate-400 uppercase tracking-wider block">Suggerimenti per il modello:</span>
+            <div className="flex flex-wrap gap-1 mt-1.5">
+              {modelSuggestions.map((suggestion) => (
+                <button
+                  key={suggestion}
+                  onClick={() => {
+                    setDraftText(suggestion);
+                    if (preview || executionStatus === 'preview') {
+                      invalidateConsent();
+                    }
+                    setPreview(null);
+                    setResponse(null);
+                    setErrorMessage(null);
+                    setExecutionStatus('idle');
+                    setTimeout(() => draftTextareaRef.current?.focus(), 0);
+                  }}
+                  disabled={_isCopilotResponding}
+                  className="text-[9px] font-bold bg-white hover:bg-indigo-50 hover:text-indigo-700 border hover:border-indigo-200 px-2 py-1 rounded-lg transition text-slate-600 text-left cursor-pointer truncate max-w-full"
+                >
+                  {suggestion}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
