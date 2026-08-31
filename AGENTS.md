@@ -12,13 +12,24 @@ Memory ID: `CML-DOS-INTEGRATED-GOVERNANCE-V1`.
 
 This file is the canonical shared logical memory for CurManLight Arena + Docente OS. It overrides stale conversation summaries, old PR descriptions and local assumptions on cross-system boundaries. Do not change the Arena/Docente OS ownership boundary, authority model, handoff contract or governed execution order without an explicit governance change mirrored in both repositories.
 
+## Mandatory Arena curriculum adoption/validation guide
+
+Before any work that can affect curriculum governance, adoption, validation, revision, institutional decisions, baseline/adoption state, evidence-driven review or Arena ↔ Docente OS curricular feedback, also read:
+
+`docs/architecture/CURRICULUM_ADOPTION_VALIDATION_DEVELOPMENT_GUIDE_V1.md`
+
+Guide ID: `CML-ARENA-CURRICULUM-ADOPTION-VALIDATION-V1`.
+
+This guide is the persistent development direction for evolving Arena into a complete curriculum adoption and validation system. It does not override the integrated governed memory, routing/architecture freezes or active promotion gates. Resume from the first incomplete authorized AD tranche; never infer completion or authorization from conversation history alone.
+
 ## Load Order
 
 1. Read this file first.
 2. Read `docs/architecture/INTEGRATED_PROJECT_GOVERNED_MEMORY_V1.md` whenever the task can affect the integrated Arena + Docente OS system.
-3. If `session/` exists, read the latest relevant `session/*/handoff.md`.
-4. Read that session's `session_state.md`, then only the timeline entries needed for the current task.
-5. Read `docs/AGENT_MEMORY.md` only when you need the full protocol or templates.
+3. Read `docs/architecture/CURRICULUM_ADOPTION_VALIDATION_DEVELOPMENT_GUIDE_V1.md` whenever the task can affect curriculum governance, adoption, validation, revision, institutional decisions or curricular feedback/interoperability.
+4. If `session/` exists, read the latest relevant `session/*/handoff.md`.
+5. Read that session's `session_state.md`, then only the timeline entries needed for the current task.
+6. Read `docs/AGENT_MEMORY.md` only when you need the full protocol or templates.
 
 ## Session Rules
 
@@ -147,4 +158,3 @@ CML_630E_REQUIRED_FOR_IMPLEMENTATION
 - Legacy data paths audited: only curriculumBaseline.ts and test files import curriculumKB directly
 - No breaking changes to existing functionality
 - TypeScript, test:fast, build: all green
-
