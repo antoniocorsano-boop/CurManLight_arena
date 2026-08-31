@@ -97,19 +97,22 @@ async function noHorizontalOverflow(page) {
       check(
         'curriculum authority state is persistently visible',
         authorityText.includes('copia locale') &&
-          authorityText.includes('valida per la scuola') &&
           authorityText.includes('fonti') &&
           authorityText.includes('applicabilità') &&
           authorityText.includes('stato')
       );
+
+      const nextAction = authorityNotice.locator('[data-human-next-action="verify-curriculum-validity"]').first();
+      await nextAction.waitFor({ state: 'visible', timeout: 5000 });
+      const nextActionText = (await nextAction.innerText()).toLowerCase();
+      check(
+        'curriculum exposes one explicit human next action',
+        await nextAction.isVisible() && nextActionText.includes('verifica se puoi usarlo')
+      );
       check('curriculum context has no material horizontal overflow', await noHorizontalOverflow(page));
 
-      const provenanceEntry = profile.id === 'desktop'
-        ? page.getByText('Controlla le fonti', { exact: false }).first()
-        : page.getByText('Fonti', { exact: true }).first();
-      await provenanceEntry.waitFor({ state: 'visible', timeout: 5000 });
-      check('provenance inspection entry point is visible', await provenanceEntry.isVisible());
-      await provenanceEntry.click();
+      check('provenance inspection entry point is visible', await nextAction.isVisible());
+      await nextAction.click();
       await page.waitForURL(/\/fonti(?:\/|$|\?)/, { timeout: 5000 });
       check('provenance entry reaches the canonical /fonti route', page.url().includes('/fonti'));
 

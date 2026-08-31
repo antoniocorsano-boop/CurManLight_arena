@@ -89,9 +89,13 @@ describe('Arena Beta canonical shell regression guard', () => {
     expect(curriculumWorkspaceSource).toContain('data-teacher-surface="curriculum-workspace"');
   });
 
-  it('keeps teacher-facing curriculum entry language direct and action-oriented', () => {
-    expect(viewsSource).toContain('Prima di usare questo curricolo');
-    expect(viewsSource).toContain('controlla Fonti, Applicabilità e Stato');
+  it('gives curriculum context one explicit human next action', () => {
+    expect(viewsSource).toContain('Adesso: controlla se puoi usare questo curricolo');
+    expect(viewsSource).toContain('verifica Fonti, Applicabilità e Stato');
+    expect(viewsSource).toContain('data-human-next-action="verify-curriculum-validity"');
+    expect(viewsSource).toContain('Verifica se puoi usarlo');
+    expect(viewsSource).toContain("safeHandleTabSwitch('fonti')");
+    expect(viewsSource).toContain('Se vuoi solo leggerlo, puoi continuare a consultare i contenuti qui sotto.');
     expect(curriculumWorkspaceSource).toContain('Vuoi controllare la fonte nazionale?');
     expect(curriculumWorkspaceSource).toContain('Controlla la fonte');
     expect(curriculumWorkspaceSource).not.toContain('Fonte nazionale · Tecnologia');
