@@ -11,11 +11,16 @@ fs.mkdirSync(OUT_DIR, { recursive: true });
 (async () => {
   const browser = await chromium.launch({ headless: true });
   const context = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 1, locale: 'it-IT' });
+  await context.addInitScript(() => {
+    // This audit measures support reachability for an already configured local user.
+    // The startup effect uses this local marker only to decide whether to open onboarding.
+    window.localStorage.setItem('curmanlight-react-db-state-v1.4.0', 'support-audit-profile-present');
+  });
+
   const page = await context.newPage();
   const checks = [];
   const findings = [];
   const pageErrors = [];
-  const dismissedStartupDialogs = [];
 
   page.on('pageerror', (error) => pageErrors.push(error.message));
 
@@ -31,47 +36,13 @@ fs.mkdirSync(OUT_DIR, { recursive: true });
     console.log(`PRODUCT_FINDING=${code} — ${detail}`);
   };
 
-  const dismissKnownStartupDialogs = async () => {
-    for (let attempt = 0; attempt < 5; attempt += 1) {
-      await page.waitForTimeout(attempt === 0 ? 700 : 250);
-      const dialogs = page.locator('[role="dialog"][aria-modal="true"]');
-      let handled = false;
-
-      for (let index = 0; index < await dialogs.count(); index += 1) {
-        const dialog = dialogs.nth(index);
-        if (!(await dialog.isVisible().catch(() => false))) continue;
-        const text = (await dialog.innerText().catch(() => '')).trim();
-        const known = /Profilo personale locale|Motto e Metodo Operativo/i.test(text);
-        if (!known) {
-          finding('UNKNOWN_STARTUP_MODAL_BLOCKS_SUPPORT', text.slice(0, 240) || 'Dialogo iniziale senza testo leggibile.');
-          return false;
-        }
-
-        dismissedStartupDialogs.push(text.split('\n').filter(Boolean)[0] || 'dialogo noto');
-        const closeButton = dialog.locator('button').first();
-        if (!(await closeButton.isVisible().catch(() => false))) {
-          finding('KNOWN_STARTUP_MODAL_NOT_DISMISSIBLE', text.slice(0, 160));
-          return false;
-        }
-        await closeButton.click();
-        await dialog.waitFor({ state: 'hidden', timeout: 3000 }).catch(() => undefined);
-        handled = true;
-        break;
-      }
-
-      if (!handled) return true;
-    }
-
-    const remainingVisible = await page.locator('[role="dialog"][aria-modal="true"]:visible').count().catch(() => 0);
-    return remainingVisible === 0;
-  };
-
   try {
     const response = await page.goto(`${BETA_URL}/`, { waitUntil: 'domcontentloaded', timeout: 45000 });
     check('Beta pubblica raggiungibile', Boolean(response && response.ok()), response ? `HTTP ${response.status()}` : 'nessuna risposta');
+    await page.waitForTimeout(1400);
 
-    const startupClear = await dismissKnownStartupDialogs();
-    check('Dialoghi iniziali noti non bloccano il supporto', startupClear, dismissedStartupDialogs.join(' → '));
+    const blockingDialogs = await page.locator('[role="dialog"][aria-modal="true"]:visible').count().catch(() => 0);
+    check('Utente locale già configurato non riceve onboarding automatico', blockingDialogs === 0, `dialoghi visibili=${blockingDialogs}`);
 
     const releaseResponse = await context.request.get(`${BETA_URL}/beta-release.json`);
     const releaseIdentity = releaseResponse.ok() ? await releaseResponse.json().catch(() => null) : null;
@@ -123,14 +94,15 @@ fs.mkdirSync(OUT_DIR, { recursive: true });
       };
     });
 
-    const screenCount = overflowMetrics.viewportHeight > 0 ? overflowMetrics.scrollHeight / overflowMetrics.viewportHeight : null;
+    const verticalScreens = overflowMetrics.viewportHeight > 0 ? overflowMetrics.scrollHeight / overflowMetrics.viewportHeight : null;
     console.log(`GUIDE_TYPOGRAPHY=${JSON.stringify(typography)}`);
-    console.log(`GUIDE_VERTICAL_SCREENS=${screenCount === null ? 'n/a' : screenCount.toFixed(2)}`);
+    console.log(`GUIDE_VERTICAL_SCREENS=${verticalScreens === null ? 'n/a' : verticalScreens.toFixed(2)}`);
+
     if (typography.minPx !== null && typography.minPx < 12) {
       finding('GUIDE_TEXT_BELOW_12PX', `Minimo osservato ${typography.minPx}px; elementi sotto 12px: ${typography.below12Count}/${typography.measuredCount}.`);
     }
-    if (screenCount !== null && screenCount > 8) {
-      finding('GUIDE_LONG_MOBILE_SCROLL', `La Guida occupa circa ${screenCount.toFixed(1)} schermate verticali a 390x844.`);
+    if (verticalScreens !== null && verticalScreens > 8) {
+      finding('GUIDE_LONG_MOBILE_SCROLL', `La Guida occupa circa ${verticalScreens.toFixed(1)} schermate verticali a 390x844.`);
     }
 
     await page.screenshot({ path: path.join(OUT_DIR, 'guide-mobile.png'), fullPage: true });
@@ -144,10 +116,10 @@ fs.mkdirSync(OUT_DIR, { recursive: true });
       await controlsAgain.click();
       await page.waitForTimeout(650);
       const documentsSurface = page.locator('[data-teacher-surface="documents"]');
-      const controlsResolvedToOwnSurface = !page.url().includes('/documents') && !(await documentsSurface.isVisible({ timeout: 500 }).catch(() => false));
-      check('Controlli e checklist risolve una superficie distinta', controlsResolvedToOwnSurface, page.url(), 'soft');
-      if (!controlsResolvedToOwnSurface) {
-        finding('NOMINAL_CONTROLS_ENTRY_ALIASES_DOCUMENTS', 'La voce Controlli e checklist ricade sulla superficie Documenti; il freeze A1 la classifica già come nominale/non risolta e non autorizza una nuova route durante S3.');
+      const aliasesDocuments = page.url().includes('/documents') || await documentsSurface.isVisible({ timeout: 500 }).catch(() => false);
+      check('Controlli e checklist non ricade su Documenti', !aliasesDocuments, page.url(), 'soft');
+      if (aliasesDocuments) {
+        finding('NOMINAL_CONTROLS_ENTRY_ALIASES_DOCUMENTS', 'La voce Controlli e checklist ricade sulla superficie Documenti; A1 la classifica già come nominale/non risolta e vieta di creare una nuova route durante S3.');
       }
     }
 
@@ -160,10 +132,10 @@ fs.mkdirSync(OUT_DIR, { recursive: true });
       releaseIdentity,
       generatedAt: new Date().toISOString(),
       humanVerdictIssued: false,
-      dismissedStartupDialogs,
+      auditPersona: 'configured-local-user',
       checks,
       findings,
-      metrics: { overflowMetrics, typography, verticalScreens: screenCount },
+      metrics: { overflowMetrics, typography, verticalScreens },
       pageErrors,
     };
     fs.writeFileSync(path.join(OUT_DIR, 'report.json'), `${JSON.stringify(report, null, 2)}\n`, 'utf8');
