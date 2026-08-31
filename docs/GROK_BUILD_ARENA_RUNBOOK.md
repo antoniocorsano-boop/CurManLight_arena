@@ -11,11 +11,12 @@ Grok Build is an external development executor. It does not become part of the C
 - Read `AGENTS.md` and the applicable governed memory/guides.
 - Start or resume the shared Arena session memory before execution.
 - Install the official `grok` binary separately and ensure `grok --version` works.
-- For mutating `code` mode, use Linux/WSL2 or macOS and an isolated non-`main` branch/worktree.
-
-The wrapper intentionally refuses mutating Grok modes on Windows because the upstream kernel sandbox is not guaranteed there. Windows can still use the read-only audit profile, enforced by a strict tool allowlist and permission denies.
+- Run the governed wrapper from **WSL2/Linux or macOS**. Native Windows is refused fail-closed because the upstream OS-level sandbox documented by Grok Build is not guaranteed there.
+- For mutating `code` mode, use an isolated non-`main` branch/worktree.
 
 ## 1. Start shared Arena memory
+
+From PowerShell before entering WSL2, or from the normal Arena workflow:
 
 ```powershell
 npm run memory:start -- -Goal "Audit or implement the current Arena task with governed Grok Build evidence"
@@ -27,18 +28,21 @@ If a relevant session already exists, inspect it first:
 npm run memory:status
 ```
 
+Then run the Grok commands from the same repository through WSL2/Linux or macOS.
+
 ## 2. Read-only independent audit
 
-```powershell
+```bash
 npm run agent:grok:audit -- "Review the current branch against AGENTS.md, applicable governed memory and the task contract. Refute unsupported completion claims and return PASS, REWORK_REQUIRED or BLOCKED as a technical finding only."
 ```
 
 The audit profile:
 
+- uses the strict OS sandbox;
 - allows only repository read/search/list tools;
 - removes editing, shell, web and subagent tools;
+- denies MCP tool execution;
 - applies secret-path deny rules;
-- uses `arena-auditor` sandbox on supported operating systems;
 - writes raw output only to gitignored `.agent-runs/`;
 - writes normalized metadata to the latest `session/` directory.
 
@@ -46,29 +50,27 @@ The audit profile:
 
 Create/use an isolated feature branch or Agent Space worktree first. Never run this mode on `main`.
 
-```powershell
+```bash
 npm run agent:grok:code -- "Implement the authorized bounded change. Preserve all current governance and stop after local verification; do not merge, push, deploy or promote."
 ```
 
-The wrapper denies promotion-oriented commands including direct push, merge and deployment paths. It also denies edits to the canonical integrated governed-memory file through Grok permission rules.
+The implementation profile also uses the strict sandbox. The wrapper denies Git/GitHub CLI commands, direct deployment/publishing command families, MCP execution and edits to the canonical integrated governed-memory file through Grok permission rules.
 
-The agent may edit the current worktree, but its own result remains non-promoting evidence.
+The agent may edit ordinary files in the current worktree and run bounded local verification commands, but its own result remains non-promoting evidence.
 
 ## 4. Untrusted-code inspection
 
-On Linux/WSL2 or macOS:
-
-```powershell
-npm run agent:grok:untrusted -- "Inspect the supplied/unfamiliar code for risks without executing or modifying it."
+```bash
+npm run agent:grok:untrusted -- "Inspect the supplied or unfamiliar code for risks without executing or modifying it."
 ```
 
-This uses the strictest configured Arena sandbox and a read-only toolset.
+This uses the strict sandbox and the same read-only tool boundary as the independent auditor.
 
 ## 5. Verify the integration contract
 
 This check does not require Grok Build to be installed:
 
-```powershell
+```bash
 npm run agent:integration:verify
 ```
 
@@ -84,7 +86,7 @@ The same validator runs in GitHub Actions for changes to the integration contrac
 
 A Grok execution may report an agent-declared `PASS`, but repository gates remain separate. Run the smallest applicable gate set on the exact resulting worktree/SHA, for example:
 
-```powershell
+```bash
 npm run test:fast
 npm run build
 ```
@@ -95,13 +97,13 @@ If the task touches Beta contracts, human journeys, adoption/validation or anoth
 
 If two or more normalized evidence files exist in the latest session:
 
-```powershell
+```bash
 npm run agent:benchmark
 ```
 
 Or specify files explicitly:
 
-```powershell
+```bash
 npm run agent:benchmark -- session/<session>/agent_execution_<id1>.json session/<session>/agent_execution_<id2>.json
 ```
 

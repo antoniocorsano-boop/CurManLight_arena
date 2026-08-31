@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
 import { existsSync, mkdirSync, readdirSync, writeFileSync } from 'node:fs';
-import { basename, join, relative, resolve } from 'node:path';
+import { basename, join, relative } from 'node:path';
 
 const EVIDENCE_SCHEMA_VERSION = 'CML-ARENA-AGENT-EXECUTION-EVIDENCE-V1';
 const RAW_RUN_DIR = '.agent-runs';
@@ -72,12 +72,11 @@ function declaredResult(text) {
   return 'UNSPECIFIED';
 }
 
-function platformPolicy(mode) {
-  if (process.platform !== 'win32') return;
-  if (mode !== 'audit') {
+function enforceSupportedSandboxPlatform() {
+  if (process.platform === 'win32') {
     fail(
-      'Fail-closed policy: Grok Build code/untrusted modes require an OS sandbox. '
-      + 'Run this wrapper from Linux/WSL2 or macOS. Windows may use audit mode only.',
+      'Fail-closed policy: the governed Grok Build wrapper requires the upstream OS-level sandbox. '
+      + 'Run it from WSL2/Linux or macOS, not native Windows.',
       3,
     );
   }
@@ -95,6 +94,7 @@ function commonSecretDenyRules() {
     'Grep(**/.env.*)',
     'Grep(**/*.pem)',
     'Grep(**/*.key)',
+    'MCPTool(*)',
   ];
 }
 
@@ -134,11 +134,13 @@ function modePolicy(mode) {
   }
 
   const promotionDenies = [
-    'Bash(git push*)',
-    'Bash(git merge*)',
-    'Bash(gh pr merge*)',
+    'Bash(git*)',
+    'Bash(gh*)',
     'Bash(surge*)',
     'Bash(vercel*)',
+    'Bash(npx surge*)',
+    'Bash(npx vercel*)',
+    'Bash(npm publish*)',
     'Edit(docs/architecture/INTEGRATED_PROJECT_GOVERNED_MEMORY_V1.md)',
     'Write(docs/architecture/INTEGRATED_PROJECT_GOVERNED_MEMORY_V1.md)',
   ];
@@ -178,7 +180,7 @@ for (let index = 0; index < argv.length; index += 1) {
 const prompt = promptParts.join(' ').trim();
 if (!prompt) fail('A non-empty task prompt is required.', 2);
 
-platformPolicy(mode);
+enforceSupportedSandboxPlatform();
 
 const root = repoRoot();
 const sessionDir = latestSession(root);
@@ -194,7 +196,7 @@ if (mode === 'code' && (!branch || branch === 'main')) {
 const shaBefore = git(root, ['rev-parse', 'HEAD']);
 const statusBefore = git(root, ['status', '--porcelain']);
 const policy = modePolicy(mode);
-const grokBinary = process.platform === 'win32' ? 'grok.cmd' : 'grok';
+const grokBinary = 'grok';
 const versionProbe = run(grokBinary, ['--version'], { cwd: root });
 if (versionProbe.error?.code === 'ENOENT' || versionProbe.status === null) {
   fail('Grok Build binary not found on PATH. Install the official `grok` CLI before using this executor.', 4);
@@ -207,13 +209,8 @@ const grokArgs = [
   '--max-turns', policy.maxTurns,
   '--permission-mode', 'defaultMode',
   '--rules', policy.rules,
+  '--sandbox', policy.sandbox,
 ];
-
-// Upstream OS sandbox support is kernel-backed on Linux/macOS. Audit mode remains
-// tool-restricted on Windows; mutating modes are refused above.
-if (process.platform !== 'win32') {
-  grokArgs.push('--sandbox', policy.sandbox);
-}
 if (policy.allowlist.length) {
   grokArgs.push('--tools', policy.allowlist.join(','));
 }
@@ -248,7 +245,7 @@ const evidence = {
     mode: policy.runtimeMode,
     version: runtimeVersion,
     externalSessionId: typeof parsed?.sessionId === 'string' ? parsed.sessionId : null,
-    sandboxProfile: process.platform === 'win32' ? null : policy.sandbox,
+    sandboxProfile: policy.sandbox,
     toolPolicy: {
       allowlist: policy.allowlist,
       denylist: policy.denylist,

@@ -113,3 +113,28 @@ All agents must use the shared protocol:
 - Super CLI supports a single launcher panel for Claude Code, Codex, Copilot CLI, Kilo, OpenCode, and custom CLIs.
 - Agent Space supports per-feature worktrees, persistent tmux-backed sessions, and custom coding tools.
 - Vibe Rules supports skill/rule sync across Claude Code, Codex, OpenCode, Copilot, Cline, Kilo Code, Continue, and others.
+
+## Governed Grok Build External Executor
+
+Grok Build is available as an **optional external executor**, not as a product framework or authority. Its canonical decision is `docs/architecture/ARENA_GROK_BUILD_EXTERNAL_EXECUTOR_DECISION_V1.md`; operational usage is defined in `docs/GROK_BUILD_ARENA_RUNBOOK.md`.
+
+Use it for two bounded purposes:
+
+- independent read-only refutation/audit when a second implementation-independent view is useful;
+- bounded implementation inside an isolated non-`main` worktree when the task is already authorized by Arena governance.
+
+Governed commands:
+
+```bash
+npm run agent:grok:audit -- "<task>"
+npm run agent:grok:code -- "<task>"
+npm run agent:grok:untrusted -- "<task>"
+npm run agent:integration:verify
+npm run agent:benchmark
+```
+
+The wrapper records only normalized execution metadata into `session/`; raw model/tool output stays under gitignored `.agent-runs/`. Every normalized record forces `authority.claim = NONE`, `promotionAllowed = false` and `humanVerdict = false`.
+
+The governed wrapper requires the upstream OS-level sandbox and therefore runs from WSL2/Linux or macOS. Native Windows is refused fail-closed. Grok Build availability is probed at runtime and is not included in the list of CLIs assumed to be installed.
+
+Grok Build must never merge, push, deploy, close S3, authorize S4, promote AD state, mutate institutional authority or replace Human Task/HIM/HVA. Any agent-declared `PASS` is evidence only; repository gates and human acceptance remain separate.

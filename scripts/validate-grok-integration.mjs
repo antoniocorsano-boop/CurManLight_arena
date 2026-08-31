@@ -62,6 +62,7 @@ expect(schema?.properties?.output?.properties?.rawArtifactTracked?.const === fal
 
 expect(registry?.authorityModel?.externalExecutorAuthority === 'NONE', 'executor registry must grant no external authority');
 expect(registry?.authorityModel?.promotionAllowed === false, 'executor registry must deny promotion');
+expect(registry?.upstream?.nativeWindowsGovernedWrapper === 'REFUSED_FAIL_CLOSED', 'native Windows wrapper must fail closed');
 expect(Array.isArray(registry?.executors) && registry.executors.length >= 3, 'executor registry must define auditor, implementer and untrusted profiles');
 for (const executor of registry?.executors || []) {
   expect(executor.mayMerge === false, `${executor.id}: mayMerge must be false`);
@@ -75,6 +76,8 @@ expect(implementer?.requiresNonMainBranch === true, 'GROK_BUILD_IMPLEMENTER must
 for (const profile of ['arena-auditor', 'arena-implementer', 'arena-untrusted']) {
   expect(sandbox.includes(`[profiles.${profile}]`), `sandbox profile missing: ${profile}`);
 }
+const strictProfiles = (sandbox.match(/extends = "strict"/g) || []).length;
+expect(strictProfiles === 3, 'all governed Grok sandbox profiles must extend strict');
 for (const deniedSecret of ['**/.env', '**/*.pem', '**/*.key']) {
   expect(sandbox.includes(`"${deniedSecret}"`), `sandbox secret deny missing: ${deniedSecret}`);
 }
@@ -82,12 +85,13 @@ for (const deniedSecret of ['**/.env', '**/*.pem', '**/*.key']) {
 for (const invariant of [
   "authority: {\n    claim: 'NONE'",
   "branch === 'main'",
-  "Bash(git push*)",
-  "Bash(git merge*)",
-  "Bash(gh pr merge*)",
+  "Bash(git*)",
+  "Bash(gh*)",
   "Bash(surge*)",
   "Bash(vercel*)",
-  'platformPolicy(mode)',
+  "MCPTool(*)",
+  "process.platform === 'win32'",
+  'enforceSupportedSandboxPlatform()',
   'RAW_RUN_DIR',
 ]) {
   expect(wrapper.includes(invariant), `governed wrapper invariant missing: ${invariant}`);
@@ -96,6 +100,7 @@ for (const invariant of [
 expect(gitignore.split(/\r?\n/).includes('.agent-runs/'), '.agent-runs/ must be gitignored');
 expect(runbook.includes('npm run agent:grok:audit'), 'runbook must expose the governed audit command');
 expect(runbook.includes('npm run agent:grok:code'), 'runbook must expose the governed code command');
+expect(runbook.includes('WSL2/Linux or macOS'), 'runbook must disclose the supported sandbox platform boundary');
 expect(benchmark.includes('CML-ARENA-AGENT-EXECUTION-EVIDENCE-V1'), 'benchmark must consume normalized v1 evidence');
 
 expect(pkg?.scripts?.['agent:grok:audit'] === 'node scripts/grok-arena.mjs audit', 'package script agent:grok:audit missing or changed');

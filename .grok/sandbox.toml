@@ -1,5 +1,5 @@
 [profiles.arena-auditor]
-extends = "read-only"
+extends = "strict"
 restrict_network = true
 deny = [
   "**/.env",
@@ -11,7 +11,7 @@ deny = [
 ]
 
 [profiles.arena-implementer]
-extends = "workspace"
+extends = "strict"
 restrict_network = true
 deny = [
   "**/.env",
