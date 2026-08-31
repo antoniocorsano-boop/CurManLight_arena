@@ -49,7 +49,7 @@ export function AppViewsLayer(props: AppViewsLayerProps) {
               onClick={() => safeHandleTabSwitch('fonti')}
               className="mt-3 inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-indigo-600 px-4 py-2.5 font-semibold text-white shadow-sm transition hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:w-auto"
             >
-              Controlla validità e fonti
+              Verifica se puoi usarlo
             </button>
             <p className="mt-2 text-xs leading-5 text-amber-900">
               Se vuoi solo leggerlo, puoi continuare a consultare i contenuti qui sotto.
