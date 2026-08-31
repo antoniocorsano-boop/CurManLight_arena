@@ -66,15 +66,21 @@ fs.mkdirSync(OUT_DIR, { recursive: true });
 
     await guideEntry.click();
     await page.waitForURL(/\/guida(?:\/|$|\?)/, { timeout: 5000 });
-    const guideHeading = page.getByRole('heading', { name: /Guida Utente e Manuale d'Uso della Piattaforma/i }).first();
+    const guideHeading = page.locator('h1').filter({ hasText: "Guida Utente e Manuale d'Uso della Piattaforma" }).first();
     check('Azione Guida apre la vista reale', await guideHeading.isVisible({ timeout: 3000 }).catch(() => false), page.url());
 
-    const overflowMetrics = await page.evaluate(() => ({
-      scrollWidth: document.documentElement.scrollWidth,
-      clientWidth: document.documentElement.clientWidth,
-      scrollHeight: document.documentElement.scrollHeight,
-      viewportHeight: window.innerHeight,
-    }));
+    const overflowMetrics = await page.evaluate(() => {
+      const root = document.querySelector('#main-content');
+      const fallback = document.documentElement;
+      const scroller = root || fallback;
+      return {
+        scrollWidth: scroller.scrollWidth,
+        clientWidth: scroller.clientWidth,
+        scrollHeight: scroller.scrollHeight,
+        clientHeight: scroller.clientHeight,
+        viewportHeight: window.innerHeight,
+      };
+    });
     check('Guida non produce overflow orizzontale', overflowMetrics.scrollWidth <= overflowMetrics.clientWidth + 4, JSON.stringify(overflowMetrics));
 
     const typography = await page.evaluate(() => {
@@ -94,7 +100,8 @@ fs.mkdirSync(OUT_DIR, { recursive: true });
       };
     });
 
-    const verticalScreens = overflowMetrics.viewportHeight > 0 ? overflowMetrics.scrollHeight / overflowMetrics.viewportHeight : null;
+    const visibleHeight = overflowMetrics.clientHeight || overflowMetrics.viewportHeight;
+    const verticalScreens = visibleHeight > 0 ? overflowMetrics.scrollHeight / visibleHeight : null;
     console.log(`GUIDE_TYPOGRAPHY=${JSON.stringify(typography)}`);
     console.log(`GUIDE_VERTICAL_SCREENS=${verticalScreens === null ? 'n/a' : verticalScreens.toFixed(2)}`);
 
@@ -102,7 +109,7 @@ fs.mkdirSync(OUT_DIR, { recursive: true });
       finding('GUIDE_TEXT_BELOW_12PX', `Minimo osservato ${typography.minPx}px; elementi sotto 12px: ${typography.below12Count}/${typography.measuredCount}.`);
     }
     if (verticalScreens !== null && verticalScreens > 8) {
-      finding('GUIDE_LONG_MOBILE_SCROLL', `La Guida occupa circa ${verticalScreens.toFixed(1)} schermate verticali a 390x844.`);
+      finding('GUIDE_LONG_MOBILE_SCROLL', `La Guida occupa circa ${verticalScreens.toFixed(1)} altezze del contenitore principale a 390x844.`);
     }
 
     await page.screenshot({ path: path.join(OUT_DIR, 'guide-mobile.png'), fullPage: true });
