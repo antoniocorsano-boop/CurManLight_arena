@@ -8,12 +8,6 @@ const OUT_DIR = process.env.AUDIT_OUT_DIR || 'artifacts/live-beta-support';
 
 fs.mkdirSync(OUT_DIR, { recursive: true });
 
-const isVisibleElement = (element) => {
-  const style = window.getComputedStyle(element);
-  const rect = element.getBoundingClientRect();
-  return style.display !== 'none' && style.visibility !== 'hidden' && Number(style.opacity) !== 0 && rect.width > 0 && rect.height > 0;
-};
-
 (async () => {
   const browser = await chromium.launch({ headless: true });
   const context = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 1, locale: 'it-IT' });
@@ -21,13 +15,14 @@ const isVisibleElement = (element) => {
   const checks = [];
   const findings = [];
   const pageErrors = [];
+  const dismissedStartupDialogs = [];
 
   page.on('pageerror', (error) => pageErrors.push(error.message));
 
-  const check = (name, pass, detail = '') => {
-    const item = { name, pass: Boolean(pass), detail };
+  const check = (name, pass, detail = '', severity = 'hard') => {
+    const item = { name, pass: Boolean(pass), detail, severity };
     checks.push(item);
-    console.log(`${item.pass ? 'PASS' : 'FAIL'} — ${name}${detail ? ` — ${detail}` : ''}`);
+    console.log(`${item.pass ? 'PASS' : 'FAIL'} — ${name}${detail ? ` — ${detail}` : ''}${severity === 'soft' ? ' — SOFT' : ''}`);
     return item.pass;
   };
 
@@ -36,27 +31,47 @@ const isVisibleElement = (element) => {
     console.log(`PRODUCT_FINDING=${code} — ${detail}`);
   };
 
-  const closeLocalProfileIfPresent = async () => {
-    await page.waitForTimeout(700);
-    const dialogs = page.locator('[role="dialog"][aria-modal="true"]');
-    const count = await dialogs.count();
-    for (let index = 0; index < count; index += 1) {
-      const dialog = dialogs.nth(index);
-      if (!(await dialog.isVisible().catch(() => false))) continue;
-      const text = await dialog.innerText().catch(() => '');
-      if (!/Profilo personale locale/i.test(text)) continue;
-      const closeButton = dialog.locator('button').first();
-      if (await closeButton.isVisible().catch(() => false)) {
+  const dismissKnownStartupDialogs = async () => {
+    for (let attempt = 0; attempt < 5; attempt += 1) {
+      await page.waitForTimeout(attempt === 0 ? 700 : 250);
+      const dialogs = page.locator('[role="dialog"][aria-modal="true"]');
+      let handled = false;
+
+      for (let index = 0; index < await dialogs.count(); index += 1) {
+        const dialog = dialogs.nth(index);
+        if (!(await dialog.isVisible().catch(() => false))) continue;
+        const text = (await dialog.innerText().catch(() => '')).trim();
+        const known = /Profilo personale locale|Motto e Metodo Operativo/i.test(text);
+        if (!known) {
+          finding('UNKNOWN_STARTUP_MODAL_BLOCKS_SUPPORT', text.slice(0, 240) || 'Dialogo iniziale senza testo leggibile.');
+          return false;
+        }
+
+        dismissedStartupDialogs.push(text.split('\n').filter(Boolean)[0] || 'dialogo noto');
+        const closeButton = dialog.locator('button').first();
+        if (!(await closeButton.isVisible().catch(() => false))) {
+          finding('KNOWN_STARTUP_MODAL_NOT_DISMISSIBLE', text.slice(0, 160));
+          return false;
+        }
         await closeButton.click();
         await dialog.waitFor({ state: 'hidden', timeout: 3000 }).catch(() => undefined);
+        handled = true;
+        break;
       }
+
+      if (!handled) return true;
     }
+
+    const remainingVisible = await page.locator('[role="dialog"][aria-modal="true"]:visible').count().catch(() => 0);
+    return remainingVisible === 0;
   };
 
   try {
     const response = await page.goto(`${BETA_URL}/`, { waitUntil: 'domcontentloaded', timeout: 45000 });
     check('Beta pubblica raggiungibile', Boolean(response && response.ok()), response ? `HTTP ${response.status()}` : 'nessuna risposta');
-    await closeLocalProfileIfPresent();
+
+    const startupClear = await dismissKnownStartupDialogs();
+    check('Dialoghi iniziali noti non bloccano il supporto', startupClear, dismissedStartupDialogs.join(' → '));
 
     const releaseResponse = await context.request.get(`${BETA_URL}/beta-release.json`);
     const releaseIdentity = releaseResponse.ok() ? await releaseResponse.json().catch(() => null) : null;
@@ -67,7 +82,7 @@ const isVisibleElement = (element) => {
 
     const navTrigger = page.locator('[data-mobile-navigation-trigger="brand"]');
     check('Comando navigazione mobile disponibile', await navTrigger.isVisible({ timeout: 3000 }).catch(() => false));
-    await navTrigger.click();
+    await navTrigger.click({ timeout: 5000 });
     await page.waitForTimeout(250);
 
     const sidebar = page.locator('#sidebar');
@@ -76,7 +91,7 @@ const isVisibleElement = (element) => {
     const guideEntry = sidebar.getByRole('button', { name: 'Guida', exact: true });
     const controlsEntry = sidebar.getByRole('button', { name: 'Controlli e checklist', exact: true });
     check('Guida è raggiungibile dal menu mobile', await guideEntry.isVisible({ timeout: 1500 }).catch(() => false));
-    check('Controlli e checklist sono raggiungibili dal menu mobile', await controlsEntry.isVisible({ timeout: 1500 }).catch(() => false));
+    check('Voce nominale Controlli e checklist è visibile', await controlsEntry.isVisible({ timeout: 1500 }).catch(() => false), '', 'soft');
 
     await guideEntry.click();
     await page.waitForURL(/\/guida(?:\/|$|\?)/, { timeout: 5000 });
@@ -120,13 +135,21 @@ const isVisibleElement = (element) => {
 
     await page.screenshot({ path: path.join(OUT_DIR, 'guide-mobile.png'), fullPage: true });
 
-    await navTrigger.click();
+    await navTrigger.click({ timeout: 5000 });
     await page.waitForTimeout(250);
     check('Menu mobile si riapre dalla Guida', await sidebar.isVisible({ timeout: 1500 }).catch(() => false));
+
     const controlsAgain = sidebar.getByRole('button', { name: 'Controlli e checklist', exact: true });
-    await controlsAgain.click();
-    await page.waitForTimeout(400);
-    check('Azione Controlli produce una navigazione osservabile', page.url().includes('/documents'));
+    if (await controlsAgain.isVisible({ timeout: 1500 }).catch(() => false)) {
+      await controlsAgain.click();
+      await page.waitForTimeout(650);
+      const documentsSurface = page.locator('[data-teacher-surface="documents"]');
+      const controlsResolvedToOwnSurface = !page.url().includes('/documents') && !(await documentsSurface.isVisible({ timeout: 500 }).catch(() => false));
+      check('Controlli e checklist risolve una superficie distinta', controlsResolvedToOwnSurface, page.url(), 'soft');
+      if (!controlsResolvedToOwnSurface) {
+        finding('NOMINAL_CONTROLS_ENTRY_ALIASES_DOCUMENTS', 'La voce Controlli e checklist ricade sulla superficie Documenti; il freeze A1 la classifica già come nominale/non risolta e non autorizza una nuova route durante S3.');
+      }
+    }
 
     check('Nessun errore pagina non gestito', pageErrors.length === 0, pageErrors.join(' | '));
 
@@ -137,6 +160,7 @@ const isVisibleElement = (element) => {
       releaseIdentity,
       generatedAt: new Date().toISOString(),
       humanVerdictIssued: false,
+      dismissedStartupDialogs,
       checks,
       findings,
       metrics: { overflowMetrics, typography, verticalScreens: screenCount },
@@ -144,7 +168,7 @@ const isVisibleElement = (element) => {
     };
     fs.writeFileSync(path.join(OUT_DIR, 'report.json'), `${JSON.stringify(report, null, 2)}\n`, 'utf8');
 
-    const hardFailures = checks.filter((item) => !item.pass);
+    const hardFailures = checks.filter((item) => item.severity !== 'soft' && !item.pass);
     process.exitCode = hardFailures.length === 0 ? 0 : 1;
   } catch (error) {
     console.error(error);
