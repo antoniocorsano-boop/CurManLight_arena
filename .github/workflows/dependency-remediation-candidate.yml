@@ -1,0 +1,71 @@
+name: Dependency Remediation Candidate
+
+on:
+  pull_request:
+    paths:
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/dependency-remediation-candidate.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  candidate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+
+      - name: Generate minimal remediation candidate
+        run: |
+          set -euo pipefail
+          npm uninstall surge --ignore-scripts
+          npm pkg set overrides.nanoid=3.3.18
+          npm pkg set overrides.valibot=1.4.2
+          npm install --ignore-scripts
+          git diff --stat -- package.json package-lock.json
+          git diff -- package.json
+
+      - name: Runtime audit after candidate
+        run: |
+          npm audit --omit=dev --json > runtime-audit-after.json || true
+          node -e "const r=require('./runtime-audit-after.json'); console.log('RUNTIME_AFTER', JSON.stringify(r.metadata?.vulnerabilities || {})); for (const v of Object.values(r.vulnerabilities || {})) console.log(JSON.stringify({package:v.name,severity:v.severity,direct:v.isDirect,range:v.range,fixAvailable:v.fixAvailable}));"
+
+      - name: Full audit after candidate
+        run: |
+          npm audit --json > full-audit-after.json || true
+          node -e "const r=require('./full-audit-after.json'); console.log('FULL_AFTER', JSON.stringify(r.metadata?.vulnerabilities || {})); for (const v of Object.values(r.vulnerabilities || {})) console.log(JSON.stringify({package:v.name,severity:v.severity,direct:v.isDirect,range:v.range,fixAvailable:v.fixAvailable}));"
+
+      - name: Fast tests
+        run: npm run test:fast
+
+      - name: TypeScript
+        run: npx tsc --noEmit
+
+      - name: Beta production build
+        run: npm run build:beta
+
+      - name: Storybook build
+        run: npm run build-storybook
+
+      - name: Upload remediation candidate
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: dependency-remediation-candidate
+          path: |
+            package.json
+            package-lock.json
+            runtime-audit-after.json
+            full-audit-after.json
+          if-no-files-found: error
+
+      - name: Non-claim
+        if: always()
+        run: echo 'Candidate generation does not modify the repository and does not constitute promotion.'
