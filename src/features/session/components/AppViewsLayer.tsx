@@ -37,12 +37,23 @@ export function AppViewsLayer(props: AppViewsLayerProps) {
           <aside
             data-human-task="curriculum-authority-context"
             role="note"
-            className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-relaxed text-amber-950"
+            className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-4 text-sm leading-relaxed text-amber-950"
           >
-            <strong className="block font-bold text-amber-950">Prima di usare questo curricolo</strong>
-            <span>
-              Stai consultando una copia locale. Per sapere se è valida per la scuola, controlla Fonti, Applicabilità e Stato.
-            </span>
+            <strong className="block text-base font-bold text-amber-950">Adesso: controlla se puoi usare questo curricolo</strong>
+            <p className="mt-1">
+              Stai consultando una copia locale. Prima di usarla nella progettazione, verifica Fonti, Applicabilità e Stato.
+            </p>
+            <button
+              type="button"
+              data-human-next-action="verify-curriculum-validity"
+              onClick={() => safeHandleTabSwitch('fonti')}
+              className="mt-3 inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-indigo-600 px-4 py-2.5 font-semibold text-white shadow-sm transition hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:w-auto"
+            >
+              Controlla validità e fonti
+            </button>
+            <p className="mt-2 text-xs leading-5 text-amber-900">
+              Se vuoi solo leggerlo, puoi continuare a consultare i contenuti qui sotto.
+            </p>
           </aside>
           <CurriculumTab {...props} />
         </div>
