@@ -1,0 +1,77 @@
+{
+  "schemaVersion": "CML-ARENA-AGENT-EXECUTOR-REGISTRY-V1",
+  "status": "DEVELOPMENT_TOOLING_ONLY",
+  "authorityModel": {
+    "externalExecutorAuthority": "NONE",
+    "promotionAllowed": false,
+    "humanVerdictAllowed": false
+  },
+  "upstream": {
+    "repository": "xai-org/grok-build",
+    "license": "Apache-2.0",
+    "integrationMode": "INSTALLED_BINARY_ONLY",
+    "vendoredCode": false
+  },
+  "executors": [
+    {
+      "id": "GROK_BUILD_AUDITOR",
+      "runtime": "GROK_BUILD",
+      "mode": "AUDIT",
+      "availability": "AVAILABLE_IF_INSTALLED",
+      "sandboxProfile": "arena-auditor",
+      "toolPolicy": {
+        "allowlist": ["read_file", "grep", "list_dir"],
+        "denylist": ["search_replace", "run_terminal_cmd", "web_search", "web_fetch", "Agent"],
+        "permissionMode": "defaultMode"
+      },
+      "mayMutateRepository": false,
+      "mayMerge": false,
+      "mayDeploy": false,
+      "mayPromote": false,
+      "mayIssueHumanVerdict": false
+    },
+    {
+      "id": "GROK_BUILD_IMPLEMENTER",
+      "runtime": "GROK_BUILD",
+      "mode": "CODE",
+      "availability": "AVAILABLE_IF_INSTALLED",
+      "sandboxProfile": "arena-implementer",
+      "toolPolicy": {
+        "allowlist": [],
+        "denylist": [
+          "Bash(git push*)",
+          "Bash(git merge*)",
+          "Bash(gh pr merge*)",
+          "Bash(surge*)",
+          "Bash(vercel*)",
+          "Edit(docs/architecture/INTEGRATED_PROJECT_GOVERNED_MEMORY_V1.md)",
+          "Write(docs/architecture/INTEGRATED_PROJECT_GOVERNED_MEMORY_V1.md)"
+        ],
+        "permissionMode": "defaultMode"
+      },
+      "mayMutateRepository": true,
+      "requiresNonMainBranch": true,
+      "mayMerge": false,
+      "mayDeploy": false,
+      "mayPromote": false,
+      "mayIssueHumanVerdict": false
+    },
+    {
+      "id": "GROK_BUILD_UNTRUSTED_REVIEWER",
+      "runtime": "GROK_BUILD",
+      "mode": "UNTRUSTED_REVIEW",
+      "availability": "AVAILABLE_IF_INSTALLED",
+      "sandboxProfile": "arena-untrusted",
+      "toolPolicy": {
+        "allowlist": ["read_file", "grep", "list_dir"],
+        "denylist": ["search_replace", "run_terminal_cmd", "web_search", "web_fetch", "Agent"],
+        "permissionMode": "defaultMode"
+      },
+      "mayMutateRepository": false,
+      "mayMerge": false,
+      "mayDeploy": false,
+      "mayPromote": false,
+      "mayIssueHumanVerdict": false
+    }
+  ]
+}

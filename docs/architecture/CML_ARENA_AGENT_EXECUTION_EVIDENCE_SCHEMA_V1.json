@@ -1,0 +1,167 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "CML-ARENA-AGENT-EXECUTION-EVIDENCE-V1",
+  "title": "CurManLight Arena Agent Execution Evidence v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "evidenceId",
+    "recordedAt",
+    "runtime",
+    "repository",
+    "task",
+    "execution",
+    "verification",
+    "authority",
+    "output"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": "CML-ARENA-AGENT-EXECUTION-EVIDENCE-V1"
+    },
+    "evidenceId": {
+      "type": "string",
+      "minLength": 8
+    },
+    "recordedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "runtime": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "mode", "version", "externalSessionId", "sandboxProfile", "toolPolicy"],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": ["GROK_BUILD", "CODEX", "CLAUDE", "OPENCODE", "OTHER"]
+        },
+        "mode": {
+          "type": "string",
+          "enum": ["AUDIT", "CODE", "UNTRUSTED_REVIEW", "OTHER"]
+        },
+        "version": {
+          "type": ["string", "null"]
+        },
+        "externalSessionId": {
+          "type": ["string", "null"]
+        },
+        "sandboxProfile": {
+          "type": ["string", "null"]
+        },
+        "toolPolicy": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["allowlist", "denylist", "permissionMode"],
+          "properties": {
+            "allowlist": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "denylist": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "permissionMode": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "repository": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "branch", "shaBefore", "shaAfter", "dirtyBefore", "dirtyAfter"],
+      "properties": {
+        "name": { "type": "string" },
+        "branch": { "type": "string" },
+        "shaBefore": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+        "shaAfter": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+        "dirtyBefore": { "type": "boolean" },
+        "dirtyAfter": { "type": "boolean" }
+      }
+    },
+    "task": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["promptSha256", "promptLength"],
+      "properties": {
+        "taskId": { "type": ["string", "null"] },
+        "promptSha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+        "promptLength": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "execution": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "exitCode", "durationMs", "numTurns", "usage", "cost"],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": ["SUCCESS", "FAILURE", "CANCELLED", "POLICY_BLOCK"]
+        },
+        "exitCode": { "type": ["integer", "null"] },
+        "durationMs": { "type": "integer", "minimum": 0 },
+        "numTurns": { "type": ["integer", "null"], "minimum": 0 },
+        "usage": {
+          "type": ["object", "null"],
+          "additionalProperties": true
+        },
+        "cost": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["usd", "isPartial"],
+          "properties": {
+            "usd": { "type": ["number", "null"], "minimum": 0 },
+            "isPartial": { "type": "boolean" }
+          }
+        }
+      }
+    },
+    "verification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["agentDeclaredResult", "repositoryGateResult", "commands", "notes"],
+      "properties": {
+        "agentDeclaredResult": {
+          "type": "string",
+          "enum": ["PASS", "REWORK_REQUIRED", "BLOCKED", "UNSPECIFIED"]
+        },
+        "repositoryGateResult": {
+          "type": "string",
+          "enum": ["PASS", "FAIL", "NOT_RUN"]
+        },
+        "commands": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "notes": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "authority": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["claim", "promotionAllowed", "humanVerdict"],
+      "properties": {
+        "claim": { "const": "NONE" },
+        "promotionAllowed": { "const": false },
+        "humanVerdict": { "const": false }
+      }
+    },
+    "output": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["sha256", "rawArtifactPath", "rawArtifactTracked"],
+      "properties": {
+        "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+        "rawArtifactPath": { "type": ["string", "null"] },
+        "rawArtifactTracked": { "const": false }
+      }
+    }
+  }
+}
