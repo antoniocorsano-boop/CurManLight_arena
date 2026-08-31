@@ -1,0 +1,119 @@
+{
+  "schema": "CML_ARENA_BETA_G5_HUMAN_ACCEPTANCE_V2",
+  "protocol": "BETA_G5_HUMAN_ACCEPTANCE_PROTOCOL_v2",
+  "sessionId": "ARENA-S3C-2026-08-31-FINAL-01",
+  "candidateRef": "evidence/arena-s3c-final-hva-f4018f7",
+  "status": "HUMAN_REVIEW_BLOCKED",
+  "releaseSha": "f4018f7ffcd87bbee133e0c24a22d581f8b1fc07",
+  "betaUrl": "https://antoniocorsano-boop.github.io/CurManLight_arena/",
+  "releaseIdentityVerified": true,
+  "reviewedAt": "2026-08-31T21:37:59Z",
+  "reviewerAttestation": {
+    "humanReviewActuallyPerformed": true,
+    "desktopReviewed": false,
+    "mobileReviewed": true,
+    "noFabricatedAuthority": true,
+    "proposalDecisionBoundaryUnderstood": true,
+    "planningHandoffBoundaryUnderstood": false
+  },
+  "tasks": {
+    "HT-BETA-CURRICULUM-CONTEXT": {
+      "desktop": "PENDING",
+      "mobile": "BLOCK",
+      "observations": {
+        "validContext": "PASS",
+        "provenance": "NOT_OBSERVABLE",
+        "invalidOrIncompleteContext": "NOT_OBSERVABLE",
+        "recovery": "NOT_OBSERVABLE"
+      },
+      "notes": "Human reviewer understands the curriculum being shown, but explicitly reports that the surface does not make the next action understandable: 'Capisco il curriculum ma dopo non si sa.' Curriculum context therefore passes, while task progression remains blocking."
+    },
+    "HT-BETA-REVISION-PREPARE": {
+      "desktop": "PENDING",
+      "mobile": "PASS",
+      "observations": {
+        "proposalInspection": "PASS",
+        "evidenceDisclosure": "NOT_OBSERVABLE",
+        "missingRequirementBlocked": "NOT_OBSERVABLE",
+        "unauthorizedReadOnly": "NOT_OBSERVABLE",
+        "staleOrReentryRecovery": "NOT_OBSERVABLE"
+      },
+      "notes": "Human reviewer reports the revision-preparation boundary as clear. Preparing a proposal is understood and is not confused with an institutional decision."
+    },
+    "HT-REVISION-DECISION": {
+      "desktop": "PENDING",
+      "mobile": "PASS",
+      "observations": {
+        "noAuthorityBlocked": "PASS",
+        "evidenceAndConsequence": "PASS",
+        "explicitOutcomeChoice": "NOT_OBSERVABLE",
+        "explicitHumanConfirmation": "NOT_OBSERVABLE",
+        "receiptRefreshReentry": "NOT_OBSERVABLE"
+      },
+      "notObservableReason": "No institutional authority was fabricated. Because the reviewer exercised the legitimate no-authority path, authorized outcome choice, confirmation and receipt re-entry were not observable and are not required to establish that the fail-closed boundary is understandable.",
+      "notes": "Human reviewer reports the no-authority/decision behavior as OK. The path remains fail-closed without fabricating institutional membership or authority."
+    },
+    "HT-BETA-PLANNING-HANDOFF": {
+      "desktop": "PENDING",
+      "mobile": "BLOCK",
+      "observations": {
+        "validPreview": "BLOCK",
+        "provisionalWarning": "NOT_OBSERVABLE",
+        "validationFailure": "NOT_OBSERVABLE",
+        "consequenceExplanation": "BLOCK",
+        "explicitHandoff": "BLOCK",
+        "recovery": "NOT_OBSERVABLE"
+      },
+      "notes": "Human reviewer reports that the planning handoff is missing entirely: 'manca del tutto'. No usable preview, consequence explanation or explicit handoff action is discoverable from the reviewed mobile experience."
+    }
+  },
+  "crossStates": {
+    "empty": "NOT_OBSERVABLE",
+    "loading": "NOT_OBSERVABLE",
+    "success": "PASS",
+    "blocked": "PASS",
+    "error": "NOT_OBSERVABLE",
+    "recovery": "NOT_OBSERVABLE"
+  },
+  "supplementalKnowledgeExperience": {
+    "searchAndAsk": "PASS",
+    "relationsFailClosed": "NOT_OBSERVABLE",
+    "keyTerms": "NOT_OBSERVABLE",
+    "historicalArchive": "NOT_OBSERVABLE",
+    "notes": "Focused R1.1 Knowledge search check passed. The reviewer reports the outcome distinction as OK; no new issue was found in the evidence-versus-abstention wording."
+  },
+  "findings": [
+    {
+      "id": "HVA-S3C-FINAL-01",
+      "severity": "S2",
+      "status": "OPEN_CONFIRMED",
+      "title": "Curriculum context lacks a clear next action",
+      "evidence": "Reviewer understands the curriculum but cannot tell what to do next after reading the curriculum surface.",
+      "requiredRemediation": "Expose one dominant, task-oriented next action from the curriculum context without changing curriculum authority, routing ownership or institutional state."
+    },
+    {
+      "id": "HVA-S3C-FINAL-02",
+      "severity": "S2",
+      "status": "OPEN_CONFIRMED",
+      "title": "Planning handoff is not discoverable in the reviewed experience",
+      "evidence": "Reviewer reports the Arena-to-Docente-OS planning handoff as missing entirely.",
+      "requiredRemediation": "Make the versioned planning preview and its consequence discoverable from the existing canonical surfaces, with an explicit handoff action and no automatic downstream mutation."
+    }
+  ],
+  "severity1Open": 0,
+  "severity2Open": 2,
+  "verdict": "BETA_HIA_BLOCK",
+  "allowedVerdicts": [
+    "BETA_HIA_PASS",
+    "PARTIAL_HUMAN_EVIDENCE",
+    "BETA_HIA_BLOCK"
+  ],
+  "nonClaims": [
+    "This receipt does not satisfy BETA-G6 accessibility acceptance.",
+    "Automated browser evidence is not a substitute for this human review.",
+    "A revoked or missing institutional membership must not be fabricated to obtain an authorized decision path.",
+    "BETA_HIA_PASS must not be written while HVA-S3C-FINAL-01 or HVA-S3C-FINAL-02 remains open.",
+    "A completed receipt must identify the exact immutable SHA exposed by the published beta-release.json.",
+    "Desktop human review remains pending; the mobile review is sufficient to block the current release because two S2 findings are open."
+  ]
+}
