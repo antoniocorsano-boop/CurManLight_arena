@@ -35,4 +35,21 @@ describe('G5 assistant discoverability boundary', () => {
     expect(localAiConfiguration).toContain('Provider opzionale');
     expect(localAiConfiguration).toContain('non approvano, modificano o promuovono contenuti istituzionali');
   });
+
+  it('does not present generative prompts as executable local-only capabilities', () => {
+    expect(sidebar).toContain('data-assistant-local-context-actions="available-only"');
+    expect(sidebar).toContain('Azioni disponibili qui:');
+    expect(sidebar).toContain('Nessuna risposta AI viene simulata.');
+    expect(sidebar).toContain('data-assistant-model-suggestions="model-required"');
+    expect(sidebar).toContain('Suggerimenti per il modello:');
+    expect(sidebar).toContain('!isAiConfigured ?');
+    expect(sidebar).not.toContain('handleSelectCopilotChip(c)');
+  });
+
+  it('uses only real local navigation targets while no model is configured', () => {
+    expect(sidebar).toContain("{ label: 'Controlla le fonti del curricolo', view: 'source' }");
+    expect(sidebar).toContain("{ label: 'Esplora le relazioni', view: 'graph' }");
+    expect(sidebar).toContain("{ label: 'Controlla le evidenze', view: 'source' }");
+    expect(sidebar).toContain('onClick={() => handleOpenKnowledge(action.view)}');
+  });
 });
