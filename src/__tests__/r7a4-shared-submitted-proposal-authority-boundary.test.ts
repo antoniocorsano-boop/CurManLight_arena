@@ -3,6 +3,7 @@ import { getRoleCapabilities } from '../domain/institution/capabilities';
 import { assessCanonicalAdoption } from '../domain/institution/canonicalAdoptionContract';
 import {
   SHARED_PROPOSAL_AUTHORITY_BOUNDARY,
+  type SharedProposalVersion,
   type SharedSubmittedProposalVersion,
   type SubmitSharedProposalVersionCommand,
 } from '../domain/revision';
@@ -18,7 +19,9 @@ const roles: InstitutionalRole[] = [
   'amministratore',
 ];
 
-const sharedVersionFixture = (): SharedSubmittedProposalVersion => ({
+const sharedSubmittedVersionFixture = (
+  previousSharedProposalVersionRef: string | null = null,
+): SharedSubmittedProposalVersion => ({
   schemaVersion: 1,
   workspaceId: 'workspace-1',
   proposalRef: 'proposal-1',
@@ -31,6 +34,7 @@ const sharedVersionFixture = (): SharedSubmittedProposalVersion => ({
   submittedByRole: 'docente',
   submittedAt: '2026-09-01T12:00:00.000Z',
   lifecycleState: 'submitted',
+  previousSharedProposalVersionRef,
 });
 
 const submitCommandFixture = (
@@ -58,19 +62,36 @@ describe('R7A4 shared submitted proposal authority boundary', () => {
     expect(SHARED_PROPOSAL_AUTHORITY_BOUNDARY.requiredCapability).toBe('CURRICULUM_PROPOSE');
   });
 
-  it('requires explicit CAS intent for both first and replacement submission', () => {
+  it('requires explicit CAS intent and an equally explicit predecessor binding', () => {
     const firstSubmission = submitCommandFixture(null);
+    const firstResult = sharedSubmittedVersionFixture(null);
     const replacement = submitCommandFixture('proposal-version-0');
+    const replacementResult = sharedSubmittedVersionFixture('proposal-version-0');
 
     expect(firstSubmission.expectedCurrentSharedProposalVersionRef).toBeNull();
+    expect(firstResult.previousSharedProposalVersionRef).toBeNull();
     expect(replacement.expectedCurrentSharedProposalVersionRef).toBe('proposal-version-0');
+    expect(replacementResult.previousSharedProposalVersionRef).toBe(
+      replacement.expectedCurrentSharedProposalVersionRef,
+    );
     expect(SHARED_PROPOSAL_AUTHORITY_BOUNDARY.requiresCompareAndSwapHead).toBe(true);
+    expect(SHARED_PROPOSAL_AUTHORITY_BOUNDARY.requiresPredecessorEqualsExpectedHead).toBe(true);
     expect(SHARED_PROPOSAL_AUTHORITY_BOUNDARY.firstSubmissionExpectedHead).toBeNull();
   });
 
+  it('makes submit results structurally incapable of skipping the submitted state', () => {
+    const submitted = sharedSubmittedVersionFixture();
+    const laterState: SharedProposalVersion = {
+      ...submitted,
+      lifecycleState: 'under-review',
+    };
+
+    expect(submitted.lifecycleState).toBe('submitted');
+    expect(laterState.lifecycleState).toBe('under-review');
+  });
+
   it('requires immutable submitted versions and no local institutional fallback', () => {
-    const version = sharedVersionFixture();
-    expect(version.lifecycleState).toBe('submitted');
+    const version = sharedSubmittedVersionFixture();
     expect(version.submittedByRole).not.toBe('non-dichiarato');
     expect(SHARED_PROPOSAL_AUTHORITY_BOUNDARY.submittedVersionsAreImmutable).toBe(true);
     expect(SHARED_PROPOSAL_AUTHORITY_BOUNDARY.allowsLocalInstitutionalSuccessFallback).toBe(false);
