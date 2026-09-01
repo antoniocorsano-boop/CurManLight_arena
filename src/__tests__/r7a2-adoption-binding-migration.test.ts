@@ -1,8 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
-
-const sql = readFileSync(resolve(process.cwd(), 'supabase/migrations/20260901090000_r7a2_adoption_binding_v2.sql'), 'utf8');
+import sql from '../../supabase/migrations/20260901090000_r7a2_adoption_binding_v2.sql?raw';
 
 describe('R7A2 adoption binding migration invariants', () => {
   it('keeps the v2 decision write behind authenticated server authority', () => {
@@ -10,8 +7,8 @@ describe('R7A2 adoption binding migration invariants', () => {
     expect(sql).toContain('auth.uid()');
     expect(sql).toContain("v_role is distinct from 'collegio'");
     expect(sql).toContain("raise exception 'REVISION_DECIDE_REQUIRED'");
-    expect(sql).toContain('membership.status = \'active\'');
-    expect(sql).toContain('workspace.status = \'active\'');
+    expect(sql).toContain("membership.status = 'active'");
+    expect(sql).toContain("workspace.status = 'active'");
   });
 
   it('computes the adoption binding server-side from the complete v2 material', () => {
