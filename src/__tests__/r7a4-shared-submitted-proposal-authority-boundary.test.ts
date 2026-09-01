@@ -4,7 +4,8 @@ import { assessCanonicalAdoption } from '../domain/institution/canonicalAdoption
 import {
   SHARED_PROPOSAL_AUTHORITY_BOUNDARY,
   type SharedSubmittedProposalVersion,
-} from '../domain/revision/sharedSubmittedProposalAuthority';
+  type SubmitSharedProposalVersionCommand,
+} from '../domain/revision';
 import type { InstitutionalRole } from '../domain/curriculum/types';
 
 const roles: InstitutionalRole[] = [
@@ -32,6 +33,20 @@ const sharedVersionFixture = (): SharedSubmittedProposalVersion => ({
   lifecycleState: 'submitted',
 });
 
+const submitCommandFixture = (
+  expectedCurrentSharedProposalVersionRef: string | null,
+): SubmitSharedProposalVersionCommand => ({
+  workspaceId: 'workspace-1',
+  proposalRef: 'proposal-1',
+  proposalVersionRef: 'proposal-version-1',
+  proposalVersionFingerprint: 'a'.repeat(64),
+  canonicalPayload: '{"id":"proposal-version-1"}',
+  targetNodeRef: 'node-1',
+  baseCurriculumVersionRef: 'curriculum-v1',
+  expectedCurrentSharedProposalVersionRef,
+  clientRequestId: 'client-request-submit-1',
+});
+
 describe('R7A4 shared submitted proposal authority boundary', () => {
   it('keeps draft preparation local and makes submitted the first shared state', () => {
     expect(SHARED_PROPOSAL_AUTHORITY_BOUNDARY.localPreparationStates).toEqual([
@@ -43,11 +58,21 @@ describe('R7A4 shared submitted proposal authority boundary', () => {
     expect(SHARED_PROPOSAL_AUTHORITY_BOUNDARY.requiredCapability).toBe('CURRICULUM_PROPOSE');
   });
 
-  it('requires immutable submitted versions, CAS head advancement and no local institutional fallback', () => {
+  it('requires explicit CAS intent for both first and replacement submission', () => {
+    const firstSubmission = submitCommandFixture(null);
+    const replacement = submitCommandFixture('proposal-version-0');
+
+    expect(firstSubmission.expectedCurrentSharedProposalVersionRef).toBeNull();
+    expect(replacement.expectedCurrentSharedProposalVersionRef).toBe('proposal-version-0');
+    expect(SHARED_PROPOSAL_AUTHORITY_BOUNDARY.requiresCompareAndSwapHead).toBe(true);
+    expect(SHARED_PROPOSAL_AUTHORITY_BOUNDARY.firstSubmissionExpectedHead).toBeNull();
+  });
+
+  it('requires immutable submitted versions and no local institutional fallback', () => {
     const version = sharedVersionFixture();
     expect(version.lifecycleState).toBe('submitted');
+    expect(version.submittedByRole).not.toBe('non-dichiarato');
     expect(SHARED_PROPOSAL_AUTHORITY_BOUNDARY.submittedVersionsAreImmutable).toBe(true);
-    expect(SHARED_PROPOSAL_AUTHORITY_BOUNDARY.requiresCompareAndSwapHead).toBe(true);
     expect(SHARED_PROPOSAL_AUTHORITY_BOUNDARY.allowsLocalInstitutionalSuccessFallback).toBe(false);
   });
 
