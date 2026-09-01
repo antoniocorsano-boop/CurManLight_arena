@@ -115,9 +115,30 @@ $$;
 revoke all on function public.freeze_institutional_revision_proposal_snapshot_v1(uuid, text, text, text, text) from public;
 grant execute on function public.freeze_institutional_revision_proposal_snapshot_v1(uuid, text, text, text, text) to authenticated;
 
--- Strengthen R7A2: a decision v2 cannot be written until the matching immutable
--- server snapshot exists. The existing function body remains authoritative; we
--- inject this invariant by replacing it with the R7A2 migration definition in
--- the same release batch before promotion.
+create or replace function public.require_frozen_proposal_snapshot_for_v2_decision()
+returns trigger
+language plpgsql
+set search_path = public, pg_temp
+as $$
+begin
+  if new.adoption_binding_version = 2 and not exists (
+    select 1
+    from public.institutional_revision_proposal_snapshots snapshot
+    where snapshot.workspace_id = new.workspace_id
+      and snapshot.proposal_ref = new.proposal_ref
+      and snapshot.proposal_version_ref = new.proposal_version_ref
+      and snapshot.proposal_version_fingerprint = new.proposal_version_fingerprint
+  ) then
+    raise exception 'FROZEN_PROPOSAL_SNAPSHOT_REQUIRED' using errcode = '23514';
+  end if;
+  return new;
+end;
+$$;
+
+drop trigger if exists institutional_revision_decisions_require_frozen_snapshot on public.institutional_revision_decisions;
+create trigger institutional_revision_decisions_require_frozen_snapshot
+before insert on public.institutional_revision_decisions
+for each row execute function public.require_frozen_proposal_snapshot_for_v2_decision();
+
 comment on table public.institutional_revision_proposal_snapshots is
   'R7A3 immutable server-owned proposal-version snapshots. Direct writes are forbidden; SHA-256 is recomputed server-side from the exact frozen payload.';
