@@ -13,3 +13,4 @@ export * from './documentIntegration';
 export * from './decisionEffects';
 export * from './sharedDecisionPort';
 export * from './versionFingerprint';
+export * from './adoptionBinding';
