@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  SHARED_PROPOSAL_ADOPTION_BINDING_DELIMITER,
   SHARED_PROPOSAL_AUTHORITY_BOUNDARY,
   SHARED_PROPOSAL_CANONICAL_PAYLOAD_SCHEMA,
   SHARED_PROPOSAL_IDEMPOTENCY_SCHEMA,
@@ -21,20 +22,36 @@ describe('R7A4 authority identity closure', () => {
     expect(SHARED_PROPOSAL_AUTHORITY_BOUNDARY.canonicalPayloadTrimRulesMatchR7A3).toBe(true);
   });
 
-  it('requires proposal identities to already be canonical trimmed values', () => {
+  it('requires proposal identities to be canonical and delimiter-safe before shared authority', () => {
     expect(SHARED_PROPOSAL_VERSION_IDENTITY_SCHEMA.canonicalIdentityFields).toEqual([
       'proposalRef',
       'proposalVersionRef',
     ]);
     expect(SHARED_PROPOSAL_VERSION_IDENTITY_SCHEMA.commandIdentityMustEqualTrimmedValue).toBe(true);
+    expect(SHARED_PROPOSAL_VERSION_IDENTITY_SCHEMA.rejectsAdoptionBindingDelimiter).toBe(true);
+    expect(SHARED_PROPOSAL_VERSION_IDENTITY_SCHEMA.forbiddenCharacters).toEqual([
+      SHARED_PROPOSAL_ADOPTION_BINDING_DELIMITER,
+    ]);
     expect(
       SHARED_PROPOSAL_VERSION_IDENTITY_SCHEMA.canonicalPayloadIdentityMustMatchCanonicalCommand,
     ).toBe(true);
     expect(SHARED_PROPOSAL_AUTHORITY_BOUNDARY.proposalIdentityReferencesMustEqualTrimmedValue).toBe(
       true,
     );
+    expect(SHARED_PROPOSAL_AUTHORITY_BOUNDARY.proposalIdentityReferencesRejectAdoptionDelimiter).toBe(
+      true,
+    );
 
-    for (const value of ['', ' ', ' proposal-1', 'proposal-1 ', '\tproposal-1', 'proposal-1\n']) {
+    for (const value of [
+      '',
+      ' ',
+      ' proposal-1',
+      'proposal-1 ',
+      '\tproposal-1',
+      'proposal-1\n',
+      `proposal${SHARED_PROPOSAL_ADOPTION_BINDING_DELIMITER}1`,
+      `version${SHARED_PROPOSAL_ADOPTION_BINDING_DELIMITER}1`,
+    ]) {
       expect(isCanonicalSharedProposalIdentityRef(value)).toBe(false);
     }
     for (const value of ['proposal-1', 'version-1']) {

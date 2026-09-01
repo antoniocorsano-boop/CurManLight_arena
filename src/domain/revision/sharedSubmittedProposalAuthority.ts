@@ -182,14 +182,22 @@ export const SHARED_PROPOSAL_CANONICAL_PAYLOAD_SCHEMA = {
   digest: 'SHA-256' as const,
 };
 
+/** U+001F is the R7A3 adoption-binding field delimiter and is never valid inside a bound reference. */
+export const SHARED_PROPOSAL_ADOPTION_BINDING_DELIMITER = '\u001f' as const;
+
+const excludesSharedProposalBindingDelimiter = (value: string): boolean =>
+  !value.includes(SHARED_PROPOSAL_ADOPTION_BINDING_DELIMITER);
+
 /**
  * Consequential proposal identities are canonical values, not merely values that
- * become valid after trimming. R7A5 must reject padded command identities instead
- * of normalizing them after exact payload matching or uniqueness checks.
+ * become valid after trimming. R7A5 must reject padded command identities and the
+ * R7A3 adoption-binding delimiter before payload matching or uniqueness checks.
  */
 export const SHARED_PROPOSAL_VERSION_IDENTITY_SCHEMA = {
   canonicalIdentityFields: ['proposalRef', 'proposalVersionRef'] as const,
   commandIdentityMustEqualTrimmedValue: true as const,
+  rejectsAdoptionBindingDelimiter: true as const,
+  forbiddenCharacters: [SHARED_PROPOSAL_ADOPTION_BINDING_DELIMITER] as const,
   canonicalPayloadIdentityMustMatchCanonicalCommand: true as const,
   uniquenessScope: ['workspaceId', 'proposalVersionRef'] as const,
   uniquenessUsesCanonicalProposalVersionRef: true as const,
@@ -199,18 +207,28 @@ export const SHARED_PROPOSAL_VERSION_IDENTITY_SCHEMA = {
 
 export const isCanonicalSharedProposalIdentityRef = (value: string): boolean => {
   const trimmed = value.trim();
-  return trimmed.length > 0 && value === trimmed;
+  return (
+    trimmed.length > 0 &&
+    value === trimmed &&
+    excludesSharedProposalBindingDelimiter(value)
+  );
 };
 
 export const SHARED_PROPOSAL_SCOPE_BINDING_SCHEMA = {
-  targetNodeRef: 'canonical-trimmed-non-empty-string',
-  baseCurriculumVersionRef: 'canonical-trimmed-non-empty-string',
+  targetNodeRef: 'canonical-trimmed-non-empty-string-without-adoption-binding-delimiter',
+  baseCurriculumVersionRef: 'canonical-trimmed-non-empty-string-without-adoption-binding-delimiter',
   submittedValueMustEqualTrimmedValue: true as const,
+  rejectsAdoptionBindingDelimiter: true as const,
+  forbiddenCharacters: [SHARED_PROPOSAL_ADOPTION_BINDING_DELIMITER] as const,
 } as const;
 
 export const isValidSharedProposalScopeRef = (value: string): boolean => {
   const trimmed = value.trim();
-  return trimmed.length > 0 && value === trimmed;
+  return (
+    trimmed.length > 0 &&
+    value === trimmed &&
+    excludesSharedProposalBindingDelimiter(value)
+  );
 };
 
 /**
@@ -372,14 +390,18 @@ export const SHARED_PROPOSAL_AUTHORITY_BOUNDARY = {
   canonicalPayloadSchema: SHARED_PROPOSAL_CANONICAL_PAYLOAD_SCHEMA,
   canonicalPayloadTrimRulesMatchR7A3: true as const,
   structuralFootprintPreservesR7A3StringContract: true as const,
+  adoptionBindingDelimiter: SHARED_PROPOSAL_ADOPTION_BINDING_DELIMITER,
+  bindingReferencesRejectAdoptionDelimiter: true as const,
   versionIdentitySchema: SHARED_PROPOSAL_VERSION_IDENTITY_SCHEMA,
   proposalIdentityReferencesMustEqualTrimmedValue: true as const,
+  proposalIdentityReferencesRejectAdoptionDelimiter: true as const,
   proposalVersionRefUniqueWithinWorkspace: true as const,
   proposalVersionUniquenessUsesCanonicalIdentity: true as const,
   proposalVersionRefImmutablyBindsProposalRef: true as const,
   scopeBindingSchema: SHARED_PROPOSAL_SCOPE_BINDING_SCHEMA,
   scopeReferencesRequireTrimmedNonEmpty: true as const,
   scopeReferencesMustEqualTrimmedValue: true as const,
+  scopeReferencesRejectAdoptionDelimiter: true as const,
   requiresServerPayloadValidation: true as const,
   requiresServerFingerprintRecompute: true as const,
   requiresExactCanonicalPayloadSerialization: true as const,

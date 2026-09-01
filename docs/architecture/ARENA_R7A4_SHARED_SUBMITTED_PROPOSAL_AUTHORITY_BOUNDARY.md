@@ -100,9 +100,10 @@ Canonical entity types:
 The submitted command identities are canonical values, not normalization requests:
 
 - `proposalRef` and `proposalVersionRef` must already equal their trimmed values;
+- neither may contain the R7A3 adoption-binding delimiter U+001F (`chr(31)` / unit separator);
 - payload `proposalRef` and payload `id` must match those canonical command identities exactly;
-- padded command identities fail closed before payload matching, fingerprint acceptance or uniqueness checks;
-- the server must not preserve one raw identity while enforcing uniqueness on a differently trimmed downstream identity.
+- padded or delimiter-bearing command identities fail closed before payload matching, fingerprint acceptance or uniqueness checks;
+- the server must not preserve one raw identity while enforcing uniqueness on a differently normalized downstream identity.
 
 ## Proposal scope
 
@@ -112,7 +113,8 @@ Before first submission or replacement:
 
 - both must be strings with at least one non-whitespace character;
 - both must already equal their trimmed values;
-- `''`, spaces-only, tabs-only, newline-only and surrounding-whitespace-padded values fail closed;
+- neither may contain U+001F, the delimiter used by R7A3 to build the adoption-binding fingerprint material;
+- `''`, spaces-only, tabs-only, newline-only, surrounding-whitespace-padded and delimiter-bearing values fail closed;
 - validation occurs before persistence or shared-head advancement;
 - the server does not silently normalize scope after authority is created;
 - the persisted/returned authoritative scope is the same canonical value consumed by R7A3/R7A6.
@@ -128,10 +130,11 @@ For a replacement under the same `proposalRef`:
 
 R7A4 freezes the same identity scope required downstream by R7A3:
 
-- `proposalRef` and `proposalVersionRef` are accepted only in canonical trimmed form;
+- `proposalRef` and `proposalVersionRef` are accepted only in canonical trimmed, U+001F-free form;
 - `(workspaceId, proposalVersionRef)` is unique across the entire workspace using that canonical value;
 - one `(workspaceId, proposalVersionRef)` is immutably bound to exactly one canonical `proposalRef`;
 - raw aliases such as `v1` and ` v1 ` cannot coexist because the padded form is rejected before uniqueness evaluation;
+- delimiter-bearing aliases fail before any shared identity is created;
 - a first submission cannot reuse an existing workspace proposal-version id under another proposal;
 - a retry with the same identity may succeed only when it is the exact same canonical operation under the idempotency rules;
 - version-id collision or version-to-proposal rebinding fails closed.
@@ -219,6 +222,7 @@ Therefore:
 | capability check | `CURRICULUM_PROPOSE` | transition-specific | `CURRICULUM_READ` |
 | actor provenance binding | yes | receipt | n/a |
 | canonical trimmed proposal identities | yes | preserved | preserved |
+| U+001F absent from proposal/version/target/base binding refs | fail closed | preserved | preserved |
 | trimmed canonical required fields | yes | n/a | n/a |
 | strict reference schema | yes | n/a | n/a |
 | exact canonical serialization + SHA-256 | yes | n/a | n/a |
@@ -269,6 +273,7 @@ R7A5 Shared Proposal Persistence must implement this frozen contract, including:
 - server-session principal anchoring;
 - strict principal/context/workspace binding;
 - canonical trimmed proposal identities before payload matching and uniqueness enforcement;
+- rejection of U+001F in `proposalRef`, `proposalVersionRef`, `targetNodeRef` and `baseCurriculumVersionRef` before shared authority is created;
 - exact canonical payload validation and serialization;
 - R7A3-compatible trim validation;
 - server-side SHA-256 recomputation;
@@ -296,8 +301,8 @@ R7A4 is complete only when review accepts that:
 - local preparation remains local and `submitted` is the first shared-authoritative state;
 - every shared operation uses server-session principal + fresh authority evidence;
 - canonical payload validation exactly matches R7A3;
-- proposal and proposal-version command identities are already canonical trimmed values;
-- target/base scope is canonical, valid and immutable across a proposal chain;
+- proposal and proposal-version command identities are canonical trimmed values and contain no U+001F;
+- target/base scope is canonical, valid, U+001F-free and immutable across a proposal chain;
 - `proposalVersionRef` is workspace-unique on canonical identity and immutably bound to one proposal;
 - shared-head and lifecycle mutations are CAS-protected;
 - lifecycle mutation follows only the closed least-privilege policy and persists coherent receipts;
