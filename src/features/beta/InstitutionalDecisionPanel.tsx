@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import type { Session } from '@supabase/supabase-js';
 import type { RevisionProposal, RevisionProposalVersion } from '../../domain/revision';
 import {
+  buildRevisionProposalVersionFingerprintPayload,
   fingerprintRevisionProposalVersion,
   type InstitutionalDecisionOutcome,
   type InstitutionalRevisionDecisionReceipt,
@@ -117,11 +118,13 @@ export function InstitutionalDecisionPanel({ proposal, version }: InstitutionalD
       const context: WorkspaceActorContext = { membership: selectedMembership, assurance: 'authenticated-workspace' };
       const latestReceipt = await repository.findInstitutionalDecisionForVersion(context, version.id); setReceipt(latestReceipt); setReceiptLookupState('resolved');
       if (!decisionControlsMayOpen('resolved', latestReceipt, freshFingerprint)) { clearPreparedDecision(); setMessage('Lo stato istituzionale della versione è cambiato. La registrazione è stata bloccata e la ricevuta è stata riletta dal server.'); return; }
+      const proposalVersionSnapshotPayload = JSON.stringify(buildRevisionProposalVersionFingerprintPayload(version));
       const nextReceipt = await repository.recordInstitutionalDecision(context, {
         workspaceId: selectedMembership.workspaceId,
         proposalRef: proposal.id,
         proposalVersionRef: version.id,
         proposalVersionFingerprint: freshFingerprint,
+        proposalVersionSnapshotPayload,
         targetNodeRef: proposal.targetNodeRef.id,
         baseCurriculumVersionRef: proposal.curriculumVersionRef.id,
         outcome,
@@ -129,7 +132,7 @@ export function InstitutionalDecisionPanel({ proposal, version }: InstitutionalD
         clientRequestId: requestId,
       });
       setReceipt(nextReceipt); setReceiptLookupState('resolved'); clearPreparedDecision();
-      setMessage('Decisione istituzionale registrata e vincolata a nodo target e baseline. Nessuna modifica del curricolo è stata applicata automaticamente.');
+      setMessage('Decisione istituzionale registrata dopo il congelamento e la verifica server della versione deliberata. Nessuna modifica del curricolo è stata applicata automaticamente.');
     } catch (error) { clearPreparedDecision(); setReceiptLookupState('error'); setMessage(error instanceof Error ? error.message : 'Decisione non registrata.'); }
     finally { setBusy(false); }
   };
@@ -156,7 +159,7 @@ export function InstitutionalDecisionPanel({ proposal, version }: InstitutionalD
               <label className="block font-semibold">Esito proposto<select value={outcome} onChange={(event) => { setOutcome(event.target.value as DecisionOutcomeSelection); resetPreview(); }} className="mt-1 block w-full rounded-lg border border-slate-300 bg-white p-2"><option value="" disabled>Seleziona un esito…</option>{Object.entries(OUTCOME_LABELS).map(([value,label]) => <option key={value} value={value}>{label}</option>)}</select></label>
               <label className="block font-semibold">Motivazione della decisione<textarea value={rationale} onChange={(event) => { setRationale(event.target.value); resetPreview(); }} rows={4} className="mt-1 block w-full rounded-lg border border-slate-300 bg-white p-2" placeholder="Esplicita gli elementi considerati e la ragione dell’esito." /></label>
               {!previewFingerprint ? <button type="button" disabled={busy || !outcome || !rationale.trim()} onClick={() => void preparePreview()} className="rounded-lg bg-indigo-600 px-3 py-2 font-bold text-white disabled:cursor-not-allowed disabled:opacity-50">Rivedi prima di registrare</button> : (
-                <div className="space-y-3 rounded-lg border-2 border-indigo-200 bg-white p-3"><strong className="block text-indigo-900">Anteprima della conseguenza</strong><div><strong>Esito:</strong> {outcome ? OUTCOME_LABELS[outcome] : '—'}</div><div><strong>Motivazione:</strong> {rationale}</div><div><strong>Versione vincolata:</strong> v{version.versionNumber}</div><div><strong>Nodo target:</strong> <code>{proposal.targetNodeRef.id}</code></div><div><strong>Baseline:</strong> <code>{proposal.curriculumVersionRef.id}</code></div><div><strong>Impronta SHA-256:</strong> <code className="break-all">{previewFingerprint}</code></div><p className="font-semibold text-slate-800">La registrazione crea una ricevuta istituzionale append-only vincolata anche a nodo target e baseline. Non modifica automaticamente il curricolo e non equivale a firma digitale o protocollazione.</p><label className="flex items-start gap-2 font-semibold"><input type="checkbox" checked={confirmed} onChange={(event) => setConfirmed(event.target.checked)} className="mt-0.5" /><span>Confermo di aver verificato contenuto, esito, nodo target, baseline e conseguenze della registrazione.</span></label><div className="flex flex-wrap gap-2"><button type="button" disabled={busy || !confirmed} onClick={() => void recordDecision()} className="rounded-lg bg-emerald-700 px-3 py-2 font-bold text-white disabled:cursor-not-allowed disabled:opacity-50">Conferma e registra decisione</button><button type="button" disabled={busy} onClick={resetPreview} className="rounded-lg border border-slate-300 bg-white px-3 py-2 font-bold text-slate-700">Torna a modificare</button></div></div>
+                <div className="space-y-3 rounded-lg border-2 border-indigo-200 bg-white p-3"><strong className="block text-indigo-900">Anteprima della conseguenza</strong><div><strong>Esito:</strong> {outcome ? OUTCOME_LABELS[outcome] : '—'}</div><div><strong>Motivazione:</strong> {rationale}</div><div><strong>Versione vincolata:</strong> v{version.versionNumber}</div><div><strong>Nodo target:</strong> <code>{proposal.targetNodeRef.id}</code></div><div><strong>Baseline:</strong> <code>{proposal.curriculumVersionRef.id}</code></div><div><strong>Impronta SHA-256:</strong> <code className="break-all">{previewFingerprint}</code></div><p className="font-semibold text-slate-800">La registrazione congela prima sul server l’esatto contenuto deliberato e ne verifica l’impronta SHA-256; solo dopo crea la ricevuta istituzionale append-only. Non modifica automaticamente il curricolo e non equivale a firma digitale o protocollazione.</p><label className="flex items-start gap-2 font-semibold"><input type="checkbox" checked={confirmed} onChange={(event) => setConfirmed(event.target.checked)} className="mt-0.5" /><span>Confermo di aver verificato contenuto, esito, nodo target, baseline e conseguenze della registrazione.</span></label><div className="flex flex-wrap gap-2"><button type="button" disabled={busy || !confirmed} onClick={() => void recordDecision()} className="rounded-lg bg-emerald-700 px-3 py-2 font-bold text-white disabled:cursor-not-allowed disabled:opacity-50">Conferma e registra decisione</button><button type="button" disabled={busy} onClick={resetPreview} className="rounded-lg border border-slate-300 bg-white px-3 py-2 font-bold text-slate-700">Torna a modificare</button></div></div>
               )}
             </div>
           ) : null}
