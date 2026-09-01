@@ -8,7 +8,21 @@ const context: WorkspaceActorContext = {
   membership: { workspaceId: '11111111-1111-4111-8111-111111111111', userId: '22222222-2222-4222-8222-222222222222', role: 'collegio', status: 'active' },
   assurance: 'authenticated-workspace',
 };
-const snapshotPayload = JSON.stringify({ id: 'proposal-version-03', proposalRef: 'proposal-01', frozen: true });
+const snapshotPayload = JSON.stringify({
+  id: 'proposal-version-03',
+  proposalRef: 'proposal-01',
+  versionNumber: 3,
+  currentTextSnapshot: 'Testo curricolare vigente.',
+  proposedText: 'Testo curricolare revisionato.',
+  rationale: 'Ragioni della revisione.',
+  sourceRefs: [{ id: 'source-1', entityType: 'curriculum-node', snapshotLabel: 'Fonte deliberata' }],
+  evidenceRefs: [{ id: 'evidence-1', entityType: 'evidence', snapshotLabel: 'Evidenza deliberata' }],
+  createdAt: '2026-09-01T08:00:00.000Z',
+  structuralFootprint: 'text-only',
+  previousVersionRef: 'proposal-version-02',
+  changeNote: 'Versione pronta per decisione.',
+  frozen: true,
+});
 const input: InstitutionalRevisionDecisionInput = {
   workspaceId: context.membership.workspaceId,
   proposalRef: 'proposal-01',
