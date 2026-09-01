@@ -1,6 +1,7 @@
 -- CurManLight Arena R7A3 — shared frozen proposal snapshot
--- A v2 institutional decision is admissible only when the server already owns
--- the exact immutable proposal-version payload and has recomputed its SHA-256.
+-- R7A3 decisions are distinguishable from historical/deployed R7A2 v2 decisions:
+-- old v2 clients remain writable during rollout, while only the new v3 RPC marks
+-- a decision as backed by a server-owned frozen proposal snapshot.
 
 create extension if not exists pgcrypto;
 
@@ -18,6 +19,14 @@ create table if not exists public.institutional_revision_proposal_snapshots (
   check (jsonb_typeof(snapshot_json) = 'object')
 );
 
+alter table public.institutional_revision_decisions
+  add column if not exists proposal_snapshot_version smallint;
+alter table public.institutional_revision_decisions
+  drop constraint if exists institutional_revision_decisions_proposal_snapshot_version_check;
+alter table public.institutional_revision_decisions
+  add constraint institutional_revision_decisions_proposal_snapshot_version_check
+  check (proposal_snapshot_version is null or proposal_snapshot_version = 1);
+
 alter table public.institutional_revision_proposal_snapshots enable row level security;
 revoke insert, update, delete on public.institutional_revision_proposal_snapshots from authenticated;
 grant select on public.institutional_revision_proposal_snapshots to authenticated;
@@ -26,10 +35,13 @@ drop policy if exists institutional_revision_proposal_snapshots_read on public.i
 create policy institutional_revision_proposal_snapshots_read
 on public.institutional_revision_proposal_snapshots for select to authenticated
 using (exists (
-  select 1 from public.workspace_memberships membership
+  select 1
+  from public.workspace_memberships membership
+  join public.workspaces workspace on workspace.id = membership.workspace_id
   where membership.workspace_id = institutional_revision_proposal_snapshots.workspace_id
     and membership.user_id = auth.uid()
     and membership.status = 'active'
+    and workspace.status = 'active'
 ));
 
 create or replace function public.freeze_institutional_revision_proposal_snapshot_v1(
@@ -78,7 +90,7 @@ begin
   if jsonb_typeof(v_json) <> 'object'
      or v_json->>'id' is distinct from trim(p_proposal_version_ref)
      or v_json->>'proposalRef' is distinct from trim(p_proposal_ref)
-     or coalesce((v_json->>'frozen')::boolean, false) is not true then
+     or v_json->'frozen' is distinct from 'true'::jsonb then
     raise exception 'FROZEN_PROPOSAL_SNAPSHOT_BINDING_MISMATCH' using errcode = '23514';
   end if;
 
@@ -107,7 +119,6 @@ begin
     p_workspace_id, trim(p_proposal_ref), trim(p_proposal_version_ref), v_fingerprint,
     p_snapshot_payload, v_json, v_user_id
   ) returning * into v_existing;
-
   return next v_existing;
 end;
 $$;
@@ -115,30 +126,120 @@ $$;
 revoke all on function public.freeze_institutional_revision_proposal_snapshot_v1(uuid, text, text, text, text) from public;
 grant execute on function public.freeze_institutional_revision_proposal_snapshot_v1(uuid, text, text, text, text) to authenticated;
 
-create or replace function public.require_frozen_proposal_snapshot_for_v2_decision()
-returns trigger
+create or replace function public.record_institutional_revision_decision_v3(
+  p_workspace_id uuid, p_proposal_ref text, p_proposal_version_ref text,
+  p_proposal_version_fingerprint text, p_target_node_ref text,
+  p_base_curriculum_version_ref text, p_outcome text, p_rationale text,
+  p_client_request_id uuid
+)
+returns setof public.institutional_revision_decisions
 language plpgsql
+security definer
 set search_path = public, pg_temp
 as $$
+declare
+  v_user_id uuid := auth.uid();
+  v_role text;
+  v_existing public.institutional_revision_decisions%rowtype;
+  v_latest public.institutional_revision_decisions%rowtype;
+  v_binding_material text;
+  v_binding_fingerprint text;
 begin
-  if new.adoption_binding_version = 2 and not exists (
-    select 1
-    from public.institutional_revision_proposal_snapshots snapshot
-    where snapshot.workspace_id = new.workspace_id
-      and snapshot.proposal_ref = new.proposal_ref
-      and snapshot.proposal_version_ref = new.proposal_version_ref
-      and snapshot.proposal_version_fingerprint = new.proposal_version_fingerprint
-  ) then
-    raise exception 'FROZEN_PROPOSAL_SNAPSHOT_REQUIRED' using errcode = '23514';
+  if v_user_id is null then raise exception 'AUTHENTICATION_REQUIRED' using errcode = '42501'; end if;
+  if p_workspace_id is null
+     or nullif(trim(p_proposal_ref), '') is null
+     or nullif(trim(p_proposal_version_ref), '') is null
+     or lower(coalesce(p_proposal_version_fingerprint, '')) !~ '^[a-f0-9]{64}$'
+     or nullif(trim(p_target_node_ref), '') is null
+     or nullif(trim(p_base_curriculum_version_ref), '') is null
+     or position(chr(31) in p_proposal_ref) > 0
+     or position(chr(31) in p_proposal_version_ref) > 0
+     or position(chr(31) in p_target_node_ref) > 0
+     or position(chr(31) in p_base_curriculum_version_ref) > 0
+     or p_outcome not in ('approve', 'approve-with-changes', 'reject', 'defer', 'return-for-revision')
+     or nullif(trim(p_rationale), '') is null
+     or char_length(trim(p_rationale)) > 4000
+     or p_client_request_id is null then
+    raise exception 'INVALID_INSTITUTIONAL_DECISION_V3_INPUT' using errcode = '22023';
   end if;
-  return new;
+
+  select membership.role into v_role
+  from public.workspace_memberships membership
+  join public.workspaces workspace on workspace.id = membership.workspace_id
+  where membership.workspace_id = p_workspace_id
+    and membership.user_id = v_user_id
+    and membership.status = 'active'
+    and workspace.status = 'active';
+  if v_role is distinct from 'collegio' then raise exception 'REVISION_DECIDE_REQUIRED' using errcode = '42501'; end if;
+
+  if not exists (
+    select 1 from public.institutional_revision_proposal_snapshots snapshot
+    where snapshot.workspace_id = p_workspace_id
+      and snapshot.proposal_ref = trim(p_proposal_ref)
+      and snapshot.proposal_version_ref = trim(p_proposal_version_ref)
+      and snapshot.proposal_version_fingerprint = lower(p_proposal_version_fingerprint)
+  ) then raise exception 'FROZEN_PROPOSAL_SNAPSHOT_REQUIRED' using errcode = '23514'; end if;
+
+  v_binding_material := 'CML_ARENA_ADOPTION_BINDING_V2' || chr(31)
+    || p_workspace_id::text || chr(31) || trim(p_proposal_ref) || chr(31)
+    || trim(p_proposal_version_ref) || chr(31) || lower(p_proposal_version_fingerprint) || chr(31)
+    || trim(p_target_node_ref) || chr(31) || trim(p_base_curriculum_version_ref);
+  v_binding_fingerprint := encode(digest(convert_to(v_binding_material, 'UTF8'), 'sha256'), 'hex');
+
+  select * into v_existing from public.institutional_revision_decisions decision
+  where decision.workspace_id = p_workspace_id and decision.client_request_id = p_client_request_id;
+  if found then
+    if v_existing.decided_by <> v_user_id
+       or v_existing.proposal_ref <> trim(p_proposal_ref)
+       or v_existing.proposal_version_ref <> trim(p_proposal_version_ref)
+       or v_existing.proposal_version_fingerprint <> lower(p_proposal_version_fingerprint)
+       or v_existing.proposal_snapshot_version is distinct from 1
+       or v_existing.adoption_binding_version is distinct from 2
+       or v_existing.adoption_target_node_ref is distinct from trim(p_target_node_ref)
+       or v_existing.adoption_base_curriculum_version_ref is distinct from trim(p_base_curriculum_version_ref)
+       or v_existing.adoption_binding_fingerprint is distinct from v_binding_fingerprint
+       or v_existing.outcome <> p_outcome
+       or v_existing.rationale <> trim(p_rationale) then
+      raise exception 'CLIENT_REQUEST_ID_REUSE_MISMATCH' using errcode = '23505';
+    end if;
+    return next v_existing; return;
+  end if;
+
+  perform pg_advisory_xact_lock(hashtextextended(p_workspace_id::text || ':' || trim(p_proposal_version_ref), 0));
+  select * into v_latest from public.institutional_revision_decisions decision
+  where decision.workspace_id = p_workspace_id and decision.proposal_version_ref = trim(p_proposal_version_ref)
+  order by decision.decided_at desc, decision.id desc limit 1;
+  if found then
+    if v_latest.proposal_ref <> trim(p_proposal_ref) then raise exception 'PROPOSAL_VERSION_REFERENCE_MISMATCH' using errcode = '23514'; end if;
+    if v_latest.proposal_version_fingerprint <> lower(p_proposal_version_fingerprint) then raise exception 'PROPOSAL_VERSION_FINGERPRINT_MISMATCH' using errcode = '23514'; end if;
+    if v_latest.adoption_binding_version = 2 and (
+      v_latest.adoption_target_node_ref is distinct from trim(p_target_node_ref)
+      or v_latest.adoption_base_curriculum_version_ref is distinct from trim(p_base_curriculum_version_ref)
+      or v_latest.adoption_binding_fingerprint is distinct from v_binding_fingerprint
+    ) then raise exception 'ADOPTION_BINDING_MISMATCH' using errcode = '23514'; end if;
+    if v_latest.outcome in ('approve', 'approve-with-changes', 'reject') then raise exception 'INSTITUTIONAL_DECISION_ALREADY_FINAL' using errcode = '23505'; end if;
+  end if;
+
+  insert into public.institutional_revision_decisions (
+    workspace_id, proposal_ref, proposal_version_ref, proposal_version_fingerprint,
+    proposal_snapshot_version, adoption_binding_version, adoption_target_node_ref,
+    adoption_base_curriculum_version_ref, adoption_binding_fingerprint,
+    outcome, rationale, decided_by, authority_role, client_request_id
+  ) values (
+    p_workspace_id, trim(p_proposal_ref), trim(p_proposal_version_ref), lower(p_proposal_version_fingerprint),
+    1, 2, trim(p_target_node_ref), trim(p_base_curriculum_version_ref), v_binding_fingerprint,
+    p_outcome, trim(p_rationale), v_user_id, 'collegio', p_client_request_id
+  ) returning * into v_existing;
+  return next v_existing;
 end;
 $$;
 
-drop trigger if exists institutional_revision_decisions_require_frozen_snapshot on public.institutional_revision_decisions;
-create trigger institutional_revision_decisions_require_frozen_snapshot
-before insert on public.institutional_revision_decisions
-for each row execute function public.require_frozen_proposal_snapshot_for_v2_decision();
+revoke all on function public.record_institutional_revision_decision_v3(uuid, text, text, text, text, text, text, text, uuid) from public;
+grant execute on function public.record_institutional_revision_decision_v3(uuid, text, text, text, text, text, text, text, uuid) to authenticated;
 
+comment on column public.institutional_revision_decisions.proposal_snapshot_version is
+  'NULL for historical/R7A2-compatible decisions; 1 only for R7A3 decisions recorded after server snapshot verification.';
+comment on function public.record_institutional_revision_decision_v3(uuid, text, text, text, text, text, text, text, uuid) is
+  'R7A3 decision boundary. Requires a matching frozen server snapshot and marks the receipt proposal_snapshot_version=1. R7A2 v2 RPC remains available for rollout compatibility but does not set this marker.';
 comment on table public.institutional_revision_proposal_snapshots is
   'R7A3 immutable server-owned proposal-version snapshots. Direct writes are forbidden; SHA-256 is recomputed server-side from the exact frozen payload.';
