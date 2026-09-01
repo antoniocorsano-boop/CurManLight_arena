@@ -14,120 +14,172 @@ R7A4 is a contract-only slice. It introduces no database migration, no RPC, no U
 
 Today `RevisionProposal`, `RevisionProposalVersion` and proposal lifecycle transitions are produced in the local `revisionArchive` and persisted through Zustand/IndexedDB. R7A3 can validate and immutably freeze the complete proposal-version payload used by a decision, but the server first learns that proposal content at freeze time.
 
-Therefore R7A3 proves:
+R7A3 therefore proves exact payload shape, server-side SHA-256 recomputation, immutability of the deliberation snapshot and authenticated institutional decision binding. It does not yet prove that the frozen payload equals a proposal version already owned independently by shared proposal authority.
 
-- exact payload shape;
-- server-side SHA-256 recomputation;
-- immutability of the frozen deliberation snapshot;
-- authenticated institutional decision binding.
-
-It does not yet prove that the frozen payload equals a proposal version already owned independently by a shared proposal authority.
-
-This is why canonical adoption remains fail-closed with `PROPOSAL_AUTHORITY_UNAVAILABLE`.
+For this reason canonical adoption remains fail-closed with `PROPOSAL_AUTHORITY_UNAVAILABLE`.
 
 ## Distinction from R7 P3
 
-The R7 process named **P3 Curriculum analysis** remains a separate concern. P3 is partial because whole-school deterministic coverage/gap analysis is incomplete.
+R7 **P3 Curriculum analysis** remains separate. P3 is partial because whole-school deterministic coverage/gap analysis is incomplete.
 
-The shared proposal authority defined here is not a redefinition or closure of P3. It is a missing authority precondition in the revision/decision/adoption chain that must be satisfied before P6 can trust a proposal version as institutional input.
+Shared proposal authority is not P3 closure. It is an authority prerequisite in the revision → decision → adoption chain.
 
-## Authority transition
+## Canonical authority transition
 
-The canonical transition is:
+The boundary is:
 
 `local preparation -> authenticated submission -> shared institutional proposal`
 
-Local preparation may include:
+Local preparation includes `draft`, `ready-for-review`, editing and local frozen proposal versions. The first shared-authoritative state is `submitted`.
 
-- `draft`;
-- `ready-for-review`;
-- local validation;
-- editing and creation of frozen local `RevisionProposalVersion` values.
+After successful submission:
 
-The first shared-authority state is:
-
-- `submitted`.
-
-Once a proposal version is successfully submitted, the shared authority owns that submitted version and its institutional lifecycle. A local copy may remain as cache/read model, but local persistence may not silently replace, rewrite or supersede the shared authoritative record.
+- the shared server is authoritative for submitted version identity, payload, fingerprint and institutional lifecycle;
+- local persistence may remain only a cache/projection;
+- local state can never prove that an institutional transition succeeded;
+- failed or unavailable shared operations never fall back to local institutional success.
 
 ## Shared authoritative identity
 
-A shared submitted version must bind at least:
+Every shared version binds:
 
 - `workspaceId`;
 - `proposalRef`;
 - `proposalVersionRef`;
-- exact canonical proposal fingerprint payload;
+- exact canonical proposal payload;
 - server-recomputed SHA-256 fingerprint;
 - `targetNodeRef`;
 - `baseCurriculumVersionRef`;
-- `submittedByUserId`;
-- authenticated submitter role;
+- authenticated submitter user and role;
 - `submittedAt`;
-- institutional lifecycle state;
-- previous shared version reference when applicable.
+- lifecycle state;
+- previous shared proposal version reference.
 
-The shared version is immutable. Mutable proposal progress is represented by authoritative state transitions and, when content changes, by a new immutable submitted version.
+Submitted content is immutable. Content changes create a new immutable submitted version.
 
-## Submission authority
+## Authentication and fresh authority evidence
 
-Preparing a proposal and submitting it institutionally are distinct acts.
+A structurally valid `WorkspaceActorContext` is not sufficient authority evidence by itself.
 
-R7A4 does not create a new capability by default. The minimum submission rule is:
+Every shared operation must, at call time:
 
-- actor has `CURRICULUM_PROPOSE`;
-- actor assurance is `authenticated-workspace`;
-- workspace membership is active;
-- workspace itself is active.
+1. re-read server-backed membership;
+2. require membership `active`;
+3. require workspace `active`;
+4. require context workspace to match the requested workspace;
+5. verify the capability required by the operation or transition;
+6. fail closed on revocation, mismatch or unavailable authority evidence.
 
-A future policy may introduce a separate `REVISION_SUBMIT` capability if governance requires preparation and formal deposit to be owned by different roles. That decision is deliberately deferred.
+Self-declared roles remain valid only for local preparation.
 
-Self-declared/local authority is sufficient for preparation but never sufficient for shared institutional submission.
+Shared reads require fresh `CURRICULUM_READ` authority. Shared submission requires fresh `CURRICULUM_PROPOSE` authority.
 
-## Shared lifecycle ownership
+## Submission authority and provenance
 
-After successful submission, lifecycle states that carry institutional meaning must be shared-authoritative rather than produced only by the local `transitionProposalStatus()` path.
+Only roles currently carrying `CURRICULUM_PROPOSE` may appear as successful shared submitters:
 
-The intended ownership boundary is:
+- `docente`;
+- `dipartimento`;
+- `referente`.
 
-### Local-only or pre-authoritative
+Runtime membership/capability verification remains mandatory.
 
-- `draft`;
-- `ready-for-review`.
+On successful submission:
 
-### Shared-authoritative
+- `submittedByUserId` must equal the freshly verified membership user;
+- `submittedByRole` must equal the freshly verified membership role;
+- provenance may not be supplied independently by the client.
 
-- `submitted`;
-- `under-review`;
-- `changes-requested`;
-- `accepted-for-decision`;
-- `rejected`;
-- `withdrawn` when withdrawal concerns an already submitted proposal;
-- `archived` when archival concerns shared institutional history.
+The server must validate the canonical payload and recompute the fingerprint independently before success.
 
-The exact transition permissions are deferred to the implementation slice and must be derived from least privilege rather than copied blindly from the current local state machine.
+## Shared head, CAS and replacement rules
 
-## Version immutability and change requests
+Every operation that can advance or replace the current shared proposal state uses explicit compare-and-swap semantics.
 
-A submitted proposal version is immutable.
+For submission:
 
-If review requests content changes:
+- `expectedCurrentSharedProposalVersionRef = null` means explicitly “first shared submission”;
+- a non-null expected head must equal the authoritative current head;
+- `previousSharedProposalVersionRef` must equal that expected head;
+- replacement submission is allowed only when the current authoritative predecessor is `changes-requested`;
+- replacement must create a new proposal-version identity;
+- stale or concurrent submissions fail instead of overwriting a newer head.
 
-1. the reviewed shared version remains historical and unchanged;
-2. a new local proposal version may be prepared;
-3. the new version must be submitted through the same authenticated shared boundary;
-4. the shared authority records the previous shared version relation;
-5. review and decision references always identify one explicit shared proposal version.
+This prevents a proposer from silently replacing a version that is still under institutional review.
 
-No update-in-place of submitted content is allowed.
+## Closed shared lifecycle policy
 
-## Shared head and compare-and-swap
+The local `PROPOSAL_STATUS_TRANSITIONS` table is not reused as institutional authority policy.
 
-The shared proposal authority must expose one current shared version/head per proposal.
+R7A4 freezes the following shared transitions only:
 
-Any command that advances the shared head must carry the caller's expected current shared version reference. If the authoritative head has moved, the operation fails instead of overwriting a newer submission or review outcome.
+| From | To | Required capability | Additional actor binding |
+|---|---|---|---|
+| `submitted` | `under-review` | `REVISION_REVIEW` | authorized member |
+| `submitted` | `withdrawn` | `CURRICULUM_PROPOSE` | original submitter |
+| `under-review` | `changes-requested` | `REVISION_REVIEW` | authorized member |
+| `under-review` | `accepted-for-decision` | `REVISION_REVIEW` | authorized member |
+| `under-review` | `rejected` | `REVISION_REVIEW` | authorized member |
 
-This compare-and-swap rule protects against stale browser sessions and concurrent submissions.
+Every lifecycle mutation must additionally:
+
+- re-read fresh server membership;
+- verify the capability selected by this policy;
+- require the target version to remain the current shared head;
+- compare-and-swap the expected lifecycle state;
+- fail closed on stale state, revoked membership or capability mismatch.
+
+No other transition is implicitly authorized by R7A4.
+
+In particular, `changes-requested -> ready-for-review` is a **local preparation** step. It never rewrites the shared historical version. A corrected local version must cross the authenticated submission boundary again and become a new shared version.
+
+Archival policy for terminal shared states is intentionally deferred until an explicit authority rule is designed; it is not inferred from the local state machine.
+
+## Lifecycle audit receipt
+
+A lifecycle transition is not only a mutable state change. Every successful shared lifecycle mutation must persist immutable audit evidence binding:
+
+- workspace;
+- proposal and exact proposal version;
+- previous and next lifecycle state;
+- capability used;
+- freshly verified actor user and role;
+- transition timestamp;
+- `clientRequestId`.
+
+The transition receipt must derive actor identity/role and capability from server-verified authority evidence and transition policy, not from caller-supplied provenance.
+
+## Idempotency
+
+Every consequential shared mutation is idempotent by `clientRequestId`.
+
+The same request identifier with the same canonical operation returns the same institutional result. Reuse of the same request identifier with conflicting payload, proposal/version, expected head or lifecycle transition fails closed.
+
+Idempotency may never be implemented as “last write wins”.
+
+## Adversarial invariant matrix
+
+R7A4 is reviewed against the following classes of failure rather than waiting for individual implementation bugs:
+
+| Invariant | Submission | Lifecycle mutation | Shared read |
+|---|---|---|---|
+| authenticated context required | yes | yes | yes |
+| fresh membership re-read | yes | yes | yes |
+| active workspace/member | yes | yes | yes |
+| workspace binding | yes | yes | yes |
+| capability check | `CURRICULUM_PROPOSE` | transition-specific | `CURRICULUM_READ` |
+| actor provenance bound to membership | yes | yes, in receipt | n/a |
+| server payload validation | yes | n/a | n/a |
+| server fingerprint recomputation | yes | n/a | n/a |
+| current-head guard | CAS | yes | n/a |
+| expected-state CAS | submission head | lifecycle state | n/a |
+| immutable version content | yes | preserved | preserved |
+| immutable institutional audit receipt | submission provenance | yes | n/a |
+| idempotency / conflict detection | yes | yes | n/a |
+| revocation fails closed | yes | yes | yes |
+| local institutional fallback | never | never | never |
+
+This matrix is enforced by the R7A4 Authority Contract Harness in `src/__tests__/r7a4-shared-submitted-proposal-authority-boundary.test.ts`.
 
 ## Relationship to R7A3
 
@@ -137,90 +189,72 @@ The future strengthened decision path must require:
 
 `shared authoritative proposal version -> exact R7A3 deliberation snapshot -> institutional decision`
 
-Before removing `PROPOSAL_AUTHORITY_UNAVAILABLE`, the server must be able to prove that:
-
-- the frozen R7A3 payload belongs to the same workspace/proposal/version;
-- the frozen payload fingerprint equals the authoritative shared submitted version fingerprint;
-- target node and base curriculum version are the same authoritative binding;
-- the submitted version was in a state eligible for institutional decision.
+Before removing `PROPOSAL_AUTHORITY_UNAVAILABLE`, the server must prove that snapshot workspace/proposal/version, fingerprint, target/base binding and decision-eligible lifecycle all match the authoritative shared proposal version.
 
 R7A4 itself does not remove the blocker because it contains no shared persistence implementation.
 
 ## Relationship to P6
 
-R7A4 must not make canonical adoption executable.
+R7A4 does not make canonical adoption executable.
 
-The following remain intentionally unavailable:
+Still intentionally unavailable:
 
 - `CURRICULUM_ADOPT` for every current role;
 - shared canonical candidate materialization;
-- shared canonical curriculum head/registry mutation;
+- canonical curriculum registry/head mutation;
 - canonical adoption RPC;
 - `CanonicalAdoptionReceipt` persistence;
 - automatic or inferred adoption.
 
-`PROPOSAL_AUTHORITY_UNAVAILABLE` remains a valid P6 blocker until the later implementation and authoritative rebind slices pass their gates.
+## Compatibility and no-double-authority rule
 
-## No double-write rule
+Existing local proposals remain readable/editable until explicitly submitted through the future shared authority path. No historical local record is retroactively promoted.
 
-There must never be two competing authorities for a submitted proposal version.
+After successful shared submission there is exactly one institutional authority: the shared server. Local state is projection only. Any reconciliation mismatch fails visibly.
 
-After authenticated submission succeeds:
-
-- the shared server is authoritative for submitted version identity, payload, fingerprint and institutional lifecycle;
-- local `revisionArchive` may retain a cache/projection for continuity and offline consultation;
-- local state cannot be treated as proof that a shared transition occurred;
-- a failed shared submission cannot be recovered as a local institutional success;
-- reconciliation must fail visibly when local and shared identities disagree.
-
-## Compatibility rule
-
-Existing local proposals remain readable and editable under their current semantics until explicitly submitted through the future shared authority path.
-
-R7A4 does not retroactively promote historical local proposals into institutional shared records.
-
-Any future migration/import path must be explicit, authenticated and auditable.
-
-## Implementation sequence after this boundary is accepted
+## Implementation sequence
 
 ### R7A5 — Shared Proposal Persistence
 
-Expected deliverables:
+Must implement the frozen contract, including:
 
-- authoritative shared proposal and proposal-version records;
-- active-workspace/member RLS;
+- shared proposal/version persistence;
+- active workspace/member RLS;
 - authenticated submission RPC;
-- server-side canonical payload validation and SHA-256 recomputation;
+- server payload validation and SHA-256 recomputation;
 - immutable submitted versions;
-- compare-and-swap shared head;
-- idempotency by client request ID;
-- shared lifecycle transition authority;
+- CAS shared head;
+- replacement only from `changes-requested`;
+- closed shared lifecycle policy;
+- fresh capability verification on each lifecycle mutation;
+- immutable lifecycle transition receipts;
+- idempotency/conflicting-request protection;
 - client repository implementation;
-- no local fallback reported as institutional success.
+- no local institutional-success fallback.
 
 ### R7A6 — Authoritative Decision Rebind
 
-Expected deliverables:
+Must bind the R7A3 freeze and institutional decision to the exact authoritative shared version and its decision-eligible state. Only after executable proof may `PROPOSAL_AUTHORITY_UNAVAILABLE` be reconsidered.
 
-- R7A3 freeze path verifies the matching authoritative shared submitted version;
-- decision path verifies authoritative proposal lifecycle eligibility;
-- target/base binding is checked against shared proposal authority;
-- historical R7A2/R7A3 compatibility remains distinguishable;
-- `PROPOSAL_AUTHORITY_UNAVAILABLE` is removed only when these invariants are actually executable and tested.
-
-Only after that should canonical candidate materialization, shared canonical registry and deliberate `CURRICULUM_ADOPT` policy be implemented.
+Canonical candidate materialization, canonical registry and deliberate `CURRICULUM_ADOPT` policy remain later work.
 
 ## Non-goals
 
-No Supabase schema, no RPC, no remote draft editor, no synchronization engine, no P3 curriculum-analysis closure, no canonical registry, no `CURRICULUM_ADOPT`, no adoption mutation, no deploy and no automatic adoption.
+No Supabase schema, RPC, remote draft editor, synchronization engine, P3 curriculum-analysis closure, canonical registry, `CURRICULUM_ADOPT`, adoption mutation, deploy or automatic adoption.
 
 ## Exit gate
 
-R7A4 is complete only when review accepts the authority boundary and the repository still proves fail-closed behavior:
+R7A4 is complete only when review accepts that:
 
-- local proposal preparation remains possible;
+- local preparation remains local;
 - authenticated submission is the first shared-authority boundary;
-- submitted versions are specified as immutable;
-- no double authority exists after submission;
+- every shared operation requires fresh server-backed authority evidence;
+- submission provenance is bound to the verified member;
+- submitted content is immutable;
+- replacement is CAS-protected and only follows `changes-requested`;
+- lifecycle mutations use the closed least-privilege transition policy;
+- institutional lifecycle changes create immutable audit receipts;
+- mutations are idempotent and conflicting retries fail closed;
+- no local fallback can become institutional success;
 - no current role gains `CURRICULUM_ADOPT`;
-- `PROPOSAL_AUTHORITY_UNAVAILABLE` remains active until a later runtime slice implements and rebinds the shared authority.
+- `PROPOSAL_AUTHORITY_UNAVAILABLE` remains active until later runtime/rebind slices actually implement these invariants.
