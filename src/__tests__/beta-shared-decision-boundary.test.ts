@@ -8,11 +8,13 @@ const context: WorkspaceActorContext = {
   membership: { workspaceId: '11111111-1111-4111-8111-111111111111', userId: '22222222-2222-4222-8222-222222222222', role: 'collegio', status: 'active' },
   assurance: 'authenticated-workspace',
 };
+const snapshotPayload = JSON.stringify({ id: 'proposal-version-03', proposalRef: 'proposal-01', frozen: true });
 const input: InstitutionalRevisionDecisionInput = {
   workspaceId: context.membership.workspaceId,
   proposalRef: 'proposal-01',
   proposalVersionRef: 'proposal-version-03',
   proposalVersionFingerprint: 'a'.repeat(64),
+  proposalVersionSnapshotPayload: snapshotPayload,
   targetNodeRef: 'node-17',
   baseCurriculumVersionRef: 'curriculum-v4',
   outcome: 'approve',
@@ -31,21 +33,40 @@ const serverRow = () => ({
   decided_by: context.membership.userId, authority_role: 'collegio',
   decided_at: '2026-09-01T09:30:00.000Z', client_request_id: input.clientRequestId,
 });
+const snapshotRow = () => ({
+  workspace_id: input.workspaceId,
+  proposal_ref: input.proposalRef,
+  proposal_version_ref: input.proposalVersionRef,
+  proposal_version_fingerprint: input.proposalVersionFingerprint,
+  snapshot_payload: input.proposalVersionSnapshotPayload,
+});
 
-describe('BETA-G4 shared institutional decision boundary', () => {
-  it('blocca la decisione prima della RPC quando REVISION_DECIDE non è verificata', async () => {
+const successfulRpc = vi.fn(async (name: string) => name === 'freeze_institutional_revision_proposal_snapshot_v1'
+  ? { data: [snapshotRow()], error: null }
+  : { data: [serverRow()], error: null });
+
+describe('BETA-G4/R7A3 shared institutional decision boundary', () => {
+  it('blocca la decisione prima di ogni RPC quando REVISION_DECIDE non è verificata', async () => {
     const rpc = vi.fn(); const client = { rpc } as unknown as SupabaseClient;
     const repository = new SupabaseSharedRevisionDecisionRepository(client, createWorkspaceRepository(false));
     await expect(repository.recordInstitutionalDecision(context, input)).rejects.toThrow('REVISION_DECIDE');
     expect(rpc).not.toHaveBeenCalled();
   });
 
-  it('usa la RPC v2 e lega la decisione a versione, nodo target e baseline', async () => {
-    const rpc = vi.fn(async () => ({ data: [serverRow()], error: null }));
-    const client = { rpc } as unknown as SupabaseClient;
-    const repository = new SupabaseSharedRevisionDecisionRepository(client, createWorkspaceRepository(true));
+  it('congela e verifica lo snapshot prima della RPC decisionale v2', async () => {
+    const rpc = vi.fn(async (name: string) => name === 'freeze_institutional_revision_proposal_snapshot_v1'
+      ? { data: [snapshotRow()], error: null }
+      : { data: [serverRow()], error: null });
+    const repository = new SupabaseSharedRevisionDecisionRepository({ rpc } as unknown as SupabaseClient, createWorkspaceRepository(true));
     const receipt = await repository.recordInstitutionalDecision(context, input);
-    expect(rpc).toHaveBeenCalledWith('record_institutional_revision_decision_v2', {
+    expect(rpc).toHaveBeenNthCalledWith(1, 'freeze_institutional_revision_proposal_snapshot_v1', {
+      p_workspace_id: input.workspaceId,
+      p_proposal_ref: input.proposalRef,
+      p_proposal_version_ref: input.proposalVersionRef,
+      p_expected_fingerprint: input.proposalVersionFingerprint,
+      p_snapshot_payload: input.proposalVersionSnapshotPayload,
+    });
+    expect(rpc).toHaveBeenNthCalledWith(2, 'record_institutional_revision_decision_v2', {
       p_workspace_id: input.workspaceId,
       p_proposal_ref: input.proposalRef,
       p_proposal_version_ref: input.proposalVersionRef,
@@ -59,6 +80,29 @@ describe('BETA-G4 shared institutional decision boundary', () => {
     expect(receipt.adoptionBinding).toEqual({ version: 2, targetNodeRef: input.targetNodeRef, baseCurriculumVersionRef: input.baseCurriculumVersionRef, bindingFingerprint: 'b'.repeat(64) });
   });
 
+  it('non chiama la decisione se il server rifiuta il congelamento', async () => {
+    const rpc = vi.fn(async () => ({ data: null, error: { message: 'FROZEN_PROPOSAL_SNAPSHOT_FINGERPRINT_MISMATCH' } }));
+    const repository = new SupabaseSharedRevisionDecisionRepository({ rpc } as unknown as SupabaseClient, createWorkspaceRepository(true));
+    await expect(repository.recordInstitutionalDecision(context, input)).rejects.toThrow('FROZEN_PROPOSAL_SNAPSHOT_FINGERPRINT_MISMATCH');
+    expect(rpc).toHaveBeenCalledTimes(1);
+  });
+
+  it('fallisce chiuso se la ricevuta snapshot non corrisponde al payload richiesto', async () => {
+    const rpc = vi.fn(async (name: string) => name === 'freeze_institutional_revision_proposal_snapshot_v1'
+      ? { data: [{ ...snapshotRow(), snapshot_payload: '{"tampered":true}' }], error: null }
+      : { data: [serverRow()], error: null });
+    const repository = new SupabaseSharedRevisionDecisionRepository({ rpc } as unknown as SupabaseClient, createWorkspaceRepository(true));
+    await expect(repository.recordInstitutionalDecision(context, input)).rejects.toThrow('stesso snapshot congelato');
+    expect(rpc).toHaveBeenCalledTimes(1);
+  });
+
+  it('rifiuta input privo del payload congelato prima delle RPC', async () => {
+    const rpc = vi.fn();
+    const repository = new SupabaseSharedRevisionDecisionRepository({ rpc } as unknown as SupabaseClient, createWorkspaceRepository(true));
+    await expect(repository.recordInstitutionalDecision(context, { ...input, proposalVersionSnapshotPayload: undefined })).rejects.toThrow('snapshot congelato');
+    expect(rpc).not.toHaveBeenCalled();
+  });
+
   it('resta compatibile in lettura con ricevute storiche prive di binding', async () => {
     const historical = { ...serverRow(), adoption_binding_version: null, adoption_target_node_ref: null, adoption_base_curriculum_version_ref: null, adoption_binding_fingerprint: null };
     const maybeSingle = vi.fn(async () => ({ data: historical, error: null }));
@@ -69,14 +113,17 @@ describe('BETA-G4 shared institutional decision boundary', () => {
   });
 
   it('fallisce chiuso se il server restituisce un binding parziale', async () => {
-    const invalid = { ...serverRow(), adoption_binding_fingerprint: null };
-    const rpc = vi.fn(async () => ({ data: [invalid], error: null }));
+    const rpc = vi.fn(async (name: string) => name === 'freeze_institutional_revision_proposal_snapshot_v1'
+      ? { data: [snapshotRow()], error: null }
+      : { data: [{ ...serverRow(), adoption_binding_fingerprint: null }], error: null });
     const repository = new SupabaseSharedRevisionDecisionRepository({ rpc } as unknown as SupabaseClient, createWorkspaceRepository(true));
     await expect(repository.recordInstitutionalDecision(context, input)).rejects.toThrow('binding di adozione incompleto');
   });
 
-  it('fallisce chiuso se il server rifiuta la scrittura e non crea fallback locale', async () => {
-    const rpc = vi.fn(async () => ({ data: null, error: { message: 'REVISION_DECIDE_REQUIRED' } }));
+  it('fallisce chiuso se il server rifiuta la decisione e non crea fallback locale', async () => {
+    const rpc = vi.fn(async (name: string) => name === 'freeze_institutional_revision_proposal_snapshot_v1'
+      ? { data: [snapshotRow()], error: null }
+      : { data: null, error: { message: 'REVISION_DECIDE_REQUIRED' } });
     const repository = new SupabaseSharedRevisionDecisionRepository({ rpc } as unknown as SupabaseClient, createWorkspaceRepository(true));
     await expect(repository.recordInstitutionalDecision(context, input)).rejects.toThrow('REVISION_DECIDE_REQUIRED');
   });
@@ -85,5 +132,12 @@ describe('BETA-G4 shared institutional decision boundary', () => {
     const rpc = vi.fn(); const repository = new SupabaseSharedRevisionDecisionRepository({ rpc } as unknown as SupabaseClient, createWorkspaceRepository(true));
     await expect(repository.recordInstitutionalDecision(context, { ...input, workspaceId: '55555555-5555-4555-8555-555555555555' })).rejects.toThrow('workspace autenticato corrente');
     expect(rpc).not.toHaveBeenCalled();
+  });
+
+  it('mantiene il mock di successo coerente con entrambe le RPC', async () => {
+    successfulRpc.mockClear();
+    const repository = new SupabaseSharedRevisionDecisionRepository({ rpc: successfulRpc } as unknown as SupabaseClient, createWorkspaceRepository(true));
+    await repository.recordInstitutionalDecision(context, input);
+    expect(successfulRpc).toHaveBeenCalledTimes(2);
   });
 });
