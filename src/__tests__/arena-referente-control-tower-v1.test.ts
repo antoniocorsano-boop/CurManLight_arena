@@ -26,7 +26,7 @@ describe('R4 Referente Control Tower v1', () => {
     expect(snapshot.sourceLocalEvidence).toBe(1);
   });
 
-  it('derives review and decision readiness only from canonical proposal statuses', () => {
+  it('derives review and known decision readiness from canonical states', () => {
     const proposals = [
       { id: 'p1', status: 'draft' },
       { id: 'p2', status: 'under-review' },
@@ -36,16 +36,48 @@ describe('R4 Referente Control Tower v1', () => {
       { id: 'p6', status: 'legacy' },
     ] as RevisionArchive['proposals'];
     const decisions = [
-      { id: 'd1', status: 'recorded-local' },
-      { id: 'd2', status: 'draft' },
+      { id: 'd1', status: 'recorded-local', outcome: 'defer', proposalRef: { id: 'p2' } },
+      { id: 'd2', status: 'draft', outcome: 'approve', proposalRef: { id: 'p3' } },
     ] as RevisionArchive['decisions'];
 
-    const snapshot = deriveReferenteControlTowerSnapshot([], archive({ proposals, decisions }));
+    const snapshot = deriveReferenteControlTowerSnapshot([], archive({ proposals, decisions }), new Set());
     expect(snapshot.proposalTotal).toBe(6);
     expect(snapshot.proposalActive).toBe(4);
     expect(snapshot.proposalInReview).toBe(2);
+    expect(snapshot.proposalAcceptedForDecision).toBe(1);
     expect(snapshot.proposalReadyForDecision).toBe(1);
+    expect(snapshot.decisionReceiptCoverageAvailable).toBe(true);
     expect(snapshot.decisionsRecordedLocal).toBe(1);
+  });
+
+  it('removes a locally terminally decided proposal from ready-for-decision', () => {
+    const proposals = [{ id: 'p1', status: 'accepted-for-decision' }] as RevisionArchive['proposals'];
+    const decisions = [{
+      id: 'd1',
+      status: 'recorded-local',
+      outcome: 'approve',
+      proposalRef: { id: 'p1' },
+    }] as RevisionArchive['decisions'];
+
+    const snapshot = deriveReferenteControlTowerSnapshot([], archive({ proposals, decisions }));
+    expect(snapshot.proposalReadyForDecision).toBe(0);
+    expect(snapshot.decisionReceiptCoverageAvailable).toBe(true);
+  });
+
+  it('fails closed when institutional receipt coverage is unavailable', () => {
+    const proposals = [{ id: 'p1', status: 'accepted-for-decision' }] as RevisionArchive['proposals'];
+    const snapshot = deriveReferenteControlTowerSnapshot([], archive({ proposals }));
+
+    expect(snapshot.proposalReadyForDecision).toBeNull();
+    expect(snapshot.decisionReceiptCoverageAvailable).toBe(false);
+  });
+
+  it('removes a proposal with a known terminal institutional receipt', () => {
+    const proposals = [{ id: 'p1', status: 'accepted-for-decision' }] as RevisionArchive['proposals'];
+    const snapshot = deriveReferenteControlTowerSnapshot([], archive({ proposals }), new Set(['p1']));
+
+    expect(snapshot.proposalReadyForDecision).toBe(0);
+    expect(snapshot.decisionReceiptCoverageAvailable).toBe(true);
   });
 
   it('fails closed on discipline/order coverage rather than inferring scope from labels', () => {
