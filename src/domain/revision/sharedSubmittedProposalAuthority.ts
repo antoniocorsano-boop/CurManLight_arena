@@ -1,5 +1,3 @@
-import type { InstitutionalRole } from '../curriculum/types';
-
 export type SharedProposalLifecycleState =
   | 'submitted'
   | 'under-review'
@@ -9,7 +7,7 @@ export type SharedProposalLifecycleState =
   | 'withdrawn'
   | 'archived';
 
-export type SharedSubmissionActorRole = Exclude<InstitutionalRole, 'non-dichiarato'>;
+export type SharedSubmissionActorRole = 'docente' | 'dipartimento' | 'referente';
 
 export interface SharedProposalVersion {
   schemaVersion: 1;
@@ -89,6 +87,7 @@ export const SHARED_PROPOSAL_AUTHORITY_BOUNDARY = {
   firstSharedState: 'submitted' as const,
   requiresAuthenticatedWorkspace: true as const,
   requiredCapability: 'CURRICULUM_PROPOSE' as const,
+  submissionActorRoles: ['docente', 'dipartimento', 'referente'] as const satisfies readonly SharedSubmissionActorRole[],
   submittedVersionsAreImmutable: true as const,
   requiresCompareAndSwapHead: true as const,
   requiresPredecessorEqualsExpectedHead: true as const,
