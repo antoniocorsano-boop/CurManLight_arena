@@ -62,7 +62,18 @@ On success:
 
 `JSON.stringify(buildRevisionProposalVersionFingerprintPayload(version))`
 
-The server recomputes SHA-256 over those exact bytes and compares it with `proposalVersionFingerprint`.
+The server recomputes SHA-256 over those exact bytes.
+
+`proposalVersionFingerprint` is not a free-form digest spelling. Before shared authority is created:
+
+- it must be exactly 64 characters;
+- every character must be lowercase hexadecimal (`0-9`, `a-f`), i.e. it must match `^[0-9a-f]{64}$`;
+- uppercase, mixed-case, non-hexadecimal, padded, shorter or longer representations fail closed;
+- the submitted value must equal the server-recomputed SHA-256 digest by exact case-sensitive equality;
+- case-insensitive digest comparison is forbidden;
+- the value persisted and returned as authoritative `proposalVersionFingerprint` is the server-recomputed lowercase digest, not the caller spelling.
+
+This freezes the same canonical representation consumed by R7A3 and the exact-equality rebind required by R7A6.
 
 Allowed top-level key order:
 
@@ -226,6 +237,8 @@ Therefore:
 | trimmed canonical required fields | yes | n/a | n/a |
 | strict reference schema | yes | n/a | n/a |
 | exact canonical serialization + SHA-256 | yes | n/a | n/a |
+| canonical 64-char lowercase fingerprint | fail closed on any other form | preserved | preserved |
+| server-recomputed fingerprint persisted/returned | yes | preserved | preserved |
 | target/base canonical trimmed values | yes | preserved | preserved |
 | `(workspace, proposalVersionRef)` canonical uniqueness | yes | preserved | preserved |
 | immutable version-to-proposal binding | yes | preserved | preserved |
@@ -277,6 +290,9 @@ R7A5 Shared Proposal Persistence must implement this frozen contract, including:
 - exact canonical payload validation and serialization;
 - R7A3-compatible trim validation;
 - server-side SHA-256 recomputation;
+- rejection of any `proposalVersionFingerprint` not matching `^[0-9a-f]{64}$`;
+- exact case-sensitive equality between submitted fingerprint and the server-recomputed digest;
+- persistence and return of the server-recomputed lowercase digest as the only authoritative fingerprint representation;
 - canonical trimmed scope persistence/return values;
 - workspace-wide canonical `proposalVersionRef` uniqueness and immutable proposal binding;
 - immutable submitted versions;
@@ -301,6 +317,7 @@ R7A4 is complete only when review accepts that:
 - local preparation remains local and `submitted` is the first shared-authoritative state;
 - every shared operation uses server-session principal + fresh authority evidence;
 - canonical payload validation exactly matches R7A3;
+- `proposalVersionFingerprint` is exactly the server-recomputed SHA-256 represented as 64 lowercase hexadecimal characters, with exact case-sensitive equality and no caller spelling preserved;
 - proposal and proposal-version command identities are canonical trimmed values and contain no U+001F;
 - target/base scope is canonical, valid, U+001F-free and immutable across a proposal chain;
 - `proposalVersionRef` is workspace-unique on canonical identity and immutably bound to one proposal;

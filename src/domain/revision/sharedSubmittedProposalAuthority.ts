@@ -182,6 +182,24 @@ export const SHARED_PROPOSAL_CANONICAL_PAYLOAD_SCHEMA = {
   digest: 'SHA-256' as const,
 };
 
+/** Canonical cross-slice representation of the proposal-version SHA-256 fingerprint. */
+export const SHARED_PROPOSAL_FINGERPRINT_SCHEMA = {
+  algorithm: 'SHA-256' as const,
+  representation: '64-lowercase-hex-characters' as const,
+  pattern: '^[0-9a-f]{64}$' as const,
+  length: 64 as const,
+  submittedValueMustBeCanonical: true as const,
+  submittedValueMustEqualServerRecomputedDigest: true as const,
+  persistedValueIsServerRecomputedDigest: true as const,
+  returnedValueIsServerRecomputedDigest: true as const,
+  caseInsensitiveComparisonAllowed: false as const,
+} as const;
+
+const CANONICAL_SHARED_PROPOSAL_FINGERPRINT_PATTERN = /^[0-9a-f]{64}$/;
+
+export const isCanonicalSharedProposalVersionFingerprint = (value: string): boolean =>
+  CANONICAL_SHARED_PROPOSAL_FINGERPRINT_PATTERN.test(value);
+
 /** U+001F is the R7A3 adoption-binding field delimiter and is never valid inside a bound reference. */
 export const SHARED_PROPOSAL_ADOPTION_BINDING_DELIMITER = '\u001f' as const;
 
@@ -252,6 +270,7 @@ export interface SharedProposalVersion {
   workspaceId: string;
   proposalRef: string;
   proposalVersionRef: string;
+  /** Server-recomputed SHA-256 in canonical 64-character lowercase hexadecimal form. */
   proposalVersionFingerprint: string;
   canonicalPayload: string;
   targetNodeRef: string;
@@ -273,6 +292,7 @@ export interface SubmitSharedProposalVersionCommand {
   workspaceId: string;
   proposalRef: string;
   proposalVersionRef: string;
+  /** Must already be canonical lowercase hex and exactly equal the server-recomputed digest. */
   proposalVersionFingerprint: string;
   canonicalPayload: string;
   targetNodeRef: string;
@@ -390,6 +410,13 @@ export const SHARED_PROPOSAL_AUTHORITY_BOUNDARY = {
   canonicalPayloadSchema: SHARED_PROPOSAL_CANONICAL_PAYLOAD_SCHEMA,
   canonicalPayloadTrimRulesMatchR7A3: true as const,
   structuralFootprintPreservesR7A3StringContract: true as const,
+  fingerprintSchema: SHARED_PROPOSAL_FINGERPRINT_SCHEMA,
+  requiresCanonicalLowercaseFingerprint: true as const,
+  rejectsNonCanonicalFingerprintInput: true as const,
+  requiresFingerprintExactMatchToServerRecompute: true as const,
+  persistsServerRecomputedFingerprint: true as const,
+  returnsServerRecomputedFingerprint: true as const,
+  allowsCaseInsensitiveFingerprintComparison: false as const,
   adoptionBindingDelimiter: SHARED_PROPOSAL_ADOPTION_BINDING_DELIMITER,
   bindingReferencesRejectAdoptionDelimiter: true as const,
   versionIdentitySchema: SHARED_PROPOSAL_VERSION_IDENTITY_SCHEMA,
