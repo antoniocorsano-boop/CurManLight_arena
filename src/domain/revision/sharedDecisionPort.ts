@@ -1,5 +1,6 @@
 import type { WorkspaceActorContext } from '../institution/sharedWorkspacePort';
 import type { DecisionOutcome } from './types';
+import type { InstitutionalAdoptionBindingV2 } from './adoptionBinding';
 
 export type InstitutionalDecisionOutcome = Exclude<DecisionOutcome, 'record-only'>;
 
@@ -8,6 +9,8 @@ export interface InstitutionalRevisionDecisionInput {
   proposalRef: string;
   proposalVersionRef: string;
   proposalVersionFingerprint: string;
+  targetNodeRef: string;
+  baseCurriculumVersionRef: string;
   outcome: InstitutionalDecisionOutcome;
   rationale: string;
   clientRequestId: string;
@@ -19,6 +22,7 @@ export interface InstitutionalRevisionDecisionReceipt {
   proposalRef: string;
   proposalVersionRef: string;
   proposalVersionFingerprint: string;
+  adoptionBinding?: InstitutionalAdoptionBindingV2;
   outcome: InstitutionalDecisionOutcome;
   rationale: string;
   decidedByUserId: string;
@@ -32,6 +36,11 @@ export interface InstitutionalRevisionDecisionReceipt {
  * historical local DecisionAuthority model. Implementations must verify an
  * authenticated workspace capability and must never fall back to a
  * self-declared role or to local-only persistence.
+ *
+ * New v2 decision receipts bind the deliberated proposal version to the exact
+ * target node and base curriculum version that may later be used by P6.
+ * Historical receipts without `adoptionBinding` remain readable, but are not
+ * sufficient for canonical adoption.
  */
 export interface SharedRevisionDecisionRepository {
   findInstitutionalDecisionForVersion(
