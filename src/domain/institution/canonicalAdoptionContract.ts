@@ -9,7 +9,7 @@ export type CanonicalAdoptionReadiness = 'READY_FOR_HUMAN_ADOPTION' | 'BLOCKED' 
 export type CanonicalAdoptionBlockerCode =
   | 'MISSING_DECISION_RECEIPT' | 'NON_ADOPTIVE_DECISION' | 'DECISION_VALIDITY_NOT_VERIFIED'
   | 'WORKSPACE_MISMATCH' | 'PROPOSAL_VERSION_MISMATCH' | 'PROPOSAL_FINGERPRINT_MISMATCH'
-  | 'ADOPTION_BINDING_MISSING' | 'TARGET_NODE_MISMATCH' | 'BASE_CURRICULUM_VERSION_MISMATCH'
+  | 'ADOPTION_BINDING_MISSING' | 'PROPOSAL_SNAPSHOT_MISSING' | 'TARGET_NODE_MISMATCH' | 'BASE_CURRICULUM_VERSION_MISMATCH'
   | 'CANONICAL_TARGET_NOT_CURRENT' | 'ALREADY_ADOPTED' | 'ADOPTION_CAPABILITY_UNAVAILABLE'
   | 'AUTHENTICATED_WORKSPACE_REQUIRED';
 
@@ -77,6 +77,10 @@ export function assessCanonicalAdoption(input: CanonicalAdoptionAssessmentInput)
       blockerCodes.push('ADOPTION_BINDING_MISSING');
       reasons.push('La ricevuta decisionale è storica o priva del binding v2 necessario per identificare nodo target e baseline canonica.');
     } else {
+      if (receipt.adoptionBinding.proposalSnapshotVersion !== 1) {
+        blockerCodes.push('PROPOSAL_SNAPSHOT_MISSING');
+        reasons.push('La ricevuta decisionale è precedente a R7A3 o non prova il congelamento server-side del payload canonico completo della proposta.');
+      }
       if (receipt.adoptionBinding.targetNodeRef !== input.targetNodeRef) {
         blockerCodes.push('TARGET_NODE_MISMATCH'); reasons.push('Il nodo target non coincide con quello vincolato dalla decisione istituzionale.');
       }
