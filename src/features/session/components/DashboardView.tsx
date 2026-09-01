@@ -8,6 +8,7 @@ import {
 } from '../../../domain/institution/workQueue';
 import type { CustomKbDoc } from '../../documents/lib/localKnowledgeStore';
 import type { ProgStatus } from '../types/appViewContracts';
+import { ReferenteControlTower } from './ReferenteControlTower';
 
 interface DashboardViewProps {
   activeTab: string;
@@ -203,6 +204,14 @@ export function DashboardView(props: DashboardViewProps) {
         <p className="mt-2 max-w-[68ch] text-sm leading-relaxed text-slate-600">{orientation.summary}</p>
         <p className="mt-2 text-xs leading-5 text-slate-500">Il ruolo selezionato orienta ciò che vedi. L’autorità istituzionale non è verificata da questo selettore e richiede una membership autenticata.</p>
       </section>
+
+      {props.role === 'referente' && (
+        <ReferenteControlTower
+          sources={props.customKbDocs ?? []}
+          onOpenSources={() => props.handleTabSwitch('fonti')}
+          onOpenRevision={() => props.handleTabSwitch('revisione')}
+        />
+      )}
 
       <section className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-5" aria-labelledby="home-actionable-title" data-home-queue="actionable">
         <div className="flex items-center justify-between gap-3">
