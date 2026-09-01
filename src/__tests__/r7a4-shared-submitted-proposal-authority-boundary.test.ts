@@ -4,9 +4,12 @@ import { assessCanonicalAdoption } from '../domain/institution/canonicalAdoption
 import type { WorkspaceActorContext } from '../domain/institution/sharedWorkspacePort';
 import {
   SHARED_PROPOSAL_AUTHORITY_BOUNDARY,
+  SHARED_PROPOSAL_CANONICAL_PAYLOAD_SCHEMA,
   SHARED_PROPOSAL_LIFECYCLE_TRANSITION_POLICY,
+  buildRevisionProposalVersionFingerprintPayload,
   getSharedProposalLifecycleTransitionPolicy,
   type AdvanceSharedProposalLifecycleCommand,
+  type RevisionProposalVersion,
   type SharedProposalLifecycleTransitionReceipt,
   type SharedProposalVersion,
   type SharedSubmittedProposalVersion,
@@ -34,6 +37,24 @@ const authenticatedDocente: WorkspaceActorContext = {
   assurance: 'authenticated-workspace',
 };
 
+const canonicalLocalVersion: RevisionProposalVersion = {
+  id: 'proposal-version-1',
+  proposalRef: 'proposal-1',
+  versionNumber: 1,
+  currentTextSnapshot: 'Current curriculum text',
+  proposedText: 'Proposed curriculum text',
+  rationale: 'Rationale',
+  sourceRefs: [{ id: 'source-1', entityType: 'source', snapshotLabel: 'Source 1' }],
+  evidenceRefs: [{ id: 'evidence-node-1', entityType: 'curriculum-node' }],
+  createdAt: '2026-09-01T12:00:00.000Z',
+  structuralFootprint: '{}',
+  frozen: true,
+};
+
+const canonicalPayload = JSON.stringify(
+  buildRevisionProposalVersionFingerprintPayload(canonicalLocalVersion),
+);
+
 const sharedSubmittedVersionFixture = (
   previousSharedProposalVersionRef: string | null = null,
 ): SharedSubmittedProposalVersion => ({
@@ -42,12 +63,14 @@ const sharedSubmittedVersionFixture = (
   proposalRef: 'proposal-1',
   proposalVersionRef: 'proposal-version-1',
   proposalVersionFingerprint: 'a'.repeat(64),
-  canonicalPayload: '{"id":"proposal-version-1"}',
+  canonicalPayload,
   targetNodeRef: 'node-1',
   baseCurriculumVersionRef: 'curriculum-v1',
   submittedByUserId: authenticatedDocente.membership.userId,
   submittedByRole: 'docente',
-  submittedAt: '2026-09-01T12:00:00.000Z',
+  submittedAt: '2026-09-01T12:01:00.000Z',
+  submittedAtSource: 'server-transaction-clock',
+  submittedPrincipalSource: 'server-session',
   lifecycleState: 'submitted',
   previousSharedProposalVersionRef,
 });
@@ -59,7 +82,7 @@ const submitCommandFixture = (
   proposalRef: 'proposal-1',
   proposalVersionRef: 'proposal-version-1',
   proposalVersionFingerprint: 'a'.repeat(64),
-  canonicalPayload: '{"id":"proposal-version-1"}',
+  canonicalPayload,
   targetNodeRef: 'node-1',
   baseCurriculumVersionRef: 'curriculum-v1',
   expectedCurrentSharedProposalVersionRef,
@@ -77,9 +100,12 @@ describe('R7A4 shared submitted proposal authority boundary', () => {
     expect(SHARED_PROPOSAL_AUTHORITY_BOUNDARY.requiredSubmissionCapability).toBe('CURRICULUM_PROPOSE');
   });
 
-  it('requires fresh authenticated authority evidence for every shared operation', () => {
+  it('requires the server-session principal to bind fresh membership and workspace', () => {
     expect(authenticatedDocente.assurance).toBe('authenticated-workspace');
     expect(authenticatedDocente.membership.status).toBe('active');
+    expect(SHARED_PROPOSAL_AUTHORITY_BOUNDARY.requiresServerSessionPrincipalBinding).toBe(true);
+    expect(SHARED_PROPOSAL_AUTHORITY_BOUNDARY.serverPrincipalMustMatchContextUser).toBe(true);
+    expect(SHARED_PROPOSAL_AUTHORITY_BOUNDARY.serverMembershipWorkspaceMustMatchCommandWorkspace).toBe(true);
     expect(SHARED_PROPOSAL_AUTHORITY_BOUNDARY.requiresFreshMembershipOnEverySharedOperation).toBe(true);
     expect(SHARED_PROPOSAL_AUTHORITY_BOUNDARY.requiredReadCapability).toBe('CURRICULUM_READ');
     expect(authenticatedDocente.membership.workspaceId).toBe(submitCommandFixture(null).workspaceId);
@@ -95,7 +121,40 @@ describe('R7A4 shared submitted proposal authority boundary', () => {
     expect([...SHARED_PROPOSAL_AUTHORITY_BOUNDARY.submissionActorRoles]).toEqual(proposalCapableRoles);
     expect(submitted.submittedByUserId).toBe(authenticatedDocente.membership.userId);
     expect(submitted.submittedByRole).toBe(authenticatedDocente.membership.role);
+    expect(submitted.submittedPrincipalSource).toBe('server-session');
     expect(SHARED_PROPOSAL_AUTHORITY_BOUNDARY.bindsSubmissionProvenanceToFreshMembership).toBe(true);
+  });
+
+  it('freezes the exact canonical payload schema and serialization used by the fingerprint builder', () => {
+    const parsed = JSON.parse(canonicalPayload) as Record<string, unknown>;
+    expect(Object.keys(parsed)).toEqual([
+      'id',
+      'proposalRef',
+      'versionNumber',
+      'currentTextSnapshot',
+      'proposedText',
+      'rationale',
+      'sourceRefs',
+      'evidenceRefs',
+      'createdAt',
+      'structuralFootprint',
+      'frozen',
+    ]);
+    expect(SHARED_PROPOSAL_CANONICAL_PAYLOAD_SCHEMA.requiredKeys).toEqual(Object.keys(parsed));
+    expect(SHARED_PROPOSAL_CANONICAL_PAYLOAD_SCHEMA.optionalKeys).toEqual([
+      'previousVersionRef',
+      'changeNote',
+    ]);
+    expect(SHARED_PROPOSAL_CANONICAL_PAYLOAD_SCHEMA.referenceRequiredKeys).toEqual(['id', 'entityType']);
+    expect(SHARED_PROPOSAL_CANONICAL_PAYLOAD_SCHEMA.referenceOptionalKeys).toEqual(['snapshotLabel']);
+    expect(SHARED_PROPOSAL_CANONICAL_PAYLOAD_SCHEMA.rejectsExtraTopLevelKeys).toBe(true);
+    expect(SHARED_PROPOSAL_CANONICAL_PAYLOAD_SCHEMA.rejectsExtraReferenceKeys).toBe(true);
+    expect(SHARED_PROPOSAL_CANONICAL_PAYLOAD_SCHEMA.serialization).toBe(
+      'JSON.stringify(buildRevisionProposalVersionFingerprintPayload(version))',
+    );
+    expect(SHARED_PROPOSAL_CANONICAL_PAYLOAD_SCHEMA.byteEncoding).toBe('UTF-8');
+    expect(SHARED_PROPOSAL_CANONICAL_PAYLOAD_SCHEMA.digest).toBe('SHA-256');
+    expect(SHARED_PROPOSAL_AUTHORITY_BOUNDARY.requiresExactCanonicalPayloadSerialization).toBe(true);
   });
 
   it('requires explicit CAS intent, predecessor binding and controlled replacement', () => {
@@ -146,7 +205,7 @@ describe('R7A4 shared submitted proposal authority boundary', () => {
     expect(SHARED_PROPOSAL_AUTHORITY_BOUNDARY.replacementRequiresChangesRequestedHead).toBe(true);
   });
 
-  it('requires immutable lifecycle audit provenance bound to the verified transition authority', () => {
+  it('derives lifecycle receipt capability and states from the selected transition tuple', () => {
     const command: AdvanceSharedProposalLifecycleCommand = {
       workspaceId: 'workspace-1',
       proposalRef: 'proposal-1',
@@ -166,17 +225,30 @@ describe('R7A4 shared submitted proposal authority boundary', () => {
       workspaceId: command.workspaceId,
       proposalRef: command.proposalRef,
       proposalVersionRef: command.proposalVersionRef,
-      fromState: command.expectedLifecycleState,
-      toState: command.nextLifecycleState,
+      fromState: 'submitted',
+      toState: 'under-review',
       capabilityUsed: 'REVISION_REVIEW',
       transitionedByUserId: 'reviewer-1',
       transitionedByRole: 'dipartimento',
       transitionedAt: '2026-09-01T12:10:00.000Z',
+      transitionedAtSource: 'server-transaction-clock',
+      transitionedPrincipalSource: 'server-session',
       clientRequestId: command.clientRequestId,
     };
 
+    expect(receipt.fromState).toBe(command.expectedLifecycleState);
+    expect(receipt.toState).toBe(command.nextLifecycleState);
     expect(receipt.capabilityUsed).toBe(policy?.requiredCapability);
+    expect(receipt.clientRequestId).toBe(command.clientRequestId);
+    expect(SHARED_PROPOSAL_AUTHORITY_BOUNDARY.lifecycleReceiptDerivedFromTransitionPolicy).toBe(true);
     expect(SHARED_PROPOSAL_AUTHORITY_BOUNDARY.lifecycleMutationPersistsImmutableReceipt).toBe(true);
+  });
+
+  it('requires server-authored audit timestamps and stable idempotent retries', () => {
+    const submitted = sharedSubmittedVersionFixture();
+    expect(submitted.submittedAtSource).toBe('server-transaction-clock');
+    expect(SHARED_PROPOSAL_AUTHORITY_BOUNDARY.requiresServerTransactionClockForAuditTimestamps).toBe(true);
+    expect(SHARED_PROPOSAL_AUTHORITY_BOUNDARY.idempotentRetriesReturnOriginalAuditTimestamps).toBe(true);
   });
 
   it('requires server validation, fingerprint recomputation and idempotent mutations', () => {
