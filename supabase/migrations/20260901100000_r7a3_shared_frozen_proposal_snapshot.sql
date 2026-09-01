@@ -115,7 +115,6 @@ begin
      or jsonb_typeof(v_json->'createdAt') <> 'string'
      or nullif(trim(v_json->>'createdAt'), '') is null
      or jsonb_typeof(v_json->'structuralFootprint') <> 'string'
-     or nullif(trim(v_json->>'structuralFootprint'), '') is null
      or (v_json ? 'previousVersionRef' and (jsonb_typeof(v_json->'previousVersionRef') <> 'string' or nullif(trim(v_json->>'previousVersionRef'), '') is null))
      or (v_json ? 'changeNote' and (jsonb_typeof(v_json->'changeNote') <> 'string' or nullif(trim(v_json->>'changeNote'), '') is null))
      or v_json->'frozen' is distinct from 'true'::jsonb then
