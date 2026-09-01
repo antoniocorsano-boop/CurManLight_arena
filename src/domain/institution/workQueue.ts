@@ -45,29 +45,57 @@ const QUEUE_STATE_ORDER: Readonly<Record<ArenaWorkQueueState, number>> = {
   COMPLETED: 4,
 };
 
-const hasEvidenceBlocker = (seed: ArenaWorkItemSeed): boolean =>
-  seed.consequential && (seed.evidenceState === 'MISSING' || seed.evidenceState === 'STALE');
+const CANONICAL_PROCESS_CAPABILITY: Partial<Record<ArenaProcessId, ArenaCapability>> = {
+  P5_INSTITUTIONAL_DECISION: 'REVISION_DECIDE',
+  P6_CANONICAL_ADOPTION: 'REVISION_DECIDE',
+  P7_PLANNING_HANDOFF: 'DOCUMENT_EXPORT',
+};
+
+const hasEvidenceBlocker = (
+  evidenceState: ArenaWorkEvidenceState,
+  consequential: boolean,
+): boolean => consequential && (evidenceState === 'MISSING' || evidenceState === 'STALE');
 
 export const projectArenaWorkItem = (
   seed: ArenaWorkItemSeed,
   actor: ArenaActorProjection,
 ): ArenaProjectedWorkItem => {
   const process = getArenaProcessContract(seed.processId);
+  const effectiveRequiredCapability = CANONICAL_PROCESS_CAPABILITY[process.id] ?? seed.requiredCapability;
+  const effectiveConsequential = process.consequential || seed.consequential;
+  const effectiveAuthenticatedAuthorityRequired =
+    process.authenticatedAuthorityRequired || seed.authenticatedAuthorityRequired;
+  const effectiveSeed: ArenaWorkItemSeed = {
+    ...seed,
+    requiredCapability: effectiveRequiredCapability,
+    consequential: effectiveConsequential,
+    authenticatedAuthorityRequired: effectiveAuthenticatedAuthorityRequired,
+  };
+
   const canRead = canUseCapability(actor.role, 'CURRICULUM_READ', actor.assurance);
-  const canAct = canUseCapability(actor.role, seed.requiredCapability, actor.assurance);
+  const canAct = canUseCapability(actor.role, effectiveRequiredCapability, actor.assurance);
 
   if (!canRead && !canAct) {
     return {
-      ...seed,
+      ...effectiveSeed,
       access: 'HIDDEN',
       accessReason: 'Il ruolo non dispone della capacità richiesta né dell’accesso di lettura al curricolo.',
       effectiveBlocker: seed.blocker,
     };
   }
 
+  if (seed.queueState === 'COMPLETED') {
+    return {
+      ...effectiveSeed,
+      access: 'READ_ONLY',
+      accessReason: 'Il lavoro risulta completato e non richiede un’azione corrente.',
+      effectiveBlocker: seed.blocker,
+    };
+  }
+
   if (process.implementationStatus === 'NOT_IMPLEMENTED') {
     return {
-      ...seed,
+      ...effectiveSeed,
       access: 'READ_ONLY',
       accessReason: 'Il processo richiesto non è ancora implementato e non può essere reso azionabile dalla sola capacità del ruolo.',
       effectiveBlocker: seed.blocker ?? `Processo ${process.id} non implementato.`,
@@ -76,16 +104,16 @@ export const projectArenaWorkItem = (
 
   if (seed.blocker) {
     return {
-      ...seed,
+      ...effectiveSeed,
       access: 'READ_ONLY',
       accessReason: 'Il lavoro è consultabile ma resta bloccato finché il requisito indicato non viene risolto.',
       effectiveBlocker: seed.blocker,
     };
   }
 
-  if (hasEvidenceBlocker(seed)) {
+  if (hasEvidenceBlocker(seed.evidenceState, effectiveConsequential)) {
     return {
-      ...seed,
+      ...effectiveSeed,
       access: 'READ_ONLY',
       accessReason: 'Un’azione conseguenziale resta bloccata perché le evidenze richieste sono mancanti o non più correnti.',
       effectiveBlocker: seed.evidenceState === 'MISSING'
@@ -96,15 +124,15 @@ export const projectArenaWorkItem = (
 
   if (!canAct) {
     return {
-      ...seed,
+      ...effectiveSeed,
       access: 'READ_ONLY',
       accessReason: 'Il lavoro è visibile, ma la capacità richiesta non è disponibile per questo ruolo e livello di assurance.',
     };
   }
 
-  if (seed.authenticatedAuthorityRequired && actor.assurance !== 'authenticated-workspace') {
+  if (effectiveAuthenticatedAuthorityRequired && actor.assurance !== 'authenticated-workspace') {
     return {
-      ...seed,
+      ...effectiveSeed,
       access: 'READ_ONLY',
       accessReason: 'L’azione richiede una membership autenticata nel workspace; il ruolo autodichiarato non attribuisce autorità.',
       effectiveBlocker: 'Membership autenticata richiesta.',
@@ -112,7 +140,7 @@ export const projectArenaWorkItem = (
   }
 
   return {
-    ...seed,
+    ...effectiveSeed,
     access: 'ACTIONABLE',
     accessReason: 'Il ruolo dispone della capacità richiesta e non risultano blocker nel contratto del work item.',
   };
