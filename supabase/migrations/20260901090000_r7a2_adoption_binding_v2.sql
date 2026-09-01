@@ -15,29 +15,14 @@ alter table public.institutional_revision_decisions
   drop constraint if exists institutional_revision_decisions_adoption_binding_v2_check;
 alter table public.institutional_revision_decisions
   add constraint institutional_revision_decisions_adoption_binding_v2_check check (
-    (
-      adoption_binding_version is null
-      and adoption_target_node_ref is null
-      and adoption_base_curriculum_version_ref is null
-      and adoption_binding_fingerprint is null
-    )
-    or (
-      adoption_binding_version = 2
-      and nullif(trim(adoption_target_node_ref), '') is not null
-      and nullif(trim(adoption_base_curriculum_version_ref), '') is not null
-      and adoption_binding_fingerprint ~ '^[a-f0-9]{64}$'
-    )
+    (adoption_binding_version is null and adoption_target_node_ref is null and adoption_base_curriculum_version_ref is null and adoption_binding_fingerprint is null)
+    or (adoption_binding_version = 2 and nullif(trim(adoption_target_node_ref), '') is not null and nullif(trim(adoption_base_curriculum_version_ref), '') is not null and adoption_binding_fingerprint ~ '^[a-f0-9]{64}$')
   );
 
 create or replace function public.record_institutional_revision_decision_v2(
-  p_workspace_id uuid,
-  p_proposal_ref text,
-  p_proposal_version_ref text,
-  p_proposal_version_fingerprint text,
-  p_target_node_ref text,
-  p_base_curriculum_version_ref text,
-  p_outcome text,
-  p_rationale text,
+  p_workspace_id uuid, p_proposal_ref text, p_proposal_version_ref text,
+  p_proposal_version_fingerprint text, p_target_node_ref text,
+  p_base_curriculum_version_ref text, p_outcome text, p_rationale text,
   p_client_request_id uuid
 )
 returns setof public.institutional_revision_decisions
@@ -49,12 +34,11 @@ declare
   v_user_id uuid := auth.uid();
   v_role text;
   v_existing public.institutional_revision_decisions%rowtype;
+  v_latest public.institutional_revision_decisions%rowtype;
   v_binding_material text;
   v_binding_fingerprint text;
 begin
-  if v_user_id is null then
-    raise exception 'AUTHENTICATION_REQUIRED' using errcode = '42501';
-  end if;
+  if v_user_id is null then raise exception 'AUTHENTICATION_REQUIRED' using errcode = '42501'; end if;
 
   if p_workspace_id is null
      or nullif(trim(p_proposal_ref), '') is null
@@ -81,26 +65,18 @@ begin
     and membership.user_id = v_user_id
     and membership.status = 'active'
     and workspace.status = 'active';
+  if v_role is distinct from 'collegio' then raise exception 'REVISION_DECIDE_REQUIRED' using errcode = '42501'; end if;
 
-  if v_role is distinct from 'collegio' then
-    raise exception 'REVISION_DECIDE_REQUIRED' using errcode = '42501';
-  end if;
-
-  v_binding_material :=
-    'CML_ARENA_ADOPTION_BINDING_V2' || chr(31)
-    || p_workspace_id::text || chr(31)
-    || trim(p_proposal_ref) || chr(31)
-    || trim(p_proposal_version_ref) || chr(31)
-    || lower(p_proposal_version_fingerprint) || chr(31)
-    || trim(p_target_node_ref) || chr(31)
-    || trim(p_base_curriculum_version_ref);
+  v_binding_material := 'CML_ARENA_ADOPTION_BINDING_V2' || chr(31)
+    || p_workspace_id::text || chr(31) || trim(p_proposal_ref) || chr(31)
+    || trim(p_proposal_version_ref) || chr(31) || lower(p_proposal_version_fingerprint) || chr(31)
+    || trim(p_target_node_ref) || chr(31) || trim(p_base_curriculum_version_ref);
   v_binding_fingerprint := encode(digest(convert_to(v_binding_material, 'UTF8'), 'sha256'), 'hex');
 
+  -- Exact retries are idempotent before sequence checks.
   select * into v_existing
   from public.institutional_revision_decisions decision
-  where decision.workspace_id = p_workspace_id
-    and decision.client_request_id = p_client_request_id;
-
+  where decision.workspace_id = p_workspace_id and decision.client_request_id = p_client_request_id;
   if found then
     if v_existing.decided_by <> v_user_id
        or v_existing.proposal_ref <> trim(p_proposal_ref)
@@ -114,15 +90,44 @@ begin
        or v_existing.rationale <> trim(p_rationale) then
       raise exception 'CLIENT_REQUEST_ID_REUSE_MISMATCH' using errcode = '23505';
     end if;
-    return next v_existing;
-    return;
+    return next v_existing; return;
+  end if;
+
+  -- Preserve B3 serialization semantics for all v1/v2 decisions on this proposal version.
+  perform pg_advisory_xact_lock(hashtextextended(p_workspace_id::text || ':' || trim(p_proposal_version_ref), 0));
+
+  select * into v_latest
+  from public.institutional_revision_decisions decision
+  where decision.workspace_id = p_workspace_id
+    and decision.proposal_version_ref = trim(p_proposal_version_ref)
+  order by decision.decided_at desc, decision.id desc
+  limit 1;
+
+  if found then
+    if v_latest.proposal_ref <> trim(p_proposal_ref) then
+      raise exception 'PROPOSAL_VERSION_REFERENCE_MISMATCH' using errcode = '23514';
+    end if;
+    if v_latest.proposal_version_fingerprint <> lower(p_proposal_version_fingerprint) then
+      raise exception 'PROPOSAL_VERSION_FINGERPRINT_MISMATCH' using errcode = '23514';
+    end if;
+    -- A v1 non-final receipt may be continued as v2. Once a v2 receipt exists,
+    -- every later continuation must preserve exactly the same target/base binding.
+    if v_latest.adoption_binding_version = 2 and (
+      v_latest.adoption_target_node_ref is distinct from trim(p_target_node_ref)
+      or v_latest.adoption_base_curriculum_version_ref is distinct from trim(p_base_curriculum_version_ref)
+      or v_latest.adoption_binding_fingerprint is distinct from v_binding_fingerprint
+    ) then
+      raise exception 'ADOPTION_BINDING_MISMATCH' using errcode = '23514';
+    end if;
+    if v_latest.outcome in ('approve', 'approve-with-changes', 'reject') then
+      raise exception 'INSTITUTIONAL_DECISION_ALREADY_FINAL' using errcode = '23505';
+    end if;
   end if;
 
   insert into public.institutional_revision_decisions (
     workspace_id, proposal_ref, proposal_version_ref, proposal_version_fingerprint,
-    adoption_binding_version, adoption_target_node_ref,
-    adoption_base_curriculum_version_ref, adoption_binding_fingerprint,
-    outcome, rationale, decided_by, authority_role, client_request_id
+    adoption_binding_version, adoption_target_node_ref, adoption_base_curriculum_version_ref,
+    adoption_binding_fingerprint, outcome, rationale, decided_by, authority_role, client_request_id
   ) values (
     p_workspace_id, trim(p_proposal_ref), trim(p_proposal_version_ref), lower(p_proposal_version_fingerprint),
     2, trim(p_target_node_ref), trim(p_base_curriculum_version_ref), v_binding_fingerprint,
@@ -137,4 +142,4 @@ revoke all on function public.record_institutional_revision_decision_v2(uuid, te
 grant execute on function public.record_institutional_revision_decision_v2(uuid, text, text, text, text, text, text, text, uuid) to authenticated;
 
 comment on function public.record_institutional_revision_decision_v2(uuid, text, text, text, text, text, text, text, uuid) is
-  'R7A2 server-authoritative decision boundary. Computes SHA-256 adoption binding v2 over workspace, proposal/version, proposal fingerprint, target node and base curriculum version.';
+  'R7A2 server-authoritative REVISION_DECIDE boundary. Computes adoption binding v2 server-side and preserves per-version serialization, idempotency and final-decision guards.';
