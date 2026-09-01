@@ -182,30 +182,47 @@ export const SHARED_PROPOSAL_CANONICAL_PAYLOAD_SCHEMA = {
   digest: 'SHA-256' as const,
 };
 
-export const SHARED_PROPOSAL_SCOPE_BINDING_SCHEMA = {
-  targetNodeRef: 'trimmed-non-empty-string',
-  baseCurriculumVersionRef: 'trimmed-non-empty-string',
-} as const;
-
-export const isValidSharedProposalScopeRef = (value: string): boolean =>
-  value.trim().length > 0;
-
 /**
- * proposalVersionRef is institutional identity within a workspace.
- * One (workspaceId, proposalVersionRef) can bind to one proposalRef only.
+ * Consequential proposal identities are canonical values, not merely values that
+ * become valid after trimming. R7A5 must reject padded command identities instead
+ * of normalizing them after exact payload matching or uniqueness checks.
  */
 export const SHARED_PROPOSAL_VERSION_IDENTITY_SCHEMA = {
+  canonicalIdentityFields: ['proposalRef', 'proposalVersionRef'] as const,
+  commandIdentityMustEqualTrimmedValue: true as const,
+  canonicalPayloadIdentityMustMatchCanonicalCommand: true as const,
   uniquenessScope: ['workspaceId', 'proposalVersionRef'] as const,
+  uniquenessUsesCanonicalProposalVersionRef: true as const,
   immutableProposalBinding: ['workspaceId', 'proposalVersionRef', 'proposalRef'] as const,
   reuseAcrossProposalRefsFailsClosed: true as const,
 } as const;
 
+export const isCanonicalSharedProposalIdentityRef = (value: string): boolean => {
+  const trimmed = value.trim();
+  return trimmed.length > 0 && value === trimmed;
+};
+
+export const SHARED_PROPOSAL_SCOPE_BINDING_SCHEMA = {
+  targetNodeRef: 'canonical-trimmed-non-empty-string',
+  baseCurriculumVersionRef: 'canonical-trimmed-non-empty-string',
+  submittedValueMustEqualTrimmedValue: true as const,
+} as const;
+
+export const isValidSharedProposalScopeRef = (value: string): boolean => {
+  const trimmed = value.trim();
+  return trimmed.length > 0 && value === trimmed;
+};
+
 /**
- * Consequential request ids are scoped to the authenticated server principal.
- * Exact retries are idempotent only for the same principal; cross-principal reuse fails.
+ * A clientRequestId is reserved independently of the actor within a workspace.
+ * The authoritative server principal is immutable bound operation data, not part
+ * of the collision key. Cross-principal reuse therefore collides and fails closed.
  */
 export const SHARED_PROPOSAL_IDEMPOTENCY_SCHEMA = {
-  key: ['serverPrincipalUserId', 'clientRequestId'] as const,
+  key: ['workspaceId', 'clientRequestId'] as const,
+  collisionScope: 'workspace' as const,
+  principalBindingField: 'serverPrincipalUserId' as const,
+  requestIdReservedIndependentOfPrincipal: true as const,
   appliesTo: ['submission', 'lifecycle-mutation'] as const,
   exactRetryRequiresSamePrincipal: true as const,
   crossPrincipalReuseFailsClosed: true as const,
@@ -355,11 +372,14 @@ export const SHARED_PROPOSAL_AUTHORITY_BOUNDARY = {
   canonicalPayloadSchema: SHARED_PROPOSAL_CANONICAL_PAYLOAD_SCHEMA,
   canonicalPayloadTrimRulesMatchR7A3: true as const,
   structuralFootprintPreservesR7A3StringContract: true as const,
+  versionIdentitySchema: SHARED_PROPOSAL_VERSION_IDENTITY_SCHEMA,
+  proposalIdentityReferencesMustEqualTrimmedValue: true as const,
+  proposalVersionRefUniqueWithinWorkspace: true as const,
+  proposalVersionUniquenessUsesCanonicalIdentity: true as const,
+  proposalVersionRefImmutablyBindsProposalRef: true as const,
   scopeBindingSchema: SHARED_PROPOSAL_SCOPE_BINDING_SCHEMA,
   scopeReferencesRequireTrimmedNonEmpty: true as const,
-  versionIdentitySchema: SHARED_PROPOSAL_VERSION_IDENTITY_SCHEMA,
-  proposalVersionRefUniqueWithinWorkspace: true as const,
-  proposalVersionRefImmutablyBindsProposalRef: true as const,
+  scopeReferencesMustEqualTrimmedValue: true as const,
   requiresServerPayloadValidation: true as const,
   requiresServerFingerprintRecompute: true as const,
   requiresExactCanonicalPayloadSerialization: true as const,
@@ -379,6 +399,8 @@ export const SHARED_PROPOSAL_AUTHORITY_BOUNDARY = {
   idempotentRetriesReturnOriginalAuditTimestamps: true as const,
   idempotencySchema: SHARED_PROPOSAL_IDEMPOTENCY_SCHEMA,
   requiresClientRequestIdIdempotency: true as const,
+  idempotencyRequestIdReservedWithinWorkspace: true as const,
+  idempotencyPrincipalIsBoundOperationData: true as const,
   idempotencyBoundToServerPrincipal: true as const,
   crossPrincipalClientRequestReuseFailsClosed: true as const,
   conflictingClientRequestReuseFailsClosed: true as const,

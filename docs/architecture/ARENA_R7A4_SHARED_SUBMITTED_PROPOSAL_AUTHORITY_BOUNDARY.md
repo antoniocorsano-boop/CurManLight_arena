@@ -74,11 +74,11 @@ Unknown top-level or reference keys fail validation.
 
 The validator must implement the same value rules already enforced by R7A3:
 
-- `id`: string, **non-empty after trim**;
-- `proposalRef`: string, **non-empty after trim**;
+- `id`: string, non-empty after trim and equal to its trimmed value;
+- `proposalRef`: string, non-empty after trim and equal to its trimmed value;
 - `versionNumber`: positive integer;
 - `currentTextSnapshot`: string;
-- `proposedText`: string, **non-empty after trim**;
+- `proposedText`: string, non-empty after trim;
 - `rationale`: string;
 - `sourceRefs`, `evidenceRefs`: arrays of strict reference objects;
 - `createdAt`: non-empty parseable timestamp string;
@@ -97,7 +97,12 @@ Canonical entity types:
 
 `institute, source, curriculum-version, curriculum-segment, curriculum-node, curriculum-link, revision-proposal, decision, teaching-design, document, document-version, template, class-context, assessment, actor, event`.
 
-Payload `id` and `proposalRef` must also match the submitted command identities exactly.
+The submitted command identities are canonical values, not normalization requests:
+
+- `proposalRef` and `proposalVersionRef` must already equal their trimmed values;
+- payload `proposalRef` and payload `id` must match those canonical command identities exactly;
+- padded command identities fail closed before payload matching, fingerprint acceptance or uniqueness checks;
+- the server must not preserve one raw identity while enforcing uniqueness on a differently trimmed downstream identity.
 
 ## Proposal scope
 
@@ -105,14 +110,16 @@ Payload `id` and `proposalRef` must also match the submitted command identities 
 
 Before first submission or replacement:
 
-- both must be strings with at least one non-whitespace character after trimming;
-- `''`, spaces-only, tabs-only and newline-only values fail closed;
+- both must be strings with at least one non-whitespace character;
+- both must already equal their trimmed values;
+- `''`, spaces-only, tabs-only, newline-only and surrounding-whitespace-padded values fail closed;
 - validation occurs before persistence or shared-head advancement;
-- blank values are never normalized into defaults.
+- the server does not silently normalize scope after authority is created;
+- the persisted/returned authoritative scope is the same canonical value consumed by R7A3/R7A6.
 
 For a replacement under the same `proposalRef`:
 
-- both scope bindings must exactly equal the authoritative predecessor;
+- both canonical scope bindings must exactly equal the authoritative predecessor;
 - any target/base change requires a new proposal identity.
 
 ## Workspace-wide proposal-version identity
@@ -121,8 +128,10 @@ For a replacement under the same `proposalRef`:
 
 R7A4 freezes the same identity scope required downstream by R7A3:
 
-- `(workspaceId, proposalVersionRef)` is unique across the entire workspace;
-- one `(workspaceId, proposalVersionRef)` is immutably bound to exactly one `proposalRef`;
+- `proposalRef` and `proposalVersionRef` are accepted only in canonical trimmed form;
+- `(workspaceId, proposalVersionRef)` is unique across the entire workspace using that canonical value;
+- one `(workspaceId, proposalVersionRef)` is immutably bound to exactly one canonical `proposalRef`;
+- raw aliases such as `v1` and ` v1 ` cannot coexist because the padded form is rejected before uniqueness evaluation;
 - a first submission cannot reuse an existing workspace proposal-version id under another proposal;
 - a retry with the same identity may succeed only when it is the exact same canonical operation under the idempotency rules;
 - version-id collision or version-to-proposal rebinding fails closed.
@@ -183,17 +192,22 @@ A successful lifecycle receipt binds:
 
 Command, selected policy tuple, receipt and returned version state must agree exactly. They cannot be selected independently.
 
-## Principal-bound idempotency
+## Workspace-reserved, principal-bound idempotency
 
-Consequential request ids are bound to the authenticated server principal.
+For both submission and lifecycle mutation, `clientRequestId` is reserved independently of actor identity within the workspace.
 
-For both submission and lifecycle mutation:
+The collision identity is:
 
-- canonical idempotency identity includes `serverPrincipalUserId + clientRequestId`;
+`workspaceId + clientRequestId`
+
+The server-session principal is then immutable bound operation data, not part of the collision key.
+
+Therefore:
+
 - the same principal repeating the exact same canonical operation receives the original institutional result/receipt/timestamp;
 - the same request id with a conflicting operation fails closed;
-- **a different authenticated principal reusing an existing `clientRequestId` fails closed even when all other operation fields are identical**;
-- cross-principal reuse must never return a result attributed to the original actor;
+- a different authenticated principal reusing an existing `clientRequestId` in the same workspace collides with the existing reservation and fails closed, even when all other fields are identical;
+- cross-principal reuse never creates a second idempotency row and never returns a result attributed to the original actor;
 - idempotency is never “last write wins”.
 
 ## Adversarial invariant matrix
@@ -204,22 +218,24 @@ For both submission and lifecycle mutation:
 | fresh membership/workspace | yes | yes | yes |
 | capability check | `CURRICULUM_PROPOSE` | transition-specific | `CURRICULUM_READ` |
 | actor provenance binding | yes | receipt | n/a |
+| canonical trimmed proposal identities | yes | preserved | preserved |
 | trimmed canonical required fields | yes | n/a | n/a |
 | strict reference schema | yes | n/a | n/a |
 | exact canonical serialization + SHA-256 | yes | n/a | n/a |
-| target/base trimmed-non-empty | yes | preserved | preserved |
-| `(workspace, proposalVersionRef)` uniqueness | yes | preserved | preserved |
+| target/base canonical trimmed values | yes | preserved | preserved |
+| `(workspace, proposalVersionRef)` canonical uniqueness | yes | preserved | preserved |
 | immutable version-to-proposal binding | yes | preserved | preserved |
 | current-head guard/CAS | yes | yes | n/a |
 | closed transition policy | n/a | yes | n/a |
 | receipt derived from policy tuple | n/a | yes | n/a |
 | server-authored audit timestamp | yes | yes | n/a |
-| idempotency bound to server principal | yes | yes | n/a |
+| workspace-reserved request id | yes | yes | n/a |
+| principal bound as immutable operation data | yes | yes | n/a |
 | cross-principal request-id reuse | fail closed | fail closed | n/a |
 | revocation | fail closed | fail closed | fail closed |
 | local institutional fallback | never | never | never |
 
-The executable guard lives in the R7A4 Authority Contract Harness plus the focused identity-closure and scope-binding tests.
+The executable guard lives in the R7A4 Authority Contract Harness plus the focused identity-closure and scope-binding tests. These guards are part of `npm run test:fast`; Product CI must execute them on the candidate SHA before R7A4 can be promoted.
 
 ## Relationship to R7A3
 
@@ -252,18 +268,19 @@ R7A5 Shared Proposal Persistence must implement this frozen contract, including:
 - active workspace/member RLS;
 - server-session principal anchoring;
 - strict principal/context/workspace binding;
+- canonical trimmed proposal identities before payload matching and uniqueness enforcement;
 - exact canonical payload validation and serialization;
 - R7A3-compatible trim validation;
 - server-side SHA-256 recomputation;
-- scope validation;
-- workspace-wide `proposalVersionRef` uniqueness and immutable proposal binding;
+- canonical trimmed scope persistence/return values;
+- workspace-wide canonical `proposalVersionRef` uniqueness and immutable proposal binding;
 - immutable submitted versions;
 - server-authored provenance/timestamps;
 - CAS shared head;
 - replacement only from `changes-requested` with preserved scope;
 - closed lifecycle policy and fresh transition capability checks;
 - immutable lifecycle receipts;
-- principal-bound idempotency and cross-principal conflict rejection;
+- workspace-reserved request ids with immutable server-principal binding and cross-principal conflict rejection;
 - no local institutional-success fallback.
 
 R7A6 later rebinds R7A3 decision/freeze to this authoritative shared version. Canonical materialization, registry and deliberate `CURRICULUM_ADOPT` policy remain later work.
@@ -278,13 +295,16 @@ R7A4 is complete only when review accepts that:
 
 - local preparation remains local and `submitted` is the first shared-authoritative state;
 - every shared operation uses server-session principal + fresh authority evidence;
-- canonical payload validation exactly matches R7A3, including trimmed required values;
-- target/base scope is valid and immutable across a proposal chain;
-- `proposalVersionRef` is workspace-unique and immutably bound to one proposal;
+- canonical payload validation exactly matches R7A3;
+- proposal and proposal-version command identities are already canonical trimmed values;
+- target/base scope is canonical, valid and immutable across a proposal chain;
+- `proposalVersionRef` is workspace-unique on canonical identity and immutably bound to one proposal;
 - shared-head and lifecycle mutations are CAS-protected;
 - lifecycle mutation follows only the closed least-privilege policy and persists coherent receipts;
 - audit timestamps/provenance are server-authored;
-- idempotency is bound to the server principal and cross-principal request-id reuse fails closed;
+- request ids are reserved per workspace independently of principal while the original server principal remains bound operation data;
+- cross-principal request-id reuse fails closed;
+- all R7A4 guards execute inside Product CI's fast regression suite;
 - no local fallback can become institutional success;
 - no current role gains `CURRICULUM_ADOPT`;
 - `PROPOSAL_AUTHORITY_UNAVAILABLE` remains active until later runtime/rebind slices actually prove these invariants.

@@ -156,9 +156,9 @@ describe('R7A4 shared submitted proposal authority boundary', () => {
     expect(SHARED_PROPOSAL_CANONICAL_PAYLOAD_SCHEMA.referenceRequiredKeys).toEqual(['id', 'entityType']);
     expect(SHARED_PROPOSAL_CANONICAL_PAYLOAD_SCHEMA.referenceOptionalKeys).toEqual(['snapshotLabel']);
     expect(SHARED_PROPOSAL_CANONICAL_PAYLOAD_SCHEMA.referenceFieldTypes).toEqual({
-      id: 'non-empty-string',
+      id: 'trimmed-non-empty-string',
       entityType: 'canonical-entity-type',
-      snapshotLabel: 'optional-non-empty-string',
+      snapshotLabel: 'optional-trimmed-non-empty-string',
     });
     expect(SHARED_PROPOSAL_CANONICAL_PAYLOAD_SCHEMA.rejectsExtraTopLevelKeys).toBe(true);
     expect(SHARED_PROPOSAL_CANONICAL_PAYLOAD_SCHEMA.rejectsExtraReferenceKeys).toBe(true);
