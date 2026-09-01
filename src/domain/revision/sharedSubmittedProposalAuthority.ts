@@ -104,6 +104,45 @@ export const SHARED_PROPOSAL_LIFECYCLE_TRANSITION_POLICY = [
   },
 ] as const satisfies readonly SharedProposalLifecycleTransitionDefinition[];
 
+/** PostgreSQL text/jsonb cannot preserve U+0000 or malformed UTF-16 surrogate sequences. */
+export const SHARED_PROPOSAL_POSTGRES_STRING_SCHEMA = {
+  canonicalPayloadTopLevelStringFields: [
+    'id',
+    'proposalRef',
+    'currentTextSnapshot',
+    'proposedText',
+    'rationale',
+    'createdAt',
+    'structuralFootprint',
+    'previousVersionRef',
+    'changeNote',
+  ] as const,
+  canonicalPayloadReferenceStringFields: ['id', 'entityType', 'snapshotLabel'] as const,
+  rejectsCodePointNull: true as const,
+  rejectsUnpairedUtf16Surrogates: true as const,
+  allowsValidUtf16SurrogatePairs: true as const,
+  storageTargets: ['PostgreSQL-text', 'PostgreSQL-jsonb'] as const,
+} as const;
+
+export const isPostgresRepresentableSharedProposalString = (value: string): boolean => {
+  for (let index = 0; index < value.length; index += 1) {
+    const codeUnit = value.charCodeAt(index);
+
+    if (codeUnit === 0) return false;
+
+    if (codeUnit >= 0xd800 && codeUnit <= 0xdbff) {
+      const nextCodeUnit = value.charCodeAt(index + 1);
+      if (!(nextCodeUnit >= 0xdc00 && nextCodeUnit <= 0xdfff)) return false;
+      index += 1;
+      continue;
+    }
+
+    if (codeUnit >= 0xdc00 && codeUnit <= 0xdfff) return false;
+  }
+
+  return true;
+};
+
 /** Exact R7A3/R7A4 canonical proposal-version payload contract. */
 export const SHARED_PROPOSAL_CANONICAL_PAYLOAD_SCHEMA = {
   orderedKeys: [
@@ -177,6 +216,8 @@ export const SHARED_PROPOSAL_CANONICAL_PAYLOAD_SCHEMA = {
   ] as const,
   rejectsExtraTopLevelKeys: true as const,
   rejectsExtraReferenceKeys: true as const,
+  allStringValuesMustBePostgresJsonbRepresentable: true as const,
+  postgresStringSchema: SHARED_PROPOSAL_POSTGRES_STRING_SCHEMA,
   serialization: 'JSON.stringify(buildRevisionProposalVersionFingerprintPayload(version))' as const,
   byteEncoding: 'UTF-8' as const,
   digest: 'SHA-256' as const,
@@ -215,6 +256,7 @@ export const SHARED_PROPOSAL_VERSION_IDENTITY_SCHEMA = {
   canonicalIdentityFields: ['proposalRef', 'proposalVersionRef'] as const,
   commandIdentityMustEqualTrimmedValue: true as const,
   rejectsAdoptionBindingDelimiter: true as const,
+  requiresPostgresRepresentableString: true as const,
   forbiddenCharacters: [SHARED_PROPOSAL_ADOPTION_BINDING_DELIMITER] as const,
   canonicalPayloadIdentityMustMatchCanonicalCommand: true as const,
   uniquenessScope: ['workspaceId', 'proposalVersionRef'] as const,
@@ -228,7 +270,8 @@ export const isCanonicalSharedProposalIdentityRef = (value: string): boolean => 
   return (
     trimmed.length > 0 &&
     value === trimmed &&
-    excludesSharedProposalBindingDelimiter(value)
+    excludesSharedProposalBindingDelimiter(value) &&
+    isPostgresRepresentableSharedProposalString(value)
   );
 };
 
@@ -237,6 +280,7 @@ export const SHARED_PROPOSAL_SCOPE_BINDING_SCHEMA = {
   baseCurriculumVersionRef: 'canonical-trimmed-non-empty-string-without-adoption-binding-delimiter',
   submittedValueMustEqualTrimmedValue: true as const,
   rejectsAdoptionBindingDelimiter: true as const,
+  requiresPostgresRepresentableString: true as const,
   forbiddenCharacters: [SHARED_PROPOSAL_ADOPTION_BINDING_DELIMITER] as const,
 } as const;
 
@@ -245,7 +289,8 @@ export const isValidSharedProposalScopeRef = (value: string): boolean => {
   return (
     trimmed.length > 0 &&
     value === trimmed &&
-    excludesSharedProposalBindingDelimiter(value)
+    excludesSharedProposalBindingDelimiter(value) &&
+    isPostgresRepresentableSharedProposalString(value)
   );
 };
 
@@ -409,6 +454,10 @@ export const SHARED_PROPOSAL_AUTHORITY_BOUNDARY = {
   submittedVersionsAreImmutable: true as const,
   canonicalPayloadSchema: SHARED_PROPOSAL_CANONICAL_PAYLOAD_SCHEMA,
   canonicalPayloadTrimRulesMatchR7A3: true as const,
+  postgresStringSchema: SHARED_PROPOSAL_POSTGRES_STRING_SCHEMA,
+  requiresPostgresRepresentableCanonicalPayloadStrings: true as const,
+  rejectsPayloadCodePointNull: true as const,
+  rejectsPayloadUnpairedUtf16Surrogates: true as const,
   structuralFootprintPreservesR7A3StringContract: true as const,
   fingerprintSchema: SHARED_PROPOSAL_FINGERPRINT_SCHEMA,
   requiresCanonicalLowercaseFingerprint: true as const,
@@ -422,6 +471,7 @@ export const SHARED_PROPOSAL_AUTHORITY_BOUNDARY = {
   versionIdentitySchema: SHARED_PROPOSAL_VERSION_IDENTITY_SCHEMA,
   proposalIdentityReferencesMustEqualTrimmedValue: true as const,
   proposalIdentityReferencesRejectAdoptionDelimiter: true as const,
+  proposalIdentityReferencesRequirePostgresRepresentability: true as const,
   proposalVersionRefUniqueWithinWorkspace: true as const,
   proposalVersionUniquenessUsesCanonicalIdentity: true as const,
   proposalVersionRefImmutablyBindsProposalRef: true as const,
@@ -429,6 +479,7 @@ export const SHARED_PROPOSAL_AUTHORITY_BOUNDARY = {
   scopeReferencesRequireTrimmedNonEmpty: true as const,
   scopeReferencesMustEqualTrimmedValue: true as const,
   scopeReferencesRejectAdoptionDelimiter: true as const,
+  scopeReferencesRequirePostgresRepresentability: true as const,
   requiresServerPayloadValidation: true as const,
   requiresServerFingerprintRecompute: true as const,
   requiresExactCanonicalPayloadSerialization: true as const,
