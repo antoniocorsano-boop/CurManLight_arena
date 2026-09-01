@@ -27,6 +27,31 @@ describe('R7A3 shared frozen proposal snapshot invariants', () => {
     expect(sql).toContain('FROZEN_PROPOSAL_SNAPSHOT_CANONICAL_SHAPE_REQUIRED');
   });
 
+  it('restricts source and evidence references to the canonical EntityType union', () => {
+    expect(sql).toContain('v_valid_entity_types text[] := array[');
+    for (const entityType of [
+      'institute',
+      'source',
+      'curriculum-version',
+      'curriculum-segment',
+      'curriculum-node',
+      'curriculum-link',
+      'revision-proposal',
+      'decision',
+      'teaching-design',
+      'document',
+      'document-version',
+      'template',
+      'class-context',
+      'assessment',
+      'actor',
+      'event',
+    ]) {
+      expect(sql).toContain(`'${entityType}'`);
+    }
+    expect(sql.match(/not \(v_ref->>'entityType' = any\(v_valid_entity_types\)\)/g)).toHaveLength(2);
+  });
+
   it('keeps structuralFootprint required and typed while allowing the domain-supported empty string', () => {
     expect(sql).toContain("'sourceRefs','evidenceRefs','createdAt','structuralFootprint','frozen'");
     expect(sql).toContain("jsonb_typeof(v_json->'structuralFootprint') <> 'string'");
