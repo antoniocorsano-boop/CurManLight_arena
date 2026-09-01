@@ -1,4 +1,4 @@
-import { ArrowRight, BookOpenCheck, CheckCircle2, Eye, FileText, Layers, RotateCcw, ShieldCheck } from 'lucide-react';
+import { ArrowRight, BookOpenCheck, Eye, FileText, Layers, RotateCcw, ShieldCheck } from 'lucide-react';
 import type { DocumentExportEvent, Proposal, UdaModel, UserRole } from '../../../types/curriculum';
 import type { InstitutionalRole } from '../../../domain/curriculum/types';
 import {
@@ -14,8 +14,8 @@ interface DashboardViewProps {
   role: UserRole;
   savedUda: UdaModel[];
   decisions: Record<string, unknown>;
-  currentDisciplineProps: Proposal[];
-  customKbDocs: CustomKbDoc[];
+  currentDisciplineProps?: Proposal[];
+  customKbDocs?: CustomKbDoc[];
   wizardStep: number;
   progTitle: string;
   progStatus: ProgStatus;
@@ -96,7 +96,6 @@ const queueLabel = (item: ArenaProjectedWorkItem): string => {
   if (item.queueState === 'TO_VERIFY') return 'Da verificare';
   if (item.queueState === 'TO_REVIEW') return 'Da esaminare';
   if (item.queueState === 'TO_DECIDE') return 'Da decidere';
-  if (item.queueState === 'COMPLETED') return 'Completato';
   return 'Da leggere';
 };
 
@@ -109,8 +108,8 @@ const routeForWorkItem = (item: ArenaProjectedWorkItem): string => {
 
 const deriveRuntimeWorkSeeds = (props: DashboardViewProps): ArenaWorkItemSeed[] => {
   const seeds: ArenaWorkItemSeed[] = [];
-  const unverifiedSources = props.customKbDocs.filter((source) => source.authorityStatus !== 'LOCAL_VERIFIED');
-  const pendingProposals = props.currentDisciplineProps.filter((proposal) => !props.decisions[proposal.id]);
+  const unverifiedSources = (props.customKbDocs ?? []).filter((source) => source.authorityStatus !== 'LOCAL_VERIFIED');
+  const pendingProposals = (props.currentDisciplineProps ?? []).filter((proposal) => !props.decisions[proposal.id]);
 
   if (unverifiedSources.length > 0) {
     seeds.push({
@@ -148,79 +147,53 @@ const deriveRuntimeWorkSeeds = (props: DashboardViewProps): ArenaWorkItemSeed[] 
     });
   }
 
-  if (props.documentExportHistory.length > 0) {
-    const latest = props.documentExportHistory[props.documentExportHistory.length - 1];
-    seeds.push({
-      id: 'home-latest-handoff',
-      processId: 'P7_PLANNING_HANDOFF',
-      title: 'Ultimo documento preparato',
-      reason: latest?.label ? `Ultima uscita registrata: ${latest.label}.` : 'Esiste almeno un documento già prodotto dal flusso di handoff.',
-      queueState: 'COMPLETED',
-      evidenceState: 'READY',
-      requiredCapability: 'DOCUMENT_EXPORT',
-      nextActionLabel: 'Apri documenti',
-      nextActorRole: 'docente',
-      consequential: true,
-      authenticatedAuthorityRequired: true,
-      sourceRef: latest?.id,
-      orderKey: '900',
-    });
-  }
-
   return seeds;
 };
 
-function WorkItemCard({
-  item,
-  onOpen,
-}: {
-  item: ArenaProjectedWorkItem;
-  onOpen: () => void;
-}) {
+function WorkItemCard({ item, onOpen }: { item: ArenaProjectedWorkItem; onOpen: () => void }) {
   const actionable = item.access === 'ACTIONABLE';
-  const completed = item.queueState === 'COMPLETED';
 
   return (
     <article
-      className={`rounded-xl border p-4 ${completed ? 'border-emerald-100 bg-emerald-50/50' : actionable ? 'border-indigo-100 bg-indigo-50/40' : 'border-slate-200 bg-slate-50'}`}
+      className={`rounded-xl border p-4 ${actionable ? 'border-indigo-100 bg-indigo-50/40' : 'border-slate-200 bg-slate-50'}`}
       data-home-work-item={item.id}
       data-work-access={item.access}
       data-work-state={item.queueState}
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <span className={`text-[10px] font-black uppercase tracking-wide ${completed ? 'text-emerald-700' : actionable ? 'text-indigo-700' : 'text-slate-500'}`}>{queueLabel(item)}</span>
+          <span className={`text-[10px] font-black uppercase tracking-wide ${actionable ? 'text-indigo-700' : 'text-slate-500'}`}>{queueLabel(item)}</span>
           <h3 className="mt-1 text-sm font-extrabold text-slate-900">{item.title}</h3>
           <p className="mt-1 text-xs leading-5 text-slate-600">{item.reason}</p>
         </div>
-        {completed ? <CheckCircle2 className="h-5 w-5 shrink-0 text-emerald-600" aria-hidden="true" /> : !actionable ? <Eye className="h-5 w-5 shrink-0 text-slate-400" aria-hidden="true" /> : null}
+        {!actionable && <Eye className="h-5 w-5 shrink-0 text-slate-400" aria-hidden="true" />}
       </div>
 
-      {item.effectiveBlocker && <p className="mt-2 rounded-lg bg-white px-3 py-2 text-xs font-semibold leading-5 text-amber-800">{item.effectiveBlocker}</p>}
-
-      {!completed && (
-        <button
-          type="button"
-          onClick={onOpen}
-          className={`mt-3 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold sm:w-auto ${actionable ? 'bg-indigo-700 text-white hover:bg-indigo-600' : 'border border-slate-300 bg-white text-slate-700 hover:bg-slate-50'}`}
-          data-home-work-action={actionable ? 'actionable' : 'read-only'}
-        >
-          {actionable ? item.nextActionLabel : 'Apri per consultare'}
-          <ArrowRight className="h-4 w-4" aria-hidden="true" />
-        </button>
+      {item.effectiveBlocker && (
+        <p className="mt-2 rounded-lg bg-white px-3 py-2 text-xs font-semibold leading-5 text-amber-800">{item.effectiveBlocker}</p>
       )}
+
+      <button
+        type="button"
+        onClick={onOpen}
+        className={`mt-3 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold sm:w-auto ${actionable ? 'bg-indigo-700 text-white hover:bg-indigo-600' : 'border border-slate-300 bg-white text-slate-700 hover:bg-slate-50'}`}
+        data-home-work-action={actionable ? 'actionable' : 'read-only'}
+      >
+        {actionable ? item.nextActionLabel : 'Apri per consultare'}
+        <ArrowRight className="h-4 w-4" aria-hidden="true" />
+      </button>
     </article>
   );
 }
 
 export function DashboardView(props: DashboardViewProps) {
   if (props.activeTab !== 'dashboard') return null;
+
   const orientation = ROLE_ORIENTATION[props.role];
   const actor = { role: toInstitutionalRole(props.role), assurance: 'self-declared' as const };
   const projectedWork = projectArenaWorkQueue(deriveRuntimeWorkSeeds(props), actor);
   const actionable = projectedWork.filter((item) => item.access === 'ACTIONABLE' && item.queueState !== 'COMPLETED');
   const readOnly = projectedWork.filter((item) => item.access === 'READ_ONLY' && item.queueState !== 'COMPLETED');
-  const completed = projectedWork.filter((item) => item.queueState === 'COMPLETED');
 
   return (
     <div className="space-y-4 fade-in text-left" data-beta-home="role-work-queue" data-teacher-surface="home" data-home-assurance="self-declared">
@@ -228,7 +201,7 @@ export function DashboardView(props: DashboardViewProps) {
         <span className="text-xs font-bold text-indigo-700">Il mio lavoro</span>
         <h1 id="beta-home-title" className="mt-1 text-xl font-extrabold leading-tight text-slate-900 sm:text-2xl">{orientation.title}</h1>
         <p className="mt-2 max-w-[68ch] text-sm leading-relaxed text-slate-600">{orientation.summary}</p>
-        <p className="mt-2 text-xs leading-5 text-slate-500">Il ruolo selezionato orienta ciò che vedi, ma non attribuisce da solo autorità istituzionale.</p>
+        <p className="mt-2 text-xs leading-5 text-slate-500">Il ruolo selezionato orienta ciò che vedi. L’autorità istituzionale non è verificata da questo selettore e richiede una membership autenticata.</p>
       </section>
 
       <section className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-5" aria-labelledby="home-actionable-title" data-home-queue="actionable">
@@ -242,13 +215,19 @@ export function DashboardView(props: DashboardViewProps) {
 
         {actionable.length > 0 ? (
           <div className="mt-3 grid gap-3 lg:grid-cols-2">
-            {actionable.map((item) => <WorkItemCard key={item.id} item={item} onOpen={() => props.handleTabSwitch(routeForWorkItem(item))} />)}
+            {actionable.map((item) => (
+              <WorkItemCard key={item.id} item={item} onOpen={() => props.handleTabSwitch(routeForWorkItem(item))} />
+            ))}
           </div>
         ) : (
           <div className="mt-3 rounded-xl border border-dashed border-slate-300 bg-slate-50 p-4">
             <p className="text-sm font-bold text-slate-800">Nessuna attività azionabile rilevata adesso.</p>
             <p className="mt-1 text-xs leading-5 text-slate-600">Arena non crea attività artificiali per riempire la Home. Puoi comunque entrare nell’area principale del tuo ruolo.</p>
-            <button type="button" onClick={() => props.handleTabSwitch(orientation.primaryTab)} className="mt-3 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-indigo-200 bg-white px-4 py-2.5 text-sm font-bold text-indigo-700 sm:w-auto">
+            <button
+              type="button"
+              onClick={() => props.handleTabSwitch(orientation.primaryTab)}
+              className="mt-3 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-indigo-200 bg-white px-4 py-2.5 text-sm font-bold text-indigo-700 sm:w-auto"
+            >
               {orientation.primaryLabel}
               <ArrowRight className="h-4 w-4" aria-hidden="true" />
             </button>
@@ -266,25 +245,23 @@ export function DashboardView(props: DashboardViewProps) {
             <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-black text-slate-600">{readOnly.length}</span>
           </div>
           <div className="mt-3 grid gap-3 lg:grid-cols-2">
-            {readOnly.map((item) => <WorkItemCard key={item.id} item={item} onOpen={() => props.handleTabSwitch(routeForWorkItem(item))} />)}
+            {readOnly.map((item) => (
+              <WorkItemCard key={item.id} item={item} onOpen={() => props.handleTabSwitch(routeForWorkItem(item))} />
+            ))}
           </div>
         </section>
-      )}
-
-      {completed.length > 0 && (
-        <details className="rounded-2xl border border-emerald-100 bg-emerald-50/40 p-4 sm:p-5" data-home-queue="completed">
-          <summary className="cursor-pointer text-sm font-extrabold text-emerald-900">Completato ({completed.length})</summary>
-          <div className="mt-3 grid gap-3 lg:grid-cols-2">
-            {completed.map((item) => <WorkItemCard key={item.id} item={item} onOpen={() => props.handleTabSwitch(routeForWorkItem(item))} />)}
-          </div>
-        </details>
       )}
 
       <details className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-5" data-hcm-secondary-content>
         <summary className="cursor-pointer text-sm font-extrabold text-slate-800">Come funziona il processo</summary>
         <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
           {JOURNEY.map(({ number, icon: Icon, title, text, tab }) => (
-            <button key={number} type="button" onClick={() => props.handleTabSwitch(tab)} className="rounded-xl border border-slate-200 bg-slate-50 p-3 text-left transition hover:border-indigo-200 hover:bg-indigo-50">
+            <button
+              key={number}
+              type="button"
+              onClick={() => props.handleTabSwitch(tab)}
+              className="rounded-xl border border-slate-200 bg-slate-50 p-3 text-left transition hover:border-indigo-200 hover:bg-indigo-50"
+            >
               <div className="flex items-center gap-2">
                 <span className="flex h-6 w-6 items-center justify-center rounded-full bg-white text-[10px] font-black text-indigo-700">{number}</span>
                 <Icon className="h-4 w-4 text-slate-500" aria-hidden="true" />
@@ -304,7 +281,7 @@ export function DashboardView(props: DashboardViewProps) {
           </div>
           <div className="min-w-0 flex-1">
             <h2 id="handoff-title" className="text-sm font-extrabold text-slate-900">Documenti e passaggio successivo</h2>
-            <p className="mt-1 text-xs leading-relaxed text-slate-600">Prepara un documento o un handoff controllato. Arena non applica automaticamente il risultato al lavoro del docente.</p>
+            <p className="mt-1 text-xs leading-relaxed text-slate-600">Prepara un documento o un handoff controllato. Un normale export non viene trattato come prova di un handoff validato.</p>
             <button type="button" onClick={() => props.handleTabSwitch('esportazioni')} className="mt-3 rounded-xl border border-emerald-200 bg-white px-4 py-2.5 text-sm font-bold text-emerald-800 hover:bg-emerald-50">Apri documenti</button>
           </div>
         </div>
