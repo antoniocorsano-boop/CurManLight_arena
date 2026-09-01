@@ -5,6 +5,7 @@ export type ArenaCapability =
   | 'CURRICULUM_PROPOSE'
   | 'REVISION_REVIEW'
   | 'REVISION_DECIDE'
+  | 'CURRICULUM_ADOPT'
   | 'DOCUMENT_PREPARE'
   | 'DOCUMENT_EXPORT'
   | 'WORKSPACE_ADMIN';
@@ -59,6 +60,7 @@ const ROLE_CAPABILITIES: Readonly<Record<InstitutionalRole, readonly ArenaCapabi
 
 const AUTHENTICATED_ONLY_CAPABILITIES: readonly ArenaCapability[] = [
   'REVISION_DECIDE',
+  'CURRICULUM_ADOPT',
   'WORKSPACE_ADMIN',
 ];
 
