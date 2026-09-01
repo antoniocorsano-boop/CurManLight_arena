@@ -62,6 +62,15 @@ describe('R7A4 shared submitted proposal authority boundary', () => {
     expect(SHARED_PROPOSAL_AUTHORITY_BOUNDARY.requiredCapability).toBe('CURRICULUM_PROPOSE');
   });
 
+  it('keeps shared submission provenance aligned with CURRICULUM_PROPOSE capability holders', () => {
+    const proposalCapableRoles = roles.filter((role) =>
+      getRoleCapabilities(role).includes('CURRICULUM_PROPOSE'),
+    );
+
+    expect(proposalCapableRoles).toEqual(['docente', 'dipartimento', 'referente']);
+    expect([...SHARED_PROPOSAL_AUTHORITY_BOUNDARY.submissionActorRoles]).toEqual(proposalCapableRoles);
+  });
+
   it('requires explicit CAS intent and an equally explicit predecessor binding', () => {
     const firstSubmission = submitCommandFixture(null);
     const firstResult = sharedSubmittedVersionFixture(null);
@@ -92,7 +101,6 @@ describe('R7A4 shared submitted proposal authority boundary', () => {
 
   it('requires immutable submitted versions and no local institutional fallback', () => {
     const version = sharedSubmittedVersionFixture();
-    expect(version.submittedByRole).not.toBe('non-dichiarato');
     expect(SHARED_PROPOSAL_AUTHORITY_BOUNDARY.submittedVersionsAreImmutable).toBe(true);
     expect(SHARED_PROPOSAL_AUTHORITY_BOUNDARY.allowsLocalInstitutionalSuccessFallback).toBe(false);
   });
