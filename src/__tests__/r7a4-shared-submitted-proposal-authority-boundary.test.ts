@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { generateDeterministicId } from '../domain/curriculum/identity';
 import { getRoleCapabilities } from '../domain/institution/capabilities';
 import { assessCanonicalAdoption } from '../domain/institution/canonicalAdoptionContract';
 import type { WorkspaceActorContext } from '../domain/institution/sharedWorkspacePort';
@@ -37,15 +38,20 @@ const authenticatedDocente: WorkspaceActorContext = {
   assurance: 'authenticated-workspace',
 };
 
+const proposalVersionId = generateDeterministicId('r7a4-proposal-version-1');
+const proposalId = generateDeterministicId('r7a4-proposal-1');
+const sourceId = generateDeterministicId('r7a4-source-1');
+const evidenceNodeId = generateDeterministicId('r7a4-evidence-node-1');
+
 const canonicalLocalVersion: RevisionProposalVersion = {
-  id: 'proposal-version-1',
-  proposalRef: 'proposal-1',
+  id: proposalVersionId,
+  proposalRef: proposalId,
   versionNumber: 1,
   currentTextSnapshot: 'Current curriculum text',
   proposedText: 'Proposed curriculum text',
   rationale: 'Rationale',
-  sourceRefs: [{ id: 'source-1', entityType: 'source', snapshotLabel: 'Source 1' }],
-  evidenceRefs: [{ id: 'evidence-node-1', entityType: 'curriculum-node' }],
+  sourceRefs: [{ id: sourceId, entityType: 'source', snapshotLabel: 'Source 1' }],
+  evidenceRefs: [{ id: evidenceNodeId, entityType: 'curriculum-node' }],
   createdAt: '2026-09-01T12:00:00.000Z',
   structuralFootprint: '{}',
   frozen: true,
@@ -60,8 +66,8 @@ const sharedSubmittedVersionFixture = (
 ): SharedSubmittedProposalVersion => ({
   schemaVersion: 1,
   workspaceId: 'workspace-1',
-  proposalRef: 'proposal-1',
-  proposalVersionRef: 'proposal-version-1',
+  proposalRef: String(proposalId),
+  proposalVersionRef: String(proposalVersionId),
   proposalVersionFingerprint: 'a'.repeat(64),
   canonicalPayload,
   targetNodeRef: 'node-1',
@@ -79,8 +85,8 @@ const submitCommandFixture = (
   expectedCurrentSharedProposalVersionRef: string | null,
 ): SubmitSharedProposalVersionCommand => ({
   workspaceId: authenticatedDocente.membership.workspaceId,
-  proposalRef: 'proposal-1',
-  proposalVersionRef: 'proposal-version-1',
+  proposalRef: String(proposalId),
+  proposalVersionRef: String(proposalVersionId),
   proposalVersionFingerprint: 'a'.repeat(64),
   canonicalPayload,
   targetNodeRef: 'node-1',
@@ -208,8 +214,8 @@ describe('R7A4 shared submitted proposal authority boundary', () => {
   it('derives lifecycle receipt capability and states from the selected transition tuple', () => {
     const command: AdvanceSharedProposalLifecycleCommand = {
       workspaceId: 'workspace-1',
-      proposalRef: 'proposal-1',
-      proposalVersionRef: 'proposal-version-1',
+      proposalRef: String(proposalId),
+      proposalVersionRef: String(proposalVersionId),
       expectedLifecycleState: 'submitted',
       nextLifecycleState: 'under-review',
       clientRequestId: 'client-transition-1',
@@ -284,7 +290,7 @@ describe('R7A4 shared submitted proposal authority boundary', () => {
   it('does not remove the proposal-authority blocker before runtime authority exists', () => {
     const assessment = assessCanonicalAdoption({
       workspaceId: 'workspace-1',
-      proposalVersionRef: 'proposal-version-1',
+      proposalVersionRef: String(proposalVersionId),
       proposalVersionFingerprint: 'a'.repeat(64),
       targetNodeRef: 'node-1',
       targetCanonicalVersionRef: 'curriculum-v1',
@@ -298,8 +304,8 @@ describe('R7A4 shared submitted proposal authority boundary', () => {
       decisionReceipt: {
         id: 'decision-1',
         workspaceId: 'workspace-1',
-        proposalRef: 'proposal-1',
-        proposalVersionRef: 'proposal-version-1',
+        proposalRef: String(proposalId),
+        proposalVersionRef: String(proposalVersionId),
         proposalVersionFingerprint: 'a'.repeat(64),
         outcome: 'approve',
         rationale: 'approved',
