@@ -9,6 +9,8 @@ export type SharedProposalLifecycleState =
   | 'withdrawn'
   | 'archived';
 
+export type SharedSubmissionActorRole = Exclude<InstitutionalRole, 'non-dichiarato'>;
+
 export interface SharedSubmittedProposalVersion {
   schemaVersion: 1;
   workspaceId: string;
@@ -19,7 +21,7 @@ export interface SharedSubmittedProposalVersion {
   targetNodeRef: string;
   baseCurriculumVersionRef: string;
   submittedByUserId: string;
-  submittedByRole: InstitutionalRole;
+  submittedByRole: SharedSubmissionActorRole;
   submittedAt: string;
   lifecycleState: SharedProposalLifecycleState;
   previousSharedProposalVersionRef?: string;
@@ -33,7 +35,11 @@ export interface SubmitSharedProposalVersionCommand {
   canonicalPayload: string;
   targetNodeRef: string;
   baseCurriculumVersionRef: string;
-  expectedCurrentSharedProposalVersionRef?: string;
+  /**
+   * Mandatory compare-and-swap precondition.
+   * null means the caller explicitly expects this to be the first shared version.
+   */
+  expectedCurrentSharedProposalVersionRef: string | null;
   clientRequestId: string;
 }
 
@@ -68,6 +74,7 @@ export const SHARED_PROPOSAL_AUTHORITY_BOUNDARY = {
   requiredCapability: 'CURRICULUM_PROPOSE' as const,
   submittedVersionsAreImmutable: true as const,
   requiresCompareAndSwapHead: true as const,
+  firstSubmissionExpectedHead: null as null,
   allowsLocalInstitutionalSuccessFallback: false as const,
   assignsCurriculumAdopt: false as const,
   removesProposalAuthorityBlocker: false as const,
