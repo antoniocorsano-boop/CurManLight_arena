@@ -10,24 +10,28 @@
 
 ## Runtime signals used in R3
 
-R3 deliberately uses only state that already exists in the current runtime:
+R3 deliberately uses only state that already exists in the current runtime and is specific enough to support the claimed task:
 
 1. user-local knowledge sources that have not yet reached `LOCAL_VERIFIED`;
-2. current-discipline revision proposals that do not yet have a local outcome recorded;
-3. existing document export history, shown only as completed work.
+2. current-discipline revision proposals that do not yet have a local outcome recorded.
+
+Generic `documentExportHistory` is **not** a planning-handoff receipt. It may contain UDA, programmazione, relazione or ordinary file exports and therefore cannot prove completion of `P7_PLANNING_HANDOFF`.
+
+R3 consequently does not project any completed P7 item until a handoff-specific validated runtime signal or receipt exists.
 
 R3 does **not** fabricate work items for empty pipeline stages and does not infer urgency, institutional responsibility or readiness from AI output.
 
 ## Projection
 
-Each runtime signal is converted to an `ArenaWorkItemSeed` and passed through the canonical R2 projector.
+Each accepted runtime signal is converted to an `ArenaWorkItemSeed` and passed through the canonical R2 projector.
 
 The Home consumes only the projected result:
 
 - `ACTIONABLE` → **Da fare** with the allowed next action;
 - `READ_ONLY` → **Da seguire** with inspection/navigation only;
-- `COMPLETED` → collapsed **Completato** history;
 - `HIDDEN` → not rendered.
+
+`COMPLETED` remains part of the R2 domain vocabulary, but R3 does not currently manufacture a completed item from generic export history. A future completed card requires a process-specific completion signal.
 
 The Home does not duplicate capability logic.
 
@@ -49,11 +53,13 @@ A later authenticated-workspace Home may project the same queue with stronger as
 
 ## UX contract
 
-The visual hierarchy is:
+The current visual hierarchy is:
 
-`Il mio lavoro → Da fare → Da seguire → Completato → Come funziona → Documenti/handoff`
+`Il mio lavoro → Da fare → Da seguire (when present) → Come funziona → Documenti/handoff`
 
 The former generic journey is retained only under progressive disclosure. The Home must not show invented institutional metrics or pretend that missing runtime state is complete.
+
+The Documenti/handoff card is navigational only. It explicitly does not claim that an ordinary export is evidence of a validated handoff.
 
 Mobile baseline remains 390×844; primary work actions keep a minimum 44px touch target and cards use a one-column flow until wider layouts are available.
 
@@ -67,15 +73,17 @@ R3 does not:
 - change primary routing;
 - create new authority mechanisms;
 - use AI to generate work queues;
+- infer P7 completion from ordinary export history;
 - automatically advance proposals, decisions or curriculum state.
 
 ## Exit gate
 
 R3 is complete when:
 
-- Home derives real runtime signals into R2 work items;
+- Home derives only supported runtime signals into R2 work items;
 - empty state explicitly avoids fabricated activity;
-- `ACTIONABLE`, `READ_ONLY` and `COMPLETED` have distinct UX behavior;
+- `ACTIONABLE` and `READ_ONLY` have distinct UX behavior;
+- generic exports are regression-tested as insufficient evidence of completed P7 handoff;
 - self-declared Collegio cannot receive implied institutional authority;
 - role-specific projection is regression-tested;
 - mobile and Human Interaction gates pass on one candidate SHA;
