@@ -9,6 +9,12 @@ describe('R7A3 shared frozen proposal snapshot invariants', () => {
     expect(sql).toContain('REVISION_DECIDE_REQUIRED');
   });
 
+  it('allows snapshot reads only for active membership in an active workspace', () => {
+    expect(sql).toContain('join public.workspaces workspace on workspace.id = membership.workspace_id');
+    expect(sql).toContain("membership.status = 'active'");
+    expect(sql).toContain("workspace.status = 'active'");
+  });
+
   it('recomputes SHA-256 server-side over the exact submitted UTF-8 payload', () => {
     expect(sql).toContain("digest(convert_to(p_snapshot_payload, 'UTF8'), 'sha256')");
     expect(sql).toContain('FROZEN_PROPOSAL_SNAPSHOT_FINGERPRINT_MISMATCH');
@@ -23,12 +29,19 @@ describe('R7A3 shared frozen proposal snapshot invariants', () => {
     expect(sql).toContain('unique (workspace_id, proposal_version_ref)');
   });
 
-  it('blocks every new v2 decision that lacks a matching server snapshot', () => {
-    expect(sql).toContain('institutional_revision_decisions_require_frozen_snapshot');
-    expect(sql).toContain('before insert on public.institutional_revision_decisions');
-    expect(sql).toContain('new.adoption_binding_version = 2');
-    expect(sql).toContain('snapshot.proposal_version_fingerprint = new.proposal_version_fingerprint');
+  it('preserves deployed R7A2 v2 clients while versioning the R7A3 decision path', () => {
+    expect(sql).toContain('proposal_snapshot_version smallint');
+    expect(sql).toContain('record_institutional_revision_decision_v3');
+    expect(sql).toContain('v_existing.proposal_snapshot_version is distinct from 1');
+    expect(sql).toContain('1, 2, trim(p_target_node_ref)');
+    expect(sql).toContain('R7A2 v2 RPC remains available for rollout compatibility');
+    expect(sql).not.toContain('before insert on public.institutional_revision_decisions');
+  });
+
+  it('requires a matching frozen snapshot inside the versioned v3 decision RPC', () => {
     expect(sql).toContain('FROZEN_PROPOSAL_SNAPSHOT_REQUIRED');
+    expect(sql).toContain('snapshot.proposal_version_fingerprint = lower(p_proposal_version_fingerprint)');
+    expect(sql).toContain('snapshot.proposal_version_ref = trim(p_proposal_version_ref)');
   });
 
   it('does not assign canonical adoption authority or mutate the canonical curriculum', () => {
