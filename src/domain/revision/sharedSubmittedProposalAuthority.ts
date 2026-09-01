@@ -1,3 +1,5 @@
+import type { WorkspaceActorContext } from '../institution/sharedWorkspacePort';
+
 export type SharedProposalLifecycleState =
   | 'submitted'
   | 'under-review'
@@ -67,11 +69,32 @@ export interface SharedSubmittedProposalAuthorityPort {
    * lifecycle state. Later lifecycle states require advanceLifecycle().
    * Implementations must persist previousSharedProposalVersionRef exactly equal
    * to command.expectedCurrentSharedProposalVersionRef after the CAS succeeds.
+   * The authenticated context is mandatory; implementations must re-check
+   * active server-backed membership and CURRICULUM_PROPOSE before success.
    */
-  submitVersion(command: SubmitSharedProposalVersionCommand): Promise<SharedSubmittedProposalVersion>;
-  advanceLifecycle(command: AdvanceSharedProposalLifecycleCommand): Promise<SharedProposalVersion>;
-  getCurrentSharedVersion(workspaceId: string, proposalRef: string): Promise<SharedProposalVersion | null>;
-  getSharedVersion(workspaceId: string, proposalVersionRef: string): Promise<SharedProposalVersion | null>;
+  submitVersion(
+    context: WorkspaceActorContext,
+    command: SubmitSharedProposalVersionCommand,
+  ): Promise<SharedSubmittedProposalVersion>;
+
+  /** Shared lifecycle mutations require the same authenticated authority context. */
+  advanceLifecycle(
+    context: WorkspaceActorContext,
+    command: AdvanceSharedProposalLifecycleCommand,
+  ): Promise<SharedProposalVersion>;
+
+  /** Shared reads remain scoped to an authenticated workspace actor. */
+  getCurrentSharedVersion(
+    context: WorkspaceActorContext,
+    workspaceId: string,
+    proposalRef: string,
+  ): Promise<SharedProposalVersion | null>;
+
+  getSharedVersion(
+    context: WorkspaceActorContext,
+    workspaceId: string,
+    proposalVersionRef: string,
+  ): Promise<SharedProposalVersion | null>;
 }
 
 /**
@@ -86,6 +109,7 @@ export const SHARED_PROPOSAL_AUTHORITY_BOUNDARY = {
   localPreparationStates: ['draft', 'ready-for-review'] as const,
   firstSharedState: 'submitted' as const,
   requiresAuthenticatedWorkspace: true as const,
+  requiresServerBackedMembershipCapabilityRecheck: true as const,
   requiredCapability: 'CURRICULUM_PROPOSE' as const,
   submissionActorRoles: ['docente', 'dipartimento', 'referente'] as const satisfies readonly SharedSubmissionActorRole[],
   submittedVersionsAreImmutable: true as const,
