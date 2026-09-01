@@ -9,7 +9,7 @@ export interface InstitutionalRevisionDecisionInput {
   proposalRef: string;
   proposalVersionRef: string;
   proposalVersionFingerprint: string;
-  proposalVersionSnapshotPayload: string;
+  proposalVersionSnapshotPayload?: string;
   targetNodeRef: string;
   baseCurriculumVersionRef: string;
   outcome: InstitutionalDecisionOutcome;
