@@ -27,6 +27,12 @@ describe('R7A3 shared frozen proposal snapshot invariants', () => {
     expect(sql).toContain('FROZEN_PROPOSAL_SNAPSHOT_CANONICAL_SHAPE_REQUIRED');
   });
 
+  it('keeps structuralFootprint required and typed while allowing the domain-supported empty string', () => {
+    expect(sql).toContain("'sourceRefs','evidenceRefs','createdAt','structuralFootprint','frozen'");
+    expect(sql).toContain("jsonb_typeof(v_json->'structuralFootprint') <> 'string'");
+    expect(sql).not.toContain("nullif(trim(v_json->>'structuralFootprint'), '') is null");
+  });
+
   it('recomputes SHA-256 server-side over the exact submitted UTF-8 payload', () => {
     expect(sql).toContain("digest(convert_to(p_snapshot_payload, 'UTF8'), 'sha256')");
     expect(sql).toContain('FROZEN_PROPOSAL_SNAPSHOT_FINGERPRINT_MISMATCH');
