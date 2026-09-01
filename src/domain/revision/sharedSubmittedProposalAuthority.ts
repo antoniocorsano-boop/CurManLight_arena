@@ -23,13 +23,42 @@ export type SharedProposalTransitionActorBinding =
   | 'authorized-member'
   | 'original-submitter';
 
-export interface SharedProposalLifecycleTransitionPolicy {
-  from: SharedProposalLifecycleState;
-  to: SharedProposalLifecycleState;
-  requiredCapability: SharedProposalMutationCapability;
-  actorBinding: SharedProposalTransitionActorBinding;
-  requiresCurrentHead: true;
-}
+export type SharedProposalLifecycleTransitionDefinition =
+  | {
+      from: 'submitted';
+      to: 'under-review';
+      requiredCapability: 'REVISION_REVIEW';
+      actorBinding: 'authorized-member';
+      requiresCurrentHead: true;
+    }
+  | {
+      from: 'submitted';
+      to: 'withdrawn';
+      requiredCapability: 'CURRICULUM_PROPOSE';
+      actorBinding: 'original-submitter';
+      requiresCurrentHead: true;
+    }
+  | {
+      from: 'under-review';
+      to: 'changes-requested';
+      requiredCapability: 'REVISION_REVIEW';
+      actorBinding: 'authorized-member';
+      requiresCurrentHead: true;
+    }
+  | {
+      from: 'under-review';
+      to: 'accepted-for-decision';
+      requiredCapability: 'REVISION_REVIEW';
+      actorBinding: 'authorized-member';
+      requiresCurrentHead: true;
+    }
+  | {
+      from: 'under-review';
+      to: 'rejected';
+      requiredCapability: 'REVISION_REVIEW';
+      actorBinding: 'authorized-member';
+      requiresCurrentHead: true;
+    };
 
 /**
  * Closed institutional lifecycle policy for R7A4.
@@ -75,7 +104,87 @@ export const SHARED_PROPOSAL_LIFECYCLE_TRANSITION_POLICY = [
     actorBinding: 'authorized-member',
     requiresCurrentHead: true,
   },
-] as const satisfies readonly SharedProposalLifecycleTransitionPolicy[];
+] as const satisfies readonly SharedProposalLifecycleTransitionDefinition[];
+
+/**
+ * Exact R7A3/R7A4 canonical proposal-version payload contract.
+ * Serialization MUST be the UTF-8 bytes of
+ * JSON.stringify(buildRevisionProposalVersionFingerprintPayload(version)).
+ * Implementations reject missing required keys, unknown top-level/reference keys,
+ * wrong types, invalid reference entity types, non-object payloads and any payload
+ * whose server recomputed SHA-256 differs from proposalVersionFingerprint.
+ */
+export const SHARED_PROPOSAL_CANONICAL_PAYLOAD_SCHEMA = {
+  orderedKeys: [
+    'id',
+    'proposalRef',
+    'versionNumber',
+    'currentTextSnapshot',
+    'proposedText',
+    'rationale',
+    'sourceRefs',
+    'evidenceRefs',
+    'createdAt',
+    'structuralFootprint',
+    'previousVersionRef',
+    'changeNote',
+    'frozen',
+  ] as const,
+  requiredKeys: [
+    'id',
+    'proposalRef',
+    'versionNumber',
+    'currentTextSnapshot',
+    'proposedText',
+    'rationale',
+    'sourceRefs',
+    'evidenceRefs',
+    'createdAt',
+    'structuralFootprint',
+    'frozen',
+  ] as const,
+  optionalKeys: ['previousVersionRef', 'changeNote'] as const,
+  fieldTypes: {
+    id: 'non-empty-string',
+    proposalRef: 'non-empty-string',
+    versionNumber: 'positive-integer',
+    currentTextSnapshot: 'string',
+    proposedText: 'non-empty-string',
+    rationale: 'string',
+    sourceRefs: 'reference-array',
+    evidenceRefs: 'reference-array',
+    createdAt: 'parseable-timestamptz-string',
+    structuralFootprint: 'string-containing-valid-json',
+    previousVersionRef: 'optional-non-empty-string',
+    changeNote: 'optional-non-empty-string',
+    frozen: 'literal-true',
+  } as const,
+  referenceRequiredKeys: ['id', 'entityType'] as const,
+  referenceOptionalKeys: ['snapshotLabel'] as const,
+  allowedReferenceEntityTypes: [
+    'institute',
+    'source',
+    'curriculum-version',
+    'curriculum-segment',
+    'curriculum-node',
+    'curriculum-link',
+    'revision-proposal',
+    'decision',
+    'teaching-design',
+    'document',
+    'document-version',
+    'template',
+    'class-context',
+    'assessment',
+    'actor',
+    'event',
+  ] as const,
+  rejectsExtraTopLevelKeys: true as const,
+  rejectsExtraReferenceKeys: true as const,
+  serialization: 'JSON.stringify(buildRevisionProposalVersionFingerprintPayload(version))' as const,
+  byteEncoding: 'UTF-8' as const,
+  digest: 'SHA-256' as const,
+};
 
 export interface SharedProposalVersion {
   schemaVersion: 1;
@@ -88,7 +197,10 @@ export interface SharedProposalVersion {
   baseCurriculumVersionRef: string;
   submittedByUserId: string;
   submittedByRole: SharedSubmissionActorRole;
+  /** Generated from the authoritative server transaction clock, never client time. */
   submittedAt: string;
+  submittedAtSource: 'server-transaction-clock';
+  submittedPrincipalSource: 'server-session';
   lifecycleState: SharedProposalLifecycleState;
   /**
    * Required immutable predecessor binding.
@@ -129,39 +241,59 @@ interface AdvanceSharedProposalLifecycleCommandBase {
   clientRequestId: string;
 }
 
-export type AdvanceSharedProposalLifecycleCommand =
-  | (AdvanceSharedProposalLifecycleCommandBase & {
-      expectedLifecycleState: 'submitted';
-      nextLifecycleState: 'under-review' | 'withdrawn';
-    })
-  | (AdvanceSharedProposalLifecycleCommandBase & {
-      expectedLifecycleState: 'under-review';
-      nextLifecycleState: 'changes-requested' | 'accepted-for-decision' | 'rejected';
-    });
+export type SharedProposalLifecycleCommandFor<
+  T extends SharedProposalLifecycleTransitionDefinition,
+> = T extends SharedProposalLifecycleTransitionDefinition
+  ? AdvanceSharedProposalLifecycleCommandBase & {
+      expectedLifecycleState: T['from'];
+      nextLifecycleState: T['to'];
+    }
+  : never;
 
-export interface SharedProposalLifecycleTransitionReceipt {
-  schemaVersion: 1;
-  workspaceId: string;
-  proposalRef: string;
-  proposalVersionRef: string;
-  fromState: AdvanceSharedProposalLifecycleCommand['expectedLifecycleState'];
-  toState: AdvanceSharedProposalLifecycleCommand['nextLifecycleState'];
-  capabilityUsed: SharedProposalMutationCapability;
-  transitionedByUserId: string;
-  transitionedByRole: WorkspaceMemberRole;
-  transitionedAt: string;
-  clientRequestId: string;
-}
+export type AdvanceSharedProposalLifecycleCommand = SharedProposalLifecycleCommandFor<
+  SharedProposalLifecycleTransitionDefinition
+>;
 
-export interface SharedProposalLifecycleTransitionResult {
-  version: SharedProposalVersion;
-  receipt: SharedProposalLifecycleTransitionReceipt;
-}
+export type SharedProposalLifecycleTransitionReceiptFor<
+  T extends SharedProposalLifecycleTransitionDefinition,
+> = T extends SharedProposalLifecycleTransitionDefinition
+  ? {
+      schemaVersion: 1;
+      workspaceId: string;
+      proposalRef: string;
+      proposalVersionRef: string;
+      fromState: T['from'];
+      toState: T['to'];
+      capabilityUsed: T['requiredCapability'];
+      transitionedByUserId: string;
+      transitionedByRole: WorkspaceMemberRole;
+      /** Generated from the same successful server mutation transaction. */
+      transitionedAt: string;
+      transitionedAtSource: 'server-transaction-clock';
+      transitionedPrincipalSource: 'server-session';
+      clientRequestId: string;
+    }
+  : never;
+
+export type SharedProposalLifecycleTransitionReceipt =
+  SharedProposalLifecycleTransitionReceiptFor<SharedProposalLifecycleTransitionDefinition>;
+
+export type SharedProposalLifecycleTransitionResultFor<
+  T extends SharedProposalLifecycleTransitionDefinition,
+> = T extends SharedProposalLifecycleTransitionDefinition
+  ? {
+      version: SharedProposalVersion & { lifecycleState: T['to'] };
+      receipt: SharedProposalLifecycleTransitionReceiptFor<T>;
+    }
+  : never;
+
+export type SharedProposalLifecycleTransitionResult =
+  SharedProposalLifecycleTransitionResultFor<SharedProposalLifecycleTransitionDefinition>;
 
 export const getSharedProposalLifecycleTransitionPolicy = (
   from: SharedProposalLifecycleState,
   to: SharedProposalLifecycleState,
-): SharedProposalLifecycleTransitionPolicy | null =>
+): SharedProposalLifecycleTransitionDefinition | null =>
   SHARED_PROPOSAL_LIFECYCLE_TRANSITION_POLICY.find(
     (transition) => transition.from === from && transition.to === to,
   ) ?? null;
@@ -169,22 +301,29 @@ export const getSharedProposalLifecycleTransitionPolicy = (
 export interface SharedSubmittedProposalAuthorityPort {
   /**
    * Every shared operation receives the canonical authenticated workspace context.
-   * The context is an identity hint, not sufficient authority evidence by itself:
-   * implementations must re-read server-backed membership at call time, require
-   * active membership/workspace and fail closed on any mismatch or revocation.
+   * The context is an identity hint, not sufficient authority evidence by itself.
+   * Before using it, server code MUST resolve the authenticated principal from the
+   * server session (for Supabase, auth.uid()), re-read membership using that principal,
+   * and fail unless principal userId == context.membership.userId and membership
+   * workspaceId == the requested workspace. Caller-supplied user IDs cannot select
+   * which membership is authoritative.
    */
 
   /**
    * Submission always creates/returns the mandatory first shared-authoritative
    * lifecycle state. Before success the implementation must:
-   * - re-read active membership and verify CURRICULUM_PROPOSE;
-   * - require context workspace == command workspace;
+   * - resolve the principal from the server session and bind it to context user/workspace;
+   * - re-read active membership for that principal and verify CURRICULUM_PROPOSE;
    * - bind submittedByUserId/submittedByRole to that freshly verified membership;
-   * - validate canonical payload identity and recompute its fingerprint server-side;
+   * - validate canonicalPayload against SHARED_PROPOSAL_CANONICAL_PAYLOAD_SCHEMA;
+   * - require payload id/proposalRef to match command version/proposal identity;
+   * - recompute SHA-256 over the exact UTF-8 JSON.stringify(builder-output) bytes;
    * - apply the explicit head CAS;
    * - allow replacement only when the current predecessor is changes-requested;
    * - persist previousSharedProposalVersionRef exactly equal to the expected head;
-   * - enforce clientRequestId idempotency and reject conflicting reuse.
+   * - generate submittedAt from the server transaction clock;
+   * - enforce clientRequestId idempotency and reject conflicting reuse;
+   * - return the original submittedAt unchanged on an idempotent retry.
    */
   submitVersion(
     context: WorkspaceActorContext,
@@ -193,26 +332,28 @@ export interface SharedSubmittedProposalAuthorityPort {
 
   /**
    * Lifecycle mutation is restricted to SHARED_PROPOSAL_LIFECYCLE_TRANSITION_POLICY.
-   * The implementation must freshly re-read membership, require active workspace,
-   * select the capability from the transition policy, verify it server-side and
-   * enforce any actor binding (including original-submitter withdrawal). The target
-   * version must still be the current shared head and its lifecycle must equal the
-   * expected state. Success persists an immutable transition receipt whose actor,
-   * role and capability are derived from the freshly verified membership/policy.
+   * The implementation must resolve the current server-session principal, freshly
+   * re-read its membership, require active workspace, select the exact transition
+   * tuple, verify that tuple's capability server-side and enforce actor binding.
+   * The target version must still be the current shared head and its lifecycle must
+   * equal the expected state. Success persists a receipt whose identifiers, request
+   * ID, from/to states, capability and returned version state are all derived from
+   * the same command + selected policy tuple. transitionedAt comes from the server
+   * transaction clock and is returned unchanged on idempotent retries.
    */
-  advanceLifecycle(
+  advanceLifecycle<T extends SharedProposalLifecycleTransitionDefinition>(
     context: WorkspaceActorContext,
-    command: AdvanceSharedProposalLifecycleCommand,
-  ): Promise<SharedProposalLifecycleTransitionResult>;
+    command: SharedProposalLifecycleCommandFor<T>,
+  ): Promise<SharedProposalLifecycleTransitionResultFor<T>>;
 
-  /** Shared reads also require a fresh active-membership + CURRICULUM_READ check. */
+  /** Shared reads require server-session principal binding plus fresh active-membership + CURRICULUM_READ. */
   getCurrentSharedVersion(
     context: WorkspaceActorContext,
     workspaceId: string,
     proposalRef: string,
   ): Promise<SharedProposalVersion | null>;
 
-  /** Shared reads also require a fresh active-membership + CURRICULUM_READ check. */
+  /** Shared reads require server-session principal binding plus fresh active-membership + CURRICULUM_READ. */
   getSharedVersion(
     context: WorkspaceActorContext,
     workspaceId: string,
@@ -232,21 +373,29 @@ export const SHARED_PROPOSAL_AUTHORITY_BOUNDARY = {
   localPreparationStates: ['draft', 'ready-for-review'] as const,
   firstSharedState: 'submitted' as const,
   requiresAuthenticatedWorkspace: true as const,
+  requiresServerSessionPrincipalBinding: true as const,
+  serverPrincipalMustMatchContextUser: true as const,
+  serverMembershipWorkspaceMustMatchCommandWorkspace: true as const,
   requiresFreshMembershipOnEverySharedOperation: true as const,
   requiredReadCapability: 'CURRICULUM_READ' as const,
   requiredSubmissionCapability: 'CURRICULUM_PROPOSE' as const,
   submissionActorRoles: ['docente', 'dipartimento', 'referente'] as const satisfies readonly SharedSubmissionActorRole[],
   bindsSubmissionProvenanceToFreshMembership: true as const,
   submittedVersionsAreImmutable: true as const,
+  canonicalPayloadSchema: SHARED_PROPOSAL_CANONICAL_PAYLOAD_SCHEMA,
   requiresServerPayloadValidation: true as const,
   requiresServerFingerprintRecompute: true as const,
+  requiresExactCanonicalPayloadSerialization: true as const,
   requiresCompareAndSwapHead: true as const,
   requiresPredecessorEqualsExpectedHead: true as const,
   replacementRequiresChangesRequestedHead: true as const,
   replacementRequiresNewVersionIdentity: true as const,
   lifecycleMutationRequiresCurrentHead: true as const,
   lifecycleMutationUsesClosedTransitionPolicy: true as const,
+  lifecycleReceiptDerivedFromTransitionPolicy: true as const,
   lifecycleMutationPersistsImmutableReceipt: true as const,
+  requiresServerTransactionClockForAuditTimestamps: true as const,
+  idempotentRetriesReturnOriginalAuditTimestamps: true as const,
   requiresClientRequestIdIdempotency: true as const,
   conflictingClientRequestReuseFailsClosed: true as const,
   firstSubmissionExpectedHead: null as null,
