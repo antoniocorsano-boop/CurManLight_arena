@@ -70,6 +70,11 @@ declare
     'id','proposalRef','versionNumber','currentTextSnapshot','proposedText','rationale',
     'sourceRefs','evidenceRefs','createdAt','structuralFootprint','frozen'
   ];
+  v_valid_entity_types text[] := array[
+    'institute','source','curriculum-version','curriculum-segment','curriculum-node','curriculum-link',
+    'revision-proposal','decision','teaching-design','document','document-version','template',
+    'class-context','assessment','actor','event'
+  ];
   v_ref jsonb;
 begin
   if v_user_id is null then raise exception 'AUTHENTICATION_REQUIRED' using errcode = '42501'; end if;
@@ -136,6 +141,7 @@ begin
        )
        or jsonb_typeof(v_ref->'id') <> 'string' or nullif(trim(v_ref->>'id'), '') is null
        or jsonb_typeof(v_ref->'entityType') <> 'string' or nullif(trim(v_ref->>'entityType'), '') is null
+       or not (v_ref->>'entityType' = any(v_valid_entity_types))
        or (v_ref ? 'snapshotLabel' and (jsonb_typeof(v_ref->'snapshotLabel') <> 'string' or nullif(trim(v_ref->>'snapshotLabel'), '') is null)) then
       raise exception 'FROZEN_PROPOSAL_SNAPSHOT_CANONICAL_SHAPE_REQUIRED' using errcode = '23514';
     end if;
@@ -150,6 +156,7 @@ begin
        )
        or jsonb_typeof(v_ref->'id') <> 'string' or nullif(trim(v_ref->>'id'), '') is null
        or jsonb_typeof(v_ref->'entityType') <> 'string' or nullif(trim(v_ref->>'entityType'), '') is null
+       or not (v_ref->>'entityType' = any(v_valid_entity_types))
        or (v_ref ? 'snapshotLabel' and (jsonb_typeof(v_ref->'snapshotLabel') <> 'string' or nullif(trim(v_ref->>'snapshotLabel'), '') is null)) then
       raise exception 'FROZEN_PROPOSAL_SNAPSHOT_CANONICAL_SHAPE_REQUIRED' using errcode = '23514';
     end if;
