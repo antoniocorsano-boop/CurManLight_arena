@@ -72,12 +72,15 @@ describe('Arena Beta canonical shell regression guard', () => {
     expect(mobileSource).toContain('Documenti');
   });
 
-  it('keeps Home compact and moves authority explanation behind progressive disclosure', () => {
+  it('keeps Home compact, task-first and authority-safe with progressive disclosure', () => {
     expect(homeSource).not.toMatch(/Votazione|Voti Registrati|Unione Consensi|Merger|\.cml|IndexedDB|Dexie|Service Worker|WCAG|GDPR/i);
-    expect(homeSource).toContain('4 passaggi');
+    expect(homeSource).toContain('data-beta-home="role-work-queue"');
+    expect(homeSource).toContain('data-home-queue="actionable"');
+    expect(homeSource).toContain('Nessuna attività azionabile rilevata adesso.');
+    expect(homeSource).toContain('Arena non crea attività artificiali');
     expect(homeSource).toContain('data-hcm-secondary-content');
-    expect(homeSource).toContain('Perché questi passaggi sono separati');
-    expect(homeSource).toContain('Un passaggio alla volta.');
+    expect(homeSource).toContain('Come funziona il processo');
+    expect(homeSource).toContain('Preparare una proposta non significa approvarla');
     expect(homeSource).not.toContain('TaskCard');
   });
 
