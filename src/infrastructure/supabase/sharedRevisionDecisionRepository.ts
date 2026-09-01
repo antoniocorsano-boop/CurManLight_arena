@@ -15,7 +15,7 @@ const VALID_OUTCOMES: readonly InstitutionalDecisionOutcome[] = [
 
 const DECISION_SELECT = [
   'id', 'workspace_id', 'proposal_ref', 'proposal_version_ref',
-  'proposal_version_fingerprint', 'adoption_binding_version',
+  'proposal_version_fingerprint', 'proposal_snapshot_version', 'adoption_binding_version',
   'adoption_target_node_ref', 'adoption_base_curriculum_version_ref',
   'adoption_binding_fingerprint', 'outcome', 'rationale', 'decided_by',
   'authority_role', 'decided_at', 'client_request_id',
@@ -23,10 +23,11 @@ const DECISION_SELECT = [
 
 interface InstitutionalDecisionRow {
   id: string; workspace_id: string; proposal_ref: string; proposal_version_ref: string;
-  proposal_version_fingerprint: string; adoption_binding_version: number | null;
-  adoption_target_node_ref: string | null; adoption_base_curriculum_version_ref: string | null;
-  adoption_binding_fingerprint: string | null; outcome: string; rationale: string;
-  decided_by: string; authority_role: string; decided_at: string; client_request_id: string;
+  proposal_version_fingerprint: string; proposal_snapshot_version: number | null;
+  adoption_binding_version: number | null; adoption_target_node_ref: string | null;
+  adoption_base_curriculum_version_ref: string | null; adoption_binding_fingerprint: string | null;
+  outcome: string; rationale: string; decided_by: string; authority_role: string;
+  decided_at: string; client_request_id: string;
 }
 
 interface FrozenProposalSnapshotRow {
@@ -46,7 +47,16 @@ const readAdoptionBinding = (row: InstitutionalDecisionRow): InstitutionalAdopti
   if (row.adoption_binding_version !== 2 || !row.adoption_target_node_ref || !row.adoption_base_curriculum_version_ref || !row.adoption_binding_fingerprint || !/^[a-f0-9]{64}$/.test(row.adoption_binding_fingerprint)) {
     throw new Error('La ricevuta istituzionale contiene un binding di adozione incompleto o non valido.');
   }
-  return { version: 2, targetNodeRef: row.adoption_target_node_ref, baseCurriculumVersionRef: row.adoption_base_curriculum_version_ref, bindingFingerprint: row.adoption_binding_fingerprint };
+  if (row.proposal_snapshot_version != null && row.proposal_snapshot_version !== 1) {
+    throw new Error('La ricevuta istituzionale contiene un marker snapshot non valido.');
+  }
+  return {
+    version: 2,
+    targetNodeRef: row.adoption_target_node_ref,
+    baseCurriculumVersionRef: row.adoption_base_curriculum_version_ref,
+    bindingFingerprint: row.adoption_binding_fingerprint,
+    ...(row.proposal_snapshot_version === 1 ? { proposalSnapshotVersion: 1 as const } : {}),
+  };
 };
 
 const toReceipt = (row: InstitutionalDecisionRow): InstitutionalRevisionDecisionReceipt => {
@@ -112,7 +122,7 @@ export class SupabaseSharedRevisionDecisionRepository implements SharedRevisionD
     if (!snapshotRow) throw new Error('Il server non ha restituito lo snapshot congelato della versione.');
     assertSnapshotReceipt(snapshotRow as FrozenProposalSnapshotRow, input);
 
-    const { data, error } = await this.client.rpc('record_institutional_revision_decision_v2', {
+    const { data, error } = await this.client.rpc('record_institutional_revision_decision_v3', {
       p_workspace_id: input.workspaceId,
       p_proposal_ref: input.proposalRef,
       p_proposal_version_ref: input.proposalVersionRef,
@@ -126,6 +136,10 @@ export class SupabaseSharedRevisionDecisionRepository implements SharedRevisionD
     if (error) throw new Error(`Decisione istituzionale non registrata: ${error.message}`);
     const row = Array.isArray(data) ? data[0] : data;
     if (!row) throw new Error('Il server non ha restituito la ricevuta della decisione istituzionale.');
-    return toReceipt(row as InstitutionalDecisionRow);
+    const receipt = toReceipt(row as InstitutionalDecisionRow);
+    if (receipt.adoptionBinding?.proposalSnapshotVersion !== 1) {
+      throw new Error('Il server non ha marcato la decisione come supportata da snapshot congelato.');
+    }
+    return receipt;
   }
 }
