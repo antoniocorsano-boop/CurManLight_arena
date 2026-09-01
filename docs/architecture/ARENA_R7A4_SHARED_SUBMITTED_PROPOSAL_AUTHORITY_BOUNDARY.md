@@ -48,14 +48,16 @@ Every shared version binds:
 - `proposalVersionRef`;
 - exact canonical proposal payload;
 - server-recomputed SHA-256 fingerprint;
-- `targetNodeRef`;
-- `baseCurriculumVersionRef`;
+- `targetNodeRef`, required to be non-empty after trimming;
+- `baseCurriculumVersionRef`, required to be non-empty after trimming;
 - authenticated submitter user and role;
 - server-authored `submittedAt`;
 - lifecycle state;
 - previous shared proposal version reference.
 
 Submitted content is immutable. Content changes create a new immutable submitted version.
+
+A shared-authoritative proposal may never be created with blank institutional scope. Both `targetNodeRef.trim().length > 0` and `baseCurriculumVersionRef.trim().length > 0` are mandatory for the first submission and every replacement. This keeps shared proposal authority compatible with the downstream R7A3 decision/rebind path.
 
 ## Authentication, server principal and fresh authority evidence
 
@@ -136,12 +138,28 @@ and the digest is SHA-256. Server-side validation must additionally bind payload
 
 This guarantees that an R7A4 shared version cannot later become incompatible with R7A3's exact frozen deliberation snapshot contract.
 
+## Proposal scope validation
+
+`targetNodeRef` and `baseCurriculumVersionRef` are consequential institutional bindings outside the fingerprint payload and therefore require their own server-side validation before authority is created.
+
+For every first submission and replacement:
+
+- `targetNodeRef` must be a string with at least one non-whitespace character after trimming;
+- `baseCurriculumVersionRef` must be a string with at least one non-whitespace character after trimming;
+- `''`, whitespace-only, tab-only and newline-only values fail closed;
+- validation occurs before persistence or head advancement;
+- the server does not normalize a blank value into a default scope;
+- replacement must additionally satisfy the predecessor equality rules below.
+
+The executable contract exports `SHARED_PROPOSAL_SCOPE_BINDING_SCHEMA` and `isValidSharedProposalScopeRef()` so R7A5 can implement and test exactly the same rule.
+
 ## Shared head, CAS and replacement rules
 
 Every operation that can advance or replace the current shared proposal state uses explicit compare-and-swap semantics.
 
 For submission:
 
+- both scope bindings must first pass the trimmed-non-empty validation above;
 - `expectedCurrentSharedProposalVersionRef = null` means explicitly “first shared submission”;
 - a non-null expected head must equal the authoritative current head;
 - `previousSharedProposalVersionRef` must equal that expected head;
@@ -152,7 +170,7 @@ For submission:
 - if either target or curriculum-base scope changes, the operation requires a **new proposal identity**, not a replacement version of the existing proposal chain;
 - stale or concurrent submissions fail instead of overwriting a newer head.
 
-This prevents a proposer from silently replacing a version that is still under institutional review or redirecting an existing proposal chain to a different institutional scope.
+This prevents a proposer from silently replacing a version that is still under institutional review, redirecting an existing proposal chain to a different institutional scope, or creating a shared-authoritative proposal with unusable blank scope.
 
 ## Closed shared lifecycle policy
 
@@ -237,6 +255,7 @@ R7A4 is reviewed against the following classes of failure rather than waiting fo
 | strict nested reference value schema | yes | n/a | n/a |
 | exact canonical byte serialization | yes | n/a | n/a |
 | server fingerprint recomputation | yes | n/a | n/a |
+| target/base scope trimmed-non-empty | yes | preserved | preserved |
 | current-head guard | CAS | yes | n/a |
 | expected-state CAS | submission head | lifecycle state | n/a |
 | proposal scope preserved across replacement | yes | n/a | n/a |
@@ -250,7 +269,7 @@ R7A4 is reviewed against the following classes of failure rather than waiting fo
 | revocation fails closed | yes | yes | yes |
 | local institutional fallback | never | never | never |
 
-This matrix is enforced by the R7A4 Authority Contract Harness in `src/__tests__/r7a4-shared-submitted-proposal-authority-boundary.test.ts`.
+This matrix is enforced by the R7A4 Authority Contract Harness in `src/__tests__/r7a4-shared-submitted-proposal-authority-boundary.test.ts` together with the dedicated scope guard in `src/__tests__/r7a4-shared-proposal-scope-binding.test.ts`.
 
 ## Relationship to R7A3
 
@@ -297,6 +316,7 @@ Must implement the frozen contract, including:
 - exact canonical payload-schema validation, including nested reference value constraints;
 - exact UTF-8 serialization compatibility with the fingerprint builder;
 - server-side SHA-256 recomputation;
+- mandatory trimmed-non-empty validation of `targetNodeRef` and `baseCurriculumVersionRef` before first submission or replacement;
 - immutable submitted versions;
 - server-authored immutable submission time/provenance;
 - CAS shared head;
@@ -329,6 +349,7 @@ R7A4 is complete only when review accepts that:
 - server-session principal identity, fresh membership and workspace are bound on every shared operation;
 - submission provenance is bound to that verified principal/member;
 - canonical proposal payload schema, nested reference constraints and exact fingerprint serialization are frozen;
+- both institutional scope bindings are trimmed-non-empty before shared authority can be created;
 - submitted content is immutable;
 - audit timestamps are server-authored and stable across idempotent retries;
 - replacement is CAS-protected, only follows `changes-requested`, and preserves target/base scope;
