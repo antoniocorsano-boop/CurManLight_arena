@@ -72,16 +72,16 @@ describe('R3 Arena role-aware Home v1', () => {
 
     expect(document.querySelector('[data-home-assurance="self-declared"]')).not.toBeNull();
     expect(screen.queryByText('Da decidere')).toBeNull();
-    expect(screen.getByText(/non attribuisce da sola autorità istituzionale/i)).toBeDefined();
+    expect(screen.getByText(/autorità istituzionale non è verificata/i)).toBeDefined();
   });
 
-  it('keeps completed handoff history outside the actionable queue', () => {
+  it('does not infer a completed planning handoff from generic export history', () => {
     const props = baseProps('insegnante');
     props.documentExportHistory = [{ id: 'export-1', label: 'Curricolo Tecnologia' }] as never[];
     render(<DashboardView {...props} />);
 
-    const card = document.querySelector('[data-home-work-item="home-latest-handoff"]');
-    expect(card?.getAttribute('data-work-state')).toBe('COMPLETED');
-    expect(card?.getAttribute('data-work-access')).toBe('READ_ONLY');
+    expect(document.querySelector('[data-home-work-item="home-latest-handoff"]')).toBeNull();
+    expect(screen.queryByText(/Ultimo documento preparato/i)).toBeNull();
+    expect(screen.getByText(/Un normale export non viene trattato come prova di un handoff validato/i)).toBeDefined();
   });
 });
