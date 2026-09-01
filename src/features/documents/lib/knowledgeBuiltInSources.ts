@@ -15,7 +15,7 @@ export const BUILT_IN_KNOWLEDGE_SOURCES: BuiltInKnowledgeSource[] = [
   { id: 'vol8', title: 'Curricolo per discipline', description: 'Traguardi, obiettivi e dettaglio disciplinare.', group: 'Curricolo', authorityClass: 'ARCHIVED_REFERENCE', retrievalEligible: true },
   { id: 'vol7', title: 'Passaggio alle Indicazioni 2025', description: 'Materiali per confrontare il quadro precedente con quello nuovo.', group: 'Curricolo', authorityClass: 'ARCHIVED_REFERENCE', retrievalEligible: true },
   { id: 'vol3', title: 'Normativa e riferimenti', description: 'Riferimenti normativi, inclusione, privacy e quadro generale.', group: 'Riferimenti', authorityClass: 'ARCHIVED_REFERENCE', retrievalEligible: true },
-  { id: 'vol2', title: 'Scuola e miglioramento', description: 'Materiali RAV, NIV e Piano di miglioramento d'Istituto (PdM).', group: 'Scuola', authorityClass: 'ARCHIVED_REFERENCE', retrievalEligible: true },
+  { id: 'vol2', title: 'Scuola e miglioramento', description: "Materiali RAV, NIV e Piano di miglioramento d'Istituto (PdM).", group: 'Scuola', authorityClass: 'ARCHIVED_REFERENCE', retrievalEligible: true },
   { id: 'vol1', title: 'Progetti e territorio', description: 'Raccolta di materiali, progetti e riferimenti territoriali.', group: 'Scuola', authorityClass: 'ARCHIVED_REFERENCE', retrievalEligible: true },
   { id: 'vol6', title: 'Termini e concetti', description: 'Repertorio locale per orientarsi nel lessico curricolare.', group: 'Riferimenti', authorityClass: 'DERIVED', retrievalEligible: false },
   { id: 'vol10', title: 'Materiali per il Collegio', description: 'Bozze e materiali di supporto alla discussione collegiale.', group: 'Processo', authorityClass: 'DERIVED', retrievalEligible: false },
