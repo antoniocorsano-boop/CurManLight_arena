@@ -17,6 +17,7 @@ export interface AddKnowledgeSourceModalProps {
 }
 
 type ImportState = 'IDLE' | 'READING' | 'READY' | 'PARTIAL' | 'OCR_REQUIRED' | 'ERROR';
+type SaveState = 'IDLE' | 'SAVING' | 'ERROR';
 
 const humanFileSize = (bytes?: number) => {
   if (!bytes) return '';
@@ -42,6 +43,8 @@ export function AddKnowledgeSourceModal({
   const [importMessage, setImportMessage] = useState('');
   const [pendingMetadata, setPendingMetadata] = useState<KnowledgeImportMetadata | null>(null);
   const [textEditedAfterImport, setTextEditedAfterImport] = useState(false);
+  const [saveState, setSaveState] = useState<SaveState>('IDLE');
+  const [saveMessage, setSaveMessage] = useState('');
 
   useEffect(() => {
     if (!showAddKbModal) {
@@ -49,17 +52,22 @@ export function AddKnowledgeSourceModal({
       setImportMessage('');
       setPendingMetadata(null);
       setTextEditedAfterImport(false);
+      setSaveState('IDLE');
+      setSaveMessage('');
     }
   }, [showAddKbModal]);
 
   if (!showAddKbModal) return null;
 
   const close = () => {
+    if (saveState === 'SAVING') return;
     setShowAddKbModal(false);
   };
 
   const handleFileSelection = async (file: File | undefined) => {
     if (!file) return;
+    setSaveState('IDLE');
+    setSaveMessage('');
     setImportState('READING');
     setImportMessage('Lettura del file in corso…');
     setPendingMetadata(null);
@@ -100,23 +108,44 @@ export function AddKnowledgeSourceModal({
   };
 
   const save = async () => {
+    if (saveState === 'SAVING') return;
     const metadata: KnowledgeImportMetadata = pendingMetadata
       ? { ...pendingMetadata, textEditedAfterExtraction: textEditedAfterImport }
       : { ingestionMethod: 'PASTE', extractionStatus: 'NOT_REQUIRED' };
-    await handleAddCustomKbDoc(metadata);
+
+    setSaveState('SAVING');
+    setSaveMessage('Salvataggio locale in corso…');
+
+    try {
+      const saved = await handleAddCustomKbDoc(metadata);
+      if (saved === false) {
+        setSaveState('ERROR');
+        setSaveMessage('La fonte non è stata salvata. Controlla il messaggio mostrato da Arena e riprova.');
+      }
+    } catch (error) {
+      console.warn('[KX-3] Source save failed:', error);
+      setSaveState('ERROR');
+      setSaveMessage('La fonte non è stata salvata in questo browser. Riprova senza perdere il testo inserito.');
+      showToast('Non riesco a salvare questa fonte nel browser. Il testo resta nel modulo.', false);
+    }
   };
 
   const blockedByExtraction = importState === 'READING' || importState === 'OCR_REQUIRED' || importState === 'ERROR';
+  const saveDisabled = blockedByExtraction || saveState === 'SAVING' || !newKbDocTitle.trim() || !newKbDocContent.trim();
 
   return (
     <div role="dialog" aria-modal="true" className="fixed inset-0 z-[180] flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm">
-      <div className="flex max-h-[92vh] w-full max-w-xl flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white text-left shadow-2xl fade-in">
+      <form
+        onSubmit={(event) => { event.preventDefault(); void save(); }}
+        data-kx-source-save-state={saveState}
+        className="flex max-h-[92vh] w-full max-w-xl flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white text-left shadow-2xl fade-in"
+      >
         <div className="flex shrink-0 items-start justify-between bg-slate-900 px-5 py-4 text-white">
           <div className="max-w-md">
             <h3 className="text-base font-black">Aggiungi una fonte</h3>
             <p className="mt-1 text-xs leading-5 text-slate-300">Aggiungi un materiale alla conoscenza locale. Resterà separato dalle fonti istituzionali finché non viene verificato.</p>
           </div>
-          <button onClick={close} className="rounded-lg p-2 text-slate-300 hover:bg-white/10 hover:text-white" aria-label="Chiudi"><X className="h-5 w-5" /></button>
+          <button type="button" onClick={close} disabled={saveState === 'SAVING'} className="rounded-lg p-2 text-slate-300 hover:bg-white/10 hover:text-white disabled:opacity-50" aria-label="Chiudi"><X className="h-5 w-5" /></button>
         </div>
 
         <div className="space-y-5 overflow-y-auto p-5">
@@ -163,7 +192,7 @@ export function AddKnowledgeSourceModal({
 
             <label className="block space-y-2">
               <span className="text-sm font-bold text-slate-800">Titolo</span>
-              <input type="text" value={newKbDocTitle} onChange={(event) => setNewKbDocTitle(event.target.value)} className="w-full rounded-xl border border-slate-300 bg-white p-3 text-sm outline-none focus:border-indigo-500" placeholder="Per esempio: Atto di indirizzo 2026" />
+              <input type="text" value={newKbDocTitle} onChange={(event) => { setNewKbDocTitle(event.target.value); setSaveState('IDLE'); setSaveMessage(''); }} className="w-full rounded-xl border border-slate-300 bg-white p-3 text-sm outline-none focus:border-indigo-500" placeholder="Per esempio: Atto di indirizzo 2026" />
             </label>
 
             <label className="block space-y-2">
@@ -175,7 +204,7 @@ export function AddKnowledgeSourceModal({
               <span className="text-sm font-bold text-slate-800">Testo della fonte</span>
               <textarea
                 value={newKbDocContent}
-                onChange={(event) => { setNewKbDocContent(event.target.value); if (pendingMetadata) setTextEditedAfterImport(true); }}
+                onChange={(event) => { setNewKbDocContent(event.target.value); setSaveState('IDLE'); setSaveMessage(''); if (pendingMetadata) setTextEditedAfterImport(true); }}
                 rows={8}
                 className="w-full rounded-xl border border-slate-300 bg-white p-3 text-sm leading-6 outline-none focus:border-indigo-500"
                 placeholder="Il testo estratto dal documento comparirà qui. Puoi anche incollare direttamente un testo."
@@ -190,14 +219,21 @@ export function AddKnowledgeSourceModal({
           </details>
         </div>
 
-        <div className="flex shrink-0 flex-col-reverse gap-2 border-t bg-slate-50 px-5 py-4 sm:flex-row sm:justify-end">
-          <button onClick={close} className="min-h-11 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-bold text-slate-700 hover:bg-slate-100">Annulla</button>
-          <button onClick={() => { void save(); }} disabled={blockedByExtraction || !newKbDocTitle.trim() || !newKbDocContent.trim()} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-bold text-white hover:bg-indigo-500 disabled:cursor-not-allowed disabled:bg-slate-300">
-            <Check className="h-4 w-4" />
-            Aggiungi alla conoscenza
-          </button>
+        <div className="shrink-0 border-t bg-slate-50 px-5 py-4">
+          {saveMessage && (
+            <p className={`mb-3 rounded-lg border px-3 py-2 text-sm leading-5 ${saveState === 'ERROR' ? 'border-rose-200 bg-rose-50 text-rose-900' : 'border-indigo-200 bg-indigo-50 text-indigo-900'}`} aria-live="assertive">
+              {saveMessage}
+            </p>
+          )}
+          <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+            <button type="button" onClick={close} disabled={saveState === 'SAVING'} className="min-h-11 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-bold text-slate-700 hover:bg-slate-100 disabled:opacity-50">Annulla</button>
+            <button type="submit" disabled={saveDisabled} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-bold text-white hover:bg-indigo-500 disabled:cursor-not-allowed disabled:bg-slate-300">
+              <Check className="h-4 w-4" />
+              {saveState === 'SAVING' ? 'Salvataggio…' : 'Aggiungi alla conoscenza'}
+            </button>
+          </div>
         </div>
-      </div>
+      </form>
     </div>
   );
 }
