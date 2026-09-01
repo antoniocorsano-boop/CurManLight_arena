@@ -155,6 +155,11 @@ describe('R7A4 shared submitted proposal authority boundary', () => {
     expect(SHARED_PROPOSAL_CANONICAL_PAYLOAD_SCHEMA.fieldTypes.structuralFootprint).toBe('string');
     expect(SHARED_PROPOSAL_CANONICAL_PAYLOAD_SCHEMA.referenceRequiredKeys).toEqual(['id', 'entityType']);
     expect(SHARED_PROPOSAL_CANONICAL_PAYLOAD_SCHEMA.referenceOptionalKeys).toEqual(['snapshotLabel']);
+    expect(SHARED_PROPOSAL_CANONICAL_PAYLOAD_SCHEMA.referenceFieldTypes).toEqual({
+      id: 'non-empty-string',
+      entityType: 'canonical-entity-type',
+      snapshotLabel: 'optional-non-empty-string',
+    });
     expect(SHARED_PROPOSAL_CANONICAL_PAYLOAD_SCHEMA.rejectsExtraTopLevelKeys).toBe(true);
     expect(SHARED_PROPOSAL_CANONICAL_PAYLOAD_SCHEMA.rejectsExtraReferenceKeys).toBe(true);
     expect(SHARED_PROPOSAL_CANONICAL_PAYLOAD_SCHEMA.serialization).toBe(
@@ -212,6 +217,13 @@ describe('R7A4 shared submitted proposal authority boundary', () => {
       expect(capableRoles.length).toBeGreaterThan(0);
     }
 
+    const reviewCapableRoles = roles.filter((role) =>
+      getRoleCapabilities(role).includes('REVISION_REVIEW'),
+    );
+    expect(reviewCapableRoles).toEqual(['dipartimento', 'referente', 'dirigente']);
+    expect([...SHARED_PROPOSAL_AUTHORITY_BOUNDARY.reviewActorRoles]).toEqual(reviewCapableRoles);
+    expect(SHARED_PROPOSAL_AUTHORITY_BOUNDARY.lifecycleReceiptRoleDerivedFromTransitionCapability).toBe(true);
+
     expect(getSharedProposalLifecycleTransitionPolicy('changes-requested', 'submitted')).toBeNull();
     expect(getSharedProposalLifecycleTransitionPolicy('accepted-for-decision', 'archived')).toBeNull();
     expect(SHARED_PROPOSAL_AUTHORITY_BOUNDARY.lifecycleMutationUsesClosedTransitionPolicy).toBe(true);
@@ -258,8 +270,10 @@ describe('R7A4 shared submitted proposal authority boundary', () => {
     expect(receipt.fromState).toBe(command.expectedLifecycleState);
     expect(receipt.toState).toBe(command.nextLifecycleState);
     expect(receipt.capabilityUsed).toBe(policy?.requiredCapability);
+    expect(receipt.transitionedByRole).toBe('dipartimento');
     expect(receipt.clientRequestId).toBe(command.clientRequestId);
     expect(SHARED_PROPOSAL_AUTHORITY_BOUNDARY.lifecycleReceiptDerivedFromTransitionPolicy).toBe(true);
+    expect(SHARED_PROPOSAL_AUTHORITY_BOUNDARY.lifecycleReceiptRoleDerivedFromTransitionCapability).toBe(true);
     expect(SHARED_PROPOSAL_AUTHORITY_BOUNDARY.lifecycleMutationPersistsImmutableReceipt).toBe(true);
   });
 
