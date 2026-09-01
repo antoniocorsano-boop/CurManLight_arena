@@ -118,8 +118,11 @@ export function executeA02ToA03ProposalTransfer(
     createEntityReference(s as EntityId, 'source' as EntityType),
   );
 
+  // A02 evidence identifiers refer to curriculum nodes whose domain nodeType is
+  // `evidence`; `evidence` itself is not a canonical EntityType. Preserve the
+  // semantic identity as a canonical curriculum-node reference.
   const evidenceRefs = payload.evidences.map(e =>
-    createEntityReference(e as EntityId, 'evidence' as EntityType),
+    createEntityReference(e as EntityId, 'curriculum-node'),
   );
 
   // Create the proposal via repository

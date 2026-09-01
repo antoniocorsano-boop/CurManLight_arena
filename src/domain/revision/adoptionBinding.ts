@@ -3,6 +3,8 @@ export interface InstitutionalAdoptionBindingV2 {
   targetNodeRef: string;
   baseCurriculumVersionRef: string;
   bindingFingerprint: string;
+  /** Present only for R7A3+ receipts backed by a server-owned frozen proposal snapshot. */
+  proposalSnapshotVersion?: 1;
 }
 
 export interface InstitutionalAdoptionBindingMaterial {
