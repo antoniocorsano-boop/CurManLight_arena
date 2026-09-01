@@ -4,181 +4,150 @@ Status: **FROZEN_FOR_REVIEW**
 
 ## Objective
 
-R7A4 freezes the authority boundary between local proposal preparation and institutional proposal authority.
+R7A4 freezes the authority boundary between local proposal preparation and institutional shared proposal authority.
 
-The goal is not to make every draft remote. The goal is to ensure that, once a proposal enters an institutional workflow, the shared server independently owns the exact submitted proposal version that later review, frozen deliberation evidence and institutional decision refer to.
+It is a contract-only slice. It introduces no database migration, RPC, UI, synchronization runtime, `CURRICULUM_ADOPT` assignment or canonical curriculum mutation.
 
-R7A4 is a contract-only slice. It introduces no database migration, no RPC, no UI, no `CURRICULUM_ADOPT` assignment and no canonical curriculum mutation.
+R7A4 does not close R7 P3 Curriculum analysis. P3 remains a separate partial process because whole-school deterministic coverage/gap analysis is incomplete.
 
-## Problem
+## Authority transition
 
-Today `RevisionProposal`, `RevisionProposalVersion` and proposal lifecycle transitions are produced in the local `revisionArchive` and persisted through Zustand/IndexedDB. R7A3 can validate and immutably freeze the complete proposal-version payload used by a decision, but the server first learns that proposal content at freeze time.
-
-R7A3 therefore proves exact payload shape, server-side SHA-256 recomputation, immutability of the deliberation snapshot and authenticated institutional decision binding. It does not yet prove that the frozen payload equals a proposal version already owned independently by shared proposal authority.
-
-For this reason canonical adoption remains fail-closed with `PROPOSAL_AUTHORITY_UNAVAILABLE`.
-
-## Distinction from R7 P3
-
-R7 **P3 Curriculum analysis** remains separate. P3 is partial because whole-school deterministic coverage/gap analysis is incomplete.
-
-Shared proposal authority is not P3 closure. It is an authority prerequisite in the revision → decision → adoption chain.
-
-## Canonical authority transition
-
-The boundary is:
+The canonical transition is:
 
 `local preparation -> authenticated submission -> shared institutional proposal`
 
-Local preparation includes `draft`, `ready-for-review`, editing and local frozen proposal versions. The first shared-authoritative state is `submitted`.
+`draft` and `ready-for-review` remain local preparation states. `submitted` is the first shared-authoritative state.
 
 After successful submission:
 
-- the shared server is authoritative for submitted version identity, payload, fingerprint and institutional lifecycle;
-- local persistence may remain only a cache/projection;
-- local state can never prove that an institutional transition succeeded;
-- failed or unavailable shared operations never fall back to local institutional success.
+- the shared server is authoritative for proposal/version identity, immutable submitted content, fingerprint, scope, provenance and institutional lifecycle;
+- local persistence is projection/cache only;
+- a failed/unavailable shared operation cannot fall back to local institutional success.
 
-## Shared authoritative identity
+## Server principal and fresh authority
 
-Every shared version binds:
+A structurally valid `WorkspaceActorContext` is not sufficient authority evidence.
 
-- `workspaceId`;
-- `proposalRef`;
-- `proposalVersionRef`;
-- exact canonical proposal payload;
-- server-recomputed SHA-256 fingerprint;
-- `targetNodeRef`, required to be non-empty after trimming;
-- `baseCurriculumVersionRef`, required to be non-empty after trimming;
-- authenticated submitter user and role;
-- server-authored `submittedAt`;
-- lifecycle state;
-- previous shared proposal version reference.
+Every shared read or mutation must, at call time:
 
-Submitted content is immutable. Content changes create a new immutable submitted version.
+1. resolve the authenticated principal from the server session (`auth.uid()` in Supabase or equivalent);
+2. re-read membership using that server principal, never a caller-selected user id;
+3. require server principal == `context.membership.userId`;
+4. require fresh membership workspace == requested workspace;
+5. require active workspace and active membership;
+6. re-check the capability required by the operation/transition;
+7. fail closed on missing/revoked/mismatched authority evidence.
 
-A shared-authoritative proposal may never be created with blank institutional scope. Both `targetNodeRef.trim().length > 0` and `baseCurriculumVersionRef.trim().length > 0` are mandatory for the first submission and every replacement. This keeps shared proposal authority compatible with the downstream R7A3 decision/rebind path.
+Shared reads require `CURRICULUM_READ`. Submission requires `CURRICULUM_PROPOSE`. Lifecycle mutation uses the capability frozen by the exact transition policy.
 
-## Authentication, server principal and fresh authority evidence
+## Submission roles and provenance
 
-A structurally valid `WorkspaceActorContext` is an identity hint, not sufficient authority evidence by itself.
-
-Every shared operation must, at call time:
-
-1. resolve the authenticated principal from the **server session**; for Supabase runtime this means `auth.uid()` or an equivalent server-trusted principal source;
-2. re-read membership using that server-authenticated principal, never a caller-selected user ID;
-3. require the server principal to equal `context.membership.userId`;
-4. require the fresh membership workspace to equal the requested/command workspace;
-5. require membership `active` and workspace `active`;
-6. verify the capability required by the operation or transition;
-7. fail closed on missing principal, revocation, identity/workspace mismatch or unavailable authority evidence.
-
-A caller cannot borrow another member's authority merely by constructing a valid-looking context. Self-declared roles remain valid only for local preparation.
-
-Shared reads require fresh `CURRICULUM_READ` authority. Shared submission requires fresh `CURRICULUM_PROPOSE` authority.
-
-## Submission authority and provenance
-
-Only roles currently carrying `CURRICULUM_PROPOSE` may appear as successful shared submitters:
+Only current `CURRICULUM_PROPOSE` holders may be successful shared submitters:
 
 - `docente`;
 - `dipartimento`;
 - `referente`.
 
-Runtime membership/capability verification remains mandatory.
+On success:
 
-On successful submission:
+- `submittedByUserId` is the freshly verified server-session member;
+- `submittedByRole` is that same fresh member role;
+- provenance cannot be independently supplied by the client;
+- `submittedAt` is generated by the successful server transaction clock;
+- an exact idempotent retry returns the original provenance and timestamp unchanged.
 
-- `submittedByUserId` equals the freshly verified server-session membership user;
-- `submittedByRole` equals the freshly verified membership role;
-- `submittedPrincipalSource` is server-session authority, not caller provenance;
-- `submittedAt` is generated by the authoritative server transaction clock;
-- provenance and audit time may not be supplied independently by the client.
+## Exact canonical proposal payload
 
-An idempotent retry returns the original successful audit timestamp unchanged; it does not create a new apparent institutional event time.
+`canonicalPayload` is the exact UTF-8 serialization of:
 
-## Exact canonical payload contract
+`JSON.stringify(buildRevisionProposalVersionFingerprintPayload(version))`
 
-`canonicalPayload` is not an unconstrained JSON string. R7A4 freezes the same payload contract used by `buildRevisionProposalVersionFingerprintPayload()` and R7A3.
+The server recomputes SHA-256 over those exact bytes and compares it with `proposalVersionFingerprint`.
 
-The canonical top-level key order is:
+Allowed top-level key order:
 
 `id, proposalRef, versionNumber, currentTextSnapshot, proposedText, rationale, sourceRefs, evidenceRefs, createdAt, structuralFootprint, previousVersionRef?, changeNote?, frozen`
 
-Required fields are all of the above except optional `previousVersionRef` and `changeNote`. Validation is strict:
+Unknown top-level or reference keys fail validation.
 
-- `id`, `proposalRef`: non-empty strings;
+### R7A3-compatible value rules
+
+The validator must implement the same value rules already enforced by R7A3:
+
+- `id`: string, **non-empty after trim**;
+- `proposalRef`: string, **non-empty after trim**;
 - `versionNumber`: positive integer;
 - `currentTextSnapshot`: string;
-- `proposedText`: non-empty string;
+- `proposedText`: string, **non-empty after trim**;
 - `rationale`: string;
 - `sourceRefs`, `evidenceRefs`: arrays of strict reference objects;
-- `createdAt`: parseable timestamp string;
-- `structuralFootprint`: arbitrary string, including the empty string; R7A4 does not reinterpret this field as JSON;
-- optional `previousVersionRef`, `changeNote`: non-empty strings when present;
+- `createdAt`: non-empty parseable timestamp string;
+- `structuralFootprint`: arbitrary string, including `''`; it is not reinterpreted as JSON;
+- optional `previousVersionRef`: string, non-empty after trim when present;
+- optional `changeNote`: string, non-empty after trim when present;
 - `frozen`: literal `true`.
 
-Each reference requires only `id` and `entityType`, may contain `snapshotLabel`, and rejects extra keys. Nested values are also strict:
+Each reference requires `id` and `entityType`, may contain `snapshotLabel`, and rejects extra keys:
 
-- reference `id`: non-empty string;
-- reference `entityType`: one value from the canonical closed set below;
-- optional `snapshotLabel`: non-empty string when present.
+- reference `id`: non-empty after trim;
+- reference `entityType`: one of the canonical 16 entity types;
+- optional `snapshotLabel`: non-empty after trim when present.
 
-`entityType` is limited to the canonical 16-type closed set:
+Canonical entity types:
 
 `institute, source, curriculum-version, curriculum-segment, curriculum-node, curriculum-link, revision-proposal, decision, teaching-design, document, document-version, template, class-context, assessment, actor, event`.
 
-Unknown top-level or reference keys fail validation.
+Payload `id` and `proposalRef` must also match the submitted command identities exactly.
 
-The fingerprint input bytes are exactly:
+## Proposal scope
 
-`UTF-8(JSON.stringify(buildRevisionProposalVersionFingerprintPayload(version)))`
+`targetNodeRef` and `baseCurriculumVersionRef` are consequential institutional bindings outside the fingerprint payload.
 
-and the digest is SHA-256. Server-side validation must additionally bind payload `id`/`proposalRef` to the submitted proposal/version identity and reject any mismatch between the server-recomputed digest and `proposalVersionFingerprint`.
+Before first submission or replacement:
 
-This guarantees that an R7A4 shared version cannot later become incompatible with R7A3's exact frozen deliberation snapshot contract.
+- both must be strings with at least one non-whitespace character after trimming;
+- `''`, spaces-only, tabs-only and newline-only values fail closed;
+- validation occurs before persistence or shared-head advancement;
+- blank values are never normalized into defaults.
 
-## Proposal scope validation
+For a replacement under the same `proposalRef`:
 
-`targetNodeRef` and `baseCurriculumVersionRef` are consequential institutional bindings outside the fingerprint payload and therefore require their own server-side validation before authority is created.
+- both scope bindings must exactly equal the authoritative predecessor;
+- any target/base change requires a new proposal identity.
 
-For every first submission and replacement:
+## Workspace-wide proposal-version identity
 
-- `targetNodeRef` must be a string with at least one non-whitespace character after trimming;
-- `baseCurriculumVersionRef` must be a string with at least one non-whitespace character after trimming;
-- `''`, whitespace-only, tab-only and newline-only values fail closed;
-- validation occurs before persistence or head advancement;
-- the server does not normalize a blank value into a default scope;
-- replacement must additionally satisfy the predecessor equality rules below.
+`proposalVersionRef` is an institutional identity, not a proposal-local convenience id.
 
-The executable contract exports `SHARED_PROPOSAL_SCOPE_BINDING_SCHEMA` and `isValidSharedProposalScopeRef()` so R7A5 can implement and test exactly the same rule.
+R7A4 freezes the same identity scope required downstream by R7A3:
 
-## Shared head, CAS and replacement rules
+- `(workspaceId, proposalVersionRef)` is unique across the entire workspace;
+- one `(workspaceId, proposalVersionRef)` is immutably bound to exactly one `proposalRef`;
+- a first submission cannot reuse an existing workspace proposal-version id under another proposal;
+- a retry with the same identity may succeed only when it is the exact same canonical operation under the idempotency rules;
+- version-id collision or version-to-proposal rebinding fails closed.
 
-Every operation that can advance or replace the current shared proposal state uses explicit compare-and-swap semantics.
+R7A5 persistence must enforce this invariant transactionally, not only through client checks.
 
-For submission:
+## Shared head and replacement CAS
 
-- both scope bindings must first pass the trimmed-non-empty validation above;
+Submission uses explicit compare-and-swap semantics:
+
 - `expectedCurrentSharedProposalVersionRef = null` means explicitly “first shared submission”;
-- a non-null expected head must equal the authoritative current head;
-- `previousSharedProposalVersionRef` must equal that expected head;
-- replacement submission is allowed only when the current authoritative predecessor is `changes-requested`;
-- replacement must create a new proposal-version identity;
-- for the same `proposalRef`, replacement must preserve exactly the authoritative predecessor `targetNodeRef`;
-- for the same `proposalRef`, replacement must preserve exactly the authoritative predecessor `baseCurriculumVersionRef`;
-- if either target or curriculum-base scope changes, the operation requires a **new proposal identity**, not a replacement version of the existing proposal chain;
-- stale or concurrent submissions fail instead of overwriting a newer head.
-
-This prevents a proposer from silently replacing a version that is still under institutional review, redirecting an existing proposal chain to a different institutional scope, or creating a shared-authoritative proposal with unusable blank scope.
+- otherwise expected head must equal the authoritative current head;
+- `previousSharedProposalVersionRef` must equal the successful expected head;
+- replacement is allowed only when the current authoritative predecessor is `changes-requested`;
+- replacement creates a new proposal-version identity;
+- replacement preserves target/base scope;
+- stale/concurrent submissions fail instead of overwriting a newer head.
 
 ## Closed shared lifecycle policy
 
-The local `PROPOSAL_STATUS_TRANSITIONS` table is not reused as institutional authority policy.
+The local proposal state machine is not automatically institutional authority policy.
 
-R7A4 freezes the following shared transitions only:
+R7A4 authorizes only:
 
-| From | To | Required capability | Additional actor binding |
+| From | To | Capability | Actor binding |
 |---|---|---|---|
 | `submitted` | `under-review` | `REVISION_REVIEW` | authorized member |
 | `submitted` | `withdrawn` | `CURRICULUM_PROPOSE` | original submitter |
@@ -186,178 +155,136 @@ R7A4 freezes the following shared transitions only:
 | `under-review` | `accepted-for-decision` | `REVISION_REVIEW` | authorized member |
 | `under-review` | `rejected` | `REVISION_REVIEW` | authorized member |
 
-Every lifecycle mutation must additionally:
+Every lifecycle mutation requires:
 
-- resolve and bind the server-session principal;
-- re-read fresh server membership;
-- verify the capability selected by this exact policy tuple;
-- require the recorded transition role to be one of the roles that currently holds that exact capability;
-- require the target version to remain the current shared head;
-- compare-and-swap the expected lifecycle state;
-- fail closed on stale state, revoked membership or capability mismatch.
+- server-session principal binding;
+- fresh membership and workspace checks;
+- exact transition-policy capability check;
+- target version still current shared head;
+- expected lifecycle-state CAS;
+- immutable transition receipt;
+- server-authored timestamp.
 
-For the current capability map, `REVISION_REVIEW` transition receipts may therefore be attributed only to `dipartimento`, `referente` or `dirigente`; `CURRICULUM_PROPOSE` transition receipts remain limited to `docente`, `dipartimento` or `referente`, with the additional original-submitter binding where the policy requires it.
+`REVISION_REVIEW` receipts may be attributed only to `dipartimento`, `referente` or `dirigente`. `CURRICULUM_PROPOSE` mutation receipts remain limited to `docente`, `dipartimento` or `referente`, with original-submitter binding where required.
 
-No other transition is implicitly authorized by R7A4.
+`changes-requested -> ready-for-review` remains local preparation. Corrected content crosses authenticated submission again as a new immutable shared version.
 
-In particular, `changes-requested -> ready-for-review` is a **local preparation** step. It never rewrites the shared historical version. A corrected local version must cross the authenticated submission boundary again and become a new shared version.
+## Lifecycle receipt coherence
 
-Archival policy for terminal shared states is intentionally deferred until an explicit authority rule is designed; it is not inferred from the local state machine.
-
-## Lifecycle audit receipt coherence
-
-A lifecycle transition is not only a mutable state change. Every successful shared lifecycle mutation must persist immutable audit evidence binding:
+A successful lifecycle receipt binds:
 
 - workspace;
-- proposal and exact proposal version;
-- previous and next lifecycle state;
+- proposal/version;
+- exact previous and next state;
 - exact capability selected by the transition policy;
-- freshly verified actor user and capability-compatible role;
+- freshly verified actor identity and capability-compatible role;
 - server-authored transition timestamp;
 - `clientRequestId`.
 
-Receipt and returned version are structurally derived from the **same allowed transition tuple**. Therefore a conforming implementation cannot independently choose `fromState`, `toState`, `capabilityUsed`, `transitionedByRole`, or the returned version lifecycle state.
+Command, selected policy tuple, receipt and returned version state must agree exactly. They cannot be selected independently.
 
-For a command `from -> to`:
+## Principal-bound idempotency
 
-- receipt `fromState == command.expectedLifecycleState`;
-- receipt `toState == command.nextLifecycleState`;
-- receipt `capabilityUsed == policy.requiredCapability`;
-- receipt `transitionedByRole` belongs to the role set that holds `policy.requiredCapability`;
-- receipt identifiers and `clientRequestId` equal the command;
-- returned `version.lifecycleState == toState`;
-- actor identity/role derive from fresh server-session membership;
-- `transitionedAt` derives from the successful server mutation transaction clock.
+Consequential request ids are bound to the authenticated server principal.
 
-An idempotent retry returns the original receipt and original `transitionedAt` unchanged.
+For both submission and lifecycle mutation:
 
-## Idempotency
-
-Every consequential shared mutation is idempotent by `clientRequestId`.
-
-The same request identifier with the same canonical operation returns the same institutional result, including the original audit timestamps. Reuse of the same request identifier with conflicting payload, proposal/version, expected head or lifecycle transition fails closed.
-
-Idempotency may never be implemented as “last write wins”.
+- canonical idempotency identity includes `serverPrincipalUserId + clientRequestId`;
+- the same principal repeating the exact same canonical operation receives the original institutional result/receipt/timestamp;
+- the same request id with a conflicting operation fails closed;
+- **a different authenticated principal reusing an existing `clientRequestId` fails closed even when all other operation fields are identical**;
+- cross-principal reuse must never return a result attributed to the original actor;
+- idempotency is never “last write wins”.
 
 ## Adversarial invariant matrix
-
-R7A4 is reviewed against the following classes of failure rather than waiting for individual implementation bugs:
 
 | Invariant | Submission | Lifecycle mutation | Shared read |
 |---|---|---|---|
 | server-session principal binding | yes | yes | yes |
-| context principal/workspace equality | yes | yes | yes |
-| fresh membership re-read | yes | yes | yes |
-| active workspace/member | yes | yes | yes |
+| fresh membership/workspace | yes | yes | yes |
 | capability check | `CURRICULUM_PROPOSE` | transition-specific | `CURRICULUM_READ` |
-| actor provenance bound to membership | yes | yes, in receipt | n/a |
-| strict canonical payload schema | yes | n/a | n/a |
-| strict nested reference value schema | yes | n/a | n/a |
-| exact canonical byte serialization | yes | n/a | n/a |
-| server fingerprint recomputation | yes | n/a | n/a |
-| target/base scope trimmed-non-empty | yes | preserved | preserved |
-| current-head guard | CAS | yes | n/a |
-| expected-state CAS | submission head | lifecycle state | n/a |
-| proposal scope preserved across replacement | yes | n/a | n/a |
-| immutable version content | yes | preserved | preserved |
+| actor provenance binding | yes | receipt | n/a |
+| trimmed canonical required fields | yes | n/a | n/a |
+| strict reference schema | yes | n/a | n/a |
+| exact canonical serialization + SHA-256 | yes | n/a | n/a |
+| target/base trimmed-non-empty | yes | preserved | preserved |
+| `(workspace, proposalVersionRef)` uniqueness | yes | preserved | preserved |
+| immutable version-to-proposal binding | yes | preserved | preserved |
+| current-head guard/CAS | yes | yes | n/a |
+| closed transition policy | n/a | yes | n/a |
 | receipt derived from policy tuple | n/a | yes | n/a |
-| receipt role derived from required capability | n/a | yes | n/a |
 | server-authored audit timestamp | yes | yes | n/a |
-| immutable institutional audit evidence | submission provenance | receipt | n/a |
-| idempotency / conflict detection | yes | yes | n/a |
-| retry preserves original timestamp | yes | yes | n/a |
-| revocation fails closed | yes | yes | yes |
+| idempotency bound to server principal | yes | yes | n/a |
+| cross-principal request-id reuse | fail closed | fail closed | n/a |
+| revocation | fail closed | fail closed | fail closed |
 | local institutional fallback | never | never | never |
 
-This matrix is enforced by the R7A4 Authority Contract Harness in `src/__tests__/r7a4-shared-submitted-proposal-authority-boundary.test.ts` together with the dedicated scope guard in `src/__tests__/r7a4-shared-proposal-scope-binding.test.ts`.
+The executable guard lives in the R7A4 Authority Contract Harness plus the focused identity-closure and scope-binding tests.
 
 ## Relationship to R7A3
 
-R7A3 remains valid and is not replaced by R7A4.
+R7A3 remains valid and is not replaced.
 
-The future strengthened decision path must require:
+The future strengthened chain is:
 
 `shared authoritative proposal version -> exact R7A3 deliberation snapshot -> institutional decision`
 
-Before removing `PROPOSAL_AUTHORITY_UNAVAILABLE`, the server must prove that snapshot workspace/proposal/version, fingerprint, target/base binding and decision-eligible lifecycle all match the authoritative shared proposal version.
+Before `PROPOSAL_AUTHORITY_UNAVAILABLE` can be removed, the server must prove exact workspace/proposal/version, fingerprint, target/base scope and decision-eligible lifecycle equality with the authoritative shared proposal version.
 
-R7A4 itself does not remove the blocker because it contains no shared persistence implementation.
+R7A4 itself does not remove that blocker because it contains no persistence implementation.
 
 ## Relationship to P6
 
-R7A4 does not make canonical adoption executable.
-
-Still intentionally unavailable:
+R7A4 does not make canonical adoption executable. Still unavailable:
 
 - `CURRICULUM_ADOPT` for every current role;
-- shared canonical candidate materialization;
-- canonical curriculum registry/head mutation;
-- canonical adoption RPC;
+- canonical candidate materialization;
+- canonical registry/head mutation;
+- adoption RPC;
 - `CanonicalAdoptionReceipt` persistence;
 - automatic or inferred adoption.
 
-## Compatibility and no-double-authority rule
+## R7A5 implementation obligations
 
-Existing local proposals remain readable/editable until explicitly submitted through the future shared authority path. No historical local record is retroactively promoted.
-
-After successful shared submission there is exactly one institutional authority: the shared server. Local state is projection only. Any reconciliation mismatch fails visibly.
-
-## Implementation sequence
-
-### R7A5 — Shared Proposal Persistence
-
-Must implement the frozen contract, including:
+R7A5 Shared Proposal Persistence must implement this frozen contract, including:
 
 - shared proposal/version persistence;
 - active workspace/member RLS;
-- RPC identity anchored to the server-session principal (`auth.uid()` in Supabase);
+- server-session principal anchoring;
 - strict principal/context/workspace binding;
-- authenticated submission RPC;
-- exact canonical payload-schema validation, including nested reference value constraints;
-- exact UTF-8 serialization compatibility with the fingerprint builder;
+- exact canonical payload validation and serialization;
+- R7A3-compatible trim validation;
 - server-side SHA-256 recomputation;
-- mandatory trimmed-non-empty validation of `targetNodeRef` and `baseCurriculumVersionRef` before first submission or replacement;
+- scope validation;
+- workspace-wide `proposalVersionRef` uniqueness and immutable proposal binding;
 - immutable submitted versions;
-- server-authored immutable submission time/provenance;
+- server-authored provenance/timestamps;
 - CAS shared head;
-- replacement only from `changes-requested`;
-- exact target/base scope preservation across replacement, with new proposal identity required for scope changes;
-- closed shared lifecycle policy;
-- fresh capability verification on each lifecycle mutation;
-- lifecycle receipts derived from the exact transition-policy tuple and restricted to capability-compatible roles;
-- server-authored immutable lifecycle timestamps;
-- idempotency/conflicting-request protection with stable retry receipts/timestamps;
-- client repository implementation;
+- replacement only from `changes-requested` with preserved scope;
+- closed lifecycle policy and fresh transition capability checks;
+- immutable lifecycle receipts;
+- principal-bound idempotency and cross-principal conflict rejection;
 - no local institutional-success fallback.
 
-### R7A6 — Authoritative Decision Rebind
-
-Must bind the R7A3 freeze and institutional decision to the exact authoritative shared version and its decision-eligible state. Only after executable proof may `PROPOSAL_AUTHORITY_UNAVAILABLE` be reconsidered.
-
-Canonical candidate materialization, canonical registry and deliberate `CURRICULUM_ADOPT` policy remain later work.
+R7A6 later rebinds R7A3 decision/freeze to this authoritative shared version. Canonical materialization, registry and deliberate `CURRICULUM_ADOPT` policy remain later work.
 
 ## Non-goals
 
-No Supabase schema, RPC, remote draft editor, synchronization engine, P3 curriculum-analysis closure, canonical registry, `CURRICULUM_ADOPT`, adoption mutation, deploy or automatic adoption.
+No Supabase schema/RPC in R7A4, no remote draft editor, no synchronization engine, no P3 closure, no canonical registry, no `CURRICULUM_ADOPT`, no adoption mutation, no deploy and no automatic adoption.
 
 ## Exit gate
 
 R7A4 is complete only when review accepts that:
 
-- local preparation remains local;
-- authenticated submission is the first shared-authority boundary;
-- server-session principal identity, fresh membership and workspace are bound on every shared operation;
-- submission provenance is bound to that verified principal/member;
-- canonical proposal payload schema, nested reference constraints and exact fingerprint serialization are frozen;
-- both institutional scope bindings are trimmed-non-empty before shared authority can be created;
-- submitted content is immutable;
-- audit timestamps are server-authored and stable across idempotent retries;
-- replacement is CAS-protected, only follows `changes-requested`, and preserves target/base scope;
-- scope changes require a new proposal identity;
-- lifecycle mutations use the closed least-privilege transition policy;
-- lifecycle receipt, capability-compatible role and returned state are derived from the same policy tuple;
-- institutional lifecycle changes create immutable audit receipts;
-- mutations are idempotent and conflicting retries fail closed;
+- local preparation remains local and `submitted` is the first shared-authoritative state;
+- every shared operation uses server-session principal + fresh authority evidence;
+- canonical payload validation exactly matches R7A3, including trimmed required values;
+- target/base scope is valid and immutable across a proposal chain;
+- `proposalVersionRef` is workspace-unique and immutably bound to one proposal;
+- shared-head and lifecycle mutations are CAS-protected;
+- lifecycle mutation follows only the closed least-privilege policy and persists coherent receipts;
+- audit timestamps/provenance are server-authored;
+- idempotency is bound to the server principal and cross-principal request-id reuse fails closed;
 - no local fallback can become institutional success;
 - no current role gains `CURRICULUM_ADOPT`;
-- `PROPOSAL_AUTHORITY_UNAVAILABLE` remains active until later runtime/rebind slices actually implement these invariants.
+- `PROPOSAL_AUTHORITY_UNAVAILABLE` remains active until later runtime/rebind slices actually prove these invariants.
