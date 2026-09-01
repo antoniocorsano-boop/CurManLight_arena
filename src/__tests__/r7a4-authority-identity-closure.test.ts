@@ -5,9 +5,11 @@ import {
   SHARED_PROPOSAL_CANONICAL_PAYLOAD_SCHEMA,
   SHARED_PROPOSAL_FINGERPRINT_SCHEMA,
   SHARED_PROPOSAL_IDEMPOTENCY_SCHEMA,
+  SHARED_PROPOSAL_POSTGRES_STRING_SCHEMA,
   SHARED_PROPOSAL_VERSION_IDENTITY_SCHEMA,
   isCanonicalSharedProposalIdentityRef,
   isCanonicalSharedProposalVersionFingerprint,
+  isPostgresRepresentableSharedProposalString,
 } from '../domain/revision';
 
 describe('R7A4 authority identity closure', () => {
@@ -22,6 +24,49 @@ describe('R7A4 authority identity closure', () => {
       'trimmed-non-empty-string',
     );
     expect(SHARED_PROPOSAL_AUTHORITY_BOUNDARY.canonicalPayloadTrimRulesMatchR7A3).toBe(true);
+  });
+
+  it('rejects canonical payload strings PostgreSQL text/jsonb cannot represent', () => {
+    expect(SHARED_PROPOSAL_POSTGRES_STRING_SCHEMA).toEqual({
+      canonicalPayloadTopLevelStringFields: [
+        'id',
+        'proposalRef',
+        'currentTextSnapshot',
+        'proposedText',
+        'rationale',
+        'createdAt',
+        'structuralFootprint',
+        'previousVersionRef',
+        'changeNote',
+      ],
+      canonicalPayloadReferenceStringFields: ['id', 'entityType', 'snapshotLabel'],
+      rejectsCodePointNull: true,
+      rejectsUnpairedUtf16Surrogates: true,
+      allowsValidUtf16SurrogatePairs: true,
+      storageTargets: ['PostgreSQL-text', 'PostgreSQL-jsonb'],
+    });
+    expect(SHARED_PROPOSAL_CANONICAL_PAYLOAD_SCHEMA.allStringValuesMustBePostgresJsonbRepresentable).toBe(
+      true,
+    );
+    expect(SHARED_PROPOSAL_CANONICAL_PAYLOAD_SCHEMA.postgresStringSchema).toBe(
+      SHARED_PROPOSAL_POSTGRES_STRING_SCHEMA,
+    );
+    expect(SHARED_PROPOSAL_AUTHORITY_BOUNDARY.postgresStringSchema).toBe(
+      SHARED_PROPOSAL_POSTGRES_STRING_SCHEMA,
+    );
+    expect(SHARED_PROPOSAL_AUTHORITY_BOUNDARY.requiresPostgresRepresentableCanonicalPayloadStrings).toBe(
+      true,
+    );
+    expect(SHARED_PROPOSAL_AUTHORITY_BOUNDARY.rejectsPayloadCodePointNull).toBe(true);
+    expect(SHARED_PROPOSAL_AUTHORITY_BOUNDARY.rejectsPayloadUnpairedUtf16Surrogates).toBe(true);
+
+    for (const value of ['\u0000', `before\u0000after`, '\ud800', '\udc00', `x\ud800y`, `x\udc00y`]) {
+      expect(isPostgresRepresentableSharedProposalString(value)).toBe(false);
+    }
+
+    for (const value of ['', 'plain text', '😀', 'before😀after']) {
+      expect(isPostgresRepresentableSharedProposalString(value)).toBe(true);
+    }
   });
 
   it('freezes the proposal fingerprint as the server-recomputed lowercase SHA-256 digest', () => {
@@ -75,6 +120,7 @@ describe('R7A4 authority identity closure', () => {
     ]);
     expect(SHARED_PROPOSAL_VERSION_IDENTITY_SCHEMA.commandIdentityMustEqualTrimmedValue).toBe(true);
     expect(SHARED_PROPOSAL_VERSION_IDENTITY_SCHEMA.rejectsAdoptionBindingDelimiter).toBe(true);
+    expect(SHARED_PROPOSAL_VERSION_IDENTITY_SCHEMA.requiresPostgresRepresentableString).toBe(true);
     expect(SHARED_PROPOSAL_VERSION_IDENTITY_SCHEMA.forbiddenCharacters).toEqual([
       SHARED_PROPOSAL_ADOPTION_BINDING_DELIMITER,
     ]);
@@ -87,6 +133,9 @@ describe('R7A4 authority identity closure', () => {
     expect(SHARED_PROPOSAL_AUTHORITY_BOUNDARY.proposalIdentityReferencesRejectAdoptionDelimiter).toBe(
       true,
     );
+    expect(SHARED_PROPOSAL_AUTHORITY_BOUNDARY.proposalIdentityReferencesRequirePostgresRepresentability).toBe(
+      true,
+    );
 
     for (const value of [
       '',
@@ -97,6 +146,8 @@ describe('R7A4 authority identity closure', () => {
       'proposal-1\n',
       `proposal${SHARED_PROPOSAL_ADOPTION_BINDING_DELIMITER}1`,
       `version${SHARED_PROPOSAL_ADOPTION_BINDING_DELIMITER}1`,
+      'proposal\u00001',
+      'proposal\ud800',
     ]) {
       expect(isCanonicalSharedProposalIdentityRef(value)).toBe(false);
     }
