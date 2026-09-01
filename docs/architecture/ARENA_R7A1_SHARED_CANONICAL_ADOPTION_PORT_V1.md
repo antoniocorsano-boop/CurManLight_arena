@@ -1,6 +1,6 @@
 # Arena R7A1 — Shared Canonical Adoption Port v1
 
-Status: **FROZEN_FOR_IMPLEMENTATION**
+Status: **IMPLEMENTED_BOUNDARY**
 
 ## Problem
 
@@ -51,15 +51,14 @@ No infrastructure implementation of `SharedCanonicalAdoptionRepository` exists y
 
 R7A1 therefore closes the authority boundary, **not P6 runtime**.
 
-## Next slice
+## Historical roadmap note
 
-**R7A2 — Shared Canonical Registry + transactional adoption persistence**
+The original R7A1 plan named “Shared Canonical Registry + transactional adoption persistence” as the immediate next slice. Subsequent R7A2/R7A3 review correctly exposed prerequisite authority gaps that must be closed first:
 
-Required deliverables:
+- R7A2 bound decision receipts to proposal version, target node and base curriculum version;
+- R7A3 added the immutable server-owned deliberation snapshot and kept P6 fail-closed;
+- R7A4 freezes the missing local-to-shared submitted-proposal authority boundary.
 
-- authoritative shared tables/records for canonical heads, candidate versions and adoption receipts;
-- row-level access constrained by authenticated workspace membership;
-- one transactional server operation for compare-and-swap adoption;
-- idempotency by `clientRequestId`;
-- repository implementation and integration tests;
-- no UI until the persistence authority passes its gates.
+Therefore the original immediate-next-slice sequence is superseded. Canonical registry/adoption persistence remains required, but only after shared proposal persistence and authoritative decision rebind make the institutional proposal version independently verifiable server-side.
+
+The R7A1 adoption authority rules themselves remain valid and unchanged.
