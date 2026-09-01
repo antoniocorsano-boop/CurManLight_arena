@@ -9,7 +9,8 @@ export type CanonicalAdoptionReadiness = 'READY_FOR_HUMAN_ADOPTION' | 'BLOCKED' 
 export type CanonicalAdoptionBlockerCode =
   | 'MISSING_DECISION_RECEIPT' | 'NON_ADOPTIVE_DECISION' | 'DECISION_VALIDITY_NOT_VERIFIED'
   | 'WORKSPACE_MISMATCH' | 'PROPOSAL_VERSION_MISMATCH' | 'PROPOSAL_FINGERPRINT_MISMATCH'
-  | 'ADOPTION_BINDING_MISSING' | 'PROPOSAL_SNAPSHOT_MISSING' | 'TARGET_NODE_MISMATCH' | 'BASE_CURRICULUM_VERSION_MISMATCH'
+  | 'ADOPTION_BINDING_MISSING' | 'PROPOSAL_SNAPSHOT_MISSING' | 'PROPOSAL_AUTHORITY_UNAVAILABLE'
+  | 'TARGET_NODE_MISMATCH' | 'BASE_CURRICULUM_VERSION_MISMATCH'
   | 'CANONICAL_TARGET_NOT_CURRENT' | 'ALREADY_ADOPTED' | 'ADOPTION_CAPABILITY_UNAVAILABLE'
   | 'AUTHENTICATED_WORKSPACE_REQUIRED';
 
@@ -89,6 +90,12 @@ export function assessCanonicalAdoption(input: CanonicalAdoptionAssessmentInput)
       }
     }
   }
+
+  // R7A3 proves that the server owns an immutable, structurally complete payload.
+  // It does not yet prove that the proposal version itself came from an independent
+  // shared proposal authority. P3 is still partial, so P6 must remain fail-closed.
+  blockerCodes.push('PROPOSAL_AUTHORITY_UNAVAILABLE');
+  reasons.push('La proposal authority condivisa server-side non è ancora implementata: lo snapshot R7A3 è completo e immutabile, ma non sostituisce l’autorità canonica della proposta.');
 
   if (input.targetCanonicalState !== 'VERIFIED_CURRENT') {
     blockerCodes.push('CANONICAL_TARGET_NOT_CURRENT'); reasons.push('La versione canonica da sostituire non è verificata come corrente.');
