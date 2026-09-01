@@ -100,7 +100,6 @@ describe('R7A4 shared submitted proposal authority boundary', () => {
   });
 
   it('requires immutable submitted versions and no local institutional fallback', () => {
-    const version = sharedSubmittedVersionFixture();
     expect(SHARED_PROPOSAL_AUTHORITY_BOUNDARY.submittedVersionsAreImmutable).toBe(true);
     expect(SHARED_PROPOSAL_AUTHORITY_BOUNDARY.allowsLocalInstitutionalSuccessFallback).toBe(false);
   });
