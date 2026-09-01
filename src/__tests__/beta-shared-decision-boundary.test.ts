@@ -23,10 +23,11 @@ const input: InstitutionalRevisionDecisionInput = {
 };
 const createWorkspaceRepository = (allowed: boolean): SharedWorkspaceRepository => ({ getMembership: vi.fn(async () => context.membership), can: vi.fn(async () => allowed) });
 
-const serverRow = () => ({
+const serverRow = (snapshotVersion: number | null = 1) => ({
   id: '44444444-4444-4444-8444-444444444444', workspace_id: input.workspaceId,
   proposal_ref: input.proposalRef, proposal_version_ref: input.proposalVersionRef,
   proposal_version_fingerprint: input.proposalVersionFingerprint,
+  proposal_snapshot_version: snapshotVersion,
   adoption_binding_version: 2, adoption_target_node_ref: input.targetNodeRef,
   adoption_base_curriculum_version_ref: input.baseCurriculumVersionRef,
   adoption_binding_fingerprint: 'b'.repeat(64), outcome: input.outcome, rationale: input.rationale,
@@ -53,7 +54,7 @@ describe('BETA-G4/R7A3 shared institutional decision boundary', () => {
     expect(rpc).not.toHaveBeenCalled();
   });
 
-  it('congela e verifica lo snapshot prima della RPC decisionale v2', async () => {
+  it('congela e verifica lo snapshot prima della RPC decisionale v3', async () => {
     const rpc = vi.fn(async (name: string) => name === 'freeze_institutional_revision_proposal_snapshot_v1'
       ? { data: [snapshotRow()], error: null }
       : { data: [serverRow()], error: null });
@@ -66,7 +67,7 @@ describe('BETA-G4/R7A3 shared institutional decision boundary', () => {
       p_expected_fingerprint: input.proposalVersionFingerprint,
       p_snapshot_payload: input.proposalVersionSnapshotPayload,
     });
-    expect(rpc).toHaveBeenNthCalledWith(2, 'record_institutional_revision_decision_v2', {
+    expect(rpc).toHaveBeenNthCalledWith(2, 'record_institutional_revision_decision_v3', {
       p_workspace_id: input.workspaceId,
       p_proposal_ref: input.proposalRef,
       p_proposal_version_ref: input.proposalVersionRef,
@@ -77,7 +78,7 @@ describe('BETA-G4/R7A3 shared institutional decision boundary', () => {
       p_rationale: input.rationale,
       p_client_request_id: input.clientRequestId,
     });
-    expect(receipt.adoptionBinding).toEqual({ version: 2, targetNodeRef: input.targetNodeRef, baseCurriculumVersionRef: input.baseCurriculumVersionRef, bindingFingerprint: 'b'.repeat(64) });
+    expect(receipt.adoptionBinding).toEqual({ version: 2, targetNodeRef: input.targetNodeRef, baseCurriculumVersionRef: input.baseCurriculumVersionRef, bindingFingerprint: 'b'.repeat(64), proposalSnapshotVersion: 1 });
   });
 
   it('non chiama la decisione se il server rifiuta il congelamento', async () => {
@@ -96,6 +97,14 @@ describe('BETA-G4/R7A3 shared institutional decision boundary', () => {
     expect(rpc).toHaveBeenCalledTimes(1);
   });
 
+  it('fallisce chiuso se la decisione v3 non ritorna il marker snapshot', async () => {
+    const rpc = vi.fn(async (name: string) => name === 'freeze_institutional_revision_proposal_snapshot_v1'
+      ? { data: [snapshotRow()], error: null }
+      : { data: [serverRow(null)], error: null });
+    const repository = new SupabaseSharedRevisionDecisionRepository({ rpc } as unknown as SupabaseClient, createWorkspaceRepository(true));
+    await expect(repository.recordInstitutionalDecision(context, input)).rejects.toThrow('snapshot congelato');
+  });
+
   it('rifiuta input privo del payload congelato prima delle RPC', async () => {
     const rpc = vi.fn();
     const repository = new SupabaseSharedRevisionDecisionRepository({ rpc } as unknown as SupabaseClient, createWorkspaceRepository(true));
@@ -103,8 +112,18 @@ describe('BETA-G4/R7A3 shared institutional decision boundary', () => {
     expect(rpc).not.toHaveBeenCalled();
   });
 
+  it('legge le ricevute R7A2 v2 senza promuoverle implicitamente a snapshot-backed', async () => {
+    const legacyV2 = serverRow(null);
+    const maybeSingle = vi.fn(async () => ({ data: legacyV2, error: null }));
+    const client = { from: vi.fn(() => ({ select: () => ({ eq: () => ({ eq: () => ({ order: () => ({ limit: () => ({ maybeSingle }) }) }) }) }) })) } as unknown as SupabaseClient;
+    const repository = new SupabaseSharedRevisionDecisionRepository(client, createWorkspaceRepository(true));
+    const receipt = await repository.findInstitutionalDecisionForVersion(context, input.proposalVersionRef);
+    expect(receipt?.adoptionBinding?.version).toBe(2);
+    expect(receipt?.adoptionBinding?.proposalSnapshotVersion).toBeUndefined();
+  });
+
   it('resta compatibile in lettura con ricevute storiche prive di binding', async () => {
-    const historical = { ...serverRow(), adoption_binding_version: null, adoption_target_node_ref: null, adoption_base_curriculum_version_ref: null, adoption_binding_fingerprint: null };
+    const historical = { ...serverRow(null), adoption_binding_version: null, adoption_target_node_ref: null, adoption_base_curriculum_version_ref: null, adoption_binding_fingerprint: null };
     const maybeSingle = vi.fn(async () => ({ data: historical, error: null }));
     const client = { from: vi.fn(() => ({ select: () => ({ eq: () => ({ eq: () => ({ order: () => ({ limit: () => ({ maybeSingle }) }) }) }) }) })) } as unknown as SupabaseClient;
     const repository = new SupabaseSharedRevisionDecisionRepository(client, createWorkspaceRepository(true));
