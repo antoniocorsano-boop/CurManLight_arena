@@ -1,8 +1,5 @@
 import type { ArenaCapability } from '../institution/capabilities';
-import type {
-  WorkspaceActorContext,
-  WorkspaceMemberRole,
-} from '../institution/sharedWorkspacePort';
+import type { WorkspaceActorContext } from '../institution/sharedWorkspacePort';
 
 export type SharedProposalLifecycleState =
   | 'submitted'
@@ -402,6 +399,7 @@ export const SHARED_PROPOSAL_AUTHORITY_BOUNDARY = {
   bindsSubmissionProvenanceToFreshMembership: true as const,
   submittedVersionsAreImmutable: true as const,
   canonicalPayloadSchema: SHARED_PROPOSAL_CANONICAL_PAYLOAD_SCHEMA,
+  structuralFootprintPreservesR7A3StringContract: true as const,
   requiresServerPayloadValidation: true as const,
   requiresServerFingerprintRecompute: true as const,
   requiresExactCanonicalPayloadSerialization: true as const,
