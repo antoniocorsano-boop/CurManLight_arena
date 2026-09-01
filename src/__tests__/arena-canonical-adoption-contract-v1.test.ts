@@ -6,12 +6,12 @@ import type { InstitutionalRevisionDecisionReceipt } from '../domain/revision/sh
 
 const receipt = (overrides: Partial<InstitutionalRevisionDecisionReceipt> = {}): InstitutionalRevisionDecisionReceipt => ({
   id: 'receipt-1', workspaceId: 'workspace-1', proposalRef: 'proposal-1', proposalVersionRef: 'version-1', proposalVersionFingerprint: 'fp-1',
-  adoptionBinding: { version: 2, targetNodeRef: 'node-1', baseCurriculumVersionRef: 'canonical-v1', bindingFingerprint: 'b'.repeat(64) },
+  adoptionBinding: { version: 2, targetNodeRef: 'node-1', baseCurriculumVersionRef: 'canonical-v1', bindingFingerprint: 'b'.repeat(64), proposalSnapshotVersion: 1 },
   outcome: 'approve', rationale: 'Delibera motivata', decidedByUserId: 'user-collegio', authorityRole: 'collegio', decidedAt: '2026-09-01T00:00:00.000Z', clientRequestId: 'request-1', ...overrides,
 });
 const baseInput = () => ({ workspaceId: 'workspace-1', proposalVersionRef: 'version-1', proposalVersionFingerprint: 'fp-1', targetNodeRef: 'node-1', targetCanonicalVersionRef: 'canonical-v1', targetCanonicalState: 'VERIFIED_CURRENT' as const, decisionReceipt: receipt(), decisionValidity: 'VERIFIED_ACTIVE' as const, actor: { role: 'collegio' as const, assurance: 'authenticated-workspace' as const, userId: 'user-collegio' } });
 
-describe('R5/R7A2 Canonical Adoption Contract', () => {
+describe('R5/R7A3 Canonical Adoption Contract', () => {
   it('keeps P6 unavailable to all current roles even when authenticated', () => {
     for (const role of ['docente','dipartimento','referente','collegio','dirigente','amministratore'] as const) expect(canUseCapability(role, 'CURRICULUM_ADOPT', 'authenticated-workspace')).toBe(false);
   });
@@ -19,14 +19,22 @@ describe('R5/R7A2 Canonical Adoption Contract', () => {
     expect(canUseCapability('collegio', 'REVISION_DECIDE', 'authenticated-workspace')).toBe(true);
     expect(canUseCapability('collegio', 'CURRICULUM_ADOPT', 'authenticated-workspace')).toBe(false);
   });
-  it('fails closed for a v2-bound approved receipt because adoption authority is not assigned yet', () => {
+  it('fails closed for an R7A3 snapshot-backed approved receipt because adoption authority is not assigned yet', () => {
     const result = assessCanonicalAdoption(baseInput());
-    expect(result.readiness).toBe('BLOCKED'); expect(result.blockerCodes).toContain('ADOPTION_CAPABILITY_UNAVAILABLE'); expect(result.blockerCodes).not.toContain('ADOPTION_BINDING_MISSING');
+    expect(result.readiness).toBe('BLOCKED');
+    expect(result.blockerCodes).toContain('ADOPTION_CAPABILITY_UNAVAILABLE');
+    expect(result.blockerCodes).not.toContain('ADOPTION_BINDING_MISSING');
+    expect(result.blockerCodes).not.toContain('PROPOSAL_SNAPSHOT_MISSING');
   });
   it('blocks historical receipts that do not carry adoption binding v2', () => {
     const historical = receipt(); delete historical.adoptionBinding;
     const result = assessCanonicalAdoption({ ...baseInput(), decisionReceipt: historical });
     expect(result.blockerCodes).toContain('ADOPTION_BINDING_MISSING');
+  });
+  it('blocks R7A2-compatible receipts that have binding v2 but no R7A3 snapshot marker', () => {
+    const legacy = receipt({ adoptionBinding: { version: 2, targetNodeRef: 'node-1', baseCurriculumVersionRef: 'canonical-v1', bindingFingerprint: 'b'.repeat(64) } });
+    const result = assessCanonicalAdoption({ ...baseInput(), decisionReceipt: legacy });
+    expect(result.blockerCodes).toContain('PROPOSAL_SNAPSHOT_MISSING');
   });
   it('blocks target node and base curriculum mismatches', () => {
     const targetMismatch = assessCanonicalAdoption({ ...baseInput(), targetNodeRef: 'node-2' });
