@@ -4,6 +4,7 @@ import { safeLocalStorageGetItem, safeLocalStorageRemoveItem } from '../../../li
 import {
  deleteLocalKnowledgeSource,
  listLocalKnowledgeSources,
+ normalizeKnowledgeSourceLifecycle,
  putLocalKnowledgeSource,
  putLocalKnowledgeSources,
  type CustomKbDoc,
@@ -36,7 +37,7 @@ function readLegacyCustomDocs(): CustomKbDoc[] {
   if (!Array.isArray(parsed)) return [];
   return parsed
    .filter((doc) => typeof doc.id === 'string' && typeof doc.title === 'string' && typeof doc.content === 'string')
-   .map((doc) => ({
+   .map((doc) => normalizeKnowledgeSourceLifecycle({
     id: doc.id as string,
     title: doc.title as string,
     subtitle: typeof doc.subtitle === 'string' ? doc.subtitle : 'Documento locale non verificato',
@@ -118,12 +119,13 @@ export function useKnowledgeBaseHandlers({ showToast }: UseKnowledgeBaseHandlers
    showToast('Inserisci almeno un titolo e il contenuto del documento!', false);
    return false;
   }
-  const newDoc: CustomKbDoc = {
+  const importedAt = new Date().toISOString();
+  const newDoc = normalizeKnowledgeSourceLifecycle({
    id: `vol-custom-${Date.now()}`,
    title: newKbDocTitle.trim(),
    subtitle: newKbDocSubtitle.trim() || 'Documento locale non verificato',
    content: newKbDocContent.trim(),
-   importedAt: new Date().toISOString(),
+   importedAt,
    authorityStatus: 'LOCAL_UNVERIFIED',
    ingestionMethod: metadata?.ingestionMethod ?? 'PASTE',
    extractionStatus: metadata?.extractionStatus ?? 'NOT_REQUIRED',
@@ -133,7 +135,7 @@ export function useKnowledgeBaseHandlers({ showToast }: UseKnowledgeBaseHandlers
    sha256: metadata?.sha256,
    pageCount: metadata?.pageCount,
    textEditedAfterExtraction: metadata?.textEditedAfterExtraction,
-  };
+  });
 
   try {
    await putLocalKnowledgeSource(newDoc);
@@ -148,7 +150,7 @@ export function useKnowledgeBaseHandlers({ showToast }: UseKnowledgeBaseHandlers
   setNewKbDocSubtitle('');
   setNewKbDocContent('');
   setShowAddKbModal(false);
-  showToast(`Fonte “${newDoc.title}” aggiunta alla conoscenza locale non verificata.`, true);
+  showToast(`Fonte “${newDoc.title}” aggiunta per consultazione. Verificala prima di usarla come evidenza locale.`, true);
   return true;
  };
 
@@ -184,20 +186,22 @@ export function useKnowledgeBaseHandlers({ showToast }: UseKnowledgeBaseHandlers
    const sourceIdentity = safeOriginalFileName
     ? `<p class=\"text-xs text-slate-500\"><strong>File:</strong> ${safeOriginalFileName}${doc.pageCount ? ` · ${doc.pageCount} pagine` : ''}</p>`
     : '';
+   const versionIdentity = `<p class=\"text-xs text-slate-500\"><strong>Versione fonte:</strong> ${escapeHtml(doc.sourceVersionId)}</p>`;
    const authorityNotice = doc.authorityStatus === 'LOCAL_VERIFIED'
     ? `<div class=\"bg-emerald-50/30 border border-emerald-200 rounded-xl p-4 space-y-2\">
        <strong class=\"text-xs text-emerald-900 block font-black\">Fonte locale verificata</strong>
-       <p class=\"text-slate-700 leading-relaxed font-semibold\">Hai controllato questa fonte. Resta separata dalle fonti normative e istituzionali e non modifica il curricolo approvato.</p>
+       <p class=\"text-slate-700 leading-relaxed font-semibold\">Hai controllato questa fonte. ${doc.evidenceEligibility === 'LOCAL_EVIDENCE' ? 'Può essere usata come evidenza locale nel retrieval.' : 'Resta consultabile ma non è ancora utilizzabile come evidenza nel retrieval.'} Non diventa normativa o istituzionale e non modifica il curricolo approvato.</p>
       </div>`
     : `<div class=\"bg-amber-50/20 border border-amber-100 rounded-xl p-4 space-y-2\">
        <strong class=\"text-xs text-amber-900 block font-black\">Fonte locale non verificata</strong>
-       <p class=\"text-slate-700 leading-relaxed font-semibold\">Il materiale resta separato dalle fonti istituzionali e richiede controllo prima dell'uso.</p>
+       <p class=\"text-slate-700 leading-relaxed font-semibold\">Il materiale è disponibile per consultazione, ma non può essere usato come evidenza dal retrieval finché non viene verificato.</p>
       </div>`;
    return `
     <div class=\"space-y-4\">
      <h1 class=\"text-lg font-black text-indigo-950 uppercase border-b pb-2\">${safeTitle}</h1>
      <p class=\"text-xs font-bold text-slate-500\">${safeSubtitle}</p>
      ${sourceIdentity}
+     ${versionIdentity}
      ${authorityNotice}
      <div class=\"text-slate-700 leading-relaxed text-xs whitespace-pre-wrap font-semibold\">${safeContent}</div>
     </div>
@@ -212,7 +216,8 @@ export function useKnowledgeBaseHandlers({ showToast }: UseKnowledgeBaseHandlers
    if (!doc) return 'Nessun contenuto disponibile.';
    const provenance = doc.originalFileName ? `File originale: ${doc.originalFileName}\n` : '';
    const authority = doc.authorityStatus === 'LOCAL_VERIFIED' ? 'Fonte locale verificata' : 'Fonte locale non verificata';
-   return `${doc.title}\n${doc.subtitle}\n${authority}\n${provenance}\n${doc.content}`;
+   const evidence = doc.evidenceEligibility === 'LOCAL_EVIDENCE' ? 'Uso: evidenza locale' : 'Uso: sola consultazione';
+   return `${doc.title}\n${doc.subtitle}\n${authority}\n${evidence}\nVersione fonte: ${doc.sourceVersionId}\n${provenance}\n${doc.content}`;
   }
   return getVolumePlainTxt(id);
  };
