@@ -53,7 +53,7 @@ const canonicalLocalVersion: RevisionProposalVersion = {
   sourceRefs: [{ id: sourceId, entityType: 'source', snapshotLabel: 'Source 1' }],
   evidenceRefs: [{ id: evidenceNodeId, entityType: 'curriculum-node' }],
   createdAt: '2026-09-01T12:00:00.000Z',
-  structuralFootprint: '{}',
+  structuralFootprint: '',
   frozen: true,
 };
 
@@ -146,11 +146,13 @@ describe('R7A4 shared submitted proposal authority boundary', () => {
       'structuralFootprint',
       'frozen',
     ]);
+    expect(parsed.structuralFootprint).toBe('');
     expect(SHARED_PROPOSAL_CANONICAL_PAYLOAD_SCHEMA.requiredKeys).toEqual(Object.keys(parsed));
     expect(SHARED_PROPOSAL_CANONICAL_PAYLOAD_SCHEMA.optionalKeys).toEqual([
       'previousVersionRef',
       'changeNote',
     ]);
+    expect(SHARED_PROPOSAL_CANONICAL_PAYLOAD_SCHEMA.fieldTypes.structuralFootprint).toBe('string');
     expect(SHARED_PROPOSAL_CANONICAL_PAYLOAD_SCHEMA.referenceRequiredKeys).toEqual(['id', 'entityType']);
     expect(SHARED_PROPOSAL_CANONICAL_PAYLOAD_SCHEMA.referenceOptionalKeys).toEqual(['snapshotLabel']);
     expect(SHARED_PROPOSAL_CANONICAL_PAYLOAD_SCHEMA.rejectsExtraTopLevelKeys).toBe(true);
@@ -161,24 +163,35 @@ describe('R7A4 shared submitted proposal authority boundary', () => {
     expect(SHARED_PROPOSAL_CANONICAL_PAYLOAD_SCHEMA.byteEncoding).toBe('UTF-8');
     expect(SHARED_PROPOSAL_CANONICAL_PAYLOAD_SCHEMA.digest).toBe('SHA-256');
     expect(SHARED_PROPOSAL_AUTHORITY_BOUNDARY.requiresExactCanonicalPayloadSerialization).toBe(true);
+    expect(SHARED_PROPOSAL_AUTHORITY_BOUNDARY.structuralFootprintPreservesR7A3StringContract).toBe(true);
   });
 
   it('requires explicit CAS intent, predecessor binding and controlled replacement', () => {
     const firstSubmission = submitCommandFixture(null);
     const firstResult = sharedSubmittedVersionFixture(null);
-    const replacement = submitCommandFixture('proposal-version-0');
-    const replacementResult = sharedSubmittedVersionFixture('proposal-version-0');
+    const predecessor = {
+      ...sharedSubmittedVersionFixture(null),
+      proposalVersionRef: 'proposal-version-0',
+      lifecycleState: 'changes-requested' as const,
+    };
+    const replacement = submitCommandFixture(predecessor.proposalVersionRef);
+    const replacementResult = sharedSubmittedVersionFixture(predecessor.proposalVersionRef);
 
     expect(firstSubmission.expectedCurrentSharedProposalVersionRef).toBeNull();
     expect(firstResult.previousSharedProposalVersionRef).toBeNull();
-    expect(replacement.expectedCurrentSharedProposalVersionRef).toBe('proposal-version-0');
+    expect(replacement.expectedCurrentSharedProposalVersionRef).toBe(predecessor.proposalVersionRef);
     expect(replacementResult.previousSharedProposalVersionRef).toBe(
       replacement.expectedCurrentSharedProposalVersionRef,
     );
+    expect(replacement.targetNodeRef).toBe(predecessor.targetNodeRef);
+    expect(replacement.baseCurriculumVersionRef).toBe(predecessor.baseCurriculumVersionRef);
     expect(SHARED_PROPOSAL_AUTHORITY_BOUNDARY.requiresCompareAndSwapHead).toBe(true);
     expect(SHARED_PROPOSAL_AUTHORITY_BOUNDARY.requiresPredecessorEqualsExpectedHead).toBe(true);
     expect(SHARED_PROPOSAL_AUTHORITY_BOUNDARY.replacementRequiresChangesRequestedHead).toBe(true);
     expect(SHARED_PROPOSAL_AUTHORITY_BOUNDARY.replacementRequiresNewVersionIdentity).toBe(true);
+    expect(SHARED_PROPOSAL_AUTHORITY_BOUNDARY.replacementPreservesTargetNodeRef).toBe(true);
+    expect(SHARED_PROPOSAL_AUTHORITY_BOUNDARY.replacementPreservesBaseCurriculumVersionRef).toBe(true);
+    expect(SHARED_PROPOSAL_AUTHORITY_BOUNDARY.scopeChangeRequiresNewProposalIdentity).toBe(true);
     expect(SHARED_PROPOSAL_AUTHORITY_BOUNDARY.firstSubmissionExpectedHead).toBeNull();
   });
 
