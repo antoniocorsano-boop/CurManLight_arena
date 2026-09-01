@@ -1,6 +1,7 @@
 import Dexie, { type Table } from 'dexie';
 
 export type KnowledgeAuthorityStatus = 'LOCAL_UNVERIFIED' | 'LOCAL_VERIFIED';
+export type KnowledgeAuthorityClass = 'LOCAL' | 'INSTITUTIONAL' | 'NORMATIVE' | 'DERIVED' | 'ARCHIVED_REFERENCE';
 export type KnowledgeIngestionMethod = 'PASTE' | 'TEXT_FILE' | 'PDF_TEXT_EXTRACTION' | 'LEGACY_LOCAL_STORAGE';
 export type KnowledgeExtractionStatus = 'NOT_REQUIRED' | 'READY' | 'PARTIAL' | 'OCR_REQUIRED';
 export type KnowledgeSourceType = 'USER_LOCAL_DOCUMENT';
@@ -25,6 +26,7 @@ export type CustomKbDoc = KnowledgeImportMetadata & {
   content: string;
   importedAt: string;
   authorityStatus: KnowledgeAuthorityStatus;
+  authorityClass: KnowledgeAuthorityClass;
   verifiedAt?: string;
   sourceType: KnowledgeSourceType;
   lifecycleStatus: KnowledgeLifecycleStatus;
@@ -62,8 +64,9 @@ export function isExtractionEvidenceReady(status: KnowledgeExtractionStatus): bo
   return status === 'READY' || status === 'NOT_REQUIRED';
 }
 
-export function normalizeKnowledgeSourceLifecycle(source: Omit<CustomKbDoc, 'sourceType' | 'lifecycleStatus' | 'sourceVersionId' | 'evidenceEligibility'> & Partial<Pick<CustomKbDoc, 'sourceType' | 'lifecycleStatus' | 'sourceVersionId' | 'evidenceEligibility'>>): CustomKbDoc {
+export function normalizeKnowledgeSourceLifecycle(source: Omit<CustomKbDoc, 'sourceType' | 'lifecycleStatus' | 'sourceVersionId' | 'evidenceEligibility' | 'authorityClass'> & Partial<Pick<CustomKbDoc, 'sourceType' | 'lifecycleStatus' | 'sourceVersionId' | 'evidenceEligibility' | 'authorityClass'>>): CustomKbDoc {
   const sourceType = source.sourceType ?? 'USER_LOCAL_DOCUMENT';
+  const authorityClass = source.authorityClass ?? 'LOCAL';
   const lifecycleStatus = source.lifecycleStatus
     ?? (source.authorityStatus === 'LOCAL_VERIFIED' ? 'VERIFIED_LOCAL' : 'PENDING_VERIFICATION');
   const evidenceEligibility = source.evidenceEligibility
@@ -75,6 +78,7 @@ export function normalizeKnowledgeSourceLifecycle(source: Omit<CustomKbDoc, 'sou
   return {
     ...source,
     sourceType,
+    authorityClass,
     lifecycleStatus,
     sourceVersionId,
     evidenceEligibility,
@@ -82,7 +86,8 @@ export function normalizeKnowledgeSourceLifecycle(source: Omit<CustomKbDoc, 'sou
 }
 
 export function isLocalKnowledgeEvidenceEligible(source: CustomKbDoc): boolean {
-  return source.authorityStatus === 'LOCAL_VERIFIED'
+  return source.authorityClass === 'LOCAL'
+    && source.authorityStatus === 'LOCAL_VERIFIED'
     && source.lifecycleStatus === 'VERIFIED_LOCAL'
     && source.evidenceEligibility === 'LOCAL_EVIDENCE'
     && isExtractionEvidenceReady(source.extractionStatus);
@@ -111,6 +116,7 @@ export async function verifyLocalKnowledgeSource(id: string, verifiedAt = new Da
   const verifiedSource: CustomKbDoc = {
     ...normalized,
     authorityStatus: 'LOCAL_VERIFIED',
+    authorityClass: 'LOCAL',
     lifecycleStatus: 'VERIFIED_LOCAL',
     evidenceEligibility: isExtractionEvidenceReady(normalized.extractionStatus) ? 'LOCAL_EVIDENCE' : 'CONSULT_ONLY',
     verifiedAt,

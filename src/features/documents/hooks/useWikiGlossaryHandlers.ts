@@ -6,6 +6,7 @@ import type { CustomKbDoc } from './useKnowledgeBaseHandlers';
 import { generateWikiResponse } from '../../../lib/wikiLLM';
 import { readAssistantKnowledgeView } from '../../copilot/assistantKnowledgeNavigation';
 import { applyLocalRetrievalContract } from '../lib/localRetrievalContract';
+import { RETRIEVAL_ELIGIBLE_BUILT_IN_SOURCE_IDS } from '../lib/knowledgeBuiltInSources';
 import { isLocalKnowledgeEvidenceEligible } from '../lib/localKnowledgeStore';
 
 type GlossaryItem = { term: string; definition: string; source: string };
@@ -50,7 +51,8 @@ export function useWikiGlossaryHandlers({
  const [glossarySearch, setGlossarySearch] = useState('');
 
  // Local retrieval processor. User uploads are evidence only after explicit local verification
- // and when extraction is complete enough for governed retrieval.
+ // and when extraction is complete enough for governed retrieval. Bundled material is also
+ // filtered through the explicit Source Authority policy before it can participate.
  const triggerWikiLLMQuery = (query: string) => {
   if (!query || !query.trim()) return;
   setWikiQuery(query);
@@ -59,12 +61,14 @@ export function useWikiGlossaryHandlers({
 
   setTimeout(() => {
    const evidenceEligibleCustomDocs = customKbDocs.filter(isLocalKnowledgeEvidenceEligible);
+   const evidenceEligibleBuiltIns = Object.values(volumesKB)
+    .filter((volume) => RETRIEVAL_ELIGIBLE_BUILT_IN_SOURCE_IDS.has(volume.id));
    const legacyResponse = generateWikiResponse({
     query,
     discipline,
     order,
     customDocs: evidenceEligibleCustomDocs,
-    volumes: Object.values(volumesKB),
+    volumes: evidenceEligibleBuiltIns,
     getVolumeTitle: getVolumeTitleWithCustom,
    });
    const outcome = applyLocalRetrievalContract(query, legacyResponse);
