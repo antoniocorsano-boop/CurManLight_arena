@@ -11,7 +11,7 @@ export type SharedProposalLifecycleState =
 
 export type SharedSubmissionActorRole = Exclude<InstitutionalRole, 'non-dichiarato'>;
 
-export interface SharedSubmittedProposalVersion {
+export interface SharedProposalVersion {
   schemaVersion: 1;
   workspaceId: string;
   proposalRef: string;
@@ -24,7 +24,17 @@ export interface SharedSubmittedProposalVersion {
   submittedByRole: SharedSubmissionActorRole;
   submittedAt: string;
   lifecycleState: SharedProposalLifecycleState;
-  previousSharedProposalVersionRef?: string;
+  /**
+   * Required immutable predecessor binding.
+   * null means this is the first shared version for the proposal.
+   * For a successful replacement submission this must equal the command's
+   * expectedCurrentSharedProposalVersionRef.
+   */
+  previousSharedProposalVersionRef: string | null;
+}
+
+export interface SharedSubmittedProposalVersion extends SharedProposalVersion {
+  lifecycleState: 'submitted';
 }
 
 export interface SubmitSharedProposalVersionCommand {
@@ -38,6 +48,7 @@ export interface SubmitSharedProposalVersionCommand {
   /**
    * Mandatory compare-and-swap precondition.
    * null means the caller explicitly expects this to be the first shared version.
+   * A successful result must persist the same value as previousSharedProposalVersionRef.
    */
   expectedCurrentSharedProposalVersionRef: string | null;
   clientRequestId: string;
@@ -53,10 +64,16 @@ export interface AdvanceSharedProposalLifecycleCommand {
 }
 
 export interface SharedSubmittedProposalAuthorityPort {
+  /**
+   * Submission always creates/returns the mandatory first shared-authoritative
+   * lifecycle state. Later lifecycle states require advanceLifecycle().
+   * Implementations must persist previousSharedProposalVersionRef exactly equal
+   * to command.expectedCurrentSharedProposalVersionRef after the CAS succeeds.
+   */
   submitVersion(command: SubmitSharedProposalVersionCommand): Promise<SharedSubmittedProposalVersion>;
-  advanceLifecycle(command: AdvanceSharedProposalLifecycleCommand): Promise<SharedSubmittedProposalVersion>;
-  getCurrentSharedVersion(workspaceId: string, proposalRef: string): Promise<SharedSubmittedProposalVersion | null>;
-  getSharedVersion(workspaceId: string, proposalVersionRef: string): Promise<SharedSubmittedProposalVersion | null>;
+  advanceLifecycle(command: AdvanceSharedProposalLifecycleCommand): Promise<SharedProposalVersion>;
+  getCurrentSharedVersion(workspaceId: string, proposalRef: string): Promise<SharedProposalVersion | null>;
+  getSharedVersion(workspaceId: string, proposalVersionRef: string): Promise<SharedProposalVersion | null>;
 }
 
 /**
@@ -74,6 +91,7 @@ export const SHARED_PROPOSAL_AUTHORITY_BOUNDARY = {
   requiredCapability: 'CURRICULUM_PROPOSE' as const,
   submittedVersionsAreImmutable: true as const,
   requiresCompareAndSwapHead: true as const,
+  requiresPredecessorEqualsExpectedHead: true as const,
   firstSubmissionExpectedHead: null as null,
   allowsLocalInstitutionalSuccessFallback: false as const,
   assignsCurriculumAdopt: false as const,
