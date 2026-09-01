@@ -15,6 +15,18 @@ describe('R7A3 shared frozen proposal snapshot invariants', () => {
     expect(sql).toContain("workspace.status = 'active'");
   });
 
+  it('requires the complete canonical fingerprint payload shape before freezing', () => {
+    expect(sql).toContain("'currentTextSnapshot','proposedText','rationale'");
+    expect(sql).toContain("'sourceRefs','evidenceRefs','createdAt','structuralFootprint'");
+    expect(sql).toContain('v_json ?& v_required_keys');
+    expect(sql).toContain('jsonb_object_keys(v_json)');
+    expect(sql).toContain("jsonb_typeof(v_json->'sourceRefs') <> 'array'");
+    expect(sql).toContain("jsonb_typeof(v_json->'evidenceRefs') <> 'array'");
+    expect(sql).toContain("jsonb_typeof(v_ref->'id') <> 'string'");
+    expect(sql).toContain("jsonb_typeof(v_ref->'entityType') <> 'string'");
+    expect(sql).toContain('FROZEN_PROPOSAL_SNAPSHOT_CANONICAL_SHAPE_REQUIRED');
+  });
+
   it('recomputes SHA-256 server-side over the exact submitted UTF-8 payload', () => {
     expect(sql).toContain("digest(convert_to(p_snapshot_payload, 'UTF8'), 'sha256')");
     expect(sql).toContain('FROZEN_PROPOSAL_SNAPSHOT_FINGERPRINT_MISMATCH');
