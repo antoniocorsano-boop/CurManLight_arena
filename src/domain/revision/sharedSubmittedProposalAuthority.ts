@@ -197,6 +197,19 @@ export const SHARED_PROPOSAL_CANONICAL_PAYLOAD_SCHEMA = {
   digest: 'SHA-256' as const,
 };
 
+/**
+ * Proposal scope is consequential institutional identity, not free-form metadata.
+ * Both scope references must contain at least one non-whitespace character before
+ * a first submission or replacement may become shared-authoritative.
+ */
+export const SHARED_PROPOSAL_SCOPE_BINDING_SCHEMA = {
+  targetNodeRef: 'trimmed-non-empty-string',
+  baseCurriculumVersionRef: 'trimmed-non-empty-string',
+} as const;
+
+export const isValidSharedProposalScopeRef = (value: string): boolean =>
+  value.trim().length > 0;
+
 export interface SharedProposalVersion {
   schemaVersion: 1;
   workspaceId: string;
@@ -232,7 +245,9 @@ export interface SubmitSharedProposalVersionCommand {
   proposalVersionRef: string;
   proposalVersionFingerprint: string;
   canonicalPayload: string;
+  /** Must be non-empty after trimming before server acceptance. */
   targetNodeRef: string;
+  /** Must be non-empty after trimming before server acceptance. */
   baseCurriculumVersionRef: string;
   /**
    * Mandatory compare-and-swap precondition.
@@ -330,6 +345,7 @@ export interface SharedSubmittedProposalAuthorityPort {
    * - bind submittedByUserId/submittedByRole to that freshly verified membership;
    * - validate canonicalPayload against SHARED_PROPOSAL_CANONICAL_PAYLOAD_SCHEMA;
    * - require payload id/proposalRef to match command version/proposal identity;
+   * - require targetNodeRef and baseCurriculumVersionRef to be non-empty after trim;
    * - recompute SHA-256 over the exact UTF-8 JSON.stringify(builder-output) bytes;
    * - apply the explicit head CAS;
    * - allow replacement only when the current predecessor is changes-requested;
@@ -400,6 +416,8 @@ export const SHARED_PROPOSAL_AUTHORITY_BOUNDARY = {
   submittedVersionsAreImmutable: true as const,
   canonicalPayloadSchema: SHARED_PROPOSAL_CANONICAL_PAYLOAD_SCHEMA,
   structuralFootprintPreservesR7A3StringContract: true as const,
+  scopeBindingSchema: SHARED_PROPOSAL_SCOPE_BINDING_SCHEMA,
+  scopeReferencesRequireTrimmedNonEmpty: true as const,
   requiresServerPayloadValidation: true as const,
   requiresServerFingerprintRecompute: true as const,
   requiresExactCanonicalPayloadSerialization: true as const,
