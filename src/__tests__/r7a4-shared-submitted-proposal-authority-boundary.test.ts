@@ -4,8 +4,11 @@ import { assessCanonicalAdoption } from '../domain/institution/canonicalAdoption
 import type { WorkspaceActorContext } from '../domain/institution/sharedWorkspacePort';
 import {
   SHARED_PROPOSAL_AUTHORITY_BOUNDARY,
+  SHARED_PROPOSAL_LIFECYCLE_TRANSITION_POLICY,
+  getSharedProposalLifecycleTransitionPolicy,
+  type AdvanceSharedProposalLifecycleCommand,
+  type SharedProposalLifecycleTransitionReceipt,
   type SharedProposalVersion,
-  type SharedSubmittedProposalAuthorityPort,
   type SharedSubmittedProposalVersion,
   type SubmitSharedProposalVersionCommand,
 } from '../domain/revision';
@@ -21,7 +24,7 @@ const roles: InstitutionalRole[] = [
   'amministratore',
 ];
 
-const authenticatedContextFixture = (): WorkspaceActorContext => ({
+const authenticatedDocente: WorkspaceActorContext = {
   membership: {
     workspaceId: 'workspace-1',
     userId: 'user-1',
@@ -29,7 +32,7 @@ const authenticatedContextFixture = (): WorkspaceActorContext => ({
     status: 'active',
   },
   assurance: 'authenticated-workspace',
-});
+};
 
 const sharedSubmittedVersionFixture = (
   previousSharedProposalVersionRef: string | null = null,
@@ -42,7 +45,7 @@ const sharedSubmittedVersionFixture = (
   canonicalPayload: '{"id":"proposal-version-1"}',
   targetNodeRef: 'node-1',
   baseCurriculumVersionRef: 'curriculum-v1',
-  submittedByUserId: 'user-1',
+  submittedByUserId: authenticatedDocente.membership.userId,
   submittedByRole: 'docente',
   submittedAt: '2026-09-01T12:00:00.000Z',
   lifecycleState: 'submitted',
@@ -52,7 +55,7 @@ const sharedSubmittedVersionFixture = (
 const submitCommandFixture = (
   expectedCurrentSharedProposalVersionRef: string | null,
 ): SubmitSharedProposalVersionCommand => ({
-  workspaceId: 'workspace-1',
+  workspaceId: authenticatedDocente.membership.workspaceId,
   proposalRef: 'proposal-1',
   proposalVersionRef: 'proposal-version-1',
   proposalVersionFingerprint: 'a'.repeat(64),
@@ -71,32 +74,15 @@ describe('R7A4 shared submitted proposal authority boundary', () => {
     ]);
     expect(SHARED_PROPOSAL_AUTHORITY_BOUNDARY.firstSharedState).toBe('submitted');
     expect(SHARED_PROPOSAL_AUTHORITY_BOUNDARY.requiresAuthenticatedWorkspace).toBe(true);
-    expect(SHARED_PROPOSAL_AUTHORITY_BOUNDARY.requiredCapability).toBe('CURRICULUM_PROPOSE');
+    expect(SHARED_PROPOSAL_AUTHORITY_BOUNDARY.requiredSubmissionCapability).toBe('CURRICULUM_PROPOSE');
   });
 
-  it('requires authenticated workspace context on shared authority operations', async () => {
-    const context = authenticatedContextFixture();
-    const command = submitCommandFixture(null);
-
-    const port: SharedSubmittedProposalAuthorityPort = {
-      submitVersion: async (receivedContext, receivedCommand) => {
-        expect(receivedContext.assurance).toBe('authenticated-workspace');
-        expect(receivedContext.membership.status).toBe('active');
-        expect(receivedContext.membership.workspaceId).toBe(receivedCommand.workspaceId);
-        return sharedSubmittedVersionFixture(null);
-      },
-      advanceLifecycle: async (_context, lifecycleCommand) => ({
-        ...sharedSubmittedVersionFixture(null),
-        lifecycleState: lifecycleCommand.nextLifecycleState,
-      }),
-      getCurrentSharedVersion: async (_context, _workspaceId, _proposalRef) => null,
-      getSharedVersion: async (_context, _workspaceId, _proposalVersionRef) => null,
-    };
-
-    const result = await port.submitVersion(context, command);
-
-    expect(result.lifecycleState).toBe('submitted');
-    expect(SHARED_PROPOSAL_AUTHORITY_BOUNDARY.requiresServerBackedMembershipCapabilityRecheck).toBe(true);
+  it('requires fresh authenticated authority evidence for every shared operation', () => {
+    expect(authenticatedDocente.assurance).toBe('authenticated-workspace');
+    expect(authenticatedDocente.membership.status).toBe('active');
+    expect(SHARED_PROPOSAL_AUTHORITY_BOUNDARY.requiresFreshMembershipOnEverySharedOperation).toBe(true);
+    expect(SHARED_PROPOSAL_AUTHORITY_BOUNDARY.requiredReadCapability).toBe('CURRICULUM_READ');
+    expect(authenticatedDocente.membership.workspaceId).toBe(submitCommandFixture(null).workspaceId);
   });
 
   it('keeps shared submission provenance aligned with CURRICULUM_PROPOSE capability holders', () => {
@@ -104,11 +90,15 @@ describe('R7A4 shared submitted proposal authority boundary', () => {
       getRoleCapabilities(role).includes('CURRICULUM_PROPOSE'),
     );
 
+    const submitted = sharedSubmittedVersionFixture();
     expect(proposalCapableRoles).toEqual(['docente', 'dipartimento', 'referente']);
     expect([...SHARED_PROPOSAL_AUTHORITY_BOUNDARY.submissionActorRoles]).toEqual(proposalCapableRoles);
+    expect(submitted.submittedByUserId).toBe(authenticatedDocente.membership.userId);
+    expect(submitted.submittedByRole).toBe(authenticatedDocente.membership.role);
+    expect(SHARED_PROPOSAL_AUTHORITY_BOUNDARY.bindsSubmissionProvenanceToFreshMembership).toBe(true);
   });
 
-  it('requires explicit CAS intent and an equally explicit predecessor binding', () => {
+  it('requires explicit CAS intent, predecessor binding and controlled replacement', () => {
     const firstSubmission = submitCommandFixture(null);
     const firstResult = sharedSubmittedVersionFixture(null);
     const replacement = submitCommandFixture('proposal-version-0');
@@ -122,7 +112,78 @@ describe('R7A4 shared submitted proposal authority boundary', () => {
     );
     expect(SHARED_PROPOSAL_AUTHORITY_BOUNDARY.requiresCompareAndSwapHead).toBe(true);
     expect(SHARED_PROPOSAL_AUTHORITY_BOUNDARY.requiresPredecessorEqualsExpectedHead).toBe(true);
+    expect(SHARED_PROPOSAL_AUTHORITY_BOUNDARY.replacementRequiresChangesRequestedHead).toBe(true);
+    expect(SHARED_PROPOSAL_AUTHORITY_BOUNDARY.replacementRequiresNewVersionIdentity).toBe(true);
     expect(SHARED_PROPOSAL_AUTHORITY_BOUNDARY.firstSubmissionExpectedHead).toBeNull();
+  });
+
+  it('freezes a closed least-privilege shared lifecycle transition policy', () => {
+    expect(SHARED_PROPOSAL_LIFECYCLE_TRANSITION_POLICY).toEqual([
+      expect.objectContaining({ from: 'submitted', to: 'under-review', requiredCapability: 'REVISION_REVIEW' }),
+      expect.objectContaining({ from: 'submitted', to: 'withdrawn', requiredCapability: 'CURRICULUM_PROPOSE', actorBinding: 'original-submitter' }),
+      expect.objectContaining({ from: 'under-review', to: 'changes-requested', requiredCapability: 'REVISION_REVIEW' }),
+      expect.objectContaining({ from: 'under-review', to: 'accepted-for-decision', requiredCapability: 'REVISION_REVIEW' }),
+      expect.objectContaining({ from: 'under-review', to: 'rejected', requiredCapability: 'REVISION_REVIEW' }),
+    ]);
+
+    for (const transition of SHARED_PROPOSAL_LIFECYCLE_TRANSITION_POLICY) {
+      expect(transition.requiresCurrentHead).toBe(true);
+      const capableRoles = roles.filter((role) =>
+        getRoleCapabilities(role).includes(transition.requiredCapability),
+      );
+      expect(capableRoles.length).toBeGreaterThan(0);
+    }
+
+    expect(getSharedProposalLifecycleTransitionPolicy('changes-requested', 'submitted')).toBeNull();
+    expect(getSharedProposalLifecycleTransitionPolicy('accepted-for-decision', 'archived')).toBeNull();
+    expect(SHARED_PROPOSAL_AUTHORITY_BOUNDARY.lifecycleMutationUsesClosedTransitionPolicy).toBe(true);
+    expect(SHARED_PROPOSAL_AUTHORITY_BOUNDARY.lifecycleMutationRequiresCurrentHead).toBe(true);
+  });
+
+  it('keeps changes-requested content repair local and requires a new shared submission', () => {
+    expect(SHARED_PROPOSAL_AUTHORITY_BOUNDARY.localPreparationStates).toContain('ready-for-review');
+    expect(getSharedProposalLifecycleTransitionPolicy('changes-requested', 'under-review')).toBeNull();
+    expect(SHARED_PROPOSAL_AUTHORITY_BOUNDARY.replacementRequiresChangesRequestedHead).toBe(true);
+  });
+
+  it('requires immutable lifecycle audit provenance bound to the verified transition authority', () => {
+    const command: AdvanceSharedProposalLifecycleCommand = {
+      workspaceId: 'workspace-1',
+      proposalRef: 'proposal-1',
+      proposalVersionRef: 'proposal-version-1',
+      expectedLifecycleState: 'submitted',
+      nextLifecycleState: 'under-review',
+      clientRequestId: 'client-transition-1',
+    };
+    const policy = getSharedProposalLifecycleTransitionPolicy(
+      command.expectedLifecycleState,
+      command.nextLifecycleState,
+    );
+    expect(policy?.requiredCapability).toBe('REVISION_REVIEW');
+
+    const receipt: SharedProposalLifecycleTransitionReceipt = {
+      schemaVersion: 1,
+      workspaceId: command.workspaceId,
+      proposalRef: command.proposalRef,
+      proposalVersionRef: command.proposalVersionRef,
+      fromState: command.expectedLifecycleState,
+      toState: command.nextLifecycleState,
+      capabilityUsed: 'REVISION_REVIEW',
+      transitionedByUserId: 'reviewer-1',
+      transitionedByRole: 'dipartimento',
+      transitionedAt: '2026-09-01T12:10:00.000Z',
+      clientRequestId: command.clientRequestId,
+    };
+
+    expect(receipt.capabilityUsed).toBe(policy?.requiredCapability);
+    expect(SHARED_PROPOSAL_AUTHORITY_BOUNDARY.lifecycleMutationPersistsImmutableReceipt).toBe(true);
+  });
+
+  it('requires server validation, fingerprint recomputation and idempotent mutations', () => {
+    expect(SHARED_PROPOSAL_AUTHORITY_BOUNDARY.requiresServerPayloadValidation).toBe(true);
+    expect(SHARED_PROPOSAL_AUTHORITY_BOUNDARY.requiresServerFingerprintRecompute).toBe(true);
+    expect(SHARED_PROPOSAL_AUTHORITY_BOUNDARY.requiresClientRequestIdIdempotency).toBe(true);
+    expect(SHARED_PROPOSAL_AUTHORITY_BOUNDARY.conflictingClientRequestReuseFailsClosed).toBe(true);
   });
 
   it('makes submit results structurally incapable of skipping the submitted state', () => {
