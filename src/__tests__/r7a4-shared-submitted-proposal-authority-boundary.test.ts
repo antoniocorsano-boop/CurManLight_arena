@@ -86,7 +86,7 @@ describe('R7A4 shared submitted proposal authority boundary', () => {
         status: 'RECORDED',
         adoptionBinding: {
           version: 2,
-          fingerprint: 'b'.repeat(64),
+          bindingFingerprint: 'b'.repeat(64),
           targetNodeRef: 'node-1',
           baseCurriculumVersionRef: 'curriculum-v1',
           proposalSnapshotVersion: 1,
