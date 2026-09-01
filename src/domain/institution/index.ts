@@ -12,3 +12,5 @@ export * from './processRoleModel';
 export * from './roleSurfaceInventory';
 export * from './workQueue';
 export * from './observerReadOnly';
+export * from './canonicalAdoptionContract';
+export * from './endToEndAdoptionValidation';
