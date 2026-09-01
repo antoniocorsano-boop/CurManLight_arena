@@ -9,3 +9,4 @@ export * from './selectors';
 export * from './capabilities';
 export * from './sharedWorkspacePort';
 export * from './processRoleModel';
+export * from './roleSurfaceInventory';
