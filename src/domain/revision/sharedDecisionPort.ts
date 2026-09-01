@@ -9,6 +9,7 @@ export interface InstitutionalRevisionDecisionInput {
   proposalRef: string;
   proposalVersionRef: string;
   proposalVersionFingerprint: string;
+  proposalVersionSnapshotPayload: string;
   targetNodeRef: string;
   baseCurriculumVersionRef: string;
   outcome: InstitutionalDecisionOutcome;
@@ -31,17 +32,6 @@ export interface InstitutionalRevisionDecisionReceipt {
   clientRequestId: string;
 }
 
-/**
- * Consequential institutional decisions are deliberately separate from the
- * historical local DecisionAuthority model. Implementations must verify an
- * authenticated workspace capability and must never fall back to a
- * self-declared role or to local-only persistence.
- *
- * New v2 decision receipts bind the deliberated proposal version to the exact
- * target node and base curriculum version that may later be used by P6.
- * Historical receipts without `adoptionBinding` remain readable, but are not
- * sufficient for canonical adoption.
- */
 export interface SharedRevisionDecisionRepository {
   findInstitutionalDecisionForVersion(
     context: WorkspaceActorContext,
