@@ -10,11 +10,7 @@ import type {
 import { SupabaseSharedWorkspaceRepository } from './sharedWorkspaceRepository';
 
 const VALID_OUTCOMES: readonly InstitutionalDecisionOutcome[] = [
-  'approve',
-  'approve-with-changes',
-  'reject',
-  'defer',
-  'return-for-revision',
+  'approve', 'approve-with-changes', 'reject', 'defer', 'return-for-revision',
 ];
 
 const DECISION_SELECT = [
@@ -26,49 +22,31 @@ const DECISION_SELECT = [
 ].join(',');
 
 interface InstitutionalDecisionRow {
-  id: string;
+  id: string; workspace_id: string; proposal_ref: string; proposal_version_ref: string;
+  proposal_version_fingerprint: string; adoption_binding_version: number | null;
+  adoption_target_node_ref: string | null; adoption_base_curriculum_version_ref: string | null;
+  adoption_binding_fingerprint: string | null; outcome: string; rationale: string;
+  decided_by: string; authority_role: string; decided_at: string; client_request_id: string;
+}
+
+interface FrozenProposalSnapshotRow {
   workspace_id: string;
   proposal_ref: string;
   proposal_version_ref: string;
   proposal_version_fingerprint: string;
-  adoption_binding_version: number | null;
-  adoption_target_node_ref: string | null;
-  adoption_base_curriculum_version_ref: string | null;
-  adoption_binding_fingerprint: string | null;
-  outcome: string;
-  rationale: string;
-  decided_by: string;
-  authority_role: string;
-  decided_at: string;
-  client_request_id: string;
+  snapshot_payload: string;
 }
 
 const isInstitutionalOutcome = (value: string): value is InstitutionalDecisionOutcome =>
   VALID_OUTCOMES.includes(value as InstitutionalDecisionOutcome);
 
 const readAdoptionBinding = (row: InstitutionalDecisionRow): InstitutionalAdoptionBindingV2 | undefined => {
-  const fields = [
-    row.adoption_binding_version,
-    row.adoption_target_node_ref,
-    row.adoption_base_curriculum_version_ref,
-    row.adoption_binding_fingerprint,
-  ];
+  const fields = [row.adoption_binding_version, row.adoption_target_node_ref, row.adoption_base_curriculum_version_ref, row.adoption_binding_fingerprint];
   if (fields.every((value) => value == null)) return undefined;
-  if (
-    row.adoption_binding_version !== 2
-    || !row.adoption_target_node_ref
-    || !row.adoption_base_curriculum_version_ref
-    || !row.adoption_binding_fingerprint
-    || !/^[a-f0-9]{64}$/.test(row.adoption_binding_fingerprint)
-  ) {
+  if (row.adoption_binding_version !== 2 || !row.adoption_target_node_ref || !row.adoption_base_curriculum_version_ref || !row.adoption_binding_fingerprint || !/^[a-f0-9]{64}$/.test(row.adoption_binding_fingerprint)) {
     throw new Error('La ricevuta istituzionale contiene un binding di adozione incompleto o non valido.');
   }
-  return {
-    version: 2,
-    targetNodeRef: row.adoption_target_node_ref,
-    baseCurriculumVersionRef: row.adoption_base_curriculum_version_ref,
-    bindingFingerprint: row.adoption_binding_fingerprint,
-  };
+  return { version: 2, targetNodeRef: row.adoption_target_node_ref, baseCurriculumVersionRef: row.adoption_base_curriculum_version_ref, bindingFingerprint: row.adoption_binding_fingerprint };
 };
 
 const toReceipt = (row: InstitutionalDecisionRow): InstitutionalRevisionDecisionReceipt => {
@@ -76,37 +54,31 @@ const toReceipt = (row: InstitutionalDecisionRow): InstitutionalRevisionDecision
   if (row.authority_role !== 'collegio') throw new Error('Il server ha restituito un ruolo di autorità non ammesso per la Beta.');
   const adoptionBinding = readAdoptionBinding(row);
   return {
-    id: row.id,
-    workspaceId: row.workspace_id,
-    proposalRef: row.proposal_ref,
-    proposalVersionRef: row.proposal_version_ref,
-    proposalVersionFingerprint: row.proposal_version_fingerprint,
-    ...(adoptionBinding ? { adoptionBinding } : {}),
-    outcome: row.outcome,
-    rationale: row.rationale,
-    decidedByUserId: row.decided_by,
-    authorityRole: 'collegio',
-    decidedAt: row.decided_at,
-    clientRequestId: row.client_request_id,
+    id: row.id, workspaceId: row.workspace_id, proposalRef: row.proposal_ref,
+    proposalVersionRef: row.proposal_version_ref, proposalVersionFingerprint: row.proposal_version_fingerprint,
+    ...(adoptionBinding ? { adoptionBinding } : {}), outcome: row.outcome, rationale: row.rationale,
+    decidedByUserId: row.decided_by, authorityRole: 'collegio', decidedAt: row.decided_at, clientRequestId: row.client_request_id,
   };
 };
 
 const assertInput = (input: InstitutionalRevisionDecisionInput): void => {
-  if (!input.workspaceId.trim() || !input.proposalRef.trim() || !input.proposalVersionRef.trim()) {
-    throw new Error('Workspace, proposta e versione della proposta sono obbligatori.');
-  }
-  if (!input.targetNodeRef.trim() || !input.baseCurriculumVersionRef.trim()) {
-    throw new Error('Nodo target e versione curricolare di base sono obbligatori per una decisione adottabile.');
-  }
+  if (!input.workspaceId.trim() || !input.proposalRef.trim() || !input.proposalVersionRef.trim()) throw new Error('Workspace, proposta e versione della proposta sono obbligatori.');
+  if (!input.targetNodeRef.trim() || !input.baseCurriculumVersionRef.trim()) throw new Error('Nodo target e versione curricolare di base sono obbligatori per una decisione adottabile.');
   if (!/^[a-f0-9]{64}$/i.test(input.proposalVersionFingerprint)) throw new Error('L’impronta della versione della proposta deve essere SHA-256 esadecimale.');
+  if (!input.proposalVersionSnapshotPayload?.trim()) throw new Error('Lo snapshot congelato della versione della proposta è obbligatorio.');
   if (!VALID_OUTCOMES.includes(input.outcome)) throw new Error('Esito di decisione istituzionale non ammesso.');
   if (!input.rationale.trim()) throw new Error('La motivazione della decisione istituzionale è obbligatoria.');
   if (!input.clientRequestId.trim()) throw new Error('L’identificativo della richiesta è obbligatorio.');
 };
 
+const assertSnapshotReceipt = (row: FrozenProposalSnapshotRow, input: InstitutionalRevisionDecisionInput): void => {
+  if (row.workspace_id !== input.workspaceId || row.proposal_ref !== input.proposalRef || row.proposal_version_ref !== input.proposalVersionRef || row.proposal_version_fingerprint !== input.proposalVersionFingerprint.toLowerCase() || row.snapshot_payload !== input.proposalVersionSnapshotPayload) {
+    throw new Error('Il server non ha confermato lo stesso snapshot congelato richiesto per la decisione.');
+  }
+};
+
 export class SupabaseSharedRevisionDecisionRepository implements SharedRevisionDecisionRepository {
   private readonly workspaceRepository: SharedWorkspaceRepository;
-
   constructor(private readonly client: SupabaseClient, workspaceRepository?: SharedWorkspaceRepository) {
     this.workspaceRepository = workspaceRepository ?? new SupabaseSharedWorkspaceRepository(client);
   }
@@ -127,6 +99,19 @@ export class SupabaseSharedRevisionDecisionRepository implements SharedRevisionD
     if (context.membership.workspaceId !== input.workspaceId) throw new Error('La richiesta non appartiene al workspace autenticato corrente.');
     const allowed = await this.workspaceRepository.can(context, 'REVISION_DECIDE');
     if (!allowed) throw new Error('La membership autenticata non possiede REVISION_DECIDE.');
+
+    const snapshotResult = await this.client.rpc('freeze_institutional_revision_proposal_snapshot_v1', {
+      p_workspace_id: input.workspaceId,
+      p_proposal_ref: input.proposalRef,
+      p_proposal_version_ref: input.proposalVersionRef,
+      p_expected_fingerprint: input.proposalVersionFingerprint.toLowerCase(),
+      p_snapshot_payload: input.proposalVersionSnapshotPayload,
+    });
+    if (snapshotResult.error) throw new Error(`Snapshot istituzionale non congelato: ${snapshotResult.error.message}`);
+    const snapshotRow = Array.isArray(snapshotResult.data) ? snapshotResult.data[0] : snapshotResult.data;
+    if (!snapshotRow) throw new Error('Il server non ha restituito lo snapshot congelato della versione.');
+    assertSnapshotReceipt(snapshotRow as FrozenProposalSnapshotRow, input);
+
     const { data, error } = await this.client.rpc('record_institutional_revision_decision_v2', {
       p_workspace_id: input.workspaceId,
       p_proposal_ref: input.proposalRef,
