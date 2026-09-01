@@ -112,11 +112,17 @@ Required fields are all of the above except optional `previousVersionRef` and `c
 - `rationale`: string;
 - `sourceRefs`, `evidenceRefs`: arrays of strict reference objects;
 - `createdAt`: parseable timestamp string;
-- `structuralFootprint`: string containing valid JSON, including valid empty-object/empty-structure representations;
+- `structuralFootprint`: arbitrary string, including the empty string; R7A4 does not reinterpret this field as JSON;
 - optional `previousVersionRef`, `changeNote`: non-empty strings when present;
 - `frozen`: literal `true`.
 
-Each reference requires only `id` and `entityType`, may contain `snapshotLabel`, and rejects extra keys. `entityType` is limited to the canonical 16-type closed set:
+Each reference requires only `id` and `entityType`, may contain `snapshotLabel`, and rejects extra keys. Nested values are also strict:
+
+- reference `id`: non-empty string;
+- reference `entityType`: one value from the canonical closed set below;
+- optional `snapshotLabel`: non-empty string when present.
+
+`entityType` is limited to the canonical 16-type closed set:
 
 `institute, source, curriculum-version, curriculum-segment, curriculum-node, curriculum-link, revision-proposal, decision, teaching-design, document, document-version, template, class-context, assessment, actor, event`.
 
@@ -141,9 +147,12 @@ For submission:
 - `previousSharedProposalVersionRef` must equal that expected head;
 - replacement submission is allowed only when the current authoritative predecessor is `changes-requested`;
 - replacement must create a new proposal-version identity;
+- for the same `proposalRef`, replacement must preserve exactly the authoritative predecessor `targetNodeRef`;
+- for the same `proposalRef`, replacement must preserve exactly the authoritative predecessor `baseCurriculumVersionRef`;
+- if either target or curriculum-base scope changes, the operation requires a **new proposal identity**, not a replacement version of the existing proposal chain;
 - stale or concurrent submissions fail instead of overwriting a newer head.
 
-This prevents a proposer from silently replacing a version that is still under institutional review.
+This prevents a proposer from silently replacing a version that is still under institutional review or redirecting an existing proposal chain to a different institutional scope.
 
 ## Closed shared lifecycle policy
 
@@ -164,9 +173,12 @@ Every lifecycle mutation must additionally:
 - resolve and bind the server-session principal;
 - re-read fresh server membership;
 - verify the capability selected by this exact policy tuple;
+- require the recorded transition role to be one of the roles that currently holds that exact capability;
 - require the target version to remain the current shared head;
 - compare-and-swap the expected lifecycle state;
 - fail closed on stale state, revoked membership or capability mismatch.
+
+For the current capability map, `REVISION_REVIEW` transition receipts may therefore be attributed only to `dipartimento`, `referente` or `dirigente`; `CURRICULUM_PROPOSE` transition receipts remain limited to `docente`, `dipartimento` or `referente`, with the additional original-submitter binding where the policy requires it.
 
 No other transition is implicitly authorized by R7A4.
 
@@ -182,17 +194,18 @@ A lifecycle transition is not only a mutable state change. Every successful shar
 - proposal and exact proposal version;
 - previous and next lifecycle state;
 - exact capability selected by the transition policy;
-- freshly verified actor user and role;
+- freshly verified actor user and capability-compatible role;
 - server-authored transition timestamp;
 - `clientRequestId`.
 
-Receipt and returned version are structurally derived from the **same allowed transition tuple**. Therefore a conforming implementation cannot independently choose `fromState`, `toState`, `capabilityUsed`, or the returned version lifecycle state.
+Receipt and returned version are structurally derived from the **same allowed transition tuple**. Therefore a conforming implementation cannot independently choose `fromState`, `toState`, `capabilityUsed`, `transitionedByRole`, or the returned version lifecycle state.
 
 For a command `from -> to`:
 
 - receipt `fromState == command.expectedLifecycleState`;
 - receipt `toState == command.nextLifecycleState`;
 - receipt `capabilityUsed == policy.requiredCapability`;
+- receipt `transitionedByRole` belongs to the role set that holds `policy.requiredCapability`;
 - receipt identifiers and `clientRequestId` equal the command;
 - returned `version.lifecycleState == toState`;
 - actor identity/role derive from fresh server-session membership;
@@ -221,12 +234,15 @@ R7A4 is reviewed against the following classes of failure rather than waiting fo
 | capability check | `CURRICULUM_PROPOSE` | transition-specific | `CURRICULUM_READ` |
 | actor provenance bound to membership | yes | yes, in receipt | n/a |
 | strict canonical payload schema | yes | n/a | n/a |
+| strict nested reference value schema | yes | n/a | n/a |
 | exact canonical byte serialization | yes | n/a | n/a |
 | server fingerprint recomputation | yes | n/a | n/a |
 | current-head guard | CAS | yes | n/a |
 | expected-state CAS | submission head | lifecycle state | n/a |
+| proposal scope preserved across replacement | yes | n/a | n/a |
 | immutable version content | yes | preserved | preserved |
 | receipt derived from policy tuple | n/a | yes | n/a |
+| receipt role derived from required capability | n/a | yes | n/a |
 | server-authored audit timestamp | yes | yes | n/a |
 | immutable institutional audit evidence | submission provenance | receipt | n/a |
 | idempotency / conflict detection | yes | yes | n/a |
@@ -278,16 +294,17 @@ Must implement the frozen contract, including:
 - RPC identity anchored to the server-session principal (`auth.uid()` in Supabase);
 - strict principal/context/workspace binding;
 - authenticated submission RPC;
-- exact canonical payload-schema validation;
+- exact canonical payload-schema validation, including nested reference value constraints;
 - exact UTF-8 serialization compatibility with the fingerprint builder;
 - server-side SHA-256 recomputation;
 - immutable submitted versions;
 - server-authored immutable submission time/provenance;
 - CAS shared head;
 - replacement only from `changes-requested`;
+- exact target/base scope preservation across replacement, with new proposal identity required for scope changes;
 - closed shared lifecycle policy;
 - fresh capability verification on each lifecycle mutation;
-- lifecycle receipts derived from the exact transition-policy tuple;
+- lifecycle receipts derived from the exact transition-policy tuple and restricted to capability-compatible roles;
 - server-authored immutable lifecycle timestamps;
 - idempotency/conflicting-request protection with stable retry receipts/timestamps;
 - client repository implementation;
@@ -311,12 +328,13 @@ R7A4 is complete only when review accepts that:
 - authenticated submission is the first shared-authority boundary;
 - server-session principal identity, fresh membership and workspace are bound on every shared operation;
 - submission provenance is bound to that verified principal/member;
-- canonical proposal payload schema and exact fingerprint serialization are frozen;
+- canonical proposal payload schema, nested reference constraints and exact fingerprint serialization are frozen;
 - submitted content is immutable;
 - audit timestamps are server-authored and stable across idempotent retries;
-- replacement is CAS-protected and only follows `changes-requested`;
+- replacement is CAS-protected, only follows `changes-requested`, and preserves target/base scope;
+- scope changes require a new proposal identity;
 - lifecycle mutations use the closed least-privilege transition policy;
-- lifecycle receipt and returned state are derived from the same policy tuple;
+- lifecycle receipt, capability-compatible role and returned state are derived from the same policy tuple;
 - institutional lifecycle changes create immutable audit receipts;
 - mutations are idempotent and conflicting retries fail closed;
 - no local fallback can become institutional success;
