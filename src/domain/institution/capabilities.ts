@@ -11,12 +11,14 @@ export type ArenaCapability =
   | 'WORKSPACE_ADMIN';
 
 export type RoleAssurance = 'self-declared' | 'authenticated-workspace';
+export type ArenaAccessProfile = 'role-default' | 'observer-read-only';
 
 export interface CapabilityAccessDecision {
   allowed: boolean;
   role: InstitutionalRole;
   capability: ArenaCapability;
   assurance: RoleAssurance;
+  accessProfile: ArenaAccessProfile;
   reason: string;
 }
 
@@ -58,6 +60,8 @@ const ROLE_CAPABILITIES: Readonly<Record<InstitutionalRole, readonly ArenaCapabi
   ],
 };
 
+const OBSERVER_CAPABILITIES: readonly ArenaCapability[] = ['CURRICULUM_READ'];
+
 const AUTHENTICATED_ONLY_CAPABILITIES: readonly ArenaCapability[] = [
   'REVISION_DECIDE',
   'CURRICULUM_ADOPT',
@@ -68,17 +72,35 @@ export const getRoleCapabilities = (
   role: InstitutionalRole
 ): readonly ArenaCapability[] => ROLE_CAPABILITIES[role];
 
+export const getObserverCapabilities = (): readonly ArenaCapability[] => OBSERVER_CAPABILITIES;
+
 export const resolveCapabilityAccess = (
   role: InstitutionalRole,
   capability: ArenaCapability,
-  assurance: RoleAssurance
+  assurance: RoleAssurance,
+  accessProfile: ArenaAccessProfile = 'role-default'
 ): CapabilityAccessDecision => {
+  if (accessProfile === 'observer-read-only') {
+    const allowed = OBSERVER_CAPABILITIES.includes(capability);
+    return {
+      allowed,
+      role,
+      capability,
+      assurance,
+      accessProfile,
+      reason: allowed
+        ? 'Il profilo osservatore consente la consultazione del curricolo senza attribuire capacità mutanti.'
+        : 'Il profilo osservatore è read-only e blocca qualsiasi capacità di proposta, revisione, decisione, adozione, export o amministrazione.',
+    };
+  }
+
   if (!ROLE_CAPABILITIES[role].includes(capability)) {
     return {
       allowed: false,
       role,
       capability,
       assurance,
+      accessProfile,
       reason: 'La capacità non appartiene al ruolo nel modello di privilegio minimo.',
     };
   }
@@ -92,6 +114,7 @@ export const resolveCapabilityAccess = (
       role,
       capability,
       assurance,
+      accessProfile,
       reason: 'Il ruolo autodichiarato non attribuisce autorità istituzionale o amministrativa.',
     };
   }
@@ -101,6 +124,7 @@ export const resolveCapabilityAccess = (
     role,
     capability,
     assurance,
+    accessProfile,
     reason:
       assurance === 'authenticated-workspace'
         ? 'Capacità consentita al ruolo autenticato nel workspace.'
@@ -111,5 +135,6 @@ export const resolveCapabilityAccess = (
 export const canUseCapability = (
   role: InstitutionalRole,
   capability: ArenaCapability,
-  assurance: RoleAssurance
-): boolean => resolveCapabilityAccess(role, capability, assurance).allowed;
+  assurance: RoleAssurance,
+  accessProfile: ArenaAccessProfile = 'role-default'
+): boolean => resolveCapabilityAccess(role, capability, assurance, accessProfile).allowed;
