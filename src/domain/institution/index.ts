@@ -8,6 +8,7 @@ export * from './legacyAdapters';
 export * from './selectors';
 export * from './capabilities';
 export * from './sharedWorkspacePort';
+export * from './sharedCanonicalAdoptionPort';
 export * from './processRoleModel';
 export * from './roleSurfaceInventory';
 export * from './workQueue';
