@@ -1,7 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import { Archive, BookOpen, CheckCircle2, FilePlus2, FileSearch, ShieldCheck } from 'lucide-react';
 import type { AppViewsLayerProps } from '../../session';
-import { USER_VISIBLE_BUILT_IN_KNOWLEDGE_SOURCES } from '../lib/knowledgeBuiltInSources';
+import {
+  USER_VISIBLE_BUILT_IN_KNOWLEDGE_SOURCES,
+  describeKnowledgeAuthorityClass,
+} from '../lib/knowledgeBuiltInSources';
 import { deriveKnowledgeSourcePresentation } from '../lib/knowledgeSourcePresentation';
 import { verifyLocalKnowledgeSource } from '../lib/localKnowledgeStore';
 
@@ -57,7 +60,7 @@ export function FontiTab({
       setVerificationCandidateId(null);
       showToast(
         verified.evidenceEligibility === 'LOCAL_EVIDENCE'
-          ? `Fonte “${verified.title}” verificata localmente e abilitata come evidenza locale. Non è diventata fonte istituzionale.`
+          ? `Fonte “${verified.title}” verificata localmente e abilitata come evidenza locale. La sua autorità resta locale.`
           : `Fonte “${verified.title}” verificata localmente. Resta in sola consultazione finché l'estrazione non è completa.`,
         true,
       );
@@ -86,7 +89,7 @@ export function FontiTab({
           <div className="min-w-0">
             <h1 className="text-lg font-black text-slate-900">Fonti</h1>
             <p className="mt-1 text-sm leading-6 text-slate-600">
-              Qui controlli da dove arrivano i materiali usati in Arena. Una fonte inclusa, caricata o verificata localmente non diventa automaticamente normativa o istituzionale.
+              Qui controlli provenienza, versione, verifica e autorità dei materiali usati in Arena. Verificare localmente una fonte non la rende normativa o istituzionale.
             </p>
           </div>
         </div>
@@ -95,11 +98,11 @@ export function FontiTab({
       <section className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-5" aria-labelledby="included-sources-title">
         <div className="max-w-2xl">
           <h2 id="included-sources-title" className="text-base font-black text-slate-900">Fonti incluse nella copia locale</h2>
-          <p className="mt-1 text-sm leading-6 text-slate-600">Sono i materiali già disponibili in Arena. Il fatto che siano inclusi non certifica da solo provenienza normativa, vigenza o applicabilità.</p>
+          <p className="mt-1 text-sm leading-6 text-slate-600">Sono materiali incorporati nella release. Arena li tratta come riferimenti archiviati o derivati finché non esiste una verifica separata della loro autorità.</p>
         </div>
         <div className="mt-4 grid gap-3 md:grid-cols-2">
           {USER_VISIBLE_BUILT_IN_KNOWLEDGE_SOURCES.map((source) => (
-            <article key={source.id} className="rounded-xl border border-slate-200 p-4" data-source-kind="bundled-local">
+            <article key={source.id} className="rounded-xl border border-slate-200 p-4" data-source-kind="bundled-local" data-authority-class={source.authorityClass} data-retrieval-eligible={source.retrievalEligible ? 'true' : 'false'}>
               <div className="flex items-start gap-3">
                 <BookOpen className="mt-0.5 h-5 w-5 shrink-0 text-slate-500" aria-hidden="true" />
                 <div className="min-w-0 flex-1">
@@ -112,7 +115,8 @@ export function FontiTab({
                     <div><dt className="inline font-bold text-slate-800">Identità: </dt><dd className="inline">{source.id}</dd></div>
                     <div><dt className="inline font-bold text-slate-800">Versione: </dt><dd className="inline">inclusa nella release Arena corrente</dd></div>
                     <div><dt className="inline font-bold text-slate-800">Provenienza: </dt><dd className="inline">archivio locale incorporato nell’app; controlla il documento per la fonte originaria</dd></div>
-                    <div><dt className="inline font-bold text-slate-800">Autorità: </dt><dd className="inline">riferimento locale, non approvazione istituzionale</dd></div>
+                    <div><dt className="inline font-bold text-slate-800">Autorità: </dt><dd className="inline">{describeKnowledgeAuthorityClass(source.authorityClass)}</dd></div>
+                    <div><dt className="inline font-bold text-slate-800">Uso nel retrieval: </dt><dd className="inline">{source.retrievalEligible ? 'ammesso come riferimento archiviato' : 'escluso'}</dd></div>
                     <div><dt className="inline font-bold text-slate-800">Applicabilità: </dt><dd className="inline">da verificare rispetto a scuola, disciplina e anno</dd></div>
                   </dl>
                   <button type="button" onClick={() => openKnowledge(source.id)} className="mt-3 min-h-11 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-800">
@@ -129,7 +133,7 @@ export function FontiTab({
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h2 id="local-sources-title" className="text-base font-black text-slate-900">Fonti aggiunte da te</h2>
-            <p className="mt-1 text-sm text-slate-600">Un documento appena caricato è consultabile, ma non entra nel retrieval come evidenza finché non viene verificato.</p>
+            <p className="mt-1 text-sm text-slate-600">Un documento appena caricato è consultabile. La verifica può abilitarlo come evidenza locale, ma non ne aumenta l’autorità oltre il livello locale.</p>
           </div>
           <button
             type="button"
@@ -153,7 +157,7 @@ export function FontiTab({
               const verified = source.authorityStatus === 'LOCAL_VERIFIED';
               const evidenceReady = source.evidenceEligibility === 'LOCAL_EVIDENCE';
               return (
-                <article key={source.id} className="rounded-xl border border-slate-200 p-4" data-source-kind="uploaded-local" data-source-lifecycle={source.lifecycleStatus} data-evidence-eligibility={source.evidenceEligibility}>
+                <article key={source.id} className="rounded-xl border border-slate-200 p-4" data-source-kind="uploaded-local" data-source-lifecycle={source.lifecycleStatus} data-evidence-eligibility={source.evidenceEligibility} data-authority-class={source.authorityClass}>
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
                       <h3 className="font-bold text-slate-900">{source.title}</h3>
@@ -167,6 +171,7 @@ export function FontiTab({
                   <dl className="mt-3 grid gap-1 text-xs leading-5 text-slate-600">
                     <div><dt className="inline font-bold text-slate-800">Tipo: </dt><dd className="inline">documento locale caricato dall’utente</dd></div>
                     <div><dt className="inline font-bold text-slate-800">Versione: </dt><dd className="inline">{shortVersion(source.sourceVersionId)}</dd></div>
+                    <div><dt className="inline font-bold text-slate-800">Autorità: </dt><dd className="inline">{describeKnowledgeAuthorityClass(source.authorityClass)}</dd></div>
                     <div><dt className="inline font-bold text-slate-800">Uso nel retrieval: </dt><dd className="inline">{evidenceReady ? 'evidenza locale' : 'sola consultazione'}</dd></div>
                   </dl>
                   <div className="mt-3 flex flex-wrap gap-2">
@@ -196,10 +201,11 @@ export function FontiTab({
         >
           <div className="max-w-2xl">
             <h2 id="source-registry-verification-title" className="text-base font-black text-slate-900">Conferma la verifica della fonte</h2>
-            <p className="mt-2 text-sm leading-6 text-slate-700">Controlla titolo, provenienza e contenuto. La conferma può rendere il documento utilizzabile come evidenza locale solo se il testo è stato estratto in modo sufficiente. Non lo rende normativo o istituzionale e non modifica il curricolo.</p>
+            <p className="mt-2 text-sm leading-6 text-slate-700">Controlla titolo, provenienza e contenuto. La conferma può rendere il documento utilizzabile come evidenza locale solo se il testo è stato estratto in modo sufficiente. L’autorità resta locale: questa azione non può promuovere il documento a fonte istituzionale o normativa.</p>
             <p className="mt-2 text-sm font-bold text-slate-900">{verificationCandidate.title}</p>
             {verificationCandidate.originalFileName && <p className="mt-1 text-xs text-slate-600">File: {verificationCandidate.originalFileName}</p>}
             <p className="mt-1 text-xs text-slate-600">Versione: {shortVersion(verificationCandidate.sourceVersionId)}</p>
+            <p className="mt-1 text-xs text-slate-600">Autorità: {describeKnowledgeAuthorityClass(verificationCandidate.authorityClass)}</p>
             <p className="mt-1 text-xs text-slate-600">Estrazione: {verificationCandidate.extractionStatus}</p>
           </div>
           <div className="flex flex-wrap gap-2">
