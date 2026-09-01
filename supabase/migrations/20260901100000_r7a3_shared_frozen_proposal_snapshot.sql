@@ -98,7 +98,10 @@ begin
 
   if jsonb_typeof(v_json) <> 'object'
      or not (v_json ?& v_required_keys)
-     or exists (select 1 from jsonb_object_keys(v_json) key where not (key = any(v_allowed_keys)))
+     or exists (
+       select 1 from jsonb_object_keys(v_json) as snapshot_keys(key_name)
+       where not (snapshot_keys.key_name = any(v_allowed_keys))
+     )
      or v_json->>'id' is distinct from trim(p_proposal_version_ref)
      or v_json->>'proposalRef' is distinct from trim(p_proposal_ref)
      or jsonb_typeof(v_json->'versionNumber') <> 'number'
@@ -128,7 +131,10 @@ begin
   for v_ref in select value from jsonb_array_elements(v_json->'sourceRefs') loop
     if jsonb_typeof(v_ref) <> 'object'
        or not (v_ref ?& array['id','entityType'])
-       or exists (select 1 from jsonb_object_keys(v_ref) key where not (key = any(array['id','entityType','snapshotLabel'])))
+       or exists (
+         select 1 from jsonb_object_keys(v_ref) as ref_keys(key_name)
+         where not (ref_keys.key_name = any(array['id','entityType','snapshotLabel']))
+       )
        or jsonb_typeof(v_ref->'id') <> 'string' or nullif(trim(v_ref->>'id'), '') is null
        or jsonb_typeof(v_ref->'entityType') <> 'string' or nullif(trim(v_ref->>'entityType'), '') is null
        or (v_ref ? 'snapshotLabel' and (jsonb_typeof(v_ref->'snapshotLabel') <> 'string' or nullif(trim(v_ref->>'snapshotLabel'), '') is null)) then
@@ -139,7 +145,10 @@ begin
   for v_ref in select value from jsonb_array_elements(v_json->'evidenceRefs') loop
     if jsonb_typeof(v_ref) <> 'object'
        or not (v_ref ?& array['id','entityType'])
-       or exists (select 1 from jsonb_object_keys(v_ref) key where not (key = any(array['id','entityType','snapshotLabel'])))
+       or exists (
+         select 1 from jsonb_object_keys(v_ref) as ref_keys(key_name)
+         where not (ref_keys.key_name = any(array['id','entityType','snapshotLabel']))
+       )
        or jsonb_typeof(v_ref->'id') <> 'string' or nullif(trim(v_ref->>'id'), '') is null
        or jsonb_typeof(v_ref->'entityType') <> 'string' or nullif(trim(v_ref->>'entityType'), '') is null
        or (v_ref ? 'snapshotLabel' and (jsonb_typeof(v_ref->'snapshotLabel') <> 'string' or nullif(trim(v_ref->>'snapshotLabel'), '') is null)) then
@@ -295,4 +304,4 @@ comment on column public.institutional_revision_decisions.proposal_snapshot_vers
 comment on function public.record_institutional_revision_decision_v3(uuid, text, text, text, text, text, text, text, uuid) is
   'R7A3 decision boundary. Requires a matching complete canonical frozen server snapshot and marks the receipt proposal_snapshot_version=1. R7A2 v2 RPC remains available for rollout compatibility but does not set this marker.';
 comment on table public.institutional_revision_proposal_snapshots is
-  'R7A3 immutable server-owned proposal-version snapshots. Direct writes are forbidden; the complete canonical fingerprint payload shape is validated and SHA-256 is recomputed server-side from its exact bytes.';
+  'R7A3 immutable server-owned proposal-version snapshots. Direct writes are forbidden; the complete canonical fingerprint payload shape is validated and SHA-256 is recomputed server-side from its exact bytes. This is not yet an independent shared proposal authority.';
