@@ -1,5 +1,10 @@
 import type { InstitutionalRole } from '../curriculum/types';
-import { canUseCapability, type ArenaCapability, type RoleAssurance } from './capabilities';
+import {
+  canUseCapability,
+  type ArenaAccessProfile,
+  type ArenaCapability,
+  type RoleAssurance,
+} from './capabilities';
 import {
   getArenaProcessContract,
   type ArenaProcessId,
@@ -12,6 +17,7 @@ export type ArenaWorkItemAccess = 'ACTIONABLE' | 'READ_ONLY' | 'HIDDEN';
 export interface ArenaActorProjection {
   role: InstitutionalRole;
   assurance: RoleAssurance;
+  accessProfile?: ArenaAccessProfile;
 }
 
 export interface ArenaWorkItemSeed {
@@ -61,6 +67,7 @@ export const projectArenaWorkItem = (
   actor: ArenaActorProjection,
 ): ArenaProjectedWorkItem => {
   const process = getArenaProcessContract(seed.processId);
+  const accessProfile = actor.accessProfile ?? 'role-default';
   const effectiveRequiredCapability = CANONICAL_PROCESS_CAPABILITY[process.id] ?? seed.requiredCapability;
   const effectiveConsequential = process.consequential || seed.consequential;
   const effectiveAuthenticatedAuthorityRequired =
@@ -72,8 +79,8 @@ export const projectArenaWorkItem = (
     authenticatedAuthorityRequired: effectiveAuthenticatedAuthorityRequired,
   };
 
-  const canRead = canUseCapability(actor.role, 'CURRICULUM_READ', actor.assurance);
-  const canAct = canUseCapability(actor.role, effectiveRequiredCapability, actor.assurance);
+  const canRead = canUseCapability(actor.role, 'CURRICULUM_READ', actor.assurance, accessProfile);
+  const canAct = canUseCapability(actor.role, effectiveRequiredCapability, actor.assurance, accessProfile);
 
   if (!canRead && !canAct) {
     return {
@@ -126,7 +133,9 @@ export const projectArenaWorkItem = (
     return {
       ...effectiveSeed,
       access: 'READ_ONLY',
-      accessReason: 'Il lavoro è visibile, ma la capacità richiesta non è disponibile per questo ruolo e livello di assurance.',
+      accessReason: accessProfile === 'observer-read-only'
+        ? 'Il profilo osservatore consente di consultare stato ed evidenze ma non espone azioni mutanti.'
+        : 'Il lavoro è visibile, ma la capacità richiesta non è disponibile per questo ruolo e livello di assurance.',
     };
   }
 

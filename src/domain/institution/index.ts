@@ -11,3 +11,4 @@ export * from './sharedWorkspacePort';
 export * from './processRoleModel';
 export * from './roleSurfaceInventory';
 export * from './workQueue';
+export * from './observerReadOnly';
