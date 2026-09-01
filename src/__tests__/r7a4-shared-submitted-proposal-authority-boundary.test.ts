@@ -81,9 +81,9 @@ describe('R7A4 shared submitted proposal authority boundary', () => {
         outcome: 'approve',
         rationale: 'approved',
         decidedByUserId: 'user-collegio',
-        decidedByRole: 'collegio',
+        authorityRole: 'collegio',
         decidedAt: '2026-09-01T12:00:00.000Z',
-        status: 'RECORDED',
+        clientRequestId: 'client-request-1',
         adoptionBinding: {
           version: 2,
           bindingFingerprint: 'b'.repeat(64),
