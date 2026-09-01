@@ -16,6 +16,10 @@ export type FontiTabProps = Pick<AppViewsLayerProps,
   | 'showToast'
 >;
 
+const shortVersion = (versionId: string): string => versionId.startsWith('sha256:')
+  ? `sha256:${versionId.slice(7, 19)}…`
+  : versionId;
+
 export function FontiTab({
   customKbDocs,
   setCustomKbDocs,
@@ -51,7 +55,12 @@ export function FontiTab({
       const verified = await verifyLocalKnowledgeSource(verificationCandidate.id);
       setCustomKbDocs((current) => current.map((source) => source.id === verified.id ? verified : source));
       setVerificationCandidateId(null);
-      showToast(`Fonte “${verified.title}” verificata localmente. Non è stata resa fonte istituzionale.`, true);
+      showToast(
+        verified.evidenceEligibility === 'LOCAL_EVIDENCE'
+          ? `Fonte “${verified.title}” verificata localmente e abilitata come evidenza locale. Non è diventata fonte istituzionale.`
+          : `Fonte “${verified.title}” verificata localmente. Resta in sola consultazione finché l'estrazione non è completa.`,
+        true,
+      );
     } catch (error) {
       console.warn('[KX-4] Source registry verification failed:', error);
       showToast('Non riesco a registrare la verifica di questa fonte nel browser.', false);
@@ -120,7 +129,7 @@ export function FontiTab({
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h2 id="local-sources-title" className="text-base font-black text-slate-900">Fonti aggiunte da te</h2>
-            <p className="mt-1 text-sm text-slate-600">Documenti caricati in questo browser.</p>
+            <p className="mt-1 text-sm text-slate-600">Un documento appena caricato è consultabile, ma non entra nel retrieval come evidenza finché non viene verificato.</p>
           </div>
           <button
             type="button"
@@ -142,8 +151,9 @@ export function FontiTab({
             {customKbDocs.map((source) => {
               const presentation = deriveKnowledgeSourcePresentation(source);
               const verified = source.authorityStatus === 'LOCAL_VERIFIED';
+              const evidenceReady = source.evidenceEligibility === 'LOCAL_EVIDENCE';
               return (
-                <article key={source.id} className="rounded-xl border border-slate-200 p-4" data-source-kind="uploaded-local">
+                <article key={source.id} className="rounded-xl border border-slate-200 p-4" data-source-kind="uploaded-local" data-source-lifecycle={source.lifecycleStatus} data-evidence-eligibility={source.evidenceEligibility}>
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
                       <h3 className="font-bold text-slate-900">{source.title}</h3>
@@ -154,6 +164,11 @@ export function FontiTab({
                     </span>
                   </div>
                   <p className="mt-3 text-sm leading-5 text-slate-600">{presentation.explanation}</p>
+                  <dl className="mt-3 grid gap-1 text-xs leading-5 text-slate-600">
+                    <div><dt className="inline font-bold text-slate-800">Tipo: </dt><dd className="inline">documento locale caricato dall’utente</dd></div>
+                    <div><dt className="inline font-bold text-slate-800">Versione: </dt><dd className="inline">{shortVersion(source.sourceVersionId)}</dd></div>
+                    <div><dt className="inline font-bold text-slate-800">Uso nel retrieval: </dt><dd className="inline">{evidenceReady ? 'evidenza locale' : 'sola consultazione'}</dd></div>
+                  </dl>
                   <div className="mt-3 flex flex-wrap gap-2">
                     <button type="button" onClick={() => openKnowledge(source.id)} className="min-h-11 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-800">Apri fonte</button>
                     {!verified && (
@@ -181,14 +196,16 @@ export function FontiTab({
         >
           <div className="max-w-2xl">
             <h2 id="source-registry-verification-title" className="text-base font-black text-slate-900">Conferma la verifica della fonte</h2>
-            <p className="mt-2 text-sm leading-6 text-slate-700">Controlla titolo, provenienza e contenuto. Questa conferma registra solo una verifica locale: non rende la fonte normativa o istituzionale e non modifica il curricolo.</p>
+            <p className="mt-2 text-sm leading-6 text-slate-700">Controlla titolo, provenienza e contenuto. La conferma può rendere il documento utilizzabile come evidenza locale solo se il testo è stato estratto in modo sufficiente. Non lo rende normativo o istituzionale e non modifica il curricolo.</p>
             <p className="mt-2 text-sm font-bold text-slate-900">{verificationCandidate.title}</p>
             {verificationCandidate.originalFileName && <p className="mt-1 text-xs text-slate-600">File: {verificationCandidate.originalFileName}</p>}
+            <p className="mt-1 text-xs text-slate-600">Versione: {shortVersion(verificationCandidate.sourceVersionId)}</p>
+            <p className="mt-1 text-xs text-slate-600">Estrazione: {verificationCandidate.extractionStatus}</p>
           </div>
           <div className="flex flex-wrap gap-2">
             <button type="button" onClick={() => setVerificationCandidateId(null)} className="min-h-11 rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700">Annulla</button>
             <button type="button" disabled={isVerifying} onClick={confirmVerification} className="min-h-11 rounded-xl bg-indigo-700 px-4 py-2 text-sm font-bold text-white disabled:bg-slate-300">
-              {isVerifying ? 'Registrazione…' : 'Conferma come fonte locale verificata'}
+              {isVerifying ? 'Registrazione…' : 'Conferma verifica locale'}
             </button>
           </div>
         </section>
