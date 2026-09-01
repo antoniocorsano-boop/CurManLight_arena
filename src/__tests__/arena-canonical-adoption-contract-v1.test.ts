@@ -19,9 +19,10 @@ describe('R5/R7A3 Canonical Adoption Contract', () => {
     expect(canUseCapability('collegio', 'REVISION_DECIDE', 'authenticated-workspace')).toBe(true);
     expect(canUseCapability('collegio', 'CURRICULUM_ADOPT', 'authenticated-workspace')).toBe(false);
   });
-  it('fails closed for an R7A3 snapshot-backed approved receipt because adoption authority is not assigned yet', () => {
+  it('fails closed for an R7A3 snapshot-backed approved receipt because proposal authority and adoption authority are not available yet', () => {
     const result = assessCanonicalAdoption(baseInput());
     expect(result.readiness).toBe('BLOCKED');
+    expect(result.blockerCodes).toContain('PROPOSAL_AUTHORITY_UNAVAILABLE');
     expect(result.blockerCodes).toContain('ADOPTION_CAPABILITY_UNAVAILABLE');
     expect(result.blockerCodes).not.toContain('ADOPTION_BINDING_MISSING');
     expect(result.blockerCodes).not.toContain('PROPOSAL_SNAPSHOT_MISSING');
@@ -35,6 +36,7 @@ describe('R5/R7A3 Canonical Adoption Contract', () => {
     const legacy = receipt({ adoptionBinding: { version: 2, targetNodeRef: 'node-1', baseCurriculumVersionRef: 'canonical-v1', bindingFingerprint: 'b'.repeat(64) } });
     const result = assessCanonicalAdoption({ ...baseInput(), decisionReceipt: legacy });
     expect(result.blockerCodes).toContain('PROPOSAL_SNAPSHOT_MISSING');
+    expect(result.blockerCodes).toContain('PROPOSAL_AUTHORITY_UNAVAILABLE');
   });
   it('blocks target node and base curriculum mismatches', () => {
     const targetMismatch = assessCanonicalAdoption({ ...baseInput(), targetNodeRef: 'node-2' });
