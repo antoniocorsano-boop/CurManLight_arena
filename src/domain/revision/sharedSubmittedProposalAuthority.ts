@@ -113,6 +113,10 @@ export const SHARED_PROPOSAL_LIFECYCLE_TRANSITION_POLICY = [
  * Implementations reject missing required keys, unknown top-level/reference keys,
  * wrong types, invalid reference entity types, non-object payloads and any payload
  * whose server recomputed SHA-256 differs from proposalVersionFingerprint.
+ *
+ * structuralFootprint intentionally remains an arbitrary string, including ''.
+ * R7A3 already fingerprints and freezes that exact domain contract; R7A4 must not
+ * reinterpret it as JSON or reject payloads accepted by the canonical builder.
  */
 export const SHARED_PROPOSAL_CANONICAL_PAYLOAD_SCHEMA = {
   orderedKeys: [
@@ -154,7 +158,7 @@ export const SHARED_PROPOSAL_CANONICAL_PAYLOAD_SCHEMA = {
     sourceRefs: 'reference-array',
     evidenceRefs: 'reference-array',
     createdAt: 'parseable-timestamptz-string',
-    structuralFootprint: 'string-containing-valid-json',
+    structuralFootprint: 'string',
     previousVersionRef: 'optional-non-empty-string',
     changeNote: 'optional-non-empty-string',
     frozen: 'literal-true',
@@ -229,6 +233,10 @@ export interface SubmitSharedProposalVersionCommand {
    * A successful result must persist the same value as previousSharedProposalVersionRef.
    * A non-null predecessor may be replaced only when its authoritative lifecycle
    * state is `changes-requested`.
+   *
+   * For a replacement, targetNodeRef and baseCurriculumVersionRef MUST equal the
+   * authoritative predecessor values. A scope change requires a new proposalRef;
+   * it cannot be smuggled through a new version of the same proposal chain.
    */
   expectedCurrentSharedProposalVersionRef: string | null;
   clientRequestId: string;
@@ -320,6 +328,8 @@ export interface SharedSubmittedProposalAuthorityPort {
    * - recompute SHA-256 over the exact UTF-8 JSON.stringify(builder-output) bytes;
    * - apply the explicit head CAS;
    * - allow replacement only when the current predecessor is changes-requested;
+   * - for replacement, require targetNodeRef/baseCurriculumVersionRef to equal the authoritative predecessor;
+   * - require a new proposal identity if target/base scope changes;
    * - persist previousSharedProposalVersionRef exactly equal to the expected head;
    * - generate submittedAt from the server transaction clock;
    * - enforce clientRequestId idempotency and reject conflicting reuse;
@@ -386,10 +396,14 @@ export const SHARED_PROPOSAL_AUTHORITY_BOUNDARY = {
   requiresServerPayloadValidation: true as const,
   requiresServerFingerprintRecompute: true as const,
   requiresExactCanonicalPayloadSerialization: true as const,
+  structuralFootprintPreservesR7A3StringContract: true as const,
   requiresCompareAndSwapHead: true as const,
   requiresPredecessorEqualsExpectedHead: true as const,
   replacementRequiresChangesRequestedHead: true as const,
   replacementRequiresNewVersionIdentity: true as const,
+  replacementPreservesTargetNodeRef: true as const,
+  replacementPreservesBaseCurriculumVersionRef: true as const,
+  scopeChangeRequiresNewProposalIdentity: true as const,
   lifecycleMutationRequiresCurrentHead: true as const,
   lifecycleMutationUsesClosedTransitionPolicy: true as const,
   lifecycleReceiptDerivedFromTransitionPolicy: true as const,
