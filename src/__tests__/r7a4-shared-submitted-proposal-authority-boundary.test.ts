@@ -1,9 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { getRoleCapabilities } from '../domain/institution/capabilities';
 import { assessCanonicalAdoption } from '../domain/institution/canonicalAdoptionContract';
+import type { WorkspaceActorContext } from '../domain/institution/sharedWorkspacePort';
 import {
   SHARED_PROPOSAL_AUTHORITY_BOUNDARY,
   type SharedProposalVersion,
+  type SharedSubmittedProposalAuthorityPort,
   type SharedSubmittedProposalVersion,
   type SubmitSharedProposalVersionCommand,
 } from '../domain/revision';
@@ -18,6 +20,16 @@ const roles: InstitutionalRole[] = [
   'dirigente',
   'amministratore',
 ];
+
+const authenticatedContextFixture = (): WorkspaceActorContext => ({
+  membership: {
+    workspaceId: 'workspace-1',
+    userId: 'user-1',
+    role: 'docente',
+    status: 'active',
+  },
+  assurance: 'authenticated-workspace',
+});
 
 const sharedSubmittedVersionFixture = (
   previousSharedProposalVersionRef: string | null = null,
@@ -60,6 +72,31 @@ describe('R7A4 shared submitted proposal authority boundary', () => {
     expect(SHARED_PROPOSAL_AUTHORITY_BOUNDARY.firstSharedState).toBe('submitted');
     expect(SHARED_PROPOSAL_AUTHORITY_BOUNDARY.requiresAuthenticatedWorkspace).toBe(true);
     expect(SHARED_PROPOSAL_AUTHORITY_BOUNDARY.requiredCapability).toBe('CURRICULUM_PROPOSE');
+  });
+
+  it('requires authenticated workspace context on shared authority operations', async () => {
+    const context = authenticatedContextFixture();
+    const command = submitCommandFixture(null);
+
+    const port: SharedSubmittedProposalAuthorityPort = {
+      submitVersion: async (receivedContext, receivedCommand) => {
+        expect(receivedContext.assurance).toBe('authenticated-workspace');
+        expect(receivedContext.membership.status).toBe('active');
+        expect(receivedContext.membership.workspaceId).toBe(receivedCommand.workspaceId);
+        return sharedSubmittedVersionFixture(null);
+      },
+      advanceLifecycle: async (_context, lifecycleCommand) => ({
+        ...sharedSubmittedVersionFixture(null),
+        lifecycleState: lifecycleCommand.nextLifecycleState,
+      }),
+      getCurrentSharedVersion: async (_context, _workspaceId, _proposalRef) => null,
+      getSharedVersion: async (_context, _workspaceId, _proposalVersionRef) => null,
+    };
+
+    const result = await port.submitVersion(context, command);
+
+    expect(result.lifecycleState).toBe('submitted');
+    expect(SHARED_PROPOSAL_AUTHORITY_BOUNDARY.requiresServerBackedMembershipCapabilityRecheck).toBe(true);
   });
 
   it('keeps shared submission provenance aligned with CURRICULUM_PROPOSE capability holders', () => {
