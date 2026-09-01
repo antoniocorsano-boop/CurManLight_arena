@@ -62,6 +62,15 @@ declare
   v_json jsonb;
   v_fingerprint text;
   v_existing public.institutional_revision_proposal_snapshots%rowtype;
+  v_allowed_keys text[] := array[
+    'id','proposalRef','versionNumber','currentTextSnapshot','proposedText','rationale',
+    'sourceRefs','evidenceRefs','createdAt','structuralFootprint','previousVersionRef','changeNote','frozen'
+  ];
+  v_required_keys text[] := array[
+    'id','proposalRef','versionNumber','currentTextSnapshot','proposedText','rationale',
+    'sourceRefs','evidenceRefs','createdAt','structuralFootprint','frozen'
+  ];
+  v_ref jsonb;
 begin
   if v_user_id is null then raise exception 'AUTHENTICATION_REQUIRED' using errcode = '42501'; end if;
   if p_workspace_id is null
@@ -88,11 +97,55 @@ begin
   end;
 
   if jsonb_typeof(v_json) <> 'object'
+     or not (v_json ?& v_required_keys)
+     or exists (select 1 from jsonb_object_keys(v_json) key where not (key = any(v_allowed_keys)))
      or v_json->>'id' is distinct from trim(p_proposal_version_ref)
      or v_json->>'proposalRef' is distinct from trim(p_proposal_ref)
+     or jsonb_typeof(v_json->'versionNumber') <> 'number'
+     or (v_json->>'versionNumber') !~ '^[1-9][0-9]*$'
+     or jsonb_typeof(v_json->'currentTextSnapshot') <> 'string'
+     or jsonb_typeof(v_json->'proposedText') <> 'string'
+     or nullif(trim(v_json->>'proposedText'), '') is null
+     or jsonb_typeof(v_json->'rationale') <> 'string'
+     or jsonb_typeof(v_json->'sourceRefs') <> 'array'
+     or jsonb_typeof(v_json->'evidenceRefs') <> 'array'
+     or jsonb_typeof(v_json->'createdAt') <> 'string'
+     or nullif(trim(v_json->>'createdAt'), '') is null
+     or jsonb_typeof(v_json->'structuralFootprint') <> 'string'
+     or nullif(trim(v_json->>'structuralFootprint'), '') is null
+     or (v_json ? 'previousVersionRef' and (jsonb_typeof(v_json->'previousVersionRef') <> 'string' or nullif(trim(v_json->>'previousVersionRef'), '') is null))
+     or (v_json ? 'changeNote' and (jsonb_typeof(v_json->'changeNote') <> 'string' or nullif(trim(v_json->>'changeNote'), '') is null))
      or v_json->'frozen' is distinct from 'true'::jsonb then
-    raise exception 'FROZEN_PROPOSAL_SNAPSHOT_BINDING_MISMATCH' using errcode = '23514';
+    raise exception 'FROZEN_PROPOSAL_SNAPSHOT_CANONICAL_SHAPE_REQUIRED' using errcode = '23514';
   end if;
+
+  begin
+    perform (v_json->>'createdAt')::timestamptz;
+  exception when others then
+    raise exception 'FROZEN_PROPOSAL_SNAPSHOT_CANONICAL_SHAPE_REQUIRED' using errcode = '23514';
+  end;
+
+  for v_ref in select value from jsonb_array_elements(v_json->'sourceRefs') loop
+    if jsonb_typeof(v_ref) <> 'object'
+       or not (v_ref ?& array['id','entityType'])
+       or exists (select 1 from jsonb_object_keys(v_ref) key where not (key = any(array['id','entityType','snapshotLabel'])))
+       or jsonb_typeof(v_ref->'id') <> 'string' or nullif(trim(v_ref->>'id'), '') is null
+       or jsonb_typeof(v_ref->'entityType') <> 'string' or nullif(trim(v_ref->>'entityType'), '') is null
+       or (v_ref ? 'snapshotLabel' and (jsonb_typeof(v_ref->'snapshotLabel') <> 'string' or nullif(trim(v_ref->>'snapshotLabel'), '') is null)) then
+      raise exception 'FROZEN_PROPOSAL_SNAPSHOT_CANONICAL_SHAPE_REQUIRED' using errcode = '23514';
+    end if;
+  end loop;
+
+  for v_ref in select value from jsonb_array_elements(v_json->'evidenceRefs') loop
+    if jsonb_typeof(v_ref) <> 'object'
+       or not (v_ref ?& array['id','entityType'])
+       or exists (select 1 from jsonb_object_keys(v_ref) key where not (key = any(array['id','entityType','snapshotLabel'])))
+       or jsonb_typeof(v_ref->'id') <> 'string' or nullif(trim(v_ref->>'id'), '') is null
+       or jsonb_typeof(v_ref->'entityType') <> 'string' or nullif(trim(v_ref->>'entityType'), '') is null
+       or (v_ref ? 'snapshotLabel' and (jsonb_typeof(v_ref->'snapshotLabel') <> 'string' or nullif(trim(v_ref->>'snapshotLabel'), '') is null)) then
+      raise exception 'FROZEN_PROPOSAL_SNAPSHOT_CANONICAL_SHAPE_REQUIRED' using errcode = '23514';
+    end if;
+  end loop;
 
   v_fingerprint := encode(digest(convert_to(p_snapshot_payload, 'UTF8'), 'sha256'), 'hex');
   if v_fingerprint <> lower(p_expected_fingerprint) then
@@ -240,6 +293,6 @@ grant execute on function public.record_institutional_revision_decision_v3(uuid,
 comment on column public.institutional_revision_decisions.proposal_snapshot_version is
   'NULL for historical/R7A2-compatible decisions; 1 only for R7A3 decisions recorded after server snapshot verification.';
 comment on function public.record_institutional_revision_decision_v3(uuid, text, text, text, text, text, text, text, uuid) is
-  'R7A3 decision boundary. Requires a matching frozen server snapshot and marks the receipt proposal_snapshot_version=1. R7A2 v2 RPC remains available for rollout compatibility but does not set this marker.';
+  'R7A3 decision boundary. Requires a matching complete canonical frozen server snapshot and marks the receipt proposal_snapshot_version=1. R7A2 v2 RPC remains available for rollout compatibility but does not set this marker.';
 comment on table public.institutional_revision_proposal_snapshots is
-  'R7A3 immutable server-owned proposal-version snapshots. Direct writes are forbidden; SHA-256 is recomputed server-side from the exact frozen payload.';
+  'R7A3 immutable server-owned proposal-version snapshots. Direct writes are forbidden; the complete canonical fingerprint payload shape is validated and SHA-256 is recomputed server-side from its exact bytes.';
