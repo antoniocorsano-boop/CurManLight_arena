@@ -33,6 +33,7 @@ export default defineConfig({
       'src/__tests__/r7a5-codex-review-closure.test.ts',
       'src/__tests__/r7a6-shared-decision-rebind.test.ts',
       'src/__tests__/r7a7-canonical-adoption-execution.test.ts',
+      'src/__tests__/r7a8-canonical-materialization-bootstrap.test.ts',
       'src/__tests__/identity.test.ts',
       'src/__tests__/beta-identity-authority.test.ts',
       'src/__tests__/beta-shell-regression.test.ts',
