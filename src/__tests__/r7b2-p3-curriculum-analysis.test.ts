@@ -9,8 +9,8 @@ import { qualifySource } from '../domain/institution/sourceQualification';
 import { assessEndToEndAdoptionFlow } from '../domain/institution/endToEndAdoptionValidation';
 import { getArenaProcessContract } from '../domain/institution/processRoleModel';
 
-const eligibleEvidence = () => qualifySource({
-  candidate: { sourceId: 'source-1', origin: 'AUTHORITY_CANDIDATE', title: 'Fonte', locator: 'page:1', contentAvailable: true },
+const eligibleEvidence = (sourceId = 'source-1') => qualifySource({
+  candidate: { sourceId, origin: 'AUTHORITY_CANDIDATE', title: 'Fonte', locator: 'page:1', contentAvailable: true },
   decision: 'ELIGIBLE_EVIDENCE',
   qualifiedByHuman: true,
   authorityBasis: 'Fonte normativa verificata',
@@ -26,7 +26,7 @@ const input = () => ({
       secondaria: { traguardi: ['Traguardo verificabile'], obiettivi: ['Obiettivo verificabile'], evidenze: [] },
     },
   }),
-  evidence: [eligibleEvidence()],
+  evidenceBindings: [{ targetRef: 'dm221:TECNOLOGIA:secondaria', evidence: [eligibleEvidence()] }],
   scope: [{ disciplineId: 'TECNOLOGIA' as const, schoolOrder: 'secondaria' as const }],
 });
 
@@ -39,6 +39,7 @@ describe('R7B2 P3 curriculum analysis', () => {
       disciplineId: 'TECNOLOGIA',
       schoolOrder: 'secondaria',
       targetRef: 'dm221:TECNOLOGIA:secondaria',
+      evidenceSourceIds: ['source-1'],
       decisionStatus: 'OBSERVATION_ONLY',
     });
     expect(result.issues).toEqual([]);
@@ -46,7 +47,7 @@ describe('R7B2 P3 curriculum analysis', () => {
     expect(result.summary).toMatchObject({ totalTargets: 1, coverageTargets: 1, gapTargets: 0 });
   });
 
-  it('computes a gap and creates only non-authoritative review artifacts when canonical scope is missing', () => {
+  it('computes a gap and creates only non-authoritative review artifacts when target-relevant evidence is explicit', () => {
     const request = input();
     request.curriculum = asCurriculum({});
     const result = analyzeCurriculum(request);
@@ -54,7 +55,30 @@ describe('R7B2 P3 curriculum analysis', () => {
     expect(result.observations[0].kind).toBe('GAP');
     expect(result.issues).toHaveLength(1);
     expect(result.proposalCandidates).toHaveLength(1);
-    expect(result.proposalCandidates[0]).toMatchObject({ status: 'CANDIDATE_ONLY', authorityEffect: 'NONE' });
+    expect(result.proposalCandidates[0]).toMatchObject({
+      targetRef: 'dm221:TECNOLOGIA:secondaria',
+      evidenceSourceIds: ['source-1'],
+      status: 'CANDIDATE_ONLY',
+      authorityEffect: 'NONE',
+    });
+  });
+
+  it('does not propagate one target evidence source to unrelated findings', () => {
+    const request = input();
+    request.curriculum = asCurriculum({});
+    request.scope = [
+      { disciplineId: 'TECNOLOGIA', schoolOrder: 'secondaria' },
+      { disciplineId: 'STORIA', schoolOrder: 'secondaria' },
+    ];
+
+    const result = analyzeCurriculum(request);
+    const technology = result.observations.find((observation) => observation.targetRef === 'dm221:TECNOLOGIA:secondaria');
+    const history = result.observations.find((observation) => observation.targetRef === 'dm221:STORIA:secondaria');
+
+    expect(technology?.evidenceSourceIds).toEqual(['source-1']);
+    expect(history?.evidenceSourceIds).toEqual([]);
+    expect(result.issues.map((issue) => issue.targetRef)).toEqual(['dm221:TECNOLOGIA:secondaria']);
+    expect(result.proposalCandidates.map((candidate) => candidate.targetRef)).toEqual(['dm221:TECNOLOGIA:secondaria']);
   });
 
   it('computes discontinuity when a discipline/order has only part of the structural baseline', () => {
@@ -65,6 +89,32 @@ describe('R7B2 P3 curriculum analysis', () => {
 
     const result = analyzeCurriculum(request);
     expect(result.observations[0].kind).toBe('DISCONTINUITY');
+  });
+
+  it('recognizes the concrete camelCase curriculum keys used by the current repository baseline', () => {
+    const findings = computeCurriculumStructuralFindings(
+      asCurriculum({
+        secondaLingua: { secondaria: { traguardi: ['T'], obiettivi: ['O'], evidenze: [] } },
+        arteImmagine: {
+          primaria: { traguardi: ['T'], obiettivi: ['O'], evidenze: [] },
+          secondaria: { traguardi: ['T'], obiettivi: ['O'], evidenze: [] },
+        },
+        educazioneFisica: {
+          primaria: { traguardi: ['T'], obiettivi: ['O'], evidenze: [] },
+          secondaria: { traguardi: ['T'], obiettivi: ['O'], evidenze: [] },
+        },
+      }),
+      [
+        { disciplineId: 'SECONDA_LINGUA_COMUNITARIA', schoolOrder: 'secondaria' },
+        { disciplineId: 'ARTE_E_IMMAGINE', schoolOrder: 'primaria' },
+        { disciplineId: 'ARTE_E_IMMAGINE', schoolOrder: 'secondaria' },
+        { disciplineId: 'EDUCAZIONE_MOTORIA', schoolOrder: 'primaria' },
+        { disciplineId: 'EDUCAZIONE_FISICA', schoolOrder: 'secondaria' },
+      ],
+    );
+
+    expect(findings).toHaveLength(5);
+    expect(findings.every((finding) => finding.kind === 'COVERAGE')).toBe(true);
   });
 
   it('computes overlap when multiple legacy representations populate the same canonical target', () => {
@@ -82,13 +132,22 @@ describe('R7B2 P3 curriculum analysis', () => {
 
   it('fails closed on evidence that is not P1 eligible evidence', () => {
     const request = input();
-    request.evidence = [qualifySource({
-      candidate: { sourceId: 'source-1', origin: 'USER_UPLOAD', title: 'Upload', locator: 'file:1', contentAvailable: true },
-      decision: 'CONSULT_ONLY',
-      qualifiedByHuman: false,
-      qualifiedAt: '2026-09-02T10:00:00+02:00',
-    })];
+    request.evidenceBindings = [{
+      targetRef: 'dm221:TECNOLOGIA:secondaria',
+      evidence: [qualifySource({
+        candidate: { sourceId: 'source-1', origin: 'USER_UPLOAD', title: 'Upload', locator: 'file:1', contentAvailable: true },
+        decision: 'CONSULT_ONLY',
+        qualifiedByHuman: false,
+        qualifiedAt: '2026-09-02T10:00:00+02:00',
+      })],
+    }];
     expect(() => analyzeCurriculum(request)).toThrow(/INELIGIBLE_EVIDENCE/);
+  });
+
+  it('fails closed when evidence is bound to a target outside the explicit scope', () => {
+    const request = input();
+    request.evidenceBindings = [{ targetRef: 'dm221:STORIA:secondaria', evidence: [eligibleEvidence()] }];
+    expect(() => analyzeCurriculum(request)).toThrow(/EVIDENCE_TARGET_OUT_OF_SCOPE/);
   });
 
   it('fails closed on duplicate canonical scope targets', () => {
