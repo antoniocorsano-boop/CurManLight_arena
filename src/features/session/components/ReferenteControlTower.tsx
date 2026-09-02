@@ -1,11 +1,12 @@
 import { AlertCircle, ArrowRight, BookOpenCheck, Layers, ShieldCheck } from 'lucide-react';
 import { deriveReferenteControlTowerSnapshot } from '../../../domain/institution/referenteControlTower';
-import { getCurriculumBaseline } from '../../../lib';
 import { useCurriculumStore } from '../../../store/useCurriculumStore';
+import type { CurriculumMap } from '../types/appViewContracts';
 import type { CustomKbDoc } from '../../documents/lib/localKnowledgeStore';
 
 interface ReferenteControlTowerProps {
   sources: readonly CustomKbDoc[];
+  curriculum: CurriculumMap | null;
   onOpenSources: () => void;
   onOpenRevision: () => void;
 }
@@ -26,9 +27,9 @@ function MetricCard({ label, value, note }: MetricCardProps) {
   );
 }
 
-export function ReferenteControlTower({ sources, onOpenSources, onOpenRevision }: ReferenteControlTowerProps) {
+export function ReferenteControlTower({ sources, curriculum, onOpenSources, onOpenRevision }: ReferenteControlTowerProps) {
   const revisionArchive = useCurriculumStore((state) => state.revisionArchive);
-  const snapshot = deriveReferenteControlTowerSnapshot(sources, revisionArchive, null, getCurriculumBaseline());
+  const snapshot = deriveReferenteControlTowerSnapshot(sources, revisionArchive, null, curriculum);
   const decisionReadinessValue = snapshot.proposalReadyForDecision ?? '—';
   const decisionReadinessNote = snapshot.decisionReceiptCoverageAvailable
     ? `${snapshot.decisionsRecordedLocal} decisioni locali registrate`
