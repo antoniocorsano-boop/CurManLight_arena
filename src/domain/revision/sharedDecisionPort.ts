@@ -9,6 +9,7 @@ export interface InstitutionalRevisionDecisionInput {
   proposalRef: string;
   proposalVersionRef: string;
   proposalVersionFingerprint: string;
+  /** Historical R7A3 compatibility input. R7A6 shared authority does not freeze or trust this payload. */
   proposalVersionSnapshotPayload?: string;
   targetNodeRef: string;
   baseCurriculumVersionRef: string;
@@ -23,6 +24,8 @@ export interface InstitutionalRevisionDecisionReceipt {
   proposalRef: string;
   proposalVersionRef: string;
   proposalVersionFingerprint: string;
+  /** Present only for decisions recorded against the R7A5 shared authoritative proposal boundary. */
+  sharedProposalAuthorityVersion?: 1;
   adoptionBinding?: InstitutionalAdoptionBindingV2;
   outcome: InstitutionalDecisionOutcome;
   rationale: string;
