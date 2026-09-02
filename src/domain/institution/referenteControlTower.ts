@@ -1,8 +1,9 @@
 import type { CurriculumMap } from '../../features/session/types/appViewContracts';
 import type { DecisionOutcome, RevisionArchive, RevisionProposalStatus } from '../revision/types';
 import {
+  CURRICULUM_ANALYSIS_CANONICAL_SCOPE,
   computeCurriculumStructuralFindings,
-  getWholeSchoolCurriculumScope,
+  getFirstCycleCurriculumScope,
   summarizeCurriculumFindings,
 } from './curriculumAnalysis';
 
@@ -23,6 +24,7 @@ export interface ReferenteControlTowerSnapshot {
   decisionReceiptCoverageAvailable: boolean;
   decisionsRecordedLocal: number;
   disciplineCoverageAvailable: boolean;
+  curriculumCoverageScope: typeof CURRICULUM_ANALYSIS_CANONICAL_SCOPE | null;
   curriculumTargetTotal: number | null;
   curriculumCoverageTargets: number | null;
   curriculumGapTargets: number | null;
@@ -61,9 +63,11 @@ const TERMINAL_DECISION_OUTCOMES = new Set<DecisionOutcome>([
  * decision for it.
  *
  * Curriculum coverage is calculated only when the caller supplies the real
- * CurriculumMap. The calculation uses the canonical D.M. 221 discipline/order
- * scope and reports structural presence/gaps only; it never upgrades baseline
- * authority or infers semantic correctness from labels or free text.
+ * CurriculumMap. P3 currently supports the canonical D.M. 221 first-cycle
+ * discipline/order model only. Infanzia is deliberately excluded because the
+ * legacy CurriculumMap still projects it through disciplines rather than the
+ * five canonical fields of experience; those cells must not be promoted into
+ * false canonical coverage.
  */
 export function deriveReferenteControlTowerSnapshot(
   sources: readonly ReferenteSourceSignal[],
@@ -85,7 +89,7 @@ export function deriveReferenteControlTowerSnapshot(
     : null;
 
   const curriculumSummary = curriculum
-    ? summarizeCurriculumFindings(computeCurriculumStructuralFindings(curriculum, getWholeSchoolCurriculumScope()))
+    ? summarizeCurriculumFindings(computeCurriculumStructuralFindings(curriculum, getFirstCycleCurriculumScope()))
     : null;
 
   return {
@@ -100,13 +104,14 @@ export function deriveReferenteControlTowerSnapshot(
     decisionReceiptCoverageAvailable,
     decisionsRecordedLocal: archive.decisions.filter((decision) => decision.status === 'recorded-local').length,
     disciplineCoverageAvailable: curriculumSummary !== null,
+    curriculumCoverageScope: curriculumSummary ? CURRICULUM_ANALYSIS_CANONICAL_SCOPE : null,
     curriculumTargetTotal: curriculumSummary?.totalTargets ?? null,
     curriculumCoverageTargets: curriculumSummary?.coverageTargets ?? null,
     curriculumGapTargets: curriculumSummary?.gapTargets ?? null,
     curriculumDiscontinuityTargets: curriculumSummary?.discontinuityTargets ?? null,
     curriculumOverlapTargets: curriculumSummary?.overlapTargets ?? null,
     scopeNote: curriculumSummary
-      ? 'Copertura strutturale calcolata deterministicamente sul perimetro canonico disciplina/ordine. I conteggi non attestano da soli correttezza semantica o adozione istituzionale.'
-      : 'La copertura disciplina/ordine resta indisponibile finché la vista non riceve una CurriculumMap concreta; etichette e proposte non vengono usate come sostituti.',
+      ? 'Copertura strutturale calcolata deterministicamente sul perimetro canonico del primo ciclo (primaria e secondaria). L’infanzia è esclusa da questo gate finché la CurriculumMap legacy non viene migrata ai cinque campi di esperienza canonici; i conteggi non attestano correttezza semantica o adozione istituzionale.'
+      : 'La copertura del primo ciclo resta indisponibile finché la vista non riceve una CurriculumMap concreta; etichette e proposte non vengono usate come sostituti. L’infanzia resta fuori da questo gate fino alla migrazione ai campi di esperienza canonici.',
   };
 }
