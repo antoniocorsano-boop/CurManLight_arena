@@ -1,12 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import fs from 'node:fs';
-import path from 'node:path';
-
-const migrationPath = path.resolve(
-  process.cwd(),
-  'supabase/migrations/20260902062000_r7a5_canonical_payload_validation.sql',
-);
-const sql = fs.readFileSync(migrationPath, 'utf8');
+import sql from '../../supabase/migrations/20260902062000_r7a5_canonical_payload_validation.sql?raw';
 
 describe('R7A5 canonical payload server validation', () => {
   it('validates the frozen payload before fingerprint acceptance and persistence', () => {
