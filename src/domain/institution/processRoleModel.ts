@@ -49,7 +49,7 @@ export const ARENA_PROCESS_PIPELINE: readonly ArenaProcessContract[] = [
     humanTaskIds: [],
     consequential: false,
     authenticatedAuthorityRequired: false,
-    implementationStatus: 'PARTIAL',
+    implementationStatus: 'IMPLEMENTED',
   },
   {
     id: 'P2_CURRICULUM_CONTEXT',

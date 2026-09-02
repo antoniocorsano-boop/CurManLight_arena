@@ -35,6 +35,7 @@ export default defineConfig({
       'src/__tests__/r7a7-canonical-adoption-execution.test.ts',
       'src/__tests__/r7a8-canonical-materialization-bootstrap.test.ts',
       'src/__tests__/r7a9-integrated-p6-validation.test.ts',
+      'src/__tests__/r7b1-p1-source-qualification.test.ts',
       'src/__tests__/end-to-end-adoption-validation-r7.test.ts',
       'src/__tests__/identity.test.ts',
       'src/__tests__/beta-identity-authority.test.ts',
