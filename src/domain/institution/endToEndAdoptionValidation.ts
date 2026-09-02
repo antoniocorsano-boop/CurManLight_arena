@@ -3,6 +3,10 @@ import {
   type ArenaProcessId,
   type ArenaProcessImplementationStatus,
 } from './processRoleModel';
+import {
+  CURRICULUM_ANALYSIS_CANONICAL_SCOPE,
+  CURRICULUM_ANALYSIS_EXCLUDED_SCHOOL_ORDERS,
+} from './curriculumAnalysis';
 
 export type AdoptionPipelineReality =
   | 'EXECUTABLE'
@@ -24,6 +28,8 @@ export interface AdoptionPipelineStepAssessment {
 
 export interface EndToEndAdoptionAssessment {
   verdict: AdoptionFlowVerdict;
+  curriculumScope: typeof CURRICULUM_ANALYSIS_CANONICAL_SCOPE;
+  excludedSchoolOrders: typeof CURRICULUM_ANALYSIS_EXCLUDED_SCHOOL_ORDERS;
   steps: readonly AdoptionPipelineStepAssessment[];
   blockingProcessIds: readonly ArenaProcessId[];
   executableProcessIds: readonly ArenaProcessId[];
@@ -42,7 +48,7 @@ const classifyProcessReality = (
 
 const explainReality = (reality: AdoptionPipelineReality): string => {
   if (reality === 'EXECUTABLE') {
-    return 'Il processo dispone di un percorso runtime implementato; resta soggetto ai propri gate e alla validazione umana prevista.';
+    return 'Il processo dispone di un percorso runtime implementato nel perimetro dichiarato; resta soggetto ai propri gate e alla validazione umana prevista.';
   }
   if (reality === 'PARTIAL') {
     return 'Il processo è disponibile solo in parte e non può essere considerato completo nell’intero ciclo istituzionale.';
@@ -53,9 +59,10 @@ const explainReality = (reality: AdoptionPipelineReality): string => {
 /**
  * R7 reality gate.
  *
- * This assessment deliberately derives its verdict from the canonical process
- * implementation statuses. It must never infer an end-to-end PASS from tests,
- * documentation, planned effects, exports, or decision receipts alone.
+ * The current executable curriculum-analysis perimeter is explicitly the
+ * D.M. 221 first cycle (primaria + secondaria). Infanzia is excluded until its
+ * legacy discipline projection is migrated to canonical fields of experience.
+ * Therefore ADOPTION_FLOW_VALIDATED is never a claim of infanzia coverage.
  */
 export const assessEndToEndAdoptionFlow = (): EndToEndAdoptionAssessment => {
   const steps = ARENA_PROCESS_PIPELINE.map((process) => {
@@ -81,6 +88,8 @@ export const assessEndToEndAdoptionFlow = (): EndToEndAdoptionAssessment => {
     verdict: blockingProcessIds.length === 0
       ? 'ADOPTION_FLOW_VALIDATED'
       : 'ADOPTION_FLOW_BLOCKED',
+    curriculumScope: CURRICULUM_ANALYSIS_CANONICAL_SCOPE,
+    excludedSchoolOrders: CURRICULUM_ANALYSIS_EXCLUDED_SCHOOL_ORDERS,
     steps,
     blockingProcessIds,
     executableProcessIds,
