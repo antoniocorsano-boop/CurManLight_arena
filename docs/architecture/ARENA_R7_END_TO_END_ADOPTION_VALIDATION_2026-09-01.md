@@ -10,6 +10,17 @@ R7 validates the institutional chain:
 
 This document records runtime reality. It must not upgrade a contract, test, planned effect, export or receipt into an implemented process.
 
+### R7B2 scope clarification — 2026-09-02
+
+The executable P3/R7B2 curriculum-analysis gate is explicitly limited to the canonical D.M. 221 **first cycle** (`primaria + secondaria`). It must not be read as a whole-school claim including `infanzia`.
+
+`infanzia` remains outside this gate because the current legacy `CurriculumMap` projects it through disciplines, while D.M. 221 models five canonical fields of experience. `legacyStructureAudit.ts` already treats that mismatch as blocking. Until a semantic migration to `DM221_INFANZIA_FIELDS` exists, the R7 runtime assessment exposes:
+
+- `curriculumScope = DM221_FIRST_CYCLE_ONLY`;
+- `excludedSchoolOrders = ['infanzia']`.
+
+Accordingly, any `ADOPTION_FLOW_VALIDATED` verdict produced after R7B2 is valid only inside that declared first-cycle scope.
+
 ## Current verdict
 
 **ADOPTION_FLOW_BLOCKED**
@@ -22,7 +33,7 @@ The current system must not be described as having a complete institutional curr
 |---|---|---|---|
 | P1 Source qualification | PARTIAL | PARTIAL | local source lifecycle/authority exists, but the full governed qualification/promotion lifecycle is not complete |
 | P2 Curriculum context | IMPLEMENTED | EXECUTABLE | applicable curriculum context can be resolved and inspected |
-| P3 Curriculum analysis | PARTIAL | PARTIAL | analysis exists in parts, but whole-school gap/coverage analysis is not yet a complete canonical pipeline |
+| P3 Curriculum analysis | PARTIAL | PARTIAL | analysis exists in parts, but complete first-cycle gap/coverage analysis is not yet a canonical pipeline |
 | P4 Revision review | IMPLEMENTED | EXECUTABLE | proposals can be prepared/reviewed under the current contract |
 | P5 Institutional decision | IMPLEMENTED | EXECUTABLE | authenticated institutional decision receipts are supported |
 | P6 Canonical adoption | NOT_IMPLEMENTED | CONTRACT_ONLY | R5 defines fail-closed readiness and receipt shape, but no canonical mutation/adoption receipt is produced |
@@ -51,7 +62,9 @@ Source Lifecycle v1 and Source Authority v1 correctly separate upload, verificat
 
 ### R7-B3 — P3 remains partial
 
-The product can inspect curriculum and revision evidence, but it does not yet have a complete canonical whole-school analysis pipeline for coverage/gaps across discipline and order. The Referente control tower correctly fails closed instead of inventing those metrics.
+The product can inspect curriculum and revision evidence, but it does not yet have a complete canonical first-cycle analysis pipeline for coverage/gaps across discipline and order. The Referente control tower correctly fails closed instead of inventing those metrics.
+
+The separate infanzia canonical migration is not part of R7B2 closure and must remain explicitly excluded rather than projected through discipline-shaped legacy data.
 
 ## What R0–R6 have achieved
 
@@ -83,9 +96,10 @@ The next development sequence is:
    - governed provenance/promotion for institutional/normative sources;
    - supersession/validity handling.
 3. **R7C — Curriculum Analysis Closure**
-   - structured discipline/order scope in canonical revision/analysis data;
+   - structured first-cycle discipline/order scope in canonical revision/analysis data;
    - deterministic coverage/gap computation;
-   - Referente whole-school view based on explicit data.
+   - Referente first-cycle view based on explicit data;
+   - keep infanzia explicitly excluded until canonical field-of-experience migration is implemented.
 4. **R7D — Release and representative HVA**
    - all runtime remediation integrated;
    - one batch Beta release;
@@ -100,8 +114,10 @@ R3/R4 UX changes remain intentionally undeployed until the R7 remediation checkp
 
 ## Exit gate
 
-R7 can become **ADOPTION_FLOW_VALIDATED** only when every P1–P7 process required by the canonical chain is runtime-executable at its declared maturity level and the final candidate passes:
+R7 can become **ADOPTION_FLOW_VALIDATED** only when every P1–P7 process required by the declared first-cycle chain is runtime-executable at its declared maturity level and the final candidate passes:
 
 `automated invariants → browser critical journey → same-SHA release → representative human acceptance`
+
+That verdict does not include infanzia until the canonical field-of-experience migration is completed and brought into a later validation scope.
 
 Until then, the canonical verdict remains **ADOPTION_FLOW_BLOCKED**.
