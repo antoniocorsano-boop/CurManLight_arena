@@ -7,6 +7,9 @@ import {
 import type { QualifiedSource } from './sourceQualification';
 import { isEligibleEvidence } from './sourceQualification';
 
+export const CURRICULUM_ANALYSIS_CANONICAL_SCOPE = 'DM221_FIRST_CYCLE_ONLY' as const;
+export const CURRICULUM_ANALYSIS_EXCLUDED_SCHOOL_ORDERS = ['infanzia'] as const;
+
 export type CurriculumAnalysisFindingKind = 'COVERAGE' | 'GAP' | 'DISCONTINUITY' | 'OVERLAP';
 
 export interface CurriculumBaselineRef {
@@ -77,6 +80,8 @@ export interface CurriculumAnalysisResult {
   baselineRef: string;
   curriculumVersionRef: string;
   scopeRef: string;
+  canonicalScope: typeof CURRICULUM_ANALYSIS_CANONICAL_SCOPE;
+  excludedSchoolOrders: typeof CURRICULUM_ANALYSIS_EXCLUDED_SCHOOL_ORDERS;
   observations: readonly CurriculumObservation[];
   issues: readonly EvidenceLinkedIssue[];
   proposalCandidates: readonly CurriculumProposalCandidate[];
@@ -133,8 +138,6 @@ const buildEvidenceIndex = (
   scope: readonly CurriculumAnalysisScope[],
   bindings: readonly CurriculumEvidenceBinding[],
 ): ReadonlyMap<string, readonly string[]> => {
-  if (bindings.length === 0) throw new Error('CURRICULUM_ANALYSIS_EVIDENCE_REQUIRED');
-
   const scopeTargets = new Set(scope.map(targetRefFor));
   const seenTargets = new Set<string>();
   const result = new Map<string, readonly string[]>();
@@ -160,7 +163,15 @@ const buildEvidenceIndex = (
   return result;
 };
 
-export const getWholeSchoolCurriculumScope = (): readonly CurriculumAnalysisScope[] => {
+/**
+ * Deterministic canonical scope currently supported by P3.
+ *
+ * This is intentionally the D.M. 221 first cycle only (primaria + secondaria).
+ * Infanzia is excluded until the legacy discipline-projected CurriculumMap is
+ * migrated to the five canonical fields of experience; treating those legacy
+ * cells as canonical infanzia targets would create false coverage.
+ */
+export const getFirstCycleCurriculumScope = (): readonly CurriculumAnalysisScope[] => {
   const disciplineIds = Object.keys(DM221_FIRST_CYCLE_DISCIPLINES) as FirstCycleDisciplineId[];
   return disciplineIds
     .flatMap((disciplineId) => DM221_FIRST_CYCLE_DISCIPLINES[disciplineId].schoolOrders
@@ -261,6 +272,8 @@ export const analyzeCurriculum = (input: CurriculumAnalysisInput): CurriculumAna
     baselineRef,
     curriculumVersionRef,
     scopeRef,
+    canonicalScope: CURRICULUM_ANALYSIS_CANONICAL_SCOPE,
+    excludedSchoolOrders: CURRICULUM_ANALYSIS_EXCLUDED_SCHOOL_ORDERS,
     observations,
     issues,
     proposalCandidates,
