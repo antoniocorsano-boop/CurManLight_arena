@@ -223,7 +223,6 @@ export const SHARED_PROPOSAL_CANONICAL_PAYLOAD_SCHEMA = {
   digest: 'SHA-256' as const,
 };
 
-/** Canonical cross-slice representation of the proposal-version SHA-256 fingerprint. */
 export const SHARED_PROPOSAL_FINGERPRINT_SCHEMA = {
   algorithm: 'SHA-256' as const,
   representation: '64-lowercase-hex-characters' as const,
@@ -241,17 +240,11 @@ const CANONICAL_SHARED_PROPOSAL_FINGERPRINT_PATTERN = /^[0-9a-f]{64}$/;
 export const isCanonicalSharedProposalVersionFingerprint = (value: string): boolean =>
   CANONICAL_SHARED_PROPOSAL_FINGERPRINT_PATTERN.test(value);
 
-/** U+001F is the R7A3 adoption-binding field delimiter and is never valid inside a bound reference. */
 export const SHARED_PROPOSAL_ADOPTION_BINDING_DELIMITER = '\u001f' as const;
 
 const excludesSharedProposalBindingDelimiter = (value: string): boolean =>
   !value.includes(SHARED_PROPOSAL_ADOPTION_BINDING_DELIMITER);
 
-/**
- * Consequential proposal identities are canonical values, not merely values that
- * become valid after trimming. R7A5 must reject padded command identities and the
- * R7A3 adoption-binding delimiter before payload matching or uniqueness checks.
- */
 export const SHARED_PROPOSAL_VERSION_IDENTITY_SCHEMA = {
   canonicalIdentityFields: ['proposalRef', 'proposalVersionRef'] as const,
   commandIdentityMustEqualTrimmedValue: true as const,
@@ -294,16 +287,39 @@ export const isValidSharedProposalScopeRef = (value: string): boolean => {
   );
 };
 
-/**
- * A clientRequestId is reserved independently of the actor within a workspace.
- * The authoritative server principal is immutable bound operation data, not part
- * of the collision key. Cross-principal reuse therefore collides and fails closed.
- */
+/** Canonical, persistence-safe identity used by workspace-scoped idempotency. */
+export const SHARED_PROPOSAL_CLIENT_REQUEST_ID_SCHEMA = {
+  field: 'clientRequestId' as const,
+  participatesInIdempotencyKey: true as const,
+  uniquenessScope: ['workspaceId', 'clientRequestId'] as const,
+  requiresTrimmedNonEmptyString: true as const,
+  submittedValueMustEqualTrimmedValue: true as const,
+  requiresPostgresRepresentableString: true as const,
+  rejectsCodePointNull: true as const,
+  rejectsUnpairedUtf16Surrogates: true as const,
+  allowsValidUtf16SurrogatePairs: true as const,
+  appliesTo: ['submission', 'lifecycle-mutation'] as const,
+  validationOrder: 'before-idempotency-lookup-or-persistence' as const,
+} as const;
+
+export const isValidSharedProposalClientRequestId = (value: string): boolean => {
+  const trimmed = value.trim();
+  return (
+    trimmed.length > 0 &&
+    value === trimmed &&
+    isPostgresRepresentableSharedProposalString(value)
+  );
+};
+
 export const SHARED_PROPOSAL_IDEMPOTENCY_SCHEMA = {
   key: ['workspaceId', 'clientRequestId'] as const,
   collisionScope: 'workspace' as const,
   principalBindingField: 'serverPrincipalUserId' as const,
   requestIdReservedIndependentOfPrincipal: true as const,
+  clientRequestIdSchema: SHARED_PROPOSAL_CLIENT_REQUEST_ID_SCHEMA,
+  clientRequestIdMustBeCanonical: true as const,
+  clientRequestIdMustBePostgresRepresentable: true as const,
+  validateClientRequestIdBeforeLookupOrPersistence: true as const,
   appliesTo: ['submission', 'lifecycle-mutation'] as const,
   exactRetryRequiresSamePrincipal: true as const,
   crossPrincipalReuseFailsClosed: true as const,
@@ -315,7 +331,6 @@ export interface SharedProposalVersion {
   workspaceId: string;
   proposalRef: string;
   proposalVersionRef: string;
-  /** Server-recomputed SHA-256 in canonical 64-character lowercase hexadecimal form. */
   proposalVersionFingerprint: string;
   canonicalPayload: string;
   targetNodeRef: string;
@@ -337,7 +352,6 @@ export interface SubmitSharedProposalVersionCommand {
   workspaceId: string;
   proposalRef: string;
   proposalVersionRef: string;
-  /** Must already be canonical lowercase hex and exactly equal the server-recomputed digest. */
   proposalVersionFingerprint: string;
   canonicalPayload: string;
   targetNodeRef: string;
@@ -410,11 +424,6 @@ export const getSharedProposalLifecycleTransitionPolicy = (
   ) ?? null;
 
 export interface SharedSubmittedProposalAuthorityPort {
-  /**
-   * Before every shared operation, server code resolves the authenticated principal
-   * from the server session, re-reads active membership for that principal and binds
-   * principal, context and requested workspace. Caller-supplied user IDs are not authority.
-   */
   submitVersion(
     context: WorkspaceActorContext,
     command: SubmitSharedProposalVersionCommand,
@@ -497,6 +506,11 @@ export const SHARED_PROPOSAL_AUTHORITY_BOUNDARY = {
   lifecycleMutationPersistsImmutableReceipt: true as const,
   requiresServerTransactionClockForAuditTimestamps: true as const,
   idempotentRetriesReturnOriginalAuditTimestamps: true as const,
+  clientRequestIdSchema: SHARED_PROPOSAL_CLIENT_REQUEST_ID_SCHEMA,
+  clientRequestIdRequiresTrimmedNonEmpty: true as const,
+  clientRequestIdMustEqualTrimmedValue: true as const,
+  clientRequestIdRequiresPostgresRepresentability: true as const,
+  clientRequestIdValidatedBeforeIdempotencyLookupOrPersistence: true as const,
   idempotencySchema: SHARED_PROPOSAL_IDEMPOTENCY_SCHEMA,
   requiresClientRequestIdIdempotency: true as const,
   idempotencyRequestIdReservedWithinWorkspace: true as const,
