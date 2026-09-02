@@ -127,10 +127,9 @@ const validateScope = (scope: readonly CurriculumAnalysisScope[]): readonly Curr
 export const getWholeSchoolCurriculumScope = (): readonly CurriculumAnalysisScope[] => {
   const disciplineIds = Object.keys(DM221_FIRST_CYCLE_DISCIPLINES) as FirstCycleDisciplineId[];
   return disciplineIds
-    .flatMap((disciplineId) => DM221_FIRST_CYCLE_DISCIPLINES[disciplineId].schoolOrders.map((schoolOrder) => ({
-      disciplineId,
-      schoolOrder,
-    })))
+    .flatMap((disciplineId) => DM221_FIRST_CYCLE_DISCIPLINES[disciplineId].schoolOrders
+      .filter((schoolOrder): schoolOrder is FirstCycleSchoolOrder => schoolOrder !== 'infanzia')
+      .map((schoolOrder) => ({ disciplineId, schoolOrder })))
     .sort((left, right) => targetRefFor(left).localeCompare(targetRefFor(right)));
 };
 
