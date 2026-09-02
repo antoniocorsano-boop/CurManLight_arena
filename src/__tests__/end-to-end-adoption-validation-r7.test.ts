@@ -6,38 +6,24 @@ const byId = () => Object.fromEntries(
 );
 
 describe('R7 end-to-end adoption validation', () => {
-  it('fails closed while P3 remains partial after P1 and P6 runtime closure', () => {
+  it('has no remaining runtime blockers after P1, P3 and P6 closure', () => {
     const assessment = assessEndToEndAdoptionFlow();
-
-    expect(assessment.verdict).toBe('ADOPTION_FLOW_BLOCKED');
-    expect(assessment.requiresRuntimeRemediation).toBe(true);
-    expect(assessment.blockingProcessIds).toEqual(['P3_CURRICULUM_ANALYSIS']);
-    expect(assessment.blockingProcessIds).not.toContain('P1_SOURCE_QUALIFICATION');
-    expect(assessment.blockingProcessIds).not.toContain('P6_CANONICAL_ADOPTION');
+    expect(assessment.verdict).toBe('ADOPTION_FLOW_VALIDATED');
+    expect(assessment.requiresRuntimeRemediation).toBe(false);
+    expect(assessment.blockingProcessIds).toEqual([]);
   });
 
-  it('recognizes source qualification, decision, adoption and planning handoff as executable', () => {
+  it('recognizes every canonical process as executable', () => {
     const steps = byId();
-
-    expect(steps.P1_SOURCE_QUALIFICATION.reality).toBe('EXECUTABLE');
-    expect(steps.P5_INSTITUTIONAL_DECISION.reality).toBe('EXECUTABLE');
-    expect(steps.P6_CANONICAL_ADOPTION.reality).toBe('EXECUTABLE');
+    expect(Object.values(steps).every((step) => step.reality === 'EXECUTABLE')).toBe(true);
+    expect(steps.P1_SOURCE_QUALIFICATION.implementationStatus).toBe('IMPLEMENTED');
+    expect(steps.P3_CURRICULUM_ANALYSIS.implementationStatus).toBe('IMPLEMENTED');
     expect(steps.P6_CANONICAL_ADOPTION.implementationStatus).toBe('IMPLEMENTED');
-    expect(steps.P7_PLANNING_HANDOFF.reality).toBe('EXECUTABLE');
   });
 
-  it('does not turn P1/P6 closure into a false whole-pipeline PASS', () => {
+  it('does not confuse runtime closure with release or representative-human evidence', () => {
     const assessment = assessEndToEndAdoptionFlow();
-
-    expect(assessment.executableProcessIds).toContain('P1_SOURCE_QUALIFICATION');
-    expect(assessment.executableProcessIds).toContain('P6_CANONICAL_ADOPTION');
-    expect(assessment.verdict).toBe('ADOPTION_FLOW_BLOCKED');
-    expect(assessment.blockingProcessIds).toEqual(['P3_CURRICULUM_ANALYSIS']);
-  });
-
-  it('still requires same-SHA release evidence and representative human acceptance', () => {
-    const assessment = assessEndToEndAdoptionFlow();
-
+    expect(assessment.verdict).toBe('ADOPTION_FLOW_VALIDATED');
     expect(assessment.requiresSameShaReleaseValidation).toBe(true);
     expect(assessment.requiresRepresentativeHumanAcceptance).toBe(true);
   });
