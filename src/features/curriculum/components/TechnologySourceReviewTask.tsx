@@ -20,10 +20,11 @@ const GROUP_LABELS: Record<string, string> = {
   LOWER_SECONDARY_KNOWLEDGE: 'Conoscenze',
 };
 
-const SCHOOL_ORDER_LABELS = {
-  primaria: 'Scuola primaria',
-  secondaria: 'Secondaria di I grado',
-} as const;
+function getSchoolOrderLabel(schoolOrder: 'infanzia' | 'primaria' | 'secondaria'): string {
+  if (schoolOrder === 'primaria') return 'Scuola primaria';
+  if (schoolOrder === 'secondaria') return 'Secondaria di I grado';
+  return 'Ordine scolastico non previsto in questa verifica';
+}
 
 function readReceipts(): TechnologySourceVerificationReceipt[] {
   if (typeof window === 'undefined') return [];
@@ -144,7 +145,7 @@ export function TechnologySourceReviewTask() {
       </div>
 
       <div className="rounded-xl border border-indigo-100 bg-indigo-50/40 p-4 space-y-2">
-        <p className="text-xs font-black uppercase tracking-wide text-indigo-700">{SCHOOL_ORDER_LABELS[current.schoolOrder]}</p>
+        <p className="text-xs font-black uppercase tracking-wide text-indigo-700">{getSchoolOrderLabel(current.schoolOrder)}</p>
         <p className="text-sm font-bold text-slate-900">{GROUP_LABELS[current.group] ?? current.group} · elemento {current.ordinal}</p>
         <div className="flex flex-wrap items-center gap-3">
           <span className="text-xs font-bold text-slate-600">D.M. 221/2025 · pagina {current.page}</span>
