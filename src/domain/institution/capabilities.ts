@@ -52,6 +52,7 @@ const ROLE_CAPABILITIES: Readonly<Record<InstitutionalRole, readonly ArenaCapabi
   dirigente: [
     'CURRICULUM_READ',
     'REVISION_REVIEW',
+    'CURRICULUM_ADOPT',
     'DOCUMENT_EXPORT',
   ],
   amministratore: [
