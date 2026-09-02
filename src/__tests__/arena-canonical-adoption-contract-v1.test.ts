@@ -6,37 +6,37 @@ import type { InstitutionalRevisionDecisionReceipt } from '../domain/revision/sh
 
 const receipt = (overrides: Partial<InstitutionalRevisionDecisionReceipt> = {}): InstitutionalRevisionDecisionReceipt => ({
   id: 'receipt-1', workspaceId: 'workspace-1', proposalRef: 'proposal-1', proposalVersionRef: 'version-1', proposalVersionFingerprint: 'fp-1',
-  adoptionBinding: { version: 2, targetNodeRef: 'node-1', baseCurriculumVersionRef: 'canonical-v1', bindingFingerprint: 'b'.repeat(64), proposalSnapshotVersion: 1 },
+  sharedProposalAuthorityVersion: 1,
+  adoptionBinding: { version: 2, targetNodeRef: 'node-1', baseCurriculumVersionRef: 'canonical-v1', bindingFingerprint: 'b'.repeat(64) },
   outcome: 'approve', rationale: 'Delibera motivata', decidedByUserId: 'user-collegio', authorityRole: 'collegio', decidedAt: '2026-09-01T00:00:00.000Z', clientRequestId: 'request-1', ...overrides,
 });
-const baseInput = () => ({ workspaceId: 'workspace-1', proposalVersionRef: 'version-1', proposalVersionFingerprint: 'fp-1', targetNodeRef: 'node-1', targetCanonicalVersionRef: 'canonical-v1', targetCanonicalState: 'VERIFIED_CURRENT' as const, decisionReceipt: receipt(), decisionValidity: 'VERIFIED_ACTIVE' as const, actor: { role: 'collegio' as const, assurance: 'authenticated-workspace' as const, userId: 'user-collegio' } });
+const baseInput = () => ({ workspaceId: 'workspace-1', proposalVersionRef: 'version-1', proposalVersionFingerprint: 'fp-1', targetNodeRef: 'node-1', targetCanonicalVersionRef: 'canonical-v1', targetCanonicalState: 'VERIFIED_CURRENT' as const, decisionReceipt: receipt(), decisionValidity: 'VERIFIED_ACTIVE' as const, actor: { role: 'dirigente' as const, assurance: 'authenticated-workspace' as const, userId: 'user-dirigente' } });
 
-describe('R5/R7A3 Canonical Adoption Contract', () => {
-  it('keeps P6 unavailable to all current roles even when authenticated', () => {
-    for (const role of ['docente','dipartimento','referente','collegio','dirigente','amministratore'] as const) expect(canUseCapability(role, 'CURRICULUM_ADOPT', 'authenticated-workspace')).toBe(false);
+describe('R7A7 Canonical Adoption Contract', () => {
+  it('assigns CURRICULUM_ADOPT only to authenticated dirigente', () => {
+    for (const role of ['docente','dipartimento','referente','collegio','amministratore'] as const) expect(canUseCapability(role, 'CURRICULUM_ADOPT', 'authenticated-workspace')).toBe(false);
+    expect(canUseCapability('dirigente', 'CURRICULUM_ADOPT', 'authenticated-workspace')).toBe(true);
+    expect(canUseCapability('dirigente', 'CURRICULUM_ADOPT', 'self-declared')).toBe(false);
   });
-  it('separates institutional decision authority from canonical adoption authority', () => {
+  it('keeps decision authority and adoption execution authority separated', () => {
     expect(canUseCapability('collegio', 'REVISION_DECIDE', 'authenticated-workspace')).toBe(true);
     expect(canUseCapability('collegio', 'CURRICULUM_ADOPT', 'authenticated-workspace')).toBe(false);
+    expect(canUseCapability('dirigente', 'REVISION_DECIDE', 'authenticated-workspace')).toBe(false);
+    expect(canUseCapability('dirigente', 'CURRICULUM_ADOPT', 'authenticated-workspace')).toBe(true);
   });
-  it('fails closed for an R7A3 snapshot-backed approved receipt because proposal authority and adoption authority are not available yet', () => {
+  it('opens human-adoption readiness for an active R7A6 authority-bound adoptive decision', () => {
     const result = assessCanonicalAdoption(baseInput());
-    expect(result.readiness).toBe('BLOCKED');
+    expect(result.readiness).toBe('READY_FOR_HUMAN_ADOPTION');
+    expect(result.blockerCodes).toEqual([]);
+  });
+  it('blocks historical decisions that are not bound to shared proposal authority', () => {
+    const result = assessCanonicalAdoption({ ...baseInput(), decisionReceipt: receipt({ sharedProposalAuthorityVersion: undefined }) });
     expect(result.blockerCodes).toContain('PROPOSAL_AUTHORITY_UNAVAILABLE');
-    expect(result.blockerCodes).toContain('ADOPTION_CAPABILITY_UNAVAILABLE');
-    expect(result.blockerCodes).not.toContain('ADOPTION_BINDING_MISSING');
-    expect(result.blockerCodes).not.toContain('PROPOSAL_SNAPSHOT_MISSING');
   });
   it('blocks historical receipts that do not carry adoption binding v2', () => {
     const historical = receipt(); delete historical.adoptionBinding;
     const result = assessCanonicalAdoption({ ...baseInput(), decisionReceipt: historical });
     expect(result.blockerCodes).toContain('ADOPTION_BINDING_MISSING');
-  });
-  it('blocks R7A2-compatible receipts that have binding v2 but no R7A3 snapshot marker', () => {
-    const legacy = receipt({ adoptionBinding: { version: 2, targetNodeRef: 'node-1', baseCurriculumVersionRef: 'canonical-v1', bindingFingerprint: 'b'.repeat(64) } });
-    const result = assessCanonicalAdoption({ ...baseInput(), decisionReceipt: legacy });
-    expect(result.blockerCodes).toContain('PROPOSAL_SNAPSHOT_MISSING');
-    expect(result.blockerCodes).toContain('PROPOSAL_AUTHORITY_UNAVAILABLE');
   });
   it('blocks target node and base curriculum mismatches', () => {
     const targetMismatch = assessCanonicalAdoption({ ...baseInput(), targetNodeRef: 'node-2' });
@@ -57,8 +57,8 @@ describe('R5/R7A3 Canonical Adoption Contract', () => {
     expect(result.blockerCodes).toContain('WORKSPACE_MISMATCH'); expect(result.blockerCodes).toContain('PROPOSAL_VERSION_MISMATCH'); expect(result.blockerCodes).toContain('PROPOSAL_FINGERPRINT_MISMATCH');
     result = assessCanonicalAdoption({ ...baseInput(), existingAdoptionReceiptRef: 'adoption-1' }); expect(result.blockerCodes).toContain('ALREADY_ADOPTED');
   });
-  it('keeps P6 work items read-only until runtime is implemented', () => {
-    const projected = projectArenaWorkItem({ id:'p6-1', processId:'P6_CANONICAL_ADOPTION', title:'Adozione canonica', reason:'Decisione valida presente', queueState:'TO_DECIDE', evidenceState:'READY', requiredCapability:'REVISION_DECIDE', nextActionLabel:'Adotta', consequential:false, authenticatedAuthorityRequired:false, orderKey:'001' }, { role:'collegio', assurance:'authenticated-workspace' });
+  it('keeps generic P6 queue items read-only until authoritative candidate materialization/bootstrap is wired', () => {
+    const projected = projectArenaWorkItem({ id:'p6-1', processId:'P6_CANONICAL_ADOPTION', title:'Adozione canonica', reason:'Decisione valida presente', queueState:'TO_DECIDE', evidenceState:'READY', requiredCapability:'REVISION_DECIDE', nextActionLabel:'Adotta', consequential:false, authenticatedAuthorityRequired:false, orderKey:'001' }, { role:'dirigente', assurance:'authenticated-workspace' });
     expect(projected.requiredCapability).toBe('CURRICULUM_ADOPT'); expect(projected.access).toBe('READ_ONLY'); expect(projected.effectiveBlocker).toMatch(/non implementato/i);
   });
 });
