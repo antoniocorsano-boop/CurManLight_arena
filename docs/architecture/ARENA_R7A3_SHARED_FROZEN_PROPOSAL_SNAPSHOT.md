@@ -1,12 +1,14 @@
 # Arena R7A3 — Shared Frozen Proposal Snapshot
 
-Status: **IMPLEMENTED_PENDING_FINAL_REVIEW**
+Status: **IMPLEMENTED**
 
 ## Objective
 
 A decision receipt must not be considered eligible for any future canonical-adoption assessment unless the shared server owns the exact frozen proposal-version payload that was deliberated, can validate its canonical shape, and can recompute its SHA-256 independently of the browser-declared fingerprint.
 
-R7A3 does **not** establish the missing shared proposal authority for P3. The frozen snapshot is immutable institutional evidence of the payload used by the R7A3 decision path; it is not, by itself, an independent authoritative proposal registry.
+R7A3 does **not** establish the missing shared submitted-proposal authority required before P6 can trust a proposal version as institutional input. The frozen snapshot is immutable institutional evidence of the payload used by the R7A3 decision path; it is not, by itself, an independent authoritative proposal registry.
+
+This proposal-authority gap is distinct from the R7 process named **P3 Curriculum analysis**, which remains partial for its own whole-school coverage/gap-analysis reasons.
 
 ## Boundary
 
@@ -30,11 +32,12 @@ The freeze RPC:
 - rejects missing and extra top-level fields;
 - validates `versionNumber`, text fields, `sourceRefs`, `evidenceRefs`, `createdAt`, `structuralFootprint`, optional version/change fields, and `frozen=true`;
 - verifies `id` and `proposalRef` against the RPC binding;
+- validates source/evidence references against canonical Arena entity types;
 - recomputes SHA-256 from the exact UTF-8 payload bytes and compares it with the supplied proposal-version fingerprint;
 - makes repeated freezing idempotent only when payload, parsed JSON and fingerprint are identical;
 - rejects conflicting writes fail-closed.
 
-Because P3 does not yet expose an independent shared proposal authority, R7A3 does not claim that canonical-shape validation proves semantic equality with a separate authoritative proposal record. P6 therefore remains fail-closed with `PROPOSAL_AUTHORITY_UNAVAILABLE` until that authority exists.
+Because no independent shared submitted-proposal authority exists yet, R7A3 does not claim that canonical-shape validation proves semantic equality with a separately authoritative proposal record. P6 therefore remains fail-closed with `PROPOSAL_AUTHORITY_UNAVAILABLE` until that authority exists and the decision path is rebound to it.
 
 ## Versioned decision guard and rollout compatibility
 
@@ -57,20 +60,30 @@ Therefore a newly written v2 receipt can still exist during the compatibility wi
 Consequences:
 - historical receipts without binding v2 remain non-adoptable;
 - R7A2-compatible v2 receipts without the R7A3 marker produce `PROPOSAL_SNAPSHOT_MISSING`;
-- R7A3 snapshot-backed receipts still remain blocked by `PROPOSAL_AUTHORITY_UNAVAILABLE` until P3 gains a genuine shared proposal authority;
+- R7A3 snapshot-backed receipts remain blocked by `PROPOSAL_AUTHORITY_UNAVAILABLE` until a genuine shared submitted-proposal authority exists and is bound into the decision path;
 - `CURRICULUM_ADOPT` remains unassigned and no receipt can mutate canonical curriculum automatically.
 
-## Validation
+## Final validation and review
 
-Validated on head `c81f3a0f74d0632b457207a78330a45823fd9563` before this documentation-only correction:
-- CurManLight Product CI #538 — PASS;
-- Beta Identity Authority #210 — PASS;
-- Beta Release Contract #406 — PASS;
-- Human Interaction Model #118 — PASS;
-- S3 Critical Journey Browser Evidence #109 — PASS;
-- Beta E2E Workflow #216 — PASS.
+Final validated branch head before squash merge:
 
-This documentation correction changes the PR head and therefore requires the complete gate set to be revalidated before merge.
+`a9f8de418df00e59c60e8e144e72e8794a7c2a2d`
+
+Required workflows were all PASS:
+- CurManLight Product CI #546;
+- Beta Identity Authority #218;
+- Beta Release Contract #414;
+- Human Interaction Model #126;
+- S3 Critical Journey Browser Evidence #117;
+- Beta E2E Workflow #224.
+
+Codex final review on `a9f8de418d` reported no major issues. PR #164 was squash-merged to `main` as:
+
+`b04bfd0d324f8db6b654e0b95c0307d1cf753901`
+
+## Successor boundary
+
+R7A4 freezes the next authority boundary: local proposal preparation may remain local, but authenticated `submitted` is the first shared-authoritative proposal state. R7A4 remains contract-only; persistence and authoritative decision rebind are separate later slices.
 
 ## Non-goals
 

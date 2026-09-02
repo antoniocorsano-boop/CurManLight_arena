@@ -12,5 +12,6 @@ export * from './transferIntegration';
 export * from './documentIntegration';
 export * from './decisionEffects';
 export * from './sharedDecisionPort';
+export * from './sharedSubmittedProposalAuthority';
 export * from './versionFingerprint';
 export * from './adoptionBinding';

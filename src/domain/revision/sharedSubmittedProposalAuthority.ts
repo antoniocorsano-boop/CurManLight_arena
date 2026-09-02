@@ -1,0 +1,525 @@
+import type { ArenaCapability } from '../institution/capabilities';
+import type { WorkspaceActorContext } from '../institution/sharedWorkspacePort';
+
+export type SharedProposalLifecycleState =
+  | 'submitted'
+  | 'under-review'
+  | 'changes-requested'
+  | 'accepted-for-decision'
+  | 'rejected'
+  | 'withdrawn'
+  | 'archived';
+
+export type SharedSubmissionActorRole = 'docente' | 'dipartimento' | 'referente';
+export type SharedReviewActorRole = 'dipartimento' | 'referente' | 'dirigente';
+export type SharedProposalMutationCapability = Extract<
+  ArenaCapability,
+  'CURRICULUM_PROPOSE' | 'REVISION_REVIEW'
+>;
+
+export type SharedProposalRoleForCapability<
+  C extends SharedProposalMutationCapability,
+> = C extends 'CURRICULUM_PROPOSE'
+  ? SharedSubmissionActorRole
+  : C extends 'REVISION_REVIEW'
+    ? SharedReviewActorRole
+    : never;
+
+export type SharedProposalTransitionActorBinding =
+  | 'authorized-member'
+  | 'original-submitter';
+
+export type SharedProposalLifecycleTransitionDefinition =
+  | {
+      from: 'submitted';
+      to: 'under-review';
+      requiredCapability: 'REVISION_REVIEW';
+      actorBinding: 'authorized-member';
+      requiresCurrentHead: true;
+    }
+  | {
+      from: 'submitted';
+      to: 'withdrawn';
+      requiredCapability: 'CURRICULUM_PROPOSE';
+      actorBinding: 'original-submitter';
+      requiresCurrentHead: true;
+    }
+  | {
+      from: 'under-review';
+      to: 'changes-requested';
+      requiredCapability: 'REVISION_REVIEW';
+      actorBinding: 'authorized-member';
+      requiresCurrentHead: true;
+    }
+  | {
+      from: 'under-review';
+      to: 'accepted-for-decision';
+      requiredCapability: 'REVISION_REVIEW';
+      actorBinding: 'authorized-member';
+      requiresCurrentHead: true;
+    }
+  | {
+      from: 'under-review';
+      to: 'rejected';
+      requiredCapability: 'REVISION_REVIEW';
+      actorBinding: 'authorized-member';
+      requiresCurrentHead: true;
+    };
+
+export const SHARED_PROPOSAL_LIFECYCLE_TRANSITION_POLICY = [
+  {
+    from: 'submitted',
+    to: 'under-review',
+    requiredCapability: 'REVISION_REVIEW',
+    actorBinding: 'authorized-member',
+    requiresCurrentHead: true,
+  },
+  {
+    from: 'submitted',
+    to: 'withdrawn',
+    requiredCapability: 'CURRICULUM_PROPOSE',
+    actorBinding: 'original-submitter',
+    requiresCurrentHead: true,
+  },
+  {
+    from: 'under-review',
+    to: 'changes-requested',
+    requiredCapability: 'REVISION_REVIEW',
+    actorBinding: 'authorized-member',
+    requiresCurrentHead: true,
+  },
+  {
+    from: 'under-review',
+    to: 'accepted-for-decision',
+    requiredCapability: 'REVISION_REVIEW',
+    actorBinding: 'authorized-member',
+    requiresCurrentHead: true,
+  },
+  {
+    from: 'under-review',
+    to: 'rejected',
+    requiredCapability: 'REVISION_REVIEW',
+    actorBinding: 'authorized-member',
+    requiresCurrentHead: true,
+  },
+] as const satisfies readonly SharedProposalLifecycleTransitionDefinition[];
+
+/** PostgreSQL text/jsonb cannot preserve U+0000 or malformed UTF-16 surrogate sequences. */
+export const SHARED_PROPOSAL_POSTGRES_STRING_SCHEMA = {
+  canonicalPayloadTopLevelStringFields: [
+    'id',
+    'proposalRef',
+    'currentTextSnapshot',
+    'proposedText',
+    'rationale',
+    'createdAt',
+    'structuralFootprint',
+    'previousVersionRef',
+    'changeNote',
+  ] as const,
+  canonicalPayloadReferenceStringFields: ['id', 'entityType', 'snapshotLabel'] as const,
+  rejectsCodePointNull: true as const,
+  rejectsUnpairedUtf16Surrogates: true as const,
+  allowsValidUtf16SurrogatePairs: true as const,
+  storageTargets: ['PostgreSQL-text', 'PostgreSQL-jsonb'] as const,
+} as const;
+
+export const isPostgresRepresentableSharedProposalString = (value: string): boolean => {
+  for (let index = 0; index < value.length; index += 1) {
+    const codeUnit = value.charCodeAt(index);
+
+    if (codeUnit === 0) return false;
+
+    if (codeUnit >= 0xd800 && codeUnit <= 0xdbff) {
+      const nextCodeUnit = value.charCodeAt(index + 1);
+      if (!(nextCodeUnit >= 0xdc00 && nextCodeUnit <= 0xdfff)) return false;
+      index += 1;
+      continue;
+    }
+
+    if (codeUnit >= 0xdc00 && codeUnit <= 0xdfff) return false;
+  }
+
+  return true;
+};
+
+/** Exact R7A3/R7A4 canonical proposal-version payload contract. */
+export const SHARED_PROPOSAL_CANONICAL_PAYLOAD_SCHEMA = {
+  orderedKeys: [
+    'id',
+    'proposalRef',
+    'versionNumber',
+    'currentTextSnapshot',
+    'proposedText',
+    'rationale',
+    'sourceRefs',
+    'evidenceRefs',
+    'createdAt',
+    'structuralFootprint',
+    'previousVersionRef',
+    'changeNote',
+    'frozen',
+  ] as const,
+  requiredKeys: [
+    'id',
+    'proposalRef',
+    'versionNumber',
+    'currentTextSnapshot',
+    'proposedText',
+    'rationale',
+    'sourceRefs',
+    'evidenceRefs',
+    'createdAt',
+    'structuralFootprint',
+    'frozen',
+  ] as const,
+  optionalKeys: ['previousVersionRef', 'changeNote'] as const,
+  fieldTypes: {
+    id: 'trimmed-non-empty-string',
+    proposalRef: 'trimmed-non-empty-string',
+    versionNumber: 'positive-integer',
+    currentTextSnapshot: 'string',
+    proposedText: 'trimmed-non-empty-string',
+    rationale: 'string',
+    sourceRefs: 'reference-array',
+    evidenceRefs: 'reference-array',
+    createdAt: 'parseable-timestamptz-string',
+    structuralFootprint: 'string',
+    previousVersionRef: 'optional-trimmed-non-empty-string',
+    changeNote: 'optional-trimmed-non-empty-string',
+    frozen: 'literal-true',
+  } as const,
+  referenceRequiredKeys: ['id', 'entityType'] as const,
+  referenceOptionalKeys: ['snapshotLabel'] as const,
+  referenceFieldTypes: {
+    id: 'trimmed-non-empty-string',
+    entityType: 'canonical-entity-type',
+    snapshotLabel: 'optional-trimmed-non-empty-string',
+  } as const,
+  allowedReferenceEntityTypes: [
+    'institute',
+    'source',
+    'curriculum-version',
+    'curriculum-segment',
+    'curriculum-node',
+    'curriculum-link',
+    'revision-proposal',
+    'decision',
+    'teaching-design',
+    'document',
+    'document-version',
+    'template',
+    'class-context',
+    'assessment',
+    'actor',
+    'event',
+  ] as const,
+  rejectsExtraTopLevelKeys: true as const,
+  rejectsExtraReferenceKeys: true as const,
+  allStringValuesMustBePostgresJsonbRepresentable: true as const,
+  postgresStringSchema: SHARED_PROPOSAL_POSTGRES_STRING_SCHEMA,
+  serialization: 'JSON.stringify(buildRevisionProposalVersionFingerprintPayload(version))' as const,
+  byteEncoding: 'UTF-8' as const,
+  digest: 'SHA-256' as const,
+};
+
+export const SHARED_PROPOSAL_FINGERPRINT_SCHEMA = {
+  algorithm: 'SHA-256' as const,
+  representation: '64-lowercase-hex-characters' as const,
+  pattern: '^[0-9a-f]{64}$' as const,
+  length: 64 as const,
+  submittedValueMustBeCanonical: true as const,
+  submittedValueMustEqualServerRecomputedDigest: true as const,
+  persistedValueIsServerRecomputedDigest: true as const,
+  returnedValueIsServerRecomputedDigest: true as const,
+  caseInsensitiveComparisonAllowed: false as const,
+} as const;
+
+const CANONICAL_SHARED_PROPOSAL_FINGERPRINT_PATTERN = /^[0-9a-f]{64}$/;
+
+export const isCanonicalSharedProposalVersionFingerprint = (value: string): boolean =>
+  CANONICAL_SHARED_PROPOSAL_FINGERPRINT_PATTERN.test(value);
+
+export const SHARED_PROPOSAL_ADOPTION_BINDING_DELIMITER = '\u001f' as const;
+
+const excludesSharedProposalBindingDelimiter = (value: string): boolean =>
+  !value.includes(SHARED_PROPOSAL_ADOPTION_BINDING_DELIMITER);
+
+export const SHARED_PROPOSAL_VERSION_IDENTITY_SCHEMA = {
+  canonicalIdentityFields: ['proposalRef', 'proposalVersionRef'] as const,
+  commandIdentityMustEqualTrimmedValue: true as const,
+  rejectsAdoptionBindingDelimiter: true as const,
+  requiresPostgresRepresentableString: true as const,
+  forbiddenCharacters: [SHARED_PROPOSAL_ADOPTION_BINDING_DELIMITER] as const,
+  canonicalPayloadIdentityMustMatchCanonicalCommand: true as const,
+  uniquenessScope: ['workspaceId', 'proposalVersionRef'] as const,
+  uniquenessUsesCanonicalProposalVersionRef: true as const,
+  immutableProposalBinding: ['workspaceId', 'proposalVersionRef', 'proposalRef'] as const,
+  reuseAcrossProposalRefsFailsClosed: true as const,
+} as const;
+
+export const isCanonicalSharedProposalIdentityRef = (value: string): boolean => {
+  const trimmed = value.trim();
+  return (
+    trimmed.length > 0 &&
+    value === trimmed &&
+    excludesSharedProposalBindingDelimiter(value) &&
+    isPostgresRepresentableSharedProposalString(value)
+  );
+};
+
+export const SHARED_PROPOSAL_SCOPE_BINDING_SCHEMA = {
+  targetNodeRef: 'canonical-trimmed-non-empty-string-without-adoption-binding-delimiter',
+  baseCurriculumVersionRef: 'canonical-trimmed-non-empty-string-without-adoption-binding-delimiter',
+  submittedValueMustEqualTrimmedValue: true as const,
+  rejectsAdoptionBindingDelimiter: true as const,
+  requiresPostgresRepresentableString: true as const,
+  forbiddenCharacters: [SHARED_PROPOSAL_ADOPTION_BINDING_DELIMITER] as const,
+} as const;
+
+export const isValidSharedProposalScopeRef = (value: string): boolean => {
+  const trimmed = value.trim();
+  return (
+    trimmed.length > 0 &&
+    value === trimmed &&
+    excludesSharedProposalBindingDelimiter(value) &&
+    isPostgresRepresentableSharedProposalString(value)
+  );
+};
+
+/** Canonical, persistence-safe identity used by workspace-scoped idempotency. */
+export const SHARED_PROPOSAL_CLIENT_REQUEST_ID_SCHEMA = {
+  field: 'clientRequestId' as const,
+  participatesInIdempotencyKey: true as const,
+  uniquenessScope: ['workspaceId', 'clientRequestId'] as const,
+  requiresTrimmedNonEmptyString: true as const,
+  submittedValueMustEqualTrimmedValue: true as const,
+  requiresPostgresRepresentableString: true as const,
+  rejectsCodePointNull: true as const,
+  rejectsUnpairedUtf16Surrogates: true as const,
+  allowsValidUtf16SurrogatePairs: true as const,
+  appliesTo: ['submission', 'lifecycle-mutation'] as const,
+  validationOrder: 'before-idempotency-lookup-or-persistence' as const,
+} as const;
+
+export const isValidSharedProposalClientRequestId = (value: string): boolean => {
+  const trimmed = value.trim();
+  return (
+    trimmed.length > 0 &&
+    value === trimmed &&
+    isPostgresRepresentableSharedProposalString(value)
+  );
+};
+
+export const SHARED_PROPOSAL_IDEMPOTENCY_SCHEMA = {
+  key: ['workspaceId', 'clientRequestId'] as const,
+  collisionScope: 'workspace' as const,
+  principalBindingField: 'serverPrincipalUserId' as const,
+  requestIdReservedIndependentOfPrincipal: true as const,
+  clientRequestIdSchema: SHARED_PROPOSAL_CLIENT_REQUEST_ID_SCHEMA,
+  clientRequestIdMustBeCanonical: true as const,
+  clientRequestIdMustBePostgresRepresentable: true as const,
+  validateClientRequestIdBeforeLookupOrPersistence: true as const,
+  appliesTo: ['submission', 'lifecycle-mutation'] as const,
+  exactRetryRequiresSamePrincipal: true as const,
+  crossPrincipalReuseFailsClosed: true as const,
+  conflictingOperationReuseFailsClosed: true as const,
+} as const;
+
+export interface SharedProposalVersion {
+  schemaVersion: 1;
+  workspaceId: string;
+  proposalRef: string;
+  proposalVersionRef: string;
+  proposalVersionFingerprint: string;
+  canonicalPayload: string;
+  targetNodeRef: string;
+  baseCurriculumVersionRef: string;
+  submittedByUserId: string;
+  submittedByRole: SharedSubmissionActorRole;
+  submittedAt: string;
+  submittedAtSource: 'server-transaction-clock';
+  submittedPrincipalSource: 'server-session';
+  lifecycleState: SharedProposalLifecycleState;
+  previousSharedProposalVersionRef: string | null;
+}
+
+export interface SharedSubmittedProposalVersion extends SharedProposalVersion {
+  lifecycleState: 'submitted';
+}
+
+export interface SubmitSharedProposalVersionCommand {
+  workspaceId: string;
+  proposalRef: string;
+  proposalVersionRef: string;
+  proposalVersionFingerprint: string;
+  canonicalPayload: string;
+  targetNodeRef: string;
+  baseCurriculumVersionRef: string;
+  expectedCurrentSharedProposalVersionRef: string | null;
+  clientRequestId: string;
+}
+
+interface AdvanceSharedProposalLifecycleCommandBase {
+  workspaceId: string;
+  proposalRef: string;
+  proposalVersionRef: string;
+  clientRequestId: string;
+}
+
+export type SharedProposalLifecycleCommandFor<
+  T extends SharedProposalLifecycleTransitionDefinition,
+> = T extends SharedProposalLifecycleTransitionDefinition
+  ? AdvanceSharedProposalLifecycleCommandBase & {
+      expectedLifecycleState: T['from'];
+      nextLifecycleState: T['to'];
+    }
+  : never;
+
+export type AdvanceSharedProposalLifecycleCommand = SharedProposalLifecycleCommandFor<
+  SharedProposalLifecycleTransitionDefinition
+>;
+
+export type SharedProposalLifecycleTransitionReceiptFor<
+  T extends SharedProposalLifecycleTransitionDefinition,
+> = T extends SharedProposalLifecycleTransitionDefinition
+  ? {
+      schemaVersion: 1;
+      workspaceId: string;
+      proposalRef: string;
+      proposalVersionRef: string;
+      fromState: T['from'];
+      toState: T['to'];
+      capabilityUsed: T['requiredCapability'];
+      transitionedByUserId: string;
+      transitionedByRole: SharedProposalRoleForCapability<T['requiredCapability']>;
+      transitionedAt: string;
+      transitionedAtSource: 'server-transaction-clock';
+      transitionedPrincipalSource: 'server-session';
+      clientRequestId: string;
+    }
+  : never;
+
+export type SharedProposalLifecycleTransitionReceipt =
+  SharedProposalLifecycleTransitionReceiptFor<SharedProposalLifecycleTransitionDefinition>;
+
+export type SharedProposalLifecycleTransitionResultFor<
+  T extends SharedProposalLifecycleTransitionDefinition,
+> = T extends SharedProposalLifecycleTransitionDefinition
+  ? {
+      version: SharedProposalVersion & { lifecycleState: T['to'] };
+      receipt: SharedProposalLifecycleTransitionReceiptFor<T>;
+    }
+  : never;
+
+export type SharedProposalLifecycleTransitionResult =
+  SharedProposalLifecycleTransitionResultFor<SharedProposalLifecycleTransitionDefinition>;
+
+export const getSharedProposalLifecycleTransitionPolicy = (
+  from: SharedProposalLifecycleState,
+  to: SharedProposalLifecycleState,
+): SharedProposalLifecycleTransitionDefinition | null =>
+  SHARED_PROPOSAL_LIFECYCLE_TRANSITION_POLICY.find(
+    (transition) => transition.from === from && transition.to === to,
+  ) ?? null;
+
+export interface SharedSubmittedProposalAuthorityPort {
+  submitVersion(
+    context: WorkspaceActorContext,
+    command: SubmitSharedProposalVersionCommand,
+  ): Promise<SharedSubmittedProposalVersion>;
+
+  advanceLifecycle<T extends SharedProposalLifecycleTransitionDefinition>(
+    context: WorkspaceActorContext,
+    command: SharedProposalLifecycleCommandFor<T>,
+  ): Promise<SharedProposalLifecycleTransitionResultFor<T>>;
+
+  getCurrentSharedVersion(
+    context: WorkspaceActorContext,
+    workspaceId: string,
+    proposalRef: string,
+  ): Promise<SharedProposalVersion | null>;
+
+  getSharedVersion(
+    context: WorkspaceActorContext,
+    workspaceId: string,
+    proposalVersionRef: string,
+  ): Promise<SharedProposalVersion | null>;
+}
+
+export const SHARED_PROPOSAL_AUTHORITY_BOUNDARY = {
+  localPreparationStates: ['draft', 'ready-for-review'] as const,
+  firstSharedState: 'submitted' as const,
+  requiresAuthenticatedWorkspace: true as const,
+  requiresServerSessionPrincipalBinding: true as const,
+  serverPrincipalMustMatchContextUser: true as const,
+  serverMembershipWorkspaceMustMatchCommandWorkspace: true as const,
+  requiresFreshMembershipOnEverySharedOperation: true as const,
+  requiredReadCapability: 'CURRICULUM_READ' as const,
+  requiredSubmissionCapability: 'CURRICULUM_PROPOSE' as const,
+  submissionActorRoles: ['docente', 'dipartimento', 'referente'] as const satisfies readonly SharedSubmissionActorRole[],
+  reviewActorRoles: ['dipartimento', 'referente', 'dirigente'] as const satisfies readonly SharedReviewActorRole[],
+  bindsSubmissionProvenanceToFreshMembership: true as const,
+  submittedVersionsAreImmutable: true as const,
+  canonicalPayloadSchema: SHARED_PROPOSAL_CANONICAL_PAYLOAD_SCHEMA,
+  canonicalPayloadTrimRulesMatchR7A3: true as const,
+  postgresStringSchema: SHARED_PROPOSAL_POSTGRES_STRING_SCHEMA,
+  requiresPostgresRepresentableCanonicalPayloadStrings: true as const,
+  rejectsPayloadCodePointNull: true as const,
+  rejectsPayloadUnpairedUtf16Surrogates: true as const,
+  structuralFootprintPreservesR7A3StringContract: true as const,
+  fingerprintSchema: SHARED_PROPOSAL_FINGERPRINT_SCHEMA,
+  requiresCanonicalLowercaseFingerprint: true as const,
+  rejectsNonCanonicalFingerprintInput: true as const,
+  requiresFingerprintExactMatchToServerRecompute: true as const,
+  persistsServerRecomputedFingerprint: true as const,
+  returnsServerRecomputedFingerprint: true as const,
+  allowsCaseInsensitiveFingerprintComparison: false as const,
+  adoptionBindingDelimiter: SHARED_PROPOSAL_ADOPTION_BINDING_DELIMITER,
+  bindingReferencesRejectAdoptionDelimiter: true as const,
+  versionIdentitySchema: SHARED_PROPOSAL_VERSION_IDENTITY_SCHEMA,
+  proposalIdentityReferencesMustEqualTrimmedValue: true as const,
+  proposalIdentityReferencesRejectAdoptionDelimiter: true as const,
+  proposalIdentityReferencesRequirePostgresRepresentability: true as const,
+  proposalVersionRefUniqueWithinWorkspace: true as const,
+  proposalVersionUniquenessUsesCanonicalIdentity: true as const,
+  proposalVersionRefImmutablyBindsProposalRef: true as const,
+  scopeBindingSchema: SHARED_PROPOSAL_SCOPE_BINDING_SCHEMA,
+  scopeReferencesRequireTrimmedNonEmpty: true as const,
+  scopeReferencesMustEqualTrimmedValue: true as const,
+  scopeReferencesRejectAdoptionDelimiter: true as const,
+  scopeReferencesRequirePostgresRepresentability: true as const,
+  requiresServerPayloadValidation: true as const,
+  requiresServerFingerprintRecompute: true as const,
+  requiresExactCanonicalPayloadSerialization: true as const,
+  requiresCompareAndSwapHead: true as const,
+  requiresPredecessorEqualsExpectedHead: true as const,
+  replacementRequiresChangesRequestedHead: true as const,
+  replacementRequiresNewVersionIdentity: true as const,
+  replacementPreservesTargetNodeRef: true as const,
+  replacementPreservesBaseCurriculumVersionRef: true as const,
+  scopeChangeRequiresNewProposalIdentity: true as const,
+  lifecycleMutationRequiresCurrentHead: true as const,
+  lifecycleMutationUsesClosedTransitionPolicy: true as const,
+  lifecycleReceiptDerivedFromTransitionPolicy: true as const,
+  lifecycleReceiptRoleDerivedFromTransitionCapability: true as const,
+  lifecycleMutationPersistsImmutableReceipt: true as const,
+  requiresServerTransactionClockForAuditTimestamps: true as const,
+  idempotentRetriesReturnOriginalAuditTimestamps: true as const,
+  clientRequestIdSchema: SHARED_PROPOSAL_CLIENT_REQUEST_ID_SCHEMA,
+  clientRequestIdRequiresTrimmedNonEmpty: true as const,
+  clientRequestIdMustEqualTrimmedValue: true as const,
+  clientRequestIdRequiresPostgresRepresentability: true as const,
+  clientRequestIdValidatedBeforeIdempotencyLookupOrPersistence: true as const,
+  idempotencySchema: SHARED_PROPOSAL_IDEMPOTENCY_SCHEMA,
+  requiresClientRequestIdIdempotency: true as const,
+  idempotencyRequestIdReservedWithinWorkspace: true as const,
+  idempotencyPrincipalIsBoundOperationData: true as const,
+  idempotencyBoundToServerPrincipal: true as const,
+  crossPrincipalClientRequestReuseFailsClosed: true as const,
+  conflictingClientRequestReuseFailsClosed: true as const,
+  firstSubmissionExpectedHead: null as null,
+  allowsLocalInstitutionalSuccessFallback: false as const,
+  assignsCurriculumAdopt: false as const,
+  removesProposalAuthorityBlocker: false as const,
+};
