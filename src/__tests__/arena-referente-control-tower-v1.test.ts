@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import type { CurriculumMap } from '../features/session/types/appViewContracts';
 import { deriveReferenteControlTowerSnapshot } from '../domain/institution/referenteControlTower';
 import type { RevisionArchive } from '../domain/revision/types';
 
@@ -12,6 +13,8 @@ const archive = (overrides: Partial<RevisionArchive> = {}): RevisionArchive => (
   events: [],
   ...overrides,
 });
+
+const asCurriculum = (value: Record<string, unknown>): CurriculumMap => value as unknown as CurriculumMap;
 
 describe('R4 Referente Control Tower v1', () => {
   it('counts only explicit source lifecycle/evidence states', () => {
@@ -86,6 +89,27 @@ describe('R4 Referente Control Tower v1', () => {
     }));
 
     expect(snapshot.disciplineCoverageAvailable).toBe(false);
-    expect(snapshot.scopeNote).toMatch(/non una percentuale affidabile/i);
+    expect(snapshot.curriculumTargetTotal).toBeNull();
+    expect(snapshot.scopeNote).toMatch(/CurriculumMap concreta/i);
+  });
+
+  it('computes whole-school discipline/order coverage from explicit curriculum data', () => {
+    const snapshot = deriveReferenteControlTowerSnapshot(
+      [],
+      archive(),
+      null,
+      asCurriculum({
+        tecnologia: {
+          primaria: { traguardi: ['T1'], obiettivi: ['O1'], evidenze: [] },
+          secondaria: { traguardi: ['T2'], obiettivi: ['O2'], evidenze: [] },
+        },
+      }),
+    );
+
+    expect(snapshot.disciplineCoverageAvailable).toBe(true);
+    expect(snapshot.curriculumTargetTotal).toBeGreaterThan(2);
+    expect(snapshot.curriculumCoverageTargets).toBe(2);
+    expect(snapshot.curriculumGapTargets).toBe((snapshot.curriculumTargetTotal ?? 0) - 2);
+    expect(snapshot.scopeNote).toMatch(/deterministicamente/i);
   });
 });
