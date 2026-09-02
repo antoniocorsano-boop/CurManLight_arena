@@ -13,6 +13,5 @@ export * from './documentIntegration';
 export * from './decisionEffects';
 export * from './sharedDecisionPort';
 export * from './sharedSubmittedProposalAuthority';
-export * from './sharedProposalClientRequestId';
 export * from './versionFingerprint';
 export * from './adoptionBinding';
