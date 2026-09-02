@@ -15,10 +15,10 @@ export function CurriculumWorkspace(props: CurriculumTabProps) {
         <section className="space-y-3 rounded-2xl border border-indigo-200 bg-indigo-50/30 p-4 shadow-sm sm:p-5">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="max-w-3xl">
-              <span className="text-xs font-bold text-indigo-700">Indicazioni 2025 · Tecnologia</span>
-              <h3 className="mt-1 text-base font-extrabold text-slate-900">Vuoi controllare la fonte nazionale?</h3>
+              <span className="text-xs font-bold text-indigo-700">Curricolo verticale · Tecnologia</span>
+              <h3 className="mt-1 text-base font-extrabold text-slate-900">Controlla le Indicazioni 2025</h3>
               <p className="mt-1 text-sm leading-relaxed text-slate-600">
-                Apri una scheda alla volta e verifica i contenuti già individuati nel D.M. 221/2025.
+                Verifica una scheda alla volta, dalla primaria alla secondaria di I grado.
               </p>
             </div>
             <button
@@ -33,7 +33,7 @@ export function CurriculumWorkspace(props: CurriculumTabProps) {
 
           {!reviewOpen && (
             <p className="text-xs text-slate-500" data-hcm-secondary-content>
-              Nulla viene modificato finché non registri una scelta esplicita sulla singola scheda.
+              La verifica registra solo ciò che controlli nella fonte: non approva il curricolo.
             </p>
           )}
 
