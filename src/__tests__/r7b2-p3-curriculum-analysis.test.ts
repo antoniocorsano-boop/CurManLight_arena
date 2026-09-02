@@ -4,6 +4,7 @@ import {
   analyzeCurriculum,
   computeCurriculumStructuralFindings,
   getWholeSchoolCurriculumScope,
+  type CurriculumAnalysisInput,
 } from '../domain/institution/curriculumAnalysis';
 import { qualifySource } from '../domain/institution/sourceQualification';
 import { assessEndToEndAdoptionFlow } from '../domain/institution/endToEndAdoptionValidation';
@@ -19,7 +20,7 @@ const eligibleEvidence = (sourceId = 'source-1') => qualifySource({
 
 const asCurriculum = (value: Record<string, unknown>): CurriculumMap => value as unknown as CurriculumMap;
 
-const input = () => ({
+const input = (): CurriculumAnalysisInput => ({
   baseline: { baselineRef: 'baseline-1', curriculumVersionRef: 'curriculum-v1', scopeRef: 'technology-lower-secondary' },
   curriculum: asCurriculum({
     tecnologia: {
@@ -27,7 +28,7 @@ const input = () => ({
     },
   }),
   evidenceBindings: [{ targetRef: 'dm221:TECNOLOGIA:secondaria', evidence: [eligibleEvidence()] }],
-  scope: [{ disciplineId: 'TECNOLOGIA' as const, schoolOrder: 'secondaria' as const }],
+  scope: [{ disciplineId: 'TECNOLOGIA', schoolOrder: 'secondaria' }],
 });
 
 describe('R7B2 P3 curriculum analysis', () => {
