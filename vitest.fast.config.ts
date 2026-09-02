@@ -29,6 +29,7 @@ export default defineConfig({
       'src/__tests__/r7a4-authority-identity-closure.test.ts',
       'src/__tests__/r7a4-client-request-id-persistence.test.ts',
       'src/__tests__/r7a5-shared-submitted-proposal-persistence.test.ts',
+      'src/__tests__/r7a5-canonical-payload-server-validation.test.ts',
       'src/__tests__/identity.test.ts',
       'src/__tests__/beta-identity-authority.test.ts',
       'src/__tests__/beta-shell-regression.test.ts',
