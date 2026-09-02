@@ -119,7 +119,7 @@ describe('BETA-G4/R7A6 shared institutional decision boundary', () => {
     const rpc = vi.fn(async () => ({ data: serverRow(), error: null }));
     const repository = new SupabaseSharedRevisionDecisionRepository({ rpc } as unknown as SupabaseClient, createWorkspaceRepository(true));
     const receipt = await repository.findInstitutionalDecisionForVersion(context, input.proposalVersionRef);
-    expect(rpc).toHaveBeenCalledWith('get_institutional_revision_decision_for_version_v1', {
+    expect(rpc).toHaveBeenCalledWith('get_institutional_revision_decision_for_shared_version_v1', {
       p_workspace_id: context.membership.workspaceId,
       p_expected_context_user_id: context.membership.userId,
       p_proposal_version_ref: input.proposalVersionRef,
