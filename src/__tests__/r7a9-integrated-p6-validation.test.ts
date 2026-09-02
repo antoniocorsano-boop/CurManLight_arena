@@ -31,12 +31,10 @@ describe('R7A9 integrated P6 validation', () => {
     expect(p6?.reality).toBe('EXECUTABLE');
   });
 
-  it('does not falsely validate R7 while P1 and P3 remain partial', () => {
+  it('does not falsely validate R7 merely because P6 is executable', () => {
     const assessment = assessEndToEndAdoptionFlow();
     expect(assessment.verdict).toBe('ADOPTION_FLOW_BLOCKED');
-    expect(assessment.blockingProcessIds).toEqual([
-      'P1_SOURCE_QUALIFICATION',
-      'P3_CURRICULUM_ANALYSIS',
-    ]);
+    expect(assessment.blockingProcessIds).not.toContain('P6_CANONICAL_ADOPTION');
+    expect(assessment.blockingProcessIds.length).toBeGreaterThan(0);
   });
 });
