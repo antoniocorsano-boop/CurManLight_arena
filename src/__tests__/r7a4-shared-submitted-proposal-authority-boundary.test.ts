@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { generateDeterministicId } from '../domain/curriculum/identity';
-import { getRoleCapabilities } from '../domain/institution/capabilities';
+import { canUseCapability, getRoleCapabilities } from '../domain/institution/capabilities';
 import type { WorkspaceActorContext } from '../domain/institution/sharedWorkspacePort';
 import {
   SHARED_PROPOSAL_AUTHORITY_BOUNDARY,
@@ -181,9 +181,11 @@ describe('R7A4 shared submitted proposal authority boundary', () => {
     expect(SHARED_PROPOSAL_AUTHORITY_BOUNDARY.assignsCurriculumAdopt).toBe(false);
     expect(SHARED_PROPOSAL_AUTHORITY_BOUNDARY.removesProposalAuthorityBlocker).toBe(false);
 
-    expect(getRoleCapabilities('dirigente')).toContain('CURRICULUM_ADOPT');
+    expect(getRoleCapabilities('dirigente')).not.toContain('CURRICULUM_ADOPT');
+    expect(canUseCapability('dirigente', 'CURRICULUM_ADOPT', 'authenticated-workspace')).toBe(true);
+    expect(canUseCapability('dirigente', 'CURRICULUM_ADOPT', 'self-declared')).toBe(false);
     for (const role of roles.filter((role) => role !== 'dirigente')) {
-      expect(getRoleCapabilities(role)).not.toContain('CURRICULUM_ADOPT');
+      expect(canUseCapability(role, 'CURRICULUM_ADOPT', 'authenticated-workspace')).toBe(false);
     }
   });
 });
