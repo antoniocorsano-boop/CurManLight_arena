@@ -20,10 +20,15 @@ export interface CurriculumAnalysisScope {
   schoolOrder: FirstCycleSchoolOrder;
 }
 
+export interface CurriculumEvidenceBinding {
+  targetRef: string;
+  evidence: readonly QualifiedSource[];
+}
+
 export interface CurriculumAnalysisInput {
   baseline: CurriculumBaselineRef;
   curriculum: CurriculumMap;
-  evidence: readonly QualifiedSource[];
+  evidenceBindings: readonly CurriculumEvidenceBinding[];
   scope: readonly CurriculumAnalysisScope[];
 }
 
@@ -81,16 +86,16 @@ export interface CurriculumAnalysisResult {
 const LEGACY_DISCIPLINE_ALIASES: Readonly<Record<FirstCycleDisciplineId, readonly string[]>> = {
   ITALIANO: ['italiano'],
   LINGUA_INGLESE: ['inglese', 'lingua_inglese'],
-  SECONDA_LINGUA_COMUNITARIA: ['seconda_lingua', 'seconda_lingua_comunitaria'],
+  SECONDA_LINGUA_COMUNITARIA: ['secondaLingua', 'seconda_lingua', 'seconda_lingua_comunitaria'],
   STORIA: ['storia'],
   GEOGRAFIA: ['geografia'],
   MATEMATICA: ['matematica'],
   TECNOLOGIA: ['tecnologia'],
   SCIENZE: ['scienze'],
   MUSICA: ['musica'],
-  ARTE_E_IMMAGINE: ['arte', 'arte_immagine'],
-  EDUCAZIONE_MOTORIA: ['educazione_motoria', 'motoria'],
-  EDUCAZIONE_FISICA: ['educazione_fisica', 'motoria'],
+  ARTE_E_IMMAGINE: ['arteImmagine', 'arte', 'arte_immagine'],
+  EDUCAZIONE_MOTORIA: ['educazioneFisica', 'educazione_motoria', 'motoria'],
+  EDUCAZIONE_FISICA: ['educazioneFisica', 'educazione_fisica', 'motoria'],
 };
 
 const normalized = (value: string): string => value.replace(/\s+/g, ' ').trim();
@@ -122,6 +127,37 @@ const validateScope = (scope: readonly CurriculumAnalysisScope[]): readonly Curr
     seen.add(targetRef);
     return entry;
   });
+};
+
+const buildEvidenceIndex = (
+  scope: readonly CurriculumAnalysisScope[],
+  bindings: readonly CurriculumEvidenceBinding[],
+): ReadonlyMap<string, readonly string[]> => {
+  if (bindings.length === 0) throw new Error('CURRICULUM_ANALYSIS_EVIDENCE_REQUIRED');
+
+  const scopeTargets = new Set(scope.map(targetRefFor));
+  const seenTargets = new Set<string>();
+  const result = new Map<string, readonly string[]>();
+
+  for (const binding of bindings) {
+    const targetRef = requireText(binding.targetRef, 'EVIDENCE_TARGET_REF');
+    if (!scopeTargets.has(targetRef)) throw new Error(`CURRICULUM_ANALYSIS_EVIDENCE_TARGET_OUT_OF_SCOPE:${targetRef}`);
+    if (seenTargets.has(targetRef)) throw new Error(`CURRICULUM_ANALYSIS_DUPLICATE_EVIDENCE_BINDING:${targetRef}`);
+    seenTargets.add(targetRef);
+    if (binding.evidence.length === 0) throw new Error(`CURRICULUM_ANALYSIS_EMPTY_EVIDENCE_BINDING:${targetRef}`);
+
+    const evidenceSourceIds = [...new Set(binding.evidence.map((source) => requireText(source.sourceId, 'EVIDENCE_SOURCE_ID')))].sort();
+    const evidenceById = new Map(binding.evidence.map((source) => [source.sourceId, source] as const));
+    for (const sourceId of evidenceSourceIds) {
+      const source = evidenceById.get(sourceId);
+      if (!source || !isEligibleEvidence(source)) {
+        throw new Error(`CURRICULUM_ANALYSIS_INELIGIBLE_EVIDENCE:${sourceId}`);
+      }
+    }
+    result.set(targetRef, evidenceSourceIds);
+  }
+
+  return result;
 };
 
 export const getWholeSchoolCurriculumScope = (): readonly CurriculumAnalysisScope[] => {
@@ -192,26 +228,19 @@ export const analyzeCurriculum = (input: CurriculumAnalysisInput): CurriculumAna
   const baselineRef = requireText(input.baseline.baselineRef, 'BASELINE_REF');
   const curriculumVersionRef = requireText(input.baseline.curriculumVersionRef, 'CURRICULUM_VERSION_REF');
   const scopeRef = requireText(input.baseline.scopeRef, 'SCOPE_REF');
+  const validatedScope = validateScope(input.scope);
+  const evidenceByTargetRef = buildEvidenceIndex(validatedScope, input.evidenceBindings);
 
-  if (input.evidence.length === 0) throw new Error('CURRICULUM_ANALYSIS_EVIDENCE_REQUIRED');
-  const evidenceSourceIds = [...new Set(input.evidence.map((source) => requireText(source.sourceId, 'EVIDENCE_SOURCE_ID')))].sort();
-  const evidenceById = new Map(input.evidence.map((source) => [source.sourceId, source] as const));
-  for (const sourceId of evidenceSourceIds) {
-    const source = evidenceById.get(sourceId);
-    if (!source || !isEligibleEvidence(source)) {
-      throw new Error(`CURRICULUM_ANALYSIS_INELIGIBLE_EVIDENCE:${sourceId}`);
-    }
-  }
-
-  const findings = computeCurriculumStructuralFindings(input.curriculum, input.scope);
+  const findings = computeCurriculumStructuralFindings(input.curriculum, validatedScope);
   const observations = findings.map((finding) => ({
     ...finding,
     observationRef: `obs:${finding.findingRef}`,
-    evidenceSourceIds,
+    evidenceSourceIds: evidenceByTargetRef.get(finding.targetRef) ?? [],
     decisionStatus: 'OBSERVATION_ONLY' as const,
   }));
 
-  const actionable = observations.filter((observation) => observation.kind !== 'COVERAGE');
+  const actionable = observations.filter((observation) =>
+    observation.kind !== 'COVERAGE' && observation.evidenceSourceIds.length > 0);
   const issues = actionable.map((observation) => ({
     issueRef: `issue:${observation.observationRef}`,
     observationRef: observation.observationRef,
