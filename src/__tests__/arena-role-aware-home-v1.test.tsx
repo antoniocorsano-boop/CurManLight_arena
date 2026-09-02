@@ -75,7 +75,8 @@ describe('R3 Arena role-aware Home v1', () => {
     const { container } = render(<DashboardView {...props} />);
 
     expect(container.querySelector('[data-referente-control-tower="process-readiness"]')?.getAttribute('data-discipline-coverage')).toBe('available');
-    expect(screen.getByText('Copertura strutturale per disciplina e ordine')).toBeDefined();
+    expect(container.querySelector('[data-referente-control-tower="process-readiness"]')?.getAttribute('data-curriculum-coverage-scope')).toBe('DM221_FIRST_CYCLE_ONLY');
+    expect(screen.getByText('Copertura strutturale del primo ciclo')).toBeDefined();
   });
 
   it('does not turn a locally selected Collegio role into institutional authority', () => {
