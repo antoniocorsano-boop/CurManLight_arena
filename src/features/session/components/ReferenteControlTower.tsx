@@ -41,6 +41,7 @@ export function ReferenteControlTower({ sources, curriculum, onOpenSources, onOp
       aria-labelledby="referente-control-tower-title"
       data-referente-control-tower="process-readiness"
       data-discipline-coverage={snapshot.disciplineCoverageAvailable ? 'available' : 'unavailable'}
+      data-curriculum-coverage-scope={snapshot.curriculumCoverageScope ?? 'unavailable'}
       data-decision-receipt-coverage={snapshot.decisionReceiptCoverageAvailable ? 'available' : 'unavailable'}
     >
       <div className="flex items-start gap-3">
@@ -85,9 +86,9 @@ export function ReferenteControlTower({ sources, curriculum, onOpenSources, onOp
 
       {snapshot.disciplineCoverageAvailable ? (
         <div className="mt-4 rounded-xl border border-slate-200 bg-white p-3" data-referente-discipline-coverage>
-          <strong className="block text-xs font-extrabold text-slate-900">Copertura strutturale per disciplina e ordine</strong>
+          <strong className="block text-xs font-extrabold text-slate-900">Copertura strutturale del primo ciclo</strong>
           <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
-            <MetricCard label="Ambiti" value={snapshot.curriculumTargetTotal ?? '—'} note="Target canonici analizzati" />
+            <MetricCard label="Ambiti" value={snapshot.curriculumTargetTotal ?? '—'} note="Target canonici di primaria e secondaria" />
             <MetricCard label="Coperti" value={snapshot.curriculumCoverageTargets ?? '—'} note="Traguardi e obiettivi presenti" />
             <MetricCard label="Lacune" value={snapshot.curriculumGapTargets ?? '—'} note="Contenuto strutturale assente" />
             <MetricCard label="Da riesaminare" value={(snapshot.curriculumDiscontinuityTargets ?? 0) + (snapshot.curriculumOverlapTargets ?? 0)} note="Parzialità o sovrapposizioni" />
@@ -98,7 +99,7 @@ export function ReferenteControlTower({ sources, curriculum, onOpenSources, onOp
         <div className="mt-4 flex gap-2 rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs leading-5 text-amber-950" data-referente-scope-limit>
           <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
           <div>
-            <strong className="block">Copertura per disciplina: non calcolabile</strong>
+            <strong className="block">Copertura del primo ciclo: non calcolabile</strong>
             <p className="mt-1">{snapshot.scopeNote}</p>
           </div>
         </div>
