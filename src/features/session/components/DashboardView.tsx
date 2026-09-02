@@ -7,7 +7,7 @@ import {
   type ArenaWorkItemSeed,
 } from '../../../domain/institution/workQueue';
 import type { CustomKbDoc } from '../../documents/lib/localKnowledgeStore';
-import type { ProgStatus } from '../types/appViewContracts';
+import type { CurriculumMap, ProgStatus } from '../types/appViewContracts';
 import { ReferenteControlTower } from './ReferenteControlTower';
 
 interface DashboardViewProps {
@@ -17,6 +17,7 @@ interface DashboardViewProps {
   decisions: Record<string, unknown>;
   currentDisciplineProps?: Proposal[];
   customKbDocs?: CustomKbDoc[];
+  localCurriculum?: CurriculumMap;
   wizardStep: number;
   progTitle: string;
   progStatus: ProgStatus;
@@ -208,6 +209,7 @@ export function DashboardView(props: DashboardViewProps) {
       {props.role === 'referente' && (
         <ReferenteControlTower
           sources={props.customKbDocs ?? []}
+          curriculum={props.localCurriculum ?? null}
           onOpenSources={() => props.handleTabSwitch('fonti')}
           onOpenRevision={() => props.handleTabSwitch('revisione')}
         />
