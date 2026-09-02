@@ -9,7 +9,7 @@ export type CanonicalAdoptionReadiness = 'READY_FOR_HUMAN_ADOPTION' | 'BLOCKED' 
 export type CanonicalAdoptionBlockerCode =
   | 'MISSING_DECISION_RECEIPT' | 'NON_ADOPTIVE_DECISION' | 'DECISION_VALIDITY_NOT_VERIFIED'
   | 'WORKSPACE_MISMATCH' | 'PROPOSAL_VERSION_MISMATCH' | 'PROPOSAL_FINGERPRINT_MISMATCH'
-  | 'ADOPTION_BINDING_MISSING' | 'PROPOSAL_SNAPSHOT_MISSING' | 'PROPOSAL_AUTHORITY_UNAVAILABLE'
+  | 'ADOPTION_BINDING_MISSING' | 'PROPOSAL_AUTHORITY_UNAVAILABLE'
   | 'TARGET_NODE_MISMATCH' | 'BASE_CURRICULUM_VERSION_MISMATCH'
   | 'CANONICAL_TARGET_NOT_CURRENT' | 'ALREADY_ADOPTED' | 'ADOPTION_CAPABILITY_UNAVAILABLE'
   | 'AUTHENTICATED_WORKSPACE_REQUIRED';
@@ -74,14 +74,14 @@ export function assessCanonicalAdoption(input: CanonicalAdoptionAssessmentInput)
   }
 
   if (receipt) {
+    if (receipt.sharedProposalAuthorityVersion !== 1) {
+      blockerCodes.push('PROPOSAL_AUTHORITY_UNAVAILABLE');
+      reasons.push('La decisione non è vincolata alla shared proposal authority R7A6.');
+    }
     if (!receipt.adoptionBinding || receipt.adoptionBinding.version !== 2) {
       blockerCodes.push('ADOPTION_BINDING_MISSING');
       reasons.push('La ricevuta decisionale è storica o priva del binding v2 necessario per identificare nodo target e baseline canonica.');
     } else {
-      if (receipt.adoptionBinding.proposalSnapshotVersion !== 1) {
-        blockerCodes.push('PROPOSAL_SNAPSHOT_MISSING');
-        reasons.push('La ricevuta decisionale è precedente a R7A3 o non prova il congelamento server-side del payload canonico completo della proposta.');
-      }
       if (receipt.adoptionBinding.targetNodeRef !== input.targetNodeRef) {
         blockerCodes.push('TARGET_NODE_MISMATCH'); reasons.push('Il nodo target non coincide con quello vincolato dalla decisione istituzionale.');
       }
@@ -90,12 +90,6 @@ export function assessCanonicalAdoption(input: CanonicalAdoptionAssessmentInput)
       }
     }
   }
-
-  // R7A3 proves that the server owns an immutable, structurally complete payload.
-  // It does not yet prove that the proposal version itself came from an independent
-  // shared proposal authority. P3 is still partial, so P6 must remain fail-closed.
-  blockerCodes.push('PROPOSAL_AUTHORITY_UNAVAILABLE');
-  reasons.push('La proposal authority condivisa server-side non è ancora implementata: lo snapshot R7A3 è completo e immutabile, ma non sostituisce l’autorità canonica della proposta.');
 
   if (input.targetCanonicalState !== 'VERIFIED_CURRENT') {
     blockerCodes.push('CANONICAL_TARGET_NOT_CURRENT'); reasons.push('La versione canonica da sostituire non è verificata come corrente.');
@@ -107,7 +101,7 @@ export function assessCanonicalAdoption(input: CanonicalAdoptionAssessmentInput)
     blockerCodes.push('AUTHENTICATED_WORKSPACE_REQUIRED'); reasons.push('L’adozione canonica richiede una membership autenticata nel workspace.');
   }
   if (!canUseCapability(input.actor.role, 'CURRICULUM_ADOPT', input.actor.assurance)) {
-    blockerCodes.push('ADOPTION_CAPABILITY_UNAVAILABLE'); reasons.push('Nessun ruolo attuale possiede ancora la capacità CURRICULUM_ADOPT.');
+    blockerCodes.push('ADOPTION_CAPABILITY_UNAVAILABLE'); reasons.push('Il ruolo corrente non possiede CURRICULUM_ADOPT nel workspace autenticato.');
   }
 
   return { readiness: blockerCodes.length === 0 ? 'READY_FOR_HUMAN_ADOPTION' : 'BLOCKED', blockerCodes, reasons, decisionReceiptRef: receipt?.id, targetCanonicalVersionRef: input.targetCanonicalVersionRef, requiredCapability: 'CURRICULUM_ADOPT', requiresHumanConfirmation: true };

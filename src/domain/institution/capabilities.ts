@@ -94,7 +94,15 @@ export const resolveCapabilityAccess = (
     };
   }
 
-  if (!ROLE_CAPABILITIES[role].includes(capability)) {
+  // R7A7 introduces one execution-only institutional grant without changing
+  // the historical role-default capability set frozen by R7A4. The grant is
+  // valid only for a freshly authenticated dirigente workspace context.
+  const authenticatedAdoptionExecutionGrant =
+    role === 'dirigente' &&
+    capability === 'CURRICULUM_ADOPT' &&
+    assurance === 'authenticated-workspace';
+
+  if (!ROLE_CAPABILITIES[role].includes(capability) && !authenticatedAdoptionExecutionGrant) {
     return {
       allowed: false,
       role,
@@ -126,9 +134,11 @@ export const resolveCapabilityAccess = (
     assurance,
     accessProfile,
     reason:
-      assurance === 'authenticated-workspace'
-        ? 'Capacità consentita al ruolo autenticato nel workspace.'
-        : 'Capacità locale consentita senza attribuire autorità istituzionale.',
+      authenticatedAdoptionExecutionGrant
+        ? 'R7A7 consente al dirigente autenticato di eseguire la promozione canonica già deliberata.'
+        : assurance === 'authenticated-workspace'
+          ? 'Capacità consentita al ruolo autenticato nel workspace.'
+          : 'Capacità locale consentita senza attribuire autorità istituzionale.',
   };
 };
 
