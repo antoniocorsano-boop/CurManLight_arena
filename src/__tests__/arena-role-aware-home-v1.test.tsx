@@ -65,6 +65,19 @@ describe('R3 Arena role-aware Home v1', () => {
     expect(screen.getByRole('button', { name: /Rivedi le proposte/i })).toBeDefined();
   });
 
+  it('feeds the current local curriculum into the Referente structural analysis', () => {
+    const props = baseProps('referente');
+    props.localCurriculum = {
+      tecnologia: {
+        secondaria: { traguardi: ['T1'], obiettivi: ['O1'], evidenze: [] },
+      },
+    } as never;
+    const { container } = render(<DashboardView {...props} />);
+
+    expect(container.querySelector('[data-referente-control-tower="process-readiness"]')?.getAttribute('data-discipline-coverage')).toBe('available');
+    expect(screen.getByText('Copertura strutturale per disciplina e ordine')).toBeDefined();
+  });
+
   it('does not turn a locally selected Collegio role into institutional authority', () => {
     const props = baseProps('collegio');
     props.currentDisciplineProps = [{ id: 'proposal-1' }] as never[];
