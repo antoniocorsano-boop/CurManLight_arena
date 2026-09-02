@@ -10,7 +10,7 @@ describe('R7A9 integrated P6 validation', () => {
     expect(r7a8Migration).toContain('prepare_shared_canonical_candidate_v1');
     expect(r7a8Migration).toContain("p_candidate_canonical_version_ref, 'PREPARED'");
     expect(r7a7Migration).toContain('adopt_shared_canonical_curriculum_v1');
-    expect(r7a7Migration).toContain("v_candidate.status is distinct from 'PREPARED'");
+    expect(r7a7Migration).toContain("v_candidate.status <> 'PREPARED'");
     expect(r7a7Migration).toContain("set status = 'ACTIVE'");
     expect(r7a7Migration).toContain('insert into public.canonical_adoption_receipts');
   });
