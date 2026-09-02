@@ -222,6 +222,17 @@ Command, selected policy tuple, receipt and returned version state must agree ex
 
 For both submission and lifecycle mutation, `clientRequestId` is reserved independently of actor identity within the workspace.
 
+Before any idempotency lookup, reservation, conflict check or persistence, the submitted `clientRequestId` must be validated as the canonical persistence-safe value frozen by R7A4:
+
+- it is a non-empty string after trimming;
+- the submitted value already equals `clientRequestId.trim()`; surrounding spaces, tabs and newlines are rejected rather than normalized;
+- it is exactly representable by PostgreSQL text;
+- U+0000 is rejected anywhere in the value;
+- unpaired UTF-16 high or low surrogates are rejected, while valid surrogate pairs remain allowed;
+- the same validation order applies to both proposal submission and lifecycle mutation.
+
+An invalid `clientRequestId` fails closed before it can participate in lookup, reservation or persistence.
+
 The collision identity is:
 
 `workspaceId + clientRequestId`
@@ -259,13 +270,14 @@ Therefore:
 | closed transition policy | n/a | yes | n/a |
 | receipt derived from policy tuple | n/a | yes | n/a |
 | server-authored audit timestamp | yes | yes | n/a |
+| canonical persistence-safe `clientRequestId` validated before lookup/persistence | fail closed | fail closed | n/a |
 | workspace-reserved request id | yes | yes | n/a |
 | principal bound as immutable operation data | yes | yes | n/a |
 | cross-principal request-id reuse | fail closed | fail closed | n/a |
 | revocation | fail closed | fail closed | fail closed |
 | local institutional fallback | never | never | never |
 
-The executable guard lives in the R7A4 Authority Contract Harness plus the focused identity-closure and scope-binding tests. These guards are part of `npm run test:fast`; Product CI must execute them on the candidate SHA before R7A4 can be promoted.
+The executable guard lives in the R7A4 Authority Contract Harness plus the focused identity-closure, scope-binding and client-request-id persistence tests. These guards are part of `npm run test:fast`; Product CI must execute them on the candidate SHA before R7A4 can be promoted.
 
 ## Relationship to R7A3
 
@@ -316,6 +328,8 @@ R7A5 Shared Proposal Persistence must implement this frozen contract, including:
 - replacement only from `changes-requested` with preserved scope;
 - closed lifecycle policy and fresh transition capability checks;
 - immutable lifecycle receipts;
+- for both submission and lifecycle mutation, `clientRequestId` must be non-empty after trim, must already equal its trimmed value, must be PostgreSQL-text representable, and must reject U+0000 plus unpaired UTF-16 surrogates;
+- that canonical `clientRequestId` validation must run before idempotency lookup, reservation, conflict evaluation or persistence;
 - workspace-reserved request ids with immutable server-principal binding and cross-principal conflict rejection;
 - no local institutional-success fallback.
 
@@ -341,6 +355,7 @@ R7A4 is complete only when review accepts that:
 - shared-head and lifecycle mutations are CAS-protected;
 - lifecycle mutation follows only the closed least-privilege policy and persists coherent receipts;
 - audit timestamps/provenance are server-authored;
+- for both submission and lifecycle mutation, `clientRequestId` is non-empty after trim, already equals its trimmed value, is PostgreSQL-text representable, rejects U+0000 and unpaired UTF-16 surrogates, and is validated before any idempotency lookup/reservation/persistence;
 - request ids are reserved per workspace independently of principal while the original server principal remains bound operation data;
 - cross-principal request-id reuse fails closed;
 - all R7A4 guards execute inside Product CI's fast regression suite;
