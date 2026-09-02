@@ -1,9 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import type { CurriculumMap } from '../features/session/types/appViewContracts';
 import {
+  CURRICULUM_ANALYSIS_CANONICAL_SCOPE,
   analyzeCurriculum,
   computeCurriculumStructuralFindings,
-  getWholeSchoolCurriculumScope,
+  getFirstCycleCurriculumScope,
   type CurriculumAnalysisInput,
 } from '../domain/institution/curriculumAnalysis';
 import { qualifySource } from '../domain/institution/sourceQualification';
@@ -34,6 +35,8 @@ const input = (): CurriculumAnalysisInput => ({
 describe('R7B2 P3 curriculum analysis', () => {
   it('computes coverage from curriculum data instead of accepting pre-classified findings', () => {
     const result = analyzeCurriculum(input());
+    expect(result.canonicalScope).toBe(CURRICULUM_ANALYSIS_CANONICAL_SCOPE);
+    expect(result.excludedSchoolOrders).toEqual(['infanzia']);
     expect(result.observations).toHaveLength(1);
     expect(result.observations[0]).toMatchObject({
       kind: 'COVERAGE',
@@ -46,6 +49,18 @@ describe('R7B2 P3 curriculum analysis', () => {
     expect(result.issues).toEqual([]);
     expect(result.proposalCandidates).toEqual([]);
     expect(result.summary).toMatchObject({ totalTargets: 1, coverageTargets: 1, gapTargets: 0 });
+  });
+
+  it('allows structural analysis with no evidence bindings and keeps findings observation-only', () => {
+    const request = input();
+    request.curriculum = asCurriculum({});
+    request.evidenceBindings = [];
+    const result = analyzeCurriculum(request);
+
+    expect(result.observations).toHaveLength(1);
+    expect(result.observations[0]).toMatchObject({ kind: 'GAP', evidenceSourceIds: [], decisionStatus: 'OBSERVATION_ONLY' });
+    expect(result.issues).toEqual([]);
+    expect(result.proposalCandidates).toEqual([]);
   });
 
   it('computes a gap and creates only non-authoritative review artifacts when target-relevant evidence is explicit', () => {
@@ -157,20 +172,24 @@ describe('R7B2 P3 curriculum analysis', () => {
     expect(() => analyzeCurriculum(request)).toThrow(/DUPLICATE_SCOPE_TARGET/);
   });
 
-  it('defines a deterministic whole-school discipline/order scope from the canonical structure', () => {
-    const scope = getWholeSchoolCurriculumScope();
+  it('defines a deterministic first-cycle discipline/order scope and does not claim infanzia coverage', () => {
+    const scope = getFirstCycleCurriculumScope();
     const identities = scope.map((entry) => `${entry.disciplineId}:${entry.schoolOrder}`);
     expect(scope.length).toBeGreaterThan(0);
     expect(new Set(identities).size).toBe(scope.length);
     expect(identities).toContain('TECNOLOGIA:primaria');
     expect(identities).toContain('TECNOLOGIA:secondaria');
+    expect(CURRICULUM_ANALYSIS_CANONICAL_SCOPE).toBe('DM221_FIRST_CYCLE_ONLY');
   });
 
-  it('classifies P3 as executable and removes all runtime blockers without claiming release/human acceptance', () => {
+  it('classifies P3 as executable only inside the explicit first-cycle R7 scope', () => {
     expect(getArenaProcessContract('P3_CURRICULUM_ANALYSIS').implementationStatus).toBe('IMPLEMENTED');
+    expect(getArenaProcessContract('P3_CURRICULUM_ANALYSIS').label).toMatch(/primo ciclo/i);
     const assessment = assessEndToEndAdoptionFlow();
     expect(assessment.blockingProcessIds).toEqual([]);
     expect(assessment.verdict).toBe('ADOPTION_FLOW_VALIDATED');
+    expect(assessment.curriculumScope).toBe('DM221_FIRST_CYCLE_ONLY');
+    expect(assessment.excludedSchoolOrders).toEqual(['infanzia']);
     expect(assessment.requiresRuntimeRemediation).toBe(false);
     expect(assessment.requiresSameShaReleaseValidation).toBe(true);
     expect(assessment.requiresRepresentativeHumanAcceptance).toBe(true);
