@@ -1,4 +1,10 @@
+import type { CurriculumMap } from '../../features/session/types/appViewContracts';
 import type { DecisionOutcome, RevisionArchive, RevisionProposalStatus } from '../revision/types';
+import {
+  computeCurriculumStructuralFindings,
+  getWholeSchoolCurriculumScope,
+  summarizeCurriculumFindings,
+} from './curriculumAnalysis';
 
 export interface ReferenteSourceSignal {
   authorityStatus: string;
@@ -16,7 +22,12 @@ export interface ReferenteControlTowerSnapshot {
   proposalReadyForDecision: number | null;
   decisionReceiptCoverageAvailable: boolean;
   decisionsRecordedLocal: number;
-  disciplineCoverageAvailable: false;
+  disciplineCoverageAvailable: boolean;
+  curriculumTargetTotal: number | null;
+  curriculumCoverageTargets: number | null;
+  curriculumGapTargets: number | null;
+  curriculumDiscontinuityTargets: number | null;
+  curriculumOverlapTargets: number | null;
   scopeNote: string;
 }
 
@@ -49,15 +60,16 @@ const TERMINAL_DECISION_OUTCOMES = new Set<DecisionOutcome>([
  * still ready merely because the local RevisionArchive has no terminal
  * decision for it.
  *
- * The selector also refuses to calculate curriculum coverage by
- * discipline/order because RevisionProposal does not currently bind those
- * dimensions as canonical mandatory fields. Target labels are not a safe
- * substitute for structured scope.
+ * Curriculum coverage is calculated only when the caller supplies the real
+ * CurriculumMap. The calculation uses the canonical D.M. 221 discipline/order
+ * scope and reports structural presence/gaps only; it never upgrades baseline
+ * authority or infers semantic correctness from labels or free text.
  */
 export function deriveReferenteControlTowerSnapshot(
   sources: readonly ReferenteSourceSignal[],
   archive: RevisionArchive,
   terminalInstitutionalProposalRefs: ReadonlySet<string> | null = null,
+  curriculum: CurriculumMap | null = null,
 ): ReferenteControlTowerSnapshot {
   const acceptedForDecision = archive.proposals.filter((proposal) => proposal.status === 'accepted-for-decision');
   const localTerminalProposalRefs = new Set(
@@ -72,6 +84,10 @@ export function deriveReferenteControlTowerSnapshot(
     ? unresolvedAfterLocal.filter((proposal) => !terminalInstitutionalProposalRefs?.has(proposal.id)).length
     : null;
 
+  const curriculumSummary = curriculum
+    ? summarizeCurriculumFindings(computeCurriculumStructuralFindings(curriculum, getWholeSchoolCurriculumScope()))
+    : null;
+
   return {
     sourceTotal: sources.length,
     sourcePendingVerification: sources.filter((source) => source.authorityStatus !== 'LOCAL_VERIFIED').length,
@@ -83,7 +99,14 @@ export function deriveReferenteControlTowerSnapshot(
     proposalReadyForDecision,
     decisionReceiptCoverageAvailable,
     decisionsRecordedLocal: archive.decisions.filter((decision) => decision.status === 'recorded-local').length,
-    disciplineCoverageAvailable: false,
-    scopeNote: 'Il registro corrente consente una vista di processo su fonti e revisioni, ma non una percentuale affidabile di copertura per disciplina/ordine.',
+    disciplineCoverageAvailable: curriculumSummary !== null,
+    curriculumTargetTotal: curriculumSummary?.totalTargets ?? null,
+    curriculumCoverageTargets: curriculumSummary?.coverageTargets ?? null,
+    curriculumGapTargets: curriculumSummary?.gapTargets ?? null,
+    curriculumDiscontinuityTargets: curriculumSummary?.discontinuityTargets ?? null,
+    curriculumOverlapTargets: curriculumSummary?.overlapTargets ?? null,
+    scopeNote: curriculumSummary
+      ? 'Copertura strutturale calcolata deterministicamente sul perimetro canonico disciplina/ordine. I conteggi non attestano da soli correttezza semantica o adozione istituzionale.'
+      : 'La copertura disciplina/ordine resta indisponibile finché la vista non riceve una CurriculumMap concreta; etichette e proposte non vengono usate come sostituti.',
   };
 }
