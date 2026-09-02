@@ -1,10 +1,12 @@
 import { AlertCircle, ArrowRight, BookOpenCheck, Layers, ShieldCheck } from 'lucide-react';
 import { deriveReferenteControlTowerSnapshot } from '../../../domain/institution/referenteControlTower';
 import { useCurriculumStore } from '../../../store/useCurriculumStore';
+import type { CurriculumMap } from '../types/appViewContracts';
 import type { CustomKbDoc } from '../../documents/lib/localKnowledgeStore';
 
 interface ReferenteControlTowerProps {
   sources: readonly CustomKbDoc[];
+  curriculum: CurriculumMap | null;
   onOpenSources: () => void;
   onOpenRevision: () => void;
 }
@@ -25,9 +27,9 @@ function MetricCard({ label, value, note }: MetricCardProps) {
   );
 }
 
-export function ReferenteControlTower({ sources, onOpenSources, onOpenRevision }: ReferenteControlTowerProps) {
+export function ReferenteControlTower({ sources, curriculum, onOpenSources, onOpenRevision }: ReferenteControlTowerProps) {
   const revisionArchive = useCurriculumStore((state) => state.revisionArchive);
-  const snapshot = deriveReferenteControlTowerSnapshot(sources, revisionArchive);
+  const snapshot = deriveReferenteControlTowerSnapshot(sources, revisionArchive, null, curriculum);
   const decisionReadinessValue = snapshot.proposalReadyForDecision ?? '—';
   const decisionReadinessNote = snapshot.decisionReceiptCoverageAvailable
     ? `${snapshot.decisionsRecordedLocal} decisioni locali registrate`
@@ -38,7 +40,8 @@ export function ReferenteControlTower({ sources, onOpenSources, onOpenRevision }
       className="rounded-2xl border border-indigo-200 bg-indigo-50/40 p-4 sm:p-5"
       aria-labelledby="referente-control-tower-title"
       data-referente-control-tower="process-readiness"
-      data-discipline-coverage="unavailable"
+      data-discipline-coverage={snapshot.disciplineCoverageAvailable ? 'available' : 'unavailable'}
+      data-curriculum-coverage-scope={snapshot.curriculumCoverageScope ?? 'unavailable'}
       data-decision-receipt-coverage={snapshot.decisionReceiptCoverageAvailable ? 'available' : 'unavailable'}
     >
       <div className="flex items-start gap-3">
@@ -81,13 +84,26 @@ export function ReferenteControlTower({ sources, onOpenSources, onOpenRevision }
         </div>
       )}
 
-      <div className="mt-4 flex gap-2 rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs leading-5 text-amber-950" data-referente-scope-limit>
-        <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
-        <div>
-          <strong className="block">Copertura per disciplina: non ancora calcolabile</strong>
-          <p className="mt-1">{snapshot.scopeNote}</p>
+      {snapshot.disciplineCoverageAvailable ? (
+        <div className="mt-4 rounded-xl border border-slate-200 bg-white p-3" data-referente-discipline-coverage>
+          <strong className="block text-xs font-extrabold text-slate-900">Copertura strutturale del primo ciclo</strong>
+          <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
+            <MetricCard label="Ambiti" value={snapshot.curriculumTargetTotal ?? '—'} note="Target canonici di primaria e secondaria" />
+            <MetricCard label="Coperti" value={snapshot.curriculumCoverageTargets ?? '—'} note="Traguardi e obiettivi presenti" />
+            <MetricCard label="Lacune" value={snapshot.curriculumGapTargets ?? '—'} note="Contenuto strutturale assente" />
+            <MetricCard label="Da riesaminare" value={(snapshot.curriculumDiscontinuityTargets ?? 0) + (snapshot.curriculumOverlapTargets ?? 0)} note="Parzialità o sovrapposizioni" />
+          </div>
+          <p className="mt-2 text-xs leading-5 text-slate-600">{snapshot.scopeNote}</p>
         </div>
-      </div>
+      ) : (
+        <div className="mt-4 flex gap-2 rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs leading-5 text-amber-950" data-referente-scope-limit>
+          <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+          <div>
+            <strong className="block">Copertura del primo ciclo: non calcolabile</strong>
+            <p className="mt-1">{snapshot.scopeNote}</p>
+          </div>
+        </div>
+      )}
     </section>
   );
 }
