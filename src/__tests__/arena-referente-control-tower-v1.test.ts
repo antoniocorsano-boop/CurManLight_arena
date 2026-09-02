@@ -83,17 +83,18 @@ describe('R4 Referente Control Tower v1', () => {
     expect(snapshot.decisionReceiptCoverageAvailable).toBe(true);
   });
 
-  it('fails closed on discipline/order coverage rather than inferring scope from labels', () => {
+  it('fails closed on first-cycle discipline/order coverage rather than inferring scope from labels', () => {
     const snapshot = deriveReferenteControlTowerSnapshot([], archive({
       proposals: [{ id: 'p1', status: 'under-review', targetNodeRef: { id: 'node-1', snapshotLabel: 'Tecnologia secondaria' } }] as RevisionArchive['proposals'],
     }));
 
     expect(snapshot.disciplineCoverageAvailable).toBe(false);
+    expect(snapshot.curriculumCoverageScope).toBeNull();
     expect(snapshot.curriculumTargetTotal).toBeNull();
     expect(snapshot.scopeNote).toMatch(/CurriculumMap concreta/i);
   });
 
-  it('computes whole-school discipline/order coverage from explicit curriculum data', () => {
+  it('computes first-cycle discipline/order coverage from explicit curriculum data and discloses the exclusion of infanzia', () => {
     const snapshot = deriveReferenteControlTowerSnapshot(
       [],
       archive(),
@@ -107,9 +108,11 @@ describe('R4 Referente Control Tower v1', () => {
     );
 
     expect(snapshot.disciplineCoverageAvailable).toBe(true);
+    expect(snapshot.curriculumCoverageScope).toBe('DM221_FIRST_CYCLE_ONLY');
     expect(snapshot.curriculumTargetTotal).toBeGreaterThan(2);
     expect(snapshot.curriculumCoverageTargets).toBe(2);
     expect(snapshot.curriculumGapTargets).toBe((snapshot.curriculumTargetTotal ?? 0) - 2);
-    expect(snapshot.scopeNote).toMatch(/deterministicamente/i);
+    expect(snapshot.scopeNote).toMatch(/primo ciclo/i);
+    expect(snapshot.scopeNote).toMatch(/infanzia è esclusa/i);
   });
 });
