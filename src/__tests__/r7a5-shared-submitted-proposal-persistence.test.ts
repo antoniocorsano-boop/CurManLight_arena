@@ -44,14 +44,14 @@ const submitted = {
 } as const;
 
 describe('R7A5 shared submitted proposal persistence', () => {
-  it('maps first shared submission to the authoritative RPC without changing the frozen command', async () => {
+  it('binds first shared submission to the WorkspaceActorContext principal', async () => {
     const rpc = vi.fn().mockResolvedValue({ data: submitted, error: null });
-    const client = { rpc } as unknown as SupabaseClient;
-    const repository = new SupabaseSharedSubmittedProposalRepository(client);
+    const repository = new SupabaseSharedSubmittedProposalRepository({ rpc } as unknown as SupabaseClient);
 
     await expect(repository.submitVersion(context, command)).resolves.toEqual(submitted);
     expect(rpc).toHaveBeenCalledWith('submit_shared_revision_proposal_version_v1', {
       p_workspace_id: command.workspaceId,
+      p_expected_context_user_id: context.membership.userId,
       p_proposal_ref: command.proposalRef,
       p_proposal_version_ref: command.proposalVersionRef,
       p_proposal_version_fingerprint: command.proposalVersionFingerprint,
@@ -65,9 +65,7 @@ describe('R7A5 shared submitted proposal persistence', () => {
 
   it('rejects workspace mismatch before authority RPC execution', async () => {
     const rpc = vi.fn();
-    const client = { rpc } as unknown as SupabaseClient;
-    const repository = new SupabaseSharedSubmittedProposalRepository(client);
-
+    const repository = new SupabaseSharedSubmittedProposalRepository({ rpc } as unknown as SupabaseClient);
     await expect(repository.submitVersion(context, { ...command, workspaceId: '33333333-3333-4333-8333-333333333333' }))
       .rejects.toThrow('workspace autenticato');
     expect(rpc).not.toHaveBeenCalled();
@@ -75,15 +73,19 @@ describe('R7A5 shared submitted proposal persistence', () => {
 
   it('rejects non-canonical request ids before persistence lookup', async () => {
     const rpc = vi.fn();
-    const client = { rpc } as unknown as SupabaseClient;
-    const repository = new SupabaseSharedSubmittedProposalRepository(client);
-
-    await expect(repository.submitVersion(context, { ...command, clientRequestId: ' request-1 ' }))
+    const repository = new SupabaseSharedSubmittedProposalRepository({ rpc } as unknown as SupabaseClient);
+    await expect(repository.submitVersion(context, { ...command, clientRequestId: '\trequest-1' }))
       .rejects.toThrow('clientRequestId non canonico');
     expect(rpc).not.toHaveBeenCalled();
   });
 
-  it('uses only the closed R7A4 lifecycle policy', async () => {
+  it('rejects a submission response authored by a different principal', async () => {
+    const rpc = vi.fn().mockResolvedValue({ data: { ...submitted, submittedByUserId: '33333333-3333-4333-8333-333333333333' }, error: null });
+    const repository = new SupabaseSharedSubmittedProposalRepository({ rpc } as unknown as SupabaseClient);
+    await expect(repository.submitVersion(context, command)).rejects.toThrow('WorkspaceActorContext');
+  });
+
+  it('binds lifecycle transitions to the same context principal', async () => {
     const rpc = vi.fn().mockResolvedValue({
       data: {
         version: { ...submitted, lifecycleState: 'under-review' },
@@ -95,7 +97,7 @@ describe('R7A5 shared submitted proposal persistence', () => {
           fromState: 'submitted',
           toState: 'under-review',
           capabilityUsed: 'REVISION_REVIEW',
-          transitionedByUserId: '33333333-3333-4333-8333-333333333333',
+          transitionedByUserId: context.membership.userId,
           transitionedByRole: 'dipartimento',
           transitionedAt: '2026-09-02T06:10:00.000Z',
           transitionedAtSource: 'server-transaction-clock',
@@ -105,8 +107,7 @@ describe('R7A5 shared submitted proposal persistence', () => {
       },
       error: null,
     });
-    const client = { rpc } as unknown as SupabaseClient;
-    const repository = new SupabaseSharedSubmittedProposalRepository(client);
+    const repository = new SupabaseSharedSubmittedProposalRepository({ rpc } as unknown as SupabaseClient);
 
     await repository.advanceLifecycle(context, {
       workspaceId: command.workspaceId,
@@ -118,8 +119,21 @@ describe('R7A5 shared submitted proposal persistence', () => {
     });
 
     expect(rpc).toHaveBeenCalledWith('advance_shared_revision_proposal_lifecycle_v1', expect.objectContaining({
+      p_expected_context_user_id: context.membership.userId,
       p_expected_lifecycle_state: 'submitted',
       p_next_lifecycle_state: 'under-review',
     }));
+  });
+
+  it('uses principal-bound RPCs for shared reads instead of direct table reads', async () => {
+    const rpc = vi.fn().mockResolvedValue({ data: submitted, error: null });
+    const repository = new SupabaseSharedSubmittedProposalRepository({ rpc } as unknown as SupabaseClient);
+
+    await expect(repository.getCurrentSharedVersion(context, command.workspaceId, command.proposalRef)).resolves.toEqual(submitted);
+    expect(rpc).toHaveBeenCalledWith('get_current_shared_revision_proposal_version_v1', {
+      p_workspace_id: command.workspaceId,
+      p_expected_context_user_id: context.membership.userId,
+      p_proposal_ref: command.proposalRef,
+    });
   });
 });
