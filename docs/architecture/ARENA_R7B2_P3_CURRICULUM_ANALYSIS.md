@@ -1,6 +1,6 @@
 # Arena R7B2 — P3 Curriculum Analysis Runtime
 
-**Status:** IMPLEMENTATION_IN_PROGRESS
+**Status:** IMPLEMENTED_WITH_EXPLICIT_FIRST_CYCLE_SCOPE
 
 ## Scope
 
@@ -52,7 +52,7 @@ The UI labels the section **“Copertura strutturale del primo ciclo”** and st
 
 With P3 marked implemented, all canonical runtime steps P1–P7 classify as executable **inside the declared `DM221_FIRST_CYCLE_ONLY` curriculum scope** and the machine reality gate may return `ADOPTION_FLOW_VALIDATED`.
 
-That verdict is scope-bound. It does **not** claim coverage or completion for infanzia. The validator now exposes both:
+That verdict is scope-bound. It does **not** claim coverage or completion for infanzia. The validator exposes both:
 
 - `curriculumScope = DM221_FIRST_CYCLE_ONLY`;
 - `excludedSchoolOrders = ['infanzia']`.
