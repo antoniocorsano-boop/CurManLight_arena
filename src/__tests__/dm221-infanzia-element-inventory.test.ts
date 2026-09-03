@@ -17,12 +17,13 @@ describe('DM 221/2025 infanzia canonical element inventory', () => {
     expect(DM221_INFANZIA_ELEMENT_INVENTORY.every((item) => item.schoolOrder === 'infanzia')).toBe(true);
   });
 
-  it('registers finality, expected competences and specific objectives for every field', () => {
+  it('registers finality, methodological guidance, expected competences and specific objectives for every field', () => {
     for (const fieldId of Object.keys(DM221_INFANZIA_FIELDS) as Array<keyof typeof DM221_INFANZIA_FIELDS>) {
       const items = getInfanziaInventoryForField(fieldId);
       const counts = DM221_INFANZIA_ELEMENT_COUNTS[fieldId];
 
       expect(items.filter((item) => item.group === 'FIELD_FINALITY')).toHaveLength(1);
+      expect(items.filter((item) => item.group === 'METHODOLOGICAL_GUIDANCE')).toHaveLength(1);
       expect(items.filter((item) => item.group === 'EXPECTED_COMPETENCES')).toHaveLength(counts.expectedCompetences);
       expect(items.filter((item) => item.group === 'SPECIFIC_OBJECTIVES')).toHaveLength(counts.specificObjectives);
     }
@@ -37,7 +38,17 @@ describe('DM 221/2025 infanzia canonical element inventory', () => {
       LA_CONOSCENZA_DEL_MONDO: { expectedCompetences: 5, specificObjectives: 5 },
     });
 
-    expect(DM221_INFANZIA_ELEMENT_INVENTORY).toHaveLength(56);
+    expect(DM221_INFANZIA_ELEMENT_INVENTORY).toHaveLength(61);
+  });
+
+  it('keeps methodological guidance as narrative source material rather than inventing objective bullets', () => {
+    const guidanceItems = DM221_INFANZIA_ELEMENT_INVENTORY.filter(
+      (item) => item.group === 'METHODOLOGICAL_GUIDANCE',
+    );
+
+    expect(guidanceItems).toHaveLength(5);
+    expect(guidanceItems.every((item) => item.elementKind === 'METHODOLOGICAL_GUIDANCE')).toBe(true);
+    expect(guidanceItems.every((item) => item.ordinal === 1)).toBe(true);
   });
 
   it('keeps every located item non-authoritative until human source verification', () => {
