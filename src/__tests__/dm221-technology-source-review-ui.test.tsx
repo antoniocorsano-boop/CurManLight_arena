@@ -1,6 +1,7 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { TechnologySourceReviewTask } from '../features/curriculum/components/TechnologySourceReviewTask';
+import { DM221_2025_SOURCE } from '../domain/curriculum/national/dm2212025';
 
 describe('Technology source review human task', () => {
   beforeEach(() => {
@@ -15,8 +16,10 @@ describe('Technology source review human task', () => {
     expect(screen.getByText('Scheda 1 di 61')).toBeTruthy();
     expect(screen.getByText('0 già controllate')).toBeTruthy();
     expect(screen.getByText('Scuola primaria')).toBeTruthy();
-    expect(screen.getByText(/D\.M\. 221\/2025 · pagina 141/)).toBeTruthy();
-    expect(screen.getByRole('link', { name: 'Apri la fonte ufficiale' })).toBeTruthy();
+    expect(screen.getByText(/D\.M\. 221\/2025 · pagina stampata 141/)).toBeTruthy();
+    const link = screen.getByRole('link', { name: 'Apri la fonte ufficiale' });
+    expect(link.getAttribute('href')).toBe(DM221_2025_SOURCE.officialCurriculumVolume.url);
+    expect(link.getAttribute('href')).not.toContain('#page=');
     expect(screen.getByLabelText('Testo che leggi nella fonte')).toBeTruthy();
   });
 
