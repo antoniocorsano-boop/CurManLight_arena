@@ -108,7 +108,11 @@ A node may be labeled `NATIONAL_PRESCRIPTIVE` only when all of the following are
 4. that element was verified by a person;
 5. `canonicalTextStatus = HUMAN_VERIFIED_SOURCE_TEXT`;
 6. the source element belongs to the same school order;
-7. the verified source-text fingerprint is identical to the node text fingerprint.
+7. the source element belongs to the **same canonical national segment** as the operational target;
+8. the verified source-text fingerprint is identical to the node text fingerprint.
+
+The exact segment constraint is mandatory: a verified element from Italiano cannot authorize a
+Tecnologia node merely because both belong to `secondaria`.
 
 This closes the architectural gap where a legacy `traguardo` or `obiettivo` could otherwise be
 projected downstream as `NATIONAL_PRESCRIPTIVE` solely because it occupied a legacy curriculum
@@ -184,6 +188,7 @@ independent and can be integrated without making #174 authoritative.
 - native infanzia field target;
 - rejection of infanzia discipline projection;
 - fail-closed national source verification/fingerprint matching;
+- rejection of cross-discipline national source binding;
 - rejection of authoritative legacy projection;
 - authority/semantic separation;
 - graph/version integrity;
