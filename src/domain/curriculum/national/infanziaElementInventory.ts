@@ -55,10 +55,11 @@ function createItems(
   const field = DM221_INFANZIA_FIELDS[fieldId];
   return Array.from({ length: count }, (_, index) => {
     const ordinal = index + 1;
-    const slug = fieldId.toLowerCase().replaceAll('_', '-');
+    const slug = fieldId.toLowerCase().replace(/_/g, '-');
+    const groupSlug = group.toLowerCase().replace(/_/g, '-');
     const narrativeSection = group === 'FIELD_FINALITY' || group === 'METHODOLOGICAL_GUIDANCE';
     return {
-      elementId: `dm221-infanzia-${slug}-${group.toLowerCase().replaceAll('_', '-')}-${String(ordinal).padStart(2, '0')}`,
+      elementId: `dm221-infanzia-${slug}-${groupSlug}-${String(ordinal).padStart(2, '0')}`,
       segmentId: field.id,
       elementKind: elementKindFor(group),
       schoolOrder: 'infanzia',
