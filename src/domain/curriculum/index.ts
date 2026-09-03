@@ -305,3 +305,11 @@ export {
   buildTechnologyOperationalPilot,
   buildTechnologyPlanningHandoff,
 } from './technology/technologyOperationalPilot';
+
+// ─── Arena R7C3 P3-v2 semantic analysis ─────────────────────────────────────
+
+export type { TechnologySemanticAnalysisPackage } from './technology/technologySemanticAnalysis';
+export {
+  DM221_LOWER_SECONDARY_TECHNOLOGY_ELEMENT_INVENTORY,
+  analyzeTechnologySemanticCoverage,
+} from './technology/technologySemanticAnalysis';

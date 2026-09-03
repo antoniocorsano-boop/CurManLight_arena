@@ -15,3 +15,4 @@ export * from './workQueue';
 export * from './observerReadOnly';
 export * from './canonicalAdoptionContract';
 export * from './endToEndAdoptionValidation';
+export * from './curriculumSemanticAnalysis';
