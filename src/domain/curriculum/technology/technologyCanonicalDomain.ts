@@ -49,10 +49,13 @@ function deterministicMetadata(
   now: string,
 ): EntityMetadata {
   const id = generateDeterministicId(seed);
+  // I validator CML-633B correnti accettano timestamp canonici UTC/Z.
+  // Normalizziamo qui qualunque ISO valido con offset senza cambiare il contratto globale.
+  const canonicalNow = new Date(now).toISOString();
   return {
     id,
-    createdAt: now,
-    updatedAt: now,
+    createdAt: canonicalNow,
+    updatedAt: canonicalNow,
     origin,
     schemaVersion: CURRENT_SCHEMA_VERSION,
   };
