@@ -1,0 +1,101 @@
+{
+  "schemaVersion": "arena-r7c5b2a-language-element-inventory-v1",
+  "workItem": "R7C5B2A_LANGUAGE_ELEMENT_INVENTORY",
+  "state": "PARTIAL_STRUCTURAL_INVENTORY_FAIL_CLOSED",
+  "base": {
+    "r7c5b1Head": "e368684b53d958cb0d920533891eb4a18e5fa8ce",
+    "r7c5aHead": "5b49e7b044f6e1410c63d9f74a999bd9300cfb1b"
+  },
+  "source": {
+    "publication": "Indicazioni nazionali per il curricolo della scuola dell’infanzia e del primo ciclo d’istruzione",
+    "publisher": "Ministero dell’Istruzione e del Merito",
+    "printedAt": "2026-03",
+    "pageNumbering": "PRINTED_PAGE"
+  },
+  "languageInventories": {
+    "ITALIANO": {
+      "elements": 36,
+      "pages": "68-79",
+      "groups": {
+        "primaryExpectedCompetences": 5,
+        "primaryGrade3Objectives": 9,
+        "primaryGrade5Objectives": 6,
+        "primaryKnowledgeBlocks": 2,
+        "lowerSecondaryExpectedCompetences": 5,
+        "lowerSecondaryGrade3Objectives": 7,
+        "lowerSecondaryKnowledgeBlocks": 2
+      }
+    },
+    "LEL": {
+      "elements": 21,
+      "pages": "80-82",
+      "scopeKind": "CONDITIONAL_OFFERING",
+      "groups": {
+        "lowerSecondaryExpectedCompetences": 5,
+        "lowerSecondaryGrade3Objectives": 15,
+        "lowerSecondaryKnowledgeBlocks": 1
+      }
+    },
+    "LINGUA_INGLESE": {
+      "elements": 51,
+      "pages": "83-90",
+      "groups": {
+        "primaryExpectedCompetences": 5,
+        "primaryGrade3Objectives": 10,
+        "primaryGrade5Objectives": 12,
+        "primaryKnowledgeBlocks": 1,
+        "lowerSecondaryExpectedCompetences": 5,
+        "lowerSecondaryGrade3Objectives": 17,
+        "lowerSecondaryKnowledgeBlocks": 1
+      }
+    },
+    "SECONDA_LINGUA_COMUNITARIA": {
+      "elements": 30,
+      "pages": "91-95",
+      "groups": {
+        "lowerSecondaryExpectedCompetences": 6,
+        "lowerSecondaryObjectives": 13,
+        "lowerSecondaryKnowledge": 11
+      },
+      "knowledgeBreakdown": {
+        "generalTitledBlocks": 5,
+        "frenchSpecificBullets": 2,
+        "spanishSpecificBullets": 2,
+        "germanSpecificBullets": 2
+      }
+    }
+  },
+  "ledger": {
+    "entries": 22,
+    "countVerifiedEntries": 11,
+    "countRequiredEntries": 11,
+    "verifiedStructuralElementCount": 261,
+    "newlyVerifiedStructuralElementCount": 138,
+    "guessedCountsAllowed": false
+  },
+  "pendingCountSections": [
+    "INFANZIA_GENERAL_FRAMEWORK",
+    "STORIA",
+    "GEOGRAFIA",
+    "STEM",
+    "MATEMATICA",
+    "SCIENZE",
+    "MUSICA",
+    "STRUMENTO_MUSICALE",
+    "ARTE_E_IMMAGINE",
+    "EDUCAZIONE_MOTORIA",
+    "EDUCAZIONE_FISICA"
+  ],
+  "authorityInvariants": {
+    "humanSourceTextVerified": false,
+    "sourceVerifiedClaimed": false,
+    "nationalPrescriptiveClaimed": false,
+    "automaticInstituteNationalMapping": false,
+    "runtimeMutation": false,
+    "persistenceMutation": false,
+    "p3Mutation": false,
+    "p7Mutation": false,
+    "institutionalAdoptionClaimed": false
+  },
+  "nextWorkItem": "R7C5B2B_STEM_HUMANITIES_SCIENCE_COUNTS"
+}
