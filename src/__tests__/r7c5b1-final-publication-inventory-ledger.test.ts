@@ -7,13 +7,14 @@ import {
   getVerifiedFinalPublicationInventoryCount,
 } from '../domain/curriculum/national/finalPublicationElementInventoryLedger';
 import { DM221_LANGUAGE_ELEMENT_COUNTS } from '../domain/curriculum/national/languageElementInventory';
+import { DM221_R7C5B2B_ELEMENT_COUNTS } from '../domain/curriculum/national/r7c5b2bElementInventory';
 import { DM221_TECHNOLOGY_ELEMENT_INVENTORY } from '../domain/curriculum/national/technologyElementInventory';
 
 describe('R7C5 final-publication element inventory ledger', () => {
   it('records verified counts only where concrete structural inventories exist', () => {
     expect(DM221_FINAL_PUBLICATION_ELEMENT_INVENTORY_LEDGER).toHaveLength(22);
-    expect(getVerifiedFinalPublicationInventoryCount()).toBe(261);
-    expect(getPendingFinalPublicationInventoryEntries()).toHaveLength(11);
+    expect(getVerifiedFinalPublicationInventoryCount()).toBe(634);
+    expect(getPendingFinalPublicationInventoryEntries()).toHaveLength(6);
     expect(() => assertNoGuessedFinalPublicationCounts()).not.toThrow();
     expect(() => assertVerifiedInventoryBackedByConcreteItems()).not.toThrow();
   });
@@ -46,6 +47,30 @@ describe('R7C5 final-publication element inventory ledger', () => {
     expect(
       DM221_FINAL_PUBLICATION_ELEMENT_INVENTORY_LEDGER.find((entry) => entry.segmentId === 'dm221-disc-seconda-lingua'),
     ).toMatchObject({ countStatus: 'COUNT_VERIFIED', elementCount: 30 });
+  });
+
+  it('records R7C5B2B humanities, STEM, mathematics and science counts from concrete inventories', () => {
+    expect(DM221_R7C5B2B_ELEMENT_COUNTS).toEqual({
+      STORIA: 93,
+      GEOGRAFIA: 81,
+      STEM: 8,
+      MATEMATICA: 78,
+      SCIENZE: 113,
+    });
+
+    const expected = [
+      ['dm221-disc-storia', 93],
+      ['dm221-disc-geografia', 81],
+      ['dm221-framework-stem', 8],
+      ['dm221-disc-matematica', 78],
+      ['dm221-disc-scienze', 113],
+    ] as const;
+
+    for (const [segmentId, elementCount] of expected) {
+      expect(
+        DM221_FINAL_PUBLICATION_ELEMENT_INVENTORY_LEDGER.find((entry) => entry.segmentId === segmentId),
+      ).toMatchObject({ countStatus: 'COUNT_VERIFIED', elementCount, humanSourceTextVerified: false });
+    }
   });
 
   it('revalidates Technology as 61 structural elements on the final publication', () => {
@@ -86,7 +111,7 @@ describe('R7C5 final-publication element inventory ledger', () => {
       DM221_FINAL_PUBLICATION_ELEMENT_INVENTORY_LEDGER.find((entry) => entry.segmentId === 'dm221-offering-strumento-musicale')?.scopeKind,
     ).toBe('CONDITIONAL_OFFERING');
     expect(
-      DM221_FINAL_PUBLICATION_ELEMENT_INVENTORY_LEDGER.find((entry) => entry.segmentId === 'dm221-framework-stem')?.scopeKind,
-    ).toBe('CROSS_DISCIPLINARY_FRAMEWORK');
+      DM221_FINAL_PUBLICATION_ELEMENT_INVENTORY_LEDGER.find((entry) => entry.segmentId === 'dm221-framework-stem'),
+    ).toMatchObject({ scopeKind: 'CROSS_DISCIPLINARY_FRAMEWORK', countStatus: 'COUNT_VERIFIED', elementCount: 8 });
   });
 });
