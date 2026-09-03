@@ -74,5 +74,34 @@
     "CURRICOLO_VERTICALE_ARENA_SOURCE_ITEMS_v3.csv": "2ba092cedb7c70557e51c42ae0583246fa11403dd1756e7a2fdd49c009958cd6",
     "ARENA_CURRICOLO_VERTICALE_SOURCE_RECONSTRUCTION_v3.md": "a2c3fa642f23589b4eb9f79a916ece12efbdaa8a9b24a4c64a1d522b4b28c107"
   },
+  "persistenceArchive": {
+    "provider": "GOOGLE_DRIVE_PRIVATE",
+    "rootFolder": "Arena — Archivio artefatti",
+    "artifactFolder": "Curricolo verticale — source reconstruction v3 — 2026-09-03",
+    "archivedAt": "2026-09-03T15:31:50Z",
+    "integrityRule": "MATCH_SHA256_AND_EXPECTED_SIZE_BEFORE_REUSE",
+    "copies": {
+      "ARENA_CURRICOLO_VERTICALE_SOURCE_RECONSTRUCTION_v3.xlsx": {
+        "sha256": "94fd82e4460f42c5b15395b204553d41be4462f342f37b74a121ed61f1690627",
+        "expectedBytes": 286302
+      },
+      "CURRICOLO_VERTICALE_ARENA_SOURCE_RECONSTRUCTION_v3.json": {
+        "sha256": "ce1668c6155831d195fd8579562506138aaac3d5772e752e2f0957b0fe416080",
+        "expectedBytes": 2022247
+      },
+      "CURRICOLO_VERTICALE_ARENA_SOURCE_BLOCKS_v3.csv": {
+        "sha256": "eb74d038d945c34702afb5d5f72cf416bba89df403f363c8b1af0de4e497cd84",
+        "expectedBytes": 303511
+      },
+      "CURRICOLO_VERTICALE_ARENA_SOURCE_ITEMS_v3.csv": {
+        "sha256": "2ba092cedb7c70557e51c42ae0583246fa11403dd1756e7a2fdd49c009958cd6",
+        "expectedBytes": 325322
+      },
+      "ARENA_CURRICOLO_VERTICALE_SOURCE_RECONSTRUCTION_v3.md": {
+        "sha256": "a2c3fa642f23589b4eb9f79a916ece12efbdaa8a9b24a4c64a1d522b4b28c107",
+        "expectedBytes": 2646
+      }
+    }
+  },
   "nextWorkItem": "R7C5_COMPLETE_IN2025_ACQUISITION"
 }
