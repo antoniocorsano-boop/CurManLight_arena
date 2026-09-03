@@ -31,6 +31,12 @@ export const DM221_2025_SOURCE = {
     printedAt: '2026-03',
     pageNumbering: 'PRINTED_PAGE',
     url: 'https://www.mim.gov.it/documents/20182/10554370/curricolo_web.pdf/f91c31a0-5ed4-65f3-bfea-fb49adaba55f?t=1773224873548&version=1.0',
+    contentFingerprint: {
+      algorithm: 'SHA-256',
+      status: 'REQUIRED',
+      sha256: null,
+      note: 'L’impronta canonica delle bytes del PDF finale non è ancora acquisita. Nessun gate NATIONAL_PRESCRIPTIVE può considerare soddisfatto il binding crittografico finché sha256 resta null.',
+    },
   },
   replaces: 'D.M. 16 novembre 2012, n. 254',
 } as const;
