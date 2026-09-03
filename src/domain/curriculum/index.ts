@@ -243,6 +243,21 @@ export {
 } from './technology/technologyInstitutionalDraft';
 
 export type {
+  TechnologyMethodologyEntry,
+  TechnologyCrossCurricularEntry,
+  TechnologyAssessmentEntry,
+} from './technology/technologyInstitutionalCompanion';
+
+export {
+  TECHNOLOGY_INSTITUTIONAL_GUIDING_PRINCIPLE,
+  TECHNOLOGY_INSTITUTIONAL_METHODOLOGIES,
+  TECHNOLOGY_INSTITUTIONAL_CROSS_CURRICULAR,
+  TECHNOLOGY_INSTITUTIONAL_ASSESSMENT_PRINCIPLE,
+  TECHNOLOGY_INSTITUTIONAL_ASSESSMENT,
+  TECHNOLOGY_INSTITUTIONAL_GOVERNANCE_RULES,
+} from './technology/technologyInstitutionalCompanion';
+
+export type {
   TechnologyArtifactCode,
   TechnologyArtifactKind,
   TechnologyArtifactOperationalStatus,
@@ -255,6 +270,16 @@ export {
   buildTechnologyWorkingArtifactGraph,
   canArtifactBeAdopted,
 } from './technology/technologyArtifacts';
+
+export type {
+  TechnologyArtifactFieldGroup,
+  TechnologyArtifactTemplateSchema,
+} from './technology/technologyArtifactSchemas';
+
+export {
+  TECHNOLOGY_ARTIFACT_TEMPLATE_SCHEMAS,
+  getTechnologyArtifactTemplateSchema,
+} from './technology/technologyArtifactSchemas';
 
 export type {
   TechnologyGradeProgressionEntry,
