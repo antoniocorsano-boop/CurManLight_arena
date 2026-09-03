@@ -2,6 +2,7 @@ import { INSTITUTE_CURRICULUM_SOURCE_RECONSTRUCTION_V3, countInstituteSourceRevi
 import { DM221_FINAL_PUBLICATION_STRUCTURAL_ITEMS } from '../national/finalPublicationHumanVerification';
 import { DM221_2025_SOURCE } from '../national/dm2212025';
 import { CURRICULUM_PERSISTENCE_MODE, type CurriculumPersistenceMode } from './compatibilityMode';
+import { R7C6B_MIGRATION_SAFETY_CAPABILITY } from './migrationSafetyRehearsal';
 
 export const R7C6A_EXPECTED_NATIONAL_ELEMENT_COUNT = 868 as const;
 
@@ -16,6 +17,7 @@ export type CurriculumMigrationReadinessBlocker =
   | 'BACKUP_GATE_NOT_PROVEN'
   | 'ROLLBACK_GATE_NOT_PROVEN'
   | 'DETERMINISTIC_COMPARISON_NOT_PROVEN'
+  | 'PRODUCTION_DATA_MIGRATION_REHEARSAL_NOT_PROVEN'
   | 'HUMAN_VALIDATION_NOT_PROVEN';
 
 export interface CurriculumMigrationReadinessEvidence {
@@ -27,9 +29,12 @@ export interface CurriculumMigrationReadinessEvidence {
   instituteSourceReconstructed: boolean;
   instituteSourceReviewBlockerCount: number;
   instituteHumanSemanticReviewComplete: boolean;
+  /** Capability proofs are validated by isolated, deterministic R7C6B rehearsals. */
   backupGateProven: boolean;
   rollbackGateProven: boolean;
   deterministicComparisonProven: boolean;
+  /** Must remain separate from capability proof: this refers to the actual local legacy dataset. */
+  productionDatasetMigrationRehearsalProven: boolean;
   humanValidationProven: boolean;
 }
 
@@ -73,6 +78,9 @@ export function assessCurriculumMigrationReadiness(
   if (!evidence.backupGateProven) blockers.push('BACKUP_GATE_NOT_PROVEN');
   if (!evidence.rollbackGateProven) blockers.push('ROLLBACK_GATE_NOT_PROVEN');
   if (!evidence.deterministicComparisonProven) blockers.push('DETERMINISTIC_COMPARISON_NOT_PROVEN');
+  if (!evidence.productionDatasetMigrationRehearsalProven) {
+    blockers.push('PRODUCTION_DATA_MIGRATION_REHEARSAL_NOT_PROVEN');
+  }
   if (!evidence.humanValidationProven) blockers.push('HUMAN_VALIDATION_NOT_PROVEN');
 
   const transitionAuthorized = blockers.length === 0;
@@ -97,9 +105,12 @@ export const CURRENT_R7C6A_MIGRATION_EVIDENCE: CurriculumMigrationReadinessEvide
   instituteSourceReviewBlockerCount: countInstituteSourceReviewBlockers(),
   instituteHumanSemanticReviewComplete:
     INSTITUTE_CURRICULUM_SOURCE_RECONSTRUCTION_V3.humanSemanticReviewComplete,
-  backupGateProven: false,
-  rollbackGateProven: false,
-  deterministicComparisonProven: false,
+  backupGateProven: R7C6B_MIGRATION_SAFETY_CAPABILITY.backupGateProven,
+  rollbackGateProven: R7C6B_MIGRATION_SAFETY_CAPABILITY.rollbackGateProven,
+  deterministicComparisonProven:
+    R7C6B_MIGRATION_SAFETY_CAPABILITY.deterministicComparisonProven,
+  productionDatasetMigrationRehearsalProven:
+    R7C6B_MIGRATION_SAFETY_CAPABILITY.productionDatasetRehearsalProven,
   humanValidationProven: false,
 };
 

@@ -5,6 +5,7 @@ export * from './errors';
 export * from './legacyAdapters';
 export * from './migration';
 export * from './migrationReadiness';
+export * from './migrationSafetyRehearsal';
 export * from './records';
 export * from './repositories';
 export * from './rollback';
