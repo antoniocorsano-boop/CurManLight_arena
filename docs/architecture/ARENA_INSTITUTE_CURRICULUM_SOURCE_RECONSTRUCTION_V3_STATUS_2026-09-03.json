@@ -1,0 +1,107 @@
+{
+  "schemaVersion": "arena-institute-curriculum-source-reconstruction-v3",
+  "workItem": "R7C4_INSTITUTE_CURRICULUM_SOURCE_RECONSTRUCTION_V3",
+  "state": "SOURCE_RECONSTRUCTED_AWAITING_NATIONAL_SEMANTIC_REVIEW",
+  "source": {
+    "file": "CURRICOLO VERTICALE .docx",
+    "sha256": "187bc12a771a29331c0d6638abe9e74788a2554af2735e3b9f43321d8f2ae57b",
+    "pages": 89,
+    "authority": "LOCAL_WORKING",
+    "semanticStatus": "UNASSESSED"
+  },
+  "base": {
+    "auditPr": 181,
+    "auditHead": "693113fd28e6466a663cf6150209a96e22f29882",
+    "r7c4Head": "a20b062e49d972fff083d0d5c6d2f12635c81ecc"
+  },
+  "extraction": {
+    "tables": 37,
+    "physicalOoxmlCells": 900,
+    "vMergeContinuations": 225,
+    "semanticAnchorCells": 675,
+    "curriculumPresentations": 32,
+    "curriculumSemanticBlocks": 554,
+    "derivedSourceItems": 741,
+    "canonicalTargetOrderIdentities": 27,
+    "disciplineRationaleAssociations": 13,
+    "roleResolution": "OOXML_TABLE_GRID_WIDTH_WEIGHTED_SEMANTIC_BAND",
+    "phantomGridColumnsTreatedAsSemanticCrossings": false,
+    "lowConfidenceFinalRoleAssignmentsBelow095": 0
+  },
+  "presentationStatus": {
+    "SOURCE_READY_FOR_SEMANTIC_REVIEW": 27,
+    "BLOCKED_SOURCE_DEFECT": 3,
+    "BLOCKED_HEADER_REPAIR": 1,
+    "REVIEW_REQUIRED_IDENTITY_LABEL": 1
+  },
+  "canonicalIdentityRules": {
+    "infanzia": "FIELD_OF_EXPERIENCE_NATIVE",
+    "infanziaDisciplineLabels": "VERTICAL_LINK_ONLY",
+    "frenchSourceVariant": {
+      "sourceLabel": "FRANCESE",
+      "canonicalTargetId": "SECONDA_LINGUA_COMUNITARIA",
+      "canonicalSegmentId": "dm221-disc-seconda-lingua"
+    },
+    "latin": {
+      "sourceLabel": "LATINO",
+      "targetKind": "SPECIAL_SEGMENT",
+      "canonicalTargetId": "LEL",
+      "canonicalSegmentId": "dm221-offering-lel"
+    },
+    "physicalEducation": {
+      "primary": "EDUCAZIONE_MOTORIA",
+      "secondary": "EDUCAZIONE_FISICA"
+    }
+  },
+  "sourceRoleCorrections": [
+    "SEVEN_LOGICAL_MIXED_CELLS_RESOLVED_AS_CONOSCENZE_BY_ACTUAL_GRID_WIDTH",
+    "MATEMATICA_SECONDARIA_CLASS_END_ROW_CLASSIFIED_AS_SCOPE_NOT_COMPETENZA"
+  ],
+  "authorityInvariants": {
+    "runtimeMutation": false,
+    "persistenceMutation": false,
+    "p3Mutation": false,
+    "p7Mutation": false,
+    "institutionalAdoptionClaimed": false,
+    "automaticCanonicalPromotion": false,
+    "automaticNationalAttribution": false,
+    "nationalPrescriptiveRequiresVerifiedElementBinding": true
+  },
+  "externalArtifacts": {
+    "ARENA_CURRICOLO_VERTICALE_SOURCE_RECONSTRUCTION_v3.xlsx": "94fd82e4460f42c5b15395b204553d41be4462f342f37b74a121ed61f1690627",
+    "CURRICOLO_VERTICALE_ARENA_SOURCE_RECONSTRUCTION_v3.json": "ce1668c6155831d195fd8579562506138aaac3d5772e752e2f0957b0fe416080",
+    "CURRICOLO_VERTICALE_ARENA_SOURCE_BLOCKS_v3.csv": "eb74d038d945c34702afb5d5f72cf416bba89df403f363c8b1af0de4e497cd84",
+    "CURRICOLO_VERTICALE_ARENA_SOURCE_ITEMS_v3.csv": "2ba092cedb7c70557e51c42ae0583246fa11403dd1756e7a2fdd49c009958cd6",
+    "ARENA_CURRICOLO_VERTICALE_SOURCE_RECONSTRUCTION_v3.md": "a2c3fa642f23589b4eb9f79a916ece12efbdaa8a9b24a4c64a1d522b4b28c107"
+  },
+  "persistenceArchive": {
+    "provider": "GOOGLE_DRIVE_PRIVATE",
+    "rootFolder": "Arena — Archivio artefatti",
+    "artifactFolder": "Curricolo verticale — source reconstruction v3 — 2026-09-03",
+    "archivedAt": "2026-09-03T15:31:50Z",
+    "integrityRule": "MATCH_SHA256_AND_EXPECTED_SIZE_BEFORE_REUSE",
+    "copies": {
+      "ARENA_CURRICOLO_VERTICALE_SOURCE_RECONSTRUCTION_v3.xlsx": {
+        "sha256": "94fd82e4460f42c5b15395b204553d41be4462f342f37b74a121ed61f1690627",
+        "expectedBytes": 286302
+      },
+      "CURRICOLO_VERTICALE_ARENA_SOURCE_RECONSTRUCTION_v3.json": {
+        "sha256": "ce1668c6155831d195fd8579562506138aaac3d5772e752e2f0957b0fe416080",
+        "expectedBytes": 2022247
+      },
+      "CURRICOLO_VERTICALE_ARENA_SOURCE_BLOCKS_v3.csv": {
+        "sha256": "eb74d038d945c34702afb5d5f72cf416bba89df403f363c8b1af0de4e497cd84",
+        "expectedBytes": 303511
+      },
+      "CURRICOLO_VERTICALE_ARENA_SOURCE_ITEMS_v3.csv": {
+        "sha256": "2ba092cedb7c70557e51c42ae0583246fa11403dd1756e7a2fdd49c009958cd6",
+        "expectedBytes": 325322
+      },
+      "ARENA_CURRICOLO_VERTICALE_SOURCE_RECONSTRUCTION_v3.md": {
+        "sha256": "a2c3fa642f23589b4eb9f79a916ece12efbdaa8a9b24a4c64a1d522b4b28c107",
+        "expectedBytes": 2646
+      }
+    }
+  },
+  "nextWorkItem": "R7C5_COMPLETE_IN2025_ACQUISITION"
+}
