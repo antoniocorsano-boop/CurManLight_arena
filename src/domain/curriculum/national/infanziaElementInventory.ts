@@ -4,6 +4,7 @@ import { DM221_2025_SOURCE_ID } from './dm2212025';
 
 export type InfanziaElementGroup =
   | 'FIELD_FINALITY'
+  | 'METHODOLOGICAL_GUIDANCE'
   | 'EXPECTED_COMPETENCES'
   | 'SPECIFIC_OBJECTIVES';
 
@@ -20,8 +21,9 @@ interface FieldGroupCounts {
 
 /**
  * Inventario strutturale ricavato dall'allegato al D.M. 221/2025.
- * Registra il numero degli elementi e la loro posizione logica nella fonte,
- * senza copiare o promuovere automaticamente il testo normativo.
+ * Registra il numero degli elementi discreti e la posizione logica delle
+ * sezioni narrative nella fonte, senza copiare o promuovere automaticamente
+ * il testo normativo.
  */
 export const DM221_INFANZIA_ELEMENT_COUNTS: Readonly<Record<InfanziaFieldId, FieldGroupCounts>> = {
   IL_SE_E_L_ALTRO: { expectedCompetences: 4, specificObjectives: 6 },
@@ -33,12 +35,14 @@ export const DM221_INFANZIA_ELEMENT_COUNTS: Readonly<Record<InfanziaFieldId, Fie
 
 function elementKindFor(group: InfanziaElementGroup): NationalCurriculumElementKind {
   if (group === 'FIELD_FINALITY') return 'FINALITY';
+  if (group === 'METHODOLOGICAL_GUIDANCE') return 'METHODOLOGICAL_GUIDANCE';
   if (group === 'EXPECTED_COMPETENCES') return 'EXPECTED_COMPETENCE';
   return 'LEARNING_OBJECTIVE';
 }
 
 function sourceSection(fieldLabel: string, group: InfanziaElementGroup): string {
   if (group === 'FIELD_FINALITY') return `Campo di esperienza — ${fieldLabel} — Finalità`;
+  if (group === 'METHODOLOGICAL_GUIDANCE') return `Campo di esperienza — ${fieldLabel} — suggerimenti metodologici nel quadro aperto del campo`;
   if (group === 'EXPECTED_COMPETENCES') return `Campo di esperienza — ${fieldLabel} — Competenze attese`;
   return `Campo di esperienza — ${fieldLabel} — Obiettivi specifici`;
 }
@@ -52,6 +56,7 @@ function createItems(
   return Array.from({ length: count }, (_, index) => {
     const ordinal = index + 1;
     const slug = fieldId.toLowerCase().replaceAll('_', '-');
+    const narrativeSection = group === 'FIELD_FINALITY' || group === 'METHODOLOGICAL_GUIDANCE';
     return {
       elementId: `dm221-infanzia-${slug}-${group.toLowerCase().replaceAll('_', '-')}-${String(ordinal).padStart(2, '0')}`,
       segmentId: field.id,
@@ -60,10 +65,9 @@ function createItems(
       sourceLocator: {
         sourceId: DM221_2025_SOURCE_ID,
         section: sourceSection(field.label, group),
-        note:
-          group === 'FIELD_FINALITY'
-            ? 'Sezione Finalità del campo di esperienza; testo non importato in questa tranche.'
-            : `Elemento n. ${ordinal} del gruppo ${group}; testo non importato in questa tranche.`,
+        note: narrativeSection
+          ? 'Sezione narrativa del campo di esperienza; testo non importato in questa tranche.'
+          : `Elemento n. ${ordinal} del gruppo ${group}; testo non importato in questa tranche.`,
       },
       sourceBindingStatus: 'SOURCE_LOCATED',
       verifiedByHuman: false,
@@ -72,7 +76,9 @@ function createItems(
       group,
       ordinal,
       notes:
-        'Inventario strutturale derivato dalla fonte ufficiale. Il testo resta non canonico finché non viene verificato da una persona e promosso a HUMAN_VERIFIED_SOURCE_TEXT.',
+        group === 'METHODOLOGICAL_GUIDANCE'
+          ? 'Le Indicazioni dichiarano suggerimenti metodologici per ciascun campo; nella fonte sono distribuiti nel quadro narrativo del campo e non vengono trasformati artificialmente in un elenco di obiettivi.'
+          : 'Inventario strutturale derivato dalla fonte ufficiale. Il testo resta non canonico finché non viene verificato da una persona e promosso a HUMAN_VERIFIED_SOURCE_TEXT.',
     } satisfies InfanziaElementInventoryItem;
   });
 }
@@ -83,6 +89,7 @@ export const DM221_INFANZIA_ELEMENT_INVENTORY: readonly InfanziaElementInventory
   const counts = DM221_INFANZIA_ELEMENT_COUNTS[fieldId];
   return [
     ...createItems(fieldId, 'FIELD_FINALITY', 1),
+    ...createItems(fieldId, 'METHODOLOGICAL_GUIDANCE', 1),
     ...createItems(fieldId, 'EXPECTED_COMPETENCES', counts.expectedCompetences),
     ...createItems(fieldId, 'SPECIFIC_OBJECTIVES', counts.specificObjectives),
   ];
