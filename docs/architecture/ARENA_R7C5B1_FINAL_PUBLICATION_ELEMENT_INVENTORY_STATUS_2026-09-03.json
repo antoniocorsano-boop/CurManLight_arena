@@ -2,6 +2,7 @@
   "schemaVersion": "arena-r7c5b1-final-publication-element-inventory-v1",
   "workItem": "R7C5B1_FINAL_PUBLICATION_ELEMENT_INVENTORY_CONTRACT",
   "state": "PARTIAL_STRUCTURAL_INVENTORY_FAIL_CLOSED",
+  "gateMode": "EXACT_HEAD_REQUIRED",
   "base": {
     "r7c5aHead": "5b49e7b044f6e1410c63d9f74a999bd9300cfb1b",
     "r7c4Head": "a20b062e49d972fff083d0d5c6d2f12635c81ecc"
