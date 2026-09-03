@@ -1,0 +1,34 @@
+{
+  "schemaVersion": "arena-r7c5c2-status-v1",
+  "workItem": "R7C5C2",
+  "date": "2026-09-03",
+  "status": "IMPLEMENTED_AWAITING_EXACT_HEAD_GATES",
+  "stackedBase": {
+    "branch": "feature/r7c5c1-general-source-review",
+    "sha": "4094d6146056daee75cd9fc625b27b10a6cf00d3"
+  },
+  "inventoryElementCount": 868,
+  "packageSchema": "dm221-final-publication-source-review-package-v1",
+  "sourceBinding": {
+    "sourceId": "dm-221-2025-indicazioni-nazionali",
+    "printedAt": "2026-03",
+    "pageNumbering": "PRINTED_PAGE",
+    "cryptographicPdfFingerprintPresent": false
+  },
+  "importPolicy": {
+    "validNewReceipt": "ADDED",
+    "identicalReceipt": "DUPLICATE",
+    "differentReceiptForExistingElement": "CONFLICT_NO_OVERWRITE",
+    "invalidReceipt": "INVALID_NO_IMPORT",
+    "foreignPackage": "REJECT_WHOLE_PACKAGE",
+    "legacyR7C5C1ArrayInput": "SUPPORTED"
+  },
+  "authority": {
+    "createsHumanVerification": false,
+    "resolvesConflictsAutomatically": false,
+    "institutionalAdoptionEffect": "NONE",
+    "p3Mutation": false,
+    "p7Mutation": false,
+    "nationalPrescriptiveAuthority": false
+  }
+}
