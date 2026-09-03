@@ -24,7 +24,18 @@
     "operationalArtifacts": 8,
     "artifactTemplateSchemas": 8,
     "nationalInventoryTotalAllTechnologyOrders": 61,
-    "nationalVerifiedElementsCommittedAsFacts": 0
+    "nationalVerifiedElementsCommittedAsFacts": 0,
+    "cml633cMaterialization": {
+      "sources": 1,
+      "curriculumVersions": 1,
+      "segments": 9,
+      "nodes": 36,
+      "links": 9,
+      "identityMode": "DETERMINISTIC",
+      "curriculumVersionStatus": "draft",
+      "nodeStatus": "proposed",
+      "nodeProvenance": "teacher-proposed"
+    }
   },
   "invariants": {
     "legacyCurriculumMapAuthority": false,
@@ -36,7 +47,9 @@
     "planningHandoffUsesStableRefs": true,
     "annexDecisionArtifactsRequireDecisionRefs": true,
     "sourceTerminologyPreserved": true,
-    "alternativeFourNucleiMeetingProposalPromoted": false
+    "alternativeFourNucleiMeetingProposalPromoted": false,
+    "cml633cDomainActuallyMaterialized": true,
+    "cml633cProductionPersistenceActivated": false
   },
   "sourceBoundaries": {
     "institutionalCurriculumSource": "technology-curriculum-working-draft-2026-2027",
