@@ -13,6 +13,10 @@ import {
   DM221_LANGUAGE_ELEMENT_COUNTS,
   DM221_LANGUAGE_ELEMENT_INVENTORY,
 } from './languageElementInventory';
+import {
+  DM221_R7C5B2B_ELEMENT_COUNTS,
+  DM221_R7C5B2B_ELEMENT_INVENTORY,
+} from './r7c5b2bElementInventory';
 import { DM221_TECHNOLOGY_ELEMENT_INVENTORY } from './technologyElementInventory';
 
 export type FinalPublicationInventoryStatus = 'COUNT_VERIFIED' | 'COUNT_REQUIRED';
@@ -167,11 +171,51 @@ export const DM221_FINAL_PUBLICATION_ELEMENT_INVENTORY_LEDGER: readonly FinalPub
     '6 competenze + 13 obiettivi + 11 elementi di conoscenza (5 blocchi generali + 6 approfondimenti specifici per francese/spagnolo/tedesco).',
     'Conteggio strutturale di 30 elementi della sola secondaria di primo grado; nessuna specifica lingua viene elevata a identità canonica separata.',
   ),
-  pending('inventory-storia', 'STORIA', 'DISCIPLINE', 'dm221-disc-storia', 'Conteggio per gruppi e ordini scolastici della struttura disciplinare finale.', 'Conteggio puntuale ancora da certificare.'),
-  pending('inventory-geografia', 'GEOGRAFIA', 'DISCIPLINE', 'dm221-disc-geografia', 'Conteggio per gruppi e ordini scolastici della struttura disciplinare finale.', 'Conteggio puntuale ancora da certificare.'),
-  pending('inventory-stem', 'STEM', 'CROSS_DISCIPLINARY_FRAMEWORK', 'dm221-framework-stem', 'Inventario della sezione integrata senza trasformarla in disciplina autonoma.', 'Conteggio puntuale ancora da certificare.'),
-  pending('inventory-matematica', 'MATEMATICA', 'DISCIPLINE', 'dm221-disc-matematica', 'Conteggio per gruppi e ordini scolastici, inclusi gli elementi di Informatica dove previsti.', 'Conteggio puntuale ancora da certificare.'),
-  pending('inventory-scienze', 'SCIENZE', 'DISCIPLINE', 'dm221-disc-scienze', 'Conteggio per gruppi e ordini scolastici della struttura disciplinare finale.', 'Conteggio puntuale ancora da certificare.'),
+  verified(
+    'inventory-storia',
+    'STORIA',
+    'DISCIPLINE',
+    'dm221-disc-storia',
+    DM221_R7C5B2B_ELEMENT_COUNTS.STORIA,
+    '4 competenze primaria + 3 obiettivi classe terza primaria + 4 obiettivi classe quinta primaria + 36 conoscenze primaria + 3 competenze secondaria + 5 obiettivi secondaria + 38 conoscenze secondaria.',
+    'Conteggio strutturale di 93 elementi ricontrollato sulla pubblicazione finale pp. 99-104; i testi restano SOURCE_LOCATED_ONLY.',
+  ),
+  verified(
+    'inventory-geografia',
+    'GEOGRAFIA',
+    'DISCIPLINE',
+    'dm221-disc-geografia',
+    DM221_R7C5B2B_ELEMENT_COUNTS.GEOGRAFIA,
+    '5 competenze primaria + 17 obiettivi classe terza primaria + 14 obiettivi classe quinta primaria + 6 blocchi di conoscenze primaria + 4 competenze secondaria + 25 obiettivi secondaria + 10 blocchi di conoscenze secondaria.',
+    'Conteggio strutturale di 81 elementi ricontrollato sulla pubblicazione finale pp. 106-112; i testi restano SOURCE_LOCATED_ONLY.',
+  ),
+  verified(
+    'inventory-stem',
+    'STEM',
+    'CROSS_DISCIPLINARY_FRAMEWORK',
+    'dm221-framework-stem',
+    DM221_R7C5B2B_ELEMENT_COUNTS.STEM,
+    '1 quadro generale narrativo + 1 blocco primaria + 1 blocco secondaria + 5 aspetti innovativi bulletizzati.',
+    'Inventario strutturale di 8 elementi del quadro STEM pp. 113-117. STEM resta framework trasversale e non disciplina autonoma.',
+  ),
+  verified(
+    'inventory-matematica',
+    'MATEMATICA',
+    'DISCIPLINE',
+    'dm221-disc-matematica',
+    DM221_R7C5B2B_ELEMENT_COUNTS.MATEMATICA,
+    '8 competenze primaria + 11 obiettivi classe terza primaria + 14 obiettivi classe quinta primaria + 4 conoscenze primaria + 8 competenze secondaria + 28 obiettivi secondaria + 5 conoscenze secondaria.',
+    'Conteggio strutturale di 78 elementi ricontrollato sulla pubblicazione finale pp. 121-129, includendo Informatica come componente interna della Matematica quando la fonte la prevede.',
+  ),
+  verified(
+    'inventory-scienze',
+    'SCIENZE',
+    'DISCIPLINE',
+    'dm221-disc-scienze',
+    DM221_R7C5B2B_ELEMENT_COUNTS.SCIENZE,
+    '3 competenze primaria + 15 obiettivi classe terza primaria + 34 obiettivi classe quinta primaria + 5 conoscenze primaria + 3 competenze secondaria + 47 obiettivi secondaria + 6 conoscenze secondaria.',
+    'Conteggio strutturale di 113 elementi ricontrollato sulla pubblicazione finale pp. 131-139; i testi restano SOURCE_LOCATED_ONLY.',
+  ),
   verified(
     'inventory-tecnologia',
     'TECNOLOGIA',
@@ -213,10 +257,16 @@ export function assertNoGuessedFinalPublicationCounts(): void {
 export function assertVerifiedInventoryBackedByConcreteItems(): void {
   const infanziaInventoryCount = DM221_INFANZIA_ELEMENT_INVENTORY.length;
   const languageInventoryCount = DM221_LANGUAGE_ELEMENT_INVENTORY.length;
+  const b2bInventoryCount = DM221_R7C5B2B_ELEMENT_INVENTORY.length;
   const technologyInventoryCount = DM221_TECHNOLOGY_ELEMENT_INVENTORY.length;
-  if (infanziaInventoryCount !== 61 || languageInventoryCount !== 138 || technologyInventoryCount !== 61) {
+  if (
+    infanziaInventoryCount !== 61 ||
+    languageInventoryCount !== 138 ||
+    b2bInventoryCount !== 373 ||
+    technologyInventoryCount !== 61
+  ) {
     throw new Error(
-      `DM221_VERIFIED_INVENTORY_DRIFT:infanzia=${infanziaInventoryCount}:lingue=${languageInventoryCount}:tecnologia=${technologyInventoryCount}`,
+      `DM221_VERIFIED_INVENTORY_DRIFT:infanzia=${infanziaInventoryCount}:lingue=${languageInventoryCount}:b2b=${b2bInventoryCount}:tecnologia=${technologyInventoryCount}`,
     );
   }
 }
