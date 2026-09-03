@@ -282,6 +282,16 @@ export {
 } from './technology/technologyArtifactSchemas';
 
 export type {
+  TechnologyCanonicalDomainSnapshot,
+  TechnologyCanonicalDomainValidation,
+} from './technology/technologyCanonicalDomain';
+
+export {
+  buildTechnologyCanonicalDomainSnapshot,
+  validateTechnologyCanonicalDomainSnapshot,
+} from './technology/technologyCanonicalDomain';
+
+export type {
   TechnologyGradeProgressionEntry,
   TechnologyGradeProgressionLink,
   TechnologyInstitutionalContextSnapshot,
