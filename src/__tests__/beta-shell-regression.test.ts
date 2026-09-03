@@ -32,6 +32,10 @@ const technologySourceReviewTaskSource = firstSource(import.meta.glob('../featur
   query: '?raw', import: 'default', eager: true,
 }) as Record<string, string>);
 
+const finalPublicationSourceReviewTaskSource = firstSource(import.meta.glob('../features/curriculum/components/FinalPublicationSourceReviewTask.tsx', {
+  query: '?raw', import: 'default', eager: true,
+}) as Record<string, string>);
+
 const revisionSource = firstSource(import.meta.glob('../features/curriculum/components/RevisioneTab.tsx', {
   query: '?raw', import: 'default', eager: true,
 }) as Record<string, string>);
@@ -103,15 +107,20 @@ describe('Arena Beta canonical shell regression guard', () => {
     expect(viewsSource).toContain('Verifica se puoi usarlo');
     expect(viewsSource).toContain("safeHandleTabSwitch('fonti')");
     expect(viewsSource).toContain('Se vuoi solo leggerlo, puoi continuare a consultare i contenuti qui sotto.');
-    expect(curriculumWorkspaceSource).toContain('Curricolo verticale · Tecnologia');
-    expect(curriculumWorkspaceSource).toContain('Verifica una scheda alla volta, dalla primaria alla secondaria di I grado.');
+    expect(curriculumWorkspaceSource).toContain('Indicazioni nazionali 2025 · pubblicazione finale');
+    expect(curriculumWorkspaceSource).toContain('Verifica una scheda alla volta tra infanzia, primaria e secondaria di I grado');
     expect(curriculumWorkspaceSource).toContain('Controlla la fonte');
-    expect(technologySourceReviewTaskSource).toContain('Scuola primaria');
-    expect(technologySourceReviewTaskSource).toContain('Secondaria di I grado');
-    expect(technologySourceReviewTaskSource).toContain('Scheda {currentIndex + 1} di {queue.length}');
-    expect(technologySourceReviewTaskSource).toContain('Apri la fonte ufficiale');
-    expect(technologySourceReviewTaskSource).toContain('DM221_2025_SOURCE.officialLocator.pdfUrl');
-    expect(technologySourceReviewTaskSource).not.toContain('Controlla Tecnologia nelle Indicazioni 2025');
+    expect(curriculumWorkspaceSource).toContain('FinalPublicationSourceReviewTask');
+    expect(finalPublicationSourceReviewTaskSource).toContain('Scuola dell’infanzia');
+    expect(finalPublicationSourceReviewTaskSource).toContain('Scuola primaria');
+    expect(finalPublicationSourceReviewTaskSource).toContain('Secondaria di I grado');
+    expect(finalPublicationSourceReviewTaskSource).toContain('Filtra per ordine scolastico');
+    expect(finalPublicationSourceReviewTaskSource).toContain('Filtra per campo o disciplina');
+    expect(finalPublicationSourceReviewTaskSource).toContain('Apri la pubblicazione finale MIM');
+    expect(finalPublicationSourceReviewTaskSource).toContain('DM221_2025_SOURCE.officialCurriculumVolume.url');
+    expect(finalPublicationSourceReviewTaskSource).not.toContain('DM221_2025_SOURCE.officialLocator.pdfUrl');
+    expect(technologySourceReviewTaskSource).toContain('DM221_2025_SOURCE.officialCurriculumVolume.url');
+    expect(technologySourceReviewTaskSource).not.toContain('DM221_2025_SOURCE.officialLocator.pdfUrl');
   });
 
   it('makes revision a focused mobile flow with nearby context and actions', () => {
