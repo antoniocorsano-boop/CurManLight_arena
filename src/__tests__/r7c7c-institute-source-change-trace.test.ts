@@ -70,4 +70,17 @@ describe('R7C7C institute source change trace', () => {
     expect(motoria?.status).toBe('ACKNOWLEDGED');
     expect(motoria?.replacementSourceSha256).toBeNull();
   });
+
+  it('espone come conflitto due decisioni umane incompatibili sullo stesso task', () => {
+    const trace = buildInstituteSourceChangeTrace([
+      receipt({ reviewedAt: '2026-09-03T18:00:00.000Z' }),
+      receipt({ decision: 'SCOPE_CLASS_ONE', reviewedAt: '2026-09-03T18:05:00.000Z' }),
+    ]);
+    const latino = trace.find((entry) => entry.taskId === 'CV-AUD-004-LATINO-SCOPE');
+
+    expect(latino?.status).toBe('CONFLICT');
+    expect(latino?.decision).toContain('conflitto');
+    expect(latino?.replacementSourceSha256).toBeNull();
+    expect(latino?.authorityEffect).toBe('NONE');
+  });
 });
