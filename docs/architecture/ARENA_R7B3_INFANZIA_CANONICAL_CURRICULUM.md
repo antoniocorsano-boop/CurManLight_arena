@@ -16,9 +16,10 @@ La sezione `Dalla scuola dell'infanzia alla scuola primaria` è registrata separ
 
 ## Inventario nazionale localizzato
 
-Per ogni campo R7B3 registra, senza importare automaticamente il testo normativo:
+Le Indicazioni dichiarano per ciascun campo un quadro aperto composto da finalità, competenze attese, obiettivi specifici e suggerimenti metodologici. R7B3 registra quindi, senza importare automaticamente il testo normativo:
 
 - una sezione `FINALITY`;
+- una sezione narrativa `METHODOLOGICAL_GUIDANCE`, senza trasformarla artificialmente in un elenco di obiettivi;
 - ogni `EXPECTED_COMPETENCE` come elemento distinto;
 - ogni `LEARNING_OBJECTIVE` come elemento distinto;
 - il locator alla sezione della fonte ufficiale;
@@ -26,7 +27,7 @@ Per ogni campo R7B3 registra, senza importare automaticamente il testo normativo
 - `verifiedByHuman = false`;
 - `canonicalTextStatus = SOURCE_LOCATED_ONLY`.
 
-Conteggi strutturali localizzati nell'allegato ufficiale:
+Conteggi degli elementi discreti localizzati nell'allegato ufficiale:
 
 | Campo di esperienza | Competenze attese | Obiettivi specifici |
 | --- | ---: | ---: |
@@ -36,7 +37,7 @@ Conteggi strutturali localizzati nell'allegato ufficiale:
 | I discorsi e le parole | 6 | 6 |
 | La conoscenza del mondo | 5 | 5 |
 
-L'inventario dei cinque campi contiene quindi 56 elementi: 5 sezioni di finalità, 24 competenze attese e 27 obiettivi specifici. Il profilo di transizione infanzia → primaria è un elemento ulteriore e separato.
+L'inventario dei cinque campi contiene quindi 61 elementi strutturali: 5 sezioni di finalità, 5 sezioni di suggerimenti metodologici, 24 competenze attese e 27 obiettivi specifici. Il profilo di transizione infanzia → primaria è un elemento ulteriore e separato.
 
 ## Autorità della fonte
 
@@ -68,6 +69,8 @@ Il modello completo deve mantenere tre livelli distinti:
 `Fonte nazionale D.M. 221/2025 → Curricolo verticale d'Istituto → strumenti operativi/evidenze`.
 
 Per l'infanzia il secondo livello deve restare centrato sui campi di esperienza; per primaria e secondaria il secondo livello può essere articolato per discipline. La continuità verticale viene costruita tra strutture diverse senza appiattirle in un'unica griglia disciplinare.
+
+La stessa regola vale per l'acquisizione completa delle Indicazioni: Arena deve censire anche le sezioni generali dell'infanzia (contesto pedagogico, gioco, professionalità docente, curricolo del quotidiano, cittadinanza e continuità), mantenendole distinte dagli elementi valutabili dei singoli campi. R7B3 costituisce la base semantica per tale acquisizione, non una dichiarazione di completezza dell'intero allegato nazionale.
 
 ## Non-obiettivi della tranche
 
