@@ -210,7 +210,7 @@ export async function rehearseLegacyCurriculumMigrationSafety(
     const backup = await backend.getBackup(LEGACY_CURRICULUM_MIGRATION_ID);
     if (!backup) throw new Error('R7C6B_BACKUP_NOT_FOUND');
     assertValidBackup(backup);
-    backupChecksum = backup.checksum;
+    backupChecksum = backup.checksum ?? null;
 
     comparison = await compareLegacySourceToMigratedDomain(source, backend, now);
     const beforeRollback = await captureMigrationOwnedDomain(backend);
