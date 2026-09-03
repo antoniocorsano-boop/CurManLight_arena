@@ -14,9 +14,15 @@
     "institutionalFrameworkNodes": 36,
     "gradeProgressionEntries": 27,
     "gradeProgressionLinks": 18,
+    "guidingPrinciples": 1,
     "finalities": 5,
     "exitProfileAreas": 6,
+    "methodologies": 6,
+    "crossCurricularConnections": 5,
+    "assessmentRows": 6,
+    "governanceRules": 4,
     "operationalArtifacts": 8,
+    "artifactTemplateSchemas": 8,
     "nationalInventoryTotalAllTechnologyOrders": 61,
     "nationalVerifiedElementsCommittedAsFacts": 0
   },
@@ -28,7 +34,9 @@
     "automaticInstituteToNationalMapping": false,
     "nationalPrescriptiveRequiresHumanVerifiedText": true,
     "planningHandoffUsesStableRefs": true,
-    "annexDecisionArtifactsRequireDecisionRefs": true
+    "annexDecisionArtifactsRequireDecisionRefs": true,
+    "sourceTerminologyPreserved": true,
+    "alternativeFourNucleiMeetingProposalPromoted": false
   },
   "sourceBoundaries": {
     "institutionalCurriculumSource": "technology-curriculum-working-draft-2026-2027",
