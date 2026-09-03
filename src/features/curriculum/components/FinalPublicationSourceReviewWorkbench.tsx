@@ -7,6 +7,7 @@ import {
   validateFinalPublicationSourceVerificationReceipt,
   type FinalPublicationSourceVerificationReceipt,
 } from '../../../domain/curriculum/national/finalPublicationHumanVerification';
+import { FinalPublicationSourceFingerprintPanel } from './FinalPublicationSourceFingerprintPanel';
 import { FinalPublicationSourceReviewTask } from './FinalPublicationSourceReviewTask';
 
 const STORAGE_KEY = 'cml.dm221.final-publication.source-review.receipts.v1';
@@ -86,6 +87,8 @@ export function FinalPublicationSourceReviewWorkbench() {
 
   return (
     <div className="space-y-4" data-source-review-workbench="final-publication">
+      <FinalPublicationSourceFingerprintPanel />
+
       <section
         className="rounded-2xl border border-slate-200 bg-slate-50 p-4"
         aria-labelledby="source-review-roundtrip-title"
