@@ -1,4 +1,5 @@
 import { FontiTab as SourceRegistry, type FontiTabProps } from './FontiTab';
+import { InstituteSourceChangeTracePanel } from './InstituteSourceChangeTracePanel';
 import { InstituteSourceReviewPanel } from './InstituteSourceReviewPanel';
 import { LocalCurriculumMigrationPreflightTask } from './LocalCurriculumMigrationPreflightTask';
 
@@ -8,6 +9,8 @@ export function FontiWorkspace(props: FontiTabProps) {
       <SourceRegistry {...props} />
 
       <InstituteSourceReviewPanel />
+
+      <InstituteSourceChangeTracePanel />
 
       <details className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-5" data-r7c6c-preflight-disclosure>
         <summary className="cursor-pointer text-sm font-black text-slate-800">
