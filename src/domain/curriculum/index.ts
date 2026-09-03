@@ -201,3 +201,34 @@ export {
   createA02CurriculumReadModel,
 } from './readModels';
 export type { A11SourceSummary, A02CurriculumQuery } from './readModels';
+
+// ─── Arena R7C1 Operational Composition Contract ────────────────────────────
+
+export type {
+  OperationalCurriculumSourcePlane,
+  OperationalCurriculumAuthorityState,
+  OperationalCurriculumSemanticStatus,
+  OperationalRequirementAuthority,
+  OperationalNodeLifecycle,
+  OperationalCurriculumAuthority,
+  OperationalDisciplineTarget,
+  OperationalInfanziaFieldTarget,
+  OperationalSpecialSegmentTarget,
+  OperationalCurriculumTarget,
+  OperationalNationalElementEvidence,
+  OperationalCurriculumSegment,
+  OperationalCurriculumNode,
+  OperationalCurriculumLink,
+  OperationalCurriculumAggregateV1,
+  OperationalCurriculumValidationIssue,
+  OperationalCurriculumValidationResult,
+} from './operationalContract';
+
+export {
+  OPERATIONAL_CURRICULUM_SCHEMA_VERSION,
+  OPERATIONAL_CURRICULUM_KIND,
+  buildOperationalCurriculumTargetRef,
+  canUseOperationalNodeAsNationalRequirement,
+  validateOperationalCurriculumAggregate,
+  assertOperationalCurriculumAggregate,
+} from './operationalContract';
