@@ -34,7 +34,7 @@ describe('Final-publication source review human task', () => {
       target: { value: 'dm221-disc-tecnologia' },
     });
     expect(screen.getByText('Tecnologia')).toBeTruthy();
-    expect(screen.getByText(/61 schede nella vista corrente/)).toBeTruthy();
+    expect(screen.getByText(/31 schede nella vista corrente/)).toBeTruthy();
   });
 
   it('blocks positive verification without explicit human attestation', () => {
