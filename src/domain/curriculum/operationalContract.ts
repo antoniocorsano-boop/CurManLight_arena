@@ -49,10 +49,6 @@ export type OperationalNodeLifecycle =
 
 export interface OperationalCurriculumAuthority {
   state: OperationalCurriculumAuthorityState;
-  /**
-   * Riferimento all'autorità esterna che rende lo stato verificabile
-   * (per esempio canonical head / receipt R7). Non viene mai inferito localmente.
-   */
   authorityRef?: string;
   decisionReceiptRef?: string;
   materializationRef?: string;
@@ -77,10 +73,6 @@ export interface OperationalSpecialSegmentTarget {
   nationalSegmentId: string;
 }
 
-/**
- * Identità curricolare nativa. L'infanzia usa esclusivamente campi di esperienza;
- * una disciplina del primo ciclo non può essere usata come sua identità canonica.
- */
 export type OperationalCurriculumTarget =
   | OperationalDisciplineTarget
   | OperationalInfanziaFieldTarget
@@ -96,7 +88,6 @@ export interface OperationalCurriculumSegment {
   segmentRef: string;
   curriculumVersionRef: string;
   target: OperationalCurriculumTarget;
-  /** Ambito stabile interno al target, es. school-level, grade:1, nucleus:<id>. */
   scopeRef: string;
   nodeRefs: readonly string[];
   sourceRefs: readonly string[];
@@ -127,9 +118,8 @@ export interface OperationalCurriculumLink {
 }
 
 /**
- * Snapshot completo e serializzabile del curricolo che i flussi produttivi
- * dovranno consumare dopo la convergenza. Non è un nuovo repository dati:
- * compone il dominio canonico CML-633C, i binding nazionali e l'autorità R7.
+ * Snapshot serializzabile del curricolo destinato ai futuri flussi produttivi.
+ * Compone CML-633C, binding nazionali e autorità R7; non introduce un nuovo repository.
  */
 export interface OperationalCurriculumAggregateV1 {
   schemaVersion: typeof OPERATIONAL_CURRICULUM_SCHEMA_VERSION;
@@ -158,18 +148,19 @@ export interface OperationalCurriculumValidationResult {
 }
 
 const SHA256_HEX = /^[a-f0-9]{64}$/;
-
 const normalized = (value: string): string => value.replace(/\s+/g, ' ').trim();
 const hasText = (value: string | undefined): value is string => Boolean(value && normalized(value));
 
 export function buildOperationalCurriculumTargetRef(target: OperationalCurriculumTarget): string {
-  if (target.kind === 'DISCIPLINE') {
-    return `dm221:${target.disciplineId}:${target.schoolOrder}`;
-  }
-  if (target.kind === 'FIELD_OF_EXPERIENCE') {
-    return `dm221:FIELD:${target.fieldId}:infanzia`;
-  }
+  if (target.kind === 'DISCIPLINE') return `dm221:${target.disciplineId}:${target.schoolOrder}`;
+  if (target.kind === 'FIELD_OF_EXPERIENCE') return `dm221:FIELD:${target.fieldId}:infanzia`;
   return `dm221:SPECIAL:${target.nationalSegmentId}:${target.schoolOrder}`;
+}
+
+function canonicalNationalSegmentIdForTarget(target: OperationalCurriculumTarget): string | undefined {
+  if (target.kind === 'DISCIPLINE') return DM221_FIRST_CYCLE_DISCIPLINES[target.disciplineId]?.id;
+  if (target.kind === 'FIELD_OF_EXPERIENCE') return DM221_INFANZIA_FIELDS[target.fieldId]?.id;
+  return DM221_SPECIAL_SEGMENTS.find(candidate => candidate.id === target.nationalSegmentId)?.id;
 }
 
 function validateTarget(
@@ -220,12 +211,16 @@ function validateTarget(
 
 function validNationalEvidenceForNode(
   node: OperationalCurriculumNode,
-  schoolOrder: SchoolOrder,
+  target: OperationalCurriculumTarget,
 ): boolean {
+  const expectedNationalSegmentId = canonicalNationalSegmentIdForTarget(target);
+  if (!expectedNationalSegmentId) return false;
+
   return node.nationalElementEvidence.some(evidence => {
     const assessment = assessElementBinding(evidence.binding);
     return assessment.canUseAsCanonicalSourceText
-      && evidence.binding.schoolOrder === schoolOrder
+      && evidence.binding.schoolOrder === target.schoolOrder
+      && evidence.binding.segmentId === expectedNationalSegmentId
       && Boolean(evidence.verifiedTextFingerprint && SHA256_HEX.test(evidence.verifiedTextFingerprint))
       && evidence.verifiedTextFingerprint === node.textFingerprint;
   });
@@ -233,12 +228,12 @@ function validNationalEvidenceForNode(
 
 export function canUseOperationalNodeAsNationalRequirement(
   node: OperationalCurriculumNode,
-  schoolOrder: SchoolOrder,
+  target: OperationalCurriculumTarget,
 ): boolean {
   return node.authorityLevel === 'NATIONAL_PRESCRIPTIVE'
     && node.origin === 'normative-source'
     && SHA256_HEX.test(node.textFingerprint)
-    && validNationalEvidenceForNode(node, schoolOrder);
+    && validNationalEvidenceForNode(node, target);
 }
 
 export function validateOperationalCurriculumAggregate(
@@ -259,10 +254,7 @@ export function validateOperationalCurriculumAggregate(
     push('CREATED_AT_INVALID', 'createdAt', 'createdAt deve essere una data ISO compatibile.');
   }
 
-  if (
-    aggregate.sourcePlane === 'LEGACY_CURRICULUM_MAP_PROJECTION'
-    && aggregate.authority.state !== 'NON_AUTHORITATIVE'
-  ) {
+  if (aggregate.sourcePlane === 'LEGACY_CURRICULUM_MAP_PROJECTION' && aggregate.authority.state !== 'NON_AUTHORITATIVE') {
     push(
       'LEGACY_PROJECTION_CANNOT_BE_AUTHORITATIVE',
       'authority.state',
@@ -337,29 +329,23 @@ export function validateOperationalCurriculumAggregate(
       if (node.origin !== 'normative-source') {
         push('NATIONAL_NODE_ORIGIN_INVALID', `${path}.origin`, 'Un requisito nazionale deve avere origine normativa.');
       }
-      if (!segment || !canUseOperationalNodeAsNationalRequirement(node, segment.target.schoolOrder)) {
+      if (!segment || !canUseOperationalNodeAsNationalRequirement(node, segment.target)) {
         push(
           'NATIONAL_NODE_SOURCE_BINDING_REQUIRED',
           `${path}.nationalElementEvidence`,
-          'Un requisito nazionale richiede un elemento sorgente verificato da persona e lo stesso fingerprint del testo.',
+          'Un requisito nazionale richiede un elemento sorgente verificato, dello stesso target e con lo stesso fingerprint del testo.',
         );
       }
     }
 
-    if (
-      aggregate.authority.state === 'ACTIVE'
-      && (node.lifecycle !== 'ACTIVE' || node.authorityLevel === 'LOCAL_WORKING')
-    ) {
+    if (aggregate.authority.state === 'ACTIVE' && (node.lifecycle !== 'ACTIVE' || node.authorityLevel === 'LOCAL_WORKING')) {
       push(
         'ACTIVE_CANONICAL_NODE_NOT_FINAL',
         path,
         'Una versione canonica ACTIVE non può contenere nodi locali di lavoro o con lifecycle non ACTIVE.',
       );
     }
-    if (
-      aggregate.authority.state === 'ACTIVE'
-      && (node.origin === 'synthetic' || node.origin === 'demonstration')
-    ) {
+    if (aggregate.authority.state === 'ACTIVE' && (node.origin === 'synthetic' || node.origin === 'demonstration')) {
       push('ACTIVE_CANONICAL_SYNTHETIC_NODE_FORBIDDEN', `${path}.origin`, 'Contenuti sintetici o dimostrativi non possono essere autorità canonica attiva.');
     }
   });
@@ -396,9 +382,7 @@ export function validateOperationalCurriculumAggregate(
   return { valid: errors.length === 0, errors };
 }
 
-export function assertOperationalCurriculumAggregate(
-  aggregate: OperationalCurriculumAggregateV1,
-): void {
+export function assertOperationalCurriculumAggregate(aggregate: OperationalCurriculumAggregateV1): void {
   const validation = validateOperationalCurriculumAggregate(aggregate);
   if (!validation.valid) {
     throw new Error(`OPERATIONAL_CURRICULUM_INVALID:${validation.errors.map(error => error.code).join(',')}`);
