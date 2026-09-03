@@ -1,0 +1,33 @@
+{
+  "workItem": "R7C4_INFANZIA_NATIVE_RUNTIME",
+  "status": "IMPLEMENTED_AWAITING_EXACT_HEAD_GATES",
+  "dependsOn": "R7C3_P3_V2_SEMANTIC",
+  "scope": "INFANZIA_RUNTIME_IDENTITY_AND_FAIL_CLOSED_PLANNING",
+  "runtimeIdentity": "DM221_NATIVE_FIELDS_OF_EXPERIENCE",
+  "nativeFields": [
+    "IL_SE_E_L_ALTRO",
+    "IL_CORPO_E_IL_MOVIMENTO",
+    "IMMAGINI_SUONI_COLORI",
+    "I_DISCORSI_E_LE_PAROLE",
+    "LA_CONOSCENZA_DEL_MONDO"
+  ],
+  "primaryRoutes": {
+    "curriculum": "InfanziaNativeCurriculumPanel",
+    "planning": "InfanziaNativePlanningBoundary"
+  },
+  "legacyDisciplineProjection": {
+    "reachableFromPrimaryInfanziaRoutes": false,
+    "retainedAsMigrationSource": true,
+    "automaticPromotion": false,
+    "humanSemanticMigrationRequired": true
+  },
+  "planningAllowed": false,
+  "planningBlock": "NATIVE_INSTITUTE_FIELD_NODES_NOT_AVAILABLE",
+  "authorityEffect": "NONE",
+  "institutionalAdoption": false,
+  "persistenceModeChanged": false,
+  "sourceTextPromoted": false,
+  "p3LegacyScopeChanged": false,
+  "r7b3InventoryDependency": false,
+  "next": "R7C5_COMPLETE_IN2025_ACQUISITION"
+}
