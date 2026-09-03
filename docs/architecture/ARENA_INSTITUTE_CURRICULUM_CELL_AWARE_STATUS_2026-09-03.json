@@ -1,0 +1,121 @@
+{
+  "schemaVersion": "arena-institute-curriculum-source-audit-v2",
+  "workItem": "R7C4_INSTITUTE_CURRICULUM_SOURCE_AUDIT_V2",
+  "state": "CELL_AWARE_AUDIT_COMPLETE_LOCAL_ARTIFACTS",
+  "base": {
+    "pr": 179,
+    "exactHead": "a20b062e49d972fff083d0d5c6d2f12635c81ecc"
+  },
+  "source": {
+    "name": "CURRICOLO VERTICALE .docx",
+    "sha256": "187bc12a771a29331c0d6638abe9e74788a2554af2735e3b9f43321d8f2ae57b",
+    "pages": 89,
+    "tables": 37
+  },
+  "extraction": {
+    "method": "OOXML_CELL_AWARE_PLUS_RENDERED_PAGE_VALIDATION",
+    "physicalOoxmlCells": 900,
+    "vMergeContinuations": 225,
+    "semanticAnchorCells": 675,
+    "gridSpanCells": 235,
+    "tablesWithMergedCells": 33
+  },
+  "authority": {
+    "sourceAuthority": "LOCAL_WORKING",
+    "semanticStatus": "UNASSESSED",
+    "automaticCanonicalPromotion": false,
+    "automaticNationalAttribution": false
+  },
+  "findings": [
+    {
+      "id": "CV-AUD-001",
+      "priority": "P0",
+      "status": "CONFIRMED_SOURCE_DEFECT",
+      "category": "CONTENT_TARGET_MISMATCH",
+      "pages": "22,32 vs 41",
+      "tables": "6,10 vs 14",
+      "r7Action": "BLOCK_AUTOMATIC_PROMOTION; HUMAN_CORRECTION_REQUIRED"
+    },
+    {
+      "id": "CV-AUD-002",
+      "priority": "P0",
+      "status": "CONFIRMED_SOURCE_DEFECT",
+      "category": "DUPLICATED_DISCIPLINE_RATIONALE",
+      "pages": "66,72",
+      "r7Action": "BLOCK_AUTOMATIC_PROMOTION; HUMAN_CORRECTION_REQUIRED"
+    },
+    {
+      "id": "CV-AUD-003",
+      "priority": "P0",
+      "status": "CONFIRMED_SOURCE_DEFECT",
+      "category": "DUPLICATED_DISCIPLINE_RATIONALE",
+      "pages": "77,83",
+      "r7Action": "BLOCK_AUTOMATIC_PROMOTION; HUMAN_CORRECTION_REQUIRED"
+    },
+    {
+      "id": "CV-AUD-004",
+      "priority": "P0",
+      "status": "CONFIRMED_SOURCE_CONFLICT",
+      "category": "APPLICABILITY_SCOPE_CONFLICT",
+      "pages": "4,27,28",
+      "tables": "9",
+      "r7Action": "BLOCK_SCOPE_BINDING; HUMAN_DECISION_REQUIRED"
+    },
+    {
+      "id": "CV-AUD-005",
+      "priority": "P1",
+      "status": "CONFIRMED_STRUCTURAL_DEFECT",
+      "category": "TABLE_HEADER_STRUCTURE_MISMATCH",
+      "pages": "88-89",
+      "tables": "37",
+      "r7Action": "REQUIRE_HEADER_REPAIR_BEFORE_SEMANTIC_MAPPING"
+    },
+    {
+      "id": "CV-AUD-006",
+      "priority": "P1",
+      "status": "CONFIRMED_LABEL_INCONSISTENCY",
+      "category": "FIELD_IDENTITY_LABEL_INCONSISTENCY",
+      "pages": "19,84",
+      "tables": "5,35",
+      "r7Action": "NORMALIZE_ONLY_AFTER_HUMAN_CONFIRMATION; PRESERVE_SOURCE_LABEL"
+    },
+    {
+      "id": "CV-AUD-007",
+      "priority": "INFO",
+      "status": "MODELING_RULE",
+      "category": "INFANZIA_VERTICAL_PRESENTATION_DUPLICATION",
+      "r7Action": "DEDUPLICATE_IDENTITY_NOT_TEXT; KEEP_VERTICAL_LINKS"
+    },
+    {
+      "id": "CV-AUD-008",
+      "priority": "INFO",
+      "status": "SCOPE_OBSERVATION",
+      "category": "FIRST_IMPLEMENTATION_CLASS_SCOPE",
+      "r7Action": "REQUIRE_APPLICABILITY_METADATA; DO_NOT_CLASSIFY_AS_MISSING_BY_DEFAULT"
+    }
+  ],
+  "externalArtifacts": {
+    "CURRICOLO_VERTICALE_ARENA_CELL_AWARE_v2.json": {
+      "sha256": "f51890a271f9c0e5126bd3d22e4b6518849b4fcc9a3205f3d4b6b871e43b5c0f"
+    },
+    "CURRICOLO_VERTICALE_ARENA_SEMANTIC_CELLS_v2.csv": {
+      "sha256": "a2d648271fef9a2f4821b687f26f39e94c4ab98cc6818ab838b1faa64432de76"
+    },
+    "ARENA_CURRICOLO_VERTICALE_AUDIT_CELL_AWARE_v2.xlsx": {
+      "sha256": "13990d8eb37b20a9951f067531e39555f84eb07da7c45ec873bdb2f8356786c6"
+    },
+    "ARENA_CURRICOLO_VERTICALE_SOURCE_AUDIT_CELL_AWARE_2026-09-03.md": {
+      "sha256": "8e0dcc64139d8d46aad846538f7bb09cd05a390e2b77b7869d3d5b51e5cdab4c"
+    }
+  },
+  "invariants": {
+    "legacyLinearizedInventoryAuthoritative": false,
+    "infanziaIdentity": "FIELD_OF_EXPERIENCE_ONLY",
+    "disciplineLabelsOnInfanzia": "VERTICAL_LINK_ONLY",
+    "sourceDefectsBlockOnlyAffectedPromotion": true,
+    "nationalPrescriptiveRequiresExternalVerifiedNationalBinding": true,
+    "runtimeMutation": false,
+    "persistenceMutation": false,
+    "authorityMutation": false
+  }
+}
