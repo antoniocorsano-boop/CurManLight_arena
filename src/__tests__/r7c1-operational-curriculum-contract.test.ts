@@ -70,7 +70,7 @@ describe('R7C1 operational curriculum aggregate contract', () => {
     const validation = validateOperationalCurriculumAggregate(aggregate);
 
     expect(validation).toEqual({ valid: true, errors: [] });
-    expect(canUseOperationalNodeAsNationalRequirement(aggregate.nodes[0], 'secondaria')).toBe(true);
+    expect(canUseOperationalNodeAsNationalRequirement(aggregate.nodes[0], aggregate.segments[0].target)).toBe(true);
     expect(buildOperationalCurriculumTargetRef(aggregate.segments[0].target)).toBe('dm221:TECNOLOGIA:secondaria');
   });
 
@@ -135,6 +135,22 @@ describe('R7C1 operational curriculum aggregate contract', () => {
       }],
     }];
     expect(errorCodes(mismatch)).toContain('NATIONAL_NODE_SOURCE_BINDING_REQUIRED');
+  });
+
+  it('does not allow a verified element from another discipline to authorize the node', () => {
+    const aggregate = base();
+    aggregate.nodes = [{
+      ...aggregate.nodes[0],
+      nationalElementEvidence: [{
+        ...aggregate.nodes[0].nationalElementEvidence[0],
+        binding: {
+          ...aggregate.nodes[0].nationalElementEvidence[0].binding,
+          segmentId: 'dm221-disc-italiano',
+        },
+      }],
+    }];
+
+    expect(errorCodes(aggregate)).toContain('NATIONAL_NODE_SOURCE_BINDING_REQUIRED');
   });
 
   it('does not allow a local legacy CurriculumMap projection to become canonical authority', () => {
