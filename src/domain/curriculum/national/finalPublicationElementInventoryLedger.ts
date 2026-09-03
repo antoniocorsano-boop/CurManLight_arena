@@ -9,6 +9,10 @@ import {
   DM221_FINAL_PUBLICATION_SECTIONS,
   type Dm221FinalPublicationSectionId,
 } from './finalPublicationManifest';
+import {
+  DM221_LANGUAGE_ELEMENT_COUNTS,
+  DM221_LANGUAGE_ELEMENT_INVENTORY,
+} from './languageElementInventory';
 import { DM221_TECHNOLOGY_ELEMENT_INVENTORY } from './technologyElementInventory';
 
 export type FinalPublicationInventoryStatus = 'COUNT_VERIFIED' | 'COUNT_REQUIRED';
@@ -127,10 +131,42 @@ export const DM221_FINAL_PUBLICATION_ELEMENT_INVENTORY_LEDGER: readonly FinalPub
     'Un profilo di transizione autonomo.',
     'Il profilo di transizione è separato dai cinque campi e non è una disciplina.',
   ),
-  pending('inventory-italiano', 'ITALIANO', 'DISCIPLINE', 'dm221-disc-italiano', 'Conteggio per gruppi e ordini scolastici della struttura disciplinare finale.', 'Conteggio puntuale ancora da certificare.'),
-  pending('inventory-lel', 'LEL', 'CONDITIONAL_OFFERING', 'dm221-offering-lel', 'Conteggio della sezione condizionale LEL senza promuoverla a disciplina universale.', 'Conteggio puntuale ancora da certificare.'),
-  pending('inventory-lingua-inglese', 'LINGUA_INGLESE', 'DISCIPLINE', 'dm221-disc-inglese', 'Conteggio per gruppi e ordini scolastici della struttura disciplinare finale.', 'Conteggio puntuale ancora da certificare.'),
-  pending('inventory-seconda-lingua', 'SECONDA_LINGUA_COMUNITARIA', 'DISCIPLINE', 'dm221-disc-seconda-lingua', 'Conteggio della sola secondaria di primo grado.', 'Conteggio puntuale ancora da certificare.'),
+  verified(
+    'inventory-italiano',
+    'ITALIANO',
+    'DISCIPLINE',
+    'dm221-disc-italiano',
+    DM221_LANGUAGE_ELEMENT_COUNTS.ITALIANO,
+    '5 competenze primaria + 9 obiettivi classe terza primaria + 6 obiettivi classe quinta primaria + 2 blocchi di conoscenze primaria + 5 competenze secondaria + 7 obiettivi secondaria + 2 blocchi di conoscenze secondaria.',
+    'Conteggio strutturale di 36 elementi ricontrollato sulla pubblicazione finale pp. 70-76; i testi restano SOURCE_LOCATED_ONLY.',
+  ),
+  verified(
+    'inventory-lel',
+    'LEL',
+    'CONDITIONAL_OFFERING',
+    'dm221-offering-lel',
+    DM221_LANGUAGE_ELEMENT_COUNTS.LEL,
+    '5 competenze + 15 obiettivi + 1 blocco narrativo di conoscenze.',
+    'Conteggio strutturale di 21 elementi. LEL resta offerta condizionale e non viene promosso a disciplina universale.',
+  ),
+  verified(
+    'inventory-lingua-inglese',
+    'LINGUA_INGLESE',
+    'DISCIPLINE',
+    'dm221-disc-inglese',
+    DM221_LANGUAGE_ELEMENT_COUNTS.LINGUA_INGLESE,
+    '5 competenze primaria + 10 obiettivi classe terza primaria + 12 obiettivi classe quinta primaria + 1 blocco di conoscenze primaria + 5 competenze secondaria + 17 obiettivi secondaria + 1 blocco di conoscenze secondaria.',
+    'Conteggio strutturale di 51 elementi ricontrollato sulla pubblicazione finale pp. 85-89; i testi restano SOURCE_LOCATED_ONLY.',
+  ),
+  verified(
+    'inventory-seconda-lingua',
+    'SECONDA_LINGUA_COMUNITARIA',
+    'DISCIPLINE',
+    'dm221-disc-seconda-lingua',
+    DM221_LANGUAGE_ELEMENT_COUNTS.SECONDA_LINGUA_COMUNITARIA,
+    '6 competenze + 13 obiettivi + 11 elementi di conoscenza (5 blocchi generali + 6 approfondimenti specifici per francese/spagnolo/tedesco).',
+    'Conteggio strutturale di 30 elementi della sola secondaria di primo grado; nessuna specifica lingua viene elevata a identità canonica separata.',
+  ),
   pending('inventory-storia', 'STORIA', 'DISCIPLINE', 'dm221-disc-storia', 'Conteggio per gruppi e ordini scolastici della struttura disciplinare finale.', 'Conteggio puntuale ancora da certificare.'),
   pending('inventory-geografia', 'GEOGRAFIA', 'DISCIPLINE', 'dm221-disc-geografia', 'Conteggio per gruppi e ordini scolastici della struttura disciplinare finale.', 'Conteggio puntuale ancora da certificare.'),
   pending('inventory-stem', 'STEM', 'CROSS_DISCIPLINARY_FRAMEWORK', 'dm221-framework-stem', 'Inventario della sezione integrata senza trasformarla in disciplina autonoma.', 'Conteggio puntuale ancora da certificare.'),
@@ -176,10 +212,11 @@ export function assertNoGuessedFinalPublicationCounts(): void {
 
 export function assertVerifiedInventoryBackedByConcreteItems(): void {
   const infanziaInventoryCount = DM221_INFANZIA_ELEMENT_INVENTORY.length;
+  const languageInventoryCount = DM221_LANGUAGE_ELEMENT_INVENTORY.length;
   const technologyInventoryCount = DM221_TECHNOLOGY_ELEMENT_INVENTORY.length;
-  if (infanziaInventoryCount !== 61 || technologyInventoryCount !== 61) {
+  if (infanziaInventoryCount !== 61 || languageInventoryCount !== 138 || technologyInventoryCount !== 61) {
     throw new Error(
-      `DM221_VERIFIED_INVENTORY_DRIFT:infanzia=${infanziaInventoryCount}:tecnologia=${technologyInventoryCount}`,
+      `DM221_VERIFIED_INVENTORY_DRIFT:infanzia=${infanziaInventoryCount}:lingue=${languageInventoryCount}:tecnologia=${technologyInventoryCount}`,
     );
   }
 }
