@@ -34,7 +34,7 @@ export const DM221_2025_SOURCE = {
     contentFingerprint: {
       algorithm: 'SHA-256',
       status: 'REQUIRED',
-      sha256: null,
+      sha256: null as string | null,
       note: 'L’impronta canonica delle bytes del PDF finale non è ancora acquisita. Nessun gate NATIONAL_PRESCRIPTIVE può considerare soddisfatto il binding crittografico finché sha256 resta null.',
     },
   },
