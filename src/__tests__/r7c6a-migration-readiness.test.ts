@@ -25,6 +25,23 @@ describe('R7C6A runtime migration readiness', () => {
     );
   });
 
+  it('accepts isolated backup/rollback/comparison capability without treating live data as rehearsed', () => {
+    expect(CURRENT_R7C6A_MIGRATION_EVIDENCE).toMatchObject({
+      backupGateProven: true,
+      rollbackGateProven: true,
+      deterministicComparisonProven: true,
+      productionDatasetMigrationRehearsalProven: false,
+    });
+    expect(CURRENT_R7C6A_MIGRATION_READINESS.blockers).not.toContain('BACKUP_GATE_NOT_PROVEN');
+    expect(CURRENT_R7C6A_MIGRATION_READINESS.blockers).not.toContain('ROLLBACK_GATE_NOT_PROVEN');
+    expect(CURRENT_R7C6A_MIGRATION_READINESS.blockers).not.toContain(
+      'DETERMINISTIC_COMPARISON_NOT_PROVEN',
+    );
+    expect(CURRENT_R7C6A_MIGRATION_READINESS.blockers).toContain(
+      'PRODUCTION_DATA_MIGRATION_REHEARSAL_NOT_PROVEN',
+    );
+  });
+
   it('fails closed on the real remaining source and migration prerequisites', () => {
     expect(CURRENT_R7C6A_MIGRATION_READINESS.state).toBe('PREP_BLOCKED');
     expect(CURRENT_R7C6A_MIGRATION_READINESS.transitionAuthorized).toBe(false);
@@ -33,9 +50,7 @@ describe('R7C6A runtime migration readiness', () => {
       'NATIONAL_SOURCE_VERIFICATION_INCOMPLETE_OR_UNEVIDENCED',
       'INSTITUTE_SOURCE_DEFECTS_UNRESOLVED',
       'INSTITUTE_SEMANTIC_REVIEW_INCOMPLETE',
-      'BACKUP_GATE_NOT_PROVEN',
-      'ROLLBACK_GATE_NOT_PROVEN',
-      'DETERMINISTIC_COMPARISON_NOT_PROVEN',
+      'PRODUCTION_DATA_MIGRATION_REHEARSAL_NOT_PROVEN',
       'HUMAN_VALIDATION_NOT_PROVEN',
     ]));
     expect(() => assertDualReadTransitionAuthorized()).toThrow(/R7C6A_DUAL_READ_BLOCKED/);
@@ -53,6 +68,7 @@ describe('R7C6A runtime migration readiness', () => {
       backupGateProven: true,
       rollbackGateProven: true,
       deterministicComparisonProven: true,
+      productionDatasetMigrationRehearsalProven: true,
       humanValidationProven: true,
     });
 
