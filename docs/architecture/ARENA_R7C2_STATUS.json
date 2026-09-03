@@ -1,0 +1,48 @@
+{
+  "schemaVersion": "arena-r7c2-status-v1",
+  "workItem": "R7C2_TECHNOLOGY_END_TO_END",
+  "state": "IMPLEMENTED_AWAITING_EXACT_HEAD_GATES",
+  "base": {
+    "workItem": "R7C1_OPERATIONAL_CURRICULUM_CONTRACT",
+    "exactHead": "aaa5f3c71a3ec0819e9f725a0f113a2d34b58530"
+  },
+  "scope": {
+    "schoolOrder": "secondaria",
+    "discipline": "TECNOLOGIA",
+    "institutionalDraftAuthority": "WORKING_DRAFT_NOT_ADOPTED",
+    "institutionalNuclei": 9,
+    "institutionalFrameworkNodes": 36,
+    "gradeProgressionEntries": 27,
+    "gradeProgressionLinks": 18,
+    "finalities": 5,
+    "exitProfileAreas": 6,
+    "operationalArtifacts": 8,
+    "nationalInventoryTotalAllTechnologyOrders": 61,
+    "nationalVerifiedElementsCommittedAsFacts": 0
+  },
+  "invariants": {
+    "legacyCurriculumMapAuthority": false,
+    "persistenceModeChanged": false,
+    "runtimeUiChanged": false,
+    "institutionalAdoptionClaimed": false,
+    "automaticInstituteToNationalMapping": false,
+    "nationalPrescriptiveRequiresHumanVerifiedText": true,
+    "planningHandoffUsesStableRefs": true,
+    "annexDecisionArtifactsRequireDecisionRefs": true
+  },
+  "sourceBoundaries": {
+    "institutionalCurriculumSource": "technology-curriculum-working-draft-2026-2027",
+    "annexSource": "technology-curriculum-annexes-a-h-2026-2027",
+    "nationalSource": "dm-221-2025-indicazioni-nazionali",
+    "alternativeMeetingNotesAutoReconciled": false
+  },
+  "remainingAfterR7C2": [
+    "human verification of the required national Technology texts in the shared operational registry",
+    "explicit semantic mapping between institute nodes and verified national elements",
+    "P3-v2 element-level coverage/gap analysis",
+    "institutional decision/adoption before any ACTIVE authority state",
+    "production UDA persistence migration from text-only snapshots to stable refs",
+    "later global persistence transition legacy-only -> dual-read -> dual-write -> new-domain-primary"
+  ],
+  "next": "R7C3_P3_V2_SEMANTIC"
+}
