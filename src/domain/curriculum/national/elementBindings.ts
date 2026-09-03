@@ -3,6 +3,7 @@ import type { NationalSourceLocator, SourceBindingStatus } from './dm2212025';
 export type NationalCurriculumElementKind =
   | 'FIELD_OF_EXPERIENCE'
   | 'DISCIPLINE_SECTION'
+  | 'GENERAL_FRAMEWORK'
   | 'FINALITY'
   | 'METHODOLOGICAL_GUIDANCE'
   | 'EXPECTED_COMPETENCE'
