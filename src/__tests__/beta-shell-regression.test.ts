@@ -28,6 +28,10 @@ const curriculumWorkspaceSource = firstSource(import.meta.glob('../features/curr
   query: '?raw', import: 'default', eager: true,
 }) as Record<string, string>);
 
+const technologySourceReviewTaskSource = firstSource(import.meta.glob('../features/curriculum/components/TechnologySourceReviewTask.tsx', {
+  query: '?raw', import: 'default', eager: true,
+}) as Record<string, string>);
+
 const revisionSource = firstSource(import.meta.glob('../features/curriculum/components/RevisioneTab.tsx', {
   query: '?raw', import: 'default', eager: true,
 }) as Record<string, string>);
@@ -99,9 +103,15 @@ describe('Arena Beta canonical shell regression guard', () => {
     expect(viewsSource).toContain('Verifica se puoi usarlo');
     expect(viewsSource).toContain("safeHandleTabSwitch('fonti')");
     expect(viewsSource).toContain('Se vuoi solo leggerlo, puoi continuare a consultare i contenuti qui sotto.');
-    expect(curriculumWorkspaceSource).toContain('Vuoi controllare la fonte nazionale?');
+    expect(curriculumWorkspaceSource).toContain('Curricolo verticale · Tecnologia');
+    expect(curriculumWorkspaceSource).toContain('Verifica una scheda alla volta, dalla primaria alla secondaria di I grado.');
     expect(curriculumWorkspaceSource).toContain('Controlla la fonte');
-    expect(curriculumWorkspaceSource).not.toContain('Fonte nazionale · Tecnologia');
+    expect(technologySourceReviewTaskSource).toContain('Scuola primaria');
+    expect(technologySourceReviewTaskSource).toContain('Secondaria di I grado');
+    expect(technologySourceReviewTaskSource).toContain('Scheda {currentIndex + 1} di {queue.length}');
+    expect(technologySourceReviewTaskSource).toContain('Apri la fonte ufficiale');
+    expect(technologySourceReviewTaskSource).toContain('DM221_2025_SOURCE.officialLocator.pdfUrl');
+    expect(technologySourceReviewTaskSource).not.toContain('Controlla Tecnologia nelle Indicazioni 2025');
   });
 
   it('makes revision a focused mobile flow with nearby context and actions', () => {

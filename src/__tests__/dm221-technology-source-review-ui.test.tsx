@@ -10,10 +10,14 @@ describe('Technology source review human task', () => {
   it('presents one source item at a time with human-readable context', () => {
     render(<TechnologySourceReviewTask />);
 
-    expect(screen.getByText('Controlla Tecnologia nelle Indicazioni 2025')).toBeTruthy();
-    expect(screen.getByText('0 di 61 controllati')).toBeTruthy();
+    expect(screen.getByText('Curricolo verticale · Tecnologia')).toBeTruthy();
+    expect(screen.getByText('Verifica il testo nella fonte ufficiale')).toBeTruthy();
+    expect(screen.getByText('Scheda 1 di 61')).toBeTruthy();
+    expect(screen.getByText('0 già controllate')).toBeTruthy();
+    expect(screen.getByText('Scuola primaria')).toBeTruthy();
     expect(screen.getByText(/D\.M\. 221\/2025 · pagina 96/)).toBeTruthy();
-    expect(screen.getByLabelText('Testo che hai letto nella fonte')).toBeTruthy();
+    expect(screen.getByRole('link', { name: 'Apri la fonte ufficiale' })).toBeTruthy();
+    expect(screen.getByLabelText('Testo che leggi nella fonte')).toBeTruthy();
   });
 
   it('blocks a positive verification without explicit human attestation', () => {

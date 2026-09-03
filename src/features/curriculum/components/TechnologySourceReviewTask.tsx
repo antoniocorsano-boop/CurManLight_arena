@@ -6,18 +6,25 @@ import {
   type TechnologySourceReviewDecision,
   type TechnologySourceVerificationReceipt,
 } from '../../../domain/curriculum/national/technologyHumanVerification';
+import { DM221_2025_SOURCE } from '../../../domain/curriculum/national/dm2212025';
 
 const STORAGE_KEY = 'cml.dm221.technology.source-review.receipts.v1';
 
 const GROUP_LABELS: Record<string, string> = {
-  PRIMARY_EXPECTED_COMPETENCES: 'Primaria · competenze attese al termine della quinta',
-  PRIMARY_GRADE3_OBJECTIVES: 'Primaria · obiettivi al termine della terza',
-  PRIMARY_GRADE5_OBJECTIVES: 'Primaria · obiettivi al termine della quinta',
-  PRIMARY_KNOWLEDGE: 'Primaria · conoscenze',
-  LOWER_SECONDARY_EXPECTED_COMPETENCES: 'Secondaria di I grado · competenze attese al termine della terza',
-  LOWER_SECONDARY_GRADE3_OBJECTIVES: 'Secondaria di I grado · obiettivi al termine della terza',
-  LOWER_SECONDARY_KNOWLEDGE: 'Secondaria di I grado · conoscenze',
+  PRIMARY_EXPECTED_COMPETENCES: 'Competenze attese al termine della quinta',
+  PRIMARY_GRADE3_OBJECTIVES: 'Obiettivi al termine della terza',
+  PRIMARY_GRADE5_OBJECTIVES: 'Obiettivi al termine della quinta',
+  PRIMARY_KNOWLEDGE: 'Conoscenze',
+  LOWER_SECONDARY_EXPECTED_COMPETENCES: 'Competenze attese al termine della terza',
+  LOWER_SECONDARY_GRADE3_OBJECTIVES: 'Obiettivi al termine della terza',
+  LOWER_SECONDARY_KNOWLEDGE: 'Conoscenze',
 };
+
+function getSchoolOrderLabel(schoolOrder: 'infanzia' | 'primaria' | 'secondaria'): string {
+  if (schoolOrder === 'primaria') return 'Scuola primaria';
+  if (schoolOrder === 'secondaria') return 'Secondaria di I grado';
+  return 'Ordine scolastico non previsto in questa verifica';
+}
 
 function readReceipts(): TechnologySourceVerificationReceipt[] {
   if (typeof window === 'undefined') return [];
@@ -117,38 +124,50 @@ export function TechnologySourceReviewTask() {
 
   if (!current) return null;
 
+  const officialSourceUrl = `${DM221_2025_SOURCE.officialLocator.pdfUrl}#page=${current.page}`;
+
   return (
     <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm space-y-5" aria-labelledby="technology-source-review-title">
       <div className="space-y-2">
-        <span className="text-[10px] font-black uppercase tracking-wider text-indigo-600">Verifica della fonte nazionale</span>
-        <h3 id="technology-source-review-title" className="text-base font-black text-slate-900">Controlla Tecnologia nelle Indicazioni 2025</h3>
+        <span className="text-[10px] font-black uppercase tracking-wider text-indigo-600">Curricolo verticale · Tecnologia</span>
+        <h3 id="technology-source-review-title" className="text-base font-black text-slate-900">Verifica il testo nella fonte ufficiale</h3>
         <p className="text-sm text-slate-600 leading-relaxed max-w-3xl">
-          Leggi l’elemento nella fonte ufficiale, riportalo qui e indica se corrisponde. Arena conserva la tua verifica sul dispositivo; non approva né modifica automaticamente il curricolo della scuola.
+          Apri la pagina indicata, riporta ciò che leggi e scegli l’esito. Nessuna modifica automatica.
         </p>
       </div>
 
       <div className="space-y-2" aria-label={`Avanzamento ${completedCount} di ${queue.length}`}>
-        <div className="flex items-center justify-between text-xs font-bold text-slate-600">
-          <span>{completedCount} di {queue.length} controllati</span>
-          <span>{progress}%</span>
+        <div className="flex items-center justify-between gap-3 text-xs font-bold text-slate-600">
+          <span>Scheda {currentIndex + 1} di {queue.length}</span>
+          <span>{completedCount} già controllate</span>
         </div>
         <div className="h-2 rounded-full bg-slate-100 overflow-hidden"><div className="h-full bg-indigo-600" style={{ width: `${progress}%` }} /></div>
       </div>
 
       <div className="rounded-xl border border-indigo-100 bg-indigo-50/40 p-4 space-y-2">
-        <p className="text-xs font-black text-indigo-900">{GROUP_LABELS[current.group] ?? current.group} · elemento {current.ordinal}</p>
-        <p className="text-sm font-bold text-slate-900">D.M. 221/2025 · pagina {current.page}</p>
-        <p className="text-xs text-slate-600 leading-relaxed">{current.section}</p>
+        <p className="text-xs font-black uppercase tracking-wide text-indigo-700">{getSchoolOrderLabel(current.schoolOrder)}</p>
+        <p className="text-sm font-bold text-slate-900">{GROUP_LABELS[current.group] ?? current.group} · elemento {current.ordinal}</p>
+        <div className="flex flex-wrap items-center gap-3">
+          <span className="text-xs font-bold text-slate-600">D.M. 221/2025 · pagina {current.page}</span>
+          <a
+            href={officialSourceUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="text-xs font-black text-indigo-700 underline underline-offset-2 hover:text-indigo-900"
+          >
+            Apri la fonte ufficiale
+          </a>
+        </div>
       </div>
 
       <div className="space-y-2">
-        <label htmlFor="technology-source-text" className="text-sm font-bold text-slate-800">Testo che hai letto nella fonte</label>
+        <label htmlFor="technology-source-text" className="text-sm font-bold text-slate-800">Testo che leggi nella fonte</label>
         <textarea
           id="technology-source-text"
           value={sourceText}
           onChange={(event) => setSourceText(event.target.value)}
           rows={5}
-          placeholder="Riporta qui l’elemento che stai verificando."
+          placeholder="Riporta qui il testo della scheda."
           className="w-full rounded-xl border border-slate-300 bg-white p-3 text-sm leading-relaxed focus:outline-none focus:ring-2 focus:ring-indigo-500"
         />
       </div>
@@ -166,7 +185,7 @@ export function TechnologySourceReviewTask() {
 
       <label className="flex items-start gap-3 rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm text-slate-700">
         <input type="checkbox" checked={attested} onChange={(event) => setAttested(event.target.checked)} className="mt-1" />
-        <span>Confermo di aver letto personalmente questo elemento nella fonte indicata sopra.</span>
+        <span>Confermo di aver controllato personalmente questo elemento nella fonte indicata.</span>
       </label>
 
       {feedback && <p role="status" className="rounded-xl bg-slate-50 border border-slate-200 p-3 text-sm font-semibold text-slate-700">{feedback}</p>}
