@@ -3,9 +3,11 @@ import type { NationalSourceLocator, SourceBindingStatus } from './dm2212025';
 export type NationalCurriculumElementKind =
   | 'FIELD_OF_EXPERIENCE'
   | 'DISCIPLINE_SECTION'
+  | 'FINALITY'
   | 'EXPECTED_COMPETENCE'
   | 'LEARNING_OBJECTIVE'
   | 'KNOWLEDGE_OR_CONTENT'
+  | 'TRANSITION_PROFILE'
   | 'CROSS_DISCIPLINARY_FRAMEWORK';
 
 export type CanonicalTextStatus =
