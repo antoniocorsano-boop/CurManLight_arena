@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useCurriculumStore } from '../../store/useCurriculumStore';
 import { CurriculumTab as CurriculumTabBase, type CurriculumTabProps } from './components/CurriculumTab';
-import { FinalPublicationSourceReviewTask } from './components/FinalPublicationSourceReviewTask';
+import { FinalPublicationSourceReviewWorkbench } from './components/FinalPublicationSourceReviewWorkbench';
 
 export function CurriculumWorkspace(props: CurriculumTabProps) {
   const { activeCurricoloView } = useCurriculumStore();
@@ -18,7 +18,7 @@ export function CurriculumWorkspace(props: CurriculumTabProps) {
               <span className="text-xs font-bold text-indigo-700">Indicazioni nazionali 2025 · pubblicazione finale</span>
               <h3 className="mt-1 text-base font-extrabold text-slate-900">Controlla i testi della fonte ufficiale</h3>
               <p className="mt-1 text-sm leading-relaxed text-slate-600">
-                Verifica una scheda alla volta tra infanzia, primaria e secondaria di I grado, con filtri per campo, disciplina e stato.
+                Verifica una scheda alla volta tra infanzia, primaria e secondaria di I grado, con filtri per campo, disciplina e stato. Puoi esportare e reimportare le ricevute senza sovrascrivere automaticamente eventuali conflitti.
               </p>
             </div>
             <button
@@ -37,7 +37,7 @@ export function CurriculumWorkspace(props: CurriculumTabProps) {
             </p>
           )}
 
-          {reviewOpen && <FinalPublicationSourceReviewTask />}
+          {reviewOpen && <FinalPublicationSourceReviewWorkbench />}
         </section>
       )}
     </div>
