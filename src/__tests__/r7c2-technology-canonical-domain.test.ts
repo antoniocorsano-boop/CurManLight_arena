@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { CURRICULUM_PERSISTENCE_MODE } from '../domain/curriculum/persistence/compatibilityMode';
 import {
   buildTechnologyCanonicalDomainSnapshot,
   validateTechnologyCanonicalDomainSnapshot,
@@ -59,5 +60,9 @@ describe('R7C2 Technology CML-633C materialization', () => {
     expect(value.nodes.every(node => segmentIds.has(node.segmentRef.id))).toBe(true);
     expect(value.nodes.every(node => node.sourceRefs.some(ref => ref.id === sourceId))).toBe(true);
     expect(value.curriculumVersion.mainSourceRefs.some(ref => ref.id === sourceId)).toBe(true);
+  });
+
+  it('does not activate CML-633C as the production persistence source in R7C2', () => {
+    expect(CURRICULUM_PERSISTENCE_MODE).toBe('legacy-only');
   });
 });
