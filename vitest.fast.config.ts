@@ -40,6 +40,7 @@ export default defineConfig({
       'src/__tests__/r7c1-operational-curriculum-contract.test.ts',
       'src/__tests__/r7c2-technology-end-to-end.test.ts',
       'src/__tests__/r7c2-technology-source-completeness.test.ts',
+      'src/__tests__/r7c2-technology-canonical-domain.test.ts',
       'src/__tests__/end-to-end-adoption-validation-r7.test.ts',
       'src/__tests__/identity.test.ts',
       'src/__tests__/beta-identity-authority.test.ts',
