@@ -1,0 +1,57 @@
+{
+  "schemaVersion": "arena-r7c7b-institute-source-remediation-workbench-v1",
+  "workItem": "R7C7B",
+  "date": "2026-09-03",
+  "state": "HUMAN_WORKBENCH_AVAILABLE_SOURCE_REMEDIATION_BLOCKED",
+  "logicalBase": {
+    "workItem": "R7C7A",
+    "sha": "422e088eb89adfcb40326a69a822ae4fa05af8ff"
+  },
+  "surface": {
+    "workspace": "FONTI",
+    "component": "InstituteSourceReviewPanel",
+    "progressiveDisclosure": true,
+    "taskCount": 7
+  },
+  "correctedSourceFlow": {
+    "fileReadLocation": "BROWSER_LOCAL_ONLY",
+    "fileUploadedToServer": false,
+    "sha256ComputedLocally": true,
+    "sameSourceShaRejected": true,
+    "perTaskHumanCorrectionConfirmationRequired": true,
+    "acknowledgementResolvesTask": false
+  },
+  "receiptContinuity": {
+    "storage": "LOCAL_STORAGE",
+    "storageKeyBoundToSourceSha256": true,
+    "exportJson": true,
+    "importJson": true,
+    "conflictingReceiptsFailClosed": true,
+    "resetSupported": true
+  },
+  "humanDecisionTasks": {
+    "latinScope": {
+      "deferAllowed": true,
+      "deferResolves": false,
+      "secondYearAndLaterResolves": true,
+      "classOneResolves": true
+    },
+    "fieldIdentity": {
+      "keepDistinctPendingRepairResolves": false,
+      "normalizeCanonicalPreserveSourceLabelResolves": true
+    }
+  },
+  "authorityEffects": {
+    "sourceDocumentMutation": false,
+    "sourceAuthorityMutation": false,
+    "nationalAuthorityMutation": false,
+    "institutionalAuthorityMutation": false,
+    "semanticReviewComplete": false,
+    "automaticCanonicalPromotion": false,
+    "institutionalAdoption": false,
+    "p3Mutation": false,
+    "p7Mutation": false,
+    "persistenceModeMutation": false
+  },
+  "nextGovernedStep": "HUMAN_REMEDIATE_SOURCE_THEN_SEMANTIC_REVIEW"
+}
