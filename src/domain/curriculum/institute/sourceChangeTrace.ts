@@ -1,5 +1,6 @@
 import {
   INSTITUTE_SOURCE_REVIEW_QUEUE,
+  assessInstituteSourceReview,
   doesInstituteSourceReceiptResolveTask,
   validateInstituteSourceReviewReceipt,
   type InstituteSourceReviewDecision,
@@ -7,7 +8,7 @@ import {
   type InstituteSourceReviewTaskId,
 } from './sourceReviewQueue';
 
-export type InstituteSourceChangeTraceStatus = 'OPEN' | 'ACKNOWLEDGED' | 'RESOLVED';
+export type InstituteSourceChangeTraceStatus = 'OPEN' | 'ACKNOWLEDGED' | 'RESOLVED' | 'CONFLICT';
 
 export interface InstituteSourceChangeTraceEntry {
   taskId: InstituteSourceReviewTaskId;
@@ -25,6 +26,8 @@ export interface InstituteSourceChangeTraceEntry {
 export function buildInstituteSourceChangeTrace(
   receipts: readonly InstituteSourceReviewReceipt[],
 ): readonly InstituteSourceChangeTraceEntry[] {
+  const assessment = assessInstituteSourceReview(receipts);
+  const conflictingTaskIds = new Set(assessment.conflictingTaskIds);
   const latestValidReceiptByTask = new Map<InstituteSourceReviewTaskId, InstituteSourceReviewReceipt>();
 
   for (const receipt of receipts) {
@@ -38,17 +41,22 @@ export function buildInstituteSourceChangeTrace(
 
   return INSTITUTE_SOURCE_REVIEW_QUEUE.map((task) => {
     const receipt = latestValidReceiptByTask.get(task.taskId) ?? null;
-    const resolved = receipt ? doesInstituteSourceReceiptResolveTask(receipt) : false;
+    const conflict = conflictingTaskIds.has(task.taskId);
+    const resolved = !conflict && receipt ? doesInstituteSourceReceiptResolveTask(receipt) : false;
     return {
       taskId: task.taskId,
       findingId: task.findingId,
       target: task.target,
       problem: task.summary,
       pages: task.pages,
-      decision: receipt ? sourceDecisionLabel(receipt.decision) : 'Decisione umana non ancora registrata',
-      correctionNote: receipt?.notes?.trim() || null,
-      replacementSourceSha256: receipt?.replacementSourceSha256 ?? null,
-      status: resolved ? 'RESOLVED' : receipt ? 'ACKNOWLEDGED' : 'OPEN',
+      decision: conflict
+        ? 'Ricevute umane in conflitto: è necessaria una nuova decisione coerente'
+        : receipt
+          ? sourceDecisionLabel(receipt.decision)
+          : 'Decisione umana non ancora registrata',
+      correctionNote: conflict ? null : receipt?.notes?.trim() || null,
+      replacementSourceSha256: conflict ? null : receipt?.replacementSourceSha256 ?? null,
+      status: conflict ? 'CONFLICT' : resolved ? 'RESOLVED' : receipt ? 'ACKNOWLEDGED' : 'OPEN',
       authorityEffect: 'NONE',
     };
   });
