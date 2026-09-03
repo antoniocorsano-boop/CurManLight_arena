@@ -1,0 +1,62 @@
+{
+  "schemaVersion": "arena-institute-curriculum-source-audit-status-v1",
+  "workItem": "R7C4_SOURCE_AUDIT",
+  "source": "CURRICOLO VERTICALE .docx",
+  "sourcePages": 89,
+  "sourceAuthority": "LOCAL_WORKING",
+  "semanticStatus": "UNASSESSED",
+  "inventoryUnits": 1156,
+  "anomalies": {
+    "total": 10,
+    "P0": 4,
+    "P1": 4,
+    "P2": 2
+  },
+  "automaticCanonicalPromotion": false,
+  "automaticNationalAttribution": false,
+  "infanziaIdentityRule": "FIELD_OF_EXPERIENCE_ONLY",
+  "firstCycleClassScopesFound": [
+    "CLASSE PRIMA"
+  ],
+  "classSecondaHeadingFound": false,
+  "classTerzaHeadingFound": false,
+  "blockingFindings": [
+    "A001",
+    "A002",
+    "A003",
+    "A004"
+  ],
+  "majorFindings": [
+    "A005",
+    "A006",
+    "A007",
+    "A008"
+  ],
+  "reviewFindings": [
+    "A009",
+    "A010"
+  ],
+  "r7c4HeadAnalyzed": "a20b062e49d972fff083d0d5c6d2f12635c81ecc",
+  "runtimeMutation": false,
+  "authorityMutation": false,
+  "persistenceModeMutation": false,
+  "recommendedNext": "human correction of P0 source defects, then source-qualified semantic migration into the operational curriculum graph",
+  "externalInventoryArtifacts": {
+    "CURRICOLO_VERTICALE_ARENA_INVENTORY_v1.min.json": {
+      "sha256": "003f4efb8f8bc6b0a9f334d7d857b748a1b19ddaedcafc6ed70073286b28ad17",
+      "bytes": 641202
+    },
+    "CURRICOLO_VERTICALE_ARENA_INVENTORY_v1.csv": {
+      "sha256": "ba94f92464d8ab76182cc7f02ed7b2041acc7a99bcd2eb8b48b0adb8db380b95",
+      "bytes": 351004
+    },
+    "ARENA_CURRICOLO_VERTICALE_AUDIT_2026-09-03.xlsx": {
+      "sha256": "4548cbe9c9cb4dff25dcbf0ba126a8eb5e07ad7742f8336126bec3657bd479aa",
+      "bytes": 698533
+    },
+    "ARENA_CURRICOLO_VERTICALE_SOURCE_AUDIT_2026-09-03.md": {
+      "sha256": "891b3b393a30ee29b0ad1b16656298b87ba4d119153e0c4119dac87f50e0b017",
+      "bytes": 6265
+    }
+  }
+}
