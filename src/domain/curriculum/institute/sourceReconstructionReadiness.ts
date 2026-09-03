@@ -21,12 +21,20 @@ export const INSTITUTE_CURRICULUM_SOURCE_RECONSTRUCTION_V3 = {
     blockedHeaderRepair: 1,
     reviewRequiredIdentityLabel: 1,
   },
+  rationaleStatus: {
+    blockedSourceDefect: 2,
+  },
+  actionableSourceReviewTaskCount: 7,
   automaticCanonicalPromotion: false,
   automaticNationalAttribution: false,
   humanSemanticReviewComplete: false,
 } as const;
 
 export function countInstituteSourceReviewBlockers(): number {
-  const status = INSTITUTE_CURRICULUM_SOURCE_RECONSTRUCTION_V3.presentationStatus;
-  return status.blockedSourceDefect + status.blockedHeaderRepair + status.reviewRequiredIdentityLabel;
+  const presentation = INSTITUTE_CURRICULUM_SOURCE_RECONSTRUCTION_V3.presentationStatus;
+  const rationale = INSTITUTE_CURRICULUM_SOURCE_RECONSTRUCTION_V3.rationaleStatus;
+  return presentation.blockedSourceDefect
+    + presentation.blockedHeaderRepair
+    + presentation.reviewRequiredIdentityLabel
+    + rationale.blockedSourceDefect;
 }
