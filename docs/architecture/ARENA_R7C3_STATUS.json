@@ -1,0 +1,51 @@
+{
+  "schemaVersion": "arena-r7c3-status-v1",
+  "workItem": "R7C3_P3_V2_SEMANTIC",
+  "state": "IMPLEMENTED_AWAITING_EXACT_HEAD_GATES",
+  "base": {
+    "workItem": "R7C2_TECHNOLOGY_END_TO_END",
+    "exactHead": "387ee5808a176312a2b567cdf44219d1150384db"
+  },
+  "scope": {
+    "schoolOrder": "secondaria",
+    "discipline": "TECNOLOGIA",
+    "nationalInventoryElements": 30,
+    "semanticFindingKinds": [
+      "SOURCE_UNVERIFIED",
+      "REVIEW_REQUIRED",
+      "COVERAGE",
+      "GAP",
+      "DISCONTINUITY",
+      "OVERLAP",
+      "CONFLICT"
+    ]
+  },
+  "invariants": {
+    "automaticSemanticMapping": false,
+    "textEqualityCreatesCoverage": false,
+    "unverifiedSourceCreatesGap": false,
+    "gapRequiresHumanReview": true,
+    "semanticReceiptHumanAttestationRequired": true,
+    "nationalFingerprintBindingRequired": true,
+    "institutionalNodeFingerprintBindingRequired": true,
+    "staleReceiptAccepted": false,
+    "authorityEffect": "NONE",
+    "legacyCurriculumMapAuthority": false,
+    "persistenceModeChanged": false,
+    "runtimeUiChanged": false,
+    "institutionalAdoptionClaimed": false,
+    "infanziaRuntimeChanged": false
+  },
+  "currentKnownDataState": {
+    "nationalTechnologyInventoryAllOrders": 61,
+    "nationalTechnologyInventoryLowerSecondary": 30,
+    "nationalVerifiedElementsCommittedAsFacts": 0,
+    "institutionalTechnologyDraftAuthority": "WORKING_DRAFT_NOT_ADOPTED"
+  },
+  "semanticCompletionRules": {
+    "reviewComplete": "all scoped elements have human-verified national source text and a current human semantic review",
+    "fullyCovered": "reviewComplete and every scoped element is COVERAGE",
+    "requiresInstitutionalAction": "at least one GAP, DISCONTINUITY, OVERLAP or CONFLICT"
+  },
+  "next": "R7C4_INFANZIA_NATIVE_RUNTIME"
+}
