@@ -15,7 +15,7 @@ describe('Technology source review human task', () => {
     expect(screen.getByText('Scheda 1 di 61')).toBeTruthy();
     expect(screen.getByText('0 già controllate')).toBeTruthy();
     expect(screen.getByText('Scuola primaria')).toBeTruthy();
-    expect(screen.getByText(/D\.M\. 221\/2025 · pagina 96/)).toBeTruthy();
+    expect(screen.getByText(/D\.M\. 221\/2025 · pagina 141/)).toBeTruthy();
     expect(screen.getByRole('link', { name: 'Apri la fonte ufficiale' })).toBeTruthy();
     expect(screen.getByLabelText('Testo che leggi nella fonte')).toBeTruthy();
   });
