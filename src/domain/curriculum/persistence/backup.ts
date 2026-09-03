@@ -15,8 +15,12 @@ function normalize(value: unknown): unknown {
   return value;
 }
 
+export function canonicalPayloadText(payload: unknown): string {
+  return JSON.stringify(normalize(payload));
+}
+
 export function checksumPayload(payload: unknown): string {
-  const text = JSON.stringify(normalize(payload));
+  const text = canonicalPayloadText(payload);
   let hash = 2166136261;
   for (let index = 0; index < text.length; index += 1) {
     hash ^= text.charCodeAt(index);

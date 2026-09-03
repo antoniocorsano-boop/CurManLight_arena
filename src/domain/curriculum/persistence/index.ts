@@ -4,6 +4,7 @@ export * from './compatibilityMode';
 export * from './errors';
 export * from './legacyAdapters';
 export * from './migration';
+export * from './migrationLocalPreflight';
 export * from './migrationReadiness';
 export * from './migrationSafetyRehearsal';
 export * from './records';
