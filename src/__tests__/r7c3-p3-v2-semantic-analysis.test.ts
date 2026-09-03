@@ -181,6 +181,37 @@ describe('R7C3 P3-v2 semantic element-level analysis', () => {
     expect(result.analysis.requiresInstitutionalAction).toBe(true);
   });
 
+  it('records DISCONTINUITY and CONFLICT only as explicit human findings', async () => {
+    const element = verifiedTechnologyElement();
+    const pilot = await pilotWith(element);
+
+    const discontinuity = analyzeTechnologySemanticCoverage({
+      pilot,
+      reviews: [reviewFor(pilot, element, 'DISCONTINUITY')],
+    });
+    expect(discontinuity.analysis.summary.discontinuities).toBe(1);
+    expect(discontinuity.analysis.requiresInstitutionalAction).toBe(true);
+
+    const conflict = analyzeTechnologySemanticCoverage({
+      pilot,
+      reviews: [reviewFor(pilot, element, 'CONFLICT')],
+    });
+    expect(conflict.analysis.summary.conflicts).toBe(1);
+    expect(conflict.analysis.requiresInstitutionalAction).toBe(true);
+  });
+
+  it('rejects semantic reviews when the national source text is not verified in the aggregate', async () => {
+    const element = verifiedTechnologyElement();
+    const verifiedPilot = await pilotWith(element);
+    const review = reviewFor(verifiedPilot, element, 'COVERAGE');
+    const unverifiedPilot = await pilotWith();
+
+    expect(() => analyzeTechnologySemanticCoverage({
+      pilot: unverifiedPilot,
+      reviews: [review],
+    })).toThrow(/CURRICULUM_SEMANTIC_REVIEW_WITHOUT_VERIFIED_SOURCE/);
+  });
+
   it('does not declare the whole curriculum semantically reviewed while source or review work remains', async () => {
     const element = verifiedTechnologyElement();
     const pilot = await pilotWith(element);
