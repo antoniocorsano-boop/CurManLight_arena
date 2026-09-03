@@ -255,12 +255,16 @@ export function analyzeCurriculumSemanticCoverage(input: {
   }
 
   const findings = input.nationalInventory.map((element) => {
+    const review = reviewByElementId.get(element.elementId);
     const nationalNode = findNationalNode(input.aggregate, element.elementId);
     const nationalFingerprint = nationalNode
       ? verifiedFingerprintForElement(nationalNode, element.elementId)
       : undefined;
 
     if (!nationalNode || !nationalFingerprint) {
+      if (review) {
+        throw new Error(`CURRICULUM_SEMANTIC_REVIEW_WITHOUT_VERIFIED_SOURCE:${review.reviewRef}:${element.elementId}`);
+      }
       const kind = 'SOURCE_UNVERIFIED' as const;
       return {
         findingRef: `p3v2:${element.elementId}:${kind.toLowerCase()}`,
@@ -276,7 +280,6 @@ export function analyzeCurriculumSemanticCoverage(input: {
       } satisfies CurriculumSemanticFinding;
     }
 
-    const review = reviewByElementId.get(element.elementId);
     if (!review) {
       const kind = 'REVIEW_REQUIRED' as const;
       return {
