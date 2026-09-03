@@ -44,7 +44,7 @@ export const DM221_DISCIPLINE_SOURCE_WORK_QUEUE: readonly DisciplineSourceWorkIt
       sourceLocator: {
         sourceId: DM221_2025_SOURCE_ID,
         section: publicationSection?.label ?? segment.label,
-        page: publicationSection?.pageStart,
+        ...(publicationSection ? { page: publicationSection.pageStart } : {}),
         note: publicationSection
           ? `Volume finale MIM, marzo 2026, pp. ${publicationSection.pageStart}-${publicationSection.pageEnd}; confini di sezione localizzati, testo elemento-per-elemento ancora da verificare.`
           : 'Sezione disciplinare nota dalla struttura canonica; pagina e confini devono ancora essere verificati nella fonte ufficiale prima di SOURCE_LOCATED.',
