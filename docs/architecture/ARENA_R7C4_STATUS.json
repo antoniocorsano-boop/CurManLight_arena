@@ -1,6 +1,6 @@
 {
   "workItem": "R7C4_INFANZIA_NATIVE_RUNTIME",
-  "status": "IMPLEMENTED_AWAITING_EXACT_HEAD_GATES",
+  "status": "IMPLEMENTED_GATE_REQUIRED",
   "dependsOn": "R7C3_P3_V2_SEMANTIC",
   "scope": "INFANZIA_RUNTIME_IDENTITY_AND_FAIL_CLOSED_PLANNING",
   "runtimeIdentity": "DM221_NATIVE_FIELDS_OF_EXPERIENCE",
@@ -29,5 +29,6 @@
   "sourceTextPromoted": false,
   "p3LegacyScopeChanged": false,
   "r7b3InventoryDependency": false,
+  "exitGate": "EXACT_HEAD_PRODUCT_CI_BETA_RELEASE_IDENTITY_AUTHORITY_PASS",
   "next": "R7C5_COMPLETE_IN2025_ACQUISITION"
 }
