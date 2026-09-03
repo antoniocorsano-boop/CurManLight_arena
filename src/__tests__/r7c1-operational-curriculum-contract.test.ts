@@ -109,31 +109,31 @@ describe('R7C1 operational curriculum aggregate contract', () => {
 
   it('fails closed if a discipline is projected onto infanzia', () => {
     const aggregate = base();
-    aggregate.segments[0] = {
+    aggregate.segments = [{
       ...aggregate.segments[0],
       target: {
         kind: 'DISCIPLINE',
         schoolOrder: 'infanzia',
         disciplineId: 'TECNOLOGIA',
       } as unknown as OperationalCurriculumAggregateV1['segments'][number]['target'],
-    };
+    }];
 
     expect(errorCodes(aggregate)).toContain('INFANZIA_DISCIPLINE_PROJECTION_FORBIDDEN');
   });
 
   it('does not allow NATIONAL_PRESCRIPTIVE without human-verified source text bound to the same fingerprint', () => {
     const missing = base();
-    missing.nodes[0] = { ...missing.nodes[0], nationalElementEvidence: [] };
+    missing.nodes = [{ ...missing.nodes[0], nationalElementEvidence: [] }];
     expect(errorCodes(missing)).toContain('NATIONAL_NODE_SOURCE_BINDING_REQUIRED');
 
     const mismatch = base();
-    mismatch.nodes[0] = {
+    mismatch.nodes = [{
       ...mismatch.nodes[0],
       nationalElementEvidence: [{
         ...mismatch.nodes[0].nationalElementEvidence[0],
         verifiedTextFingerprint: HASH_B,
       }],
-    };
+    }];
     expect(errorCodes(mismatch)).toContain('NATIONAL_NODE_SOURCE_BINDING_REQUIRED');
   });
 
@@ -165,11 +165,11 @@ describe('R7C1 operational curriculum aggregate contract', () => {
 
   it('requires one coherent version graph with resolvable segment, node and link references', () => {
     const aggregate = base();
-    aggregate.nodes[0] = {
+    aggregate.nodes = [{
       ...aggregate.nodes[0],
       curriculumVersionRef: 'curriculum:other',
       segmentRef: 'segment:missing',
-    };
+    }];
     aggregate.links = [{
       linkRef: 'link:1',
       curriculumVersionRef: 'curriculum:v1',
@@ -195,13 +195,13 @@ describe('R7C1 operational curriculum aggregate contract', () => {
       materializationRef: 'materialization:1',
       materializationFingerprint: HASH_A,
     };
-    aggregate.nodes[0] = {
+    aggregate.nodes = [{
       ...aggregate.nodes[0],
       origin: 'synthetic',
       lifecycle: 'PROPOSED',
       authorityLevel: 'LOCAL_WORKING',
       nationalElementEvidence: [],
-    };
+    }];
 
     expect(errorCodes(aggregate)).toEqual(expect.arrayContaining([
       'ACTIVE_CANONICAL_NODE_NOT_FINAL',
