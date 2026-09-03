@@ -36,6 +36,10 @@ const finalPublicationSourceReviewTaskSource = firstSource(import.meta.glob('../
   query: '?raw', import: 'default', eager: true,
 }) as Record<string, string>);
 
+const finalPublicationSourceReviewWorkbenchSource = firstSource(import.meta.glob('../features/curriculum/components/FinalPublicationSourceReviewWorkbench.tsx', {
+  query: '?raw', import: 'default', eager: true,
+}) as Record<string, string>);
+
 const revisionSource = firstSource(import.meta.glob('../features/curriculum/components/RevisioneTab.tsx', {
   query: '?raw', import: 'default', eager: true,
 }) as Record<string, string>);
@@ -110,7 +114,11 @@ describe('Arena Beta canonical shell regression guard', () => {
     expect(curriculumWorkspaceSource).toContain('Indicazioni nazionali 2025 · pubblicazione finale');
     expect(curriculumWorkspaceSource).toContain('Verifica una scheda alla volta tra infanzia, primaria e secondaria di I grado');
     expect(curriculumWorkspaceSource).toContain('Controlla la fonte');
-    expect(curriculumWorkspaceSource).toContain('FinalPublicationSourceReviewTask');
+    expect(curriculumWorkspaceSource).toContain('FinalPublicationSourceReviewWorkbench');
+    expect(finalPublicationSourceReviewWorkbenchSource).toContain('data-source-review-roundtrip');
+    expect(finalPublicationSourceReviewWorkbenchSource).toContain('Esporta pacchetto');
+    expect(finalPublicationSourceReviewWorkbenchSource).toContain('Importa verifiche');
+    expect(finalPublicationSourceReviewWorkbenchSource).toContain('FinalPublicationSourceReviewTask');
     expect(finalPublicationSourceReviewTaskSource).toContain('Scuola dell’infanzia');
     expect(finalPublicationSourceReviewTaskSource).toContain('Scuola primaria');
     expect(finalPublicationSourceReviewTaskSource).toContain('Secondaria di I grado');
