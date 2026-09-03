@@ -73,7 +73,6 @@ export {
 
 // ─── CML-633C Canonical Domain ──────────────────────────────────────────────
 
-// Source Types
 export type {
   Source,
   SourceType,
@@ -91,7 +90,6 @@ export {
   SOURCE_SCHEMA_VERSION,
 } from './sources/types';
 
-// Curriculum Model Types
 export type {
   CurriculumVersion as CanonicalCurriculumVersion,
   CurriculumVersionStatus as CanonicalCurriculumVersionStatus,
@@ -120,7 +118,6 @@ export {
   VALID_COMPLETENESS_LEVELS,
 } from './model/types';
 
-// Vocabularies
 export type {
   DisciplineCode,
   CurriculumNodeType as CanonicalCurriculumNodeType,
@@ -143,7 +140,6 @@ export {
   isDisciplineSupportedForOrder,
 } from './model/vocabularies';
 
-// Constructors
 export {
   createSource,
   createLegacySource,
@@ -160,7 +156,6 @@ export {
   createNodeReference,
 } from './constructors';
 
-// Validation
 export {
   validateSource,
   validateSourceVersion,
@@ -173,7 +168,6 @@ export {
   detectDuplicateSources,
 } from './validation';
 
-// Repositories
 export {
   SourceRepository,
   SourceVersionRepository,
@@ -184,7 +178,6 @@ export {
   CurriculumDomainRepository,
 } from './repositories';
 
-// Adapters
 export {
   adaptCurriculumKB,
   adaptDiscipline,
@@ -232,3 +225,48 @@ export {
   validateOperationalCurriculumAggregate,
   assertOperationalCurriculumAggregate,
 } from './operationalContract';
+
+// ─── Arena R7C2 Technology end-to-end pilot ─────────────────────────────────
+
+export type {
+  TechnologyDraftGrade,
+  TechnologyDraftNucleusId,
+  TechnologyDraftNucleus,
+  TechnologyExitProfileArea,
+} from './technology/technologyInstitutionalDraft';
+
+export {
+  TECHNOLOGY_INSTITUTIONAL_DRAFT_SOURCE,
+  TECHNOLOGY_INSTITUTIONAL_DRAFT_FINALITIES,
+  TECHNOLOGY_INSTITUTIONAL_DRAFT_EXIT_PROFILE,
+  TECHNOLOGY_INSTITUTIONAL_DRAFT_NUCLEI,
+} from './technology/technologyInstitutionalDraft';
+
+export type {
+  TechnologyArtifactCode,
+  TechnologyArtifactKind,
+  TechnologyArtifactOperationalStatus,
+  TechnologyCurriculumArtifactDefinition,
+  TechnologyCurriculumArtifactInstance,
+} from './technology/technologyArtifacts';
+
+export {
+  TECHNOLOGY_ARTIFACT_DEFINITIONS,
+  buildTechnologyWorkingArtifactGraph,
+  canArtifactBeAdopted,
+} from './technology/technologyArtifacts';
+
+export type {
+  TechnologyGradeProgressionEntry,
+  TechnologyGradeProgressionLink,
+  TechnologyInstitutionalContextSnapshot,
+  TechnologyOperationalPilotPackage,
+  TechnologyPlanningRequirementSnapshot,
+  TechnologyPlanningHandoff,
+} from './technology/technologyOperationalPilot';
+
+export {
+  sha256NormalizedText,
+  buildTechnologyOperationalPilot,
+  buildTechnologyPlanningHandoff,
+} from './technology/technologyOperationalPilot';
