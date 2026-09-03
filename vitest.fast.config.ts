@@ -43,6 +43,7 @@ export default defineConfig({
       'src/__tests__/r7c2-technology-canonical-domain.test.ts',
       'src/__tests__/r7c3-p3-v2-semantic-analysis.test.ts',
       'src/__tests__/r7c4-infanzia-native-runtime.test.ts',
+      'src/__tests__/r7c5a-final-publication-locators.test.ts',
       'src/__tests__/end-to-end-adoption-validation-r7.test.ts',
       'src/__tests__/identity.test.ts',
       'src/__tests__/beta-identity-authority.test.ts',

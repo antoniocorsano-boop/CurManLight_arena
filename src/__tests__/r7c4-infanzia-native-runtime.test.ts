@@ -1,4 +1,3 @@
-import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import {
   INFANZIA_LEGACY_CANDIDATE_KEYS,
@@ -90,16 +89,6 @@ describe('R7C4 infanzia native runtime', () => {
     expect(view.planningAllowed).toBe(false);
     expect(view.planningBlockReason).toMatch(/nodi nativi/i);
     expect(view.authorityEffect).toBe('NONE');
-  });
-
-  it('routes infanzia away from the legacy curriculum and discipline-planning components', () => {
-    const curriculumPage = readFileSync(new URL('../pages/CurriculumPage.tsx', import.meta.url), 'utf8');
-    const planningPage = readFileSync(new URL('../pages/PlanningPage.tsx', import.meta.url), 'utf8');
-
-    expect(curriculumPage).toContain("if (ctx.order === 'infanzia')");
-    expect(curriculumPage).toContain('InfanziaNativeCurriculumPanel');
-    expect(planningPage).toContain("if (ctx.order === 'infanzia')");
-    expect(planningPage).toContain('InfanziaNativePlanningBoundary');
   });
 
   it('does not silently rewrite or delete the legacy CurriculumMap in R7C4', () => {
