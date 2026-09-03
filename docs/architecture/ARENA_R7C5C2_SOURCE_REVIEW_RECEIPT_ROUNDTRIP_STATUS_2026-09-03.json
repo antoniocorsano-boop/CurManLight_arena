@@ -7,6 +7,11 @@
     "branch": "feature/r7c5c1-general-source-review",
     "sha": "4094d6146056daee75cd9fc625b27b10a6cf00d3"
   },
+  "validationStrategy": {
+    "workflowTriggerBase": "main",
+    "restoreStackedBaseAfterExactHeadPass": true,
+    "headMustRemainImmutableDuringBaseRestore": true
+  },
   "inventoryElementCount": 868,
   "packageSchema": "dm221-final-publication-source-review-package-v1",
   "sourceBinding": {
