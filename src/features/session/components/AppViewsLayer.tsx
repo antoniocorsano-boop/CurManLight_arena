@@ -1,8 +1,10 @@
 import { CurriculumTab, RevisioneTab } from '../../curriculum';
 import { EsportazioniTab, FontiTab, SecondBrainTab } from '../../documents';
 import { PlanningHandoffPreview } from '../../beta/PlanningHandoffPreview';
+import { TeamReviewWorkspace } from '../../beta';
 import { ProcessoTab } from '../../processo';
 import { ProgettazioneTab } from '../../progettazione';
+import { useCurriculumStore } from '../../../store/useCurriculumStore';
 import { DashboardView } from './DashboardView';
 import { InfoViews } from './InfoViews';
 import type { ActiveProgTab, AppViewsLayerProps } from '../types/appViewContracts';
@@ -17,6 +19,8 @@ const isAppTab = (tab: string): tab is AppTab => (APP_TABS as readonly string[])
 const isActiveProgTab = (tab: string): tab is ActiveProgTab => (ACTIVE_PROG_TABS as readonly string[]).includes(tab);
 
 export function AppViewsLayer(props: AppViewsLayerProps) {
+  const { decisions, customTexts } = useCurriculumStore();
+
   const safeHandleTabSwitch = (tab: string) => {
     if (isAppTab(tab)) props.handleTabSwitch(tab);
   };
@@ -107,6 +111,11 @@ export function AppViewsLayer(props: AppViewsLayerProps) {
             </p>
           </aside>
           <RevisioneTab {...props} />
+          <TeamReviewWorkspace
+            proposals={props.currentDisciplineProps}
+            decisions={decisions}
+            customTexts={customTexts}
+          />
         </div>
       )}
 
