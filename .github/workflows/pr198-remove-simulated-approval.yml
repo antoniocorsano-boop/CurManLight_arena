@@ -1,0 +1,295 @@
+name: PR198 Remove Simulated Approval
+
+on:
+  push:
+    branches:
+      - ops/pr198-preview-build
+    paths:
+      - '.github/workflows/pr198-remove-simulated-approval.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch-validate-push:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout PR #198 branch
+        uses: actions/checkout@v4
+        with:
+          ref: feature/team-meeting-workspace
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Patch teacher surface and planning boundary
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+
+          revision = Path('src/features/curriculum/components/RevisioneTab.tsx')
+          s = revision.read_text()
+          s = s.replace(
+              "import { ChevronLeft, ChevronRight, FileSearch, History, Info, Layers, Milestone } from 'lucide-react';",
+              "import { ChevronLeft, ChevronRight, FileSearch, Info, Milestone } from 'lucide-react';",
+          )
+          for line in [
+              "import { PROPOSAL_STATUS_LABELS } from '../../../domain/revision/vocabularies';\n",
+              "import { findDecisionsByProposal, getEventsByProposal, getLatestProposalVersion } from '../../../domain/revision';\n",
+              "import type { RevisionProposal } from '../../../domain/revision';\n",
+              "import { addProposal, transitionProposalStatus } from '../../../domain/revision/repository';\n",
+              "import { createEntityReference } from '../../../domain/curriculum/identity';\n",
+              "import type { EntityId } from '../../../domain/curriculum/identity/types';\n",
+              "import { InstitutionalDecisionPanel, StructuredProposalStarter } from '../../beta';\n",
+          ]:
+              s = s.replace(line, '')
+          s, n = re.subn(
+              r"\nfunction useCanonicalRevisionActions\(\) \{.*?\n\}\n\nexport type RevisioneTabProps",
+              "\nexport type RevisioneTabProps",
+              s,
+              count=1,
+              flags=re.S,
+          )
+          if n != 1:
+              raise SystemExit('Could not remove simulated canonical proposal section')
+          s = s.replace("    discipline,\n    order,\n", '')
+          s, n = re.subn(
+              r"\n\s*<StructuredProposalStarter\n.*?\n\s*/>\n\n\s*<CanonicalProposalsSection />\n",
+              "\n",
+              s,
+              count=1,
+              flags=re.S,
+          )
+          if n != 1:
+              raise SystemExit('Could not remove structured proposal starter render')
+          revision.write_text(s)
+
+          views = Path('src/features/session/components/AppViewsLayer.tsx')
+          s = views.read_text()
+          s = s.replace(
+              'Qui prepari una proposta. Non approvi il curricolo.',
+              'Qui prepari il confronto. Non approvi il curricolo.',
+          )
+          s = s.replace(
+              '<li>Scegli quale testo portare avanti come proposta locale.</li>\n              <li>Solo dopo, se serve, la proposta può entrare in un percorso di revisione separato.</li>',
+              '<li>Registra il tuo orientamento professionale per il confronto.</li>\n              <li>Il lavoro del team resta separato; nessun passaggio istituzionale viene simulato da questa schermata.</li>',
+          )
+          views.write_text(s)
+
+          component = Path('src/features/beta/PlanningHandoffPreview.tsx')
+          s = component.read_text()
+          s = s.replace("    revisionArchive,\n", '')
+          s = s.replace("    revisionArchive,\n  }), [", "  }), [")
+          s = s.replace("    revisionArchive,\n  ]);", "  ]);")
+          component.write_text(s)
+
+          handoff = Path('src/features/beta/planningHandoffPreview.ts')
+          s = handoff.read_text()
+          s = s.replace(
+              "import type { RevisionArchive } from '../../domain/revision';",
+              "import { createEmptyRevisionArchive } from '../../domain/revision';",
+          )
+          s = s.replace("  revisionArchive: RevisionArchive;\n", '')
+          s = s.replace(
+              "      revisionArchive: input.revisionArchive,",
+              "      // Revision proposals are not current curriculum. Only materialized/adopted\n      // curriculum may flow to planning. Keep the handoff isolated from revisionArchive.\n      revisionArchive: createEmptyRevisionArchive('1970-01-01T00:00:00.000Z'),",
+          )
+          handoff.write_text(s)
+
+          test = Path('src/__tests__/beta-planning-handoff-preview.test.ts')
+          s = test.read_text()
+          s = s.replace("import { createEmptyRevisionArchive } from '../domain/revision';\n", '')
+          s = s.replace("    revisionArchive: createEmptyRevisionArchive('2026-08-27T12:00:00.000Z'),\n", '')
+          test.write_text(s)
+          PY
+
+          cat > src/__tests__/beta-no-simulated-approval-surface.test.ts <<'EOF'
+          import { describe, expect, it } from 'vitest';
+          import revisionSource from '../features/curriculum/components/RevisioneTab.tsx?raw';
+          import planningComponentSource from '../features/beta/PlanningHandoffPreview.tsx?raw';
+          import planningBoundarySource from '../features/beta/planningHandoffPreview.ts?raw';
+
+          describe('Beta teacher surface authority boundary', () => {
+            it('does not expose the simulated institutional workflow in teacher revision', () => {
+              expect(revisionSource).not.toContain('StructuredProposalStarter');
+              expect(revisionSource).not.toContain('CanonicalProposalsSection');
+              expect(revisionSource).not.toContain('Crea proposta strutturata');
+              expect(revisionSource).not.toContain('Prepara per revisione');
+              expect(revisionSource).not.toContain('Prendi in carico');
+              expect(revisionSource).not.toContain('Ammetti alla decisione');
+              expect(revisionSource).not.toContain('InstitutionalDecisionPanel');
+            });
+
+            it('does not feed unadopted revisionArchive data into planning handoff', () => {
+              expect(planningComponentSource).not.toContain('revisionArchive');
+              expect(planningBoundarySource).not.toContain('input.revisionArchive');
+              expect(planningBoundarySource).toContain("createEmptyRevisionArchive('1970-01-01T00:00:00.000Z')");
+            });
+          });
+          EOF
+
+          cat > scripts/verify-beta-g4-browser.cjs <<'EOF'
+          const { chromium } = require('playwright');
+
+          const baseUrl = process.env.BETA_BASE_URL || 'http://127.0.0.1:4173/CurManLight_arena';
+          const normalizedBaseUrl = baseUrl.replace(/\/$/, '');
+          const revisionUrl = `${normalizedBaseUrl}/revisione`;
+          const documentsUrl = `${normalizedBaseUrl}/documents`;
+
+          async function closeLocalProfileIfPresent(page) {
+            await page.waitForTimeout(1200);
+            const dialog = page.locator('[role="dialog"][aria-modal="true"]');
+            if (!(await dialog.isVisible({ timeout: 800 }).catch(() => false))) return;
+            const closeButton = dialog.locator('button').first();
+            if (await closeButton.isVisible({ timeout: 500 }).catch(() => false)) {
+              await closeButton.click();
+              await dialog.waitFor({ state: 'hidden', timeout: 3000 }).catch(() => undefined);
+            }
+          }
+
+          async function expectVisibleText(page, text, timeout = 8000) {
+            const locator = page.getByText(text, { exact: false }).first();
+            await locator.waitFor({ state: 'visible', timeout });
+            return locator;
+          }
+
+          async function gotoWorkspace(page, url, expectedText) {
+            const response = await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 });
+            await closeLocalProfileIfPresent(page);
+            await expectVisibleText(page, expectedText);
+            return response;
+          }
+
+          async function readPlanningHandoffState(page) {
+            const handoff = page.getByRole('region', { name: 'Passaggio alla progettazione' }).first();
+            await handoff.waitFor({ state: 'visible', timeout: 8000 });
+            const text = await handoff.innerText();
+            const blocked = text.includes('Il passaggio non è ancora pronto');
+            const validPreview = text.includes('Docente OS') && text.includes('Accettazione docente');
+            const automaticSyncActionCount = await handoff.getByRole('button', { name: /sincronizza/i }).count();
+            return { handoff, text, blocked, validPreview, automaticSyncActionCount };
+          }
+
+          (async () => {
+            const browser = await chromium.launch({ headless: true });
+            const context = await browser.newContext({ viewport: { width: 1280, height: 900 }, locale: 'it-IT' });
+            const page = await context.newPage();
+            const pageErrors = [];
+            let decisionRpcCalls = 0;
+            page.on('pageerror', (error) => pageErrors.push(error.message));
+            page.on('request', (request) => {
+              if (request.url().includes('/rpc/record_institutional_revision_decision')) decisionRpcCalls += 1;
+            });
+
+            const checks = [];
+            const check = (label, condition) => {
+              checks.push({ label, condition: Boolean(condition) });
+              console.log(`${condition ? '✓' : '✗'} ${label}`);
+            };
+
+            try {
+              console.log('=== BETA-G4 BROWSER — REVISION WITHOUT SIMULATED APPROVAL ===');
+              const initialResponse = await gotoWorkspace(page, revisionUrl, 'Il mio lavoro nel curricolo');
+              check('1. /revisione renders the teacher review workspace', page.url().includes('/revisione'));
+              check('2. Teacher surface states that it does not approve the curriculum', (await page.locator('body').innerText()).includes('Non approvi il curricolo'));
+
+              const localChoice = page.getByRole('button', { name: 'Conferma proposta' }).first();
+              await localChoice.waitFor({ state: 'visible', timeout: 8000 });
+              await localChoice.click();
+              await expectVisibleText(page, 'Proposta confermata');
+              check('3. A teacher can record a professional orientation', true);
+
+              const forbidden = ['Crea proposta strutturata', 'Prepara per revisione', 'Invia', 'Prendi in carico', 'Ammetti alla decisione'];
+              for (const label of forbidden) {
+                check(`No simulated action: ${label}`, await page.getByRole('button', { name: label, exact: true }).count() === 0);
+              }
+              check('9. Institutional decision panel is absent from teacher surface', await page.getByRole('region', { name: 'Decisione istituzionale Beta' }).count() === 0);
+
+              const refreshResponse = await page.reload({ waitUntil: 'domcontentloaded', timeout: 30000 });
+              await closeLocalProfileIfPresent(page);
+              await expectVisibleText(page, 'Il mio lavoro nel curricolo');
+              await expectVisibleText(page, 'Proposta confermata');
+              check('10. Refresh preserves the teacher orientation without creating an institutional workflow', Boolean(refreshResponse));
+              check('11. No institutional-decision RPC is called by local review or refresh', decisionRpcCalls === 0);
+
+              await gotoWorkspace(page, documentsUrl, 'Documenti del curricolo');
+              const handoff = await readPlanningHandoffState(page);
+              check('12. Planning handoff remains observable', handoff.validPreview || handoff.blocked);
+              check('13. Planning handoff exposes no automatic synchronization action', handoff.automaticSyncActionCount === 0);
+
+              await page.setViewportSize({ width: 390, height: 844 });
+              await handoff.handoff.scrollIntoViewIfNeeded();
+              check('14. Planning handoff remains reachable on mobile', await handoff.handoff.isVisible());
+
+              await gotoWorkspace(page, revisionUrl, 'Il mio lavoro nel curricolo');
+              check('15. Teacher review remains reachable on mobile', await page.getByText('Il mio lavoro nel curricolo').first().isVisible());
+              check('16. No uncaught page errors in the bounded journey', pageErrors.length === 0);
+
+              const failed = checks.filter((item) => !item.condition);
+              console.log(`=== RESULT: ${checks.length - failed.length}/${checks.length} checks passed ===`);
+              if (failed.length > 0) process.exitCode = 1;
+            } catch (error) {
+              console.error(error);
+              process.exitCode = 1;
+            } finally {
+              await browser.close();
+            }
+          })();
+          EOF
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Authority-boundary regression tests
+        run: >-
+          npx vitest run
+          src/__tests__/beta-no-simulated-approval-surface.test.ts
+          src/__tests__/beta-planning-handoff-preview.test.ts
+          src/__tests__/team-review-workspace.test.ts
+
+      - name: TypeScript
+        run: npx tsc --noEmit
+
+      - name: Beta build
+        run: npm run build:beta
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Browser authority-boundary journey
+        env:
+          BETA_BASE_URL: http://127.0.0.1:4173/CurManLight_arena
+        run: |
+          set -euo pipefail
+          node scripts/serve-beta-pages-preview.cjs > /tmp/cml-beta-preview.log 2>&1 &
+          preview_pid=$!
+          trap 'kill "$preview_pid" 2>/dev/null || true; cat /tmp/cml-beta-preview.log' EXIT
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:4173/CurManLight_arena/ >/dev/null 2>&1; then break; fi
+            sleep 1
+          done
+          node scripts/verify-beta-g4-browser.cjs
+
+      - name: Commit validated fix to PR #198
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          git config user.name "Antonio Corsano"
+          git config user.email "antonio.corsano@gmail.com"
+          git add \
+            src/features/curriculum/components/RevisioneTab.tsx \
+            src/features/session/components/AppViewsLayer.tsx \
+            src/features/beta/PlanningHandoffPreview.tsx \
+            src/features/beta/planningHandoffPreview.ts \
+            src/__tests__/beta-planning-handoff-preview.test.ts \
+            src/__tests__/beta-no-simulated-approval-surface.test.ts \
+            scripts/verify-beta-g4-browser.cjs
+          git commit -m "fix: remove simulated approval path from teacher review"
+          git push origin HEAD:feature/team-meeting-workspace
