@@ -1,0 +1,47 @@
+name: PR198 Preview Build
+
+on:
+  push:
+    branches:
+      - ops/pr198-preview-build
+
+permissions:
+  contents: read
+
+jobs:
+  build-preview:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout exact validated PR #198 SHA
+        uses: actions/checkout@v4
+        with:
+          ref: 94e77d436adccf30f9192bfb6f94bbca34fa4997
+          fetch-depth: 1
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build exact Beta artifact
+        env:
+          CML_RELEASE_REF: 94e77d436adccf30f9192bfb6f94bbca34fa4997
+          CML_RELEASE_SHA: 94e77d436adccf30f9192bfb6f94bbca34fa4997
+        run: npm run build:beta
+
+      - name: Verify release identity
+        run: |
+          node -e "const fs=require('fs');const p='dist/beta-release.json';const d=JSON.parse(fs.readFileSync(p,'utf8'));if(d.releaseSha!=='94e77d436adccf30f9192bfb6f94bbca34fa4997'){throw new Error('Unexpected release SHA: '+d.releaseSha)}"
+
+      - name: Upload preview dist
+        uses: actions/upload-artifact@v4
+        with:
+          name: pr198-preview-dist
+          path: dist
+          if-no-files-found: error
+          retention-days: 7
