@@ -1,0 +1,64 @@
+name: PR198 Fix Review Status Copy
+
+on:
+  push:
+    branches:
+      - ops/pr198-preview-build
+    paths:
+      - '.github/workflows/pr198-fix-review-status-copy.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch-validate-push:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout PR #198 branch
+        uses: actions/checkout@v4
+        with:
+          ref: feature/team-meeting-workspace
+          fetch-depth: 0
+
+      - name: Fix contradictory content badge
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('src/features/curriculum/components/RevisioneTab.tsx')
+          s = p.read_text()
+          old = '<span className="rounded-full bg-white px-2 py-1 text-[10px] font-semibold text-indigo-600">da esaminare</span>'
+          new = '<span className="rounded-full bg-white px-2 py-1 text-[10px] font-semibold text-indigo-600">testo proposto</span>'
+          if s.count(old) != 1:
+              raise SystemExit(f'Expected exactly one proposal-content status badge, found {s.count(old)}')
+          p.write_text(s.replace(old, new))
+          PY
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Authority boundary regression
+        run: npx vitest run src/__tests__/beta-no-simulated-approval-surface.test.ts src/__tests__/team-review-workspace.test.ts
+
+      - name: TypeScript
+        run: npx tsc --noEmit
+
+      - name: Beta build
+        run: npm run build:beta
+
+      - name: Commit validated copy fix to PR #198
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          git config user.name "Antonio Corsano"
+          git config user.email "antonio.corsano@gmail.com"
+          git add src/features/curriculum/components/RevisioneTab.tsx
+          git commit -m "fix: remove contradictory review status label"
+          git push origin HEAD:feature/team-meeting-workspace
