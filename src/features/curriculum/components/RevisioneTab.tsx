@@ -146,7 +146,7 @@ export function RevisioneTab({
               <article className="rounded-xl border border-indigo-100 bg-indigo-50/30 p-3">
                 <div className="flex items-center justify-between gap-2">
                   <strong className="text-[10px] uppercase tracking-wide text-indigo-600">Proposta aggiornata · quadro 2025</strong>
-                  <span className="rounded-full bg-white px-2 py-1 text-[10px] font-semibold text-indigo-600">da esaminare</span>
+                  <span className="rounded-full bg-white px-2 py-1 text-[10px] font-semibold text-indigo-600">testo proposto</span>
                 </div>
                 <p className="mt-2 text-sm leading-relaxed text-slate-800">{current.newText}</p>
               </article>
