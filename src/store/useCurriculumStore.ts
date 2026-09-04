@@ -48,12 +48,21 @@ type PersistedStateRecord = {
   value: string;
 };
 
+function markStorageVolatile(reason: unknown) {
+  if (typeof window === 'undefined') return;
+  (window as Window & { __curmanStorageVolatile?: boolean }).__curmanStorageVolatile = true;
+  window.dispatchEvent(new CustomEvent('arena:storage-volatile', {
+    detail: { reason: reason instanceof Error ? reason.message : String(reason) },
+  }));
+}
+
 let db: Dexie | null = null;
 try {
   if (typeof window !== 'undefined' && window.indexedDB) {
     db = createCurriculumDatabase();
   }
 } catch (e) {
+  markStorageVolatile(e);
   console.warn("[CurManLight Storage Guard] Impossibile configurare Dexie/IndexedDB:", e);
 }
 
@@ -66,6 +75,7 @@ const indexedDBStorage = {
       const val = (await db.table('state').get(name)) as PersistedStateRecord | undefined;
       return val ? val.value : null;
     } catch (e) {
+      markStorageVolatile(e);
       console.warn("[CurManLight Storage Guard] Impossibile leggere da IndexedDB, uso la memoria temporanea:", e);
       return memoryStore[name] || null;
     }
@@ -75,6 +85,7 @@ const indexedDBStorage = {
       if (!db) throw new Error("IndexedDB non inizializzato");
       await db.table('state').put({ key: name, value });
     } catch (e) {
+      markStorageVolatile(e);
       console.warn("[CurManLight Storage Guard] Impossibile scrivere in IndexedDB, uso la memoria temporanea:", e);
       memoryStore[name] = value;
     }
@@ -84,6 +95,7 @@ const indexedDBStorage = {
       if (!db) throw new Error("IndexedDB non inizializzato");
       await db.table('state').delete(name);
     } catch (e) {
+      markStorageVolatile(e);
       console.warn("[CurManLight Storage Guard] Impossibile eliminare da IndexedDB, uso la memoria temporanea:", e);
       delete memoryStore[name];
     }
