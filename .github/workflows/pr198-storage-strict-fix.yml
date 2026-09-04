@@ -1,0 +1,77 @@
+name: Apply PR198 Strict Storage Fix
+
+on:
+  push:
+    branches:
+      - ops/pr198-storage-strict-fix
+
+permissions:
+  contents: write
+
+jobs:
+  patch-validate-push:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout current PR
+        uses: actions/checkout@v4
+        with:
+          ref: f042c4f685aba4b4b0e9fa23978231d12d3980e5
+          fetch-depth: 0
+
+      - name: Make persisted-state detection strictly IndexedDB
+        shell: python
+        run: |
+          from pathlib import Path
+          path = Path('src/store/useCurriculumStore.ts')
+          text = path.read_text()
+          old = """export async function hasPersistedCurriculumState(): Promise<boolean> {\n  return (await indexedDBStorage.getItem(CURRICULUM_STATE_STORAGE_KEY)) !== null;\n}\n"""
+          new = """export async function hasPersistedCurriculumState(): Promise<boolean> {\n  if (!db) {\n    const error = new Error('IndexedDB non inizializzato');\n    markStorageVolatile(error);\n    throw error;\n  }\n\n  try {\n    const record = (await db.table('state').get(CURRICULUM_STATE_STORAGE_KEY)) as PersistedStateRecord | undefined;\n    return record !== undefined;\n  } catch (error) {\n    markStorageVolatile(error);\n    throw error;\n  }\n}\n"""
+          if old not in text:
+              raise SystemExit('Expected hasPersistedCurriculumState implementation not found')
+          path.write_text(text.replace(old, new, 1))
+
+      - name: Remove timing-based browser assertion and verify raw IndexedDB payload
+        shell: python
+        run: |
+          from pathlib import Path
+          path = Path('src/__tests__/persisted-curriculum-state.browser.test.ts')
+          path.write_text("""import { describe, expect, it } from 'vitest';\nimport { createCurriculumDatabase } from '../domain/curriculum/persistence/backend';\nimport {\n  CURRICULUM_STATE_STORAGE_KEY,\n  hasPersistedCurriculumState,\n  useCurriculumStore,\n} from '../store/useCurriculumStore';\n\ntype PersistedStateRecord = { key: string; value: string };\n\nasync function waitForPersistedRecord(timeoutMs = 3000): Promise<PersistedStateRecord> {\n  const database = createCurriculumDatabase();\n  const deadline = Date.now() + timeoutMs;\n\n  try {\n    while (Date.now() < deadline) {\n      const record = (await database.table('state').get(CURRICULUM_STATE_STORAGE_KEY)) as PersistedStateRecord | undefined;\n      if (record) return record;\n      await new Promise((resolve) => setTimeout(resolve, 20));\n    }\n  } finally {\n    database.close();\n  }\n\n  throw new Error('Timed out waiting for the Zustand state to reach IndexedDB');\n}\n\ndescribe('persisted curriculum state authority', () => {\n  it('proves the Zustand state is durably written to IndexedDB rather than localStorage', async () => {\n    await useCurriculumStore.persist.clearStorage();\n    localStorage.removeItem(CURRICULUM_STATE_STORAGE_KEY);\n    expect(await hasPersistedCurriculumState()).toBe(false);\n\n    useCurriculumStore.getState().setSchoolYear('2026/2027');\n\n    const record = await waitForPersistedRecord();\n    const payload = JSON.parse(record.value) as { state?: { schoolYear?: string } };\n\n    expect(localStorage.getItem(CURRICULUM_STATE_STORAGE_KEY)).toBeNull();\n    expect(payload.state?.schoolYear).toBe('2026/2027');\n    expect(await hasPersistedCurriculumState()).toBe(true);\n\n    await useCurriculumStore.persist.clearStorage();\n  });\n});\n""")
+
+      - name: Check patch
+        run: git diff --check
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Storage unit tests
+        run: npx vitest run src/__tests__/storage-runtime-health.test.ts
+
+      - name: Browser persistence tests
+        run: npm run test:browser
+
+      - name: TypeScript
+        run: npx tsc --noEmit
+
+      - name: Production build
+        run: npm run build
+
+      - name: Push only validated fix to PR
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/store/useCurriculumStore.ts src/__tests__/persisted-curriculum-state.browser.test.ts
+          git commit -m "fix(storage): reject RAM fallback as persisted state"
+          git push "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" HEAD:feature/team-meeting-workspace
