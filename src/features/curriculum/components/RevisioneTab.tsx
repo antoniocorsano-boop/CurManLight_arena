@@ -61,7 +61,7 @@ export function RevisioneTab({
   };
 
   return (
-    <div className="space-y-4 fade-in pb-24 text-left sm:pb-6" data-revision-flow="focused">
+    <div className="space-y-4 fade-in text-left" data-revision-flow="focused">
       <section className="rounded-2xl border border-indigo-100 bg-indigo-50/40 p-4" aria-labelledby="team-review-work-title" data-team-review-overview>
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">

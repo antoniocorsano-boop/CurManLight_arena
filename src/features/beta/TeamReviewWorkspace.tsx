@@ -354,7 +354,7 @@ export function TeamReviewWorkspace({ proposals, decisions, customTexts }: TeamR
       </div>
 
       {!session ? (
-        <div role="status" className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs text-amber-900">Per vedere il lavoro condiviso, <a href={identityHref} className="font-bold underline">accedi al workspace Beta</a>.</div>
+        <div role="status" className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs text-amber-900">Per vedere o condividere il lavoro del team, <a href={identityHref} className="font-bold underline">accedi</a>.</div>
       ) : activeMemberships.length === 0 ? (
         <div role="status" className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs text-amber-900">La sessione è autenticata, ma non esiste una membership attiva per un workspace.</div>
       ) : (
