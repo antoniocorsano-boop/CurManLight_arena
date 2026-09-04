@@ -160,6 +160,21 @@ export class SupabaseSharedTeamReviewRepository implements SharedTeamReviewRepos
     return ((data ?? []) as ContributionRow[]).map(toContribution);
   }
 
+  async getEligibleContributorCount(
+    context: WorkspaceActorContext,
+    workspaceId: string,
+  ): Promise<number> {
+    assertContextWorkspace(context, workspaceId);
+    const { data, error } = await this.client.rpc('get_team_review_eligible_contributor_count_v1', {
+      p_workspace_id: workspaceId,
+    });
+    if (error) throw new Error(`Copertura del team non verificabile: ${error.message}`);
+    if (typeof data !== 'number' || !Number.isInteger(data) || data < 0) {
+      throw new Error('Il server non ha restituito una copertura del team valida.');
+    }
+    return data;
+  }
+
   async recordTeamOutcome(
     context: WorkspaceActorContext,
     input: RecordTeamReviewOutcomeInput,
