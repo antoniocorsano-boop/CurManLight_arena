@@ -16,7 +16,7 @@ jobs:
       - name: Checkout exact validated PR #198 SHA
         uses: actions/checkout@v4
         with:
-          ref: d2f2a68254b3706f46a8163de7758bb10ea70c0a
+          ref: 08bdd336961a034ffce3d17034e44e3d1e60ebf9
           fetch-depth: 1
 
       - name: Setup Node
@@ -30,13 +30,13 @@ jobs:
 
       - name: Build exact Beta artifact
         env:
-          CML_RELEASE_REF: d2f2a68254b3706f46a8163de7758bb10ea70c0a
-          CML_RELEASE_SHA: d2f2a68254b3706f46a8163de7758bb10ea70c0a
+          CML_RELEASE_REF: 08bdd336961a034ffce3d17034e44e3d1e60ebf9
+          CML_RELEASE_SHA: 08bdd336961a034ffce3d17034e44e3d1e60ebf9
         run: npm run build:beta
 
       - name: Verify release identity
         run: |
-          node -e "const fs=require('fs');const p='dist/beta-release.json';const d=JSON.parse(fs.readFileSync(p,'utf8'));if(d.releaseSha!=='d2f2a68254b3706f46a8163de7758bb10ea70c0a'){throw new Error('Unexpected release SHA: '+d.releaseSha)};if(d.basePath!=='/CurManLight_arena/'){throw new Error('Unexpected basePath: '+d.basePath)}"
+          node -e "const fs=require('fs');const p='dist/beta-release.json';const d=JSON.parse(fs.readFileSync(p,'utf8'));if(d.releaseSha!=='08bdd336961a034ffce3d17034e44e3d1e60ebf9'){throw new Error('Unexpected release SHA: '+d.releaseSha)};if(d.basePath!=='/CurManLight_arena/'){throw new Error('Unexpected basePath: '+d.basePath)}"
 
       - name: Prepare basename-safe static host tree
         run: |
@@ -45,10 +45,6 @@ jobs:
           mkdir -p preview-root/CurManLight_arena
           cp -a dist/. preview-root/CurManLight_arena/
 
-          # Render static sites do not apply SPA rewrites unless configured in the service.
-          # Make this isolated preview self-contained by materialising every Arena route
-          # with the exact same Vite entry document. BrowserRouter keeps the pathname and
-          # resolves the correct view after index.html loads.
           for route in \
             revisione curriculum planning documents knowledge fonti guida \
             classroom copilot second-brain social settings onboarding
@@ -57,8 +53,6 @@ jobs:
             cp dist/index.html "preview-root/CurManLight_arena/${route}/index.html"
           done
 
-          # Safety fallback: unknown static paths return to the Arena base instead of the
-          # hosting provider's generic 404 page.
           cat > preview-root/404.html <<'EOF'
           <!doctype html>
           <html lang="it"><head><meta charset="utf-8"><meta http-equiv="refresh" content="0; url=/CurManLight_arena/"><title>CurManLight Arena test</title></head><body><a href="/CurManLight_arena/">Apri CurManLight Arena</a></body></html>
@@ -92,6 +86,6 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
-          git commit -m "PR #198 preview d2f2a68254b3706f46a8163de7758bb10ea70c0a — deep-link safe"
+          git commit -m "PR #198 preview 08bdd336961a034ffce3d17034e44e3d1e60ebf9 — no simulated approval"
           git remote add origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
           git push --force origin HEAD:refs/heads/preview/pr198-static HEAD:refs/heads/pr198-static-preview
