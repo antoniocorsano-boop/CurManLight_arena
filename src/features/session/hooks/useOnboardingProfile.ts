@@ -1,22 +1,14 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { SchoolOrder, UserRole } from '../../../types/curriculum';
-import {
-  getOperationalGroupsForDisciplines,
-  getOperationalDisciplinesForOrder,
-  type OperationalGroupCode,
-  type OperationalSchoolOrder,
-} from '../../../domain/institution/operationalGroups';
 import { safeLocalStorageGetItem, safeLocalStorageSetItem } from '../../../lib/consolidatedStorage';
 import { getOptionalSupabaseBrowserClient } from '../../../infrastructure/supabase/client';
 import {
   readLocalOperationalProfile,
-  saveLocalOperationalProfile,
-  syncOperationalProfile,
+  syncStoredOperationalProfile,
 } from '../../../infrastructure/supabase/operationalProfile';
 
 interface UseOnboardingProfileArgs {
   order: SchoolOrder;
-  schoolYear: string;
   setRole: (role: UserRole) => void;
   setDiscipline: (discipline: string) => void;
   setOrder: (order: SchoolOrder) => void;
@@ -26,14 +18,12 @@ interface UseOnboardingProfileArgs {
 
 export const useOnboardingProfile = ({
   order,
-  schoolYear,
   setRole,
   setDiscipline,
   setOrder,
   setShowOnboardingModal,
   showToast
 }: UseOnboardingProfileArgs) => {
-  const storedOperationalProfile = useMemo(() => readLocalOperationalProfile(), []);
   const [, setTeacherType] = useState<'comune' | 'specialista'>(() => {
     return safeLocalStorageGetItem('curman_teacherType', 'comune') as 'comune' | 'specialista';
   });
@@ -43,32 +33,24 @@ export const useOnboardingProfile = ({
   });
   const [assignedCombinations, setAssignedCombinations] = useState<string[]>(() => {
     const saved = safeLocalStorageGetItem('curman_assignedCombinations', '');
-    if (saved) return saved.split(',');
-    return [];
+    return saved ? saved.split(',') : [];
   });
   const [availableSections, setAvailableSections] = useState<string[]>(() => {
     const saved = safeLocalStorageGetItem('curman_availableSections', '');
-    if (saved) return saved.split(',');
-    return [];
+    return saved ? saved.split(',') : [];
   });
   const [newSectionInput, setNewSectionInput] = useState<string>('');
 
+  const storedOperationalProfile = readLocalOperationalProfile();
   const [onboardingRole, setOnboardingRoleLocal] = useState<UserRole>('non-dichiarato');
-  const [onboardingDisc, setOnboardingDiscLocal] = useState(() => storedOperationalProfile?.disciplines[0] ?? 'italiano');
-  const [onboardingOrd, setOnboardingOrdLocal] = useState<SchoolOrder>(() => storedOperationalProfile?.schoolOrder ?? order ?? 'secondaria');
-  const [onboardingDisciplines, setOnboardingDisciplines] = useState<string[]>(() => storedOperationalProfile?.disciplines ?? []);
-  const [onboardingCoordinatorGroup, setOnboardingCoordinatorGroup] = useState<OperationalGroupCode | null>(() => storedOperationalProfile?.coordinatorGroupCode ?? null);
+  const [onboardingDisc, setOnboardingDiscLocal] = useState(storedOperationalProfile?.disciplines[0] ?? 'italiano');
+  const [onboardingOrd, setOnboardingOrdLocal] = useState<SchoolOrder>(storedOperationalProfile?.schoolOrder ?? order);
   const [onboardingStep, setOnboardingStep] = useState<number>(1);
   const [onboardingAssignedClasses, setOnboardingAssignedClasses] = useState<string[]>([]);
   const [onboardingTeacherType] = useState<'comune' | 'specialista'>('comune');
   const [, setIsSostegno] = useState(() => safeLocalStorageGetItem('curman_isSostegno', 'false') === 'true');
   const [onboardingIsSostegno, setOnboardingIsSostegno] = useState(() => safeLocalStorageGetItem('curman_isSostegno', 'false') === 'true');
   const [onboardingCombinations, setOnboardingCombinations] = useState<string[]>([]);
-
-  const onboardingOperationalGroups = useMemo(
-    () => getOperationalGroupsForDisciplines(onboardingOrd, onboardingDisciplines),
-    [onboardingOrd, onboardingDisciplines],
-  );
 
   useEffect(() => {
     const handleAssistantOpen = () => setShowOnboardingModal(false);
@@ -81,33 +63,7 @@ export const useOnboardingProfile = ({
     setOnboardingAssignedClasses([]);
     setOnboardingCombinations([]);
     setAvailableSections([]);
-    setOnboardingDisciplines([]);
-    setOnboardingCoordinatorGroup(null);
-    const available = getOperationalDisciplinesForOrder(ord);
-    if (available.length > 0) setOnboardingDiscLocal(available[0]);
     safeLocalStorageSetItem('curman_availableSections', '');
-  };
-
-  const handleToggleOnboardingDiscipline = (discipline: string) => {
-    if (!getOperationalDisciplinesForOrder(onboardingOrd).includes(discipline)) return;
-    setOnboardingDisciplines((current) => {
-      const next = current.includes(discipline)
-        ? current.filter((item) => item !== discipline)
-        : [...current, discipline];
-      const nextGroups = getOperationalGroupsForDisciplines(onboardingOrd, next);
-      setOnboardingCoordinatorGroup((currentCoordinator) =>
-        currentCoordinator && nextGroups.some((group) => group.code === currentCoordinator)
-          ? currentCoordinator
-          : null,
-      );
-      if (next.length > 0 && !next.includes(onboardingDisc)) setOnboardingDiscLocal(next[0]);
-      return next;
-    });
-  };
-
-  const handleSetOnboardingCoordinatorGroup = (groupCode: OperationalGroupCode | null) => {
-    if (groupCode && !onboardingOperationalGroups.some((group) => group.code === groupCode)) return;
-    setOnboardingCoordinatorGroup(groupCode);
   };
 
   const handleToggleOnboardingCombination = (combo: string) => {
@@ -133,10 +89,9 @@ export const useOnboardingProfile = ({
   };
 
   const saveOnboardingProfile = () => {
-    const operationalOrder = onboardingOrd === 'primaria' || onboardingOrd === 'secondaria'
-      ? onboardingOrd as OperationalSchoolOrder
-      : null;
-    if (operationalOrder && !onboardingIsSostegno && onboardingDisciplines.length === 0) {
+    const operationalProfile = readLocalOperationalProfile();
+    const needsOperationalProfile = (onboardingOrd === 'primaria' || onboardingOrd === 'secondaria') && !onboardingIsSostegno;
+    if (needsOperationalProfile && (!operationalProfile || operationalProfile.schoolOrder !== onboardingOrd || operationalProfile.disciplines.length === 0)) {
       showToast('Seleziona almeno una disciplina di competenza prima di entrare.', false);
       return;
     }
@@ -150,25 +105,18 @@ export const useOnboardingProfile = ({
 
     if (onboardingIsSostegno || onboardingOrd === 'infanzia') {
       setDiscipline('italiano');
-    } else {
-      const activeDiscipline = onboardingDisciplines.includes(onboardingDisc)
+    } else if (operationalProfile) {
+      const activeDiscipline = operationalProfile.disciplines.includes(onboardingDisc)
         ? onboardingDisc
-        : onboardingDisciplines[0];
+        : operationalProfile.disciplines[0];
       setDiscipline(activeDiscipline);
       setOnboardingDiscLocal(activeDiscipline);
     }
 
-    if (operationalOrder && !onboardingIsSostegno) {
-      const operationalProfile = {
-        academicYear: schoolYear,
-        schoolOrder: operationalOrder,
-        disciplines: onboardingDisciplines,
-        coordinatorGroupCode: onboardingCoordinatorGroup,
-      };
-      saveLocalOperationalProfile(operationalProfile);
+    if (needsOperationalProfile) {
       const optional = getOptionalSupabaseBrowserClient();
       if (optional.client) {
-        void syncOperationalProfile(optional.client, operationalProfile)
+        void syncStoredOperationalProfile(optional.client)
           .then((synced) => {
             if (synced) showToast('Profilo operativo condiviso aggiornato. Il coordinamento resta una funzione di lavoro, non un’autorità istituzionale.');
           })
@@ -190,11 +138,6 @@ export const useOnboardingProfile = ({
     setOnboardingRoleLocal,
     onboardingDisc,
     setOnboardingDiscLocal,
-    onboardingDisciplines,
-    onboardingOperationalGroups,
-    onboardingCoordinatorGroup,
-    setOnboardingCoordinatorGroup: handleSetOnboardingCoordinatorGroup,
-    handleToggleOnboardingDiscipline,
     onboardingOrd,
     setOnboardingOrdLocal,
     onboardingStep,
