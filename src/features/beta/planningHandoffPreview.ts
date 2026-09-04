@@ -137,8 +137,8 @@ export function buildPlanningHandoffPreview(
       ...(input.cohortRef?.trim() ? { cohortRef: input.cohortRef.trim() } : {}),
       disciplineRef: input.disciplineRef,
       curriculumMap: input.curriculumMap,
-      // Revision proposals are not current curriculum. Only materialized/adopted
-      // curriculum may flow to planning. Keep the handoff isolated from revisionArchive.
+      // Authority boundary: revision proposals are not current curriculum.
+      // Only materialized/adopted curriculum may flow to planning.
       revisionArchive: createEmptyRevisionArchive('1970-01-01T00:00:00.000Z'),
       sourceVersion: 'arena-beta-b3',
       emittedAt: input.emittedAt,
