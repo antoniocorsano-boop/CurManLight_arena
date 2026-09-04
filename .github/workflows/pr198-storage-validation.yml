@@ -16,7 +16,7 @@ jobs:
       - name: Checkout exact PR #198 head
         uses: actions/checkout@v4
         with:
-          ref: b46115168146b3c20248d2e006159c5453e652f2
+          ref: 9e323f5f8a82436d51c7dd75c54a6ca74c085288
           fetch-depth: 1
 
       - name: Setup Node
