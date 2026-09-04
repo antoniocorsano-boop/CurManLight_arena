@@ -163,14 +163,15 @@ export class SupabaseSharedTeamReviewRepository implements SharedTeamReviewRepos
   async getEligibleContributorCount(
     context: WorkspaceActorContext,
     workspaceId: string,
-  ): Promise<number> {
+  ): Promise<number | null> {
     assertContextWorkspace(context, workspaceId);
-    const { data, error } = await this.client.rpc('get_team_review_eligible_contributor_count_v1', {
+    const { data, error } = await this.client.rpc('get_team_review_eligible_contributor_count_v2', {
       p_workspace_id: workspaceId,
     });
-    if (error) throw new Error(`Copertura del team non verificabile: ${error.message}`);
+    if (error) throw new Error(`Partecipazione del team non verificabile: ${error.message}`);
+    if (data === null) return null;
     if (typeof data !== 'number' || !Number.isInteger(data) || data < 0) {
-      throw new Error('Il server non ha restituito una copertura del team valida.');
+      throw new Error('Il server non ha restituito una partecipazione del team valida.');
     }
     return data;
   }
@@ -199,7 +200,12 @@ export class SupabaseSharedTeamReviewRepository implements SharedTeamReviewRepos
       p_rationale: input.rationale.trim(),
       p_client_request_id: input.clientRequestId,
     });
-    if (error) throw new Error(`Esito del team non registrato: ${error.message}`);
+    if (error) {
+      if (error.message.includes('TEAM_ORGANIZATIONAL_BINDING_REQUIRED')) {
+        throw new Error('Il gruppo di lavoro corrente non è ancora confermato da una fonte istituzionale valida.');
+      }
+      throw new Error(`Esito del team non registrato: ${error.message}`);
+    }
     if (!data || typeof data !== 'object') throw new Error('Il server non ha restituito la ricevuta dell’esito del team.');
     const receipt = toOutcome(data as OutcomeRow);
     if (
