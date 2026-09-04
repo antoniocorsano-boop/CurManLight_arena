@@ -40,6 +40,8 @@ export interface TeamReviewItemSummary {
   proposalFingerprint: string;
   bucket: TeamReviewBucket;
   contributionCount: number;
+  expectedContributorCount: number | null;
+  coverageComplete: boolean;
   staleContributionCount: number;
   counts: Record<TeamReviewOrientation, number>;
   proposedTexts: string[];
@@ -52,6 +54,7 @@ export interface TeamReviewSummary {
   changeProposed: number;
   divergent: number;
   needsClarification: number;
+  expectedContributorCount: number | null;
   items: TeamReviewItemSummary[];
 }
 
@@ -98,6 +101,11 @@ export interface SharedTeamReviewRepository {
     workspaceId: string,
   ): Promise<TeamReviewContribution[]>;
 
+  getEligibleContributorCount(
+    context: WorkspaceActorContext,
+    workspaceId: string,
+  ): Promise<number>;
+
   recordTeamOutcome(
     context: WorkspaceActorContext,
     input: RecordTeamReviewOutcomeInput,
@@ -120,10 +128,15 @@ const normalizeText = (value: string | null | undefined): string => value?.trim(
 export function classifyTeamReviewItem(
   proposal: TeamReviewProposalDescriptor,
   contributions: TeamReviewContribution[],
+  expectedContributorCount: number | null,
 ): TeamReviewItemSummary {
   const related = contributions.filter((item) => item.proposalRef === proposal.proposalRef);
   const current = related.filter((item) => item.proposalFingerprint === proposal.proposalFingerprint);
+  const currentContributorCount = new Set(current.map((item) => item.contributorUserId)).size;
   const staleContributionCount = related.length - current.length;
+  const coverageComplete = expectedContributorCount !== null
+    && expectedContributorCount > 0
+    && currentContributorCount >= expectedContributorCount;
   const counts = emptyCounts();
   current.forEach((item) => { counts[item.orientation] += 1; });
 
@@ -146,6 +159,8 @@ export function classifyTeamReviewItem(
     bucket = proposedTexts.length === 1 && current.every((item) => normalizeText(item.customText).length > 0)
       ? 'change-proposed'
       : 'divergent';
+  } else if (!coverageComplete) {
+    bucket = 'needs-clarification';
   } else {
     bucket = 'shared';
   }
@@ -155,7 +170,9 @@ export function classifyTeamReviewItem(
     focus: proposal.focus,
     proposalFingerprint: proposal.proposalFingerprint,
     bucket,
-    contributionCount: current.length,
+    contributionCount: currentContributorCount,
+    expectedContributorCount,
+    coverageComplete,
     staleContributionCount,
     counts,
     proposedTexts,
@@ -166,14 +183,16 @@ export function classifyTeamReviewItem(
 export function deriveTeamReviewSummary(
   proposals: TeamReviewProposalDescriptor[],
   contributions: TeamReviewContribution[],
+  expectedContributorCount: number | null,
 ): TeamReviewSummary {
-  const items = proposals.map((proposal) => classifyTeamReviewItem(proposal, contributions));
+  const items = proposals.map((proposal) => classifyTeamReviewItem(proposal, contributions, expectedContributorCount));
   return {
     total: items.length,
     shared: items.filter((item) => item.bucket === 'shared').length,
     changeProposed: items.filter((item) => item.bucket === 'change-proposed').length,
     divergent: items.filter((item) => item.bucket === 'divergent').length,
     needsClarification: items.filter((item) => item.bucket === 'needs-clarification').length,
+    expectedContributorCount,
     items,
   };
 }
