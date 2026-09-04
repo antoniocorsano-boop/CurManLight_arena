@@ -19,7 +19,7 @@ const isAppTab = (tab: string): tab is AppTab => (APP_TABS as readonly string[])
 const isActiveProgTab = (tab: string): tab is ActiveProgTab => (ACTIVE_PROG_TABS as readonly string[]).includes(tab);
 
 export function AppViewsLayer(props: AppViewsLayerProps) {
-  const { decisions, customTexts } = useCurriculumStore();
+  const { decisions, customTexts, schoolYear } = useCurriculumStore();
 
   const safeHandleTabSwitch = (tab: string) => {
     if (isAppTab(tab)) props.handleTabSwitch(tab);
@@ -115,6 +115,9 @@ export function AppViewsLayer(props: AppViewsLayerProps) {
             proposals={props.currentDisciplineProps}
             decisions={decisions}
             customTexts={customTexts}
+            discipline={props.discipline}
+            order={props.order}
+            academicYear={schoolYear}
           />
         </div>
       )}
