@@ -1,7 +1,8 @@
 import { useEffect, type Dispatch, type SetStateAction } from 'react';
 import type { SchoolOrder, UserRole } from '../../../types/curriculum';
-import { safeLocalStorageGetItem, safeLocalStorageSetItem } from '../../../lib/consolidatedStorage';
+import { safeLocalStorageSetItem } from '../../../lib/consolidatedStorage';
 import { ARENA_STORAGE_VOLATILE_EVENT, verifyBrowserStorage } from '../../../lib/storageRuntimeHealth';
+import { hasPersistedCurriculumState } from '../../../store/useCurriculumStore';
 
 interface UseAppStartupEffectsArgs {
  role: UserRole;
@@ -45,6 +46,7 @@ export function useAppStartupEffects({
 }: UseAppStartupEffectsArgs) {
  useEffect(() => {
   let onboardingTimer: ReturnType<typeof setTimeout> | null = null;
+  let disposed = false;
 
   const cancelPendingOnboarding = () => {
    if (onboardingTimer !== null) {
@@ -152,16 +154,23 @@ export function useAppStartupEffects({
    }
   }
 
-  const isNew = !safeLocalStorageGetItem('curmanlight-react-db-state-v1.4.0', '');
-  if (isNew) {
-   onboardingTimer = setTimeout(() => {
-    onboardingTimer = null;
-    setOnboardingRoleLocal(role);
-    setOnboardingDiscLocal(discipline);
-    setOnboardingOrdLocal(order);
-    setShowOnboardingModal(true);
-   }, 1000);
-  }
+  void hasPersistedCurriculumState()
+   .then((hasPersistedState) => {
+    if (disposed || hasPersistedState) return;
+    onboardingTimer = setTimeout(() => {
+     onboardingTimer = null;
+     if (disposed) return;
+     setOnboardingRoleLocal(role);
+     setOnboardingDiscLocal(discipline);
+     setOnboardingOrdLocal(order);
+     setShowOnboardingModal(true);
+    }, 1000);
+   })
+   .catch((error) => {
+    if (disposed) return;
+    setIsDatabaseVolatile(true);
+    console.error('[CurManLight Storage Guard] Impossibile determinare la presenza dello stato persistito in IndexedDB.', error);
+   });
 
   try {
    const allKeys = Object.keys(localStorage);
@@ -185,6 +194,7 @@ export function useAppStartupEffects({
   }
 
   return () => {
+   disposed = true;
    cancelPendingOnboarding();
    window.removeEventListener('arena:assistant-open', cancelPendingOnboarding);
    window.removeEventListener('arena:knowledge-open', deferAutomaticOnboardingForFocusedTask);

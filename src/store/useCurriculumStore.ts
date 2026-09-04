@@ -31,13 +31,17 @@ import { GuidedTeacherWorkflowState } from '../features/guided-workflow/types';
 
 const getCurriculumBaselineData = () => {
   if (typeof window !== 'undefined') {
-    const saved = localStorage.getItem('curmanlight-custom-curriculum-v2');
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch (e) {
-        // Fallback
+    try {
+      const saved = localStorage.getItem('curmanlight-custom-curriculum-v2');
+      if (saved) {
+        try {
+          return JSON.parse(saved);
+        } catch {
+          // Invalid override: fall back to the bundled baseline.
+        }
       }
+    } catch (error) {
+      console.warn('[CurManLight Storage Guard] Lettura curriculum personalizzato da localStorage non disponibile:', error);
     }
   }
   return getCurriculumBaseline();
@@ -67,6 +71,8 @@ try {
 }
 
 const memoryStore: Record<string, string> = {};
+
+export const CURRICULUM_STATE_STORAGE_KEY = 'curmanlight-react-db-state-v1.4.0';
 
 const indexedDBStorage = {
   getItem: async (name: string): Promise<string | null> => {
@@ -101,6 +107,10 @@ const indexedDBStorage = {
     }
   }
 };
+
+export async function hasPersistedCurriculumState(): Promise<boolean> {
+  return (await indexedDBStorage.getItem(CURRICULUM_STATE_STORAGE_KEY)) !== null;
+}
 
 type CurriculumStoreState = UserState & {
   institutionalArchive: InstitutionalArchive;
@@ -319,7 +329,7 @@ export const useCurriculumStore = create<StoreActions>()(
       resetGuidedWorkflowState: () => set({ guidedWorkflowState: undefined }),
     }),
     {
-      name: 'curmanlight-react-db-state-v1.4.0',
+      name: CURRICULUM_STATE_STORAGE_KEY,
       storage: createJSONStorage(() => indexedDBStorage),
       merge: (persistedState, currentState) => {
         const persisted = isRecord(persistedState) ? persistedState : {};
