@@ -1,9 +1,5 @@
-import { readFileSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-
-const componentPath = fileURLToPath(new URL('../features/beta/TeamReviewWorkspace.tsx', import.meta.url));
-const source = readFileSync(componentPath, 'utf8');
+import source from '../features/beta/TeamReviewWorkspace.tsx?raw';
 
 describe('Arena guided team meeting', () => {
   it('offers a simple point-by-point meeting path', () => {
