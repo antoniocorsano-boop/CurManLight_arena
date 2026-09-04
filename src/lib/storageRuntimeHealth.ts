@@ -54,26 +54,24 @@ async function verifyIndexedDbRoundTrip(): Promise<void> {
 
   try {
     const write = database.transaction(PROBE_STORE, 'readwrite');
+    const writeDone = transactionDone(write);
     write.objectStore(PROBE_STORE).put(probeValue, probeKey);
-    await transactionDone(write);
+    await writeDone;
 
     const read = database.transaction(PROBE_STORE, 'readonly');
+    const readDone = transactionDone(read);
     const result = await requestToPromise(read.objectStore(PROBE_STORE).get(probeKey));
-    await transactionDone(read);
+    await readDone;
     if (result !== probeValue) {
       throw new Error('IndexedDB round-trip returned an unexpected value');
     }
 
     const cleanup = database.transaction(PROBE_STORE, 'readwrite');
+    const cleanupDone = transactionDone(cleanup);
     cleanup.objectStore(PROBE_STORE).delete(probeKey);
-    await transactionDone(cleanup);
+    await cleanupDone;
   } finally {
     database.close();
-    try {
-      window.indexedDB.deleteDatabase(PROBE_DB_NAME);
-    } catch {
-      // The disposable probe database may be cleaned by the browser later.
-    }
   }
 }
 
