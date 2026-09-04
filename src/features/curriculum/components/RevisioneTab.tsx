@@ -1,148 +1,8 @@
-import { ChevronLeft, ChevronRight, FileSearch, History, Info, Layers, Milestone } from 'lucide-react';
+import { ChevronLeft, ChevronRight, FileSearch, Info, Milestone } from 'lucide-react';
 import { useCurriculumStore } from '../../../store/useCurriculumStore';
 import { UiEmptyState } from '../../../ui/components/UiEmptyState';
 import type { DecisionStatus, Proposal } from '../../../types/curriculum';
 import type { AppViewsLayerProps } from '../../session';
-import { PROPOSAL_STATUS_LABELS } from '../../../domain/revision/vocabularies';
-import { findDecisionsByProposal, getEventsByProposal, getLatestProposalVersion } from '../../../domain/revision';
-import type { RevisionProposal } from '../../../domain/revision';
-import { addProposal, transitionProposalStatus } from '../../../domain/revision/repository';
-import { createEntityReference } from '../../../domain/curriculum/identity';
-import type { EntityId } from '../../../domain/curriculum/identity/types';
-import { InstitutionalDecisionPanel, StructuredProposalStarter } from '../../beta';
-
-function useCanonicalRevisionActions() {
-  const { revisionArchive, replaceRevisionArchive } = useCurriculumStore();
-
-  const transitionProposal = (proposalId: string, newStatus: RevisionProposal['status'], rationale?: string) => {
-    const result = transitionProposalStatus(revisionArchive, proposalId as EntityId, newStatus, undefined, rationale);
-    if (result.success) replaceRevisionArchive(result.archive);
-    return result;
-  };
-
-  const createDraft = (targetLabel: string, currentText: string) => {
-    const result = addProposal(revisionArchive, {
-      targetNodeRef: createEntityReference(`node-${Date.now()}` as never, 'curriculum-node' as never, targetLabel),
-      curriculumVersionRef: createEntityReference('cv-current' as never, 'curriculum-version' as never),
-      currentTextSnapshot: currentText,
-      proposedText: currentText,
-      rationale: '',
-    });
-    if (result.success) replaceRevisionArchive(result.archive);
-    return result;
-  };
-
-  return { transitionProposal, createDraft };
-}
-
-function CanonicalProposalsSection() {
-  const { revisionArchive } = useCurriculumStore();
-  const { transitionProposal } = useCanonicalRevisionActions();
-  const proposals = revisionArchive.proposals.filter((proposal) => proposal.status !== 'legacy');
-
-  if (proposals.length === 0) return null;
-
-  return (
-    <details open className="rounded-2xl border border-indigo-100 bg-white" data-revision-secondary="structured-proposals">
-      <summary className="cursor-pointer list-none p-4">
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex min-w-0 items-center gap-2">
-            <Layers className="h-4 w-4 shrink-0 text-indigo-600" aria-hidden="true" />
-            <div className="min-w-0">
-              <strong className="block text-sm text-slate-900">Proposte già preparate</strong>
-              <span className="block text-xs text-slate-500">{proposals.length} da seguire nel percorso di revisione</span>
-            </div>
-          </div>
-          <span className="text-xs font-semibold text-indigo-700">Apri / chiudi</span>
-        </div>
-      </summary>
-
-      <div className="space-y-3 border-t border-slate-100 p-3 sm:p-4">
-        {proposals.map((proposal) => {
-          const version = getLatestProposalVersion(revisionArchive, proposal);
-          const proposalDecisions = findDecisionsByProposal(revisionArchive, proposal.id);
-          const latestDecision = proposalDecisions.length > 0 ? proposalDecisions[proposalDecisions.length - 1] : undefined;
-          const events = getEventsByProposal(revisionArchive, proposal.id);
-          const nodeLabel = proposal.targetNodeRef.snapshotLabel || proposal.targetNodeRef.id;
-
-          return (
-            <article key={proposal.id} className="overflow-hidden rounded-xl border border-slate-200 bg-white">
-              <header className="flex items-start justify-between gap-3 bg-slate-50 px-3 py-3">
-                <div className="min-w-0">
-                  <strong className="block truncate text-sm text-slate-900">{nodeLabel}</strong>
-                  <span className="mt-0.5 block text-xs text-slate-500">{PROPOSAL_STATUS_LABELS[proposal.status]}</span>
-                </div>
-                <span className="shrink-0 rounded-full bg-white px-2 py-1 text-[10px] font-bold text-slate-500">v{version?.versionNumber ?? 1}</span>
-              </header>
-
-              <div className="space-y-3 p-3 text-xs leading-relaxed sm:p-4">
-                <div className="grid gap-2 sm:grid-cols-2">
-                  <div className="rounded-xl bg-slate-50 p-3">
-                    <span className="text-[10px] font-bold uppercase text-slate-400">Testo vigente</span>
-                    <p className="mt-1 text-slate-700">{proposal.currentTextSnapshot}</p>
-                  </div>
-                  <div className="rounded-xl border border-indigo-100 bg-indigo-50/30 p-3">
-                    <span className="text-[10px] font-bold uppercase text-indigo-500">Testo proposto</span>
-                    <p className="mt-1 text-slate-800">{version?.proposedText ?? proposal.proposedText}</p>
-                  </div>
-                </div>
-
-                {proposal.rationale && <p className="text-slate-600"><strong>Motivazione:</strong> {proposal.rationale}</p>}
-
-                {latestDecision && (
-                  <div className="rounded-xl border border-emerald-100 bg-emerald-50 p-3 text-slate-700">
-                    <strong>Decisione registrata:</strong> {String(latestDecision.outcome)}
-                    {latestDecision.rationale ? ` — ${latestDecision.rationale}` : ''}
-                  </div>
-                )}
-
-                {events.length > 0 && (
-                  <details>
-                    <summary className="cursor-pointer text-xs font-semibold text-slate-500"><History className="mr-1 inline h-3 w-3" aria-hidden="true" />Cronologia locale</summary>
-                    <div className="mt-2 space-y-1 rounded-xl bg-slate-50 p-3 text-[11px] text-slate-500">
-                      {events.slice(-5).reverse().map((event) => <div key={event.id}>{event.eventType}{event.rationale ? ` — ${event.rationale.slice(0, 80)}` : ''}</div>)}
-                    </div>
-                  </details>
-                )}
-              </div>
-
-              <div className="flex flex-wrap gap-2 border-t border-slate-100 bg-slate-50 px-3 py-3">
-                {proposal.status === 'draft' && (
-                  <>
-                    <button disabled={!proposal.rationale} onClick={() => transitionProposal(proposal.id, 'ready-for-review', proposal.rationale || undefined)} className="rounded-lg bg-indigo-700 px-3 py-2 text-xs font-bold text-white disabled:cursor-not-allowed disabled:opacity-40">Prepara per revisione</button>
-                    <button onClick={() => transitionProposal(proposal.id, 'archived')} className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-700">Archivia</button>
-                  </>
-                )}
-                {proposal.status === 'ready-for-review' && <button onClick={() => transitionProposal(proposal.id, 'submitted')} className="rounded-lg bg-indigo-700 px-3 py-2 text-xs font-bold text-white">Invia</button>}
-                {proposal.status === 'submitted' && (
-                  <>
-                    <button onClick={() => transitionProposal(proposal.id, 'under-review')} className="rounded-lg bg-indigo-700 px-3 py-2 text-xs font-bold text-white">Prendi in carico</button>
-                    <button onClick={() => transitionProposal(proposal.id, 'withdrawn')} className="rounded-lg border border-rose-200 bg-white px-3 py-2 text-xs font-bold text-rose-700">Ritira</button>
-                  </>
-                )}
-                {proposal.status === 'under-review' && (
-                  <>
-                    <button onClick={() => transitionProposal(proposal.id, 'changes-requested', 'Modifiche richieste dal revisore')} className="rounded-lg border border-amber-200 bg-white px-3 py-2 text-xs font-bold text-amber-800">Richiedi modifiche</button>
-                    <button onClick={() => transitionProposal(proposal.id, 'accepted-for-decision')} className="rounded-lg bg-emerald-700 px-3 py-2 text-xs font-bold text-white">Ammetti alla decisione</button>
-                    <button onClick={() => transitionProposal(proposal.id, 'rejected')} className="rounded-lg border border-rose-200 bg-white px-3 py-2 text-xs font-bold text-rose-700">Rigetta</button>
-                  </>
-                )}
-                {proposal.status === 'changes-requested' && <button onClick={() => transitionProposal(proposal.id, 'ready-for-review')} className="rounded-lg bg-indigo-700 px-3 py-2 text-xs font-bold text-white">Nuova versione pronta</button>}
-                {(proposal.status === 'rejected' || proposal.status === 'withdrawn') && <button onClick={() => transitionProposal(proposal.id, 'archived')} className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-700">Archivia</button>}
-              </div>
-
-              {proposal.status === 'accepted-for-decision' && version && (
-                <div className="border-t border-emerald-100 p-3 sm:p-4">
-                  <InstitutionalDecisionPanel proposal={proposal} version={version} />
-                </div>
-              )}
-            </article>
-          );
-        })}
-      </div>
-    </details>
-  );
-}
 
 export type RevisioneTabProps = Pick<AppViewsLayerProps,
   | 'currentDisciplineProps'
@@ -184,8 +44,6 @@ export function RevisioneTab({
     setDecision,
     resetDecision,
     setCustomText,
-    discipline,
-    order,
   } = useCurriculumStore();
 
   const filtered = filterProposals(currentDisciplineProps, decisions, activeRevisionFilter);
@@ -346,16 +204,6 @@ export function RevisioneTab({
       ) : (
         <UiEmptyState icon={FileSearch} title="Niente da esaminare qui" description="Non ci sono schede corrispondenti al filtro scelto." />
       )}
-
-      <StructuredProposalStarter
-        proposals={currentDisciplineProps}
-        decisions={decisions}
-        customTexts={customTexts}
-        discipline={discipline}
-        order={order}
-      />
-
-      <CanonicalProposalsSection />
 
       <details className="rounded-2xl border border-slate-200 bg-white" data-revision-secondary="help">
         <summary className="cursor-pointer list-none p-4">

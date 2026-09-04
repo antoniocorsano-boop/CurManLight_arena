@@ -1,5 +1,5 @@
 import type { A07InstitutionalDocumentRead } from '../../domain/institution';
-import type { RevisionArchive } from '../../domain/revision';
+import { createEmptyRevisionArchive } from '../../domain/revision';
 import {
   createCmlLocalHandoffV2FromArenaRuntime,
   validateCmlLocalHandoffV2,
@@ -27,7 +27,6 @@ export interface PlanningHandoffPreviewInput {
   cohortRef?: string;
   disciplineRef: string;
   curriculumMap: CurriculumMap;
-  revisionArchive: RevisionArchive;
   emittedAt?: string;
 }
 
@@ -138,7 +137,9 @@ export function buildPlanningHandoffPreview(
       ...(input.cohortRef?.trim() ? { cohortRef: input.cohortRef.trim() } : {}),
       disciplineRef: input.disciplineRef,
       curriculumMap: input.curriculumMap,
-      revisionArchive: input.revisionArchive,
+      // Revision proposals are not current curriculum. Only materialized/adopted
+      // curriculum may flow to planning. Keep the handoff isolated from revisionArchive.
+      revisionArchive: createEmptyRevisionArchive('1970-01-01T00:00:00.000Z'),
       sourceVersion: 'arena-beta-b3',
       emittedAt: input.emittedAt,
     });
