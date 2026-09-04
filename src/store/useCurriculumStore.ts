@@ -109,7 +109,19 @@ const indexedDBStorage = {
 };
 
 export async function hasPersistedCurriculumState(): Promise<boolean> {
-  return (await indexedDBStorage.getItem(CURRICULUM_STATE_STORAGE_KEY)) !== null;
+  if (!db) {
+    const error = new Error('IndexedDB non inizializzato');
+    markStorageVolatile(error);
+    throw error;
+  }
+
+  try {
+    const record = (await db.table('state').get(CURRICULUM_STATE_STORAGE_KEY)) as PersistedStateRecord | undefined;
+    return record !== undefined;
+  } catch (error) {
+    markStorageVolatile(error);
+    throw error;
+  }
 }
 
 type CurriculumStoreState = UserState & {
