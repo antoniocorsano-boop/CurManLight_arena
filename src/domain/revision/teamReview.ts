@@ -101,10 +101,15 @@ export interface SharedTeamReviewRepository {
     workspaceId: string,
   ): Promise<TeamReviewContribution[]>;
 
+  /**
+   * Returns the count only when the workspace membership set is bound to a
+   * confirmed current institutional work group. Null means that Arena may
+   * collect individual contributions but must not infer full-team coverage.
+   */
   getEligibleContributorCount(
     context: WorkspaceActorContext,
     workspaceId: string,
-  ): Promise<number>;
+  ): Promise<number | null>;
 
   recordTeamOutcome(
     context: WorkspaceActorContext,
