@@ -11,12 +11,12 @@ permissions:
 jobs:
   build-preview:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - name: Checkout exact validated PR #198 SHA
         uses: actions/checkout@v4
         with:
-          ref: 94e77d436adccf30f9192bfb6f94bbca34fa4997
+          ref: 9e323f5f8a82436d51c7dd75c54a6ca74c085288
           fetch-depth: 1
 
       - name: Setup Node
@@ -30,33 +30,43 @@ jobs:
 
       - name: Build exact Beta artifact
         env:
-          CML_RELEASE_REF: 94e77d436adccf30f9192bfb6f94bbca34fa4997
-          CML_RELEASE_SHA: 94e77d436adccf30f9192bfb6f94bbca34fa4997
+          CML_RELEASE_REF: 9e323f5f8a82436d51c7dd75c54a6ca74c085288
+          CML_RELEASE_SHA: 9e323f5f8a82436d51c7dd75c54a6ca74c085288
         run: npm run build:beta
 
       - name: Verify release identity
         run: |
-          node -e "const fs=require('fs');const p='dist/beta-release.json';const d=JSON.parse(fs.readFileSync(p,'utf8'));if(d.releaseSha!=='94e77d436adccf30f9192bfb6f94bbca34fa4997'){throw new Error('Unexpected release SHA: '+d.releaseSha)}"
+          node -e "const fs=require('fs');const p='dist/beta-release.json';const d=JSON.parse(fs.readFileSync(p,'utf8'));if(d.releaseSha!=='9e323f5f8a82436d51c7dd75c54a6ca74c085288'){throw new Error('Unexpected release SHA: '+d.releaseSha)};if(d.basePath!=='/CurManLight_arena/'){throw new Error('Unexpected basePath: '+d.basePath)}"
 
-      - name: Upload preview dist
+      - name: Prepare basename-safe static host tree
+        run: |
+          set -euo pipefail
+          rm -rf preview-root
+          mkdir -p preview-root/CurManLight_arena
+          cp -a dist/. preview-root/CurManLight_arena/
+          cat > preview-root/index.html <<'EOF'
+          <!doctype html>
+          <html lang="it"><head><meta charset="utf-8"><meta http-equiv="refresh" content="0; url=/CurManLight_arena/"><title>CurManLight Arena test</title></head><body><a href="/CurManLight_arena/">Apri CurManLight Arena</a></body></html>
+          EOF
+
+      - name: Upload preview tree
         uses: actions/upload-artifact@v4
         with:
           name: pr198-preview-dist
-          path: dist
+          path: preview-root
           if-no-files-found: error
           retention-days: 7
 
-      - name: Publish exact static preview branch
+      - name: Publish exact static preview branches
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          cd dist
+          cd preview-root
           git init
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
-          git commit -m "PR #198 preview 94e77d436adccf30f9192bfb6f94bbca34fa4997"
-          git branch -M preview/pr198-static
+          git commit -m "PR #198 preview 9e323f5f8a82436d51c7dd75c54a6ca74c085288"
           git remote add origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
-          git push --force origin HEAD:refs/heads/preview/pr198-static
+          git push --force origin HEAD:refs/heads/preview/pr198-static HEAD:refs/heads/pr198-static-preview
