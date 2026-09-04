@@ -16,7 +16,7 @@ jobs:
       - name: Checkout exact validated PR #198 SHA
         uses: actions/checkout@v4
         with:
-          ref: 9e323f5f8a82436d51c7dd75c54a6ca74c085288
+          ref: d2f2a68254b3706f46a8163de7758bb10ea70c0a
           fetch-depth: 1
 
       - name: Setup Node
@@ -30,13 +30,13 @@ jobs:
 
       - name: Build exact Beta artifact
         env:
-          CML_RELEASE_REF: 9e323f5f8a82436d51c7dd75c54a6ca74c085288
-          CML_RELEASE_SHA: 9e323f5f8a82436d51c7dd75c54a6ca74c085288
+          CML_RELEASE_REF: d2f2a68254b3706f46a8163de7758bb10ea70c0a
+          CML_RELEASE_SHA: d2f2a68254b3706f46a8163de7758bb10ea70c0a
         run: npm run build:beta
 
       - name: Verify release identity
         run: |
-          node -e "const fs=require('fs');const p='dist/beta-release.json';const d=JSON.parse(fs.readFileSync(p,'utf8'));if(d.releaseSha!=='9e323f5f8a82436d51c7dd75c54a6ca74c085288'){throw new Error('Unexpected release SHA: '+d.releaseSha)};if(d.basePath!=='/CurManLight_arena/'){throw new Error('Unexpected basePath: '+d.basePath)}"
+          node -e "const fs=require('fs');const p='dist/beta-release.json';const d=JSON.parse(fs.readFileSync(p,'utf8'));if(d.releaseSha!=='d2f2a68254b3706f46a8163de7758bb10ea70c0a'){throw new Error('Unexpected release SHA: '+d.releaseSha)};if(d.basePath!=='/CurManLight_arena/'){throw new Error('Unexpected basePath: '+d.basePath)}"
 
       - name: Prepare basename-safe static host tree
         run: |
@@ -67,6 +67,6 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
-          git commit -m "PR #198 preview 9e323f5f8a82436d51c7dd75c54a6ca74c085288"
+          git commit -m "PR #198 preview d2f2a68254b3706f46a8163de7758bb10ea70c0a"
           git remote add origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
           git push --force origin HEAD:refs/heads/preview/pr198-static HEAD:refs/heads/pr198-static-preview
