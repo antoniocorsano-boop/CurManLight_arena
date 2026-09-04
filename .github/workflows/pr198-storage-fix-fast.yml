@@ -1,0 +1,75 @@
+name: Apply PR198 Storage Fix Fast
+
+on:
+  push:
+    branches:
+      - ops/pr198-storage-fix-fast
+
+permissions:
+  contents: write
+
+jobs:
+  patch-push:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout PR #198 branch
+        uses: actions/checkout@v4
+        with:
+          ref: feature/team-meeting-workspace
+          fetch-depth: 0
+
+      - name: Patch runtime Dexie fallback
+        shell: python
+        run: |
+          from pathlib import Path
+          path = Path('src/store/useCurriculumStore.ts')
+          text = path.read_text(encoding='utf-8')
+
+          def replace_once(old: str, new: str, label: str) -> None:
+              global text
+              count = text.count(old)
+              if count != 1:
+                  raise SystemExit(f'{label}: expected exactly one match, found {count}')
+              text = text.replace(old, new, 1)
+
+          replace_once(
+              """type PersistedStateRecord = {\n  key: string;\n  value: string;\n};\n\nlet db: Dexie | null = null;""",
+              """type PersistedStateRecord = {\n  key: string;\n  value: string;\n};\n\nfunction markStorageVolatile(reason: unknown) {\n  if (typeof window === 'undefined') return;\n  (window as Window & { __curmanStorageVolatile?: boolean }).__curmanStorageVolatile = true;\n  window.dispatchEvent(new CustomEvent('arena:storage-volatile', {\n    detail: { reason: reason instanceof Error ? reason.message : String(reason) },\n  }));\n}\n\nlet db: Dexie | null = null;""",
+              'insert runtime storage marker',
+          )
+
+          for old, new, label in [
+              (
+                  '  console.warn("[CurManLight Storage Guard] Impossibile configurare Dexie/IndexedDB:", e);',
+                  '  markStorageVolatile(e);\n  console.warn("[CurManLight Storage Guard] Impossibile configurare Dexie/IndexedDB:", e);',
+                  'Dexie setup fallback',
+              ),
+              (
+                  '      console.warn("[CurManLight Storage Guard] Impossibile leggere da IndexedDB, uso la memoria temporanea:", e);',
+                  '      markStorageVolatile(e);\n      console.warn("[CurManLight Storage Guard] Impossibile leggere da IndexedDB, uso la memoria temporanea:", e);',
+                  'IndexedDB read fallback',
+              ),
+              (
+                  '      console.warn("[CurManLight Storage Guard] Impossibile scrivere in IndexedDB, uso la memoria temporanea:", e);',
+                  '      markStorageVolatile(e);\n      console.warn("[CurManLight Storage Guard] Impossibile scrivere in IndexedDB, uso la memoria temporanea:", e);',
+                  'IndexedDB write fallback',
+              ),
+              (
+                  '      console.warn("[CurManLight Storage Guard] Impossibile eliminare da IndexedDB, uso la memoria temporanea:", e);',
+                  '      markStorageVolatile(e);\n      console.warn("[CurManLight Storage Guard] Impossibile eliminare da IndexedDB, uso la memoria temporanea:", e);',
+                  'IndexedDB delete fallback',
+              ),
+          ]:
+              replace_once(old, new, label)
+
+          path.write_text(text, encoding='utf-8')
+
+      - name: Validate patch and push
+        run: |
+          git diff --check
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/store/useCurriculumStore.ts
+          git commit -m "fix(storage): surface runtime IndexedDB fallback"
+          git push origin HEAD:feature/team-meeting-workspace
