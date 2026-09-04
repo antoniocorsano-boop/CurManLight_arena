@@ -44,10 +44,35 @@ jobs:
           rm -rf preview-root
           mkdir -p preview-root/CurManLight_arena
           cp -a dist/. preview-root/CurManLight_arena/
+
+          # Render static sites do not apply SPA rewrites unless configured in the service.
+          # Make this isolated preview self-contained by materialising every Arena route
+          # with the exact same Vite entry document. BrowserRouter keeps the pathname and
+          # resolves the correct view after index.html loads.
+          for route in \
+            revisione curriculum planning documents knowledge fonti guida \
+            classroom copilot second-brain social settings onboarding
+          do
+            mkdir -p "preview-root/CurManLight_arena/${route}"
+            cp dist/index.html "preview-root/CurManLight_arena/${route}/index.html"
+          done
+
+          # Safety fallback: unknown static paths return to the Arena base instead of the
+          # hosting provider's generic 404 page.
+          cat > preview-root/404.html <<'EOF'
+          <!doctype html>
+          <html lang="it"><head><meta charset="utf-8"><meta http-equiv="refresh" content="0; url=/CurManLight_arena/"><title>CurManLight Arena test</title></head><body><a href="/CurManLight_arena/">Apri CurManLight Arena</a></body></html>
+          EOF
+
           cat > preview-root/index.html <<'EOF'
           <!doctype html>
           <html lang="it"><head><meta charset="utf-8"><meta http-equiv="refresh" content="0; url=/CurManLight_arena/"><title>CurManLight Arena test</title></head><body><a href="/CurManLight_arena/">Apri CurManLight Arena</a></body></html>
           EOF
+
+          test -f preview-root/CurManLight_arena/revisione/index.html
+          test -f preview-root/CurManLight_arena/curriculum/index.html
+          test -f preview-root/CurManLight_arena/documents/index.html
+          test -f preview-root/CurManLight_arena/planning/index.html
 
       - name: Upload preview tree
         uses: actions/upload-artifact@v4
@@ -67,6 +92,6 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
-          git commit -m "PR #198 preview d2f2a68254b3706f46a8163de7758bb10ea70c0a"
+          git commit -m "PR #198 preview d2f2a68254b3706f46a8163de7758bb10ea70c0a — deep-link safe"
           git remote add origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
           git push --force origin HEAD:refs/heads/preview/pr198-static HEAD:refs/heads/pr198-static-preview
