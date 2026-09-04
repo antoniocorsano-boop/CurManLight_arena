@@ -15,6 +15,8 @@ vi.mock('../store/useCurriculumStore', () => ({
       resetDecision: vi.fn(),
       setCustomText: vi.fn(),
       replaceRevisionArchive: vi.fn(),
+      discipline: 'Tecnologia',
+      order: 'secondaria',
     }),
     {
       getState: () => ({
@@ -33,8 +35,8 @@ describe('CML-610 — Empty states operational clarity', () => {
     vi.clearAllMocks();
   });
 
-  describe('R1: RevisioneTab list mode — no matching proposals', () => {
-    it('shows empty state when filtered list is empty in list mode', () => {
+  describe('R1: RevisioneTab — lavoro del team', () => {
+    it('shows a clear empty state when there is nothing to review', () => {
       render(
         <RevisioneTab
           currentDisciplineProps={[]}
@@ -45,15 +47,16 @@ describe('CML-610 — Empty states operational clarity', () => {
           setRevisioneWizardIndex={vi.fn()}
         />
       );
-      expect(screen.getByText('Nessuna variazione da mostrare')).toBeInTheDocument();
+      expect(screen.getByText('Il mio lavoro nel curricolo')).toBeInTheDocument();
+      expect(screen.getByText('Niente da esaminare qui')).toBeInTheDocument();
       expect(screen.getByText(/Non ci sono schede corrispondenti/)).toBeInTheDocument();
     });
 
-    it('does not show empty state when proposals exist in list mode', () => {
+    it('explains the task in teacher language when a proposal exists', () => {
       render(
         <RevisioneTab
           currentDisciplineProps={[
-            { id: 'prop-1', focus: 'Test', oldText: 'Old', newText: 'New', notes: '' },
+            { id: 'prop-1', focus: 'Tecnologia — classe prima', oldText: 'Testo precedente', newText: 'Proposta aggiornata', notes: '' },
           ]}
           currentDisciplineDecided={0}
           revisioneMode="list"
@@ -62,7 +65,14 @@ describe('CML-610 — Empty states operational clarity', () => {
           setRevisioneWizardIndex={vi.fn()}
         />
       );
-      expect(screen.queryByText('Nessuna variazione da mostrare')).not.toBeInTheDocument();
+
+      expect(screen.getByText('Il mio lavoro nel curricolo')).toBeInTheDocument();
+      expect(screen.getByText('Perché è in revisione?')).toBeInTheDocument();
+      expect(screen.getByText('Prima di scegliere, controlla tre cose')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Conferma proposta' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Propongo una modifica' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Mantieni testo precedente' })).toBeInTheDocument();
+      expect(screen.getByText(/non approva e non modifica da solo il curricolo/)).toBeInTheDocument();
     });
   });
 

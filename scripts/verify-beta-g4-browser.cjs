@@ -88,11 +88,11 @@ async function readPlanningHandoffState(page) {
   try {
     console.log('=== BETA-G4/S3B BROWSER — REVISION, AUTHORITY AND PLANNING HANDOFF ===');
 
-    const initialResponse = await gotoWorkspace(page, revisionUrl, 'Revisione del Curricolo: Gap 2025');
+    const initialResponse = await gotoWorkspace(page, revisionUrl, 'Il mio lavoro nel curricolo');
     console.log(`Initial navigation status: ${initialResponse?.status() ?? 'unknown'} ${page.url()}`);
     check('1. /revisione renders the actual revision workspace', page.url().includes('/revisione'));
 
-    const localChoice = page.getByRole('button', { name: 'Usa testo 2025' }).first();
+    const localChoice = page.getByRole('button', { name: 'Conferma proposta' }).first();
     await localChoice.waitFor({ state: 'visible', timeout: 8000 });
     await localChoice.click();
 
@@ -110,7 +110,7 @@ async function readPlanningHandoffState(page) {
     );
     check('5. Planning handoff exposes no automatic synchronization action', initialHandoff.automaticSyncActionCount === 0);
 
-    await gotoWorkspace(page, revisionUrl, 'Revisione del Curricolo: Gap 2025');
+    await gotoWorkspace(page, revisionUrl, 'Il mio lavoro nel curricolo');
     const reenteredStarter = page.getByRole('region', { name: 'Avvio proposta strutturata Beta' });
     await reenteredStarter.waitFor({ state: 'visible', timeout: 5000 });
     const proposalSelect = reenteredStarter.locator('select');
@@ -130,7 +130,7 @@ async function readPlanningHandoffState(page) {
       proposalHandoff.validPreview || proposalHandoff.blocked
     );
 
-    await gotoWorkspace(page, revisionUrl, 'Revisione del Curricolo: Gap 2025');
+    await gotoWorkspace(page, revisionUrl, 'Il mio lavoro nel curricolo');
     prepareButton = page.getByRole('button', { name: 'Prepara per revisione' }).first();
     await prepareButton.waitFor({ state: 'visible', timeout: 5000 });
     await prepareButton.click();
@@ -158,7 +158,7 @@ async function readPlanningHandoffState(page) {
     console.log(`Refresh navigation status: ${refreshResponse?.status() ?? 'unknown'} ${page.url()}`);
     await closeLocalProfileIfPresent(page);
 
-    await expectVisibleText(page, 'Revisione del Curricolo: Gap 2025');
+    await expectVisibleText(page, 'Il mio lavoro nel curricolo');
     const reenteredPanel = page.getByRole('region', { name: 'Decisione istituzionale Beta' }).first();
     await reenteredPanel.waitFor({ state: 'visible', timeout: 8000 });
     await expectVisibleText(reenteredPanel, 'Nessuna identità Beta autenticata');
@@ -180,7 +180,7 @@ async function readPlanningHandoffState(page) {
       reenteredHandoff.validPreview || reenteredHandoff.blocked
     );
 
-    await gotoWorkspace(page, revisionUrl, 'Revisione del Curricolo: Gap 2025');
+    await gotoWorkspace(page, revisionUrl, 'Il mio lavoro nel curricolo');
     const mobileDecisionPanel = page.getByRole('region', { name: 'Decisione istituzionale Beta' }).first();
     await mobileDecisionPanel.waitFor({ state: 'visible', timeout: 8000 });
     await mobileDecisionPanel.scrollIntoViewIfNeeded();
