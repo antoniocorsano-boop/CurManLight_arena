@@ -44,14 +44,29 @@ describe('Arena team review synthesis', () => {
       contribution('p-clarify', fingerprint('9'), 'u1', 'confirm-proposal'),
     ];
 
-    const summary = deriveTeamReviewSummary(proposals, contributions);
+    const summary = deriveTeamReviewSummary(proposals, contributions, 2);
 
     expect(summary.total).toBe(4);
     expect(summary.shared).toBe(1);
     expect(summary.changeProposed).toBe(1);
     expect(summary.divergent).toBe(1);
     expect(summary.needsClarification).toBe(1);
+    expect(summary.items.find((item) => item.proposalRef === 'p-shared')?.coverageComplete).toBe(true);
     expect(summary.items.find((item) => item.proposalRef === 'p-clarify')?.staleContributionCount).toBe(1);
+  });
+
+  it('never treats one unanimous contribution as full-team sharing when more contributors are expected', () => {
+    const summary = deriveTeamReviewSummary(
+      [{ proposalRef: 'p1', focus: 'P1', proposalFingerprint: fingerprint('a') }],
+      [contribution('p1', fingerprint('a'), 'u1', 'confirm-proposal')],
+      3,
+    );
+
+    expect(summary.shared).toBe(0);
+    expect(summary.needsClarification).toBe(1);
+    expect(summary.items[0].coverageComplete).toBe(false);
+    expect(summary.items[0].contributionCount).toBe(1);
+    expect(summary.items[0].expectedContributorCount).toBe(3);
   });
 
   it('does not treat different custom formulations as consensus', () => {
@@ -61,6 +76,7 @@ describe('Arena team review synthesis', () => {
         contribution('p1', fingerprint('a'), 'u1', 'propose-change', 'Prima formulazione'),
         contribution('p1', fingerprint('a'), 'u2', 'propose-change', 'Seconda formulazione'),
       ],
+      2,
     );
 
     expect(summary.divergent).toBe(1);
