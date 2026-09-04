@@ -6,7 +6,7 @@ on:
       - ops/pr198-preview-build
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   build-preview:
@@ -45,3 +45,18 @@ jobs:
           path: dist
           if-no-files-found: error
           retention-days: 7
+
+      - name: Publish exact static preview branch
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          cd dist
+          git init
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "PR #198 preview 94e77d436adccf30f9192bfb6f94bbca34fa4997"
+          git branch -M preview/pr198-static
+          git remote add origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git push --force origin HEAD:refs/heads/preview/pr198-static
