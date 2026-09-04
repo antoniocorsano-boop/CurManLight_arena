@@ -1,0 +1,76 @@
+name: PR198 Clean Revision Team Transition
+
+on:
+  push:
+    branches:
+      - ops/pr198-preview-build
+
+permissions:
+  contents: write
+
+jobs:
+  patch-validate-push:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout PR
+        uses: actions/checkout@v4
+        with:
+          ref: feature/team-meeting-workspace
+          fetch-depth: 0
+
+      - name: Remove obsolete gap and simplify authentication copy
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          revision = Path('src/features/curriculum/components/RevisioneTab.tsx')
+          text = revision.read_text()
+          old = 'className="space-y-4 fade-in pb-24 text-left sm:pb-6"'
+          new = 'className="space-y-4 fade-in text-left"'
+          if old not in text:
+              raise SystemExit('Expected RevisioneTab terminal padding not found')
+          revision.write_text(text.replace(old, new, 1))
+
+          team = Path('src/features/beta/TeamReviewWorkspace.tsx')
+          text = team.read_text()
+          old = 'Per vedere il lavoro condiviso, <a href={identityHref} className="font-bold underline">accedi al workspace Beta</a>.'
+          new = 'Per vedere o condividere il lavoro del team, <a href={identityHref} className="font-bold underline">accedi</a>.'
+          if old not in text:
+              raise SystemExit('Expected unauthenticated workspace copy not found')
+          team.write_text(text.replace(old, new, 1))
+          PY
+
+          grep -F 'className="space-y-4 fade-in text-left"' src/features/curriculum/components/RevisioneTab.tsx
+          ! grep -F 'pb-24' src/features/curriculum/components/RevisioneTab.tsx
+          grep -F 'Per vedere o condividere il lavoro del team' src/features/beta/TeamReviewWorkspace.tsx
+          ! grep -F 'accedi al workspace Beta' src/features/beta/TeamReviewWorkspace.tsx
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Authority boundary regression
+        run: npx vitest run src/__tests__/teacher-revision-authority-boundary.test.ts
+
+      - name: TypeScript
+        run: npx tsc --noEmit
+
+      - name: Beta build
+        run: npm run build:beta
+
+      - name: Commit validated UX cleanup to PR
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          git config user.name "Antonio Corsano"
+          git config user.email "antonio.corsano@gmail.com"
+          git add src/features/curriculum/components/RevisioneTab.tsx src/features/beta/TeamReviewWorkspace.tsx
+          git commit -m "fix: clean transition from review to team workspace"
+          git push origin HEAD:feature/team-meeting-workspace
