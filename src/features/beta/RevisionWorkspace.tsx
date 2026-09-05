@@ -71,7 +71,8 @@ export function RevisionWorkspace(props: AppViewsLayerProps) {
             role="note"
             className="rounded-2xl border border-indigo-200 bg-indigo-50/70 p-4 text-sm leading-6 text-slate-700"
           >
-            <strong className="block text-base text-slate-900">Qui prepari il tuo contributo. Non esprimi l’esito del team.</strong>
+            <strong className="block text-base text-slate-900">Qui prepari il confronto. Non approvi il curricolo.</strong>
+            <p className="mt-1">In questo spazio prepari soltanto il tuo contributo personale; non esprimi l’esito del team.</p>
             <ol className="mt-2 grid gap-1 pl-5 text-sm list-decimal">
               <li>Confronta il testo precedente con quello proposto.</li>
               <li>Registra il tuo orientamento professionale.</li>
