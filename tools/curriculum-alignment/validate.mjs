@@ -30,7 +30,7 @@ const revisionSurface = readText('src/features/curriculum/components/RevisioneTa
 const progressHook = readText('src/features/curriculum/hooks/useCurriculumProgressStats.ts');
 
 assert(registry.registry_id === 'REG-CURR-00', 'registry_id deve essere REG-CURR-00');
-assert(registry.version === '1.2.0', 'versione del registro inattesa');
+assert(registry.version === '1.3.0', 'versione del registro inattesa');
 
 const source = registry.drive?.current_curriculum_source;
 assert(source, 'fonte curricolare corrente assente');
@@ -66,6 +66,17 @@ assert(pilot?.human_outcome === 'OPEN', 'un esito umano non può essere simulato
 assert(pilot?.review_card_count === 5, 'il pilot Tecnologia deve esporre cinque decisioni reali');
 assert(pilot?.canonical_promotion === 'NOT_AUTHORIZED', 'il pilot non può autorizzare promozione canonica');
 assert(pilot?.implementation_head === baseline.product_head, 'pilot e baseline funzionale devono usare lo stesso implementation head');
+
+const audit = pilot?.instructional_audit;
+assert(audit?.audit_id === 'AUD-CURR-TEC-SEC1-01', 'audit istruttorio Tecnologia non registrato');
+assert(audit?.file_id === '1SZ_lmaYXNF2Fx8ro1C-hTh5iUH-riECcqyZtRx9JRPM', 'Drive file ID dell’audit Tecnologia inatteso');
+assert(audit?.status === 'COMPLETATO', 'l’audit istruttorio deve risultare completato');
+assert(audit?.instructional_outcome === 'PRONTO_AL_RIESAME_PROFESSIONALE_CON_CORREZIONI_MIRATE', 'esito istruttorio dell’audit inatteso');
+assert(audit?.human_outcome === 'OPEN', 'l’audit istruttorio non può chiudere un esito umano');
+assert(audit?.canonical_promotion === 'NOT_AUTHORIZED', 'l’audit non può autorizzare promozione canonica');
+assert(audit?.card_findings?.['TEC-SEC1-2026-N4'] === 'DA_MODIFICARE_PRIMA_DELLA_CONFERMA_PROFESSIONALE', 'il rilievo istruttorio su N4 deve restare registrato');
+assert(Array.isArray(audit?.required_instructional_corrections) && audit.required_instructional_corrections.length === 4, 'le quattro correzioni istruttorie dell’audit devono restare registrate');
+assert(registry.alignment_rules?.instructional_audit_must_not_be_promoted_as_human_outcome === true, 'il registro deve separare audit istruttorio ed esito umano');
 
 const expectedPilotBindings = {
   source: '1DPdK_EIZsE3lI-LIzTJG776cU1PcAcnf',
@@ -115,6 +126,8 @@ assert(mirror.includes(source.title), 'il mirror Markdown non richiama la fonte 
 assert(mirror.includes(source.sha256), 'il mirror Markdown non richiama l’impronta della fonte corrente');
 assert(mirror.includes('TEC-SEC1-2026-01'), 'il mirror Markdown non richiama il pilot Tecnologia');
 assert(mirror.includes(pilot.work_manifest.file_id), 'il mirror Markdown non richiama il manifesto operativo del pilot');
+assert(mirror.includes(audit.audit_id), 'il mirror Markdown non richiama l’audit istruttorio Tecnologia');
+assert(mirror.includes(audit.file_id), 'il mirror Markdown non richiama il file Drive dell’audit Tecnologia');
 assert(mirror.includes(`CCO \`1.3.0\``), 'il mirror Markdown non dichiara la versione CCO corrente');
 assert(mirror.includes('NOT_AUTHORIZED'), 'il mirror Markdown deve rendere visibile il blocco di promozione canonica');
 
@@ -122,5 +135,6 @@ console.log('REG-CURR-00_ALIGNMENT_PASS');
 console.log(`Curriculum source: ${source.title}`);
 console.log(`Arena product baseline: PR #${baseline.pr} @ ${baseline.product_head}`);
 console.log(`Active pilot: ${pilot.pilot_id} — ${pilot.status} — human outcome ${pilot.human_outcome}`);
+console.log(`Instructional audit: ${audit.audit_id} — ${audit.status} — human outcome ${audit.human_outcome}`);
 console.log(`CCO: ${cco.version}; surfaces: ${surfaces.version}`);
 console.log(`Drive register: ${driveRegisterId}`);
