@@ -142,6 +142,7 @@ export function RevisioneTab({
         <section className="rounded-2xl border border-emerald-200 bg-white p-4 shadow-sm" data-revision-completed-card>
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
+              {current.scopeLabel && <p className="mb-1 text-[10px] font-bold uppercase tracking-wide text-slate-400">{current.scopeLabel}</p>}
               <h2 className="text-base font-extrabold leading-tight text-slate-900">{current.focus}</h2>
               <p className="mt-1 text-xs font-bold text-emerald-700">✓ {reviewStatusLabel(currentDecision, currentCustomText)}</p>
             </div>
@@ -182,17 +183,18 @@ export function RevisioneTab({
       ) : (
         <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm" aria-labelledby="current-revision-title" data-revision-current-card>
           <header className="border-b border-slate-100 px-4 py-3">
+            {current.scopeLabel && <p className="mb-1 text-[10px] font-bold uppercase tracking-wide text-slate-400">{current.scopeLabel}</p>}
             <h2 id="current-revision-title" className="text-base font-extrabold leading-tight text-slate-900">{current.focus}</h2>
           </header>
 
           <div className="space-y-3 p-4">
             <div className="grid gap-3 lg:grid-cols-2" data-revision-comparison>
               <article className="rounded-xl bg-slate-50 p-3">
-                <strong className="text-[11px] font-bold text-slate-500">Precedente</strong>
+                <strong className="text-[11px] font-bold text-slate-500">{current.oldLabel || 'Precedente'}</strong>
                 <p className="mt-2 text-sm leading-relaxed text-slate-700">{current.oldText}</p>
               </article>
               <article className="rounded-xl border border-indigo-100 bg-indigo-50/30 p-3">
-                <strong className="text-[11px] font-bold text-indigo-700">Proposta</strong>
+                <strong className="text-[11px] font-bold text-indigo-700">{current.newLabel || 'Proposta'}</strong>
                 <p className="mt-2 text-sm leading-relaxed text-slate-800">{current.newText}</p>
               </article>
             </div>
@@ -200,12 +202,14 @@ export function RevisioneTab({
             <details className="rounded-xl border border-slate-200 bg-white" data-revision-secondary="context">
               <summary className="cursor-pointer px-3 py-2.5 text-xs font-bold text-slate-600">Contesto e fonti</summary>
               <div className="space-y-3 border-t border-slate-100 px-3 py-3 text-xs leading-relaxed text-slate-600">
-                <p>Il testo precedente è collegato al quadro nazionale 2012; la proposta è costruita per il confronto con il quadro 2025.</p>
-                <ul className="space-y-1">
-                  <li>• Chiarezza e adeguatezza alla classe</li>
-                  <li>• Continuità con ciò che viene prima</li>
-                  <li>• Preparazione di ciò che viene dopo</li>
-                </ul>
+                <p>{current.contextSummary || 'Il testo precedente e la proposta appartengono a due stati distinti del lavoro curricolare. Verifica formulazione, continuità verticale e adeguatezza al contesto.'}</p>
+                {current.gateId && <p><strong>Gate:</strong> {current.gateId}</p>}
+                {current.sourceRefs && current.sourceRefs.length > 0 && (
+                  <ul className="space-y-1" data-revision-source-refs>
+                    {current.sourceRefs.map((sourceRef) => <li key={sourceRef}>• {sourceRef}</li>)}
+                  </ul>
+                )}
+                {current.notes && <p className="text-slate-500">{current.notes}</p>}
               </div>
             </details>
 
