@@ -3,6 +3,8 @@ import type { SchoolOrder, UserRole } from '../../../types/curriculum';
 import { safeLocalStorageGetItem, safeLocalStorageSetItem } from '../../../lib/consolidatedStorage';
 
 interface UseOnboardingProfileArgs {
+  role: UserRole;
+  discipline: string;
   order: SchoolOrder;
   setRole: (role: UserRole) => void;
   setDiscipline: (discipline: string) => void;
@@ -12,6 +14,9 @@ interface UseOnboardingProfileArgs {
 }
 
 export const useOnboardingProfile = ({
+  role,
+  discipline,
+  order,
   setRole,
   setDiscipline,
   setOrder,
@@ -58,7 +63,6 @@ export const useOnboardingProfile = ({
     setOnboardingAssignedClasses([]);
     setOnboardingCombinations([]);
     setAvailableSections([]);
-    safeLocalStorageSetItem('curman_availableSections', '');
   };
 
   const handleToggleOnboardingCombination = (combo: string) => {
@@ -81,9 +85,25 @@ export const useOnboardingProfile = ({
     }
     const updated = [...availableSections, cleanSec];
     setAvailableSections(updated);
-    safeLocalStorageSetItem('curman_availableSections', updated.join(','));
     setNewSectionInput('');
     showToast(`Sezione '${cleanSec}' aggiunta al contesto personale.`);
+  };
+
+  const openOnboardingProfileEditor = () => {
+    const savedClasses = safeLocalStorageGetItem('curman_assignedClasses', '');
+    const savedCombinations = safeLocalStorageGetItem('curman_assignedCombinations', '');
+    const savedSections = safeLocalStorageGetItem('curman_availableSections', '');
+
+    setOnboardingRoleLocal(role);
+    setOnboardingDiscLocal(discipline);
+    setOnboardingOrdLocal(order);
+    setOnboardingAssignedClasses(savedClasses ? savedClasses.split(',') : []);
+    setOnboardingCombinations(savedCombinations ? savedCombinations.split(',') : []);
+    setAvailableSections(savedSections ? savedSections.split(',') : []);
+    setOnboardingIsSostegno(safeLocalStorageGetItem('curman_isSostegno', 'false') === 'true');
+    setNewSectionInput('');
+    setOnboardingStep(1);
+    setShowOnboardingModal(true);
   };
 
   const saveOnboardingProfile = () => {
@@ -106,6 +126,7 @@ export const useOnboardingProfile = ({
     safeLocalStorageSetItem('curman_assignedClasses', onboardingAssignedClasses.join(','));
     setAssignedCombinations(onboardingCombinations);
     safeLocalStorageSetItem('curman_assignedCombinations', onboardingCombinations.join(','));
+    safeLocalStorageSetItem('curman_availableSections', availableSections.join(','));
     setShowOnboardingModal(false);
     showToast('Profilo personale locale salvato. Il ruolo dichiarato non è autenticato.');
   };
@@ -131,6 +152,7 @@ export const useOnboardingProfile = ({
     handleSetOnboardingOrdLocal,
     handleToggleOnboardingCombination,
     handleAddSectionLocal,
+    openOnboardingProfileEditor,
     saveOnboardingProfile
   };
 };

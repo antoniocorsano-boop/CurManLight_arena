@@ -16,7 +16,7 @@ describe('CML-633D Task 10 neutral role and onboarding defaults', () => {
 
   it('starts onboarding without assigned classes, combinations, or sections', () => {
     const { result } = renderHook(() => useOnboardingProfile({
-      order: 'secondaria', setRole: vi.fn(), setDiscipline: vi.fn(), setOrder: vi.fn(), setShowOnboardingModal: vi.fn(), showToast: vi.fn(),
+      role: 'non-dichiarato', discipline: 'italiano', order: 'secondaria', setRole: vi.fn(), setDiscipline: vi.fn(), setOrder: vi.fn(), setShowOnboardingModal: vi.fn(), showToast: vi.fn(),
     }));
 
     expect(result.current.onboardingRole).toBe('non-dichiarato');
@@ -33,7 +33,7 @@ describe('CML-633D Task 10 neutral role and onboarding defaults', () => {
   it('saves the onboarding selection as a personal local profile, not institutional configuration', () => {
     const showToast = vi.fn();
     const { result } = renderHook(() => useOnboardingProfile({
-      order: 'secondaria', setRole: vi.fn(), setDiscipline: vi.fn(), setOrder: vi.fn(), setShowOnboardingModal: vi.fn(), showToast,
+      role: 'non-dichiarato', discipline: 'italiano', order: 'secondaria', setRole: vi.fn(), setDiscipline: vi.fn(), setOrder: vi.fn(), setShowOnboardingModal: vi.fn(), showToast,
     }));
     act(() => result.current.saveOnboardingProfile());
     expect(showToast).toHaveBeenCalledWith(expect.stringMatching(/profilo personale locale/i));
