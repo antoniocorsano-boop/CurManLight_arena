@@ -35,12 +35,17 @@ vi.mock('../store/useCurriculumStore', () => ({
         activeRevisionFilter: revisionMock.activeRevisionFilter,
         revisionArchive: { proposals: [], versions: [], decisions: [], effects: [], events: [] },
       }),
-    }
+    },
   ),
 }));
 
 const oneProposal = [
   { id: 'prop-1', focus: 'Tecnologia — classe prima', oldText: 'Testo precedente', newText: 'Proposta aggiornata', notes: '' },
+];
+
+const twoProposals = [
+  ...oneProposal,
+  { id: 'prop-2', focus: 'Tecnologia — classe seconda', oldText: 'Testo precedente 2', newText: 'Proposta aggiornata 2', notes: '' },
 ];
 
 const revisionProps = () => ({
@@ -59,9 +64,10 @@ describe('CML-610 — Empty states operational clarity', () => {
     revisionMock.decisions = {};
     revisionMock.customTexts = {};
     vi.clearAllMocks();
+    Object.defineProperty(window, 'scrollTo', { value: vi.fn(), configurable: true });
   });
 
-  describe('R1/R2: RevisioneTab — comunicazione operativa progressiva CCO', () => {
+  describe('R1/R2: RevisioneTab — singolo compito operativo CCO', () => {
     it('distinguishes absence of review work from completed work', () => {
       render(
         <RevisioneTab
@@ -71,76 +77,68 @@ describe('CML-610 — Empty states operational clarity', () => {
           setRevisioneMode={vi.fn()}
           revisioneWizardIndex={0}
           setRevisioneWizardIndex={vi.fn()}
-        />
+        />,
       );
 
       expect(screen.getByText('Il mio lavoro nel curricolo')).toBeInTheDocument();
-      expect(screen.getByText('Nessuna scheda da revisionare in questo contesto.')).toBeInTheDocument();
       expect(screen.getByText('Nessuna scheda da revisionare')).toBeInTheDocument();
-      expect(screen.queryByText('Hai esaminato tutte le schede di questo contesto.')).not.toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: 'Passa alla condivisione' })).not.toBeInTheDocument();
     });
 
-    it('puts state and the next useful action before training copy', () => {
+    it('shows one active sheet without duplicate process rails', () => {
       render(<RevisioneTab {...revisionProps()} />);
 
-      expect(screen.getByText('1 scheda richiede il tuo orientamento')).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: 'Esamina la prossima scheda' })).toBeInTheDocument();
-      expect(screen.getByText('Apre la prima scheda ancora da esaminare.')).toBeInTheDocument();
-      expect(screen.getByText('Perché è in revisione?')).toBeInTheDocument();
-      expect(screen.getByText('Criteri utili per esaminare la scheda')).toBeInTheDocument();
+      expect(screen.getByText('0/1 completate')).toBeInTheDocument();
+      expect(screen.getByText('1 da esaminare')).toBeInTheDocument();
+      expect(screen.getByText('Testo precedente')).toBeInTheDocument();
+      expect(screen.getByText('Proposta aggiornata')).toBeInTheDocument();
+      expect(screen.getByText('Qual è il tuo orientamento?')).toBeInTheDocument();
       expect(screen.getByRole('button', { name: 'Conferma proposta' })).toBeInTheDocument();
       expect(screen.getByRole('button', { name: 'Proponi una modifica' })).toBeInTheDocument();
       expect(screen.getByRole('button', { name: 'Mantieni testo precedente' })).toBeInTheDocument();
-      expect(screen.getByText(/resta personale: non approva il curricolo/i)).toBeInTheDocument();
+      expect(screen.queryByText('1 · Confronto')).not.toBeInTheDocument();
+      expect(screen.queryByText('2 · Orientamento')).not.toBeInTheDocument();
+      expect(screen.getByText(/resta personale\. non approva il curricolo/i)).toBeInTheDocument();
     });
 
-    it('recovers from an empty filter without contradicting pending work', () => {
-      revisionMock.activeRevisionFilter = 'approved';
+    it('keeps retrospective navigation behind progressive disclosure', () => {
+      render(<RevisioneTab {...revisionProps()} currentDisciplineProps={twoProposals} />);
+
+      expect(screen.getByText('Rivedi le schede · 2')).toBeInTheDocument();
+      expect(screen.getAllByText(/Tecnologia — classe/).length).toBeGreaterThanOrEqual(2);
+    });
+
+    it('does not complete a textual change until Registra la modifica', () => {
       render(<RevisioneTab {...revisionProps()} />);
 
-      expect(screen.getByText('Questo filtro non mostra le schede da esaminare')).toBeInTheDocument();
-      const action = screen.getByRole('button', { name: 'Mostra la scheda da esaminare' });
-      fireEvent.click(action);
-      expect(revisionMock.setActiveRevisionFilter).toHaveBeenCalledWith('pending');
+      fireEvent.click(screen.getByRole('button', { name: 'Proponi una modifica' }));
+      expect(revisionMock.setDecision).not.toHaveBeenCalled();
+
+      const textarea = screen.getByPlaceholderText('Scrivi la formulazione alternativa…');
+      expect(screen.getByRole('button', { name: 'Registra la modifica' })).toBeDisabled();
+
+      fireEvent.change(textarea, { target: { value: 'Nuova formulazione verificabile' } });
+      const register = screen.getByRole('button', { name: 'Registra la modifica' });
+      expect(register).toBeEnabled();
+      fireEvent.click(register);
+
+      expect(revisionMock.setCustomText).toHaveBeenCalledWith('prop-1', 'Nuova formulazione verificabile');
+      expect(revisionMock.setDecision).toHaveBeenCalledWith('prop-1', 'custom');
     });
 
-    it('turns a completed orientation into a visible consequence and explicit continuation', () => {
-      const onContinueAfterReview = vi.fn();
-      const view = render(<RevisioneTab {...revisionProps()} onContinueAfterReview={onContinueAfterReview} />);
-
-      fireEvent.click(screen.getByRole('button', { name: 'Conferma proposta' }));
-      expect(revisionMock.setDecision).toHaveBeenCalledWith('prop-1', 'approved');
-
+    it('shows a compact completed card and the real transition action only when all work is complete', () => {
       revisionMock.decisions = { 'prop-1': 'approved' };
-      view.rerender(<RevisioneTab {...revisionProps()} currentDisciplineDecided={1} onContinueAfterReview={onContinueAfterReview} />);
+      const onContinueAfterReview = vi.fn();
+      render(<RevisioneTab {...revisionProps()} currentDisciplineDecided={1} onContinueAfterReview={onContinueAfterReview} />);
 
-      expect(screen.getByText('Orientamento registrato')).toBeInTheDocument();
-      expect(screen.getByText('Hai esaminato tutte le schede di questo contesto.')).toBeInTheDocument();
-      const continueAction = screen.getByRole('button', { name: 'Continua alla condivisione' });
+      expect(screen.getByText('1/1 completate')).toBeInTheDocument();
+      expect(screen.getByText('Proposta confermata')).toBeInTheDocument();
+      expect(screen.queryByText('Qual è il tuo orientamento?')).not.toBeInTheDocument();
+
+      const continueAction = screen.getByRole('button', { name: 'Passa alla condivisione' });
       fireEvent.click(continueAction);
       expect(onContinueAfterReview).toHaveBeenCalledTimes(1);
       expect(screen.getByRole('button', { name: 'Modifica orientamento' })).toBeInTheDocument();
-    });
-
-    it('does not count an empty custom formulation as completed work', () => {
-      revisionMock.decisions = { 'prop-1': 'custom' };
-      revisionMock.customTexts = { 'prop-1': '' };
-      render(<RevisioneTab {...revisionProps()} currentDisciplineDecided={1} />);
-
-      expect(screen.getByText('1 scheda richiede il tuo orientamento')).toBeInTheDocument();
-      expect(screen.getByText('Modifica da completare')).toBeInTheDocument();
-      expect(screen.getByText(/finché è vuota, la scheda resta da esaminare/i)).toBeInTheDocument();
-      expect(screen.queryByText('Orientamento registrato')).not.toBeInTheDocument();
-      expect(screen.queryByRole('button', { name: 'Continua alla condivisione' })).not.toBeInTheDocument();
-    });
-
-    it('shows completion only when review work existed and all items are actually complete', () => {
-      revisionMock.decisions = { 'prop-1': 'approved' };
-      render(<RevisioneTab {...revisionProps()} currentDisciplineDecided={1} onContinueAfterReview={vi.fn()} />);
-
-      expect(screen.getByText('Hai esaminato tutte le schede di questo contesto.')).toBeInTheDocument();
-      expect(screen.queryByRole('button', { name: 'Esamina la prossima scheda' })).not.toBeInTheDocument();
-      expect(screen.getByRole('button', { name: 'Continua alla condivisione' })).toBeInTheDocument();
     });
   });
 
@@ -150,7 +148,7 @@ describe('CML-610 — Empty states operational clarity', () => {
         <DocumentExportHistory
           events={[]}
           onClearHistory={vi.fn()}
-        />
+        />,
       );
       expect(screen.getByText('Non hai ancora prodotto documenti in questa sessione.')).toBeInTheDocument();
     });
@@ -172,7 +170,7 @@ describe('CML-610 — Empty states operational clarity', () => {
             },
           ]}
           onClearHistory={vi.fn()}
-        />
+        />,
       );
       expect(screen.queryByText('Non hai ancora prodotto documenti in questa sessione.')).not.toBeInTheDocument();
     });
