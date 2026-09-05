@@ -1,6 +1,6 @@
 {
   "registry_id": "REG-CURR-00",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "recorded_at": "2026-09-05",
   "purpose": "Mantenere allineati fascicolo Drive, fonte curricolare corrente, logiche di governo, baseline Arena e documentazione operativa.",
   "drive": {
@@ -34,7 +34,7 @@
     "repository": "antoniocorsano-boop/CurManLight_arena",
     "pr": 198,
     "branch": "feature/team-meeting-workspace",
-    "product_head": "d5be9b4469844237380f17173820d373ba9fe61c",
+    "product_head": "77a464e0619907bcd6aabac948eb299a3c8d8f0a",
     "status": "DRAFT_OPERATIONAL_BASELINE",
     "cco_version": "1.3.0",
     "cco_surfaces_version": "1.4.0"
@@ -45,6 +45,42 @@
     "status": "ALIGNED_TO_CORRECTED_SOURCE",
     "historical_v3_role": "HISTORICAL_TECHNICAL_BASELINE",
     "historical_remediation_workbench_active_in_canonical_surface": false
+  },
+  "active_validation_pilot": {
+    "pilot_id": "TEC-SEC1-2026-01",
+    "discipline": "Tecnologia",
+    "order": "secondaria",
+    "class_label": "Classe prima",
+    "status": "READY_FOR_HUMAN_DISCIPLINE_REVIEW",
+    "human_outcome": "OPEN",
+    "review_card_count": 5,
+    "canonical_promotion": "NOT_AUTHORIZED",
+    "implementation_head": "77a464e0619907bcd6aabac948eb299a3c8d8f0a",
+    "domain_contract": "src/domain/curriculum/validation/technologyClass1Review.ts",
+    "work_manifest": {
+      "title": "WORK-CURR-TEC-01_Pacchetto_operativo_Arena_Tecnologia_classe_prima_2026-2027",
+      "file_id": "1s2qZf53O6BqjgyrtzcXuL5lSdafoAmtAUEFv-4mwcog"
+    },
+    "source": {
+      "title": "CURRICOLO_VERTICALE_CORRETTO_PROPOSTA_2026-09-03.docx",
+      "file_id": "1DPdK_EIZsE3lI-LIzTJG776cU1PcAcnf"
+    },
+    "proposal": {
+      "title": "PROP-CURR-SEC1-TEC-1_Tecnologia_classe_prima_revisione_curricolare_da_validare_2026-2027.docx",
+      "file_id": "19nPCsAj_ItBscUwwcHwrVhxDbBy-MXIJ"
+    },
+    "vertical_matrix": {
+      "title": "MATR-CURR-TEC-T01_Raccordo_transitorio_Tecnologia_2026-2027.docx",
+      "file_id": "1CMSESN73HCi_2jM_tZYhN9hd6oWzyHgK"
+    },
+    "validation_gate": {
+      "title": "VAL-CURR-SEC1-01_Scheda_validazione_Dipartimenti_Secondaria_Classe_Prima_2026-2027",
+      "file_id": "1rxKy2IDD5V7l4Nc1LfJeLr407ltfa_vbt_EFK54s7mU"
+    },
+    "decision_register": {
+      "title": "DEC-CURR-SEC1-00_Registro_decisioni_validazione_Secondaria_Classe_Prima_2026-2027",
+      "file_id": "1KmnrgWrNxVDUjOvdPo0oibqTvr1lQ72QepBE8KNsdZA"
+    }
   },
   "interaction_contract": {
     "primary_principle": "recognition_before_interpretation",
@@ -81,6 +117,8 @@
     "product_governance_change_requires_registry_update": true,
     "cco_change_requires_operational_doc_review": true,
     "current_source_must_match_across_drive_and_repo": true,
+    "active_validation_pilot_requires_exact_drive_bindings": true,
+    "human_outcome_must_not_be_inferred_from_app_state": true,
     "experimental_feature_must_be_marked_experimental": true,
     "tests_or_commits_never_imply_curriculum_approval": true
   },
