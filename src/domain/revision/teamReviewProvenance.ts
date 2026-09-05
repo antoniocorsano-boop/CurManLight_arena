@@ -122,6 +122,12 @@ export function teamReviewContextLabel(discipline: string, order: SchoolOrder): 
   return `${disciplineLabel} · ${ORDER_LABELS[order]}`;
 }
 
+export function teamReviewVersionStatusLabel(staleContributionCount: number): string {
+  return staleContributionCount > 0
+    ? 'Versione corrente · alcuni contributi devono essere riallineati'
+    : 'Versione corrente · contributi validi per questa versione';
+}
+
 export function contributionOriginLabel(contribution: TeamReviewContribution, currentUserId: string | null): string {
   if (currentUserId && contribution.contributorUserId === currentUserId) return 'Il tuo contributo';
   if (contribution.contributorRole === 'dipartimento') return 'Coordinatore di dipartimento';
