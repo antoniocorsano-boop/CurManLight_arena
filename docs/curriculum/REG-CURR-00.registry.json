@@ -1,6 +1,6 @@
 {
   "registry_id": "REG-CURR-00",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "recorded_at": "2026-09-05",
   "purpose": "Mantenere allineati fascicolo Drive, fonte curricolare corrente, logiche di governo, baseline Arena e documentazione operativa.",
   "drive": {
@@ -34,10 +34,17 @@
     "repository": "antoniocorsano-boop/CurManLight_arena",
     "pr": 198,
     "branch": "feature/team-meeting-workspace",
-    "product_head": "b0b67b645dc87f568c38ccc5ddff46a0e20623cc",
+    "product_head": "d5be9b4469844237380f17173820d373ba9fe61c",
     "status": "DRAFT_OPERATIONAL_BASELINE",
     "cco_version": "1.3.0",
     "cco_surfaces_version": "1.4.0"
+  },
+  "source_logic": {
+    "current_source_contract": "src/domain/curriculum/institute/currentSource.ts",
+    "canonical_surface": "src/features/documents/components/FontiWorkspace.tsx",
+    "status": "ALIGNED_TO_CORRECTED_SOURCE",
+    "historical_v3_role": "HISTORICAL_TECHNICAL_BASELINE",
+    "historical_remediation_workbench_active_in_canonical_surface": false
   },
   "interaction_contract": {
     "primary_principle": "recognition_before_interpretation",
