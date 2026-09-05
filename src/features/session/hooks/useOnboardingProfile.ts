@@ -1,6 +1,11 @@
 import { useEffect, useState } from 'react';
 import type { SchoolOrder, UserRole } from '../../../types/curriculum';
 import { safeLocalStorageGetItem, safeLocalStorageSetItem } from '../../../lib/consolidatedStorage';
+import { getOptionalSupabaseBrowserClient } from '../../../infrastructure/supabase/client';
+import {
+  readLocalOperationalProfile,
+  syncStoredOperationalProfile,
+} from '../../../infrastructure/supabase/operationalProfile';
 
 interface UseOnboardingProfileArgs {
   order: SchoolOrder;
@@ -12,6 +17,7 @@ interface UseOnboardingProfileArgs {
 }
 
 export const useOnboardingProfile = ({
+  order,
   setRole,
   setDiscipline,
   setOrder,
@@ -27,19 +33,18 @@ export const useOnboardingProfile = ({
   });
   const [assignedCombinations, setAssignedCombinations] = useState<string[]>(() => {
     const saved = safeLocalStorageGetItem('curman_assignedCombinations', '');
-    if (saved) return saved.split(',');
-    return [];
+    return saved ? saved.split(',') : [];
   });
   const [availableSections, setAvailableSections] = useState<string[]>(() => {
     const saved = safeLocalStorageGetItem('curman_availableSections', '');
-    if (saved) return saved.split(',');
-    return [];
+    return saved ? saved.split(',') : [];
   });
   const [newSectionInput, setNewSectionInput] = useState<string>('');
 
+  const storedOperationalProfile = readLocalOperationalProfile();
   const [onboardingRole, setOnboardingRoleLocal] = useState<UserRole>('non-dichiarato');
-  const [onboardingDisc, setOnboardingDiscLocal] = useState('italiano');
-  const [onboardingOrd, setOnboardingOrdLocal] = useState<SchoolOrder>('secondaria');
+  const [onboardingDisc, setOnboardingDiscLocal] = useState(storedOperationalProfile?.disciplines[0] ?? 'italiano');
+  const [onboardingOrd, setOnboardingOrdLocal] = useState<SchoolOrder>(storedOperationalProfile?.schoolOrder ?? order);
   const [onboardingStep, setOnboardingStep] = useState<number>(1);
   const [onboardingAssignedClasses, setOnboardingAssignedClasses] = useState<string[]>([]);
   const [onboardingTeacherType] = useState<'comune' | 'specialista'>('comune');
@@ -64,11 +69,8 @@ export const useOnboardingProfile = ({
   const handleToggleOnboardingCombination = (combo: string) => {
     const list = [...onboardingCombinations];
     const idx = list.indexOf(combo);
-    if (idx > -1) {
-      list.splice(idx, 1);
-    } else {
-      list.push(combo);
-    }
+    if (idx > -1) list.splice(idx, 1);
+    else list.push(combo);
     setOnboardingCombinations(list);
   };
 
@@ -87,6 +89,13 @@ export const useOnboardingProfile = ({
   };
 
   const saveOnboardingProfile = () => {
+    const operationalProfile = readLocalOperationalProfile();
+    const needsOperationalProfile = (onboardingOrd === 'primaria' || onboardingOrd === 'secondaria') && !onboardingIsSostegno;
+    if (needsOperationalProfile && (!operationalProfile || operationalProfile.schoolOrder !== onboardingOrd || operationalProfile.disciplines.length === 0)) {
+      showToast('Seleziona almeno una disciplina di competenza prima di entrare.', false);
+      return;
+    }
+
     setRole(onboardingRole);
     setOrder(onboardingOrd);
     setTeacherType(onboardingTeacherType);
@@ -94,12 +103,25 @@ export const useOnboardingProfile = ({
     setIsSostegno(onboardingIsSostegno);
     safeLocalStorageSetItem('curman_isSostegno', onboardingIsSostegno ? 'true' : 'false');
 
-    if (onboardingIsSostegno) {
+    if (onboardingIsSostegno || onboardingOrd === 'infanzia') {
       setDiscipline('italiano');
-    } else if (onboardingOrd === 'infanzia' && onboardingTeacherType === 'comune') {
-      setDiscipline('italiano');
-    } else {
-      setDiscipline(onboardingDisc);
+    } else if (operationalProfile) {
+      const activeDiscipline = operationalProfile.disciplines.includes(onboardingDisc)
+        ? onboardingDisc
+        : operationalProfile.disciplines[0];
+      setDiscipline(activeDiscipline);
+      setOnboardingDiscLocal(activeDiscipline);
+    }
+
+    if (needsOperationalProfile) {
+      const optional = getOptionalSupabaseBrowserClient();
+      if (optional.client) {
+        void syncStoredOperationalProfile(optional.client)
+          .then((synced) => {
+            if (synced) showToast('Profilo operativo condiviso aggiornato. Il coordinamento resta una funzione di lavoro, non un’autorità istituzionale.');
+          })
+          .catch(() => showToast('Profilo salvato localmente; la sincronizzazione del gruppo potrà essere ripetuta dopo l’accesso ad Arena.', false));
+      }
     }
 
     setAssignedClasses(onboardingAssignedClasses);
@@ -107,7 +129,7 @@ export const useOnboardingProfile = ({
     setAssignedCombinations(onboardingCombinations);
     safeLocalStorageSetItem('curman_assignedCombinations', onboardingCombinations.join(','));
     setShowOnboardingModal(false);
-    showToast('Profilo personale locale salvato. Il ruolo dichiarato non è autenticato.');
+    showToast('Profilo personale salvato. Gruppi e competenze operative non equivalgono a una nomina istituzionale.');
   };
 
   return {

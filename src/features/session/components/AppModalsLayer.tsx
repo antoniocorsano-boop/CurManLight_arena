@@ -2,7 +2,8 @@ import { AgentSetupModal } from '../../copilot';
 import { AddKbDocumentModal, WikiReaderModal } from '../../documents';
 import { UdaDetailModal } from '../../progettazione';
 import { CloudAccountModal, GemmaSuggestionModal, MicPermissionGuideModal } from '../../workspace';
-import { DocumentViewModal, MottoModal, OnboardingModal, SaveSettingsModal, TourModal } from './SessionModals';
+import { DocumentViewModal, MottoModal, SaveSettingsModal, TourModal } from './SessionModals';
+import { OperationalOnboardingModal } from './OperationalOnboardingModal';
 import type { AppModalsLayerProps, CloudAccountType, LocalAgentSize, LocalAgentStatus, OllamaStatus } from '../types/appModalContracts';
 import type { AppTab } from '../../navigation';
 
@@ -188,7 +189,7 @@ export function AppModalsLayer(props: AppModalsLayerProps) {
         handleWorkspaceLogin={(type) => { if (isCloudAccountType(type)) handleWorkspaceLogin(type); }}
         handleLocalDriveSync={handleLocalDriveSync}
       />
-      <OnboardingModal
+      <OperationalOnboardingModal
         showOnboardingModal={showOnboardingModal}
         setShowOnboardingModal={setShowOnboardingModal}
         onboardingRole={onboardingRole}
