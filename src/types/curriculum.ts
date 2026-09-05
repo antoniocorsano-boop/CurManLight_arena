@@ -10,6 +10,12 @@ export interface Proposal {
   oldText: string;
   newText: string;
   notes: string;
+  scopeLabel?: string;
+  oldLabel?: string;
+  newLabel?: string;
+  contextSummary?: string;
+  sourceRefs?: string[];
+  gateId?: string;
 }
 
 export interface CurricularLevel {
