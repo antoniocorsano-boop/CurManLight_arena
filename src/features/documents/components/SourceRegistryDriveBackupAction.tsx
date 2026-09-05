@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { CheckCircle2, CloudUpload, ShieldCheck } from 'lucide-react';
+import { CML_ORDINARY_CLOUD_COST_POLICY } from '../../../domain/backup';
 import { safeLocalStorageGetItem } from '../../../lib/consolidatedStorage';
 import { GoogleDriveBackupSink } from '../../../infrastructure/googleDrive/googleDriveBackupSink';
 import {
@@ -27,6 +28,7 @@ function shortHash(hash: string): string {
 
 function backupErrorMessage(error: unknown): string {
   const message = error instanceof Error ? error.message : String(error);
+  if (message.includes('CLOUD_COST_GUARD_PACKAGE_TOO_LARGE')) return 'Il backup supera il limite di sicurezza previsto per evitare traffico cloud anomalo. Riduci le fonti incluse prima di riprovare.';
   if (message.includes('TOKEN_INTERACTION_FAILED')) return 'Autorizzazione Google annullata o non disponibile.';
   if (message.includes('TOKEN_FAILED')) return 'Google non ha autorizzato l’accesso temporaneo a Drive.';
   if (message.includes('SCRIPT_LOAD_FAILED') || message.includes('API_UNAVAILABLE')) return 'Il servizio di autorizzazione Google non è raggiungibile.';
@@ -49,6 +51,7 @@ export function SourceRegistryDriveBackupAction({
 
   const configured = clientConfig.status === 'available';
   const canBackup = configured && sourceCount > 0 && state !== 'working';
+  const maxBackupMiB = CML_ORDINARY_CLOUD_COST_POLICY.maxOutboundPackageBytes / (1024 * 1024);
 
   const runBackup = async () => {
     if (!configured || state === 'working') return;
@@ -87,6 +90,7 @@ export function SourceRegistryDriveBackupAction({
       aria-labelledby="source-registry-drive-backup-title"
       data-human-task="source-registry-drive-backup"
       data-backup-direction="outbound-only"
+      data-cloud-cost-policy="zero-cost-by-design"
     >
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="max-w-2xl">
@@ -102,7 +106,7 @@ export function SourceRegistryDriveBackupAction({
           <div className="mt-3 flex items-start gap-2 rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs leading-5 text-slate-600">
             <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-slate-500" aria-hidden="true" />
             <p>
-              L’accesso a Drive viene richiesto solo quando premi il pulsante, con scope <strong>drive.file</strong>. Il token resta in memoria per la sola operazione e non viene salvato nel backup o nel browser. Arena può riusare l’ID client Google OAuth pubblico già configurato per il collegamento cloud.
+              L’accesso a Drive viene richiesto solo quando premi il pulsante, con scope <strong>drive.file</strong>. Nessun polling, backup automatico o sincronizzazione in background è ammesso. Il package in uscita è limitato a <strong>{maxBackupMiB} MiB</strong> e il controllo avviene prima dell’autorizzazione Google e prima di qualsiasi chiamata di rete. Il token resta in memoria per la sola operazione.
             </p>
           </div>
           {!configured && (
