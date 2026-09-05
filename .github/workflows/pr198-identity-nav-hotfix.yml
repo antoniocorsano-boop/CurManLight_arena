@@ -1,0 +1,94 @@
+name: PR198 Identity Navigation Hotfix
+
+on:
+  push:
+    branches:
+      - ops/pr198-preview-build
+
+permissions:
+  contents: write
+
+jobs:
+  patch-validate-push:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout PR head
+        uses: actions/checkout@v4
+        with:
+          ref: feature/team-meeting-workspace
+          fetch-depth: 0
+
+      - name: Patch team identity entry to client-side routing
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('src/features/beta/TeamReviewWorkspace.tsx')
+          s = p.read_text()
+          if "import { Link } from 'react-router-dom';" not in s:
+              anchor = "import { useEffect, useMemo, useState } from 'react';\n"
+              if anchor not in s:
+                  raise SystemExit('React import anchor missing')
+              s = s.replace(anchor, anchor + "import { Link } from 'react-router-dom';\n", 1)
+          s = s.replace("import { resolveRouterBasename } from '../navigation/routerBasename';\n", "")
+          s = s.replace("  const routerBasename = resolveRouterBasename(import.meta.env.MODE).replace(/\\/$/, '');\n  const identityHref = `${routerBasename}/beta-identity`;\n\n", "")
+          old = '<a href={identityHref} className="font-bold underline">accedi</a>'
+          new = '<Link to="/beta-identity" className="font-bold underline">accedi</Link>'
+          if old in s:
+              s = s.replace(old, new, 1)
+          elif new not in s:
+              raise SystemExit('Identity entry anchor missing')
+          p.write_text(s)
+
+          t = Path('src/__tests__/team-review-identity-navigation.test.ts')
+          t.write_text("""import { describe, expect, it } from 'vitest';
+import { readFileSync } from 'node:fs';
+
+const teamSource = readFileSync('src/features/beta/TeamReviewWorkspace.tsx', 'utf8');
+const mainSource = readFileSync('src/main.tsx', 'utf8');
+
+describe('team review identity navigation', () => {
+  it('uses client-side routing instead of a full document reload', () => {
+    expect(teamSource).toContain("import { Link } from 'react-router-dom';");
+    expect(teamSource).toContain('<Link to="/beta-identity"');
+    expect(teamSource).not.toContain('href={identityHref}');
+    expect(teamSource).not.toContain("resolveRouterBasename(import.meta.env.MODE)");
+  });
+
+  it('keeps beta identity as an explicit application route', () => {
+    expect(mainSource).toContain('<Route path="/beta-identity" element={<BetaIdentityPage />} />');
+  });
+});
+""")
+          PY
+          grep -F '<Link to="/beta-identity"' src/features/beta/TeamReviewWorkspace.tsx
+          ! grep -F 'href={identityHref}' src/features/beta/TeamReviewWorkspace.tsx
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Navigation and authority regression
+        run: npx vitest run --project unit src/__tests__/team-review-identity-navigation.test.ts src/__tests__/team-review-workspace.test.ts src/__tests__/beta-identity-authority.test.ts
+
+      - name: TypeScript
+        run: npx tsc --noEmit
+
+      - name: Beta build
+        run: npm run build:beta
+
+      - name: Push validated fix to PR
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          git config user.name "Antonio Corsano"
+          git config user.email "antonio.corsano@gmail.com"
+          git add src/features/beta/TeamReviewWorkspace.tsx src/__tests__/team-review-identity-navigation.test.ts
+          git commit -m "fix: keep team identity navigation inside Arena"
+          git push origin HEAD:feature/team-meeting-workspace
