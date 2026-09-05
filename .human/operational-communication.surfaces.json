@@ -1,6 +1,6 @@
 {
   "registry_id": "CCO-SURFACES",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "contract": ".human/operational-communication.contract.json",
   "status_vocabulary": ["conformant", "migration", "guided-setup", "excluded"],
   "surfaces": [
@@ -21,23 +21,34 @@
     },
     {
       "id": "revisione-personale",
+      "path": "src/features/beta/RevisionWorkspace.tsx",
+      "status": "conformant",
+      "operational_context": "Il mio contributo",
+      "primary_task": "Completare la revisione personale e passare alla condivisione solo tramite una vera transizione di stato",
+      "required_tokens": [
+        "data-revision-stage=\"review\"",
+        "data-revision-stage=\"sharing\"",
+        "setPersonalStage('sharing')",
+        "Rivedi la revisione personale",
+        "Ora il compito attivo è la condivisione con il team."
+      ]
+    },
+    {
+      "id": "revisione-scheda-personale",
       "path": "src/features/curriculum/components/RevisioneTab.tsx",
       "status": "conformant",
       "operational_context": "Il mio lavoro nel curricolo",
-      "primary_task": "Vedere lo stato, esaminare una scheda e proseguire in base alla conseguenza dell'orientamento registrato",
+      "primary_task": "Esaminare una scheda alla volta, registrare un orientamento completo e ricevere una sola conseguenza operativa",
       "required_tokens": [
-        "data-revision-flow=\"progressive\"",
-        "data-revision-operational-summary",
-        "data-revision-next-action",
-        "data-revision-progressive-stage",
+        "data-revision-flow=\"single-task\"",
+        "data-revision-current-card",
+        "data-revision-completed-card",
         "data-revision-consequence",
-        "Esamina la prossima scheda",
-        "Continua alla condivisione",
-        "Orientamento registrato",
-        "Modifica orientamento",
-        "data-revision-assurance",
-        "data-revision-secondary=\"help\"",
-        "Proponi una modifica"
+        "Rivedi le schede",
+        "Proponi una modifica",
+        "Registra la modifica",
+        "Passa alla condivisione",
+        "data-revision-assurance"
       ]
     },
     {
