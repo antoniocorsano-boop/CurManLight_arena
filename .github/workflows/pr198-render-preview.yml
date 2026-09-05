@@ -16,6 +16,7 @@ on:
 permissions:
   contents: write
 
+# Keep preview publication serialized: each completed build force-publishes one coherent static tree.
 concurrency:
   group: pr198-render-static-preview
   cancel-in-progress: false
