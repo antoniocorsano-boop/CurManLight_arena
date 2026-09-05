@@ -105,7 +105,24 @@ Un backup può essere importato solo attraverso un'operazione esplicita:
 
 Nessun backup può essere applicato automaticamente perché più recente di uno stato locale o condiviso.
 
-## 8. Invarianti bloccanti
+## 8. Vincolo di costo cloud ordinario
+
+CurManLight adotta un criterio **zero-cost-by-design** per l'uso ordinario del cloud.
+
+Questo criterio significa che:
+
+- il funzionamento normale di Arena non richiede un piano cloud a pagamento;
+- Arena non genera traffico cloud autonomo o ricorrente;
+- ogni backup remoto nasce da un gesto umano esplicito;
+- polling, scansioni periodiche di Drive, backup automatici e sincronizzazione bidirezionale sono vietati;
+- può esistere un solo upload di backup alla volta nella superficie utente;
+- ogni package outbound è soggetto a un limite tecnico di **25 MiB** prima dell'autorizzazione OAuth e prima di qualsiasi chiamata al provider;
+- il superamento del limite blocca il backup senza consumare traffico Google;
+- la mancata disponibilità o configurazione di Drive non degrada il funzionamento locale.
+
+`zero-cost-by-design` è un vincolo di architettura e comportamento del prodotto, non una promessa sulle future condizioni economiche stabilite da provider terzi. Se un provider introducesse tariffe incompatibili con questo criterio, la funzione deve poter essere disabilitata senza compromettere Arena.
+
+## 9. Invarianti bloccanti
 
 1. La posizione fisica non determina autorità.
 2. `verified ≠ institutional`.
@@ -117,12 +134,16 @@ Nessun backup può essere applicato automaticamente perché più recente di uno 
 8. Il restore richiede conferma umana esplicita.
 9. Drive non è un repository runtime e non è una fonte di verità applicativa.
 10. Il sistema deve restare utilizzabile senza Drive.
+11. Nessun componente Drive può introdurre polling, backup automatico o sincronizzazione in background.
+12. Il limite outbound deve essere verificato prima di OAuth e prima della rete.
+13. L'operatività ordinaria deve restare compatibile con il criterio `zero-cost-by-design`.
 
-## 9. Sequenza di sviluppo
+## 10. Sequenza di sviluppo
 
-- **Slice A — questo incremento:** contratto, governance delle fonti, validità contestuale, contratto backup/restore e test invarianti.
-- **Slice B:** persistenza condivisa del Source Registry e UI “Fonti valide per me/questo contesto”.
+- **Slice A:** contratto, governance delle fonti, validità contestuale, contratto backup/restore e test invarianti.
+- **Slice B:** persistenza del Source Registry e UI “Fonti valide per me/questo contesto”.
 - **Slice C:** adapter di backup Google Drive in sola uscita con ricevuta.
 - **Slice D:** import/ripristino esplicito con preview e conferma umana.
+- **Slice E:** cost guard ordinario: niente traffico autonomo, package cap e gate CI dedicato.
 
-Nessuno slice successivo può introdurre sincronizzazione Drive ↔ Arena o derivare autorità dal provider.
+Nessuno slice successivo può introdurre sincronizzazione Drive ↔ Arena, derivare autorità dal provider o aggirare il cost guard senza una nuova decisione architetturale esplicita.
