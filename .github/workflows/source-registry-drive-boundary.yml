@@ -18,6 +18,7 @@ on:
       - 'src/__tests__/source-authority-v1.test.ts'
       - 'src/__tests__/source-lifecycle-v1.test.ts'
       - 'docs/architecture/CML_DRIVE_SOURCE_BOUNDARY.md'
+      - 'docs/architecture/ARENA_CONTEXTUAL_SOURCE_REGISTRY.md'
       - '.github/workflows/source-registry-drive-boundary.yml'
 
 permissions:
