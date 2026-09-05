@@ -1,4 +1,4 @@
-name: PR198 Local Profile Editor v3
+name: PR198 Identity Navigation Validation
 
 on:
   push:
@@ -13,60 +13,55 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - name: Checkout PR
+      - name: Checkout PR head
         uses: actions/checkout@v4
         with:
           ref: feature/team-meeting-workspace
           fetch-depth: 0
 
-      - name: Add reopenable local profile editor
+      - name: Patch team identity entry to client-side routing
         run: |
           python - <<'PY'
           from pathlib import Path
-
-          p = Path('src/features/session/hooks/useOnboardingProfile.ts')
+          p = Path('src/features/beta/TeamReviewWorkspace.tsx')
           s = p.read_text()
-          s = s.replace("interface UseOnboardingProfileArgs {\n  order: SchoolOrder;", "interface UseOnboardingProfileArgs {\n  role: UserRole;\n  discipline: string;\n  order: SchoolOrder;", 1)
-          s = s.replace("export const useOnboardingProfile = ({\n  setRole,", "export const useOnboardingProfile = ({\n  role,\n  discipline,\n  order,\n  setRole,", 1)
-          s = s.replace("    setAvailableSections([]);\n    safeLocalStorageSetItem('curman_availableSections', '');\n  };", "    setAvailableSections([]);\n  };", 1)
-          s = s.replace("    setAvailableSections(updated);\n    safeLocalStorageSetItem('curman_availableSections', updated.join(','));\n    setNewSectionInput('');", "    setAvailableSections(updated);\n    setNewSectionInput('');", 1)
-          marker = "  const saveOnboardingProfile = () => {"
-          if marker not in s: raise SystemExit('save marker missing')
-          editor = '''  const openOnboardingProfileEditor = () => {\n    const savedClasses = safeLocalStorageGetItem('curman_assignedClasses', '');\n    const savedCombinations = safeLocalStorageGetItem('curman_assignedCombinations', '');\n    const savedSections = safeLocalStorageGetItem('curman_availableSections', '');\n\n    setOnboardingRoleLocal(role);\n    setOnboardingDiscLocal(discipline);\n    setOnboardingOrdLocal(order);\n    setOnboardingAssignedClasses(savedClasses ? savedClasses.split(',') : []);\n    setOnboardingCombinations(savedCombinations ? savedCombinations.split(',') : []);\n    setAvailableSections(savedSections ? savedSections.split(',') : []);\n    setOnboardingIsSostegno(safeLocalStorageGetItem('curman_isSostegno', 'false') === 'true');\n    setNewSectionInput('');\n    setOnboardingStep(1);\n    setShowOnboardingModal(true);\n  };\n\n'''
-          s = s.replace(marker, editor + marker, 1)
-          s = s.replace("    safeLocalStorageSetItem('curman_assignedCombinations', onboardingCombinations.join(','));\n    setShowOnboardingModal(false);", "    safeLocalStorageSetItem('curman_assignedCombinations', onboardingCombinations.join(','));\n    safeLocalStorageSetItem('curman_availableSections', availableSections.join(','));\n    setShowOnboardingModal(false);", 1)
-          s = s.replace("    handleAddSectionLocal,\n    saveOnboardingProfile", "    handleAddSectionLocal,\n    openOnboardingProfileEditor,\n    saveOnboardingProfile", 1)
+          if "import { Link } from 'react-router-dom';" not in s:
+              anchor = "import { useEffect, useMemo, useState } from 'react';\n"
+              if anchor not in s:
+                  raise SystemExit('React import anchor missing')
+              s = s.replace(anchor, anchor + "import { Link } from 'react-router-dom';\n", 1)
+          s = s.replace("import { resolveRouterBasename } from '../navigation/routerBasename';\n", "")
+          s = s.replace("  const routerBasename = resolveRouterBasename(import.meta.env.MODE).replace(/\\/$/, '');\n  const identityHref = `${routerBasename}/beta-identity`;\n\n", "")
+          old = '<a href={identityHref} className="font-bold underline">accedi</a>'
+          new = '<Link to="/beta-identity" className="font-bold underline">accedi</Link>'
+          if old in s:
+              s = s.replace(old, new, 1)
+          elif new not in s:
+              raise SystemExit('Identity entry anchor missing')
           p.write_text(s)
 
-          p = Path('src/App.tsx')
-          s = p.read_text()
-          s = s.replace("  handleAddSectionLocal,\n  saveOnboardingProfile\n } = useOnboardingProfile({\n  order,", "  handleAddSectionLocal,\n  openOnboardingProfileEditor,\n  saveOnboardingProfile\n } = useOnboardingProfile({\n  role,\n  discipline,\n  order,", 1)
-          s = s.replace("     handleWorkspaceLogout={handleWorkspaceLogout}\n     setShowCloudAccountModal={setShowCloudAccountModal}", "     handleWorkspaceLogout={handleWorkspaceLogout}\n     openLocalProfileEditor={openOnboardingProfileEditor}\n     setShowCloudAccountModal={setShowCloudAccountModal}", 1)
-          p.write_text(s)
+          t = Path('src/__tests__/team-review-identity-navigation.test.ts')
+          t.write_text("""import { describe, expect, it } from 'vitest';
+import { readFileSync } from 'node:fs';
 
-          p = Path('src/features/navigation/components/AppHeader.tsx')
-          s = p.read_text()
-          s = s.replace("import { Bot, DownloadCloud, Layers3, RotateCcw, Save, ServerCog, Settings, ShieldAlert, X } from 'lucide-react';", "import { Bot, DownloadCloud, Layers3, RotateCcw, Save, ServerCog, Settings, ShieldAlert, UserCog, X } from 'lucide-react';", 1)
-          s = s.replace("  handleWorkspaceLogout: () => void;\n  setShowCloudAccountModal: (value: boolean) => void;", "  handleWorkspaceLogout: () => void;\n  openLocalProfileEditor: () => void;\n  setShowCloudAccountModal: (value: boolean) => void;", 1)
-          anchor = '''                    </div>\n\n                    <div className="border-t border-slate-700 py-1">\n                      {props.isWorkspaceLoggedIn ? ('''
-          replacement = '''                    </div>\n\n                    <div className="border-t border-slate-700 py-1">\n                      <button\n                        type="button"\n                        onClick={() => { props.openLocalProfileEditor(); setProfileMenuOpen(false); }}\n                        className="flex w-full items-center gap-2.5 px-4 py-2.5 text-left font-bold text-slate-200 hover:bg-slate-700"\n                        data-local-profile-editor="avatar"\n                      >\n                        <UserCog className="h-4 w-4" aria-hidden="true" />\n                        <span>Modifica profilo locale</span>\n                      </button>\n                    </div>\n\n                    <div className="border-t border-slate-700 py-1">\n                      {props.isWorkspaceLoggedIn ? ('''
-          if anchor not in s: raise SystemExit('header anchor missing')
-          p.write_text(s.replace(anchor, replacement, 1))
+const teamSource = readFileSync('src/features/beta/TeamReviewWorkspace.tsx', 'utf8');
+const mainSource = readFileSync('src/main.tsx', 'utf8');
 
-          p = Path('src/__tests__/app-header-task10.test.tsx')
-          p.write_text(p.read_text().replace("    handleWorkspaceLogout: vi.fn(), setShowCloudAccountModal: vi.fn(), ...overrides,", "    handleWorkspaceLogout: vi.fn(), openLocalProfileEditor: vi.fn(), setShowCloudAccountModal: vi.fn(), ...overrides,", 1))
+describe('team review identity navigation', () => {
+  it('uses client-side routing instead of a full document reload', () => {
+    expect(teamSource).toContain("import { Link } from 'react-router-dom';");
+    expect(teamSource).toContain('<Link to="/beta-identity"');
+    expect(teamSource).not.toContain('href={identityHref}');
+  });
 
-          p = Path('src/__tests__/role-onboarding-task10.test.ts')
-          p.write_text(p.read_text().replace("      order: 'secondaria', setRole:", "      role: 'non-dichiarato', discipline: 'italiano', order: 'secondaria', setRole:"))
-
-          p = Path('src/__tests__/interaction.cml603d.test.tsx')
-          p.write_text(p.read_text().replace(" const onboarding = useOnboardingProfile({\n  order,", " const onboarding = useOnboardingProfile({\n  role: 'non-dichiarato',\n  discipline: 'italiano',\n  order,", 1))
-
-          Path('src/__tests__/local-profile-editor-access.test.tsx').write_text('''import { act, fireEvent, render, renderHook, screen } from '@testing-library/react';\nimport type { ComponentProps } from 'react';\nimport { beforeEach, describe, expect, it, vi } from 'vitest';\nimport { AppHeader } from '../features/navigation';\nimport { useOnboardingProfile } from '../features/session/hooks/useOnboardingProfile';\n\nconst headerProps = (openLocalProfileEditor: () => void): ComponentProps<typeof AppHeader> => ({\n  toggleSidebar: vi.fn(), isCopilotChatOpen: false, setIsCopilotChatOpen: vi.fn(), setShowAgentSetupModal: vi.fn(),\n  localAgentStatus: 'none', localAgentType: 'none', ollamaStatus: 'disconnected', ollamaModelName: '', localAgentSize: 'none',\n  setShowSaveModal: vi.fn(), roleDropdownOpen: false, setRoleDropdownOpen: vi.fn(), isWorkspaceLoggedIn: false,\n  cloudAccountType: 'personale', workspaceUserEmail: '', handleWorkspaceSync: vi.fn(), showToast: vi.fn(),\n  handleClearLocalStorageWithReset: vi.fn(), handleWorkspaceLogout: vi.fn(), openLocalProfileEditor, setShowCloudAccountModal: vi.fn(),\n});\n\ndescribe('local profile editor remains reachable after onboarding', () => {\n  beforeEach(() => localStorage.clear());\n  it('opens from the avatar menu', () => {\n    const openLocalProfileEditor = vi.fn();\n    render(<AppHeader {...headerProps(openLocalProfileEditor)} />);\n    fireEvent.click(screen.getByRole('button', { name: /Profilo:/i }));\n    fireEvent.click(screen.getByRole('button', { name: 'Modifica profilo locale' }));\n    expect(openLocalProfileEditor).toHaveBeenCalledTimes(1);\n  });\n  it('rehydrates saved choices and persists draft sections only on final save', () => {\n    localStorage.setItem('curman_assignedCombinations', '1A,2B');\n    localStorage.setItem('curman_availableSections', 'A,B');\n    localStorage.setItem('curman_isSostegno', 'false');\n    const setShowOnboardingModal = vi.fn();\n    const { result } = renderHook(() => useOnboardingProfile({ role: 'insegnante', discipline: 'tecnologia', order: 'secondaria', setRole: vi.fn(), setDiscipline: vi.fn(), setOrder: vi.fn(), setShowOnboardingModal, showToast: vi.fn() }));\n    act(() => result.current.openOnboardingProfileEditor());\n    expect(result.current.onboardingRole).toBe('insegnante');\n    expect(result.current.onboardingDisc).toBe('tecnologia');\n    expect(result.current.onboardingOrd).toBe('secondaria');\n    expect(result.current.onboardingCombinations).toEqual(['1A', '2B']);\n    expect(result.current.availableSections).toEqual(['A', 'B']);\n    expect(result.current.onboardingStep).toBe(1);\n    expect(setShowOnboardingModal).toHaveBeenCalledWith(true);\n    act(() => result.current.setNewSectionInput('C'));\n    act(() => result.current.handleAddSectionLocal());\n    expect(result.current.availableSections).toEqual(['A', 'B', 'C']);\n    expect(localStorage.getItem('curman_availableSections')).toBe('A,B');\n    act(() => result.current.saveOnboardingProfile());\n    expect(localStorage.getItem('curman_availableSections')).toBe('A,B,C');\n  });\n});\n''')
+  it('keeps beta identity as an explicit application route', () => {
+    expect(mainSource).toContain('<Route path="/beta-identity" element={<BetaIdentityPage />} />');
+  });
+});
+""")
           PY
-
-          grep -F 'Modifica profilo locale' src/features/navigation/components/AppHeader.tsx
-          grep -F 'openOnboardingProfileEditor' src/features/session/hooks/useOnboardingProfile.ts
+          grep -F '<Link to="/beta-identity"' src/features/beta/TeamReviewWorkspace.tsx
+          ! grep -F 'href={identityHref}' src/features/beta/TeamReviewWorkspace.tsx
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -77,22 +72,22 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Profile editor tests
-        run: npx vitest run --project unit src/__tests__/local-profile-editor-access.test.tsx src/__tests__/role-onboarding-task10.test.ts
+      - name: Navigation and authority regression
+        run: npx vitest run --project unit src/__tests__/team-review-identity-navigation.test.ts src/__tests__/team-review-workspace.test.ts src/__tests__/beta-identity-authority.test.ts
 
-      - name: TypeScript global contract
+      - name: TypeScript
         run: npx tsc --noEmit
 
       - name: Beta build
         run: npm run build:beta
 
-      - name: Commit validated profile editor to PR
+      - name: Push validated fix to PR
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
           git config user.name "Antonio Corsano"
           git config user.email "antonio.corsano@gmail.com"
-          git add src/App.tsx src/features/navigation/components/AppHeader.tsx src/features/session/hooks/useOnboardingProfile.ts src/__tests__/app-header-task10.test.tsx src/__tests__/role-onboarding-task10.test.ts src/__tests__/interaction.cml603d.test.tsx src/__tests__/local-profile-editor-access.test.tsx
-          git commit -m "feat: reopen local profile from avatar"
+          git add src/features/beta/TeamReviewWorkspace.tsx src/__tests__/team-review-identity-navigation.test.ts
+          git commit -m "fix: keep team identity navigation inside Arena"
           git push origin HEAD:feature/team-meeting-workspace
