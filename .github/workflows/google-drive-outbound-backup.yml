@@ -1,0 +1,46 @@
+name: CML Google Drive Outbound Backup
+
+on:
+  push:
+    branches:
+      - feature/google-drive-outbound-backup
+  pull_request:
+    paths:
+      - 'src/domain/backup/**'
+      - 'src/infrastructure/googleDrive/**'
+      - 'src/__tests__/google-drive-backup-sink.test.ts'
+      - 'src/__tests__/source-registry-drive-boundary.test.ts'
+      - 'docs/architecture/ARENA_GOOGLE_DRIVE_OUTBOUND_BACKUP.md'
+      - '.github/workflows/google-drive-outbound-backup.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  outbound-backup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Backup boundary and Google Drive adapter tests
+        run: >-
+          npx vitest run --project unit
+          src/__tests__/source-registry-drive-boundary.test.ts
+          src/__tests__/google-drive-backup-sink.test.ts
+
+      - name: TypeScript
+        run: npx tsc --noEmit
+
+      - name: Production build
+        run: npm run build
