@@ -1,6 +1,6 @@
 # REG-CURR-00 — Registro maestro del fascicolo curricolare e dell’allineamento Arena
 
-**Versione:** 1.0 — 5 settembre 2026  
+**Versione:** 1.1 — 5 settembre 2026  
 **Ambito:** Curricolo verticale d’Istituto — A.S. 2026/2027
 
 ## Funzione
@@ -27,11 +27,18 @@ La base istruttoria corrente è:
 
 La precedente `source reconstruction v3` resta storico tecnico e non è la base corrente per attestare lo stato del curricolo.
 
+La stessa identità è ora registrata nel dominio Arena in `src/domain/curriculum/institute/currentSource.ts`. La superficie canonica `Fonti` mostra la fonte corretta come corrente e non riapre il vecchio workbench R7C7 come se i sette difetti della fonte originaria fossero ancora blocker attivi.
+
+La distinzione corrente è:
+
+**correzioni documentali recepite nella fonte corretta ≠ validazione professionale dei contenuti completata**.
+
 ## Stato del processo
 
 | Ambito | Stato corrente |
 |---|---|
 | Copertura istruttoria 3–14 | `PASS_ISTRUTTORIO` |
+| Correzioni della fonte originaria | recepite nella fonte corrente |
 | Validazione professionale | `OPEN` |
 | Revisione verticale finale | `OPEN` |
 | Pronto per il Collegio | `NOT_YET` |
@@ -46,11 +53,11 @@ Per il lavoro corrente si assume come baseline operativa di prodotto:
 
 - PR **#198**;
 - branch `feature/team-meeting-workspace`;
-- product head `b0b67b645dc87f568c38ccc5ddff46a0e20623cc`;
+- product head `d5be9b4469844237380f17173820d373ba9fe61c`;
 - CCO `1.3.0`;
 - registro superfici CCO `1.4.0`.
 
-I commit successivi che modificano soltanto REG-CURR-00 sono **metadata di allineamento**, non una nuova baseline funzionale del prodotto.
+Il product head include il riallineamento della superficie `Fonti` alla fonte corretta. I commit successivi che modificano test, registri, documentazione e gate di allineamento non cambiano da soli questa baseline funzionale.
 
 ## Regola di interazione corrente
 
@@ -79,7 +86,7 @@ Né la presenza nel sistema, né la partecipazione a un gruppo, né il coordinam
 
 Le PR **#199–#201** e **#202–#207** restano sviluppi Draft e non fanno parte della baseline canonica corrente finché non vengono riallineate sul current head della #198 e nuovamente validate.
 
-In particolare la catena #202–#207 parte da `cc8bcab2971587fbda0205f0b343e5f8f0fb782c` e risulta divergente rispetto al product head CCO corrente.
+In particolare la catena #202–#207 parte da `cc8bcab2971587fbda0205f0b343e5f8f0fb782c` e risulta divergente rispetto alla baseline CCO e fonte-corrente attuale.
 
 Una funzione Draft non deve essere descritta in un documento istituzionale come funzione corrente di Arena.
 
@@ -96,7 +103,7 @@ Una funzione Draft non deve essere descritta in un documento istituzionale come 
 - `VAL-CURR-00_Indice_unico_gate_validazione_2026-2027`;
 - `ARENA-UX-01_Dal_documento_al_lavoro_dei_team_2026-2027`.
 
-`ARENA-UX-01` contiene ora l’addendum **25. ALLINEAMENTO CANONICO — 5 SETTEMBRE 2026**, che prevale sugli stati storici delle sezioni precedenti.
+`ARENA-UX-01` contiene l’addendum **25. ALLINEAMENTO CANONICO — 5 SETTEMBRE 2026**, che prevale sugli stati storici delle sezioni precedenti.
 
 ## Materiali formativi
 
