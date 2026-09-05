@@ -1,0 +1,70 @@
+name: PR198 Team Access Empty State UX
+
+on:
+  push:
+    branches:
+      - ops/pr198-preview-build
+    paths:
+      - .github/workflows/pr198-team-access-empty-state-ux.yml
+
+permissions:
+  contents: write
+
+jobs:
+  patch-and-validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout exact PR #198 head
+        uses: actions/checkout@v4
+        with:
+          ref: 6a8366808a926228579d7345a361a264886b905e
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Replace technical dead-end with actionable team access state
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('src/features/beta/TeamReviewWorkspace.tsx')
+          s = p.read_text()
+          old = '''      ) : activeMemberships.length === 0 ? (\n        <div role="status" className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs text-amber-900">La sessione è autenticata, ma non esiste una membership attiva per un workspace.</div>\n      ) : ('''
+          new = '''      ) : activeMemberships.length === 0 ? (\n        <div role="status" className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-amber-950">\n          <strong className="block text-sm">Account collegato, ma nessun team disponibile</strong>\n          <p className="mt-1 text-xs leading-relaxed text-amber-900">Hai effettuato l’accesso, ma questo account non risulta ancora associato a un team della scuola. Controlla l’account utilizzato oppure accedi con un altro account.</p>\n          <Link to="/beta-identity" className="mt-3 inline-flex min-h-10 items-center justify-center rounded-lg border border-amber-300 bg-white px-3 py-2 text-xs font-bold text-amber-950 shadow-sm">Controlla account e accesso</Link>\n        </div>\n      ) : ('''
+          if old not in s:
+              raise SystemExit('expected empty-state block not found')
+          s = s.replace(old, new, 1)
+          s = s.replace('Membership non leggibile: ${error.message}', 'Non riesco a verificare i team associati a questo account: ${error.message}', 1)
+          p.write_text(s)
+          PY
+
+      - name: Verify user-facing copy
+        run: |
+          grep -q "Account collegato, ma nessun team disponibile" src/features/beta/TeamReviewWorkspace.tsx
+          grep -q "Controlla account e accesso" src/features/beta/TeamReviewWorkspace.tsx
+          ! grep -q "La sessione è autenticata, ma non esiste una membership attiva per un workspace" src/features/beta/TeamReviewWorkspace.tsx
+
+      - name: TypeScript
+        run: npx tsc --noEmit
+
+      - name: Beta production build
+        run: npm run build:beta
+
+      - name: Commit and push PR #198
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/features/beta/TeamReviewWorkspace.tsx
+          git commit -m "fix: rendi chiaro il caso senza team associato"
+          git push origin HEAD:refs/heads/feature/team-meeting-workspace
