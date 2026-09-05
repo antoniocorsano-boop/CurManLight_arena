@@ -18,6 +18,7 @@ import {
   contributionOriginLabel,
   deriveTeamDiscussionReason,
   teamReviewContextLabel,
+  teamReviewVersionStatusLabel,
 } from '../../domain/revision/teamReviewProvenance';
 import { SupabaseSharedTeamReviewRepository } from '../../infrastructure/supabase/sharedTeamReviewRepository';
 import { useTeamWorkspaceContext } from './useTeamWorkspaceContext';
@@ -42,6 +43,13 @@ const BUCKET_LABELS: Record<TeamReviewItemSummary['bucket'], string> = {
   'change-proposed': 'Modifica proposta',
   divergent: 'Opinioni diverse',
   'needs-clarification': 'Serve chiarimento',
+};
+
+const roleLabel = (role: string): string => {
+  if (role === 'dipartimento') return 'Coordinatore di dipartimento';
+  if (role === 'referente') return 'Referente';
+  if (role === 'docente') return 'Docente';
+  return role;
 };
 
 const createRequestId = (): string => {
@@ -287,7 +295,7 @@ export function TeamCoordinationWorkspace({ proposals, discipline, order }: Team
             </p>
           </div>
           {team.selectedMembership && (
-            <span className="rounded-full bg-white px-3 py-1.5 text-[10px] font-bold text-indigo-700">{team.selectedMembership.role}</span>
+            <span className="rounded-full bg-white px-3 py-1.5 text-[10px] font-bold text-indigo-700">{roleLabel(team.selectedMembership.role)}</span>
           )}
         </div>
 
@@ -295,7 +303,7 @@ export function TeamCoordinationWorkspace({ proposals, discipline, order }: Team
           <label className="mt-3 block text-xs font-semibold text-slate-700">Team
             <select value={team.workspaceId} onChange={(event) => team.setWorkspaceId(event.target.value)} className="mt-1 block w-full rounded-lg border border-slate-300 bg-white p-2">
               {team.activeMemberships.map((membership) => (
-                <option key={membership.workspaceId} value={membership.workspaceId}>{membership.workspaceName} · {membership.role}</option>
+                <option key={membership.workspaceId} value={membership.workspaceId}>{membership.workspaceName} · {roleLabel(membership.role)}</option>
               ))}
             </select>
           </label>
@@ -326,7 +334,7 @@ export function TeamCoordinationWorkspace({ proposals, discipline, order }: Team
         <div className="flex items-end justify-between gap-3">
           <div>
             <h2 id="team-discussion-title" className="text-base font-extrabold text-slate-900">Da discutere</h2>
-            <p className="mt-1 text-xs text-slate-500">Ogni punto spiega perché è entrato nella coda e da quale versione/contributi deriva.</p>
+            <p className="mt-1 text-xs text-slate-500">Ogni punto mostra perché è aperto, da quale contesto curricolare proviene e quali contributi lo hanno generato.</p>
           </div>
           <span className="rounded-full bg-slate-100 px-2.5 py-1 text-[10px] font-bold text-slate-600">{openDiscussionItems.length} aperti</span>
         </div>
@@ -339,6 +347,7 @@ export function TeamCoordinationWorkspace({ proposals, discipline, order }: Team
           const reason = deriveTeamDiscussionReason(item);
           const provenance = buildTeamReviewProvenance(proposal, discipline, order, item.proposalFingerprint);
           const currentContributions = item.contributions.slice().sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+          const versionStatus = teamReviewVersionStatusLabel(item.staleContributionCount);
 
           return (
             <article key={item.proposalRef} className="rounded-2xl border border-slate-200 bg-white p-4" data-team-discussion-item>
@@ -357,20 +366,23 @@ export function TeamCoordinationWorkspace({ proposals, discipline, order }: Team
 
               <div className="mt-3 rounded-xl border border-indigo-100 bg-indigo-50/30 p-3" data-team-discussion-provenance>
                 <strong className="text-xs text-indigo-950">Da dove arriva</strong>
-                <p className="mt-1 text-xs leading-relaxed text-slate-700">{teamReviewContextLabel(discipline, order)} · scheda <code className="rounded bg-white px-1 py-0.5 text-[10px]">{provenance.proposalRef}</code></p>
-                <p className="mt-1 text-xs leading-relaxed text-slate-700">{provenance.versionLabel} · riferimento tecnico <code className="rounded bg-white px-1 py-0.5 text-[10px]">{shortFingerprint(provenance.technicalVersionRef)}</code></p>
-                <p className="mt-1 text-[11px] font-semibold text-amber-700">Fonti documentali canoniche: collegamento non ancora verificato per questa scheda.</p>
+                <p className="mt-1 text-xs leading-relaxed text-slate-700">{teamReviewContextLabel(discipline, order)}</p>
+                <p className={`mt-1 text-[11px] font-semibold ${item.staleContributionCount > 0 ? 'text-amber-700' : 'text-emerald-700'}`}>{versionStatus}</p>
+                <p className="mt-1 text-[11px] text-amber-700">Fonti: collegamento canonico ancora da verificare.</p>
               </div>
 
-              <div className="mt-3 flex flex-wrap gap-2 text-[11px] text-slate-600">
-                <span className="rounded-full bg-slate-100 px-2 py-1">{item.counts['confirm-proposal']} confermano</span>
-                <span className="rounded-full bg-slate-100 px-2 py-1">{item.counts['propose-change']} propongono modifica</span>
-                <span className="rounded-full bg-slate-100 px-2 py-1">{item.counts['keep-previous']} mantengono il precedente</span>
-                {item.staleContributionCount > 0 && <span className="rounded-full bg-rose-50 px-2 py-1 text-rose-700">{item.staleContributionCount} contributi su versione precedente</span>}
+              <div className="mt-3" aria-label="Situazione del team">
+                <strong className="text-xs text-slate-800">Situazione del team</strong>
+                <div className="mt-2 flex flex-wrap gap-2 text-[11px] text-slate-600">
+                  <span className="rounded-full bg-slate-100 px-2 py-1">{item.counts['confirm-proposal']} confermano</span>
+                  <span className="rounded-full bg-slate-100 px-2 py-1">{item.counts['propose-change']} propongono modifica</span>
+                  <span className="rounded-full bg-slate-100 px-2 py-1">{item.counts['keep-previous']} mantengono il precedente</span>
+                  {item.staleContributionCount > 0 && <span className="rounded-full bg-rose-50 px-2 py-1 text-rose-700">{item.staleContributionCount} contributi su versione precedente</span>}
+                </div>
               </div>
 
               <details className="mt-3 rounded-xl border border-slate-200 bg-white" data-team-contribution-provenance>
-                <summary className="cursor-pointer p-3 text-xs font-bold text-slate-700">Contributi e provenienza · {currentContributions.length}</summary>
+                <summary className="cursor-pointer p-3 text-xs font-bold text-slate-700">Vedi contributi e provenienza · {currentContributions.length}</summary>
                 <div className="space-y-2 border-t border-slate-100 p-3">
                   {currentContributions.length === 0 ? (
                     <p className="text-xs text-slate-500">Nessun contributo corrente disponibile.</p>
@@ -381,7 +393,7 @@ export function TeamCoordinationWorkspace({ proposals, discipline, order }: Team
                         <span className="text-[10px] text-slate-500">{new Date(contribution.updatedAt).toLocaleString('it-IT')}</span>
                       </div>
                       <p className="mt-1 font-semibold">{contributionOrientationLabel(contribution)}</p>
-                      <p className="mt-1 text-[11px] text-emerald-700">Versione corrente verificata</p>
+                      <p className="mt-1 text-[11px] text-emerald-700">Contributo valido per la versione corrente</p>
                       {contribution.customText && <p className="mt-2 rounded-lg bg-white p-2 leading-relaxed">{contribution.customText}</p>}
                     </div>
                   ))}
@@ -389,8 +401,14 @@ export function TeamCoordinationWorkspace({ proposals, discipline, order }: Team
               </details>
 
               <details className="mt-3 rounded-xl border border-slate-200 bg-white" data-team-source-trace>
-                <summary className="cursor-pointer p-3 text-xs font-bold text-slate-700">Tracciabilità della scheda</summary>
+                <summary className="cursor-pointer p-3 text-xs font-bold text-slate-700">Tracciabilità tecnica e fonti</summary>
                 <div className="space-y-3 border-t border-slate-100 p-3 text-xs leading-relaxed text-slate-700">
+                  <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+                    <strong className="text-slate-900">Identità della versione esaminata</strong>
+                    <p className="mt-1">Scheda <code className="rounded bg-white px-1 py-0.5 text-[10px]">{provenance.proposalRef}</code></p>
+                    <p className="mt-1">Impronta tecnica <code className="rounded bg-white px-1 py-0.5 text-[10px]">{shortFingerprint(provenance.technicalVersionRef)}</code></p>
+                    <p className="mt-1 text-[11px] text-slate-500">{provenance.versionLabel}</p>
+                  </div>
                   <div className="rounded-lg bg-slate-50 p-3">
                     <strong className="text-slate-900">Testo precedente</strong>
                     <p className="mt-1">{proposal.oldText}</p>
@@ -470,7 +488,7 @@ export function TeamCoordinationWorkspace({ proposals, discipline, order }: Team
                 <div key={item.proposalRef} className="rounded-lg bg-slate-50 p-3 text-xs text-slate-700">
                   <strong>{item.focus}</strong>
                   <span className="mt-1 block">{TEAM_OUTCOME_LABELS[receipt.outcome]} · {new Date(receipt.recordedAt).toLocaleString('it-IT')}</span>
-                  <span className="mt-1 block text-[10px] text-slate-500">Registrato da ruolo {receipt.recordedByRole}. Esito del team, non approvazione istituzionale.</span>
+                  <span className="mt-1 block text-[10px] text-slate-500">Registrato da ruolo {roleLabel(receipt.recordedByRole)}. Esito del team, non approvazione istituzionale.</span>
                 </div>
               );
             })}
