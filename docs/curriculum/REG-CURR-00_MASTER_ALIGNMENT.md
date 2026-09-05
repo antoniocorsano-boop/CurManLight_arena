@@ -44,7 +44,7 @@ Per il lavoro corrente si assume:
 - branch `feature/team-meeting-workspace`;
 - product head funzionale `77a464e0619907bcd6aabac948eb299a3c8d8f0a`;
 - CCO `1.3.0`;
-- registro superfici CCO `1.4.0`.
+- registro superfici CCO `1.4.1`.
 
 Il product head include la fonte corretta in `Fonti` e il primo pacchetto reale di revisione professionale in `Revisione`.
 
