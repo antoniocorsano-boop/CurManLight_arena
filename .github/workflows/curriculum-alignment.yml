@@ -8,6 +8,9 @@ on:
       - '.human/him.config.json'
       - '.human/operational-communication.contract.json'
       - '.human/operational-communication.surfaces.json'
+      - 'src/domain/curriculum/institute/currentSource.ts'
+      - 'src/features/documents/components/InstituteCurrentSourcePanel.tsx'
+      - 'src/features/documents/components/FontiWorkspace.tsx'
       - 'tools/curriculum-alignment/validate.mjs'
       - '.github/workflows/curriculum-alignment.yml'
   push:
@@ -17,6 +20,9 @@ on:
       - '.human/him.config.json'
       - '.human/operational-communication.contract.json'
       - '.human/operational-communication.surfaces.json'
+      - 'src/domain/curriculum/institute/currentSource.ts'
+      - 'src/features/documents/components/InstituteCurrentSourcePanel.tsx'
+      - 'src/features/documents/components/FontiWorkspace.tsx'
       - 'tools/curriculum-alignment/validate.mjs'
       - '.github/workflows/curriculum-alignment.yml'
 
