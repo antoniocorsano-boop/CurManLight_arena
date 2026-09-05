@@ -1,0 +1,130 @@
+name: PR198 Share Feedback UX
+
+on:
+  push:
+    branches:
+      - ops/pr198-preview-build
+    paths:
+      - .github/workflows/pr198-share-feedback-ux.yml
+
+permissions:
+  contents: write
+
+jobs:
+  share-feedback-ux:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout exact PR #198 head
+        uses: actions/checkout@v4
+        with:
+          ref: 525cd1ae916b66250107773c79862ff6baeeb1dc
+          fetch-depth: 0
+
+      - name: Patch immediate share feedback
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path('src/features/beta/TeamReviewWorkspace.tsx')
+          source = path.read_text()
+
+          def replace_once(old: str, new: str) -> None:
+              global source
+              count = source.count(old)
+              if count != 1:
+                  raise SystemExit(f'Expected exactly one match, found {count}: {old[:100]!r}')
+              source = source.replace(old, new, 1)
+
+          replace_once(
+              "  const [busy, setBusy] = useState(false);\n  const [message, setMessage] = useState<string | null>(null);",
+              "  const [busy, setBusy] = useState(false);\n  const [message, setMessage] = useState<string | null>(null);\n  const [shareFeedback, setShareFeedback] = useState<{ kind: 'success' | 'error'; text: string } | null>(null);"
+          )
+
+          replace_once(
+              "  const localPreparedCount = proposals.filter((proposal) => Boolean(decisions[proposal.id])).length;",
+              "  const localPreparedCount = proposals.filter((proposal) => Boolean(decisions[proposal.id])).length;\n  const currentUserContributionCount = session\n    ? new Set(contributions\n      .filter((contribution) => contribution.contributorUserId === session.user.id\n        && descriptors.some((descriptor) => descriptor.proposalRef === contribution.proposalRef\n          && descriptor.proposalFingerprint === contribution.proposalFingerprint))\n      .map((contribution) => contribution.proposalRef)).size\n    : 0;\n  const hasPublishedPreparation = currentUserContributionCount > 0;"
+          )
+
+          replace_once(
+              "    if (invalidCustom) {\n      setMessage(`Completa la modifica proposta per “${invalidCustom.focus}” prima di condividerla con il team.`);\n      return;\n    }\n    if (publishable.length === 0) {\n      setMessage('Non ci sono ancora orientamenti individuali da condividere con il team.');\n      return;\n    }\n\n    setBusy(true);\n    setMessage(null);",
+              "    if (invalidCustom) {\n      const text = `Completa la modifica proposta per “${invalidCustom.focus}” prima di condividerla con il team.`;\n      setShareFeedback({ kind: 'error', text });\n      return;\n    }\n    if (publishable.length === 0) {\n      setShareFeedback({ kind: 'error', text: 'Non ci sono ancora orientamenti individuali da condividere con il team.' });\n      return;\n    }\n\n    setBusy(true);\n    setShareFeedback(null);\n    setMessage(null);"
+          )
+
+          replace_once(
+              "      setRefreshVersion((value) => value + 1);\n      setMessage(`${publishable.length} contributi aggiornati nel workspace. Restano orientamenti preparatori, non decisioni del team.`);\n    } catch (error) {\n      setMessage(error instanceof Error ? error.message : 'Contributi non registrati.');",
+              "      setRefreshVersion((value) => value + 1);\n      setShareFeedback({\n        kind: 'success',\n        text: `${publishable.length} ${publishable.length === 1 ? 'scheda condivisa' : 'schede condivise'} con il team. Il tuo contributo è registrato, ma non è ancora un esito del team.`,\n      });\n    } catch (error) {\n      setShareFeedback({ kind: 'error', text: error instanceof Error ? error.message : 'Contributi non registrati.' });"
+          )
+
+          replace_once(
+              "          <div className=\"flex flex-wrap items-center justify-between gap-2 rounded-xl border border-slate-200 bg-white p-3\">\n            <div className=\"text-xs text-slate-600\"><strong className=\"text-slate-800\">Il tuo lavoro:</strong> {localPreparedCount} schede preparate localmente.</div>\n            <button type=\"button\" disabled={busy || !canContribute || localPreparedCount === 0} onClick={() => void publishPreparation()} className=\"rounded-lg bg-indigo-700 px-3 py-2 text-xs font-bold text-white disabled:cursor-not-allowed disabled:opacity-40\">Condividi il mio lavoro con il team</button>\n          </div>",
+              "          <div className=\"rounded-xl border border-slate-200 bg-white p-3\">\n            <div className=\"flex flex-wrap items-center justify-between gap-3\">\n              <div className=\"text-xs text-slate-600\">\n                <strong className=\"text-slate-800\">Il tuo lavoro:</strong> {localPreparedCount} schede preparate localmente.\n                {currentUserContributionCount > 0 && <span className=\"mt-1 block font-semibold text-emerald-700\">{currentUserContributionCount} {currentUserContributionCount === 1 ? 'scheda già condivisa' : 'schede già condivise'} con il team.</span>}\n              </div>\n              <button type=\"button\" disabled={busy || !canContribute || localPreparedCount === 0} onClick={() => void publishPreparation()} className=\"min-h-10 rounded-lg bg-indigo-700 px-3 py-2 text-xs font-bold text-white disabled:cursor-not-allowed disabled:opacity-40\">\n                {busy ? 'Condivisione in corso…' : hasPublishedPreparation ? 'Aggiorna il lavoro condiviso' : 'Condividi il mio lavoro con il team'}\n              </button>\n            </div>\n            {shareFeedback && (\n              <div role=\"status\" aria-live=\"polite\" className={`mt-3 rounded-lg border p-2.5 text-xs font-semibold leading-relaxed ${shareFeedback.kind === 'success' ? 'border-emerald-200 bg-emerald-50 text-emerald-800' : 'border-rose-200 bg-rose-50 text-rose-800'}`}>\n                {shareFeedback.kind === 'success' ? '✓ ' : ''}{shareFeedback.text}\n              </div>\n            )}\n          </div>"
+          )
+
+          replace_once(
+              "            {expectedContributorCount === null\n              ? 'non verificabile — nessun punto può essere considerato già condiviso.'\n              : `${expectedContributorCount} contributori attivi attesi nel workspace selezionato.`}",
+              "            {expectedContributorCount === null\n              ? 'non verificabile — nessun punto può essere considerato già condiviso.'\n              : expectedContributorCount === 1\n                ? 'nel team c’è ancora un solo componente attivo. Puoi condividere il tuo lavoro, ma nessun punto sarà considerato condiviso finché non parteciperà almeno un secondo componente.'\n                : `${expectedContributorCount} contributori attivi attesi nel team selezionato.`}"
+          )
+
+          path.write_text(source)
+          PY
+
+      - name: Add UX regression contract
+        shell: bash
+        run: |
+          cat > src/__tests__/team-review-share-feedback.test.ts <<'EOF'
+          import { readFileSync } from 'node:fs';
+          import { fileURLToPath } from 'node:url';
+          import { describe, expect, it } from 'vitest';
+
+          const source = readFileSync(
+            fileURLToPath(new URL('../features/beta/TeamReviewWorkspace.tsx', import.meta.url)),
+            'utf8',
+          );
+
+          describe('Arena team share feedback UX', () => {
+            it('shows immediate progress and success feedback beside the share action', () => {
+              expect(source).toContain('Condivisione in corso…');
+              expect(source).toContain('Aggiorna il lavoro condiviso');
+              expect(source).toContain('schede già condivise');
+              expect(source).toContain('aria-live="polite"');
+              expect(source).toContain("shareFeedback.kind === 'success' ? '✓ ' : ''");
+            });
+
+            it('explains the one-person team state without implying consensus', () => {
+              expect(source).toContain('nel team c’è ancora un solo componente attivo');
+              expect(source).toContain('nessun punto sarà considerato condiviso finché non parteciperà almeno un secondo componente');
+            });
+          });
+          EOF
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run focused regression tests
+        run: npm test -- --run src/__tests__/team-review-workspace.test.ts src/__tests__/team-review-share-feedback.test.ts
+
+      - name: TypeScript
+        run: npx tsc --noEmit
+
+      - name: Beta build
+        run: npm run build:beta
+
+      - name: Commit and push to PR #198
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/features/beta/TeamReviewWorkspace.tsx src/__tests__/team-review-share-feedback.test.ts
+          git commit -m "fix: show immediate team share feedback"
+          git push "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" HEAD:refs/heads/feature/team-meeting-workspace
