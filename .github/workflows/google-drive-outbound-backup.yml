@@ -8,7 +8,9 @@ on:
     paths:
       - 'src/domain/backup/**'
       - 'src/infrastructure/googleDrive/**'
+      - 'src/features/documents/lib/localSourceRegistryBackup.ts'
       - 'src/__tests__/google-drive-backup-sink.test.ts'
+      - 'src/__tests__/local-source-registry-backup.browser.test.ts'
       - 'src/__tests__/source-registry-drive-boundary.test.ts'
       - 'docs/architecture/ARENA_GOOGLE_DRIVE_OUTBOUND_BACKUP.md'
       - '.github/workflows/google-drive-outbound-backup.yml'
@@ -19,7 +21,7 @@ permissions:
 jobs:
   outbound-backup:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -38,6 +40,12 @@ jobs:
           npx vitest run --project unit
           src/__tests__/source-registry-drive-boundary.test.ts
           src/__tests__/google-drive-backup-sink.test.ts
+
+      - name: Install Chromium for exact local registry snapshot verification
+        run: npx playwright install --with-deps chromium
+
+      - name: Local source registry backup browser pipeline
+        run: npx vitest run --project indexeddb-browser src/__tests__/local-source-registry-backup.browser.test.ts
 
       - name: TypeScript
         run: npx tsc --noEmit
