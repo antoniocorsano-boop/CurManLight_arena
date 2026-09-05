@@ -4,6 +4,10 @@ export {
   validateRestoreRequest,
 } from './contract';
 export {
+  calculateCmlBackupContentHash,
+  createCmlBackupArtifact,
+} from './artifact';
+export {
   CML_BACKUP_PACKAGE_MAGIC,
   encodeCmlBackupPackage,
   decodeCmlBackupPackage,
@@ -19,4 +23,8 @@ export type {
   RestoreValidationResult,
   BackupSink,
 } from './contract';
+export type {
+  CreateCmlBackupArtifactInput,
+  CmlBackupArtifact,
+} from './artifact';
 export type { DecodedCmlBackupPackage } from './package';
