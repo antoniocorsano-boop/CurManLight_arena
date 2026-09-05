@@ -21,6 +21,7 @@ function assert(condition, message) {
 const registry = readJson('docs/curriculum/REG-CURR-00.registry.json');
 const cco = readJson('.human/operational-communication.contract.json');
 const surfaces = readJson('.human/operational-communication.surfaces.json');
+const him = readJson('.human/him.config.json');
 const mirror = readText('docs/curriculum/REG-CURR-00_MASTER_ALIGNMENT.md');
 
 assert(registry.registry_id === 'REG-CURR-00', 'registry_id deve essere REG-CURR-00');
@@ -81,6 +82,29 @@ assert(
   'una bozza non può risultare completata senza registrazione esplicita',
 );
 
+const driveRegisterId = registry.drive?.master_register?.file_id;
+assert(
+  driveRegisterId === '1IMKwWWukefIDIOsbHQByiXLN7YuU7He0V5b01tjitG4',
+  'registro maestro Drive inatteso',
+);
+
+assert(
+  him.requirements?.curriculum_alignment_registry_required === true,
+  'HIM deve richiedere esplicitamente il registro di allineamento curricolare',
+);
+assert(
+  him.curriculum_alignment?.registry === 'docs/curriculum/REG-CURR-00.registry.json',
+  'HIM non punta al registro macchina REG-CURR-00',
+);
+assert(
+  him.curriculum_alignment?.documentation === 'docs/curriculum/REG-CURR-00_MASTER_ALIGNMENT.md',
+  'HIM non punta al mirror documentale REG-CURR-00',
+);
+assert(
+  him.curriculum_alignment?.drive_register_id === driveRegisterId,
+  'HIM e REG-CURR-00 non concordano sul registro maestro Drive',
+);
+
 const downstream = registry.downstream_draft_stacks ?? [];
 assert(downstream.length === 2, 'le due catene Draft successive devono restare esplicitamente registrate');
 for (const stack of downstream) {
@@ -103,11 +127,6 @@ assert(
   'la promozione canonica del curricolo non è autorizzata',
 );
 
-const driveRegisterId = registry.drive?.master_register?.file_id;
-assert(
-  driveRegisterId === '1IMKwWWukefIDIOsbHQByiXLN7YuU7He0V5b01tjitG4',
-  'registro maestro Drive inatteso',
-);
 assert(mirror.includes(driveRegisterId), 'il mirror Markdown non richiama il registro maestro Drive');
 assert(mirror.includes(source.title), 'il mirror Markdown non richiama la fonte curricolare corrente');
 assert(mirror.includes(source.sha256), 'il mirror Markdown non richiama l’impronta della fonte corrente');
@@ -118,3 +137,4 @@ console.log('REG-CURR-00_ALIGNMENT_PASS');
 console.log(`Curriculum source: ${source.title}`);
 console.log(`Arena product baseline: PR #${baseline.pr} @ ${baseline.product_head}`);
 console.log(`CCO: ${cco.version}; surfaces: ${surfaces.version}`);
+console.log(`Drive register: ${driveRegisterId}`);
