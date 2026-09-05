@@ -115,16 +115,23 @@ export function RevisioneTab({
             </button>
             <p className="mt-2 text-[11px] text-slate-500">Apre la prima scheda ancora da esaminare.</p>
           </div>
-        ) : (
+        ) : totalCount > 0 ? (
           <div className="mt-3 rounded-xl border border-emerald-200 bg-emerald-50/70 p-3" data-revision-complete>
             <strong className="block text-sm text-emerald-900">Hai esaminato tutte le schede di questo contesto.</strong>
             <p className="mt-1 text-xs leading-relaxed text-emerald-800">Puoi rivedere un orientamento oppure passare alla condivisione del tuo contributo.</p>
           </div>
+        ) : (
+          <div className="mt-3 rounded-xl border border-slate-200 bg-white p-3" data-revision-no-work>
+            <strong className="block text-sm text-slate-900">Nessuna scheda da revisionare in questo contesto.</strong>
+            <p className="mt-1 text-xs leading-relaxed text-slate-600">Non è richiesta alcuna azione personale qui.</p>
+          </div>
         )}
 
-        <p className="mt-3 text-xs font-semibold text-indigo-950" data-revision-assurance>
-          Il tuo orientamento resta un contributo personale anche dopo la condivisione.
-        </p>
+        {totalCount > 0 && (
+          <p className="mt-3 text-xs font-semibold text-indigo-950" data-revision-assurance>
+            Il tuo orientamento resta un contributo personale anche dopo la condivisione.
+          </p>
+        )}
       </section>
 
       <header className="sticky top-16 z-30 -mx-3 border-b border-slate-200 bg-white/95 px-3 py-3 backdrop-blur sm:static sm:mx-0 sm:rounded-2xl sm:border sm:p-4" data-revision-sticky-context>
@@ -236,6 +243,8 @@ export function RevisioneTab({
             {currentDecision && <p className="mt-2 text-center text-[11px] leading-relaxed text-slate-500">Rimette la scheda tra quelle da esaminare. Non registra un esito del team.</p>}
           </div>
         </section>
+      ) : totalCount === 0 ? (
+        <UiEmptyState icon={FileSearch} title="Nessuna scheda da revisionare" description="Non ci sono schede di revisione nel contesto personale corrente." />
       ) : pendingCount > 0 && activeRevisionFilter !== 'pending' ? (
         <UiEmptyState
           icon={FileSearch}
