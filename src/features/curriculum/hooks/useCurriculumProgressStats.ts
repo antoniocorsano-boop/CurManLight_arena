@@ -1,4 +1,5 @@
 import type { Proposal, SchoolOrder } from '../../../types/curriculum';
+import { resolveOperationalReviewProposals } from '../../../domain/curriculum/validation/technologyClass1Review';
 import type { CurriculumMap } from '../../session';
 
 interface UseCurriculumProgressStatsArgs {
@@ -21,7 +22,9 @@ export const useCurriculumProgressStats = ({
 
   Object.keys(localCurriculum).forEach(disc => {
     Object.keys(localCurriculum[disc]).forEach(ord => {
-      const props = (localCurriculum[disc][ord as SchoolOrder].proposals || []) as Proposal[];
+      const schoolOrder = ord as SchoolOrder;
+      const fallback = (localCurriculum[disc][schoolOrder].proposals || []) as Proposal[];
+      const props = resolveOperationalReviewProposals(disc, schoolOrder, fallback);
       totalDecisions += props.length;
       props.forEach(p => {
         const s = decisions[p.id];
@@ -34,7 +37,8 @@ export const useCurriculumProgressStats = ({
 
   const progressPercent = totalDecisions > 0 ? Math.round(((approvedCount + rejectedCount + customCount) / totalDecisions) * 100) : 0;
 
-  const currentDisciplineProps = (localCurriculum[discipline]?.[order]?.proposals || []) as Proposal[];
+  const fallbackCurrent = (localCurriculum[discipline]?.[order]?.proposals || []) as Proposal[];
+  const currentDisciplineProps = resolveOperationalReviewProposals(discipline, order, fallbackCurrent);
   let currentDisciplineDecided = 0;
   currentDisciplineProps.forEach(p => {
     if (decisions[p.id]) currentDisciplineDecided++;
