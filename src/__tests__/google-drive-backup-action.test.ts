@@ -10,14 +10,30 @@ import appViewsSource from '../features/session/components/AppViewsLayer.tsx?raw
 import tokenProviderSource from '../infrastructure/googleDrive/googleIdentityAccessToken.ts?raw';
 
 const PUBLIC_CLIENT_ID = '123456789-example.apps.googleusercontent.com';
+const RUNTIME_CLIENT_ID = '987654321-runtime.apps.googleusercontent.com';
+const LEGACY_CLIENT_ID = '111111111-legacy.apps.googleusercontent.com';
 
 describe('CML-DRIVE-01 explicit Google Drive backup action', () => {
-  it('stays disabled by configuration when no public OAuth client id is available', () => {
+  it('stays disabled when no public OAuth client id is available and reuses governed public configuration', () => {
     expect(resolveGoogleDriveBackupClientConfig({})).toEqual({
       status: 'unconfigured',
-      reason: 'Configura VITE_GOOGLE_DRIVE_BACKUP_CLIENT_ID per abilitare il backup Drive.',
+      reason: 'Configura un ID client Google OAuth pubblico per abilitare il backup Drive.',
     });
-    expect(resolveGoogleDriveBackupClientConfig({ VITE_GOOGLE_DRIVE_BACKUP_CLIENT_ID: PUBLIC_CLIENT_ID })).toEqual({
+
+    expect(resolveGoogleDriveBackupClientConfig({}, RUNTIME_CLIENT_ID)).toEqual({
+      status: 'available',
+      clientId: RUNTIME_CLIENT_ID,
+    });
+
+    expect(resolveGoogleDriveBackupClientConfig({ VITE_GOOGLE_CLIENT_ID: LEGACY_CLIENT_ID })).toEqual({
+      status: 'available',
+      clientId: LEGACY_CLIENT_ID,
+    });
+
+    expect(resolveGoogleDriveBackupClientConfig({
+      VITE_GOOGLE_DRIVE_BACKUP_CLIENT_ID: PUBLIC_CLIENT_ID,
+      VITE_GOOGLE_CLIENT_ID: LEGACY_CLIENT_ID,
+    }, RUNTIME_CLIENT_ID)).toEqual({
       status: 'available',
       clientId: PUBLIC_CLIENT_ID,
     });
@@ -54,6 +70,7 @@ describe('CML-DRIVE-01 explicit Google Drive backup action', () => {
     expect(tokenProviderSource).not.toContain('downloadFromDrive');
     expect(tokenProviderSource).not.toContain('listFiles');
 
+    expect(backupActionSource).toContain("safeLocalStorageGetItem('curman_workspaceClientId', '')");
     expect(backupActionSource).toContain('data-backup-direction="outbound-only"');
     expect(backupActionSource).toContain('Backup su Google Drive');
     expect(backupActionSource).toContain('Il token resta in memoria');
