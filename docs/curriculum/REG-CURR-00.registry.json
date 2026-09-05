@@ -1,6 +1,6 @@
 {
   "registry_id": "REG-CURR-00",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "recorded_at": "2026-09-06",
   "purpose": "Mantenere allineati fascicolo Drive, fonte curricolare corrente, logiche di governo, baseline Arena e documentazione operativa.",
   "drive": {
@@ -34,7 +34,7 @@
     "repository": "antoniocorsano-boop/CurManLight_arena",
     "pr": 198,
     "branch": "feature/team-meeting-workspace",
-    "product_head": "77a464e0619907bcd6aabac948eb299a3c8d8f0a",
+    "product_head": "2317b57fef35695f0c8373208d5b5f4898671478",
     "status": "DRAFT_OPERATIONAL_BASELINE",
     "cco_version": "1.3.0",
     "cco_surfaces_version": "1.4.1"
@@ -48,6 +48,7 @@
   },
   "active_validation_pilot": {
     "pilot_id": "TEC-SEC1-2026-01",
+    "revision": 2,
     "discipline": "Tecnologia",
     "order": "secondaria",
     "class_label": "Classe prima",
@@ -55,32 +56,46 @@
     "human_outcome": "OPEN",
     "review_card_count": 5,
     "canonical_promotion": "NOT_AUTHORIZED",
-    "implementation_head": "77a464e0619907bcd6aabac948eb299a3c8d8f0a",
+    "decision_carry_forward": "NOT_AUTHORIZED",
+    "implementation_head": "2317b57fef35695f0c8373208d5b5f4898671478",
     "domain_contract": "src/domain/curriculum/validation/technologyClass1Review.ts",
+    "active_proposal_ids": [
+      "tec-sec1-2026-r2-n1",
+      "tec-sec1-2026-r2-n2",
+      "tec-sec1-2026-r2-n3",
+      "tec-sec1-2026-r2-n4",
+      "tec-sec1-2026-r2-verticalita"
+    ],
+    "previous_revision": {
+      "revision": 1,
+      "status": "SUPERSEDED_INSTRUCTIONAL_TEXT_PRESERVED",
+      "proposal_ids": [
+        "tec-sec1-2026-n1",
+        "tec-sec1-2026-n2",
+        "tec-sec1-2026-n3",
+        "tec-sec1-2026-n4",
+        "tec-sec1-2026-verticalita"
+      ],
+      "decision_semantics": "PRESERVED_AS_HISTORY_ONLY"
+    },
     "work_manifest": {
       "title": "WORK-CURR-TEC-01_Pacchetto_operativo_Arena_Tecnologia_classe_prima_2026-2027",
-      "file_id": "1s2qZf53O6BqjgyrtzcXuL5lSdafoAmtAUEFv-4mwcog"
+      "file_id": "1s2qZf53O6BqjgyrtzcXuL5lSdafoAmtAUEFv-4mwcog",
+      "revision": "1.1"
     },
     "instructional_audit": {
       "audit_id": "AUD-CURR-TEC-SEC1-01",
       "title": "AUD-CURR-TEC-SEC1-01_Audit_cinque_schede_Tecnologia_classe_prima_2026-2027",
       "file_id": "1SZ_lmaYXNF2Fx8ro1C-hTh5iUH-riECcqyZtRx9JRPM",
-      "status": "COMPLETATO",
-      "instructional_outcome": "PRONTO_AL_RIESAME_PROFESSIONALE_CON_CORREZIONI_MIRATE",
+      "status": "CORRECTIONS_APPLIED",
+      "instructional_outcome": "R2_READY_FOR_NEW_HUMAN_REVIEW",
       "human_outcome": "OPEN",
       "canonical_promotion": "NOT_AUTHORIZED",
-      "card_findings": {
-        "TEC-SEC1-2026-N1": "CONFERMABILE_CON_MICRO_CORREZIONE_ISTRUTTORIA",
-        "TEC-SEC1-2026-N2": "CONFERMABILE",
-        "TEC-SEC1-2026-N3": "CONFERMABILE_CON_QUALIFICAZIONE_DI_PROVENIENZA",
-        "TEC-SEC1-2026-N4": "DA_MODIFICARE_PRIMA_DELLA_CONFERMA_PROFESSIONALE",
-        "TEC-SEC1-2026-VERTICALITÀ": "IMPIANTO_CONFERMABILE_GATE_APERTO"
-      },
-      "required_instructional_corrections": [
-        "Rappresentare la struttura nazionale come tre nuclei fondanti di Tecnologia integrati con Informatica, senza qualificare N4 come quarto nucleo nazionale autonomo.",
-        "Qualificare le formulazioni della classe prima come obiettivi annuali o progressione annuale d'Istituto, distinguendole dagli Obiettivi specifici di apprendimento nazionali.",
-        "Riscalare N4 verso comprensione funzionale di sistemi informatici, dati, processi, Internet e attendibilità delle informazioni.",
-        "Mantenere provenienza granulare per elementi d'Istituto, trasversali e transitori."
+      "corrections_applied": [
+        "Tre nuclei fondanti di Tecnologia distinti dall'asse integrato di Informatica e sistemi digitali.",
+        "Formulazioni della classe prima qualificate come obiettivi annuali d'Istituto.",
+        "N1 alleggerito dal richiamo autonomo all'energia e N3 qualificato nella provenienza del raccordo sull'economia circolare.",
+        "N4 riscalato verso funzionamento dei sistemi informatici, dati, processi, Internet, Web, servizi e attendibilità."
       ]
     },
     "source": {
@@ -89,11 +104,15 @@
     },
     "proposal": {
       "title": "PROP-CURR-SEC1-TEC-1_Tecnologia_classe_prima_revisione_curricolare_da_validare_2026-2027.docx",
-      "file_id": "19nPCsAj_ItBscUwwcHwrVhxDbBy-MXIJ"
+      "file_id": "19nPCsAj_ItBscUwwcHwrVhxDbBy-MXIJ",
+      "revision": "1.1",
+      "updated_in_place": true
     },
     "vertical_matrix": {
       "title": "MATR-CURR-TEC-T01_Raccordo_transitorio_Tecnologia_2026-2027.docx",
-      "file_id": "1CMSESN73HCi_2jM_tZYhN9hd6oWzyHgK"
+      "file_id": "1CMSESN73HCi_2jM_tZYhN9hd6oWzyHgK",
+      "revision": "1.1",
+      "updated_in_place": true
     },
     "validation_gate": {
       "title": "VAL-CURR-SEC1-01_Scheda_validazione_Dipartimenti_Secondaria_Classe_Prima_2026-2027",
@@ -142,8 +161,10 @@
     "active_validation_pilot_requires_exact_drive_bindings": true,
     "human_outcome_must_not_be_inferred_from_app_state": true,
     "instructional_audit_must_not_be_promoted_as_human_outcome": true,
+    "proposal_text_change_requires_new_proposal_identity": true,
+    "previous_decision_carry_forward_requires_explicit_authority": true,
     "experimental_feature_must_be_marked_experimental": true,
     "tests_or_commits_never_imply_curriculum_approval": true
   },
-  "next_authorized_phase": "HUMAN_PROFESSIONAL_CONTENT_VALIDATION"
+  "next_authorized_phase": "HUMAN_PROFESSIONAL_CONTENT_VALIDATION_R2"
 }
