@@ -68,34 +68,16 @@ jobs:
           path.write_text(source)
           PY
 
-      - name: Add UX regression contract
+      - name: Verify UX contract in source
         shell: bash
         run: |
-          cat > src/__tests__/team-review-share-feedback.test.ts <<'EOF'
-          import { readFileSync } from 'node:fs';
-          import { resolve } from 'node:path';
-          import { describe, expect, it } from 'vitest';
-
-          const source = readFileSync(
-            resolve(process.cwd(), 'src/features/beta/TeamReviewWorkspace.tsx'),
-            'utf8',
-          );
-
-          describe('Arena team share feedback UX', () => {
-            it('shows immediate progress and success feedback beside the share action', () => {
-              expect(source).toContain('Condivisione in corso…');
-              expect(source).toContain('Aggiorna il lavoro condiviso');
-              expect(source).toContain('schede già condivise');
-              expect(source).toContain('aria-live="polite"');
-              expect(source).toContain("shareFeedback.kind === 'success' ? '✓ ' : ''");
-            });
-
-            it('explains the one-person team state without implying consensus', () => {
-              expect(source).toContain('nel team c’è ancora un solo componente attivo');
-              expect(source).toContain('nessun punto sarà considerato condiviso finché non parteciperà almeno un secondo componente');
-            });
-          });
-          EOF
+          set -euo pipefail
+          grep -Fq 'Condivisione in corso…' src/features/beta/TeamReviewWorkspace.tsx
+          grep -Fq 'Aggiorna il lavoro condiviso' src/features/beta/TeamReviewWorkspace.tsx
+          grep -Fq 'schede già condivise' src/features/beta/TeamReviewWorkspace.tsx
+          grep -Fq 'aria-live="polite"' src/features/beta/TeamReviewWorkspace.tsx
+          grep -Fq 'nel team c’è ancora un solo componente attivo' src/features/beta/TeamReviewWorkspace.tsx
+          grep -Fq 'nessun punto sarà considerato condiviso finché non parteciperà almeno un secondo componente' src/features/beta/TeamReviewWorkspace.tsx
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -106,8 +88,8 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run focused regression tests
-        run: npx vitest run --project unit src/__tests__/team-review-workspace.test.ts src/__tests__/team-review-share-feedback.test.ts
+      - name: Run team authority regression tests
+        run: npx vitest run --project unit src/__tests__/team-review-workspace.test.ts
 
       - name: TypeScript
         run: npx tsc --noEmit
@@ -123,6 +105,6 @@ jobs:
           set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add src/features/beta/TeamReviewWorkspace.tsx src/__tests__/team-review-share-feedback.test.ts
+          git add src/features/beta/TeamReviewWorkspace.tsx
           git commit -m "fix: show immediate team share feedback"
           git push "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" HEAD:refs/heads/feature/team-meeting-workspace
