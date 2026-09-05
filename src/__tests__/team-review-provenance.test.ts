@@ -5,6 +5,7 @@ import {
   buildTeamReviewProvenance,
   deriveTeamDiscussionReason,
   teamReviewContextLabel,
+  teamReviewVersionStatusLabel,
 } from '../domain/revision/teamReviewProvenance';
 
 const fingerprint = 'a'.repeat(64);
@@ -75,5 +76,10 @@ describe('Arena team review provenance', () => {
 
   it('produces a readable curricular context without claiming institutional source linkage', () => {
     expect(teamReviewContextLabel('italiano', 'secondaria')).toBe('Italiano · Scuola secondaria di primo grado');
+  });
+
+  it('keeps the technical fingerprint out of the human-readable version status', () => {
+    expect(teamReviewVersionStatusLabel(0)).toBe('Versione corrente · contributi validi per questa versione');
+    expect(teamReviewVersionStatusLabel(2)).toBe('Versione corrente · alcuni contributi devono essere riallineati');
   });
 });
