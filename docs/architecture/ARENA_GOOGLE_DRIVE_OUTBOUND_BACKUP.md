@@ -14,6 +14,22 @@ The only supported direction is:
 
 There is deliberately no inverse API in this slice.
 
+## Local Source Registry snapshot
+
+Slice C includes the application-level pipeline that produces the actual source-registry payload. `createLocalSourceRegistryBackupArtifact()` reads the same IndexedDB registry used by the `Fonti` surface and serializes:
+
+- local source records;
+- persisted `SourceGovernanceRecord` values for their exact versions;
+- snapshot schema and creation timestamp.
+
+Before serialization Arena reconciles source lifecycle and governance using the same fail-closed rules as Slice B. The snapshot is canonicalized deterministically: sources and governance records are sorted, scope arrays are sorted and JSON object keys are emitted in stable order. With the same registry state, creation time and backup ID, the payload bytes are reproducible.
+
+`backupLocalSourceRegistry()` is an explicit one-shot orchestration only:
+
+`read local registry → build exact snapshot → calculate manifest/hash → BackupSink.writeSnapshot()`
+
+It has no timer, polling, watcher or inbound provider call.
+
 ## Backup artifact
 
 A provider-neutral backup artifact contains:
@@ -98,9 +114,22 @@ The operation also fails closed when:
 
 No partial failure changes Arena's canonical state.
 
+## Automated evidence
+
+The Slice C workflow verifies both boundaries:
+
+- provider-neutral backup contract and Google Drive adapter in unit tests;
+- exact package bytes sent to the mocked Drive upload session;
+- hash mismatch rejected before credential/network access;
+- untrusted resumable locations rejected;
+- real IndexedDB source-registry snapshot construction in headless Chromium;
+- presence of verified source governance and contextual scope in the generated payload;
+- single outbound `BackupSink` invocation and receipt with `authorityEffect = none`;
+- TypeScript and production build.
+
 ## What is not yet activated
 
-This slice supplies the production adapter and package format, not a user credential flow. A visible **Backup su Google Drive** command must not be enabled until Arena has a governed way to provide a short-lived Drive token after an explicit user action.
+This slice supplies the real source-registry snapshot pipeline, production adapter and package format, not a user credential flow. A visible **Backup su Google Drive** command must not be enabled until Arena has a governed way to provide a short-lived Drive token after an explicit user action.
 
 That activation must preserve the same rules: no background sync, no stored Drive credentials, no authority inference, and no inbound mutation.
 
