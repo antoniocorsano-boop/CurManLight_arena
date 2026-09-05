@@ -86,7 +86,15 @@ export function TeamContributionPublisher({ proposals, decisions, customTexts }:
     return () => { active = false; };
   }, [repository, team.selectedMembership?.workspaceId, team.session?.user.id, proposalIdentityKey, fingerprints, refreshVersion]);
 
-  const localPreparedCount = proposals.filter((proposal) => Boolean(decisions[proposal.id])).length;
+  const localPreparedCount = proposals.filter((proposal) => {
+    const decision = decisions[proposal.id];
+    if (!decision) return false;
+    if (decision === 'custom') return Boolean(customTexts[proposal.id]?.trim());
+    return true;
+  }).length;
+  const incompleteCustomCount = proposals.filter(
+    (proposal) => decisions[proposal.id] === 'custom' && !customTexts[proposal.id]?.trim(),
+  ).length;
   const canContribute = Boolean(team.selectedMembership && ['docente', 'dipartimento', 'referente'].includes(team.selectedMembership.role));
 
   const publishPreparation = async () => {
@@ -170,7 +178,7 @@ export function TeamContributionPublisher({ proposals, decisions, customTexts }:
     <section className="space-y-3 rounded-2xl border border-indigo-200 bg-indigo-50/30 p-4" aria-label="Condivisione del contributo" data-team-contribution-publisher>
       <div>
         <strong className="block text-base text-slate-900">Condividi il mio contributo</strong>
-        <p className="mt-1 text-xs leading-relaxed text-slate-600">Solo dopo questa azione il team vede il tuo orientamento. La pubblicazione non lo trasforma in voto, esito del team o decisione della scuola.</p>
+        <p className="mt-1 text-xs leading-relaxed text-slate-600">Solo questa azione rende visibile al team il lavoro personale già preparato.</p>
       </div>
 
       {team.activeMemberships.length > 1 && (
@@ -184,20 +192,22 @@ export function TeamContributionPublisher({ proposals, decisions, customTexts }:
       )}
 
       {team.selectedMembership && (
-        <div className="rounded-xl border border-slate-200 bg-white p-3 text-xs text-slate-600">
+        <div className="rounded-xl border border-slate-200 bg-white p-3 text-xs text-slate-600" data-team-contribution-status>
           <strong className="text-slate-800">Team selezionato:</strong> {team.selectedMembership.workspaceName}
-          <span className="mt-1 block"><strong className="text-slate-800">Il tuo stato:</strong> {localPreparedCount} schede preparate · {currentUserContributionCount} già condivise sulla versione corrente.</span>
+          <span className="mt-1 block"><strong className="text-slate-800">Pronte:</strong> {localPreparedCount} · <strong className="text-slate-800">già condivise:</strong> {currentUserContributionCount}</span>
+          {incompleteCustomCount > 0 && <span className="mt-1 block font-semibold text-amber-800">{incompleteCustomCount === 1 ? '1 modifica deve essere completata.' : `${incompleteCustomCount} modifiche devono essere completate.`}</span>}
         </div>
       )}
 
       <button
         type="button"
-        disabled={busy || !canContribute || localPreparedCount === 0}
+        disabled={busy || !canContribute || localPreparedCount === 0 || incompleteCustomCount > 0}
         onClick={() => void publishPreparation()}
         className="min-h-11 w-full rounded-xl bg-indigo-700 px-4 py-3 text-sm font-bold text-white disabled:cursor-not-allowed disabled:opacity-40"
       >
         {busy ? 'Condivisione in corso…' : currentUserContributionCount > 0 ? 'Aggiorna il mio contributo condiviso' : 'Condividi il mio lavoro con il team'}
       </button>
+      <p className="text-[11px] font-semibold leading-relaxed text-indigo-950">Il contributo condiviso resta personale: non è un voto, un esito del team o una decisione della scuola.</p>
 
       {feedback && (
         <div role="status" aria-live="polite" className={`rounded-xl border p-3 text-xs font-semibold leading-relaxed ${feedback.kind === 'success' ? 'border-emerald-200 bg-emerald-50 text-emerald-800' : 'border-rose-200 bg-rose-50 text-rose-800'}`}>
