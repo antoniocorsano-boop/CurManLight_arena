@@ -10,7 +10,9 @@ import {
 } from '../../../domain/curriculum/sources/governance';
 import {
   calculateLocalKnowledgeSourceFingerprint,
-  getOrCreateLocalKnowledgePrincipalId,
+  countLocalKnowledgeSources,
+  createLocalKnowledgePrincipalIdCandidate,
+  getLocalKnowledgePrincipalId,
   listLocalKnowledgeSources,
   replaceLocalKnowledgeRegistryFromRestore,
   type CustomKbDoc,
@@ -29,6 +31,8 @@ export interface LocalSourceRegistryRestorePreview {
   preservedVerificationCount: number;
   needsVerificationCount: number;
   principalRebindCount: number;
+  expectedExistingPrincipalId: string | null;
+  targetPrincipalId: string;
   preparedSources: readonly CustomKbDoc[];
   preparedGovernance: readonly SourceGovernanceRecord[];
 }
@@ -52,6 +56,8 @@ const EXTRACTION_STATUSES = new Set(['NOT_REQUIRED', 'READY', 'PARTIAL', 'OCR_RE
 const AUTHORITY_STATUSES = new Set(['LOCAL_UNVERIFIED', 'LOCAL_VERIFIED']);
 const LIFECYCLE_STATUSES = new Set(['PENDING_VERIFICATION', 'VERIFIED_LOCAL']);
 const EVIDENCE_ELIGIBILITY = new Set(['CONSULT_ONLY', 'LOCAL_EVIDENCE']);
+const VERIFICATION_STATUSES = new Set(['imported', 'identified', 'verified', 'rejected']);
+const ORIGIN_KINDS = new Set(['local-upload', 'institutional-import', 'normative-registry', 'legacy-migration', 'system-import']);
 
 function asObject(value: unknown, errorCode: string): Record<string, unknown> {
   if (!value || typeof value !== 'object' || Array.isArray(value)) throw new Error(errorCode);
@@ -61,6 +67,13 @@ function asObject(value: unknown, errorCode: string): Record<string, unknown> {
 function requireString(value: unknown, errorCode: string): string {
   if (typeof value !== 'string' || !value.trim()) throw new Error(errorCode);
   return value;
+}
+
+function assertOptionalStringArray(value: unknown, errorCode: string): void {
+  if (value === undefined) return;
+  if (!Array.isArray(value) || value.some((item) => typeof item !== 'string' || !item.trim())) {
+    throw new Error(errorCode);
+  }
 }
 
 function assertLocalSource(value: unknown): asserts value is CustomKbDoc {
@@ -78,6 +91,14 @@ function assertLocalSource(value: unknown): asserts value is CustomKbDoc {
   if (!EVIDENCE_ELIGIBILITY.has(String(source.evidenceEligibility))) throw new Error('RESTORE_SOURCE_EVIDENCE_ELIGIBILITY_INVALID');
   if (!INGESTION_METHODS.has(String(source.ingestionMethod))) throw new Error('RESTORE_SOURCE_INGESTION_INVALID');
   if (!EXTRACTION_STATUSES.has(String(source.extractionStatus))) throw new Error('RESTORE_SOURCE_EXTRACTION_INVALID');
+
+  const verifiedBySource = source.authorityStatus === 'LOCAL_VERIFIED';
+  if (verifiedBySource !== (source.lifecycleStatus === 'VERIFIED_LOCAL')) {
+    throw new Error('RESTORE_SOURCE_VERIFICATION_STATE_INCONSISTENT');
+  }
+  if (!verifiedBySource && source.evidenceEligibility !== 'CONSULT_ONLY') {
+    throw new Error('RESTORE_SOURCE_UNVERIFIED_EVIDENCE_INVALID');
+  }
 }
 
 function assertGovernanceRecord(value: unknown): asserts value is SourceGovernanceRecord {
@@ -86,11 +107,28 @@ function assertGovernanceRecord(value: unknown): asserts value is SourceGovernan
   requireString(record.sourceVersionId, 'RESTORE_GOVERNANCE_VERSION_REQUIRED');
   requireString(record.versionFingerprint, 'RESTORE_GOVERNANCE_FINGERPRINT_REQUIRED');
   if (record.authorityLevel !== 'personal') throw new Error('RESTORE_GOVERNANCE_AUTHORITY_ESCALATION_BLOCKED');
-  if (!record.validFor || typeof record.validFor !== 'object') throw new Error('RESTORE_GOVERNANCE_SCOPE_INVALID');
-  if (!record.provenance || typeof record.provenance !== 'object') throw new Error('RESTORE_GOVERNANCE_PROVENANCE_INVALID');
-  const validation = validateSourceGovernance(value as SourceGovernanceRecord);
+  if (!VERIFICATION_STATUSES.has(String(record.verificationStatus))) throw new Error('RESTORE_GOVERNANCE_VERIFICATION_STATUS_INVALID');
+
+  const validFor = asObject(record.validFor, 'RESTORE_GOVERNANCE_SCOPE_INVALID');
+  assertOptionalStringArray(validFor.userIds, 'RESTORE_GOVERNANCE_USER_SCOPE_INVALID');
+  assertOptionalStringArray(validFor.instituteIds, 'RESTORE_GOVERNANCE_INSTITUTE_SCOPE_INVALID');
+  assertOptionalStringArray(validFor.schoolOrders, 'RESTORE_GOVERNANCE_ORDER_SCOPE_INVALID');
+  assertOptionalStringArray(validFor.disciplines, 'RESTORE_GOVERNANCE_DISCIPLINE_SCOPE_INVALID');
+  if (validFor.validFrom !== undefined && typeof validFor.validFrom !== 'string') throw new Error('RESTORE_GOVERNANCE_VALID_FROM_INVALID');
+  if (validFor.validTo !== undefined && typeof validFor.validTo !== 'string') throw new Error('RESTORE_GOVERNANCE_VALID_TO_INVALID');
+
+  const provenance = asObject(record.provenance, 'RESTORE_GOVERNANCE_PROVENANCE_INVALID');
+  if (!ORIGIN_KINDS.has(String(provenance.originKind))) throw new Error('RESTORE_GOVERNANCE_ORIGIN_INVALID');
+  for (const key of ['assertedBy', 'verifiedBy', 'verifiedAt', 'evidenceRef', 'notes'] as const) {
+    if (provenance[key] !== undefined && typeof provenance[key] !== 'string') {
+      throw new Error(`RESTORE_GOVERNANCE_PROVENANCE_${key.toUpperCase()}_INVALID`);
+    }
+  }
+
+  const typed = value as SourceGovernanceRecord;
+  const validation = validateSourceGovernance(typed);
   if (!validation.valid) throw new Error(`RESTORE_GOVERNANCE_INVALID:${validation.errors.join(',')}`);
-  const userIds = (value as SourceGovernanceRecord).validFor.userIds;
+  const userIds = typed.validFor.userIds;
   if (!userIds || userIds.length !== 1 || !userIds[0]?.trim()) {
     throw new Error('RESTORE_PERSONAL_USER_SCOPE_INVALID');
   }
@@ -125,6 +163,7 @@ function validateManifestCoverage(
   manifest: CmlBackupManifest,
   snapshot: { createdAt: string; sources: readonly CustomKbDoc[]; governance: readonly SourceGovernanceRecord[] },
 ): void {
+  if (!manifest.objectCounts || typeof manifest.objectCounts !== 'object') throw new Error('RESTORE_OBJECT_COUNTS_INVALID');
   if (manifest.sourceRegistrySchemaVersion !== LOCAL_SOURCE_REGISTRY_SCHEMA_VERSION) {
     throw new Error('RESTORE_SOURCE_REGISTRY_SCHEMA_UNSUPPORTED');
   }
@@ -155,8 +194,9 @@ function downgradeForCurrentPrincipal(
 ): { source: CustomKbDoc; governance: SourceGovernanceRecord } {
   const previousVerifier = governance.provenance.verifiedBy;
   const previousVerifiedAt = governance.provenance.verifiedAt;
+  const previousVerification = [previousVerifier, previousVerifiedAt].filter(Boolean).join(', ');
   const historyNote = governance.verificationStatus === 'verified'
-    ? `Verifica del backup non ereditata automaticamente${previousVerifier ? ` (${previousVerifier}` : ''}${previousVerifiedAt ? `, ${previousVerifiedAt}` : ''}${previousVerifier ? ')' : ''}. Richiesta nuova verifica nel principal locale corrente.`
+    ? `Verifica del backup non ereditata automaticamente${previousVerification ? ` (${previousVerification})` : ''}. Richiesta nuova verifica nel principal locale corrente.`
     : 'Fonte ripristinata nel principal locale corrente; resta da verificare.';
   const existingNotes = governance.provenance.notes?.trim();
 
@@ -198,8 +238,9 @@ export async function previewLocalSourceRegistryRestore(
   const snapshot = parseSnapshot(payload);
   validateManifestCoverage(manifest, snapshot);
 
-  const currentPrincipalId = await getOrCreateLocalKnowledgePrincipalId();
-  const currentSources = await listLocalKnowledgeSources();
+  const expectedExistingPrincipalId = await getLocalKnowledgePrincipalId();
+  const targetPrincipalId = expectedExistingPrincipalId ?? createLocalKnowledgePrincipalIdCandidate();
+  const currentSourceCount = await countLocalKnowledgeSources();
   const sourceIds = new Set<string>();
   const governanceByKey = new Map<string, SourceGovernanceRecord>();
 
@@ -225,15 +266,14 @@ export async function previewLocalSourceRegistryRestore(
     const fingerprint = await calculateLocalKnowledgeSourceFingerprint(source);
     if (fingerprint !== governance.versionFingerprint) throw new Error('RESTORE_SOURCE_FINGERPRINT_MISMATCH');
 
-    const sourceClaimsVerified = source.authorityStatus === 'LOCAL_VERIFIED'
-      || source.lifecycleStatus === 'VERIFIED_LOCAL';
+    const sourceClaimsVerified = source.authorityStatus === 'LOCAL_VERIFIED';
     const governanceClaimsVerified = governance.verificationStatus === 'verified';
     if (sourceClaimsVerified !== governanceClaimsVerified) throw new Error('RESTORE_VERIFICATION_STATE_INCONSISTENT');
 
     const backupPrincipalId = governance.validFor.userIds?.[0];
     const canPreserveVerification = governanceClaimsVerified
-      && backupPrincipalId === currentPrincipalId
-      && governance.provenance.verifiedBy === currentPrincipalId;
+      && backupPrincipalId === targetPrincipalId
+      && governance.provenance.verifiedBy === targetPrincipalId;
 
     if (canPreserveVerification) {
       preparedSources.push({ ...source });
@@ -246,11 +286,11 @@ export async function previewLocalSourceRegistryRestore(
       continue;
     }
 
-    const adjusted = downgradeForCurrentPrincipal(source, governance, currentPrincipalId);
+    const adjusted = downgradeForCurrentPrincipal(source, governance, targetPrincipalId);
     preparedSources.push(adjusted.source);
     preparedGovernance.push(adjusted.governance);
     needsVerificationCount += 1;
-    if (backupPrincipalId !== currentPrincipalId) principalRebindCount += 1;
+    if (backupPrincipalId !== targetPrincipalId) principalRebindCount += 1;
   }
 
   if (governanceByKey.size !== preparedGovernance.length) throw new Error('RESTORE_ORPHAN_GOVERNANCE_RECORD');
@@ -259,11 +299,13 @@ export async function previewLocalSourceRegistryRestore(
     manifest,
     recomputedContentHash,
     snapshotCreatedAt: snapshot.createdAt,
-    currentSourceCount: currentSources.length,
+    currentSourceCount,
     restoredSourceCount: preparedSources.length,
     preservedVerificationCount,
     needsVerificationCount,
     principalRebindCount,
+    expectedExistingPrincipalId,
+    targetPrincipalId,
     preparedSources,
     preparedGovernance,
   };
@@ -282,6 +324,8 @@ export async function applyLocalSourceRegistryRestore(
   await replaceLocalKnowledgeRegistryFromRestore({
     sources: preview.preparedSources,
     governance: preview.preparedGovernance,
+    expectedExistingPrincipalId: preview.expectedExistingPrincipalId,
+    targetPrincipalId: preview.targetPrincipalId,
   });
   const sources = await listLocalKnowledgeSources();
   return {
