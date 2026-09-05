@@ -43,16 +43,16 @@ describe('CML-DRIVE-01 zero-cost-by-design guard', () => {
     expect(networkIndex).toBeGreaterThan(tokenIndex);
   });
 
-  it('contains no autonomous backup loop, polling or inbound Drive capability', () => {
+  it('contains no autonomous backup loop or inbound Drive capability', () => {
     for (const source of [backupSinkSource, backupActionSource, tokenProviderSource]) {
       expect(source).not.toContain('setInterval(');
       expect(source).not.toContain('watch(');
-      expect(source).not.toContain('polling');
     }
     expect(backupSinkSource).not.toContain('listFiles');
     expect(backupSinkSource).not.toContain('downloadFromDrive');
     expect(backupActionSource).toContain('state !== \'working\'');
     expect(backupActionSource).toContain('data-cloud-cost-policy="zero-cost-by-design"');
+    expect(backupActionSource).toContain('Nessun polling, backup automatico o sincronizzazione in background è ammesso');
   });
 
   it('makes the cost rule part of the canonical CML-DRIVE-01 contract', () => {
