@@ -27,7 +27,7 @@ const currentSourceDomain = readText('src/domain/curriculum/institute/currentSou
 const canonicalFontiWorkspace = readText('src/features/documents/components/FontiWorkspace.tsx');
 
 assert(registry.registry_id === 'REG-CURR-00', 'registry_id deve essere REG-CURR-00');
-assert(registry.version === '1.0.0', 'versione iniziale del registro inattesa');
+assert(registry.version === '1.1.0', 'versione del registro inattesa');
 
 const source = registry.drive?.current_curriculum_source;
 assert(source, 'fonte curricolare corrente assente');
@@ -75,6 +75,14 @@ assert(
   !canonicalFontiWorkspace.includes('<InstituteSourceChangeTracePanel />'),
   'Fonti non deve presentare la traccia locale v3 come stato corrente della fonte',
 );
+assert(
+  registry.source_logic?.status === 'ALIGNED_TO_CORRECTED_SOURCE',
+  'REG-CURR-00 deve dichiarare la logica sorgente allineata alla fonte corretta',
+);
+assert(
+  registry.source_logic?.historical_remediation_workbench_active_in_canonical_surface === false,
+  'il vecchio workbench di remediation non può essere attivo nella superficie canonica',
+);
 
 const baseline = registry.arena_product_baseline;
 assert(baseline?.pr === 198, 'la baseline operativa corrente deve restare esplicitamente identificata');
@@ -83,8 +91,8 @@ assert(
   'branch della baseline Arena inatteso',
 );
 assert(
-  baseline?.product_head === 'b0b67b645dc87f568c38ccc5ddff46a0e20623cc',
-  'product head registrato non coincide con la baseline funzionale congelata',
+  baseline?.product_head === 'd5be9b4469844237380f17173820d373ba9fe61c',
+  'product head registrato non coincide con la baseline funzionale allineata alla fonte corretta',
 );
 assert(
   baseline?.cco_version === cco.version,
