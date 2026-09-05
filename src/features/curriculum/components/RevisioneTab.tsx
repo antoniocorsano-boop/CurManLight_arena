@@ -129,7 +129,7 @@ export function RevisioneTab({
 
         {totalCount > 0 && (
           <p className="mt-3 text-xs font-semibold text-indigo-950" data-revision-assurance>
-            Il tuo orientamento resta un contributo personale anche dopo la condivisione.
+            Il tuo orientamento resta personale: non approva il curricolo.
           </p>
         )}
       </section>
