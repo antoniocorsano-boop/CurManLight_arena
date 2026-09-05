@@ -54,7 +54,7 @@ export function MobileBottomNav({ activeTab, pendingCount, handleTabSwitch }: Mo
           <span className={iconShellClass(activeTab === 'revisione')}>
             <ClipboardCheck className={iconClass} aria-hidden="true" />
             {pendingCount > 0 && (
-              <span className="absolute -right-2 -top-1 min-w-5 rounded-full bg-amber-500 px-1 text-center text-[8px] font-black leading-4 text-white ring-2 ring-white" aria-label={`${pendingCount} elementi da rivedere`}>
+              <span className="absolute -right-2 -top-1 min-w-5 rounded-full bg-amber-500 px-1 text-center text-[8px] font-black leading-4 text-white ring-2 ring-white" aria-label={`${pendingCount} schede del contesto personale corrente da esaminare`}>
                 {pendingCount > 99 ? '99+' : pendingCount}
               </span>
             )}
