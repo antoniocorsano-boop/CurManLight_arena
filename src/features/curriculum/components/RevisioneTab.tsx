@@ -36,7 +36,7 @@ function reviewStatusLabel(decision?: DecisionStatus, customText = '') {
   if (decision === 'approved') return 'Confermata';
   if (decision === 'custom' && customText.trim()) return 'Modifica registrata';
   if (decision === 'custom') return 'Modifica da completare';
-  if (decision === 'rejected') return 'Precedente mantenuto';
+  if (decision === 'rejected') return 'Stato corrente mantenuto';
   return 'Da esaminare';
 }
 
@@ -246,7 +246,7 @@ export function RevisioneTab({
               <div className="grid gap-2 sm:grid-cols-3" data-revision-decision-actions>
                 <button type="button" onClick={() => recordDecision('approved')} className="min-h-11 rounded-xl bg-indigo-700 px-3 py-3 text-sm font-bold text-white">Conferma</button>
                 <button type="button" onClick={startCustomDraft} className="min-h-11 rounded-xl border border-slate-300 bg-white px-3 py-3 text-sm font-bold text-slate-700">Modifica</button>
-                <button type="button" onClick={() => recordDecision('rejected')} className="min-h-11 rounded-xl border border-slate-300 bg-white px-3 py-3 text-sm font-bold text-slate-700">Mantieni precedente</button>
+                <button type="button" onClick={() => recordDecision('rejected')} className="min-h-11 rounded-xl border border-slate-300 bg-white px-3 py-3 text-sm font-bold text-slate-700">{current.keepLabel || 'Mantieni precedente'}</button>
               </div>
             )}
           </div>
