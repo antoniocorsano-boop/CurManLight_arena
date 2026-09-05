@@ -1,5 +1,6 @@
 import { CurriculumTab, RevisioneTab } from '../../curriculum';
 import { EsportazioniTab, FontiTab, SecondBrainTab } from '../../documents';
+import { SourceRegistryDriveBackupAction } from '../../documents/components/SourceRegistryDriveBackupAction';
 import { PlanningHandoffPreview } from '../../beta/PlanningHandoffPreview';
 import { TeamReviewWorkspace } from '../../beta';
 import { ProcessoTab } from '../../processo';
@@ -141,7 +142,15 @@ export function AppViewsLayer(props: AppViewsLayerProps) {
         </div>
       )}
 
-      {props.activeTab === 'fonti' && <FontiTab {...props} />}
+      {props.activeTab === 'fonti' && (
+        <div className="space-y-4">
+          <SourceRegistryDriveBackupAction
+            sourceCount={props.customKbDocs.length}
+            showToast={props.showToast}
+          />
+          <FontiTab {...props} />
+        </div>
+      )}
 
       {props.activeTab !== 'fonti' && (
         <InfoViews
