@@ -64,6 +64,102 @@ for (const file of taskFiles) {
   }
 }
 
+async function validateSurfaceRegistry(contract) {
+  const registryRef = config?.operational_communication?.surface_registry;
+  if (!registryRef) {
+    fail('CCO registry: riferimento surface_registry mancante in him.config.json');
+    return;
+  }
+
+  let registry;
+  try {
+    registry = await readJson(resolve(root, registryRef));
+  } catch (error) {
+    fail(`CCO registry: impossibile leggere ${registryRef}: ${error.message}`);
+    return;
+  }
+
+  if (registry.registry_id !== 'CCO-SURFACES') fail('CCO registry: registry_id deve essere CCO-SURFACES');
+  if (!/^1\./.test(registry.version ?? '')) fail('CCO registry: version deve essere 1.x');
+  if (registry.contract !== config?.operational_communication?.contract) {
+    fail('CCO registry: riferimento al contratto non coincide con him.config.json');
+  }
+
+  const allowedStatuses = new Set(['conformant', 'migration', 'guided-setup', 'excluded']);
+  const declaredStatuses = new Set(registry.status_vocabulary ?? []);
+  for (const status of allowedStatuses) {
+    if (!declaredStatuses.has(status)) fail(`CCO registry: status_vocabulary non contiene ${status}`);
+  }
+
+  if (!Array.isArray(registry.surfaces) || registry.surfaces.length === 0) {
+    fail('CCO registry: nessuna superficie registrata');
+    return;
+  }
+
+  const ids = new Set();
+  const conformantPaths = new Set();
+  let conformantCount = 0;
+
+  for (const surface of registry.surfaces) {
+    if (!surface.id || ids.has(surface.id)) {
+      fail(`CCO registry: id superficie mancante o duplicato: ${surface.id ?? 'undefined'}`);
+      continue;
+    }
+    ids.add(surface.id);
+
+    if (!surface.path) {
+      fail(`CCO registry ${surface.id}: path mancante`);
+      continue;
+    }
+    if (!allowedStatuses.has(surface.status)) {
+      fail(`CCO registry ${surface.id}: status non valido ${surface.status ?? 'undefined'}`);
+      continue;
+    }
+
+    let source;
+    try {
+      source = await readText(resolve(root, surface.path));
+    } catch (error) {
+      fail(`CCO registry ${surface.id}: impossibile leggere ${surface.path}: ${error.message}`);
+      continue;
+    }
+
+    if (surface.status === 'conformant') {
+      conformantCount += 1;
+      conformantPaths.add(surface.path);
+      if (!Array.isArray(surface.required_tokens) || surface.required_tokens.length === 0) {
+        fail(`CCO registry ${surface.id}: una superficie conforme deve dichiarare required_tokens`);
+      } else {
+        for (const token of surface.required_tokens) {
+          if (!source.includes(token)) fail(`CCO registry ${surface.id}: token richiesto assente: ${token}`);
+        }
+      }
+      if (!surface.operational_context || !surface.primary_task) {
+        fail(`CCO registry ${surface.id}: una superficie conforme deve dichiarare operational_context e primary_task`);
+      }
+    }
+
+    if (surface.status === 'migration' && !surface.migration_goal?.trim()) {
+      fail(`CCO registry ${surface.id}: migration richiede migration_goal`);
+    }
+    if ((surface.status === 'guided-setup' || surface.status === 'excluded') && !surface.reason?.trim()) {
+      fail(`CCO registry ${surface.id}: ${surface.status} richiede reason`);
+    }
+
+    pass(`CCO registry surface ${surface.id} [${surface.status}]`);
+  }
+
+  if (conformantCount === 0) fail('CCO registry: deve esistere almeno una superficie conforme');
+
+  for (const pilot of contract.pilot_surfaces ?? []) {
+    if (!conformantPaths.has(pilot.path)) {
+      fail(`CCO registry: la superficie pilota ${pilot.path} deve essere registrata come conformant`);
+    }
+  }
+
+  pass(`CCO registry ${registry.version ?? 'unknown'}`);
+}
+
 async function validateOperationalCommunicationContract() {
   if (config?.requirements?.operational_communication_contract_required !== true) {
     fail('CCO: operational_communication_contract_required deve essere true');
@@ -157,6 +253,8 @@ async function validateOperationalCommunicationContract() {
     }
   }
 
+  await validateSurfaceRegistry(contract);
+
   if (documentationRef) {
     try {
       const docs = await readText(resolve(root, documentationRef));
@@ -164,6 +262,7 @@ async function validateOperationalCommunicationContract() {
       if (!docs.includes('contesto → stato → prossima azione → conseguenza immediata → approfondimento')) {
         fail('CCO: gerarchia comunicativa canonica assente dalla documentazione');
       }
+      if (!docs.includes('Registro delle superfici')) fail('CCO: documentazione priva del Registro delle superfici');
       pass('CCO documentation');
     } catch (error) {
       fail(`CCO: impossibile leggere la documentazione: ${error.message}`);
