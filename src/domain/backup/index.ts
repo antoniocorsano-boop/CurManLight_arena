@@ -3,6 +3,11 @@ export {
   createBackupReceipt,
   validateRestoreRequest,
 } from './contract';
+export {
+  CML_BACKUP_PACKAGE_MAGIC,
+  encodeCmlBackupPackage,
+  decodeCmlBackupPackage,
+} from './package';
 
 export type {
   BackupProvider,
@@ -14,3 +19,4 @@ export type {
   RestoreValidationResult,
   BackupSink,
 } from './contract';
+export type { DecodedCmlBackupPackage } from './package';
