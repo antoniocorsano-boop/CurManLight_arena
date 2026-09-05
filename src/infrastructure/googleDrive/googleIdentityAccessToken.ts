@@ -40,19 +40,21 @@ export interface GoogleDriveAccessTokenProviderOptions {
 
 export function resolveGoogleDriveBackupClientConfig(
   env: Record<string, unknown> = import.meta.env as Record<string, unknown>,
+  runtimeClientId?: string,
 ): GoogleDriveBackupClientConfig {
   const specific = typeof env.VITE_GOOGLE_DRIVE_BACKUP_CLIENT_ID === 'string'
     ? env.VITE_GOOGLE_DRIVE_BACKUP_CLIENT_ID.trim()
     : '';
+  const runtime = runtimeClientId?.trim() ?? '';
   const legacy = typeof env.VITE_GOOGLE_CLIENT_ID === 'string'
     ? env.VITE_GOOGLE_CLIENT_ID.trim()
     : '';
-  const clientId = specific || legacy;
+  const clientId = specific || runtime || legacy;
 
   if (!clientId) {
     return {
       status: 'unconfigured',
-      reason: 'Configura VITE_GOOGLE_DRIVE_BACKUP_CLIENT_ID per abilitare il backup Drive.',
+      reason: 'Configura un ID client Google OAuth pubblico per abilitare il backup Drive.',
     };
   }
 
