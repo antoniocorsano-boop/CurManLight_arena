@@ -1,18 +1,11 @@
 # REG-CURR-00 — Registro maestro del fascicolo curricolare e dell’allineamento Arena
 
-**Versione:** 1.1 — 5 settembre 2026  
+**Versione:** 1.2 — 5 settembre 2026  
 **Ambito:** Curricolo verticale d’Istituto — A.S. 2026/2027
 
 ## Funzione
 
-Questo documento è il mirror repository del registro Drive `REG-CURR-00_Registro_maestro_fascicolo_curricolare_e_allineamento_Arena_2026-2027` (`1IMKwWWukefIDIOsbHQByiXLN7YuU7He0V5b01tjitG4`).
-
-Serve a impedire che quattro livelli divergano:
-
-1. **fascicolo Drive**;
-2. **fonte curricolare corrente**;
-3. **logiche e contratti di Arena**;
-4. **documentazione operativa e formativa**.
+Questo documento è il mirror repository del registro Drive `REG-CURR-00_Registro_maestro_fascicolo_curricolare_e_allineamento_Arena_2026-2027` (`1IMKwWWukefIDIOsbHQByiXLN7YuU7He0V5b01tjitG4`). Mantiene allineati fascicolo Drive, fonte curricolare corrente, logiche e contratti di Arena e documentazione operativa.
 
 Il registro macchina associato è `docs/curriculum/REG-CURR-00.registry.json`.
 
@@ -25,13 +18,9 @@ La base istruttoria corrente è:
 - SHA-256 `c89fbbbe43432db8410913675381b7dc3654d2448f9f91a8c72b115b9ec6fc55`;
 - stato: **proposta d’Istituto da validare**.
 
-La precedente `source reconstruction v3` resta storico tecnico e non è la base corrente per attestare lo stato del curricolo.
+La precedente `source reconstruction v3` resta storico tecnico. La distinzione corrente resta:
 
-La stessa identità è ora registrata nel dominio Arena in `src/domain/curriculum/institute/currentSource.ts`. La superficie canonica `Fonti` mostra la fonte corretta come corrente e non riapre il vecchio workbench R7C7 come se i sette difetti della fonte originaria fossero ancora blocker attivi.
-
-La distinzione corrente è:
-
-**correzioni documentali recepite nella fonte corretta ≠ validazione professionale dei contenuti completata**.
+**correzioni documentali recepite ≠ validazione professionale completata ≠ approvazione collegiale ≠ curricolo vigente**.
 
 ## Stato del processo
 
@@ -45,84 +34,76 @@ La distinzione corrente è:
 | Approvazione collegiale | `NOT_YET` |
 | Promozione canonica | `NOT_AUTHORIZED` |
 
-La prossima fase autorizzata è la **validazione professionale reale dei contenuti**. Non è autorizzata una nuova ricostruzione documentale generalizzata come sostituto dei gate umani.
+La prossima fase autorizzata è la **validazione professionale reale dei contenuti**.
 
 ## Baseline Arena
 
-Per il lavoro corrente si assume come baseline operativa di prodotto:
+Per il lavoro corrente si assume:
 
 - PR **#198**;
 - branch `feature/team-meeting-workspace`;
-- product head `d5be9b4469844237380f17173820d373ba9fe61c`;
+- product head funzionale `77a464e0619907bcd6aabac948eb299a3c8d8f0a`;
 - CCO `1.3.0`;
 - registro superfici CCO `1.4.0`.
 
-Il product head include il riallineamento della superficie `Fonti` alla fonte corretta. I commit successivi che modificano test, registri, documentazione e gate di allineamento non cambiano da soli questa baseline funzionale.
+Il product head include la fonte corretta in `Fonti` e il primo pacchetto reale di revisione professionale in `Revisione`.
+
+## Pilota attivo — Tecnologia classe prima
+
+**Pilot ID:** `TEC-SEC1-2026-01`  
+**Stato:** `READY_FOR_HUMAN_DISCIPLINE_REVIEW`  
+**Esito umano:** `OPEN`  
+**Promozione canonica:** `NOT_AUTHORIZED`
+
+Il pilota sostituisce, esclusivamente nel contesto **Tecnologia / scuola secondaria di primo grado**, le vecchie proposte dimostrative con cinque decisioni provenienti dal fascicolo reale:
+
+1. osservare, misurare e rappresentare;
+2. progettare con problema e vincoli;
+3. realizzare, verificare e considerare il ciclo di vita;
+4. dati, procedure e sistemi digitali;
+5. raccordo classe I → classi II–III nel regime transitorio.
+
+Catena documentale esatta:
+
+- fonte: `CURRICOLO_VERTICALE_CORRETTO_PROPOSTA_2026-09-03.docx` — `1DPdK_EIZsE3lI-LIzTJG776cU1PcAcnf`;
+- proposta: `PROP-CURR-SEC1-TEC-1_Tecnologia_classe_prima_revisione_curricolare_da_validare_2026-2027.docx` — `19nPCsAj_ItBscUwwcHwrVhxDbBy-MXIJ`;
+- matrice verticale: `MATR-CURR-TEC-T01_Raccordo_transitorio_Tecnologia_2026-2027.docx` — `1CMSESN73HCi_2jM_tZYhN9hd6oWzyHgK`;
+- gate: `VAL-CURR-SEC1-01_Scheda_validazione_Dipartimenti_Secondaria_Classe_Prima_2026-2027` — `1rxKy2IDD5V7l4Nc1LfJeLr407ltfa_vbt_EFK54s7mU`;
+- registro decisioni: `DEC-CURR-SEC1-00_Registro_decisioni_validazione_Secondaria_Classe_Prima_2026-2027` — `1KmnrgWrNxVDUjOvdPo0oibqTvr1lQ72QepBE8KNsdZA`;
+- manifesto operativo: `WORK-CURR-TEC-01_Pacchetto_operativo_Arena_Tecnologia_classe_prima_2026-2027` — `1s2qZf53O6BqjgyrtzcXuL5lSdafoAmtAUEFv-4mwcog`.
+
+Il contratto applicativo è `src/domain/curriculum/validation/technologyClass1Review.ts`.
 
 ## Regola di interazione corrente
 
-Il principio operativo è **riconoscimento prima dell’interpretazione**.
+Il principio operativo è **riconoscimento prima dell’interpretazione**. La modalità lavoro privilegia un solo oggetto dominante, confronto visivo, azioni adiacenti e provenienza sotto disclosure. Una modifica è completa soltanto dopo `Registra modifica`.
 
-La modalità ordinaria deve privilegiare:
-
-- un solo oggetto dominante per contesto;
-- azioni vicine all’oggetto su cui agiscono;
-- stato comunicato tramite trasformazione della superficie quando possibile;
-- spiegazioni secondarie su richiesta;
-- vera transizione di stato nei flussi multistadio;
-- atto esplicito di registrazione prima di considerare completa una modifica.
-
-Lo scorrimento verso un contenuto già renderizzato **non** costituisce una transizione di processo.
+Nel pilota Tecnologia le etichette sono contestuali: `Fonte corrente` / `Proposta da validare`; il raccordo usa `Stato corrente` / `Raccordo da validare`. L’azione di mantenimento dichiara esattamente cosa viene conservato.
 
 ## Catena di autorità
 
-La separazione da preservare è:
-
 `fonte normativa ≠ elaborazione d’Istituto ≠ proposta professionale ≠ contributo individuale ≠ esito professionale del gruppo ≠ decisione istituzionale ≠ curricolo vigente`
 
-Né la presenza nel sistema, né la partecipazione a un gruppo, né il coordinamento operativo, né un commit o un test superato attribuiscono autorità curricolare.
+La compilazione del pilota produce soltanto un contributo personale. Il gate professionale resta aperto finché non esiste un esito umano reale del gruppo competente.
 
 ## PR successive
 
-Le PR **#199–#201** e **#202–#207** restano sviluppi Draft e non fanno parte della baseline canonica corrente finché non vengono riallineate sul current head della #198 e nuovamente validate.
-
-In particolare la catena #202–#207 parte da `cc8bcab2971587fbda0205f0b343e5f8f0fb782c` e risulta divergente rispetto alla baseline CCO e fonte-corrente attuale.
-
-Una funzione Draft non deve essere descritta in un documento istituzionale come funzione corrente di Arena.
+Le PR **#199–#201** e **#202–#207** restano Draft e non canoniche finché non vengono riallineate sulla baseline corrente e nuovamente validate.
 
 ## Documenti Drive collegati
 
 - `CAN-CURR-00_Quadro_istituzionale_e_normativo_Curricolo_Verticale_2026-2027`;
 - `CAN-CURR-01_Identita_pedagogica_e_architettura_Curricolo_Verticale_3-14`;
 - `CAN-GOV-CURR-00_Regole_canoniche_governo_revisione_validazione_CurManLight_Arena`;
-- `ALL-CURR-A_Repertorio_fonti_normative_e_istituzionali_2026-2027`;
-- `ALL-CURR-B_Matrice_applicabilita_e_regime_transitorio_2026-2027`;
-- `ALL-CURR-F_Stato_fonte_corretta_e_prerequisiti_validazione_2026-2027`;
-- `ALL-CURR-G_Piano_di_lavoro_dalla_fonte_corretta_alla_validazione_2026-2027`;
-- `CAN-AUDIT-CURR-03_Audit_integrato_pre-validazione_2026-2027`;
 - `VAL-CURR-00_Indice_unico_gate_validazione_2026-2027`;
-- `ARENA-UX-01_Dal_documento_al_lavoro_dei_team_2026-2027`.
-
-`ARENA-UX-01` contiene l’addendum **25. ALLINEAMENTO CANONICO — 5 SETTEMBRE 2026**, che prevale sugli stati storici delle sezioni precedenti.
+- `CAN-AUDIT-CURR-03_Audit_integrato_pre-validazione_2026-2027`;
+- `ARENA-UX-01_Dal_documento_al_lavoro_dei_team_2026-2027`;
+- `WORK-CURR-TEC-01_Pacchetto_operativo_Arena_Tecnologia_classe_prima_2026-2027`.
 
 ## Materiali formativi
 
-La presentazione docenti del 4 settembre 2026 resta utile come documento storico/formativo, ma è **da aggiornare prima dell’uso operativo** perché precede CCO 1.3 e rappresenta il processo in modo più testuale rispetto alla modalità lavoro corrente.
-
-Il documento stakeholder sul modello di governo resta valido nei principi generali, ma deve essere verificato contro REG-CURR-00 prima di ogni pubblicazione o uso istituzionale.
-
-## Regola di aggiornamento
-
-REG-CURR-00 deve essere aggiornato quando cambia uno dei seguenti elementi:
-
-- fonte curricolare corrente;
-- stato dei gate professionali o collegiali;
-- baseline Arena;
-- versione CCO o registro superfici;
-- modello di autorità o provenienza;
-- promozione di una funzione Draft a funzione corrente;
-- documento formativo che descrive il funzionamento operativo di Arena.
+La presentazione docenti del 4 settembre resta da aggiornare prima dell’uso operativo perché precede CCO 1.3. Il documento stakeholder resta valido nei principi generali ma va verificato contro REG-CURR-00 prima di ogni uso istituzionale.
 
 ## Criterio di allineamento
 
-Drive, repository, logiche e documenti sono allineati soltanto se indicano la stessa fonte corrente, lo stesso stato del curricolo, la stessa baseline di prodotto, gli stessi confini di autorità e distinguono esplicitamente funzioni correnti da sperimentazioni Draft.
+Drive, repository, logiche e documenti sono allineati soltanto se indicano la stessa fonte, lo stesso stato dei gate, la stessa baseline, gli stessi confini di autorità e — quando un pilota è attivo — le stesse identità Drive di fonte, proposta, matrice, gate e registro decisioni.
