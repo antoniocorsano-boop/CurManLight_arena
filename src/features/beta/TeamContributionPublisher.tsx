@@ -196,7 +196,7 @@ export function TeamContributionPublisher({ proposals, decisions, customTexts }:
         onClick={() => void publishPreparation()}
         className="min-h-11 w-full rounded-xl bg-indigo-700 px-4 py-3 text-sm font-bold text-white disabled:cursor-not-allowed disabled:opacity-40"
       >
-        {busy ? 'Condivisione in corso…' : currentUserContributionCount > 0 ? 'Aggiorna il lavoro condiviso' : 'Condividi il mio lavoro con il team'}
+        {busy ? 'Condivisione in corso…' : currentUserContributionCount > 0 ? 'Aggiorna il mio contributo condiviso' : 'Condividi il mio lavoro con il team'}
       </button>
 
       {feedback && (
