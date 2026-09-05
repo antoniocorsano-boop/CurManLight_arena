@@ -1,6 +1,6 @@
 {
   "registry_id": "CCO-SURFACES",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "contract": ".human/operational-communication.contract.json",
   "status_vocabulary": ["conformant", "migration", "guided-setup", "excluded"],
   "surfaces": [
@@ -21,9 +21,21 @@
     },
     {
       "id": "revisione-personale",
-      "path": "src/features/beta/RevisionWorkspace.tsx",
-      "status": "migration",
-      "migration_goal": "Portare contesto, stato personale e prossima azione prima della spiegazione del processo; mantenere la formazione disponibile tramite divulgazione progressiva."
+      "path": "src/features/curriculum/components/RevisioneTab.tsx",
+      "status": "conformant",
+      "operational_context": "Il mio lavoro nel curricolo",
+      "primary_task": "Vedere lo stato del proprio lavoro ed esaminare la prossima scheda aperta",
+      "required_tokens": [
+        "data-revision-operational-summary",
+        "data-revision-next-action",
+        "Esamina la prossima scheda",
+        "Apre la prima scheda ancora da esaminare.",
+        "Questo filtro non mostra le schede da esaminare",
+        "data-revision-assurance",
+        "data-revision-secondary=\"help\"",
+        "Proponi una modifica",
+        "Rimetti da esaminare"
+      ]
     },
     {
       "id": "pubblicazione-contributo-personale",
