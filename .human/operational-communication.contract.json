@@ -135,7 +135,7 @@
         "Proposta",
         ">Conferma<",
         ">Modifica<",
-        ">Mantieni precedente<",
+        "current.keepLabel || 'Mantieni precedente'",
         "Registra modifica",
         "Tutte le schede"
       ]
