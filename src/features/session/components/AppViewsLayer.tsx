@@ -1,6 +1,7 @@
 import { CurriculumTab, RevisioneTab } from '../../curriculum';
 import { EsportazioniTab, FontiTab, SecondBrainTab } from '../../documents';
 import { SourceRegistryDriveBackupAction } from '../../documents/components/SourceRegistryDriveBackupAction';
+import { SourceRegistryRestoreAction } from '../../documents/components/SourceRegistryRestoreAction';
 import { PlanningHandoffPreview } from '../../beta/PlanningHandoffPreview';
 import { TeamReviewWorkspace } from '../../beta';
 import { ProcessoTab } from '../../processo';
@@ -146,6 +147,10 @@ export function AppViewsLayer(props: AppViewsLayerProps) {
         <div className="space-y-4">
           <SourceRegistryDriveBackupAction
             sourceCount={props.customKbDocs.length}
+            showToast={props.showToast}
+          />
+          <SourceRegistryRestoreAction
+            setCustomKbDocs={props.setCustomKbDocs}
             showToast={props.showToast}
           />
           <FontiTab {...props} />
