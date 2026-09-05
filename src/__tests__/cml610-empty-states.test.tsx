@@ -91,7 +91,7 @@ describe('CML-610 — Empty states operational clarity', () => {
       expect(screen.getByRole('button', { name: 'Conferma proposta' })).toBeInTheDocument();
       expect(screen.getByRole('button', { name: 'Proponi una modifica' })).toBeInTheDocument();
       expect(screen.getByRole('button', { name: 'Mantieni testo precedente' })).toBeInTheDocument();
-      expect(screen.getByText(/resta un contributo personale anche dopo la condivisione/i)).toBeInTheDocument();
+      expect(screen.getByText(/resta personale: non approva il curricolo/i)).toBeInTheDocument();
     });
 
     it('recovers from an empty filter without contradicting pending work', () => {
