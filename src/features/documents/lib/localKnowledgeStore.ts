@@ -99,6 +99,16 @@ function hasExplicitScope(scope: LocalSourceGovernanceScope | undefined): boolea
   return Boolean(scope?.instituteId || scope?.schoolOrder || scope?.discipline);
 }
 
+function downgradeLocalKnowledgeVerification(source: CustomKbDoc): CustomKbDoc {
+  return {
+    ...source,
+    authorityStatus: 'LOCAL_UNVERIFIED',
+    lifecycleStatus: 'PENDING_VERIFICATION',
+    evidenceEligibility: 'CONSULT_ONLY',
+    verifiedAt: undefined,
+  };
+}
+
 export async function getOrCreateLocalKnowledgePrincipalId(): Promise<string> {
   const db = getKnowledgeDb();
   return db.transaction('rw', db.meta, async () => {
@@ -124,9 +134,34 @@ export async function calculateLocalKnowledgeSourceFingerprint(source: Pick<Cust
   return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, '0')).join('');
 }
 
+async function reconcileSourceWithPersistedGovernance(source: CustomKbDoc): Promise<CustomKbDoc> {
+  const db = getKnowledgeDb();
+  const normalized = normalizeKnowledgeSourceLifecycle(source);
+  const fingerprint = await calculateLocalKnowledgeSourceFingerprint(normalized);
+  const existing = await db.governance.get(governanceRegistryId(normalized.id, normalized.sourceVersionId));
+
+  if (!existing) {
+    return normalized.authorityStatus === 'LOCAL_VERIFIED'
+      ? downgradeLocalKnowledgeVerification(normalized)
+      : normalized;
+  }
+
+  if (
+    existing.versionFingerprint !== fingerprint
+    || existing.verificationStatus !== 'verified'
+  ) {
+    return normalized.authorityStatus === 'LOCAL_VERIFIED'
+      ? downgradeLocalKnowledgeVerification(normalized)
+      : normalized;
+  }
+
+  return normalized;
+}
+
 async function prepareGovernanceRecord(
   source: CustomKbDoc,
   scope?: LocalSourceGovernanceScope,
+  allowFingerprintReplacement = false,
 ): Promise<PersistedSourceGovernanceRecord> {
   const db = getKnowledgeDb();
   const principalId = await getOrCreateLocalKnowledgePrincipalId();
@@ -135,16 +170,14 @@ async function prepareGovernanceRecord(
   const existing = await db.governance.get(registryId);
   const effectiveScope = hasExplicitScope(scope) ? scope : scopeFromGovernance(existing);
 
-  if (existing && existing.versionFingerprint !== versionFingerprint) {
-    const downgradedSource: CustomKbDoc = {
-      ...source,
-      authorityStatus: 'LOCAL_UNVERIFIED',
-      lifecycleStatus: 'PENDING_VERIFICATION',
-      evidenceEligibility: 'CONSULT_ONLY',
-      verifiedAt: undefined,
-    };
+  if (existing && existing.versionFingerprint !== versionFingerprint && !allowFingerprintReplacement) {
     return {
-      ...buildLocalSourceGovernanceRecord(downgradedSource, principalId, versionFingerprint, effectiveScope),
+      ...buildLocalSourceGovernanceRecord(
+        downgradeLocalKnowledgeVerification(source),
+        principalId,
+        versionFingerprint,
+        effectiveScope,
+      ),
       registryId,
       recordedAt: new Date().toISOString(),
     };
@@ -206,8 +239,15 @@ export function isLocalKnowledgeEvidenceEligible(source: CustomKbDoc): boolean {
 }
 
 export async function listLocalKnowledgeSources(): Promise<CustomKbDoc[]> {
-  const sources = await getKnowledgeDb().sources.orderBy('importedAt').reverse().toArray();
-  return sources.map((source) => normalizeKnowledgeSourceLifecycle(source));
+  const db = getKnowledgeDb();
+  const sources = await db.sources.orderBy('importedAt').reverse().toArray();
+  const reconciled = await Promise.all(sources.map((source) => reconcileSourceWithPersistedGovernance(source)));
+  const changed = reconciled.filter((source, index) => source.authorityStatus !== sources[index].authorityStatus
+    || source.lifecycleStatus !== sources[index].lifecycleStatus
+    || source.evidenceEligibility !== sources[index].evidenceEligibility
+    || source.verifiedAt !== sources[index].verifiedAt);
+  if (changed.length > 0) await db.sources.bulkPut(changed);
+  return reconciled;
 }
 
 export async function listLocalSourceGovernanceRecords(): Promise<SourceGovernanceRecord[]> {
@@ -219,17 +259,21 @@ export async function ensureLocalKnowledgeGovernanceRecords(sources: readonly Cu
   if (sources.length === 0) return [];
   const db = getKnowledgeDb();
   await getOrCreateLocalKnowledgePrincipalId();
-  const prepared = await Promise.all(sources.map((source) => prepareGovernanceRecord(source)));
-  await db.governance.bulkPut(prepared);
+  const reconciled = await Promise.all(sources.map((source) => reconcileSourceWithPersistedGovernance(source)));
+  const prepared = await Promise.all(reconciled.map((source) => prepareGovernanceRecord(source)));
+  await db.transaction('rw', db.sources, db.governance, async () => {
+    await db.sources.bulkPut(reconciled);
+    await db.governance.bulkPut(prepared);
+  });
   return prepared.map(({ registryId: _registryId, recordedAt: _recordedAt, ...record }) => record);
 }
 
 export async function putLocalKnowledgeSource(source: CustomKbDoc): Promise<void> {
   const db = getKnowledgeDb();
-  const normalized = normalizeKnowledgeSourceLifecycle(source);
-  const governance = await prepareGovernanceRecord(normalized);
+  const reconciled = await reconcileSourceWithPersistedGovernance(source);
+  const governance = await prepareGovernanceRecord(reconciled);
   await db.transaction('rw', db.sources, db.governance, async () => {
-    await db.sources.put(normalized);
+    await db.sources.put(reconciled);
     await db.governance.put(governance);
   });
 }
@@ -237,11 +281,11 @@ export async function putLocalKnowledgeSource(source: CustomKbDoc): Promise<void
 export async function putLocalKnowledgeSources(sources: CustomKbDoc[]): Promise<void> {
   if (sources.length === 0) return;
   const db = getKnowledgeDb();
-  const normalized = sources.map((source) => normalizeKnowledgeSourceLifecycle(source));
   await getOrCreateLocalKnowledgePrincipalId();
-  const governance = await Promise.all(normalized.map((source) => prepareGovernanceRecord(source)));
+  const reconciled = await Promise.all(sources.map((source) => reconcileSourceWithPersistedGovernance(source)));
+  const governance = await Promise.all(reconciled.map((source) => prepareGovernanceRecord(source)));
   await db.transaction('rw', db.sources, db.governance, async () => {
-    await db.sources.bulkPut(normalized);
+    await db.sources.bulkPut(reconciled);
     await db.governance.bulkPut(governance);
   });
 }
@@ -267,7 +311,7 @@ export async function verifyLocalKnowledgeSource(
     evidenceEligibility: isExtractionEvidenceReady(normalized.extractionStatus) ? 'LOCAL_EVIDENCE' : 'CONSULT_ONLY',
     verifiedAt,
   };
-  const governance = await prepareGovernanceRecord(verifiedSource, requestedScope);
+  const governance = await prepareGovernanceRecord(verifiedSource, requestedScope, true);
 
   await db.transaction('rw', db.sources, db.governance, async () => {
     await db.sources.put(verifiedSource);
