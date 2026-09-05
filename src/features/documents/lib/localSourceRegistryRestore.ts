@@ -33,6 +33,8 @@ export interface LocalSourceRegistryRestorePreview {
   principalRebindCount: number;
   expectedExistingPrincipalId: string | null;
   targetPrincipalId: string;
+  /** Exact selected package, copied so confirmation can rebuild the plan. */
+  packageBytes: Uint8Array;
   preparedSources: readonly CustomKbDoc[];
   preparedGovernance: readonly SourceGovernanceRecord[];
 }
@@ -228,10 +230,12 @@ function downgradeForCurrentPrincipal(
   };
 }
 
-export async function previewLocalSourceRegistryRestore(
+async function buildRestorePreview(
   packageBytes: Uint8Array,
+  targetPrincipalOverride?: string,
 ): Promise<LocalSourceRegistryRestorePreview> {
-  const { manifest, payload } = decodeCmlBackupPackage(packageBytes);
+  const ownedPackage = packageBytes.slice();
+  const { manifest, payload } = decodeCmlBackupPackage(ownedPackage);
   const recomputedContentHash = await calculateCmlBackupContentHash(payload);
   if (recomputedContentHash !== manifest.contentHash) throw new Error('RESTORE_CONTENT_HASH_MISMATCH');
 
@@ -239,7 +243,10 @@ export async function previewLocalSourceRegistryRestore(
   validateManifestCoverage(manifest, snapshot);
 
   const expectedExistingPrincipalId = await getLocalKnowledgePrincipalId();
-  const targetPrincipalId = expectedExistingPrincipalId ?? createLocalKnowledgePrincipalIdCandidate();
+  const targetPrincipalId = expectedExistingPrincipalId
+    ?? targetPrincipalOverride?.trim()
+    ?? createLocalKnowledgePrincipalIdCandidate();
+  if (!targetPrincipalId) throw new Error('RESTORE_TARGET_PRINCIPAL_REQUIRED');
   const currentSourceCount = await countLocalKnowledgeSources();
   const sourceIds = new Set<string>();
   const governanceByKey = new Map<string, SourceGovernanceRecord>();
@@ -306,32 +313,55 @@ export async function previewLocalSourceRegistryRestore(
     principalRebindCount,
     expectedExistingPrincipalId,
     targetPrincipalId,
+    packageBytes: ownedPackage,
     preparedSources,
     preparedGovernance,
   };
 }
 
+export async function previewLocalSourceRegistryRestore(
+  packageBytes: Uint8Array,
+): Promise<LocalSourceRegistryRestorePreview> {
+  return buildRestorePreview(packageBytes);
+}
+
 export async function applyLocalSourceRegistryRestore(
   preview: LocalSourceRegistryRestorePreview,
 ): Promise<LocalSourceRegistryRestoreResult> {
+  const existingPrincipalNow = await getLocalKnowledgePrincipalId();
+  if (existingPrincipalNow !== preview.expectedExistingPrincipalId) {
+    throw new Error('RESTORE_PRINCIPAL_CHANGED_SINCE_PREVIEW');
+  }
+
+  // Rebuild from the exact selected package; mutable preview arrays are never trusted at commit time.
+  const fresh = await buildRestorePreview(preview.packageBytes, preview.targetPrincipalId);
+  if (
+    fresh.expectedExistingPrincipalId !== preview.expectedExistingPrincipalId
+    || fresh.targetPrincipalId !== preview.targetPrincipalId
+    || fresh.manifest.backupId !== preview.manifest.backupId
+    || fresh.recomputedContentHash !== preview.recomputedContentHash
+  ) {
+    throw new Error('RESTORE_PREVIEW_STALE');
+  }
+
   const validation = validateRestoreRequest({
-    manifest: preview.manifest,
-    recomputedContentHash: preview.recomputedContentHash,
+    manifest: fresh.manifest,
+    recomputedContentHash: fresh.recomputedContentHash,
     humanConfirmed: true,
   });
   if (!validation.valid) throw new Error(`RESTORE_VALIDATION_FAILED:${validation.errors.join(',')}`);
 
   await replaceLocalKnowledgeRegistryFromRestore({
-    sources: preview.preparedSources,
-    governance: preview.preparedGovernance,
-    expectedExistingPrincipalId: preview.expectedExistingPrincipalId,
-    targetPrincipalId: preview.targetPrincipalId,
+    sources: fresh.preparedSources,
+    governance: fresh.preparedGovernance,
+    expectedExistingPrincipalId: fresh.expectedExistingPrincipalId,
+    targetPrincipalId: fresh.targetPrincipalId,
   });
   const sources = await listLocalKnowledgeSources();
   return {
     sources,
-    restoredSourceCount: preview.restoredSourceCount,
-    preservedVerificationCount: preview.preservedVerificationCount,
-    needsVerificationCount: preview.needsVerificationCount,
+    restoredSourceCount: fresh.restoredSourceCount,
+    preservedVerificationCount: fresh.preservedVerificationCount,
+    needsVerificationCount: fresh.needsVerificationCount,
   };
 }
