@@ -13,6 +13,7 @@ export interface Proposal {
   scopeLabel?: string;
   oldLabel?: string;
   newLabel?: string;
+  keepLabel?: string;
   contextSummary?: string;
   sourceRefs?: string[];
   gateId?: string;
