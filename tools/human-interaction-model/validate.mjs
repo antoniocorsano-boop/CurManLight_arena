@@ -191,6 +191,14 @@ async function validateOperationalCommunicationContract() {
     'operational_use_must_not_depend_on_training_copy',
     'trust_through_predictability',
     'progressive_disclosure_for_learning',
+    'vertical_workflows_must_be_state_progressive',
+    'future_steps_must_not_compete_with_current_task',
+    'completed_steps_should_compact_when_possible',
+    'automatic_scroll_must_not_replace_explicit_user_progression',
+    'progression_requires_real_state_transition',
+    'one_visible_process_hierarchy_per_task_context',
+    'secondary_navigation_must_not_interrupt_primary_flow',
+    'draft_actions_must_not_claim_completion_before_commit',
   ];
   for (const principle of requiredPrinciples) {
     if (contract.principles?.[principle] !== true) fail(`CCO: principio ${principle} deve essere true`);
@@ -208,8 +216,24 @@ async function validateOperationalCommunicationContract() {
     fail('CCO: la formazione deve usare divulgazione progressiva e non bloccare l’azione primaria');
   }
 
+  const progression = contract.layers?.workflow_progression ?? {};
+  for (const invariant of [
+    'required_for_multistep_vertical_surfaces',
+    'current_step_must_dominate',
+    'future_step_controls_should_be_hidden_until_relevant',
+    'completed_step_should_become_compact_summary_when_next_stage_is_active',
+    'next_step_should_appear_as_consequence_of_completed_work',
+    'partial_progress_must_remain_recoverable',
+    'explicit_continue_action_must_change_active_stage',
+    'scrolling_alone_is_not_a_stage_transition',
+    'duplicate_progress_rails_are_forbidden',
+    'secondary_filters_must_use_progressive_disclosure',
+  ]) {
+    if (progression[invariant] !== true) fail(`CCO: workflow_progression.${invariant} deve essere true`);
+  }
+
   const grammar = new Set((contract.action_grammar ?? []).map((item) => item.verb));
-  for (const verb of ['Esamina', 'Conferma', 'Proponi una modifica', 'Condividi', "Registra l'esito"]) {
+  for (const verb of ['Esamina', 'Conferma', 'Proponi una modifica', 'Registra la modifica', 'Condividi', "Registra l'esito"]) {
     if (!grammar.has(verb)) fail(`CCO: verbo canonico mancante: ${verb}`);
   }
   const reserved = new Set(contract.reserved_authority_verbs ?? []);
@@ -226,11 +250,18 @@ async function validateOperationalCommunicationContract() {
     if (contract.authority_boundaries?.[boundary] !== true) fail(`CCO: confine di autorità ${boundary} deve essere true`);
   }
 
-  if (contract.acceptance?.flow_must_survive_training_copy_removal !== true) {
-    fail('CCO: il flusso deve restare comprensibile senza testo formativo');
-  }
-  if (contract.acceptance?.full_explanation_must_remain_reachable !== true) {
-    fail('CCO: la spiegazione completa deve restare raggiungibile');
+  for (const acceptance of [
+    'flow_must_survive_training_copy_removal',
+    'full_explanation_must_remain_reachable',
+    'downstream_controls_must_not_be_fully_active_before_prerequisite',
+    'completion_must_produce_visible_consequence',
+    'incomplete_required_input_must_not_count_as_completed_work',
+    'stage_transition_must_change_rendered_task_context',
+    'no_duplicate_progress_hierarchies',
+    'secondary_filters_under_progressive_disclosure',
+    'draft_requires_explicit_commit',
+  ]) {
+    if (contract.acceptance?.[acceptance] !== true) fail(`CCO: acceptance.${acceptance} deve essere true`);
   }
 
   if (!Array.isArray(contract.pilot_surfaces) || contract.pilot_surfaces.length === 0) {
@@ -263,6 +294,8 @@ async function validateOperationalCommunicationContract() {
         fail('CCO: gerarchia comunicativa canonica assente dalla documentazione');
       }
       if (!docs.includes('Registro delle superfici')) fail('CCO: documentazione priva del Registro delle superfici');
+      if (!docs.includes('una vera transizione di stato')) fail('CCO: documentazione priva del vincolo di vera transizione di stato');
+      if (!docs.includes('Registra la modifica')) fail('CCO: documentazione priva della distinzione tra bozza e registrazione della modifica');
       pass('CCO documentation');
     } catch (error) {
       fail(`CCO: impossibile leggere la documentazione: ${error.message}`);
