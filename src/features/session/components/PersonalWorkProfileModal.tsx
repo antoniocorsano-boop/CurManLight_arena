@@ -242,7 +242,7 @@ export function PersonalWorkProfileModal({
                 <div className="flex items-start gap-2">
                   <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
                   <p>
-                    <strong>Coordinatore di dipartimento, referente, dirigente e ruoli negli organi collegiali</strong> non si scelgono nel profilo personale. Arena li abilita solo quando risultano dalla membership verificata del team.
+                    <strong>Coordinatore di dipartimento, referente, dirigente e ruoli negli organi collegiali</strong> non si scelgono nel profilo personale. Arena riconosce questi incarichi solo quando risultano verificati nel contesto istituzionale. Le relative facoltà operative dipendono dalle autorizzazioni associate all’incarico.
                   </p>
                 </div>
               </div>
