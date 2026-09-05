@@ -4,15 +4,20 @@ on:
   push:
     branches:
       - feature/google-drive-outbound-backup
+      - feature/google-drive-backup-action
   pull_request:
     paths:
       - 'src/domain/backup/**'
       - 'src/infrastructure/googleDrive/**'
       - 'src/features/documents/lib/localSourceRegistryBackup.ts'
+      - 'src/features/documents/components/SourceRegistryDriveBackupAction.tsx'
+      - 'src/features/session/components/AppViewsLayer.tsx'
       - 'src/__tests__/google-drive-backup-sink.test.ts'
+      - 'src/__tests__/google-drive-backup-action.test.ts'
       - 'src/__tests__/local-source-registry-backup.browser.test.ts'
       - 'src/__tests__/source-registry-drive-boundary.test.ts'
       - 'docs/architecture/ARENA_GOOGLE_DRIVE_OUTBOUND_BACKUP.md'
+      - 'docs/architecture/ARENA_GOOGLE_DRIVE_BACKUP_ACTION.md'
       - '.github/workflows/google-drive-outbound-backup.yml'
 
 permissions:
@@ -35,11 +40,12 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Backup boundary and Google Drive adapter tests
+      - name: Backup boundary, Drive adapter and explicit action tests
         run: >-
           npx vitest run --project unit
           src/__tests__/source-registry-drive-boundary.test.ts
           src/__tests__/google-drive-backup-sink.test.ts
+          src/__tests__/google-drive-backup-action.test.ts
 
       - name: Install Chromium for exact local registry snapshot verification
         run: npx playwright install --with-deps chromium
