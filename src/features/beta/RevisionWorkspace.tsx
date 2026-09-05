@@ -42,9 +42,6 @@ export function RevisionWorkspace(props: AppViewsLayerProps) {
         <div className="mb-2 flex items-start justify-between gap-3">
           <div className="min-w-0">
             <strong className="block text-sm text-slate-900">Revisione del curricolo</strong>
-            <p className="mt-0.5 text-xs leading-relaxed text-slate-500">
-              Il contributo personale resta separato dal lavoro del gruppo.
-            </p>
           </div>
           {selectedRoleLabel && (
             <span className="shrink-0 rounded-full bg-indigo-50 px-2.5 py-1 text-[10px] font-bold text-indigo-700">{selectedRoleLabel}</span>
@@ -75,27 +72,29 @@ export function RevisionWorkspace(props: AppViewsLayerProps) {
 
       {pane === 'mine' ? (
         <div className="space-y-3" role="tabpanel" aria-label="Il mio contributo">
-          <aside
-            data-hva-revision-guide
-            role="note"
-            className="rounded-2xl border border-indigo-200 bg-indigo-50/70 p-4 text-sm leading-6 text-slate-700"
-          >
-            <strong className="block text-base text-slate-900">Qui prepari il confronto. Non approvi il curricolo.</strong>
-            <p className="mt-1">In questo spazio prepari soltanto il tuo contributo personale; non esprimi l’esito del team.</p>
-            <ol className="mt-2 grid gap-1 pl-5 text-sm list-decimal">
-              <li>Confronta il testo precedente con quello proposto.</li>
-              <li>Registra il tuo orientamento professionale.</li>
-              <li>Quando sei pronto, condividilo esplicitamente con il team.</li>
-            </ol>
-            <p className="mt-2 font-semibold text-indigo-950">Il coordinatore resta un contributore come gli altri quando lavora in questo spazio.</p>
-          </aside>
-
           <RevisioneTab {...props} />
           <TeamContributionPublisher
             proposals={props.currentDisciplineProps}
             decisions={decisions}
             customTexts={customTexts}
           />
+
+          <details
+            data-hva-revision-guide
+            data-revision-learning
+            className="rounded-2xl border border-indigo-200 bg-indigo-50/70 text-sm leading-6 text-slate-700"
+          >
+            <summary className="cursor-pointer px-4 py-3 font-bold text-slate-900">Come funziona questa revisione</summary>
+            <div className="border-t border-indigo-100 p-4">
+              <p>In questo spazio prepari soltanto il tuo contributo personale; non esprimi l’esito del team.</p>
+              <ol className="mt-2 grid gap-1 pl-5 text-sm list-decimal">
+                <li>Confronta il testo precedente con quello proposto.</li>
+                <li>Registra il tuo orientamento professionale.</li>
+                <li>Quando sei pronto, condividilo esplicitamente con il team.</li>
+              </ol>
+              <p className="mt-2 font-semibold text-indigo-950">Il coordinatore resta un contributore come gli altri quando lavora in questo spazio.</p>
+            </div>
+          </details>
         </div>
       ) : (
         <div role="tabpanel" aria-label={isCoordinator ? 'Coordinamento del team' : 'Lavoro del team'}>
