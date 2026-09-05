@@ -1,0 +1,56 @@
+name: CML Explicit Local Backup Restore
+
+on:
+  push:
+    branches:
+      - feature/explicit-local-backup-restore
+  pull_request:
+    paths:
+      - 'src/domain/backup/**'
+      - 'src/features/documents/lib/localKnowledgeStore.ts'
+      - 'src/features/documents/lib/localSourceRegistryBackup.ts'
+      - 'src/features/documents/lib/localSourceRegistryRestore.ts'
+      - 'src/features/documents/components/SourceRegistryRestoreAction.tsx'
+      - 'src/features/session/components/AppViewsLayer.tsx'
+      - 'src/__tests__/source-registry-explicit-restore.test.ts'
+      - 'src/__tests__/local-source-registry-restore.browser.test.ts'
+      - 'docs/architecture/ARENA_EXPLICIT_LOCAL_BACKUP_RESTORE.md'
+      - '.github/workflows/explicit-local-backup-restore.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  explicit-restore:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Restore boundary unit tests
+        run: >-
+          npx vitest run --project unit
+          src/__tests__/source-registry-explicit-restore.test.ts
+          src/__tests__/source-registry-drive-boundary.test.ts
+
+      - name: Install Chromium for IndexedDB restore verification
+        run: npx playwright install --with-deps chromium
+
+      - name: Exact package preview and restore browser tests
+        run: npx vitest run --project indexeddb-browser src/__tests__/local-source-registry-restore.browser.test.ts
+
+      - name: TypeScript
+        run: npx tsc --noEmit
+
+      - name: Production build
+        run: npm run build
