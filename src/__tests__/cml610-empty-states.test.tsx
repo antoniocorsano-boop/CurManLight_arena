@@ -67,8 +67,8 @@ describe('CML-610 — Empty states operational clarity', () => {
     Object.defineProperty(window, 'scrollTo', { value: vi.fn(), configurable: true });
   });
 
-  describe('R1/R2: RevisioneTab — singolo compito operativo CCO', () => {
-    it('distinguishes absence of review work from completed work', () => {
+  describe('R1/R2/R3: RevisioneTab — interazione per riconoscimento CCO', () => {
+    it('distinguishes absence of review work without adding process explanation', () => {
       render(
         <RevisioneTab
           currentDisciplineProps={[]}
@@ -80,45 +80,44 @@ describe('CML-610 — Empty states operational clarity', () => {
         />,
       );
 
-      expect(screen.getByText('Il mio lavoro nel curricolo')).toBeInTheDocument();
       expect(screen.getByText('Nessuna scheda da revisionare')).toBeInTheDocument();
-      expect(screen.queryByRole('button', { name: 'Passa alla condivisione' })).not.toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: 'Vai alla condivisione' })).not.toBeInTheDocument();
     });
 
-    it('shows one active sheet without duplicate process rails', () => {
+    it('shows one dominant sheet with comparison and contextual actions', () => {
       render(<RevisioneTab {...revisionProps()} />);
 
-      expect(screen.getByText('0/1 completate')).toBeInTheDocument();
-      expect(screen.getByText('1 da esaminare')).toBeInTheDocument();
-      expect(screen.getByText('Testo precedente')).toBeInTheDocument();
-      expect(screen.getByText('Proposta aggiornata')).toBeInTheDocument();
-      expect(screen.getByText('Qual è il tuo orientamento?')).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: 'Conferma proposta' })).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: 'Proponi una modifica' })).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: 'Mantieni testo precedente' })).toBeInTheDocument();
-      expect(screen.queryByText('1 · Confronto')).not.toBeInTheDocument();
-      expect(screen.queryByText('2 · Orientamento')).not.toBeInTheDocument();
+      expect(screen.getByText('1 di 1')).toBeInTheDocument();
+      expect(screen.getByText('Tecnologia — classe prima')).toBeInTheDocument();
+      expect(screen.getByText('Precedente')).toBeInTheDocument();
+      expect(screen.getByText('Proposta')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Conferma' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Modifica' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Mantieni precedente' })).toBeInTheDocument();
+      expect(screen.queryByText('Qual è il tuo orientamento?')).not.toBeInTheDocument();
+      expect(screen.queryByText('0/1 completate')).not.toBeInTheDocument();
+      expect(screen.getByText('Personale')).toBeInTheDocument();
       expect(screen.getByText(/resta personale\. non approva il curricolo/i)).toBeInTheDocument();
     });
 
-    it('keeps retrospective navigation behind progressive disclosure', () => {
+    it('keeps context and retrospective navigation under progressive disclosure', () => {
       render(<RevisioneTab {...revisionProps()} currentDisciplineProps={twoProposals} />);
 
-      expect(screen.getByText('Rivedi le schede · 2')).toBeInTheDocument();
-      expect(screen.getAllByText(/Tecnologia — classe/).length).toBeGreaterThanOrEqual(2);
+      expect(screen.getByText('Contesto e fonti')).toBeInTheDocument();
+      expect(screen.getByText('Tutte le schede · 0/2')).toBeInTheDocument();
     });
 
-    it('does not complete a textual change until Registra la modifica', () => {
+    it('does not complete a textual change until Registra modifica', () => {
       render(<RevisioneTab {...revisionProps()} />);
 
-      fireEvent.click(screen.getByRole('button', { name: 'Proponi una modifica' }));
+      fireEvent.click(screen.getByRole('button', { name: 'Modifica' }));
       expect(revisionMock.setDecision).not.toHaveBeenCalled();
 
       const textarea = screen.getByPlaceholderText('Scrivi la formulazione alternativa…');
-      expect(screen.getByRole('button', { name: 'Registra la modifica' })).toBeDisabled();
+      expect(screen.getByRole('button', { name: 'Registra modifica' })).toBeDisabled();
 
       fireEvent.change(textarea, { target: { value: 'Nuova formulazione verificabile' } });
-      const register = screen.getByRole('button', { name: 'Registra la modifica' });
+      const register = screen.getByRole('button', { name: 'Registra modifica' });
       expect(register).toBeEnabled();
       fireEvent.click(register);
 
@@ -126,19 +125,19 @@ describe('CML-610 — Empty states operational clarity', () => {
       expect(revisionMock.setDecision).toHaveBeenCalledWith('prop-1', 'custom');
     });
 
-    it('shows a compact completed card and the real transition action only when all work is complete', () => {
+    it('turns completion into a compact visual state and one next action', () => {
       revisionMock.decisions = { 'prop-1': 'approved' };
       const onContinueAfterReview = vi.fn();
       render(<RevisioneTab {...revisionProps()} currentDisciplineDecided={1} onContinueAfterReview={onContinueAfterReview} />);
 
-      expect(screen.getByText('1/1 completate')).toBeInTheDocument();
-      expect(screen.getByText('Proposta confermata')).toBeInTheDocument();
-      expect(screen.queryByText('Qual è il tuo orientamento?')).not.toBeInTheDocument();
+      expect(screen.getByText('✓ Confermata')).toBeInTheDocument();
+      expect(screen.queryByText('Precedente')).not.toBeInTheDocument();
+      expect(screen.queryByText('Proposta')).not.toBeInTheDocument();
 
-      const continueAction = screen.getByRole('button', { name: 'Passa alla condivisione' });
+      const continueAction = screen.getByRole('button', { name: 'Vai alla condivisione' });
       fireEvent.click(continueAction);
       expect(onContinueAfterReview).toHaveBeenCalledTimes(1);
-      expect(screen.getByRole('button', { name: 'Modifica orientamento' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Cambia scelta' })).toBeInTheDocument();
     });
   });
 
