@@ -58,22 +58,23 @@ async function readPlanningHandoffState(page) {
 
   try {
     console.log('=== BETA-G4 BROWSER — REVISION WITHOUT SIMULATED APPROVAL ===');
-    const initialResponse = await gotoWorkspace(page, revisionUrl, 'Il mio lavoro nel curricolo');
-    check('1. /revisione renders the teacher review workspace', page.url().includes('/revisione'));
+    const initialResponse = await gotoWorkspace(page, revisionUrl, 'Revisione del curricolo');
+    check('1. /revisione renders the teacher review workspace', Boolean(initialResponse) && page.url().includes('/revisione'));
 
-    const authorityAssurance = page.locator('[data-revision-assurance]').first();
-    const authorityAssuranceVisible = await authorityAssurance.isVisible({ timeout: 3000 }).catch(() => false);
-    const authorityAssuranceText = authorityAssuranceVisible ? (await authorityAssurance.innerText()).toLocaleLowerCase('it-IT') : '';
+    const personalAssurance = page.locator('[data-revision-assurance-on-demand]').first();
+    await personalAssurance.waitFor({ state: 'attached', timeout: 3000 });
+    const personalMarkerVisible = await personalAssurance.getByText('Personale', { exact: true }).isVisible();
+    const personalAssuranceText = ((await personalAssurance.textContent()) || '').toLocaleLowerCase('it-IT');
     check(
-      '2. Teacher surface states that the personal orientation does not approve the curriculum',
-      authorityAssuranceVisible && authorityAssuranceText.includes('non approva il curricolo'),
+      '2. Personal authority boundary stays reachable on demand without occupying the work surface',
+      personalMarkerVisible && personalAssuranceText.includes('non approva il curricolo'),
     );
 
-    const localChoice = page.getByRole('button', { name: 'Conferma proposta' }).first();
+    const localChoice = page.getByRole('button', { name: 'Conferma', exact: true }).first();
     await localChoice.waitFor({ state: 'visible', timeout: 8000 });
     await localChoice.click();
-    await expectVisibleText(page, 'Proposta confermata');
-    check('3. A teacher can record a professional orientation', true);
+    await expectVisibleText(page, 'Confermata');
+    check('3. A teacher can record a professional orientation through the recognition-first action', true);
 
     const forbidden = ['Crea proposta strutturata', 'Prepara per revisione', 'Invia', 'Prendi in carico', 'Ammetti alla decisione'];
     for (const label of forbidden) {
@@ -83,8 +84,8 @@ async function readPlanningHandoffState(page) {
 
     const refreshResponse = await page.reload({ waitUntil: 'domcontentloaded', timeout: 30000 });
     await closeLocalProfileIfPresent(page);
-    await expectVisibleText(page, 'Il mio lavoro nel curricolo');
-    await expectVisibleText(page, 'Proposta confermata');
+    await expectVisibleText(page, 'Revisione del curricolo');
+    await expectVisibleText(page, 'Confermata');
     check('10. Refresh preserves the teacher orientation without creating an institutional workflow', Boolean(refreshResponse));
     check('11. No institutional-decision RPC is called by local review or refresh', decisionRpcCalls === 0);
 
@@ -97,8 +98,8 @@ async function readPlanningHandoffState(page) {
     await handoff.handoff.scrollIntoViewIfNeeded();
     check('14. Planning handoff remains reachable on mobile', await handoff.handoff.isVisible());
 
-    await gotoWorkspace(page, revisionUrl, 'Il mio lavoro nel curricolo');
-    check('15. Teacher review remains reachable on mobile', await page.getByText('Il mio lavoro nel curricolo').first().isVisible());
+    await gotoWorkspace(page, revisionUrl, 'Revisione del curricolo');
+    check('15. Teacher review remains reachable on mobile', await page.getByText('Revisione del curricolo').first().isVisible());
     check('16. No uncaught page errors in the bounded journey', pageErrors.length === 0);
 
     const failed = checks.filter((item) => !item.condition);
