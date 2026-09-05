@@ -60,7 +60,14 @@ async function readPlanningHandoffState(page) {
     console.log('=== BETA-G4 BROWSER — REVISION WITHOUT SIMULATED APPROVAL ===');
     const initialResponse = await gotoWorkspace(page, revisionUrl, 'Il mio lavoro nel curricolo');
     check('1. /revisione renders the teacher review workspace', page.url().includes('/revisione'));
-    check('2. Teacher surface states that it does not approve the curriculum', (await page.locator('body').innerText()).includes('Non approvi il curricolo'));
+
+    const authorityAssurance = page.locator('[data-revision-assurance]').first();
+    const authorityAssuranceVisible = await authorityAssurance.isVisible({ timeout: 3000 }).catch(() => false);
+    const authorityAssuranceText = authorityAssuranceVisible ? (await authorityAssurance.innerText()).toLocaleLowerCase('it-IT') : '';
+    check(
+      '2. Teacher surface states that the personal orientation does not approve the curriculum',
+      authorityAssuranceVisible && authorityAssuranceText.includes('non approva il curricolo'),
+    );
 
     const localChoice = page.getByRole('button', { name: 'Conferma proposta' }).first();
     await localChoice.waitFor({ state: 'visible', timeout: 8000 });
