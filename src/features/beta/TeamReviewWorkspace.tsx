@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import type { Session } from '@supabase/supabase-js';
 import type { DecisionStatus, Proposal } from '../../types/curriculum';
 import type {
@@ -18,7 +19,6 @@ import type {
 } from '../../domain/institution/sharedWorkspacePort';
 import { getOptionalSupabaseBrowserClient } from '../../infrastructure/supabase/client';
 import { SupabaseSharedTeamReviewRepository } from '../../infrastructure/supabase/sharedTeamReviewRepository';
-import { resolveRouterBasename } from '../navigation/routerBasename';
 
 interface MembershipRow {
   workspace_id: string;
@@ -238,9 +238,6 @@ export function TeamReviewWorkspace({ proposals, decisions, customTexts }: TeamR
     );
   }
 
-  const routerBasename = resolveRouterBasename(import.meta.env.MODE).replace(/\/$/, '');
-  const identityHref = `${routerBasename}/beta-identity`;
-
   const publishPreparation = async () => {
     if (!repository || !selectedMembership || !session || !canContribute || descriptors.length !== proposals.length) return;
     const context: WorkspaceActorContext = { membership: selectedMembership, assurance: 'authenticated-workspace' };
@@ -354,7 +351,7 @@ export function TeamReviewWorkspace({ proposals, decisions, customTexts }: TeamR
       </div>
 
       {!session ? (
-        <div role="status" className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs text-amber-900">Per vedere o condividere il lavoro del team, <a href={identityHref} className="font-bold underline">accedi</a>.</div>
+        <div role="status" className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs text-amber-900">Per vedere o condividere il lavoro del team, <Link to="/beta-identity" className="font-bold underline">accedi</Link>.</div>
       ) : activeMemberships.length === 0 ? (
         <div role="status" className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs text-amber-900">La sessione è autenticata, ma non esiste una membership attiva per un workspace.</div>
       ) : (
