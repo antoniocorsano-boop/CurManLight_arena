@@ -132,6 +132,7 @@ export default function BetaIdentityPage() {
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [messageKind, setMessageKind] = useState<'success' | 'error' | 'info'>('info');
+  const [awaitingEmailConfirmation, setAwaitingEmailConfirmation] = useState(false);
   const [transportProbe, setTransportProbe] = useState<ProbeState>({ status: 'idle', detail: 'Non verificato' });
   const [apiProbe, setApiProbe] = useState<ProbeState>({ status: 'idle', detail: 'Non verificata' });
 
@@ -234,11 +235,19 @@ export default function BetaIdentityPage() {
     const { error } = await client.auth.signInWithPassword({ email, password });
     setBusy(false);
     if (error) {
+      const authCode = (error as { code?: string }).code;
+      if (authCode === 'email_not_confirmed' || /email not confirmed/i.test(error.message)) {
+        setAwaitingEmailConfirmation(true);
+        setMessageKind('info');
+        setMessage('Account creato, ma email non ancora confermata. Apri il messaggio ricevuto e conferma l’indirizzo prima di accedere.');
+        return;
+      }
       setMessageKind('error');
       setMessage('Accesso non riuscito. Controlla email e password e riprova.');
       if (/failed to fetch|network/i.test(error.message)) void probeSupabase();
       return;
     }
+    setAwaitingEmailConfirmation(false);
     setMessageKind('success');
     setMessage('Accesso effettuato. Ora puoi entrare nel lavoro condiviso del team.');
   };
@@ -262,9 +271,30 @@ export default function BetaIdentityPage() {
       return;
     }
     setMessageKind('success');
-    setMessage(data.session
-      ? 'Account creato. La sessione è già attiva.'
-      : 'Account creato. Controlla la tua email per confermare l’indirizzo, poi torna qui per accedere.');
+    if (data.session) {
+      setAwaitingEmailConfirmation(false);
+      setMessage('Account creato. La sessione è già attiva.');
+    } else {
+      setAwaitingEmailConfirmation(true);
+      setAuthMode('sign-in');
+      setPassword('');
+      setPasswordConfirm('');
+      setMessage('Account creato. Ti abbiamo inviato un’email: conferma l’indirizzo prima di accedere.');
+    }
+  };
+
+  const resendConfirmation = async () => {
+    if (!client || !email) return;
+    setBusy(true);
+    const { error } = await client.auth.resend({ type: 'signup', email });
+    setBusy(false);
+    if (error) {
+      setMessageKind('error');
+      setMessage('Non riesco a reinviare l’email di conferma. Riprova tra poco.');
+      return;
+    }
+    setMessageKind('success');
+    setMessage('Email di conferma inviata di nuovo. Controlla anche la cartella Spam o Posta indesiderata.');
   };
 
   const submitAuth = async (event: FormEvent) => {
@@ -421,6 +451,18 @@ export default function BetaIdentityPage() {
                   <p role="status" aria-live="polite" style={{ ...messageStyle, margin: 0, padding: '11px 12px', borderRadius: 10, fontWeight: 700 }}>
                     {message}
                   </p>
+                )}
+
+                {awaitingEmailConfirmation && (
+                  <section style={{ padding: 14, borderRadius: 12, background: colors.warningBg, border: '1px solid #fedf89' }}>
+                    <strong style={{ display: 'block', color: colors.warning }}>Conferma la tua email</strong>
+                    <p style={{ margin: '6px 0 12px', color: '#754c00' }}>
+                      L’account esiste già. Prima del primo accesso devi aprire l’email di conferma ricevuta dal servizio Beta.
+                    </p>
+                    <button type="button" onClick={() => void resendConfirmation()} disabled={busy} style={secondaryButtonStyle}>
+                      {busy ? 'Invio in corso…' : 'Invia di nuovo l’email di conferma'}
+                    </button>
+                  </section>
                 )}
 
                 <button
