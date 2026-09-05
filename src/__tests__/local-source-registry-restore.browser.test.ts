@@ -15,6 +15,7 @@ import {
   deleteLocalKnowledgeSource,
   getOrCreateLocalKnowledgePrincipalId,
   listLocalKnowledgeSources,
+  listLocalSourceGovernanceRecords,
   normalizeKnowledgeSourceLifecycle,
   putLocalKnowledgeSource,
   verifyLocalKnowledgeSource,
@@ -71,9 +72,18 @@ describe('CML-DRIVE-01 explicit local source-registry restore', () => {
       expect(preview.recomputedContentHash).toBe(backup.manifest.contentHash);
       expect(preview.preparedSources.some((source) => source.id === sourceId)).toBe(true);
 
+      // Confirmation must not trust mutable preview arrays: rebuild from exact package bytes.
+      const mutablePreparedSource = preview.preparedSources.find((source) => source.id === sourceId) as any;
+      const mutablePreparedGovernance = preview.preparedGovernance.find((item) => item.sourceId === sourceId) as any;
+      mutablePreparedSource.content = 'Tentativo di alterazione dopo la preview';
+      mutablePreparedGovernance.authorityLevel = 'institutional';
+
       const result = await applyLocalSourceRegistryRestore(preview);
       const restored = result.sources.find((source) => source.id === sourceId);
+      const restoredGovernance = (await listLocalSourceGovernanceRecords()).find((item) => item.sourceId === sourceId);
+      expect(restored?.content).toBe('Contenuto esatto incluso nel backup');
       expect(restored?.authorityStatus).toBe('LOCAL_VERIFIED');
+      expect(restoredGovernance?.authorityLevel).toBe('personal');
       expect(result.sources.some((source) => source.id === extraId)).toBe(false);
       expect(result.preservedVerificationCount).toBeGreaterThanOrEqual(1);
     } finally {
