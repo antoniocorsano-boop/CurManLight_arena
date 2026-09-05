@@ -69,6 +69,20 @@ describe('Arena team review synthesis', () => {
     expect(summary.items[0].expectedContributorCount).toBe(3);
   });
 
+  it('never treats a one-person workspace as team consensus', () => {
+    const summary = deriveTeamReviewSummary(
+      [{ proposalRef: 'p1', focus: 'P1', proposalFingerprint: fingerprint('a') }],
+      [contribution('p1', fingerprint('a'), 'u1', 'confirm-proposal')],
+      1,
+    );
+
+    expect(summary.shared).toBe(0);
+    expect(summary.needsClarification).toBe(1);
+    expect(summary.items[0].coverageComplete).toBe(false);
+    expect(summary.items[0].contributionCount).toBe(1);
+    expect(summary.items[0].expectedContributorCount).toBe(1);
+  });
+
   it('does not treat different custom formulations as consensus', () => {
     const summary = deriveTeamReviewSummary(
       [{ proposalRef: 'p1', focus: 'P1', proposalFingerprint: fingerprint('a') }],
