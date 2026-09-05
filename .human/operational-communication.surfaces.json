@@ -1,6 +1,6 @@
 {
   "registry_id": "CCO-SURFACES",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "contract": ".human/operational-communication.contract.json",
   "status_vocabulary": ["conformant", "migration", "guided-setup", "excluded"],
   "surfaces": [
@@ -24,17 +24,20 @@
       "path": "src/features/curriculum/components/RevisioneTab.tsx",
       "status": "conformant",
       "operational_context": "Il mio lavoro nel curricolo",
-      "primary_task": "Vedere lo stato del proprio lavoro ed esaminare la prossima scheda aperta",
+      "primary_task": "Vedere lo stato, esaminare una scheda e proseguire in base alla conseguenza dell'orientamento registrato",
       "required_tokens": [
+        "data-revision-flow=\"progressive\"",
         "data-revision-operational-summary",
         "data-revision-next-action",
+        "data-revision-progressive-stage",
+        "data-revision-consequence",
         "Esamina la prossima scheda",
-        "Apre la prima scheda ancora da esaminare.",
-        "Questo filtro non mostra le schede da esaminare",
+        "Continua alla condivisione",
+        "Orientamento registrato",
+        "Modifica orientamento",
         "data-revision-assurance",
         "data-revision-secondary=\"help\"",
-        "Proponi una modifica",
-        "Rimetti da esaminare"
+        "Proponi una modifica"
       ]
     },
     {
