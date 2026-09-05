@@ -1,7 +1,7 @@
 {
   "contract_id": "CCO",
   "name": "Contratto di comunicazione operativa di Arena",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "purpose": "Separare uso operativo, rassicurazione contestuale e formazione affinché l'utente possa agire con fiducia senza dover studiare ogni vista prima di usarla.",
   "principles": {
     "structure_before_explanation": true,
@@ -12,7 +12,11 @@
     "vertical_workflows_must_be_state_progressive": true,
     "future_steps_must_not_compete_with_current_task": true,
     "completed_steps_should_compact_when_possible": true,
-    "automatic_scroll_must_not_replace_explicit_user_progression": true
+    "automatic_scroll_must_not_replace_explicit_user_progression": true,
+    "progression_requires_real_state_transition": true,
+    "one_visible_process_hierarchy_per_task_context": true,
+    "secondary_navigation_must_not_interrupt_primary_flow": true,
+    "draft_actions_must_not_claim_completion_before_commit": true
   },
   "layers": {
     "operational": {
@@ -34,17 +38,21 @@
     "workflow_progression": {
       "required_for_multistep_vertical_surfaces": true,
       "current_step_must_dominate": true,
-      "future_step_controls_should_be_locked_or_hidden_until_relevant": true,
-      "completed_step_may_become_compact_summary": true,
+      "future_step_controls_should_be_hidden_until_relevant": true,
+      "completed_step_should_become_compact_summary_when_next_stage_is_active": true,
       "next_step_should_appear_as_consequence_of_completed_work": true,
       "partial_progress_must_remain_recoverable": true,
-      "explicit_continue_action_preferred_over_forced_scroll": true
+      "explicit_continue_action_must_change_active_stage": true,
+      "scrolling_alone_is_not_a_stage_transition": true,
+      "duplicate_progress_rails_are_forbidden": true,
+      "secondary_filters_must_use_progressive_disclosure": true
     }
   },
   "action_grammar": [
     {"verb": "Esamina", "meaning": "leggi e valuta una scheda"},
     {"verb": "Conferma", "meaning": "esprimi accordo con una proposta nel tuo contesto"},
-    {"verb": "Proponi una modifica", "meaning": "introduci una formulazione alternativa"},
+    {"verb": "Proponi una modifica", "meaning": "avvia la formulazione di un'alternativa senza registrarla come completata"},
+    {"verb": "Registra la modifica", "meaning": "conferma e salva la formulazione alternativa come orientamento personale completo"},
     {"verb": "Condividi", "meaning": "rendi visibile al team un contributo personale"},
     {"verb": "Registra l'esito", "meaning": "documenta un esito già maturato nel gruppo autorizzato"}
   ],
@@ -64,7 +72,11 @@
     "state_must_precede_process_explanation": true,
     "downstream_controls_must_not_be_fully_active_before_prerequisite": true,
     "completion_must_produce_visible_consequence": true,
-    "incomplete_required_input_must_not_count_as_completed_work": true
+    "incomplete_required_input_must_not_count_as_completed_work": true,
+    "stage_transition_must_change_rendered_task_context": true,
+    "no_duplicate_progress_hierarchies": true,
+    "secondary_filters_under_progressive_disclosure": true,
+    "draft_requires_explicit_commit": true
   },
   "pilot_surfaces": [
     {
@@ -76,6 +88,27 @@
         "data-hcm-secondary-content",
         "Il tuo spazio nel curricolo",
         "Da fare"
+      ]
+    },
+    {
+      "path": "src/features/beta/RevisionWorkspace.tsx",
+      "required_tokens": [
+        "data-revision-stage=\"review\"",
+        "data-revision-stage=\"sharing\"",
+        "setPersonalStage('sharing')",
+        "Rivedi la revisione personale"
+      ]
+    },
+    {
+      "path": "src/features/curriculum/components/RevisioneTab.tsx",
+      "required_tokens": [
+        "data-revision-flow=\"single-task\"",
+        "data-revision-current-card",
+        "data-revision-completed-card",
+        "Rivedi le schede",
+        "Proponi una modifica",
+        "Registra la modifica",
+        "Passa alla condivisione"
       ]
     }
   ]
