@@ -101,16 +101,18 @@ function hasExplicitScope(scope: LocalSourceGovernanceScope | undefined): boolea
 
 export async function getOrCreateLocalKnowledgePrincipalId(): Promise<string> {
   const db = getKnowledgeDb();
-  const existing = await db.meta.get(LOCAL_PRINCIPAL_KEY);
-  if (existing?.value) return existing.value;
+  return db.transaction('rw', db.meta, async () => {
+    const existing = await db.meta.get(LOCAL_PRINCIPAL_KEY);
+    if (existing?.value) return existing.value;
 
-  if (!globalThis.crypto?.randomUUID) {
-    throw new Error('Generatore di identità locale non disponibile.');
-  }
+    if (!globalThis.crypto?.randomUUID) {
+      throw new Error('Generatore di identità locale non disponibile.');
+    }
 
-  const value = `local:${globalThis.crypto.randomUUID()}`;
-  await db.meta.put({ key: LOCAL_PRINCIPAL_KEY, value });
-  return value;
+    const value = `local:${globalThis.crypto.randomUUID()}`;
+    await db.meta.put({ key: LOCAL_PRINCIPAL_KEY, value });
+    return value;
+  });
 }
 
 export async function calculateLocalKnowledgeSourceFingerprint(source: Pick<CustomKbDoc, 'content'>): Promise<string> {
@@ -216,6 +218,7 @@ export async function listLocalSourceGovernanceRecords(): Promise<SourceGovernan
 export async function ensureLocalKnowledgeGovernanceRecords(sources: readonly CustomKbDoc[]): Promise<SourceGovernanceRecord[]> {
   if (sources.length === 0) return [];
   const db = getKnowledgeDb();
+  await getOrCreateLocalKnowledgePrincipalId();
   const prepared = await Promise.all(sources.map((source) => prepareGovernanceRecord(source)));
   await db.governance.bulkPut(prepared);
   return prepared.map(({ registryId: _registryId, recordedAt: _recordedAt, ...record }) => record);
@@ -235,6 +238,7 @@ export async function putLocalKnowledgeSources(sources: CustomKbDoc[]): Promise<
   if (sources.length === 0) return;
   const db = getKnowledgeDb();
   const normalized = sources.map((source) => normalizeKnowledgeSourceLifecycle(source));
+  await getOrCreateLocalKnowledgePrincipalId();
   const governance = await Promise.all(normalized.map((source) => prepareGovernanceRecord(source)));
   await db.transaction('rw', db.sources, db.governance, async () => {
     await db.sources.bulkPut(normalized);
