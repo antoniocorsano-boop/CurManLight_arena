@@ -157,7 +157,7 @@ export function TeamReviewWorkspace({ proposals, decisions, customTexts }: TeamR
         .eq('user_id', nextSession.user.id);
       if (error) {
         setMemberships([]);
-        setMessage(`Membership non leggibile: ${error.message}`);
+        setMessage(`Non riesco a verificare i team associati a questo account: ${error.message}`);
         return;
       }
       const resolved = ((data ?? []) as MembershipRow[])
@@ -353,7 +353,11 @@ export function TeamReviewWorkspace({ proposals, decisions, customTexts }: TeamR
       {!session ? (
         <div role="status" className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs text-amber-900">Per vedere o condividere il lavoro del team, <Link to="/beta-identity" className="font-bold underline">accedi</Link>.</div>
       ) : activeMemberships.length === 0 ? (
-        <div role="status" className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs text-amber-900">La sessione è autenticata, ma non esiste una membership attiva per un workspace.</div>
+        <div role="status" className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-amber-950">
+          <strong className="block text-sm">Account collegato, ma nessun team disponibile</strong>
+          <p className="mt-1 text-xs leading-relaxed text-amber-900">Hai effettuato l’accesso, ma questo account non risulta ancora associato a un team della scuola. Controlla l’account utilizzato oppure accedi con un altro account.</p>
+          <Link to="/beta-identity" className="mt-3 inline-flex min-h-10 items-center justify-center rounded-lg border border-amber-300 bg-white px-3 py-2 text-xs font-bold text-amber-950 shadow-sm">Controlla account e accesso</Link>
+        </div>
       ) : (
         <>
           {activeMemberships.length > 1 && (
