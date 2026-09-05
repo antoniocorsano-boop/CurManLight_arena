@@ -60,7 +60,7 @@ export function AppSidebar(props: AppSidebarProps) {
               <RotateCcw className="h-4 w-4 shrink-0" aria-hidden="true" />
               <span className="min-w-0 flex-1">Rivedi le proposte</span>
               {props.pendingCount > 0 && (
-                <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-black text-amber-800" aria-label={`${props.pendingCount} elementi da rivedere`}>
+                <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-black text-amber-800" aria-label={`${props.pendingCount} schede del contesto personale corrente da esaminare`}>
                   {props.pendingCount}
                 </span>
               )}
