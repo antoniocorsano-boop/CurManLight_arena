@@ -1,0 +1,157 @@
+name: PR198 Local Profile Editor
+
+on:
+  push:
+    branches:
+      - ops/pr198-preview-build
+
+permissions:
+  contents: write
+
+jobs:
+  patch-validate-push:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout PR
+        uses: actions/checkout@v4
+        with:
+          ref: feature/team-meeting-workspace
+          fetch-depth: 0
+
+      - name: Add reopenable local profile editor
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          # 1) Local-profile hook: rehydrate a draft from saved/current values,
+          #    and persist sections only on final save.
+          p = Path('src/features/session/hooks/useOnboardingProfile.ts')
+          s = p.read_text()
+          s = s.replace(
+            "interface UseOnboardingProfileArgs {\n  order: SchoolOrder;",
+            "interface UseOnboardingProfileArgs {\n  role: UserRole;\n  discipline: string;\n  order: SchoolOrder;",
+            1,
+          )
+          s = s.replace(
+            "export const useOnboardingProfile = ({\n  setRole,",
+            "export const useOnboardingProfile = ({\n  role,\n  discipline,\n  order,\n  setRole,",
+            1,
+          )
+          s = s.replace(
+            "    setAvailableSections([]);\n    safeLocalStorageSetItem('curman_availableSections', '');\n  };",
+            "    setAvailableSections([]);\n  };",
+            1,
+          )
+          s = s.replace(
+            "    setAvailableSections(updated);\n    safeLocalStorageSetItem('curman_availableSections', updated.join(','));\n    setNewSectionInput('');",
+            "    setAvailableSections(updated);\n    setNewSectionInput('');",
+            1,
+          )
+          marker = "  const saveOnboardingProfile = () => {"
+          if marker not in s:
+              raise SystemExit('saveOnboardingProfile marker missing')
+          editor = '''  const openOnboardingProfileEditor = () => {\n    const savedClasses = safeLocalStorageGetItem('curman_assignedClasses', '');\n    const savedCombinations = safeLocalStorageGetItem('curman_assignedCombinations', '');\n    const savedSections = safeLocalStorageGetItem('curman_availableSections', '');\n\n    setOnboardingRoleLocal(role);\n    setOnboardingDiscLocal(discipline);\n    setOnboardingOrdLocal(order);\n    setOnboardingAssignedClasses(savedClasses ? savedClasses.split(',') : []);\n    setOnboardingCombinations(savedCombinations ? savedCombinations.split(',') : []);\n    setAvailableSections(savedSections ? savedSections.split(',') : []);\n    setOnboardingIsSostegno(safeLocalStorageGetItem('curman_isSostegno', 'false') === 'true');\n    setNewSectionInput('');\n    setOnboardingStep(1);\n    setShowOnboardingModal(true);\n  };\n\n'''
+          s = s.replace(marker, editor + marker, 1)
+          s = s.replace(
+            "    safeLocalStorageSetItem('curman_assignedCombinations', onboardingCombinations.join(','));\n    setShowOnboardingModal(false);",
+            "    safeLocalStorageSetItem('curman_assignedCombinations', onboardingCombinations.join(','));\n    safeLocalStorageSetItem('curman_availableSections', availableSections.join(','));\n    setShowOnboardingModal(false);",
+            1,
+          )
+          s = s.replace(
+            "    handleAddSectionLocal,\n    saveOnboardingProfile",
+            "    handleAddSectionLocal,\n    openOnboardingProfileEditor,\n    saveOnboardingProfile",
+            1,
+          )
+          p.write_text(s)
+
+          # 2) Wire current profile values into the hook and expose the editor to the header.
+          p = Path('src/App.tsx')
+          s = p.read_text()
+          s = s.replace(
+            "  handleAddSectionLocal,\n  saveOnboardingProfile\n } = useOnboardingProfile({\n  order,",
+            "  handleAddSectionLocal,\n  openOnboardingProfileEditor,\n  saveOnboardingProfile\n } = useOnboardingProfile({\n  role,\n  discipline,\n  order,",
+            1,
+          )
+          s = s.replace(
+            "     handleWorkspaceLogout={handleWorkspaceLogout}\n     setShowCloudAccountModal={setShowCloudAccountModal}",
+            "     handleWorkspaceLogout={handleWorkspaceLogout}\n     openLocalProfileEditor={openOnboardingProfileEditor}\n     setShowCloudAccountModal={setShowCloudAccountModal}",
+            1,
+          )
+          p.write_text(s)
+
+          # 3) Avatar menu entry.
+          p = Path('src/features/navigation/components/AppHeader.tsx')
+          s = p.read_text()
+          s = s.replace(
+            "import { Bot, DownloadCloud, Layers3, RotateCcw, Save, ServerCog, Settings, ShieldAlert, X } from 'lucide-react';",
+            "import { Bot, DownloadCloud, Layers3, RotateCcw, Save, ServerCog, Settings, ShieldAlert, UserCog, X } from 'lucide-react';",
+            1,
+          )
+          s = s.replace(
+            "  handleWorkspaceLogout: () => void;\n  setShowCloudAccountModal: (value: boolean) => void;",
+            "  handleWorkspaceLogout: () => void;\n  openLocalProfileEditor: () => void;\n  setShowCloudAccountModal: (value: boolean) => void;",
+            1,
+          )
+          anchor = '''                    </div>\n\n                    <div className="border-t border-slate-700 py-1">\n                      {props.isWorkspaceLoggedIn ? ('''
+          replacement = '''                    </div>\n\n                    <div className="border-t border-slate-700 py-1">\n                      <button\n                        type="button"\n                        onClick={() => { props.openLocalProfileEditor(); setProfileMenuOpen(false); }}\n                        className="flex w-full items-center gap-2.5 px-4 py-2.5 text-left font-bold text-slate-200 hover:bg-slate-700"\n                        data-local-profile-editor="avatar"\n                      >\n                        <UserCog className="h-4 w-4" aria-hidden="true" />\n                        <span>Modifica profilo locale</span>\n                      </button>\n                    </div>\n\n                    <div className="border-t border-slate-700 py-1">\n                      {props.isWorkspaceLoggedIn ? ('''
+          if anchor not in s:
+              raise SystemExit('AppHeader profile action anchor missing')
+          s = s.replace(anchor, replacement, 1)
+          p.write_text(s)
+
+          # 4) Existing tests need the new required prop and hook inputs.
+          p = Path('src/__tests__/app-header-task10.test.tsx')
+          s = p.read_text()
+          s = s.replace(
+            "    handleWorkspaceLogout: vi.fn(), setShowCloudAccountModal: vi.fn(), ...overrides,",
+            "    handleWorkspaceLogout: vi.fn(), openLocalProfileEditor: vi.fn(), setShowCloudAccountModal: vi.fn(), ...overrides,",
+            1,
+          )
+          p.write_text(s)
+
+          p = Path('src/__tests__/role-onboarding-task10.test.ts')
+          s = p.read_text()
+          s = s.replace(
+            "      order: 'secondaria', setRole:",
+            "      role: 'non-dichiarato', discipline: 'italiano', order: 'secondaria', setRole:",
+          )
+          p.write_text(s)
+
+          # 5) Regression test: avatar access + rehydration + save-on-confirm only.
+          p = Path('src/__tests__/local-profile-editor-access.test.tsx')
+          p.write_text('''import { act, fireEvent, render, renderHook, screen } from '@testing-library/react';\nimport type { ComponentProps } from 'react';\nimport { beforeEach, describe, expect, it, vi } from 'vitest';\nimport { AppHeader } from '../features/navigation';\nimport { useOnboardingProfile } from '../features/session/hooks/useOnboardingProfile';\n\nconst headerProps = (openLocalProfileEditor: () => void): ComponentProps<typeof AppHeader> => ({\n  toggleSidebar: vi.fn(),\n  isCopilotChatOpen: false,\n  setIsCopilotChatOpen: vi.fn(),\n  setShowAgentSetupModal: vi.fn(),\n  localAgentStatus: 'none',\n  localAgentType: 'none',\n  ollamaStatus: 'disconnected',\n  ollamaModelName: '',\n  localAgentSize: 'none',\n  setShowSaveModal: vi.fn(),\n  roleDropdownOpen: false,\n  setRoleDropdownOpen: vi.fn(),\n  isWorkspaceLoggedIn: false,\n  cloudAccountType: 'personale',\n  workspaceUserEmail: '',\n  handleWorkspaceSync: vi.fn(),\n  showToast: vi.fn(),\n  handleClearLocalStorageWithReset: vi.fn(),\n  handleWorkspaceLogout: vi.fn(),\n  openLocalProfileEditor,\n  setShowCloudAccountModal: vi.fn(),\n});\n\ndescribe('local profile editor remains reachable after onboarding', () => {\n  beforeEach(() => localStorage.clear());\n\n  it('opens the local profile editor from the avatar menu', () => {\n    const openLocalProfileEditor = vi.fn();\n    render(<AppHeader {...headerProps(openLocalProfileEditor)} />);\n\n    fireEvent.click(screen.getByRole('button', { name: /Profilo:/i }));\n    fireEvent.click(screen.getByRole('button', { name: 'Modifica profilo locale' }));\n\n    expect(openLocalProfileEditor).toHaveBeenCalledTimes(1);\n  });\n\n  it('rehydrates saved choices and does not persist section edits until final save', () => {\n    localStorage.setItem('curman_assignedCombinations', '1A,2B');\n    localStorage.setItem('curman_availableSections', 'A,B');\n    localStorage.setItem('curman_isSostegno', 'false');\n    const setShowOnboardingModal = vi.fn();\n\n    const { result } = renderHook(() => useOnboardingProfile({\n      role: 'insegnante',\n      discipline: 'tecnologia',\n      order: 'secondaria',\n      setRole: vi.fn(),\n      setDiscipline: vi.fn(),\n      setOrder: vi.fn(),\n      setShowOnboardingModal,\n      showToast: vi.fn(),\n    }));\n\n    act(() => result.current.openOnboardingProfileEditor());\n    expect(result.current.onboardingRole).toBe('insegnante');\n    expect(result.current.onboardingDisc).toBe('tecnologia');\n    expect(result.current.onboardingOrd).toBe('secondaria');\n    expect(result.current.onboardingCombinations).toEqual(['1A', '2B']);\n    expect(result.current.availableSections).toEqual(['A', 'B']);\n    expect(result.current.onboardingStep).toBe(1);\n    expect(setShowOnboardingModal).toHaveBeenCalledWith(true);\n\n    act(() => result.current.setNewSectionInput('C'));\n    act(() => result.current.handleAddSectionLocal());\n    expect(result.current.availableSections).toEqual(['A', 'B', 'C']);\n    expect(localStorage.getItem('curman_availableSections')).toBe('A,B');\n\n    act(() => result.current.saveOnboardingProfile());\n    expect(localStorage.getItem('curman_availableSections')).toBe('A,B,C');\n  });\n});\n''')
+          PY
+
+          grep -F 'Modifica profilo locale' src/features/navigation/components/AppHeader.tsx
+          grep -F 'openOnboardingProfileEditor' src/features/session/hooks/useOnboardingProfile.ts
+          grep -F 'openLocalProfileEditor={openOnboardingProfileEditor}' src/App.tsx
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Profile editor regression
+        run: npx vitest run --project unit src/__tests__/local-profile-editor-access.test.tsx src/__tests__/role-onboarding-task10.test.ts
+
+      - name: TypeScript
+        run: npx tsc --noEmit
+
+      - name: Beta build
+        run: npm run build:beta
+
+      - name: Commit validated profile editor to PR
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          git config user.name "Antonio Corsano"
+          git config user.email "antonio.corsano@gmail.com"
+          git add src/App.tsx src/features/navigation/components/AppHeader.tsx src/features/session/hooks/useOnboardingProfile.ts src/__tests__/app-header-task10.test.tsx src/__tests__/role-onboarding-task10.test.ts src/__tests__/local-profile-editor-access.test.tsx
+          git commit -m "feat: reopen local profile from avatar"
+          git push origin HEAD:feature/team-meeting-workspace
