@@ -1,0 +1,53 @@
+{
+  "registry_id": "CCO-SURFACES",
+  "version": "1.0.0",
+  "contract": ".human/operational-communication.contract.json",
+  "status_vocabulary": ["conformant", "migration", "guided-setup", "excluded"],
+  "surfaces": [
+    {
+      "id": "home-docente",
+      "path": "src/features/session/components/DashboardView.tsx",
+      "status": "conformant",
+      "operational_context": "Il tuo spazio nel curricolo",
+      "primary_task": "Orientarsi e aprire il lavoro pertinente al proprio profilo",
+      "required_tokens": [
+        "data-beta-home=\"role-work-queue\"",
+        "data-home-queue=\"actionable\"",
+        "data-home-work-action=",
+        "data-hcm-secondary-content",
+        "Il tuo spazio nel curricolo",
+        "Da fare"
+      ]
+    },
+    {
+      "id": "revisione-personale",
+      "path": "src/features/beta/RevisionWorkspace.tsx",
+      "status": "migration",
+      "migration_goal": "Portare contesto, stato personale e prossima azione prima della spiegazione del processo; mantenere la formazione disponibile tramite divulgazione progressiva."
+    },
+    {
+      "id": "pubblicazione-contributo-personale",
+      "path": "src/features/beta/TeamContributionPublisher.tsx",
+      "status": "migration",
+      "migration_goal": "Rendere immediatamente visibili stato di preparazione, stato di condivisione e conseguenza dell'azione, riducendo la dipendenza dai paragrafi esplicativi."
+    },
+    {
+      "id": "lavoro-del-team",
+      "path": "src/features/beta/TeamReviewWorkspace.tsx",
+      "status": "migration",
+      "migration_goal": "Rendere motivo del punto, provenienza, stato del team e prossima azione comprensibili senza richiedere lettura formativa preventiva."
+    },
+    {
+      "id": "coordinamento-del-team",
+      "path": "src/features/beta/TeamCoordinationWorkspace.tsx",
+      "status": "migration",
+      "migration_goal": "Separare con chiarezza stato della riunione, coda da discutere e azioni del coordinatore dalle spiegazioni sul modello di governo."
+    },
+    {
+      "id": "profilo-di-lavoro-personale",
+      "path": "src/features/session/components/PersonalWorkProfileModal.tsx",
+      "status": "guided-setup",
+      "reason": "È una configurazione iniziale intenzionalmente guidata: una quota maggiore di testo formativo è ammessa, purché non confonda profilo personale, incarico verificato e autorità."
+    }
+  ]
+}
