@@ -54,6 +54,12 @@ export type LocalKnowledgeVerificationOptions = {
   scope?: LocalSourceGovernanceScope;
 };
 
+export interface LocalKnowledgeRegistryRestoreInput {
+  sources: readonly CustomKbDoc[];
+  governance: readonly SourceGovernanceRecord[];
+  restoredAt?: string;
+}
+
 class LocalKnowledgeDatabase extends Dexie {
   sources!: Table<CustomKbDoc, string>;
   governance!: Table<PersistedSourceGovernanceRecord, string>;
@@ -287,6 +293,39 @@ export async function putLocalKnowledgeSources(sources: CustomKbDoc[]): Promise<
   await db.transaction('rw', db.sources, db.governance, async () => {
     await db.sources.bulkPut(reconciled);
     await db.governance.bulkPut(governance);
+  });
+}
+
+/**
+ * Atomically replaces only the local personal Source Registry. The stable local
+ * principal stored in `meta` is deliberately preserved; caller-side restore
+ * validation decides whether historical verification can be inherited.
+ */
+export async function replaceLocalKnowledgeRegistryFromRestore(
+  input: LocalKnowledgeRegistryRestoreInput,
+): Promise<void> {
+  const db = getKnowledgeDb();
+  const restoredAt = input.restoredAt ?? new Date().toISOString();
+  const sourceIds = new Set<string>();
+  const governanceKeys = new Set<string>();
+
+  for (const source of input.sources) {
+    if (sourceIds.has(source.id)) throw new Error('RESTORE_DUPLICATE_SOURCE_ID');
+    sourceIds.add(source.id);
+  }
+
+  const persistedGovernance = input.governance.map((record): PersistedSourceGovernanceRecord => {
+    const registryId = governanceRegistryId(String(record.sourceId), String(record.sourceVersionId));
+    if (governanceKeys.has(registryId)) throw new Error('RESTORE_DUPLICATE_GOVERNANCE_RECORD');
+    governanceKeys.add(registryId);
+    return { ...record, registryId, recordedAt: restoredAt };
+  });
+
+  await db.transaction('rw', db.sources, db.governance, async () => {
+    await db.sources.clear();
+    await db.governance.clear();
+    if (input.sources.length > 0) await db.sources.bulkPut([...input.sources]);
+    if (persistedGovernance.length > 0) await db.governance.bulkPut(persistedGovernance);
   });
 }
 
