@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { CheckCircle2, CloudUpload, ShieldCheck } from 'lucide-react';
+import { safeLocalStorageGetItem } from '../../../lib/consolidatedStorage';
 import { GoogleDriveBackupSink } from '../../../infrastructure/googleDrive/googleDriveBackupSink';
 import {
   createGoogleDriveBackupAccessTokenProvider,
@@ -38,7 +39,10 @@ export function SourceRegistryDriveBackupAction({
   sourceCount,
   showToast,
 }: SourceRegistryDriveBackupActionProps) {
-  const clientConfig = useMemo(() => resolveGoogleDriveBackupClientConfig(), []);
+  const clientConfig = useMemo(() => {
+    const existingArenaClientId = safeLocalStorageGetItem('curman_workspaceClientId', '');
+    return resolveGoogleDriveBackupClientConfig(import.meta.env as Record<string, unknown>, existingArenaClientId);
+  }, []);
   const [state, setState] = useState<BackupUiState>('idle');
   const [lastBackup, setLastBackup] = useState<LastBackupReceipt | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -98,12 +102,12 @@ export function SourceRegistryDriveBackupAction({
           <div className="mt-3 flex items-start gap-2 rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs leading-5 text-slate-600">
             <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-slate-500" aria-hidden="true" />
             <p>
-              L’accesso a Drive viene richiesto solo quando premi il pulsante, con scope <strong>drive.file</strong>. Il token resta in memoria per la sola operazione e non viene salvato nel backup o nel browser.
+              L’accesso a Drive viene richiesto solo quando premi il pulsante, con scope <strong>drive.file</strong>. Il token resta in memoria per la sola operazione e non viene salvato nel backup o nel browser. Arena può riusare l’ID client Google OAuth pubblico già configurato per il collegamento cloud.
             </p>
           </div>
           {!configured && (
             <p className="mt-3 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm font-semibold text-amber-900" role="status">
-              Backup Drive non configurato in questa release. Arena continua a funzionare normalmente senza Google Drive.
+              Backup Drive non configurato. Inserisci un ID client Google OAuth nella configurazione cloud di Arena oppure configurane uno nella release. Arena continua a funzionare normalmente senza Google Drive.
             </p>
           )}
           {configured && sourceCount === 0 && (
