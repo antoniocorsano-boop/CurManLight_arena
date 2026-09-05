@@ -25,6 +25,18 @@ export function RevisionWorkspace(props: AppViewsLayerProps) {
   const selectedRole = team.selectedMembership?.role;
   const isCoordinator = selectedRole === 'dipartimento' || selectedRole === 'referente';
   const selectedRoleLabel = roleLabel(selectedRole);
+  const totalReviewCount = props.currentDisciplineProps.length;
+  const preparedReviewCount = props.currentDisciplineProps.filter((proposal) => {
+    const decision = decisions[proposal.id];
+    if (!decision) return false;
+    if (decision === 'custom') return Boolean(customTexts[proposal.id]?.trim());
+    return true;
+  }).length;
+  const incompleteCustomCount = props.currentDisciplineProps.filter(
+    (proposal) => decisions[proposal.id] === 'custom' && !customTexts[proposal.id]?.trim(),
+  ).length;
+  const reviewComplete = totalReviewCount > 0 && preparedReviewCount === totalReviewCount;
+  const sharingAvailable = preparedReviewCount > 0;
 
   useEffect(() => {
     if (!userSelectedPane && isCoordinator) setPane('team');
@@ -34,6 +46,11 @@ export function RevisionWorkspace(props: AppViewsLayerProps) {
     setUserSelectedPane(true);
     setPane(next);
     if (typeof window !== 'undefined') window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const continueToSharing = () => {
+    if (typeof document === 'undefined') return;
+    document.getElementById('team-contribution-stage')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
   return (
@@ -72,12 +89,62 @@ export function RevisionWorkspace(props: AppViewsLayerProps) {
 
       {pane === 'mine' ? (
         <div className="space-y-3" role="tabpanel" aria-label="Il mio contributo">
-          <RevisioneTab {...props} />
-          <TeamContributionPublisher
-            proposals={props.currentDisciplineProps}
-            decisions={decisions}
-            customTexts={customTexts}
-          />
+          <section className="grid gap-2 sm:grid-cols-2" aria-label="Avanzamento del contributo personale" data-revision-process-rail>
+            <div className={`rounded-xl border p-3 ${reviewComplete ? 'border-emerald-200 bg-emerald-50' : 'border-indigo-200 bg-indigo-50/50'}`} data-revision-process-step="review">
+              <div className="flex items-center justify-between gap-2">
+                <strong className="text-xs text-slate-900">1 · Revisione personale</strong>
+                <span className={`rounded-full px-2 py-1 text-[10px] font-bold ${reviewComplete ? 'bg-emerald-100 text-emerald-800' : 'bg-indigo-100 text-indigo-800'}`}>
+                  {reviewComplete ? 'completata' : totalReviewCount === 0 ? 'nessun lavoro' : `${preparedReviewCount}/${totalReviewCount}`}
+                </span>
+              </div>
+              <p className="mt-1 text-[11px] leading-relaxed text-slate-600">Esamina le schede e registra il tuo orientamento.</p>
+            </div>
+
+            <div className={`rounded-xl border p-3 ${sharingAvailable ? 'border-indigo-200 bg-white' : 'border-slate-200 bg-slate-50'}`} data-revision-process-step="sharing" data-step-state={sharingAvailable ? 'available' : 'locked'}>
+              <div className="flex items-center justify-between gap-2">
+                <strong className="text-xs text-slate-900">2 · Condivisione con il team</strong>
+                <span className={`rounded-full px-2 py-1 text-[10px] font-bold ${sharingAvailable ? 'bg-indigo-100 text-indigo-800' : 'bg-slate-200 text-slate-600'}`}>
+                  {reviewComplete ? 'prossimo passaggio' : sharingAvailable ? 'disponibile' : 'non ancora disponibile'}
+                </span>
+              </div>
+              <p className="mt-1 text-[11px] leading-relaxed text-slate-600">
+                {sharingAvailable ? 'Compare quando esiste almeno un orientamento completo.' : 'Si attiva dopo il primo orientamento completo.'}
+              </p>
+            </div>
+          </section>
+
+          <RevisioneTab {...props} onContinueAfterReview={continueToSharing} />
+
+          <div id="team-contribution-stage" className="scroll-mt-24" data-revision-sharing-stage>
+            {sharingAvailable ? (
+              <div className="space-y-3 fade-in" data-revision-stage-revealed="sharing">
+                <div className={`rounded-2xl border p-4 ${reviewComplete ? 'border-emerald-200 bg-emerald-50/70' : 'border-indigo-200 bg-indigo-50/40'}`}>
+                  <strong className="block text-sm text-slate-900">
+                    {reviewComplete ? 'Revisione personale completata' : 'La condivisione è ora disponibile'}
+                  </strong>
+                  <p className="mt-1 text-xs leading-relaxed text-slate-600">
+                    {reviewComplete
+                      ? 'Hai completato il passaggio personale. Ora puoi rendere visibile al team il contributo che hai preparato.'
+                      : `Hai ${preparedReviewCount} ${preparedReviewCount === 1 ? 'orientamento completo' : 'orientamenti completi'}. Puoi continuare la revisione oppure condividere ciò che è già pronto.`}
+                  </p>
+                  {incompleteCustomCount > 0 && (
+                    <p className="mt-2 text-xs font-semibold text-amber-800">Completa {incompleteCustomCount === 1 ? 'la modifica ancora aperta' : `le ${incompleteCustomCount} modifiche ancora aperte`} prima della condivisione.</p>
+                  )}
+                </div>
+
+                <TeamContributionPublisher
+                  proposals={props.currentDisciplineProps}
+                  decisions={decisions}
+                  customTexts={customTexts}
+                />
+              </div>
+            ) : (
+              <section className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-4" aria-label="Passaggio successivo" data-revision-stage-locked="sharing">
+                <strong className="block text-sm text-slate-800">La condivisione apparirà qui</strong>
+                <p className="mt-1 text-xs leading-relaxed text-slate-600">Registra almeno un orientamento completo: Arena mostrerà il passaggio successivo senza cambiare contesto.</p>
+              </section>
+            )}
+          </div>
 
           <details
             data-hva-revision-guide
