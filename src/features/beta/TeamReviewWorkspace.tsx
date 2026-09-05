@@ -107,6 +107,7 @@ export function TeamReviewWorkspace({ proposals, decisions, customTexts }: TeamR
   const [refreshVersion, setRefreshVersion] = useState(0);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  const [shareFeedback, setShareFeedback] = useState<{ kind: 'success' | 'error'; text: string } | null>(null);
   const [selectedProposalRef, setSelectedProposalRef] = useState<string | null>(null);
   const [teamOutcome, setTeamOutcome] = useState<TeamReviewOutcome>('accept-proposal');
   const [sharedText, setSharedText] = useState('');
@@ -228,6 +229,14 @@ export function TeamReviewWorkspace({ proposals, decisions, customTexts }: TeamR
   const resolvedItems = summary.items.filter((item) => Boolean(latestOutcomes[item.proposalRef]));
   const selectedItem = summary.items.find((item) => item.proposalRef === selectedProposalRef) ?? null;
   const localPreparedCount = proposals.filter((proposal) => Boolean(decisions[proposal.id])).length;
+  const currentUserContributionCount = session
+    ? new Set(contributions
+      .filter((contribution) => contribution.contributorUserId === session.user.id
+        && descriptors.some((descriptor) => descriptor.proposalRef === contribution.proposalRef
+          && descriptor.proposalFingerprint === contribution.proposalFingerprint))
+      .map((contribution) => contribution.proposalRef)).size
+    : 0;
+  const hasPublishedPreparation = currentUserContributionCount > 0;
 
   if (optional.config.status !== 'configured' || !client) {
     return (
@@ -244,15 +253,17 @@ export function TeamReviewWorkspace({ proposals, decisions, customTexts }: TeamR
     const publishable = proposals.filter((proposal) => Boolean(localOrientation(decisions[proposal.id])));
     const invalidCustom = publishable.find((proposal) => decisions[proposal.id] === 'custom' && !customTexts[proposal.id]?.trim());
     if (invalidCustom) {
-      setMessage(`Completa la modifica proposta per “${invalidCustom.focus}” prima di condividerla con il team.`);
+      const text = `Completa la modifica proposta per “${invalidCustom.focus}” prima di condividerla con il team.`;
+      setShareFeedback({ kind: 'error', text });
       return;
     }
     if (publishable.length === 0) {
-      setMessage('Non ci sono ancora orientamenti individuali da condividere con il team.');
+      setShareFeedback({ kind: 'error', text: 'Non ci sono ancora orientamenti individuali da condividere con il team.' });
       return;
     }
 
     setBusy(true);
+    setShareFeedback(null);
     setMessage(null);
     try {
       for (const proposal of publishable) {
@@ -267,9 +278,12 @@ export function TeamReviewWorkspace({ proposals, decisions, customTexts }: TeamR
         });
       }
       setRefreshVersion((value) => value + 1);
-      setMessage(`${publishable.length} contributi aggiornati nel workspace. Restano orientamenti preparatori, non decisioni del team.`);
+      setShareFeedback({
+        kind: 'success',
+        text: `${publishable.length} ${publishable.length === 1 ? 'scheda condivisa' : 'schede condivise'} con il team. Il tuo contributo è registrato, ma non è ancora un esito del team.`,
+      });
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : 'Contributi non registrati.');
+      setShareFeedback({ kind: 'error', text: error instanceof Error ? error.message : 'Contributi non registrati.' });
     } finally {
       setBusy(false);
     }
@@ -368,16 +382,30 @@ export function TeamReviewWorkspace({ proposals, decisions, customTexts }: TeamR
             </label>
           )}
 
-          <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-slate-200 bg-white p-3">
-            <div className="text-xs text-slate-600"><strong className="text-slate-800">Il tuo lavoro:</strong> {localPreparedCount} schede preparate localmente.</div>
-            <button type="button" disabled={busy || !canContribute || localPreparedCount === 0} onClick={() => void publishPreparation()} className="rounded-lg bg-indigo-700 px-3 py-2 text-xs font-bold text-white disabled:cursor-not-allowed disabled:opacity-40">Condividi il mio lavoro con il team</button>
+          <div className="rounded-xl border border-slate-200 bg-white p-3">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="text-xs text-slate-600">
+                <strong className="text-slate-800">Il tuo lavoro:</strong> {localPreparedCount} schede preparate localmente.
+                {currentUserContributionCount > 0 && <span className="mt-1 block font-semibold text-emerald-700">{currentUserContributionCount} {currentUserContributionCount === 1 ? 'scheda già condivisa' : 'schede già condivise'} con il team.</span>}
+              </div>
+              <button type="button" disabled={busy || !canContribute || localPreparedCount === 0} onClick={() => void publishPreparation()} className="min-h-10 rounded-lg bg-indigo-700 px-3 py-2 text-xs font-bold text-white disabled:cursor-not-allowed disabled:opacity-40">
+                {busy ? 'Condivisione in corso…' : hasPublishedPreparation ? 'Aggiorna il lavoro condiviso' : 'Condividi il mio lavoro con il team'}
+              </button>
+            </div>
+            {shareFeedback && (
+              <div role="status" aria-live="polite" className={`mt-3 rounded-lg border p-2.5 text-xs font-semibold leading-relaxed ${shareFeedback.kind === 'success' ? 'border-emerald-200 bg-emerald-50 text-emerald-800' : 'border-rose-200 bg-rose-50 text-rose-800'}`}>
+                {shareFeedback.kind === 'success' ? '✓ ' : ''}{shareFeedback.text}
+              </div>
+            )}
           </div>
 
           <div className="rounded-xl border border-slate-200 bg-white p-3 text-xs text-slate-600" data-team-review-coverage>
             <strong className="text-slate-800">Copertura del team:</strong>{' '}
             {expectedContributorCount === null
               ? 'non verificabile — nessun punto può essere considerato già condiviso.'
-              : `${expectedContributorCount} contributori attivi attesi nel workspace selezionato.`}
+              : expectedContributorCount === 1
+                ? 'nel team c’è ancora un solo componente attivo. Puoi condividere il tuo lavoro, ma nessun punto sarà considerato condiviso finché non parteciperà almeno un secondo componente.'
+                : `${expectedContributorCount} contributori attivi attesi nel team selezionato.`}
           </div>
 
           <div className="grid grid-cols-2 gap-2 lg:grid-cols-4" aria-label="Sintesi del lavoro del team">
