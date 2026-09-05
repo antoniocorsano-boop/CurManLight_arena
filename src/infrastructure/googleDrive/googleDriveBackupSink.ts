@@ -1,4 +1,6 @@
 import {
+  CML_BACKUP_SCHEMA,
+  calculateCmlBackupContentHash,
   createBackupReceipt,
   encodeCmlBackupPackage,
   type BackupReceipt,
@@ -8,6 +10,7 @@ import {
 
 export const CML_BACKUP_MIME_TYPE = 'application/vnd.curmanlight.backup' as const;
 const DRIVE_RESUMABLE_CREATE_URL = 'https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable&fields=id%2Cname';
+const SHA256_HEX = /^[0-9a-f]{64}$/;
 
 export interface GoogleDriveBackupSinkOptions {
   /**
@@ -33,16 +36,20 @@ function toSafeFileSegment(value: string): string {
   return safe || 'backup';
 }
 
+function assertManifestReadyForOutboundBackup(manifest: CmlBackupManifest): void {
+  if (manifest.schema !== CML_BACKUP_SCHEMA) throw new Error('BACKUP_SCHEMA_UNSUPPORTED');
+  if (manifest.product !== 'CurManLight Arena') throw new Error('BACKUP_PRODUCT_INVALID');
+  if (!manifest.backupId.trim()) throw new Error('BACKUP_ID_REQUIRED');
+  if (!manifest.createdAt.trim()) throw new Error('BACKUP_CREATED_AT_REQUIRED');
+  if (!SHA256_HEX.test(manifest.contentHash)) throw new Error('BACKUP_CONTENT_HASH_INVALID');
+  if (!Number.isInteger(manifest.sourceRegistrySchemaVersion) || manifest.sourceRegistrySchemaVersion < 1) {
+    throw new Error('BACKUP_SOURCE_REGISTRY_SCHEMA_INVALID');
+  }
+}
+
 export function buildGoogleDriveBackupFileName(manifest: CmlBackupManifest): string {
   const timestamp = manifest.createdAt.replace(/[:]/g, '-').replace(/[^0-9TZ.+-]/g, '_');
   return `CurManLight_Arena_${timestamp}_${toSafeFileSegment(manifest.backupId)}.cml-backup`;
-}
-
-async function sha256Hex(payload: Uint8Array): Promise<string> {
-  if (!globalThis.crypto?.subtle) throw new Error('BACKUP_CRYPTO_UNAVAILABLE');
-  const ownedBytes = payload.slice();
-  const digest = await globalThis.crypto.subtle.digest('SHA-256', ownedBytes.buffer);
-  return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, '0')).join('');
 }
 
 function assertTrustedResumableLocation(value: string | null): string {
@@ -100,7 +107,8 @@ export class GoogleDriveBackupSink implements BackupSink {
   }
 
   async writeSnapshot(manifest: CmlBackupManifest, payload: Uint8Array): Promise<BackupReceipt> {
-    const recomputedHash = await sha256Hex(payload);
+    assertManifestReadyForOutboundBackup(manifest);
+    const recomputedHash = await calculateCmlBackupContentHash(payload);
     if (recomputedHash !== manifest.contentHash) {
       throw new Error('BACKUP_CONTENT_HASH_MISMATCH');
     }
