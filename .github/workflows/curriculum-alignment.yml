@@ -5,6 +5,7 @@ on:
     paths:
       - 'docs/curriculum/REG-CURR-00.registry.json'
       - 'docs/curriculum/REG-CURR-00_MASTER_ALIGNMENT.md'
+      - '.human/him.config.json'
       - '.human/operational-communication.contract.json'
       - '.human/operational-communication.surfaces.json'
       - 'tools/curriculum-alignment/validate.mjs'
@@ -13,6 +14,7 @@ on:
     paths:
       - 'docs/curriculum/REG-CURR-00.registry.json'
       - 'docs/curriculum/REG-CURR-00_MASTER_ALIGNMENT.md'
+      - '.human/him.config.json'
       - '.human/operational-communication.contract.json'
       - '.human/operational-communication.surfaces.json'
       - 'tools/curriculum-alignment/validate.mjs'
