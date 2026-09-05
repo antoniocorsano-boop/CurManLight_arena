@@ -28,15 +28,21 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Build exact Beta artifact
+      - name: Build exact Beta artifact with public Drive OAuth client
         env:
           CML_RELEASE_REF: 99ea576f8bab68ef904d5d264a687bcb490490fd
           CML_RELEASE_SHA: 99ea576f8bab68ef904d5d264a687bcb490490fd
+          VITE_GOOGLE_DRIVE_BACKUP_CLIENT_ID: 713488938910-s17q8hohlkqhuc46k4na66n3gnka7e7t.apps.googleusercontent.com
         run: npm run build:beta
 
       - name: Verify release identity
         run: |
           node -e "const fs=require('fs');const p='dist/beta-release.json';const d=JSON.parse(fs.readFileSync(p,'utf8'));if(d.releaseSha!=='99ea576f8bab68ef904d5d264a687bcb490490fd'){throw new Error('Unexpected release SHA: '+d.releaseSha)};if(d.basePath!=='/CurManLight_arena/'){throw new Error('Unexpected basePath: '+d.basePath)}"
+
+      - name: Verify Drive OAuth client is embedded in the preview bundle
+        run: |
+          set -euo pipefail
+          grep -R --fixed-strings "713488938910-s17q8hohlkqhuc46k4na66n3gnka7e7t.apps.googleusercontent.com" dist >/dev/null
 
       - name: Prepare basename-safe static host tree
         run: |
@@ -85,6 +91,6 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
-          git commit -m "Drive stack preview 99ea576f8bab68ef904d5d264a687bcb490490fd"
+          git commit -m "Drive stack preview 99ea576f8bab68ef904d5d264a687bcb490490fd — OAuth client configured"
           git remote add origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
           git push --force origin HEAD:refs/heads/preview/drive-stack-static
