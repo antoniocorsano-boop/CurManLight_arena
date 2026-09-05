@@ -1,6 +1,6 @@
 # REG-CURR-00 — Registro maestro del fascicolo curricolare e dell’allineamento Arena
 
-**Versione:** 1.2 — 5 settembre 2026  
+**Versione:** 1.3 — 6 settembre 2026  
 **Ambito:** Curricolo verticale d’Istituto — A.S. 2026/2027
 
 ## Funzione
@@ -28,6 +28,7 @@ La precedente `source reconstruction v3` resta storico tecnico. La distinzione c
 |---|---|
 | Copertura istruttoria 3–14 | `PASS_ISTRUTTORIO` |
 | Correzioni della fonte originaria | recepite nella fonte corrente |
+| Audit istruttorio pilota Tecnologia | completato con correzioni mirate |
 | Validazione professionale | `OPEN` |
 | Revisione verticale finale | `OPEN` |
 | Pronto per il Collegio | `NOT_YET` |
@@ -74,6 +75,33 @@ Catena documentale esatta:
 
 Il contratto applicativo è `src/domain/curriculum/validation/technologyClass1Review.ts`.
 
+## Audit istruttorio del pilota Tecnologia
+
+**Audit ID:** `AUD-CURR-TEC-SEC1-01`  
+**Documento Drive:** `AUD-CURR-TEC-SEC1-01_Audit_cinque_schede_Tecnologia_classe_prima_2026-2027`  
+**Drive file ID:** `1SZ_lmaYXNF2Fx8ro1C-hTh5iUH-riECcqyZtRx9JRPM`  
+**Stato audit:** completato  
+**Esito istruttorio:** pronto al riesame professionale con correzioni mirate  
+**Esito umano:** `OPEN`  
+**Promozione canonica:** `NOT_AUTHORIZED`
+
+Esito per scheda:
+
+- N1 — confermabile con micro-correzione istruttoria;
+- N2 — confermabile;
+- N3 — confermabile con qualificazione di provenienza;
+- N4 — da modificare prima della conferma professionale;
+- raccordo I → II–III — impianto confermabile, gate ancora aperto.
+
+Le correzioni istruttorie trasversali sono quattro:
+
+1. rappresentare la struttura nazionale come **tre nuclei fondanti di Tecnologia integrati con Informatica**, senza presentare N4 come quarto nucleo nazionale autonomo;
+2. qualificare le formulazioni della classe prima come **obiettivi annuali/progressione annuale d’Istituto**, distinguendole dagli Obiettivi specifici di apprendimento nazionali;
+3. riscalare N4 verso comprensione funzionale di sistemi informatici, dati, processi, Internet e attendibilità delle informazioni;
+4. mantenere provenienza granulare degli elementi d’Istituto, trasversali e transitori.
+
+L’audit è un controllo istruttorio: **non registra né simula una decisione professionale umana**.
+
 ## Regola di interazione corrente
 
 Il principio operativo è **riconoscimento prima dell’interpretazione**. La modalità lavoro privilegia un solo oggetto dominante, confronto visivo, azioni adiacenti e provenienza sotto disclosure. Una modifica è completa soltanto dopo `Registra modifica`.
@@ -98,7 +126,8 @@ Le PR **#199–#201** e **#202–#207** restano Draft e non canoniche finché no
 - `VAL-CURR-00_Indice_unico_gate_validazione_2026-2027`;
 - `CAN-AUDIT-CURR-03_Audit_integrato_pre-validazione_2026-2027`;
 - `ARENA-UX-01_Dal_documento_al_lavoro_dei_team_2026-2027`;
-- `WORK-CURR-TEC-01_Pacchetto_operativo_Arena_Tecnologia_classe_prima_2026-2027`.
+- `WORK-CURR-TEC-01_Pacchetto_operativo_Arena_Tecnologia_classe_prima_2026-2027`;
+- `AUD-CURR-TEC-SEC1-01_Audit_cinque_schede_Tecnologia_classe_prima_2026-2027`.
 
 ## Materiali formativi
 
@@ -106,4 +135,4 @@ La presentazione docenti del 4 settembre resta da aggiornare prima dell’uso op
 
 ## Criterio di allineamento
 
-Drive, repository, logiche e documenti sono allineati soltanto se indicano la stessa fonte, lo stesso stato dei gate, la stessa baseline, gli stessi confini di autorità e — quando un pilota è attivo — le stesse identità Drive di fonte, proposta, matrice, gate e registro decisioni.
+Drive, repository, logiche e documenti sono allineati soltanto se indicano la stessa fonte, lo stesso stato dei gate, la stessa baseline, gli stessi confini di autorità e — quando un pilota è attivo — le stesse identità Drive di fonte, proposta, matrice, gate, registro decisioni e audit istruttorio.
