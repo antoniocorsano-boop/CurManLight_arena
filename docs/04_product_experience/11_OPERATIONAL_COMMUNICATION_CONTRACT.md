@@ -2,7 +2,8 @@
 
 **Versione:** 1.0.0  
 **Stato:** normativo per le nuove superfici e per le superfici migrate  
-**Integrazione:** Human Interaction Model (HIM)
+**Integrazione:** Human Interaction Model (HIM)  
+**Registro superfici:** 1.1.0
 
 ## 1. Scopo
 
@@ -162,15 +163,29 @@ Il CCO è strutturale solo se la sua applicazione è esplicita superficie per su
 - **guided-setup** — la superficie è intenzionalmente formativa o di configurazione iniziale; può contenere più spiegazione, ma deve mantenere chiari azione, conseguenza e confini di autorità;
 - **excluded** — superficie non operativa esclusa dal contratto, sempre con motivazione esplicita.
 
-Il registro iniziale classifica:
+Stato corrente del registro:
 
 | Superficie | Stato CCO | Obiettivo |
 |---|---|---|
 | Home docente | **conformant** | Orientamento e accesso al lavoro pertinente senza dipendenza dal testo formativo. |
-| Revisione personale | **migration** | Stato e azione prima della spiegazione del processo. |
+| Revisione personale | **conformant** | Stato, prossima azione e recupero dai filtri sono comprensibili senza testo formativo persistente. |
 | Pubblicazione del contributo personale | **migration** | Stato di preparazione/condivisione e conseguenza leggibili immediatamente. |
 | Lavoro del team | **migration** | Motivo, provenienza, stato del team e prossima azione leggibili senza studio preventivo. |
 | Coordinamento del team | **migration** | Separare coda e azioni di coordinamento dalla formazione sul modello di governo. |
 | Profilo di lavoro personale | **guided-setup** | Configurazione iniziale guidata senza confondere preferenze, incarichi e autorità. |
 
 Una superficie può passare da **migration** a **conformant** solo quando il registro viene aggiornato con prove verificabili e il gate HIM/CCO resta verde. In questo modo la conformità comunicativa non è una valutazione informale ma uno stato governato del prodotto.
+
+## 12. CCO-R1 — Revisione personale
+
+La Revisione personale è la prima superficie migrata dopo la Home docente. La conformità richiede che:
+
+- i conteggi del contesto personale siano mostrati prima delle spiegazioni;
+- quando esistono schede pendenti sia evidente l'azione **Esamina la prossima scheda** e il suo effetto immediato;
+- un filtro vuoto non possa far sembrare che non esista lavoro pendente: Arena deve dichiarare il disallineamento e offrire **Mostra le schede da esaminare**;
+- assenza di schede e completamento di schede esistenti siano stati diversi;
+- i criteri di valutazione e le spiegazioni del processo siano disponibili tramite divulgazione progressiva;
+- l'azione che annulla un orientamento sia descritta per effetto, **Rimetti da esaminare**, senza dipendere da un paragrafo interpretativo;
+- il confine di fiducia resti breve e contestuale: l'orientamento rimane un contributo personale anche dopo la condivisione.
+
+La superficie è registrata come **conformant** solo se i token operativi richiesti restano presenti e il gate HIM/CCO continua a superare la validazione automatica.
