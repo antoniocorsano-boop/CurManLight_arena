@@ -1,0 +1,14 @@
+{
+  "schema": "CML_BETA_RELEASE_V1",
+  "product": "CurManLight Arena",
+  "channel": "beta",
+  "releaseSha": "b0b67b645dc87f568c38ccc5ddff46a0e20623cc",
+  "sourceRef": "feature/team-meeting-workspace",
+  "builtAt": "2026-09-05T19:40:35.794Z",
+  "repository": "antoniocorsano-boop/CurManLight_arena",
+  "basePath": "/CurManLight_arena/",
+  "rollback": {
+    "strategy": "redeploy-known-good-ref",
+    "supported": true
+  }
+}
