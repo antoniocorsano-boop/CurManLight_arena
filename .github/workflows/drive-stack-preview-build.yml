@@ -1,0 +1,90 @@
+name: Drive Stack Preview Build
+
+on:
+  push:
+    branches:
+      - ops/drive-stack-preview-build
+
+permissions:
+  contents: write
+
+jobs:
+  build-preview:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout exact validated Drive stack SHA
+        uses: actions/checkout@v4
+        with:
+          ref: 99ea576f8bab68ef904d5d264a687bcb490490fd
+          fetch-depth: 1
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build exact Beta artifact
+        env:
+          CML_RELEASE_REF: 99ea576f8bab68ef904d5d264a687bcb490490fd
+          CML_RELEASE_SHA: 99ea576f8bab68ef904d5d264a687bcb490490fd
+        run: npm run build:beta
+
+      - name: Verify release identity
+        run: |
+          node -e "const fs=require('fs');const p='dist/beta-release.json';const d=JSON.parse(fs.readFileSync(p,'utf8'));if(d.releaseSha!=='99ea576f8bab68ef904d5d264a687bcb490490fd'){throw new Error('Unexpected release SHA: '+d.releaseSha)};if(d.basePath!=='/CurManLight_arena/'){throw new Error('Unexpected basePath: '+d.basePath)}"
+
+      - name: Prepare basename-safe static host tree
+        run: |
+          set -euo pipefail
+          rm -rf preview-root
+          mkdir -p preview-root/CurManLight_arena
+          cp -a dist/. preview-root/CurManLight_arena/
+
+          for route in \
+            revisione curriculum planning documents knowledge fonti guida \
+            classroom copilot second-brain social settings onboarding
+          do
+            mkdir -p "preview-root/CurManLight_arena/${route}"
+            cp dist/index.html "preview-root/CurManLight_arena/${route}/index.html"
+          done
+
+          cat > preview-root/404.html <<'EOF'
+          <!doctype html>
+          <html lang="it"><head><meta charset="utf-8"><meta http-equiv="refresh" content="0; url=/CurManLight_arena/"><title>CurManLight Arena Drive test</title></head><body><a href="/CurManLight_arena/">Apri CurManLight Arena</a></body></html>
+          EOF
+
+          cat > preview-root/index.html <<'EOF'
+          <!doctype html>
+          <html lang="it"><head><meta charset="utf-8"><meta http-equiv="refresh" content="0; url=/CurManLight_arena/"><title>CurManLight Arena Drive test</title></head><body><a href="/CurManLight_arena/">Apri CurManLight Arena</a></body></html>
+          EOF
+
+          test -f preview-root/CurManLight_arena/fonti/index.html
+          test -f preview-root/CurManLight_arena/revisione/index.html
+          test -f preview-root/CurManLight_arena/curriculum/index.html
+
+      - name: Upload preview tree
+        uses: actions/upload-artifact@v4
+        with:
+          name: drive-stack-preview-dist
+          path: preview-root
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Publish exact static preview branch
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          cd preview-root
+          git init
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Drive stack preview 99ea576f8bab68ef904d5d264a687bcb490490fd"
+          git remote add origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git push --force origin HEAD:refs/heads/preview/drive-stack-static
