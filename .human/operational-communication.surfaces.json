@@ -1,6 +1,6 @@
 {
   "registry_id": "CCO-SURFACES",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "contract": ".human/operational-communication.contract.json",
   "status_vocabulary": ["conformant", "migration", "guided-setup", "excluded"],
   "surfaces": [
@@ -37,31 +37,35 @@
       "id": "revisione-scheda-personale",
       "path": "src/features/curriculum/components/RevisioneTab.tsx",
       "status": "conformant",
-      "operational_context": "Il mio lavoro nel curricolo",
-      "primary_task": "Esaminare una scheda alla volta, registrare un orientamento completo e ricevere una sola conseguenza operativa",
+      "operational_context": "Il mio contributo",
+      "primary_task": "Riconoscere la scheda corrente, confrontare precedente e proposta e scegliere senza leggere una spiegazione del processo",
       "required_tokens": [
-        "data-revision-flow=\"single-task\"",
+        "data-revision-flow=\"recognition-first\"",
+        "data-revision-recognition-header",
         "data-revision-current-card",
         "data-revision-completed-card",
         "data-revision-consequence",
-        "Rivedi le schede",
-        "Proponi una modifica",
-        "Registra la modifica",
-        "Passa alla condivisione",
-        "data-revision-assurance"
+        "data-revision-assurance-on-demand",
+        "Precedente",
+        "Proposta",
+        ">Conferma<",
+        ">Modifica<",
+        ">Mantieni precedente<",
+        "Registra modifica",
+        "Tutte le schede"
       ]
     },
     {
       "id": "pubblicazione-contributo-personale",
       "path": "src/features/beta/TeamContributionPublisher.tsx",
       "status": "migration",
-      "migration_goal": "Rendere immediatamente visibili stato di preparazione, stato di condivisione e conseguenza dell'azione, riducendo la dipendenza dai paragrafi esplicativi."
+      "migration_goal": "Applicare il riconoscimento prima dell'interpretazione: un solo stato dominante, un'azione di condivisione evidente e rassicurazione persistente limitata all'effetto condiviso."
     },
     {
       "id": "lavoro-del-team",
       "path": "src/features/beta/TeamReviewWorkspace.tsx",
       "status": "migration",
-      "migration_goal": "Rendere motivo del punto, provenienza, stato del team e prossima azione comprensibili senza richiedere lettura formativa preventiva."
+      "migration_goal": "Rendere motivo del punto, provenienza, stato del team e prossima azione riconoscibili senza richiedere lettura formativa preventiva."
     },
     {
       "id": "coordinamento-del-team",
