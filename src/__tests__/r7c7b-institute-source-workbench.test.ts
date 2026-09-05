@@ -3,12 +3,14 @@ import panelSource from '../features/documents/components/InstituteSourceReviewP
 import workspaceSource from '../features/documents/components/FontiWorkspace.tsx?raw';
 
 describe('R7C7B institute source remediation workbench', () => {
-  it('is exposed from the canonical Fonti workspace', () => {
-    expect(workspaceSource).toContain("import { InstituteSourceReviewPanel } from './InstituteSourceReviewPanel'");
-    expect(workspaceSource).toContain('<InstituteSourceReviewPanel />');
+  it('resta disponibile come logica storica ma non è più il flusso canonico di Fonti', () => {
+    expect(workspaceSource).not.toContain("import { InstituteSourceReviewPanel } from './InstituteSourceReviewPanel'");
+    expect(workspaceSource).not.toContain('<InstituteSourceReviewPanel />');
+    expect(workspaceSource).toContain("import { InstituteCurrentSourcePanel } from './InstituteCurrentSourcePanel'");
+    expect(workspaceSource).toContain('<InstituteCurrentSourcePanel />');
   });
 
-  it('keeps corrected-source evidence local and source-bound', () => {
+  it('keeps corrected-source evidence local and source-bound in the historical workbench', () => {
     expect(panelSource).toContain("crypto.subtle.digest('SHA-256'");
     expect(panelSource).toContain('arena-institute-source-review-receipts-v1');
     expect(panelSource).toContain('CORRECTED_SOURCE_VERSION_LINKED');
