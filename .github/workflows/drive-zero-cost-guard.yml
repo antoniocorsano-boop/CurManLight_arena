@@ -1,0 +1,50 @@
+name: CML Drive Zero Cost Guard
+
+on:
+  push:
+    branches:
+      - feature/drive-zero-cost-guard
+  pull_request:
+    paths:
+      - 'src/domain/backup/**'
+      - 'src/infrastructure/googleDrive/**'
+      - 'src/features/documents/components/SourceRegistryDriveBackupAction.tsx'
+      - 'src/__tests__/drive-zero-cost-guard.test.ts'
+      - 'docs/architecture/CML_DRIVE_SOURCE_BOUNDARY.md'
+      - '.github/workflows/drive-zero-cost-guard.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  zero-cost-guard:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Zero-cost Drive invariants
+        run: npx vitest run --project unit src/__tests__/drive-zero-cost-guard.test.ts
+
+      - name: Existing Drive boundary regression
+        run: >-
+          npx vitest run --project unit
+          src/__tests__/source-registry-drive-boundary.test.ts
+          src/__tests__/google-drive-backup-sink.test.ts
+          src/__tests__/google-drive-backup-action.test.ts
+
+      - name: TypeScript
+        run: npx tsc --noEmit
+
+      - name: Production build
+        run: npm run build

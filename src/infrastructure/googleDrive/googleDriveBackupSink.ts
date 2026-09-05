@@ -1,5 +1,6 @@
 import {
   CML_BACKUP_SCHEMA,
+  assertCmlOutboundPackageWithinCostGuard,
   calculateCmlBackupContentHash,
   createBackupReceipt,
   encodeCmlBackupPackage,
@@ -113,10 +114,13 @@ export class GoogleDriveBackupSink implements BackupSink {
       throw new Error('BACKUP_CONTENT_HASH_MISMATCH');
     }
 
+    const packageBytes = encodeCmlBackupPackage(manifest, payload);
+    // Cost guard is intentionally enforced before OAuth and before any provider call.
+    assertCmlOutboundPackageWithinCostGuard(packageBytes.byteLength);
+
     const accessToken = (await this.accessTokenProvider()).trim();
     if (!accessToken) throw new Error('DRIVE_BACKUP_ACCESS_TOKEN_REQUIRED');
 
-    const packageBytes = encodeCmlBackupPackage(manifest, payload);
     const fileName = buildGoogleDriveBackupFileName(manifest);
     const metadata = {
       name: fileName,

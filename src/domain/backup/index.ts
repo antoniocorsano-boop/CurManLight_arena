@@ -12,6 +12,10 @@ export {
   encodeCmlBackupPackage,
   decodeCmlBackupPackage,
 } from './package';
+export {
+  CML_ORDINARY_CLOUD_COST_POLICY,
+  assertCmlOutboundPackageWithinCostGuard,
+} from './costGuard';
 
 export type {
   BackupProvider,
@@ -28,3 +32,4 @@ export type {
   CmlBackupArtifact,
 } from './artifact';
 export type { DecodedCmlBackupPackage } from './package';
+export type { CmlOrdinaryCloudCostPolicy } from './costGuard';
