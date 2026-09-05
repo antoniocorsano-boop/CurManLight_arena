@@ -60,7 +60,6 @@ export function OperationalOnboardingModal({
   setOnboardingDiscLocal,
   localCurriculum,
   onboardingCombinations,
-  setOnboardingCombinations,
   handleToggleOnboardingCombination,
   availableSections,
   setAvailableSections,
