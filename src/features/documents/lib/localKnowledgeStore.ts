@@ -57,6 +57,10 @@ export type LocalKnowledgeVerificationOptions = {
 export interface LocalKnowledgeRegistryRestoreInput {
   sources: readonly CustomKbDoc[];
   governance: readonly SourceGovernanceRecord[];
+  /** Principal observed (or absent) while the human reviewed the preview. */
+  expectedExistingPrincipalId: string | null;
+  /** Existing principal, or a generated candidate when the preview found none. */
+  targetPrincipalId: string;
   restoredAt?: string;
 }
 
@@ -115,20 +119,32 @@ function downgradeLocalKnowledgeVerification(source: CustomKbDoc): CustomKbDoc {
   };
 }
 
+export async function getLocalKnowledgePrincipalId(): Promise<string | null> {
+  const existing = await getKnowledgeDb().meta.get(LOCAL_PRINCIPAL_KEY);
+  return existing?.value?.trim() || null;
+}
+
+export function createLocalKnowledgePrincipalIdCandidate(): string {
+  if (!globalThis.crypto?.randomUUID) {
+    throw new Error('Generatore di identità locale non disponibile.');
+  }
+  return `local:${globalThis.crypto.randomUUID()}`;
+}
+
 export async function getOrCreateLocalKnowledgePrincipalId(): Promise<string> {
   const db = getKnowledgeDb();
   return db.transaction('rw', db.meta, async () => {
     const existing = await db.meta.get(LOCAL_PRINCIPAL_KEY);
     if (existing?.value) return existing.value;
 
-    if (!globalThis.crypto?.randomUUID) {
-      throw new Error('Generatore di identità locale non disponibile.');
-    }
-
-    const value = `local:${globalThis.crypto.randomUUID()}`;
+    const value = createLocalKnowledgePrincipalIdCandidate();
     await db.meta.put({ key: LOCAL_PRINCIPAL_KEY, value });
     return value;
   });
+}
+
+export async function countLocalKnowledgeSources(): Promise<number> {
+  return getKnowledgeDb().sources.count();
 }
 
 export async function calculateLocalKnowledgeSourceFingerprint(source: Pick<CustomKbDoc, 'content'>): Promise<string> {
@@ -298,14 +314,16 @@ export async function putLocalKnowledgeSources(sources: CustomKbDoc[]): Promise<
 
 /**
  * Atomically replaces only the local personal Source Registry. The stable local
- * principal stored in `meta` is deliberately preserved; caller-side restore
- * validation decides whether historical verification can be inherited.
+ * principal is preserved when present; when preview observed no principal, the
+ * generated preview candidate is persisted in the same transaction as restore.
  */
 export async function replaceLocalKnowledgeRegistryFromRestore(
   input: LocalKnowledgeRegistryRestoreInput,
 ): Promise<void> {
   const db = getKnowledgeDb();
   const restoredAt = input.restoredAt ?? new Date().toISOString();
+  const targetPrincipalId = input.targetPrincipalId.trim();
+  if (!targetPrincipalId) throw new Error('RESTORE_TARGET_PRINCIPAL_REQUIRED');
   const sourceIds = new Set<string>();
   const governanceKeys = new Set<string>();
 
@@ -321,11 +339,22 @@ export async function replaceLocalKnowledgeRegistryFromRestore(
     return { ...record, registryId, recordedAt: restoredAt };
   });
 
-  await db.transaction('rw', db.sources, db.governance, async () => {
+  await db.transaction('rw', db.sources, db.governance, db.meta, async () => {
+    const observedPrincipal = (await db.meta.get(LOCAL_PRINCIPAL_KEY))?.value?.trim() || null;
+    if (observedPrincipal !== input.expectedExistingPrincipalId) {
+      throw new Error('RESTORE_PRINCIPAL_CHANGED_SINCE_PREVIEW');
+    }
+    if (observedPrincipal && observedPrincipal !== targetPrincipalId) {
+      throw new Error('RESTORE_EXISTING_PRINCIPAL_REPLACEMENT_BLOCKED');
+    }
+
     await db.sources.clear();
     await db.governance.clear();
     if (input.sources.length > 0) await db.sources.bulkPut([...input.sources]);
     if (persistedGovernance.length > 0) await db.governance.bulkPut(persistedGovernance);
+    if (!observedPrincipal) {
+      await db.meta.put({ key: LOCAL_PRINCIPAL_KEY, value: targetPrincipalId });
+    }
   });
 }
 
