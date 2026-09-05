@@ -33,13 +33,17 @@ export const useCurriculumProgressStats = ({
   });
 
   const progressPercent = totalDecisions > 0 ? Math.round(((approvedCount + rejectedCount + customCount) / totalDecisions) * 100) : 0;
-  const pendingCount = totalDecisions - (approvedCount + rejectedCount + customCount);
 
   const currentDisciplineProps = (localCurriculum[discipline]?.[order]?.proposals || []) as Proposal[];
   let currentDisciplineDecided = 0;
   currentDisciplineProps.forEach(p => {
     if (decisions[p.id]) currentDisciplineDecided++;
   });
+
+  // Navigation badge contract: only the user's current personal review context.
+  // Team discussion items have their own counters inside the team workspace and
+  // must not be mixed with the teacher's individual review backlog.
+  const pendingCount = Math.max(0, currentDisciplineProps.length - currentDisciplineDecided);
 
   return {
     totalDecisions,

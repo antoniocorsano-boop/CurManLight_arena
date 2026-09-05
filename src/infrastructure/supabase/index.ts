@@ -3,3 +3,4 @@ export * from './client';
 export * from './sharedWorkspaceRepository';
 export * from './sharedRevisionDecisionRepository';
 export * from './sharedSubmittedProposalRepository';
+export * from './sharedTeamReviewRepository';
