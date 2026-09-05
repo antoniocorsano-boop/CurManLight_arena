@@ -23,6 +23,8 @@ const cco = readJson('.human/operational-communication.contract.json');
 const surfaces = readJson('.human/operational-communication.surfaces.json');
 const him = readJson('.human/him.config.json');
 const mirror = readText('docs/curriculum/REG-CURR-00_MASTER_ALIGNMENT.md');
+const currentSourceDomain = readText('src/domain/curriculum/institute/currentSource.ts');
+const canonicalFontiWorkspace = readText('src/features/documents/components/FontiWorkspace.tsx');
 
 assert(registry.registry_id === 'REG-CURR-00', 'registry_id deve essere REG-CURR-00');
 assert(registry.version === '1.0.0', 'versione iniziale del registro inattesa');
@@ -44,6 +46,34 @@ assert(
 assert(
   source.status === 'PROPOSTA_D_ISTITUTO_DA_VALIDARE',
   'la fonte corretta non deve essere promossa implicitamente oltre lo stato di proposta da validare',
+);
+
+assert(currentSourceDomain.includes(source.title), 'il dominio non usa il titolo della fonte curricolare corrente');
+assert(currentSourceDomain.includes(source.file_id), 'il dominio non usa il Drive file ID della fonte corrente');
+assert(currentSourceDomain.includes(source.sha256), 'il dominio non usa lo SHA-256 della fonte corrente');
+assert(
+  currentSourceDomain.includes("lifecycleState: 'PROPOSAL_PENDING_HUMAN_VALIDATION'"),
+  'il dominio deve mantenere la fonte corrente come proposta in attesa di validazione umana',
+);
+assert(
+  currentSourceDomain.includes("role: 'HISTORICAL_TECHNICAL_BASELINE'"),
+  'la ricostruzione v3 deve restare soltanto precedente tecnico storico',
+);
+assert(
+  currentSourceDomain.includes('canonicalPromotionAuthorized: false'),
+  'il dominio non può autorizzare promozione canonica automatica',
+);
+assert(
+  canonicalFontiWorkspace.includes('<InstituteCurrentSourcePanel />'),
+  'Fonti deve mostrare la fonte curricolare corrente',
+);
+assert(
+  !canonicalFontiWorkspace.includes('<InstituteSourceReviewPanel />'),
+  'Fonti non deve riaprire il vecchio workbench di remediation come flusso canonico',
+);
+assert(
+  !canonicalFontiWorkspace.includes('<InstituteSourceChangeTracePanel />'),
+  'Fonti non deve presentare la traccia locale v3 come stato corrente della fonte',
 );
 
 const baseline = registry.arena_product_baseline;
