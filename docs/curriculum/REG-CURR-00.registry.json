@@ -1,7 +1,7 @@
 {
   "registry_id": "REG-CURR-00",
-  "version": "1.2.0",
-  "recorded_at": "2026-09-05",
+  "version": "1.3.0",
+  "recorded_at": "2026-09-06",
   "purpose": "Mantenere allineati fascicolo Drive, fonte curricolare corrente, logiche di governo, baseline Arena e documentazione operativa.",
   "drive": {
     "master_register": {
@@ -61,6 +61,28 @@
       "title": "WORK-CURR-TEC-01_Pacchetto_operativo_Arena_Tecnologia_classe_prima_2026-2027",
       "file_id": "1s2qZf53O6BqjgyrtzcXuL5lSdafoAmtAUEFv-4mwcog"
     },
+    "instructional_audit": {
+      "audit_id": "AUD-CURR-TEC-SEC1-01",
+      "title": "AUD-CURR-TEC-SEC1-01_Audit_cinque_schede_Tecnologia_classe_prima_2026-2027",
+      "file_id": "1SZ_lmaYXNF2Fx8ro1C-hTh5iUH-riECcqyZtRx9JRPM",
+      "status": "COMPLETATO",
+      "instructional_outcome": "PRONTO_AL_RIESAME_PROFESSIONALE_CON_CORREZIONI_MIRATE",
+      "human_outcome": "OPEN",
+      "canonical_promotion": "NOT_AUTHORIZED",
+      "card_findings": {
+        "TEC-SEC1-2026-N1": "CONFERMABILE_CON_MICRO_CORREZIONE_ISTRUTTORIA",
+        "TEC-SEC1-2026-N2": "CONFERMABILE",
+        "TEC-SEC1-2026-N3": "CONFERMABILE_CON_QUALIFICAZIONE_DI_PROVENIENZA",
+        "TEC-SEC1-2026-N4": "DA_MODIFICARE_PRIMA_DELLA_CONFERMA_PROFESSIONALE",
+        "TEC-SEC1-2026-VERTICALITÀ": "IMPIANTO_CONFERMABILE_GATE_APERTO"
+      },
+      "required_instructional_corrections": [
+        "Rappresentare la struttura nazionale come tre nuclei fondanti di Tecnologia integrati con Informatica, senza qualificare N4 come quarto nucleo nazionale autonomo.",
+        "Qualificare le formulazioni della classe prima come obiettivi annuali o progressione annuale d'Istituto, distinguendole dagli Obiettivi specifici di apprendimento nazionali.",
+        "Riscalare N4 verso comprensione funzionale di sistemi informatici, dati, processi, Internet e attendibilità delle informazioni.",
+        "Mantenere provenienza granulare per elementi d'Istituto, trasversali e transitori."
+      ]
+    },
     "source": {
       "title": "CURRICOLO_VERTICALE_CORRETTO_PROPOSTA_2026-09-03.docx",
       "file_id": "1DPdK_EIZsE3lI-LIzTJG776cU1PcAcnf"
@@ -119,6 +141,7 @@
     "current_source_must_match_across_drive_and_repo": true,
     "active_validation_pilot_requires_exact_drive_bindings": true,
     "human_outcome_must_not_be_inferred_from_app_state": true,
+    "instructional_audit_must_not_be_promoted_as_human_outcome": true,
     "experimental_feature_must_be_marked_experimental": true,
     "tests_or_commits_never_imply_curriculum_approval": true
   },
