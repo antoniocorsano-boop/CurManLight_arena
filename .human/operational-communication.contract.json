@@ -1,14 +1,18 @@
 {
   "contract_id": "CCO",
   "name": "Contratto di comunicazione operativa di Arena",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "purpose": "Separare uso operativo, rassicurazione contestuale e formazione affinché l'utente possa agire con fiducia senza dover studiare ogni vista prima di usarla.",
   "principles": {
     "structure_before_explanation": true,
     "state_before_explanation": true,
     "operational_use_must_not_depend_on_training_copy": true,
     "trust_through_predictability": true,
-    "progressive_disclosure_for_learning": true
+    "progressive_disclosure_for_learning": true,
+    "vertical_workflows_must_be_state_progressive": true,
+    "future_steps_must_not_compete_with_current_task": true,
+    "completed_steps_should_compact_when_possible": true,
+    "automatic_scroll_must_not_replace_explicit_user_progression": true
   },
   "layers": {
     "operational": {
@@ -26,6 +30,15 @@
       "progressive_disclosure": true,
       "must_not_block_primary_action": true,
       "must_remain_reachable": true
+    },
+    "workflow_progression": {
+      "required_for_multistep_vertical_surfaces": true,
+      "current_step_must_dominate": true,
+      "future_step_controls_should_be_locked_or_hidden_until_relevant": true,
+      "completed_step_may_become_compact_summary": true,
+      "next_step_should_appear_as_consequence_of_completed_work": true,
+      "partial_progress_must_remain_recoverable": true,
+      "explicit_continue_action_preferred_over_forced_scroll": true
     }
   },
   "action_grammar": [
@@ -48,7 +61,10 @@
     "one_primary_action_per_task_context": true,
     "flow_must_survive_training_copy_removal": true,
     "full_explanation_must_remain_reachable": true,
-    "state_must_precede_process_explanation": true
+    "state_must_precede_process_explanation": true,
+    "downstream_controls_must_not_be_fully_active_before_prerequisite": true,
+    "completion_must_produce_visible_consequence": true,
+    "incomplete_required_input_must_not_count_as_completed_work": true
   },
   "pilot_surfaces": [
     {
