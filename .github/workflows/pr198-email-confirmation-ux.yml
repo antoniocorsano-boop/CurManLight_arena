@@ -1,0 +1,89 @@
+name: PR198 Email Confirmation UX
+
+on:
+  push:
+    branches:
+      - ops/pr198-preview-build
+
+permissions:
+  contents: write
+
+jobs:
+  email-confirmation-ux:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout exact PR
+        uses: actions/checkout@v4
+        with:
+          ref: 39a0a7a64d4cd05d63b0ab0c0841e986aacd493e
+          fetch-depth: 0
+
+      - name: Patch confirmation UX
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('src/features/beta/BetaIdentityPage.tsx')
+          s = p.read_text()
+
+          s = s.replace(
+            "  const [messageKind, setMessageKind] = useState<'success' | 'error' | 'info'>('info');\n",
+            "  const [messageKind, setMessageKind] = useState<'success' | 'error' | 'info'>('info');\n  const [awaitingEmailConfirmation, setAwaitingEmailConfirmation] = useState(false);\n"
+          )
+
+          old = """    if (error) {\n      setMessageKind('error');\n      setMessage('Accesso non riuscito. Controlla email e password e riprova.');\n      if (/failed to fetch|network/i.test(error.message)) void probeSupabase();\n      return;\n    }\n    setMessageKind('success');\n    setMessage('Accesso effettuato. Ora puoi entrare nel lavoro condiviso del team.');\n"""
+          new = """    if (error) {\n      const authCode = (error as { code?: string }).code;\n      if (authCode === 'email_not_confirmed' || /email not confirmed/i.test(error.message)) {\n        setAwaitingEmailConfirmation(true);\n        setMessageKind('info');\n        setMessage('Account creato, ma email non ancora confermata. Apri il messaggio ricevuto e conferma l’indirizzo prima di accedere.');\n        return;\n      }\n      setMessageKind('error');\n      setMessage('Accesso non riuscito. Controlla email e password e riprova.');\n      if (/failed to fetch|network/i.test(error.message)) void probeSupabase();\n      return;\n    }\n    setAwaitingEmailConfirmation(false);\n    setMessageKind('success');\n    setMessage('Accesso effettuato. Ora puoi entrare nel lavoro condiviso del team.');\n"""
+          if old not in s:
+            raise SystemExit('signIn block not found')
+          s = s.replace(old, new)
+
+          old = """    setMessageKind('success');\n    setMessage(data.session\n      ? 'Account creato. La sessione è già attiva.'\n      : 'Account creato. Controlla la tua email per confermare l’indirizzo, poi torna qui per accedere.');\n  };\n\n  const submitAuth = async (event: FormEvent) => {\n"""
+          new = """    setMessageKind('success');\n    if (data.session) {\n      setAwaitingEmailConfirmation(false);\n      setMessage('Account creato. La sessione è già attiva.');\n    } else {\n      setAwaitingEmailConfirmation(true);\n      setAuthMode('sign-in');\n      setPassword('');\n      setPasswordConfirm('');\n      setMessage('Account creato. Ti abbiamo inviato un’email: conferma l’indirizzo prima di accedere.');\n    }\n  };\n\n  const resendConfirmation = async () => {\n    if (!client || !email) return;\n    setBusy(true);\n    const { error } = await client.auth.resend({ type: 'signup', email });\n    setBusy(false);\n    if (error) {\n      setMessageKind('error');\n      setMessage('Non riesco a reinviare l’email di conferma. Riprova tra poco.');\n      return;\n    }\n    setMessageKind('success');\n    setMessage('Email di conferma inviata di nuovo. Controlla anche la cartella Spam o Posta indesiderata.');\n  };\n\n  const submitAuth = async (event: FormEvent) => {\n"""
+          if old not in s:
+            raise SystemExit('signUp tail not found')
+          s = s.replace(old, new)
+
+          old = """                {message && (\n                  <p role=\"status\" aria-live=\"polite\" style={{ ...messageStyle, margin: 0, padding: '11px 12px', borderRadius: 10, fontWeight: 700 }}>\n                    {message}\n                  </p>\n                )}\n\n                <button\n"""
+          new = """                {message && (\n                  <p role=\"status\" aria-live=\"polite\" style={{ ...messageStyle, margin: 0, padding: '11px 12px', borderRadius: 10, fontWeight: 700 }}>\n                    {message}\n                  </p>\n                )}\n\n                {awaitingEmailConfirmation && (\n                  <section style={{ padding: 14, borderRadius: 12, background: colors.warningBg, border: '1px solid #fedf89' }}>\n                    <strong style={{ display: 'block', color: colors.warning }}>Conferma la tua email</strong>\n                    <p style={{ margin: '6px 0 12px', color: '#754c00' }}>\n                      L’account esiste già. Prima del primo accesso devi aprire l’email di conferma ricevuta dal servizio Beta.\n                    </p>\n                    <button type=\"button\" onClick={() => void resendConfirmation()} disabled={busy} style={secondaryButtonStyle}>\n                      {busy ? 'Invio in corso…' : 'Invia di nuovo l’email di conferma'}\n                    </button>\n                  </section>\n                )}\n\n                <button\n"""
+          if old not in s:
+            raise SystemExit('message render block not found')
+          s = s.replace(old, new)
+
+          p.write_text(s)
+          PY
+
+      - name: Verify UX contract
+        run: |
+          grep -Fq "email_not_confirmed" src/features/beta/BetaIdentityPage.tsx
+          grep -Fq "Conferma la tua email" src/features/beta/BetaIdentityPage.tsx
+          grep -Fq "Invia di nuovo l’email di conferma" src/features/beta/BetaIdentityPage.tsx
+          grep -Fq "client.auth.resend" src/features/beta/BetaIdentityPage.tsx
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run authority regression tests
+        run: npx vitest run src/__tests__/team-review-workspace.test.ts src/__tests__/beta-planning-handoff-preview.test.ts
+
+      - name: TypeScript
+        run: npx tsc --noEmit
+
+      - name: Beta build
+        run: npm run build:beta
+
+      - name: Commit and push to PR
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/features/beta/BetaIdentityPage.tsx
+          git commit -m "fix(beta): explain email confirmation before sign-in"
+          git push "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" HEAD:feature/team-meeting-workspace
