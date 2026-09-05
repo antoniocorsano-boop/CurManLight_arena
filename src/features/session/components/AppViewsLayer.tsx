@@ -1,10 +1,9 @@
-import { CurriculumTab, RevisioneTab } from '../../curriculum';
+import { CurriculumTab } from '../../curriculum';
 import { EsportazioniTab, FontiTab, SecondBrainTab } from '../../documents';
 import { PlanningHandoffPreview } from '../../beta/PlanningHandoffPreview';
-import { TeamReviewWorkspace } from '../../beta';
+import { RevisionWorkspace } from '../../beta';
 import { ProcessoTab } from '../../processo';
 import { ProgettazioneTab } from '../../progettazione';
-import { useCurriculumStore } from '../../../store/useCurriculumStore';
 import { DashboardView } from './DashboardView';
 import { InfoViews } from './InfoViews';
 import type { ActiveProgTab, AppViewsLayerProps } from '../types/appViewContracts';
@@ -19,8 +18,6 @@ const isAppTab = (tab: string): tab is AppTab => (APP_TABS as readonly string[])
 const isActiveProgTab = (tab: string): tab is ActiveProgTab => (ACTIVE_PROG_TABS as readonly string[]).includes(tab);
 
 export function AppViewsLayer(props: AppViewsLayerProps) {
-  const { decisions, customTexts } = useCurriculumStore();
-
   const safeHandleTabSwitch = (tab: string) => {
     if (isAppTab(tab)) props.handleTabSwitch(tab);
   };
@@ -95,27 +92,7 @@ export function AppViewsLayer(props: AppViewsLayerProps) {
 
       {props.activeTab === 'revisione' && (
         <div className="space-y-3" data-teacher-surface="revision">
-          <aside
-            data-hva-revision-guide
-            role="note"
-            className="rounded-2xl border border-indigo-200 bg-indigo-50/70 p-4 text-sm leading-6 text-slate-700"
-          >
-            <strong className="block text-base text-slate-900">Qui prepari il confronto. Non approvi il curricolo.</strong>
-            <ol className="mt-2 grid gap-1 pl-5 text-sm list-decimal">
-              <li>Confronta il testo precedente con quello proposto.</li>
-              <li>Registra il tuo orientamento professionale per il confronto.</li>
-              <li>Il lavoro del team resta separato; nessun passaggio istituzionale viene simulato da questa schermata.</li>
-            </ol>
-            <p className="mt-2 font-semibold text-indigo-950">
-              La decisione della scuola è un passaggio diverso e richiede identità e autorità verificate. Senza quel contesto, Arena resta in consultazione e preparazione.
-            </p>
-          </aside>
-          <RevisioneTab {...props} />
-          <TeamReviewWorkspace
-            proposals={props.currentDisciplineProps}
-            decisions={decisions}
-            customTexts={customTexts}
-          />
+          <RevisionWorkspace {...props} />
         </div>
       )}
 
