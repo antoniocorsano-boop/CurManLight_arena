@@ -1,14 +1,21 @@
 {
   "contract_id": "CCO",
   "name": "Contratto di comunicazione operativa di Arena",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "purpose": "Separare uso operativo, rassicurazione contestuale e formazione affinché l'utente possa agire con fiducia senza dover studiare ogni vista prima di usarla.",
   "principles": {
     "structure_before_explanation": true,
     "state_before_explanation": true,
+    "recognition_before_interpretation": true,
     "operational_use_must_not_depend_on_training_copy": true,
     "trust_through_predictability": true,
     "progressive_disclosure_for_learning": true,
+    "visual_state_preferred_over_explanatory_copy": true,
+    "one_dominant_object_per_task_context": true,
+    "action_must_be_adjacent_to_object": true,
+    "routine_copy_must_not_restate_visible_structure": true,
+    "work_mode_is_default": true,
+    "explanations_are_on_demand": true,
     "vertical_workflows_must_be_state_progressive": true,
     "future_steps_must_not_compete_with_current_task": true,
     "completed_steps_should_compact_when_possible": true,
@@ -24,8 +31,18 @@
       "must_answer": ["where_am_i", "current_state", "next_action", "immediate_effect"],
       "primary_action_must_be_self_describing": true
     },
+    "recognition": {
+      "required": true,
+      "single_dominant_object": true,
+      "state_by_transformation_preferred": true,
+      "actions_adjacent_to_object": true,
+      "routine_explanation_default_hidden": true,
+      "secondary_metadata_progressive_disclosure": true,
+      "persistent_copy_must_prevent_a_current_error": true
+    },
     "assurance": {
-      "required_when": ["shared_effect", "authority_boundary", "consequential_action"],
+      "persistent_required_when": ["shared_effect", "institutional_authority_action", "irreversible_or_external_effect"],
+      "on_demand_allowed_when": ["personal_scope_boundary", "background_governance"],
       "must_be_contextual": true,
       "must_not_replace_action_label": true,
       "preferred_max_words": 18
@@ -50,9 +67,10 @@
   },
   "action_grammar": [
     {"verb": "Esamina", "meaning": "leggi e valuta una scheda"},
-    {"verb": "Conferma", "meaning": "esprimi accordo con una proposta nel tuo contesto"},
-    {"verb": "Proponi una modifica", "meaning": "avvia la formulazione di un'alternativa senza registrarla come completata"},
-    {"verb": "Registra la modifica", "meaning": "conferma e salva la formulazione alternativa come orientamento personale completo"},
+    {"verb": "Conferma", "meaning": "esprimi accordo con la proposta visibile nel contesto corrente"},
+    {"verb": "Modifica", "meaning": "apri la formulazione di un'alternativa senza registrarla come completata"},
+    {"verb": "Registra modifica", "meaning": "salva la formulazione alternativa come orientamento personale completo"},
+    {"verb": "Mantieni", "meaning": "mantieni il testo precedente nel contesto corrente"},
     {"verb": "Condividi", "meaning": "rendi visibile al team un contributo personale"},
     {"verb": "Registra l'esito", "meaning": "documenta un esito già maturato nel gruppo autorizzato"}
   ],
@@ -70,6 +88,12 @@
     "flow_must_survive_training_copy_removal": true,
     "full_explanation_must_remain_reachable": true,
     "state_must_precede_process_explanation": true,
+    "recognition_must_precede_interpretation": true,
+    "single_dominant_object": true,
+    "routine_copy_must_not_duplicate_visible_state": true,
+    "action_object_proximity_required": true,
+    "secondary_explanation_default_collapsed": true,
+    "persistent_assurance_requires_current_risk": true,
     "downstream_controls_must_not_be_fully_active_before_prerequisite": true,
     "completion_must_produce_visible_consequence": true,
     "incomplete_required_input_must_not_count_as_completed_work": true,
@@ -102,13 +126,18 @@
     {
       "path": "src/features/curriculum/components/RevisioneTab.tsx",
       "required_tokens": [
-        "data-revision-flow=\"single-task\"",
+        "data-revision-flow=\"recognition-first\"",
+        "data-revision-recognition-header",
         "data-revision-current-card",
         "data-revision-completed-card",
-        "Rivedi le schede",
-        "Proponi una modifica",
-        "Registra la modifica",
-        "Passa alla condivisione"
+        "data-revision-assurance-on-demand",
+        "Precedente",
+        "Proposta",
+        ">Conferma<",
+        ">Modifica<",
+        ">Mantieni precedente<",
+        "Registra modifica",
+        "Tutte le schede"
       ]
     }
   ]
