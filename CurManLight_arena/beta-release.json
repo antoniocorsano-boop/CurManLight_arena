@@ -1,0 +1,14 @@
+{
+  "schema": "CML_BETA_RELEASE_V1",
+  "product": "CurManLight Arena",
+  "channel": "beta",
+  "releaseSha": "99ea576f8bab68ef904d5d264a687bcb490490fd",
+  "sourceRef": "99ea576f8bab68ef904d5d264a687bcb490490fd",
+  "builtAt": "2026-09-05T07:10:53.239Z",
+  "repository": "antoniocorsano-boop/CurManLight_arena",
+  "basePath": "/CurManLight_arena/",
+  "rollback": {
+    "strategy": "redeploy-known-good-ref",
+    "supported": true
+  }
+}
