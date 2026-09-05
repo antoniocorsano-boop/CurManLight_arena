@@ -16,7 +16,7 @@ jobs:
       - name: Checkout exact validated PR #198 SHA
         uses: actions/checkout@v4
         with:
-          ref: a697ae4681a37ecf6944b3eb80a6ee81e6963a7c
+          ref: 6a8366808a926228579d7345a361a264886b905e
           fetch-depth: 1
 
       - name: Setup Node
@@ -30,13 +30,13 @@ jobs:
 
       - name: Build exact Beta artifact
         env:
-          CML_RELEASE_REF: a697ae4681a37ecf6944b3eb80a6ee81e6963a7c
-          CML_RELEASE_SHA: a697ae4681a37ecf6944b3eb80a6ee81e6963a7c
+          CML_RELEASE_REF: 6a8366808a926228579d7345a361a264886b905e
+          CML_RELEASE_SHA: 6a8366808a926228579d7345a361a264886b905e
         run: npm run build:beta
 
       - name: Verify release identity
         run: |
-          node -e "const fs=require('fs');const p='dist/beta-release.json';const d=JSON.parse(fs.readFileSync(p,'utf8'));if(d.releaseSha!=='a697ae4681a37ecf6944b3eb80a6ee81e6963a7c'){throw new Error('Unexpected release SHA: '+d.releaseSha)};if(d.basePath!=='/CurManLight_arena/'){throw new Error('Unexpected basePath: '+d.basePath)}"
+          node -e "const fs=require('fs');const p='dist/beta-release.json';const d=JSON.parse(fs.readFileSync(p,'utf8'));if(d.releaseSha!=='6a8366808a926228579d7345a361a264886b905e'){throw new Error('Unexpected release SHA: '+d.releaseSha)};if(d.basePath!=='/CurManLight_arena/'){throw new Error('Unexpected basePath: '+d.basePath)}"
 
       - name: Prepare basename-safe static host tree
         run: |
@@ -87,6 +87,6 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
-          git commit -m "PR #198 preview a697ae4681a37ecf6944b3eb80a6ee81e6963a7c — fixed team identity navigation"
+          git commit -m "PR #198 preview 6a8366808a926228579d7345a361a264886b905e — user-friendly Beta access"
           git remote add origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
           git push --force origin HEAD:refs/heads/preview/pr198-static HEAD:refs/heads/pr198-static-preview
