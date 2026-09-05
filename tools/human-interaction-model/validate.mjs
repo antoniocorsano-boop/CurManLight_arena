@@ -188,9 +188,16 @@ async function validateOperationalCommunicationContract() {
   const requiredPrinciples = [
     'structure_before_explanation',
     'state_before_explanation',
+    'recognition_before_interpretation',
     'operational_use_must_not_depend_on_training_copy',
     'trust_through_predictability',
     'progressive_disclosure_for_learning',
+    'visual_state_preferred_over_explanatory_copy',
+    'one_dominant_object_per_task_context',
+    'action_must_be_adjacent_to_object',
+    'routine_copy_must_not_restate_visible_structure',
+    'work_mode_is_default',
+    'explanations_are_on_demand',
     'vertical_workflows_must_be_state_progressive',
     'future_steps_must_not_compete_with_current_task',
     'completed_steps_should_compact_when_possible',
@@ -209,9 +216,31 @@ async function validateOperationalCommunicationContract() {
     if (!operationalAnswers.includes(answer)) fail(`CCO: livello operativo non risponde a ${answer}`);
   }
 
+  const recognition = contract.layers?.recognition ?? {};
+  for (const invariant of [
+    'required',
+    'single_dominant_object',
+    'state_by_transformation_preferred',
+    'actions_adjacent_to_object',
+    'routine_explanation_default_hidden',
+    'secondary_metadata_progressive_disclosure',
+    'persistent_copy_must_prevent_a_current_error',
+  ]) {
+    if (recognition[invariant] !== true) fail(`CCO: recognition.${invariant} deve essere true`);
+  }
+
   if (contract.layers?.assurance?.must_not_replace_action_label !== true) {
     fail('CCO: la rassicurazione non può sostituire il nome dell’azione');
   }
+  if (!Array.isArray(contract.layers?.assurance?.persistent_required_when)
+    || !contract.layers.assurance.persistent_required_when.includes('shared_effect')) {
+    fail('CCO: la rassicurazione persistente deve restare obbligatoria per gli effetti condivisi');
+  }
+  if (!Array.isArray(contract.layers?.assurance?.on_demand_allowed_when)
+    || !contract.layers.assurance.on_demand_allowed_when.includes('personal_scope_boundary')) {
+    fail('CCO: il confine personale deve poter essere comunicato su richiesta quando non è il rischio corrente');
+  }
+
   if (contract.layers?.learning?.progressive_disclosure !== true || contract.layers?.learning?.must_not_block_primary_action !== true) {
     fail('CCO: la formazione deve usare divulgazione progressiva e non bloccare l’azione primaria');
   }
@@ -233,9 +262,10 @@ async function validateOperationalCommunicationContract() {
   }
 
   const grammar = new Set((contract.action_grammar ?? []).map((item) => item.verb));
-  for (const verb of ['Esamina', 'Conferma', 'Proponi una modifica', 'Registra la modifica', 'Condividi', "Registra l'esito"]) {
+  for (const verb of ['Esamina', 'Conferma', 'Modifica', 'Registra modifica', 'Mantieni', 'Condividi', "Registra l'esito"]) {
     if (!grammar.has(verb)) fail(`CCO: verbo canonico mancante: ${verb}`);
   }
+
   const reserved = new Set(contract.reserved_authority_verbs ?? []);
   for (const verb of ['Approva', 'Adotta']) {
     if (!reserved.has(verb)) fail(`CCO: verbo di autorità non riservato: ${verb}`);
@@ -253,6 +283,12 @@ async function validateOperationalCommunicationContract() {
   for (const acceptance of [
     'flow_must_survive_training_copy_removal',
     'full_explanation_must_remain_reachable',
+    'recognition_must_precede_interpretation',
+    'single_dominant_object',
+    'routine_copy_must_not_duplicate_visible_state',
+    'action_object_proximity_required',
+    'secondary_explanation_default_collapsed',
+    'persistent_assurance_requires_current_risk',
     'downstream_controls_must_not_be_fully_active_before_prerequisite',
     'completion_must_produce_visible_consequence',
     'incomplete_required_input_must_not_count_as_completed_work',
@@ -295,7 +331,11 @@ async function validateOperationalCommunicationContract() {
       }
       if (!docs.includes('Registro delle superfici')) fail('CCO: documentazione priva del Registro delle superfici');
       if (!docs.includes('una vera transizione di stato')) fail('CCO: documentazione priva del vincolo di vera transizione di stato');
-      if (!docs.includes('Registra la modifica')) fail('CCO: documentazione priva della distinzione tra bozza e registrazione della modifica');
+      if (!docs.includes('Riconoscimento prima dell’interpretazione') && !docs.includes("Riconoscimento prima dell'interpretazione")) {
+        fail('CCO: documentazione priva del principio di riconoscimento prima dell’interpretazione');
+      }
+      if (!docs.includes('Registra modifica')) fail('CCO: documentazione priva della distinzione tra bozza e registrazione della modifica');
+      if (!docs.includes('modalità lavoro') && !docs.includes('Modalità lavoro')) fail('CCO: documentazione priva della modalità lavoro');
       pass('CCO documentation');
     } catch (error) {
       fail(`CCO: impossibile leggere la documentazione: ${error.message}`);
