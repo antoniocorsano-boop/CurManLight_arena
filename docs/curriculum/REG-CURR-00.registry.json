@@ -1,0 +1,81 @@
+{
+  "registry_id": "REG-CURR-00",
+  "version": "1.0.0",
+  "recorded_at": "2026-09-05",
+  "purpose": "Mantenere allineati fascicolo Drive, fonte curricolare corrente, logiche di governo, baseline Arena e documentazione operativa.",
+  "drive": {
+    "master_register": {
+      "title": "REG-CURR-00_Registro_maestro_fascicolo_curricolare_e_allineamento_Arena_2026-2027",
+      "file_id": "1IMKwWWukefIDIOsbHQByiXLN7YuU7He0V5b01tjitG4",
+      "parent_folder_id": "1WXvNeMAuQZ21njUq6xo49bxf2we7o9I3"
+    },
+    "arena_operational_document": {
+      "title": "ARENA-UX-01_Dal_documento_al_lavoro_dei_team_2026-2027",
+      "file_id": "1M8LriHG1zASUq7jE2xiyJfvX4gVnnmZNmYBrrfYS7fE",
+      "alignment_addendum": "25. ALLINEAMENTO CANONICO — 5 SETTEMBRE 2026"
+    },
+    "current_curriculum_source": {
+      "title": "CURRICOLO_VERTICALE_CORRETTO_PROPOSTA_2026-09-03.docx",
+      "file_id": "1DPdK_EIZsE3lI-LIzTJG776cU1PcAcnf",
+      "sha256": "c89fbbbe43432db8410913675381b7dc3654d2448f9f91a8c72b115b9ec6fc55",
+      "status": "PROPOSTA_D_ISTITUTO_DA_VALIDARE",
+      "supersedes_for_current_work": "source-reconstruction-v3"
+    }
+  },
+  "curriculum_process": {
+    "instructional_coverage_3_14": "PASS_ISTRUTTORIO",
+    "human_professional_validation": "OPEN",
+    "verticality_final_review": "OPEN",
+    "ready_for_collegio": "NOT_YET",
+    "collegiate_approval": "NOT_YET",
+    "canonical_curriculum_promotion": "NOT_AUTHORIZED"
+  },
+  "arena_product_baseline": {
+    "repository": "antoniocorsano-boop/CurManLight_arena",
+    "pr": 198,
+    "branch": "feature/team-meeting-workspace",
+    "product_head": "b0b67b645dc87f568c38ccc5ddff46a0e20623cc",
+    "status": "DRAFT_OPERATIONAL_BASELINE",
+    "cco_version": "1.3.0",
+    "cco_surfaces_version": "1.4.0"
+  },
+  "interaction_contract": {
+    "primary_principle": "recognition_before_interpretation",
+    "work_mode_default": true,
+    "one_dominant_object_per_task_context": true,
+    "scrolling_alone_is_not_a_stage_transition": true,
+    "draft_requires_explicit_commit": true
+  },
+  "authority_chain": [
+    "fonte_normativa",
+    "elaborazione_istituto",
+    "proposta_professionale",
+    "contributo_individuale",
+    "esito_professionale_gruppo",
+    "decisione_istituzionale",
+    "curricolo_vigente"
+  ],
+  "downstream_draft_stacks": [
+    {
+      "prs": [199, 200, 201],
+      "scope": "linguaggio_team_riunione_guidata_gruppi_operativi",
+      "status": "NOT_CANONICAL_UNTIL_REALIGNED",
+      "reason": "La catena deriva da una baseline precedente della PR 198 e deve essere riallineata sul current product head prima di una nuova validazione."
+    },
+    {
+      "prs": [202, 203, 204, 205, 206, 207],
+      "scope": "source_registry_backup_restore_drive",
+      "status": "NOT_CANONICAL_UNTIL_REALIGNED",
+      "reason": "La catena parte dal commit cc8bcab2971587fbda0205f0b343e5f8f0fb782c della PR 198 ed è divergente dalla baseline CCO corrente."
+    }
+  ],
+  "alignment_rules": {
+    "draft_pr_does_not_change_institutional_fascicle": true,
+    "product_governance_change_requires_registry_update": true,
+    "cco_change_requires_operational_doc_review": true,
+    "current_source_must_match_across_drive_and_repo": true,
+    "experimental_feature_must_be_marked_experimental": true,
+    "tests_or_commits_never_imply_curriculum_approval": true
+  },
+  "next_authorized_phase": "HUMAN_PROFESSIONAL_CONTENT_VALIDATION"
+}
