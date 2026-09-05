@@ -4,12 +4,21 @@ on:
   push:
     branches:
       - feature/source-registry-drive-boundary
+      - feature/contextual-source-registry
   pull_request:
     paths:
       - 'src/domain/curriculum/sources/**'
       - 'src/domain/backup/**'
+      - 'src/features/documents/components/FontiTab.tsx'
+      - 'src/features/documents/lib/localKnowledgeStore.ts'
+      - 'src/features/documents/lib/localSourceGovernance.ts'
       - 'src/__tests__/source-registry-drive-boundary.test.ts'
+      - 'src/__tests__/source-registry-contextual-ui.test.ts'
+      - 'src/__tests__/source-registry-contextual-persistence.browser.test.ts'
+      - 'src/__tests__/source-authority-v1.test.ts'
+      - 'src/__tests__/source-lifecycle-v1.test.ts'
       - 'docs/architecture/CML_DRIVE_SOURCE_BOUNDARY.md'
+      - 'docs/architecture/ARENA_CONTEXTUAL_SOURCE_REGISTRY.md'
       - '.github/workflows/source-registry-drive-boundary.yml'
 
 permissions:
@@ -18,7 +27,7 @@ permissions:
 jobs:
   boundary:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -33,7 +42,18 @@ jobs:
         run: npm ci
 
       - name: Source and Drive contract tests
-        run: npx vitest run src/__tests__/source-registry-drive-boundary.test.ts
+        run: >-
+          npx vitest run --project unit
+          src/__tests__/source-registry-drive-boundary.test.ts
+          src/__tests__/source-registry-contextual-ui.test.ts
+          src/__tests__/source-authority-v1.test.ts
+          src/__tests__/source-lifecycle-v1.test.ts
+
+      - name: Install Chromium for IndexedDB persistence verification
+        run: npx playwright install --with-deps chromium
+
+      - name: Contextual registry browser persistence
+        run: npx vitest run --project indexeddb-browser src/__tests__/source-registry-contextual-persistence.browser.test.ts
 
       - name: TypeScript
         run: npx tsc --noEmit

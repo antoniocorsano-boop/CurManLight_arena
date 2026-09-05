@@ -60,10 +60,12 @@ describe('Source Authority v1', () => {
     expect(wikiHandlersSource).toContain('volumes: evidenceEligibleBuiltIns');
   });
 
-  it('shows authority class separately from verification and retrieval eligibility', () => {
+  it('shows authority class separately from verification, contextual validity and retrieval eligibility', () => {
     expect(fontiSource).toContain('data-authority-class={source.authorityClass}');
     expect(fontiSource).toContain('Autorità:');
-    expect(fontiSource).toContain('L’autorità resta locale');
+    expect(fontiSource).toContain('non la rende normativa o istituzionale');
+    expect(fontiSource).toContain('governance CML resta personale');
+    expect(fontiSource).toContain('Fonti valide per me / per questo contesto');
     expect(describeKnowledgeAuthorityClass('ARCHIVED_REFERENCE')).toBe('archivio di riferimento');
     expect(describeKnowledgeAuthorityClass('DERIVED')).toBe('materiale derivato');
   });
