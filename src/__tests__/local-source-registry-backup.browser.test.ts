@@ -75,15 +75,22 @@ describe('CML-DRIVE-01 local source registry backup pipeline', () => {
       expect(backedUpGovernance?.validFor.schoolOrders).toEqual(['secondaria']);
       expect(backedUpGovernance?.validFor.disciplines).toEqual(['Tecnologia']);
 
-      const writeSnapshot = vi.fn(async (manifest, payload): Promise<BackupReceipt> => ({
-        backupId: manifest.backupId,
-        provider: 'google-drive',
-        remoteObjectId: 'drive-browser-test',
-        contentHash: manifest.contentHash,
-        exportedAt: '2026-09-05T06:16:00.000Z',
-        direction: 'outbound-backup',
-        authorityEffect: 'none',
-      }));
+      const writeSnapshot = vi.fn(async (manifest, payload): Promise<BackupReceipt> => {
+        const outboundSnapshot = decodeSnapshot(payload);
+        expect(outboundSnapshot.schema).toBe(LOCAL_SOURCE_REGISTRY_SNAPSHOT_SCHEMA);
+        expect(outboundSnapshot.sources.some((item: any) => item.id === id)).toBe(true);
+        expect(await calculateCmlBackupContentHash(payload)).toBe(manifest.contentHash);
+
+        return {
+          backupId: manifest.backupId,
+          provider: 'google-drive',
+          remoteObjectId: 'drive-browser-test',
+          contentHash: manifest.contentHash,
+          exportedAt: '2026-09-05T06:16:00.000Z',
+          direction: 'outbound-backup',
+          authorityEffect: 'none',
+        };
+      });
       const sink: BackupSink = { writeSnapshot };
 
       const result = await backupLocalSourceRegistry(sink, {
