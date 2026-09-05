@@ -1,0 +1,66 @@
+{
+  "contract_id": "CCO",
+  "name": "Contratto di comunicazione operativa di Arena",
+  "version": "1.0.0",
+  "purpose": "Separare uso operativo, rassicurazione contestuale e formazione affinché l'utente possa agire con fiducia senza dover studiare ogni vista prima di usarla.",
+  "principles": {
+    "structure_before_explanation": true,
+    "state_before_explanation": true,
+    "operational_use_must_not_depend_on_training_copy": true,
+    "trust_through_predictability": true,
+    "progressive_disclosure_for_learning": true
+  },
+  "layers": {
+    "operational": {
+      "required": true,
+      "must_answer": ["where_am_i", "current_state", "next_action", "immediate_effect"],
+      "primary_action_must_be_self_describing": true
+    },
+    "assurance": {
+      "required_when": ["shared_effect", "authority_boundary", "consequential_action"],
+      "must_be_contextual": true,
+      "must_not_replace_action_label": true,
+      "preferred_max_words": 18
+    },
+    "learning": {
+      "progressive_disclosure": true,
+      "must_not_block_primary_action": true,
+      "must_remain_reachable": true
+    }
+  },
+  "action_grammar": [
+    {"verb": "Esamina", "meaning": "leggi e valuta una scheda"},
+    {"verb": "Conferma", "meaning": "esprimi accordo con una proposta nel tuo contesto"},
+    {"verb": "Proponi una modifica", "meaning": "introduci una formulazione alternativa"},
+    {"verb": "Condividi", "meaning": "rendi visibile al team un contributo personale"},
+    {"verb": "Registra l'esito", "meaning": "documenta un esito già maturato nel gruppo autorizzato"}
+  ],
+  "reserved_authority_verbs": ["Approva", "Adotta"],
+  "authority_boundaries": {
+    "personal_profile_is_not_verified_role": true,
+    "membership_is_not_authority": true,
+    "individual_contribution_is_not_team_outcome": true,
+    "team_outcome_is_not_institutional_decision": true,
+    "institutional_decision_is_not_adopted_curriculum_until_recorded": true
+  },
+  "acceptance": {
+    "orientation_target_seconds": 5,
+    "one_primary_action_per_task_context": true,
+    "flow_must_survive_training_copy_removal": true,
+    "full_explanation_must_remain_reachable": true,
+    "state_must_precede_process_explanation": true
+  },
+  "pilot_surfaces": [
+    {
+      "path": "src/features/session/components/DashboardView.tsx",
+      "required_tokens": [
+        "data-beta-home=\"role-work-queue\"",
+        "data-home-queue=\"actionable\"",
+        "data-home-work-action=",
+        "data-hcm-secondary-content",
+        "Il tuo spazio nel curricolo",
+        "Da fare"
+      ]
+    }
+  ]
+}
