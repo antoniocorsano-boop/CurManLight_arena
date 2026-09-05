@@ -134,8 +134,11 @@ export function classifyTeamReviewItem(
   const current = related.filter((item) => item.proposalFingerprint === proposal.proposalFingerprint);
   const currentContributorCount = new Set(current.map((item) => item.contributorUserId)).size;
   const staleContributionCount = related.length - current.length;
+  // A one-person workspace cannot establish team consensus. Requiring at least
+  // two eligible contributors keeps the team outcome fail-closed until there
+  // is a real second human participant.
   const coverageComplete = expectedContributorCount !== null
-    && expectedContributorCount > 0
+    && expectedContributorCount >= 2
     && currentContributorCount >= expectedContributorCount;
   const counts = emptyCounts();
   current.forEach((item) => { counts[item.orientation] += 1; });
