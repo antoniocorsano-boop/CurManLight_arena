@@ -1,18 +1,28 @@
-import source from '../features/session/components/OperationalOnboardingModal.tsx?raw';
 import { describe, expect, it } from 'vitest';
+import operationalProfileSource from '../infrastructure/supabase/operationalProfile.ts?raw';
+import onboardingHookSource from '../features/session/hooks/useOnboardingProfile.ts?raw';
+import teamRepositorySource from '../infrastructure/supabase/sharedTeamReviewRepository.ts?raw';
+import authorityMigrationSource from '../../supabase/migrations/20260906091500_team_review_authority_hardening.sql?raw';
 
-describe('Arena operational onboarding', () => {
-  it('asks for discipline competence and derives groups without names', () => {
-    expect(source).toContain('Quali sono le tue discipline di competenza?');
-    expect(source).toContain('Gruppi operativi derivati');
-    expect(source).toContain('Coordinamento operativo');
-    expect(source).toContain('Sono coordinatore operativo di');
-    expect(source).not.toContain('Nome e cognome');
+describe('Arena operational onboarding authority boundary', () => {
+  it('allows discipline competence but never self-assigns team authority', () => {
+    expect(operationalProfileSource).toContain('coordinatorGroupCode: null');
+    expect(operationalProfileSource).toContain('p_coordinator_group_code: null');
+    expect(operationalProfileSource).toContain('Il coordinamento non può essere autoassegnato dal profilo personale.');
+    expect(onboardingHookSource).toContain('coordinatorGroupCode: null');
   });
 
-  it('keeps coordinator, competence and institutional authority separate', () => {
-    expect(source).toContain('non costituisce nomina istituzionale');
-    expect(source).toContain('Non acquisisce per questo competenza nelle altre discipline');
-    expect(source).toContain('Educazione civica e AI Literacy non costituiscono un quinto gruppo');
+  it('fails closed when a client tries to self-assign coordination', () => {
+    expect(authorityMigrationSource).toContain('SELF_ASSIGNED_OPERATIONAL_COORDINATOR_FORBIDDEN');
+    expect(authorityMigrationSource).toContain("v_workspace_role not in ('dipartimento','referente')");
+    expect(authorityMigrationSource).toContain('OPERATIONAL_DISCIPLINE_MEMBERSHIP_REQUIRED');
+    expect(authorityMigrationSource).toContain('TEAM_REVIEW_COVERAGE_INCOMPLETE');
+    expect(authorityMigrationSource).toContain('VERIFIED_TEAM_OUTCOME_AUTHORITY_REQUIRED');
+  });
+
+  it('requires the verified shared role again at the repository boundary', () => {
+    expect(teamRepositorySource).toContain("const TEAM_OUTCOME_ROLES: readonly WorkspaceMemberRole[] = ['dipartimento', 'referente']");
+    expect(teamRepositorySource).toContain("if (!TEAM_OUTCOME_ROLES.includes(context.membership.role))");
+    expect(teamRepositorySource).toContain('Solo una membership verificata di Dipartimento o Referente può registrare l’esito del team.');
   });
 });
