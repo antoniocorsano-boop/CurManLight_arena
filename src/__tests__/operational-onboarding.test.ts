@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import operationalProfileSource from '../infrastructure/supabase/operationalProfile.ts?raw';
 import onboardingHookSource from '../features/session/hooks/useOnboardingProfile.ts?raw';
 import teamRepositorySource from '../infrastructure/supabase/sharedTeamReviewRepository.ts?raw';
-import authorityMigrationSource from '../../supabase/migrations/20260906091500_team_review_authority_hardening.sql?raw';
+import authorityMigrationSource from '../../supabase/migrations/20260906094500_team_review_operational_scope.sql?raw';
 
 describe('Arena operational onboarding authority boundary', () => {
   it('allows discipline competence but exposes no self-service coordinator field', () => {
