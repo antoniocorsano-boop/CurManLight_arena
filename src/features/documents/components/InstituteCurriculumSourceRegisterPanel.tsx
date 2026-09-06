@@ -27,8 +27,9 @@ export function InstituteCurriculumSourceRegisterPanel() {
       className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-5"
       data-institute-curriculum-source-register
       data-source-repertory-version={INSTITUTE_CURRICULUM_SOURCE_REPERTORY.version}
+      data-hcm-level="2"
     >
-      <div className="flex items-start gap-3" data-hcm-level="1">
+      <div className="flex items-start gap-3">
         <Landmark className="mt-0.5 h-5 w-5 shrink-0 text-indigo-700" aria-hidden="true" />
         <div className="min-w-0 flex-1">
           <h2 className="text-base font-black text-slate-900">Fonti normative e istituzionali del curricolo</h2>
@@ -44,7 +45,6 @@ export function InstituteCurriculumSourceRegisterPanel() {
       <details
         className="mt-4 rounded-xl border border-slate-200 bg-slate-50/70 p-3"
         data-authoritative-curriculum-sources
-        data-hcm-level="2"
       >
         <summary className="cursor-pointer text-sm font-black text-slate-800">
           Consulta le {INSTITUTE_CURRICULUM_AUTHORITATIVE_SOURCE_COUNT} fonti
@@ -133,7 +133,7 @@ export function InstituteCurriculumSourceRegisterPanel() {
         </div>
       </details>
 
-      <p className="mt-3 text-xs leading-5 text-slate-500" data-hcm-level="2">
+      <p className="mt-3 text-xs leading-5 text-slate-500">
         Verifica della fonte ≠ validazione del contenuto curricolare ≠ decisione istituzionale ≠ curricolo vigente.
       </p>
     </section>
