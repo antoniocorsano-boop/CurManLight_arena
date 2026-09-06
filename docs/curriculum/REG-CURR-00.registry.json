@@ -1,8 +1,8 @@
 {
   "registry_id": "REG-CURR-00",
-  "version": "1.11.0",
+  "version": "1.12.0",
   "recorded_at": "2026-09-06",
-  "purpose": "Mantenere allineati fascicolo Drive, master curricolare canonico, provenienza, repertorio delle fonti, conformita normativa, logiche di governo, baseline Arena e documentazione operativa senza creare baseline curricolari concorrenti.",
+  "purpose": "Mantenere allineati fascicolo Drive, master curricolare canonico, provenienza, repertorio delle fonti, conformita normativa, gate OSA, logiche di governo, baseline Arena e documentazione operativa senza creare baseline curricolari concorrenti.",
   "drive": {
     "master_register": {
       "title": "REG-CURR-00_Registro_maestro_fascicolo_curricolare_e_allineamento_Arena_2026-2027",
@@ -17,7 +17,7 @@
     "current_curriculum_master": {
       "title": "CAN-CURR-MASTER-00_Curricolo_verticale_integrale_unificato_3-14_2026-2027",
       "file_id": "12eWTPUZBJxZixd6-p8drNAaW5_eL8qWpXZUSDyZZAv4",
-      "version": "1.1",
+      "version": "1.2",
       "date": "2026-09-06",
       "status": "BASELINE_CANONICA_INTEGRALE_DA_VALIDARE",
       "materialization": "COMPLETE",
@@ -31,9 +31,12 @@
       "title": "MATR-CURR-MASTER-01_Matrice_conformita_normativa_IN2025_e_atti_collegati_2026-2027",
       "file_id": "1Wiw8Wsifls1-wr_GPYuqIAoB8GnwXMChO8Mz_kwiLKY",
       "role": "CONTROL_ATTACHMENT_NOT_CURRICULUM_BASELINE",
-      "status": "AUDIT_COMPLETE_GAPS_MATERIALIZED_IN_MASTER_1_1",
+      "status": "OSA_ONE_TO_ONE_GATE_IN_PROGRESS_ON_MASTER_1_2",
       "identified_curricular_gaps": 6,
-      "materialized_curricular_gaps": 6
+      "materialized_curricular_gaps": 6,
+      "osa_one_to_one_gate": "IN_PROGRESS",
+      "osa_verified_integrations_materialized_in_master_1_2": true,
+      "osa_completion_claim_authorized": false
     },
     "source_repertory": {
       "title": "ALL-CURR-A_Repertorio_fonti_normative_e_istituzionali_2026-2027",
@@ -41,7 +44,7 @@
       "version": "1.1",
       "date": "2026-09-06",
       "role": "INSTRUCTIONAL_SOURCE_REPERTORY",
-      "status": "CURRENT_ALIGNED_TO_MASTER_1_1"
+      "status": "CURRENT_ALIGNED_TO_MASTER_1_2"
     },
     "primary_corrected_source": {
       "title": "CURRICOLO_VERTICALE_CORRETTO_PROPOSTA_2026-09-03.docx",
@@ -63,11 +66,20 @@
     "latino_lel_ii_iii": "MATERIALIZED",
     "educazione_civica_3_14": "MATERIALIZED",
     "ai_literacy_3_14": "MATERIALIZED",
-    "normative_alignment": "GAPS_MATERIALIZED_PENDING_HUMAN_VALIDATION",
+    "normative_alignment": "OSA_ONE_TO_ONE_GATE_IN_PROGRESS",
     "normative_gaps_identified": 6,
     "normative_gaps_materialized": 6,
+    "osa_one_to_one_gate": "IN_PROGRESS",
+    "osa_verified_integrations_materialized_in_master_1_2": true,
+    "osa_completion_claim_authorized": false,
+    "national_benchmark_semantics": {
+      "primary": "END_III_AND_V_WITH_INSTITUTE_ANNUALIZATION",
+      "lower_secondary": "END_III_WITH_INSTITUTE_ANNUALIZATION",
+      "annual_class_osa_inference_forbidden": true,
+      "retroactive_rewrite_of_2012_cohorts_forbidden": true
+    },
     "source_repertory": "ALL-CURR-A@1.1",
-    "source_traceability": "ALIGNED_TO_MASTER_1_1",
+    "source_traceability": "ALIGNED_TO_MASTER_1_2",
     "authoritative_sources_applied": 11,
     "document_chain_entries": 4,
     "human_professional_validation": "OPEN",
@@ -90,13 +102,13 @@
     "source_repertory_contract": "src/domain/curriculum/institute/sourceRegister.ts",
     "canonical_surface": "src/features/documents/components/FontiWorkspace.tsx",
     "source_repertory_surface": "src/features/documents/components/InstituteCurriculumSourceRegisterPanel.tsx",
-    "status": "ALIGNED_TO_UNIFIED_CANONICAL_MASTER_1_1",
+    "status": "ALIGNED_TO_UNIFIED_CANONICAL_MASTER_1_2",
     "source_repertory_version": "1.1",
     "authoritative_source_count": 11,
     "document_chain_count": 4,
     "source_locator_policy": "OFFICIAL_OR_EXPLICIT_INSTITUTIONAL_MIRROR",
     "source_authority_inferred_from_presence": false,
-    "source_traceability_status": "ALIGNED_TO_MASTER_1_1",
+    "source_traceability_status": "ALIGNED_TO_MASTER_1_2",
     "primary_corrected_source_role": "PRIMARY_CORRECTED_PROVENANCE",
     "historical_v3_role": "HISTORICAL_TECHNICAL_BASELINE",
     "historical_remediation_workbench_active_in_canonical_surface": false
@@ -245,6 +257,9 @@
     "accepted_change_must_update_same_master": true,
     "normative_matrix_is_control_attachment_not_baseline": true,
     "normative_gap_closure_requires_same_master_update": true,
+    "osa_gate_must_not_claim_complete_without_full_mapping": true,
+    "osa_annualization_must_not_be_misrepresented_as_national_benchmark": true,
+    "transitional_2012_cohorts_must_not_be_rewritten_retroactively": true,
     "source_repertory_must_match_drive_and_runtime": true,
     "source_presence_never_implies_authority": true,
     "source_locator_kind_must_be_explicit": true,
@@ -260,5 +275,5 @@
     "experimental_feature_must_be_marked_experimental": true,
     "tests_or_commits_never_imply_curriculum_approval": true
   },
-  "next_authorized_phase": "PROFESSIONAL_VALIDATION_ON_CANONICAL_MASTER_1_1"
+  "next_authorized_phase": "OSA_ONE_TO_ONE_GATE_ON_CANONICAL_MASTER_1_2"
 }
