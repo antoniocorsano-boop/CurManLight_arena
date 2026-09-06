@@ -1,3 +1,9 @@
+import type {
+  OperationalGroupCode,
+  OperationalGroupMemberRole,
+  OperationalGroupStatus,
+  OperationalSchoolOrder,
+} from '../institution/operationalGroups';
 import type { WorkspaceActorContext, WorkspaceMemberRole } from '../institution/sharedWorkspacePort';
 
 export type TeamReviewOrientation =
@@ -17,13 +23,20 @@ export type TeamReviewOutcome =
   | 'shared-text'
   | 'defer';
 
-export interface TeamReviewProposalDescriptor {
+export interface TeamReviewScope {
+  academicYear: string;
+  order: OperationalSchoolOrder;
+  groupCode: OperationalGroupCode;
+  discipline: string;
+}
+
+export interface TeamReviewProposalDescriptor extends TeamReviewScope {
   proposalRef: string;
   focus: string;
   proposalFingerprint: string;
 }
 
-export interface TeamReviewContribution {
+export interface TeamReviewContribution extends TeamReviewScope {
   workspaceId: string;
   proposalRef: string;
   proposalFingerprint: string;
@@ -34,7 +47,7 @@ export interface TeamReviewContribution {
   updatedAt: string;
 }
 
-export interface TeamReviewItemSummary {
+export interface TeamReviewItemSummary extends TeamReviewScope {
   proposalRef: string;
   focus: string;
   proposalFingerprint: string;
@@ -58,7 +71,17 @@ export interface TeamReviewSummary {
   items: TeamReviewItemSummary[];
 }
 
-export interface UpsertTeamReviewContributionInput {
+export interface OperationalGroupMembership {
+  userId: string;
+  academicYear: string;
+  schoolOrder: OperationalSchoolOrder;
+  groupCode: OperationalGroupCode;
+  memberRole: OperationalGroupMemberRole;
+  membershipState: OperationalGroupStatus;
+  disciplines: string[];
+}
+
+export interface UpsertTeamReviewContributionInput extends TeamReviewScope {
   workspaceId: string;
   proposalRef: string;
   proposalFingerprint: string;
@@ -66,7 +89,7 @@ export interface UpsertTeamReviewContributionInput {
   customText?: string | null;
 }
 
-export interface RecordTeamReviewOutcomeInput {
+export interface RecordTeamReviewOutcomeInput extends TeamReviewScope {
   workspaceId: string;
   proposalRef: string;
   proposalFingerprint: string;
@@ -76,7 +99,7 @@ export interface RecordTeamReviewOutcomeInput {
   clientRequestId: string;
 }
 
-export interface TeamReviewOutcomeReceipt {
+export interface TeamReviewOutcomeReceipt extends TeamReviewScope {
   id: string;
   workspaceId: string;
   proposalRef: string;
@@ -85,7 +108,9 @@ export interface TeamReviewOutcomeReceipt {
   sharedText: string | null;
   rationale: string;
   recordedByUserId: string;
-  recordedByRole: Extract<WorkspaceMemberRole, 'dipartimento' | 'referente'>;
+  recordedByRole: Extract<WorkspaceMemberRole, 'docente' | 'dipartimento' | 'referente'>;
+  recordedByOperationalRole: Extract<OperationalGroupMemberRole, 'coordinatore'>;
+  authorityState: OperationalGroupStatus;
   recordedAt: string;
   clientRequestId: string;
 }
@@ -99,12 +124,23 @@ export interface SharedTeamReviewRepository {
   listContributions(
     context: WorkspaceActorContext,
     workspaceId: string,
+    scope: TeamReviewScope,
   ): Promise<TeamReviewContribution[]>;
 
+  /**
+   * Counts only active workspace users who belong to the operational group and
+   * declared competence for the exact discipline. Identities are never exposed.
+   */
   getEligibleContributorCount(
     context: WorkspaceActorContext,
     workspaceId: string,
-  ): Promise<number>;
+    scope: TeamReviewScope,
+  ): Promise<number | null>;
+
+  getMyOperationalMembership(
+    context: WorkspaceActorContext,
+    scope: TeamReviewScope,
+  ): Promise<OperationalGroupMembership | null>;
 
   recordTeamOutcome(
     context: WorkspaceActorContext,
@@ -114,6 +150,7 @@ export interface SharedTeamReviewRepository {
   listTeamOutcomes(
     context: WorkspaceActorContext,
     workspaceId: string,
+    scope: TeamReviewScope,
   ): Promise<TeamReviewOutcomeReceipt[]>;
 }
 
@@ -125,21 +162,30 @@ const emptyCounts = (): Record<TeamReviewOrientation, number> => ({
 
 const normalizeText = (value: string | null | undefined): string => value?.trim().replace(/\s+/g, ' ') ?? '';
 
+const sameScope = (a: TeamReviewScope, b: TeamReviewScope): boolean =>
+  a.academicYear === b.academicYear
+  && a.order === b.order
+  && a.groupCode === b.groupCode
+  && a.discipline === b.discipline;
+
 export function classifyTeamReviewItem(
   proposal: TeamReviewProposalDescriptor,
   contributions: TeamReviewContribution[],
   expectedContributorCount: number | null,
 ): TeamReviewItemSummary {
-  const related = contributions.filter((item) => item.proposalRef === proposal.proposalRef);
+  const related = contributions.filter((item) =>
+    item.proposalRef === proposal.proposalRef && sameScope(item, proposal));
   const current = related.filter((item) => item.proposalFingerprint === proposal.proposalFingerprint);
   const currentContributorCount = new Set(current.map((item) => item.contributorUserId)).size;
   const staleContributionCount = related.length - current.length;
+
   // A one-person workspace cannot establish team consensus. Requiring at least
   // two eligible contributors keeps the team outcome fail-closed until there
   // is a real second human participant.
   const coverageComplete = expectedContributorCount !== null
     && expectedContributorCount >= 2
     && currentContributorCount >= expectedContributorCount;
+
   const counts = emptyCounts();
   current.forEach((item) => { counts[item.orientation] += 1; });
 
@@ -169,6 +215,10 @@ export function classifyTeamReviewItem(
   }
 
   return {
+    academicYear: proposal.academicYear,
+    order: proposal.order,
+    groupCode: proposal.groupCode,
+    discipline: proposal.discipline,
     proposalRef: proposal.proposalRef,
     focus: proposal.focus,
     proposalFingerprint: proposal.proposalFingerprint,
@@ -201,12 +251,20 @@ export function deriveTeamReviewSummary(
 }
 
 export async function fingerprintTeamReviewProposal(input: {
+  academicYear: string;
+  order: OperationalSchoolOrder;
+  groupCode: OperationalGroupCode;
+  discipline: string;
   proposalRef: string;
   focus: string;
   oldText: string;
   newText: string;
 }): Promise<string> {
   const canonical = JSON.stringify({
+    academicYear: input.academicYear,
+    order: input.order,
+    groupCode: input.groupCode,
+    discipline: input.discipline,
     proposalRef: input.proposalRef,
     focus: input.focus.trim(),
     oldText: input.oldText.trim(),
