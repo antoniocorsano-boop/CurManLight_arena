@@ -124,7 +124,7 @@
   "secondary_navigation": ["FASCICOLO"],
   "navigation_invariants": {
     "sources_are_not_a_primary_human_phase": true,
-    "institutional_decision_is_role_and-state_projected_not_universal_navigation": true,
+    "institutional_decision_is_role_and_state_projected_not_universal_navigation": true,
     "technical_pipeline_ids_forbidden_at_teacher_level_1": true
   },
   "didactic_binding": {
