@@ -23,7 +23,7 @@ try {
 
 if (registry) {
   assert(registry.registry_id === 'ARENA-PRODUCT-DOCS', 'registry_id prodotto corretto');
-  assert(registry.version === '1.0.3', 'versione registro prodotto 1.0.3');
+  assert(registry.version === '1.0.4', 'versione registro prodotto 1.0.4');
   assert(registry.product_vision?.id === 'ARENA-PRODUCT-VISION', 'vision id canonico');
   assert(registry.product_vision?.version === '1.0.0', 'vision version canonica');
   assert(registry.product_vision?.drive_file_id === '1s17jJCslSIJIXQfiTEzyRcD5q-Baopj6-l14aaFEWik', 'Drive ID vision canonica');
@@ -37,8 +37,9 @@ if (registry) {
   assert(lifecycle.derived_objects?.includes('RevisionTrigger'), 'RevisionTrigger presente nel lifecycle');
   assert(lifecycle.revision_triggers?.automatic_curriculum_change_forbidden === true, 'RevisionTrigger non modifica automaticamente il curricolo');
   assert(lifecycle.revision_triggers?.parallel_curriculum_baseline_creation_forbidden === true, 'RevisionTrigger non crea baseline parallele');
-  assert(lifecycle.work_session?.share_completion_requires_persisted_current_professional_contribution === true, 'lifecycle non vincola SHARE alla persistenza corrente');
-  assert(lifecycle.work_session?.compare_stage_fail_closed_without_current_persisted_share === true, 'lifecycle non chiude COMPARE in assenza di share corrente');
+  assert(lifecycle.work_session?.share_completion_requires_persisted_current_professional_contribution === true, 'lifecycle vincola SHARE alla persistenza corrente');
+  assert(lifecycle.work_session?.compare_stage_fail_closed_without_current_persisted_share === true, 'lifecycle chiude COMPARE in assenza di share corrente');
+  assert(JSON.stringify(lifecycle.work_session?.progression) === JSON.stringify(['EXAMINE','SHARE','COMPARE','RECORD_TEAM_OUTCOME']), 'lifecycle conserva i quattro stadi della CurriculumWorkSession');
 
   const canonical = registry.canonical_documents ?? [];
   const requiredRoles = ['PRODUCT_VISION', 'INFORMATION_ARCHITECTURE', 'NAVIGATION_MODEL', 'CRITICAL_USER_FLOWS', 'OPERATIONAL_COMMUNICATION'];
@@ -83,7 +84,7 @@ if (registry) {
   }
 
   const ccoDocs = readText('docs/04_product_experience/11_OPERATIONAL_COMMUNICATION_CONTRACT.md');
-  for (const token of ['Versione:** 1.4.1', 'CURRICULUM_LIFECYCLE@1.1.1', 'Registro superfici:** 1.5.1', 'CCO-R5 — condivisione persistita prima del confronto']) {
+  for (const token of ['Versione:** 1.4.1', 'CURRICULUM_LIFECYCLE@1.1.1', 'Registro superfici:** 1.6.0', 'CCO-R5 — condivisione persistita prima del confronto', "CCO-R6 — confronto ed esito come stadi distinti della stessa sessione"]) {
     assert(ccoDocs.includes(token), `CCO docs contiene: ${token}`);
   }
 
@@ -127,6 +128,10 @@ if (registry) {
   assert(state.persisted_current_professional_contribution_gates_comparison === true, 'share persistito corrente governa il confronto');
   assert(state.local_personal_change_invalidates_previous_share_completion === true, 'modifica personale invalida share precedente');
   assert(state.team_contribution_publisher_integrated_with_work_session_state === true, 'publisher integrato nello stato della sessione');
+  assert(state.team_comparison_integrated_with_work_session_state === true, 'confronto del team integrato nello stato della sessione');
+  assert(state.team_outcome_recording_is_distinct_work_session_stage === true, 'registrazione esito è quarto stadio reale');
+  assert(state.team_coordination_workspace_no_longer_primary_competing_surface === true, 'coordinamento non è più superficie primaria concorrente');
+  assert(state.teacher_after_share_sees_status_not_coordination_actions === true, 'docente dopo SHARE vede stato e non azioni di coordinamento');
   assert(state.target_ui_fully_implemented === false, 'la documentazione non simula UI target già implementata');
   assert(state.human_end_to_end_pilot_complete === false, 'la documentazione non simula pilota umano concluso');
 }
