@@ -1,20 +1,16 @@
-# Arena — gruppi operativi per disciplina e formalizzazione successiva
+# Arena — gruppi operativi per disciplina e autorità verificata
 
 ## Decisione di prodotto
 
-Arena non attende la disponibilità di nominativi o atti di nomina per consentire il lavoro professionale sul curricolo.
+Arena consente il lavoro professionale sul curricolo anche prima che ogni appartenenza operativa sia collegata a un atto organizzativo, senza però trasformare un dato auto-dichiarato in autorità condivisa.
 
-I gruppi vengono costituiti operativamente **per aggregazione disciplinare**. Il docente dichiara durante l’onboarding le discipline di competenza; Arena deriva automaticamente il gruppo o i gruppi di appartenenza. L’eventuale coordinatore dichiara separatamente la funzione di coordinamento operativo.
+Il docente può dichiarare **le proprie discipline di competenza**. Arena deriva automaticamente il gruppo o i gruppi operativi corrispondenti. Il profilo personale **non consente di autoattribuirsi il coordinamento, il ruolo di Dipartimento, il ruolo di Referente o altra autorità condivisa**.
 
-La formalizzazione istituzionale può avvenire successivamente, collegando fonte, atto e dati organizzativi senza perdere contributi, esiti o storia del gruppo.
+La capacità di registrare un esito del team richiede invece una membership condivisa autenticata e verificata di **Dipartimento o Referente**, oltre alla competenza nella disciplina della scheda.
 
 Regola di autorità:
 
-`appartenenza al gruppo != competenza disciplinare != coordinamento operativo != autorità istituzionale`
-
-e resta valida la catena:
-
-`contributo individuale != esito professionale del gruppo != decisione istituzionale != curricolo vigente`
+`profilo personale != competenza disciplinare != membership condivisa verificata != esito del team != decisione istituzionale != curricolo vigente`
 
 ## Otto gruppi operativi
 
@@ -33,47 +29,41 @@ e resta valida la catena:
 |---|---|---|
 | S-G01 | Area linguistico-storico-geografica | Italiano, Storia, Geografia, Latino per l’Educazione Linguistica, Insegnamento della religione cattolica |
 | S-G02 | Area matematico-scientifico-tecnologica | Matematica, Scienze, Tecnologia |
-| S-G03 | Area delle lingue straniere | Lingua inglese, Seconda lingua comunitaria — Francese |
+| S-G03 | Area delle lingue straniere | Lingua inglese, Seconda lingua comunitaria |
 | S-G04 | Area artistico-espressiva e motoria | Musica, Arte e immagine, Educazione fisica |
 
-I codici sono identificativi operativi stabili. La futura denominazione istituzionale può essere collegata senza cambiare l’identità tecnica del gruppo.
+I codici sono identificativi operativi stabili. Una futura denominazione istituzionale può essere collegata senza cambiare l’identità tecnica del gruppo.
 
 ## Educazione civica e AI Literacy
 
-Educazione civica non costituisce un quinto gruppo. È un asse trasversale: ogni formulazione viene instradata al gruppo responsabile in base al **nucleo interno specifico**, con eventuali gruppi collegati in consultazione.
+Educazione civica non costituisce un quinto gruppo. È un asse trasversale: ogni formulazione deve essere instradata al gruppo responsabile in base al nucleo specifico, con eventuali gruppi collegati in consultazione.
 
-AI Literacy resta a sua volta un asse trasversale distinto. Anche in questo caso il routing è per nucleo e non per gruppo autonomo.
+AI Literacy resta a sua volta un asse trasversale distinto, con instradamento per nucleo e non tramite un gruppo autonomo.
 
-## Onboarding
+## Profilo personale e onboarding
 
-Per scuola primaria e scuola secondaria di primo grado il docente indica:
+Per la scuola primaria e la scuola secondaria di primo grado il profilo personale può raccogliere:
 
 1. ordine di scuola;
-2. una o più discipline di competenza;
-3. disciplina iniziale per la navigazione nell’app;
-4. eventuale gruppo coordinato.
+2. disciplina o discipline utili al lavoro personale;
+3. disciplina iniziale di navigazione;
+4. classi e sezioni personali.
 
-Arena mostra immediatamente i gruppi derivati dalle discipline. Più discipline nello stesso gruppo producono una sola appartenenza al gruppo, conservando più competenze disciplinari. Discipline appartenenti a gruppi diversi producono più appartenenze.
+Arena può derivare i gruppi dalle discipline. Più discipline nello stesso gruppo non duplicano l’appartenenza tecnica; discipline appartenenti a gruppi diversi possono produrre più associazioni operative.
 
-Il sostegno/inclusione non crea un quinto gruppo disciplinare. Rimane funzione trasversale; l’eventuale competenza disciplinare deve essere dichiarata separatamente.
+**Non viene chiesto né salvato un coordinamento auto-dichiarato.** Gli incarichi di Dipartimento, Referente, Dirigente e le altre facoltà condivise derivano esclusivamente dal contesto autenticato e dalle membership verificate.
 
-## Stati del gruppo
+Il sostegno/inclusione non crea un quinto gruppo disciplinare e non attribuisce automaticamente competenza sulle singole discipline.
 
-### OPERATIVO_PROVVISORIO
+## Stati dell’appartenenza operativa
 
-È lo stato iniziale. Consente:
+### `OPERATIVO_PROVVISORIO`
 
-- revisione individuale;
-- condivisione dei pareri;
-- sintesi per disciplina;
-- riunione guidata;
-- registrazione dell’esito professionale da parte del coordinatore operativo.
+È lo stato iniziale delle competenze dichiarate e consente di partecipare al lavoro professionale nella disciplina per cui l’utente risulta competente. Non attribuisce da solo alcuna facoltà di registrare l’esito del team.
 
-Ogni ricevuta deve indicare che si tratta di un **esito professionale del gruppo operativo provvisorio** e che non costituisce approvazione istituzionale.
+### `FORMALIZZATO`
 
-### FORMALIZZATO
-
-È uno stato successivo. Richiede fonte/atto, data e soggetto che formalizza. La formalizzazione non modifica retroattivamente la natura degli esiti prodotti quando il gruppo era provvisorio.
+È uno stato successivo collegabile a fonte, data e soggetto che formalizza. La formalizzazione non modifica retroattivamente la natura dei contributi già registrati e **non trasforma un esito del team in approvazione istituzionale**.
 
 ## Competenza disciplinare e partecipazione
 
@@ -81,25 +71,42 @@ La partecipazione non viene calcolata su tutti i membri del gruppo.
 
 Per una scheda di Tecnologia in S-G02, Arena conta esclusivamente gli utenti attivi che:
 
-- appartengono a S-G02;
-- hanno dichiarato Tecnologia tra le proprie discipline di competenza;
-- partecipano allo spazio condiviso corrente.
+- partecipano allo spazio condiviso corrente;
+- risultano associati a S-G02 per l’anno scolastico corrente;
+- hanno Tecnologia tra le proprie discipline di competenza.
 
-Un docente di Matematica appartenente allo stesso S-G02 non viene contato automaticamente nella validazione di Tecnologia, salvo che abbia dichiarato anche Tecnologia come propria competenza.
+Un docente di Matematica appartenente allo stesso S-G02 non viene contato automaticamente nella validazione di Tecnologia.
 
-Questa regola vale per tutti i gruppi, compreso S-G01: appartenere allo stesso gruppo non abilita automaticamente un docente a validare formulazioni specifiche dell’Insegnamento della religione cattolica o del Latino per l’Educazione Linguistica.
+La stessa regola vale per tutti i gruppi: appartenere al gruppo non abilita automaticamente a validare una disciplina diversa da quelle dichiarate e correnti.
 
-## Coordinatore operativo
+## Autorità per l’esito del team
 
-Il coordinatore:
+La registrazione dell’esito richiede contemporaneamente:
 
-- guida il confronto;
-- può avviare la riunione guidata;
-- registra l’esito professionale del gruppo;
-- non acquisisce automaticamente competenza nelle altre discipline;
-- non acquisisce un ruolo deliberativo istituzionale.
+- sessione autenticata;
+- membership attiva nello spazio condiviso;
+- ruolo verificato `dipartimento` oppure `referente`;
+- competenza operativa sulla disciplina esatta;
+- collegamento all’anno scolastico, gruppo, disciplina, proposta e impronta della versione corrente;
+- per ogni esito diverso da `Rinvia`, copertura completa dei contributori competenti correnti.
 
-Un esito diverso da `Rinvia` richiede la partecipazione completa dei docenti competenti per la disciplina. `Rinvia` resta utilizzabile quando il confronto non può ancora essere chiuso.
+Un utente con sola membership `docente` può contribuire e consultare il confronto, ma **non può registrare l’esito del team**. Una competenza disciplinare auto-dichiarata non può elevare questa facoltà.
+
+`Rinvia` resta disponibile all’autorità verificata quando il confronto non può ancora essere chiuso.
+
+## Confine istituzionale
+
+Un esito del team:
+
+- documenta il risultato professionale del confronto;
+- non è una deliberazione del Collegio dei docenti;
+- non approva il curricolo;
+- non produce adozione o promozione canonica;
+- non modifica automaticamente il curricolo vigente.
+
+La catena resta:
+
+`contributo individuale → esito professionale del team → proposta istituzionale → decisione dell’organo competente → versione vigente`
 
 ## Modello dati
 
@@ -107,29 +114,35 @@ La configurazione comprende:
 
 - `operational_group_definitions` — gli otto gruppi;
 - `operational_group_discipline_map` — relazione disciplina → gruppo;
-- `operational_transversal_axes` — Educazione civica e AI Literacy con routing per nucleo;
-- `team_operational_memberships` — appartenenza dell’utente, discipline di competenza, ruolo operativo e stato provvisorio/formalizzato.
+- `operational_transversal_axes` — Educazione civica e AI Literacy con instradamento per nucleo;
+- `team_operational_memberships` — associazioni operative, competenze disciplinari e stato provvisorio/formalizzato;
+- `workspace_memberships` — fonte condivisa autenticata dei ruoli che possono esercitare le relative facoltà.
 
-L’onboarding usa `upsert_my_operational_profile_v1`: l’utente può costituire il proprio profilo operativo, ma non può autoattribuirsi autorità istituzionale.
+`upsert_my_operational_profile_v1` conserva la firma compatibile, ma accetta esclusivamente competenze disciplinari: un tentativo di valorizzare il parametro di coordinamento viene respinto in modo fail-closed.
 
-I contributi e gli esiti sono inoltre legati a:
+I contributi e gli esiti sono legati a:
 
-`anno scolastico + gruppo + disciplina + proposta + versione`
+`anno scolastico + gruppo + disciplina + proposta + impronta della versione`
 
-per impedire che un parere espresso in un’altra disciplina o in un altro gruppo venga contato nel consenso corrente.
+per impedire che un parere espresso in un’altra disciplina, gruppo o versione venga contato nel consenso corrente.
+
+## Difesa in profondità
+
+Il confine di autorità viene applicato su più livelli:
+
+1. il profilo personale non espone un controllo per autoassegnare il coordinamento;
+2. il client invia sempre `p_coordinator_group_code = null`;
+3. la RPC del profilo rifiuta esplicitamente ogni tentativo di autoattribuzione;
+4. il repository applicativo rifiuta la registrazione dell’esito senza ruolo Dipartimento/Referente;
+5. la RPC di registrazione verifica nuovamente ruolo, competenza, scope e copertura;
+6. un trigger protegge anche insert diretti o percorsi legacy.
 
 ## Privacy minima
 
-La costituzione dei gruppi non richiede nominativi nell’interfaccia o nel modello organizzativo iniziale. Il sistema utilizza gli identificativi tecnici autenticati soltanto per impedire duplicazioni e calcolare il numero dei partecipanti competenti. L’interfaccia può mostrare il denominatore senza esporre identità personali.
+La costituzione dei gruppi non richiede nominativi nell’interfaccia organizzativa. Il sistema utilizza identificativi tecnici autenticati per impedire duplicazioni e calcolare il numero dei partecipanti competenti. La sintesi può mostrare il denominatore senza esporre identità personali non necessarie.
 
 ## Formalizzazione futura
 
-Quando saranno disponibili circolari, verbali, atti di nomina, organigramma o funzionigramma, Arena potrà:
+Quando saranno disponibili circolari, verbali, atti di nomina, organigramma o funzionigramma, Arena potrà collegare le fonti organizzative alle appartenenze e agli incarichi verificati.
 
-- confermare o correggere la denominazione del gruppo;
-- collegare la fonte istituzionale;
-- formalizzare le appartenenze;
-- registrare il coordinamento formale;
-- mantenere invariati contributi ed esiti storici con il loro stato originario.
-
-La formalizzazione è quindi un **upgrade di autorità e provenienza**, non la condizione necessaria per iniziare il lavoro professionale.
+Questa formalizzazione aumenta **provenienza e verificabilità**; non sostituisce la successiva decisione dell’organo competente e non rende retroattivamente istituzionali gli esiti professionali già prodotti.
