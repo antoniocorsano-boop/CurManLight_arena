@@ -61,16 +61,16 @@ export function InstituteCurriculumSourceRegisterPanel() {
                 data-source-verification={source.verificationState}
               >
                 <summary className="cursor-pointer list-none px-3 py-3 marker:content-none">
-                  <div className="flex items-start gap-2">
+                  <span className="flex items-start gap-2">
                     <span className="shrink-0 rounded-md bg-slate-100 px-2 py-1 text-xs font-black text-slate-700">{source.code}</span>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm font-bold leading-5 text-slate-900">{source.title}</p>
-                      <p className={`mt-1 text-xs font-bold ${official ? 'text-emerald-700' : 'text-amber-700'}`}>
+                    <span className="min-w-0 flex-1">
+                      <span className="block text-sm font-bold leading-5 text-slate-900">{source.title}</span>
+                      <span className={`mt-1 block text-xs font-bold ${official ? 'text-emerald-700' : 'text-amber-700'}`}>
                         {official ? 'Fonte ufficiale verificata' : 'Atto verificato — copia di trasmissione'}
-                      </p>
-                    </div>
+                      </span>
+                    </span>
                     <ShieldCheck className={`mt-0.5 h-4 w-4 shrink-0 ${official ? 'text-emerald-600' : 'text-amber-600'}`} aria-hidden="true" />
-                  </div>
+                  </span>
                 </summary>
 
                 <div className="border-t border-slate-200 px-3 pb-3 pt-3">
