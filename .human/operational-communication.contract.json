@@ -1,7 +1,7 @@
 {
   "contract_id": "CCO",
   "name": "Contratto di comunicazione operativa di Arena",
-  "version": "1.4.0",
+  "version": "1.3.0",
   "purpose": "Separare orientamento operativo, spiegazione del processo e verifica tecnica affinché il docente possa agire con linguaggio istituzionale senza essere esposto al funzionamento interno del sistema.",
   "principles": {
     "structure_before_explanation": true,
