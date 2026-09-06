@@ -1,7 +1,8 @@
-import { Bot, DownloadCloud, Layers3, LogOut, RotateCcw, Save, ServerCog, Settings, ShieldAlert, UserCog, X } from 'lucide-react';
+import { Bot, DownloadCloud, Layers3, LogIn, LogOut, RotateCcw, Save, ServerCog, Settings, ShieldAlert, UserCog, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { getOptionalSupabaseBrowserClient } from '../../../infrastructure/supabase/client';
 import { UiConfirmDialog } from '../../../ui/components/UiConfirmDialog';
+import { resolveRouterBasename } from '../routerBasename';
 
 interface AppHeaderProps {
   toggleSidebar: () => void;
@@ -36,6 +37,7 @@ export function AppHeader(props: AppHeaderProps) {
 
   const assistantReady = props.localAgentStatus === 'ready'
     || (props.localAgentType === 'ollama' && props.ollamaStatus === 'connected');
+  const teamAuthAvailable = Boolean(getOptionalSupabaseBrowserClient().client);
   const hasTeamSession = Boolean(teamSessionEmail);
 
   const activeProfileLabel = hasTeamSession
@@ -99,6 +101,14 @@ export function AppHeader(props: AppHeaderProps) {
   const toggleProfile = () => {
     props.setRoleDropdownOpen(false);
     setProfileMenuOpen((open) => !open);
+  };
+
+  const handleTeamLogin = () => {
+    const basename = resolveRouterBasename(import.meta.env.MODE, window.location.pathname);
+    const entryPath = basename === '/' ? '/' : `${basename}/`;
+    const target = new URL(entryPath, window.location.origin);
+    target.searchParams.set('betaIdentity', '1');
+    window.location.assign(target.toString());
   };
 
   const handleTeamLogout = async () => {
@@ -285,7 +295,7 @@ export function AppHeader(props: AppHeaderProps) {
                             className="flex w-full items-center gap-2.5 px-4 py-2.5 text-left font-semibold text-slate-400 hover:bg-slate-700"
                           >
                             <ServerCog className="h-4 w-4" aria-hidden="true" />
-                            <span>Disconnetti account</span>
+                            <span>Disconnetti account cloud</span>
                           </button>
                         </>
                       ) : (
@@ -295,24 +305,38 @@ export function AppHeader(props: AppHeaderProps) {
                           className="flex w-full items-center gap-2.5 px-4 py-2.5 text-left font-bold text-indigo-300 hover:bg-slate-700"
                         >
                           <DownloadCloud className="h-4 w-4" aria-hidden="true" />
-                          <span>Collega un account (facoltativo)</span>
+                          <span>Collega account cloud (facoltativo)</span>
                         </button>
                       )}
                     </div>
 
-                    {hasTeamSession && (
+                    {teamAuthAvailable && (
                       <div className="border-t border-slate-700 py-1">
-                        <button
-                          type="button"
-                          onClick={() => void handleTeamLogout()}
-                          className="flex w-full items-center gap-2.5 px-4 py-2.5 text-left font-bold text-rose-300 hover:bg-slate-700"
-                          data-team-signout="canonical"
-                        >
-                          <LogOut className="h-4 w-4" aria-hidden="true" />
-                          <span>Esci</span>
-                        </button>
+                        {hasTeamSession ? (
+                          <button
+                            type="button"
+                            onClick={() => void handleTeamLogout()}
+                            className="flex w-full items-center gap-2.5 px-4 py-2.5 text-left font-bold text-rose-300 hover:bg-slate-700"
+                            data-team-signout="canonical"
+                          >
+                            <LogOut className="h-4 w-4" aria-hidden="true" />
+                            <span>Esci</span>
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={handleTeamLogin}
+                            className="flex w-full items-center gap-2.5 px-4 py-2.5 text-left font-bold text-indigo-300 hover:bg-slate-700"
+                            data-team-signin="canonical"
+                          >
+                            <LogIn className="h-4 w-4" aria-hidden="true" />
+                            <span>Entra</span>
+                          </button>
+                        )}
                         <p className="px-4 pb-2 text-[10px] leading-relaxed text-slate-500">
-                          Termina la sessione del lavoro del team; il profilo locale resta sul dispositivo.
+                          {hasTeamSession
+                            ? 'Termina la sessione del lavoro del team; il profilo locale resta sul dispositivo.'
+                            : 'Accedi al lavoro del team con il tuo account Beta. Il profilo locale resta separato.'}
                         </p>
                       </div>
                     )}
