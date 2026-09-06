@@ -1,9 +1,9 @@
 # CCO — Contratto di comunicazione operativa di Arena
 
-**Versione:** 1.3.0  
+**Versione:** 1.4.0  
 **Stato:** normativo per le nuove superfici e per le superfici migrate  
-**Integrazione:** Human Interaction Model (HIM)  
-**Registro superfici:** 1.4.0
+**Integrazione:** Human Interaction Model (HIM) e `CURRICULUM_LIFECYCLE@1.1.0`  
+**Registro superfici:** 1.5.0
 
 ## 1. Scopo
 
@@ -57,12 +57,7 @@ La rassicurazione persistente è obbligatoria quando l'azione produce un effetto
 
 Per confini di sfondo — per esempio il fatto che la revisione personale non costituisca approvazione — è ammessa una rassicurazione **su richiesta**, purché la struttura della vista non suggerisca l'equivalenza errata.
 
-Esempio nella revisione personale:
-
-- indicatore compatto **Personale**;
-- approfondimento su richiesta: `Il tuo contributo resta personale. Non approva il curricolo.`
-
-Nella condivisione con il team, invece, il confine resta visibile perché l'azione produce un effetto condiviso.
+Nella condivisione con il team, invece, il confine resta visibile perché l'azione produce un effetto condiviso: il contributo condiviso resta personale e non costituisce esito del gruppo.
 
 ## 5. Gerarchia visiva obbligatoria
 
@@ -72,11 +67,16 @@ Per la singola scheda di revisione la gerarchia è:
 
 **titolo della scheda → confronto → azioni**.
 
+Per la sessione complessiva di validazione professionale la gerarchia è:
+
+**stadio corrente → oggetto di lavoro → azione che consente il passaggio successivo**.
+
 Contatori multipli, spiegazioni del processo, filtri, criteri e provenienza non devono competere con questa gerarchia. Possono essere disponibili, ma secondari.
 
 Una superficie non è conforme se:
 
 - mostra più gerarchie di avanzamento concorrenti;
+- usa tab paralleli per rappresentare passaggi che appartengono allo stesso processo professionale;
 - usa più card, badge o riquadri con lo stesso peso percettivo senza necessità;
 - ripete lo stesso stato sia come numero, sia come frase, sia come badge senza aggiungere significato;
 - richiede una lettura preliminare per capire l'azione immediata.
@@ -96,6 +96,14 @@ Per un flusso composto da più passaggi valgono questi vincoli:
 - filtri e navigazione retrospettiva vivono dietro divulgazione progressiva;
 - il sistema non duplica la stessa conseguenza o lo stesso invito all'azione su più livelli.
 
+Per `CurriculumWorkSession` la progressione canonica è:
+
+**ESAMINA → CONDIVIDI → CONFRONTA → REGISTRA L'ESITO**.
+
+Il coordinatore non salta `ESAMINA` o `CONDIVIDI`: quando lavora sul proprio contributo è un contributore come gli altri. Il ruolo di coordinamento diventa pertinente soltanto dopo il contributo personale e quando i prerequisiti del gruppo consentono il confronto.
+
+Per il docente senza ulteriori responsabilità il compito personale termina dopo la condivisione; Arena deve mostrare uno stato di attesa comprensibile senza proiettare come azione personale il lavoro futuro del coordinatore.
+
 ## 7. Grammatica delle azioni
 
 Arena usa una grammatica stabile, ma ammette etichette brevi quando la relazione tra azione e oggetto è già evidente dalla posizione.
@@ -108,6 +116,7 @@ Arena usa una grammatica stabile, ma ammette etichette brevi quando la relazione
 | **Registra modifica** | Salva la formulazione alternativa come orientamento personale completo. |
 | **Mantieni** | Mantieni il testo precedente nel contesto corrente. |
 | **Condividi** | Rende visibile al team un contributo personale. |
+| **Confronta** | Esamina con il gruppo i punti che richiedono realmente discussione. |
 | **Registra l'esito** | Documenta un esito già maturato nel gruppo autorizzato. |
 
 La distinzione **Modifica → Registra modifica** è obbligatoria: aprire o compilare una bozza non equivale a completarla.
@@ -153,8 +162,9 @@ Una vista conforme deve superare queste domande:
 9. Il passaggio successivo viene realmente renderizzato solo dopo la transizione di stato?
 10. Una bozza che richiede conferma non viene conteggiata come lavoro completato?
 11. Una rassicurazione persistente corrisponde a un rischio presente nell'azione corrente?
+12. Un coordinatore attraversa prima gli stessi passaggi personali richiesti agli altri contributori?
 
-I controlli 2, 3, 5, 6, 8 e 9 sono discriminanti.
+I controlli 2, 3, 5, 6, 8, 9 e 12 sono discriminanti.
 
 ## 11. Integrazione con HIM
 
@@ -177,11 +187,11 @@ Il validatore HIM controlla gli invarianti del contratto, le superfici pilota e 
 | Superficie | Stato CCO | Obiettivo |
 |---|---|---|
 | Home docente | **conformant** | Orientamento e accesso al lavoro pertinente. |
-| Revisione personale — transizione | **conformant** | Revisione e condivisione sono stadi realmente alternativi. |
+| CurriculumWorkSession | **conformant** | Un'unica progressione Esamina → Condividi → Confronta → Esito, senza tab concorrenti. |
 | Revisione della singola scheda | **conformant** | Riconoscimento immediato: una scheda, un confronto, tre azioni. |
-| Pubblicazione del contributo personale | **migration** | Rendere stato e azione leggibili senza spiegazione preventiva. |
-| Lavoro del team | **migration** | Motivo, provenienza, stato e prossima azione leggibili senza studio preventivo. |
-| Coordinamento del team | **migration** | Separare coda e azioni dalla formazione sul modello di governo. |
+| Pubblicazione del contributo personale | **migration** | Collegare l'avanzamento alla registrazione effettiva del contributo condiviso. |
+| Lavoro del team legacy | **migration** | Restare solo compatibilità temporanea, non superficie primaria concorrente. |
+| Coordinamento del team | **migration** | Integrare completamente confronto ed esito nella sessione unica. |
 | Profilo di lavoro personale | **guided-setup** | Configurazione iniziale senza confondere preferenze, incarichi e autorità. |
 
 ## 13. CCO-R1 — comunicazione operativa
@@ -196,17 +206,21 @@ CCO-R2 ha stabilito che la condivisione non può essere semplicemente un blocco 
 
 CCO-R3 introduce il principio **riconoscimento prima dell'interpretazione**.
 
-Nella Revisione personale questo significa:
+Nella Revisione personale questo significa che la vista ordinaria non apre con spiegazioni o contatori concorrenti, la scheda mostra direttamente **Precedente** e **Proposta**, le azioni sono adiacenti all'oggetto e **Contesto e fonti** resta disponibile ma chiuso.
 
-- la vista ordinaria non apre più con una card esplicativa o con tre contatori concorrenti;
-- il progresso è ridotto a un indicatore essenziale `n di totale`;
-- il confine personale è rappresentato da **Personale** con spiegazione su richiesta;
-- la scheda mostra direttamente **Precedente** e **Proposta**;
-- le azioni sono immediatamente sotto l'oggetto: **Conferma**, **Modifica**, **Mantieni precedente**;
-- **Qual è il tuo orientamento?** non è necessario perché le azioni esprimono già la domanda;
-- **Contesto e fonti** resta disponibile, ma chiuso;
-- dopo la scelta la scheda si compatta e il cambiamento visivo comunica il completamento;
-- la navigazione retrospettiva è raccolta in **Tutte le schede**;
-- una spiegazione persistente è ammessa soltanto quando previene un errore reale nel compito corrente.
+## 16. CCO-R4 — sessione professionale unica
 
-La superficie è conforme solo se resta utilizzabile anche ignorando completamente gli approfondimenti.
+CCO-R4 applica il lifecycle di prodotto alla validazione professionale.
+
+Le precedenti superfici **Il mio contributo**, **Condivisione**, **Lavoro del team** e **Coordinamento del team** non sono più considerate processi paralleli. Convergono nella `CurriculumWorkSession`.
+
+Il primo incremento implementato stabilisce che:
+
+- all'ingresso domina sempre **Esamina**, anche per il coordinatore;
+- il completamento personale abilita **Condividi** mediante una vera transizione di stato;
+- il docente senza responsabilità successive vede chiaramente che, dopo la condivisione, il lavoro passa al gruppo;
+- il coordinatore può entrare in **Confronta** soltanto dopo il proprio passaggio di condivisione;
+- il confronto e la registrazione dell'esito continuano a rispettare i controlli di ruolo, competenza e copertura già presenti;
+- la convergenza non è ancora dichiarata integralmente conclusa: il prossimo incremento deve collegare l'avanzamento alla registrazione effettiva del `ProfessionalContribution`, non a una sola conferma dell'utente.
+
+Questa revisione modifica il prodotto e la sua comunicazione operativa, non lo stato professionale o istituzionale del curricolo.
