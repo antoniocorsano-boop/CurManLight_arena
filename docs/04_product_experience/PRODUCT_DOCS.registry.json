@@ -1,6 +1,6 @@
 {
   "registry_id": "ARENA-PRODUCT-DOCS",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "date": "2026-09-06",
   "product_vision": {
     "id": "ARENA-PRODUCT-VISION",
@@ -61,6 +61,12 @@
     "team_outcome_recording_is_distinct_work_session_stage": true,
     "team_coordination_workspace_no_longer_primary_competing_surface": true,
     "teacher_after_share_sees_status_not_coordination_actions": true,
+    "fascicolo_secondary_navigation_implemented": true,
+    "fonti_removed_from_primary_navigation": true,
+    "mobile_primary_navigation_excludes_fascicolo": true,
+    "fascicolo_public_route_is_canonical": true,
+    "legacy_fonti_and_settings_routes_remain_compatibility_aliases": true,
+    "home_journey_does_not_model_sources_or_institutional_decision_as_universal_stages": true,
     "target_ui_fully_implemented": false,
     "human_end_to_end_pilot_complete": false
   }
