@@ -1,8 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import {
-  getOperationalGroupByCode,
+  getOperationalGroupForDiscipline,
   getOperationalGroupsForDisciplines,
-  type OperationalGroupCode,
   type OperationalSchoolOrder,
 } from '../../domain/institution/operationalGroups';
 import { safeLocalStorageGetItem, safeLocalStorageSetItem } from '../../lib/consolidatedStorage';
@@ -11,45 +10,64 @@ export const OPERATIONAL_PROFILE_STORAGE = {
   academicYear: 'curman_operationalAcademicYear',
   schoolOrder: 'curman_operationalSchoolOrder',
   disciplines: 'curman_operationalDisciplines',
-  coordinatorGroup: 'curman_operationalCoordinatorGroup',
 } as const;
 
 export interface LocalOperationalProfile {
   academicYear: string;
   schoolOrder: OperationalSchoolOrder;
   disciplines: string[];
-  coordinatorGroupCode: OperationalGroupCode | null;
 }
 
 const isOperationalOrder = (value: string): value is OperationalSchoolOrder => value === 'primaria' || value === 'secondaria';
 
+const normalizeDisciplines = (schoolOrder: OperationalSchoolOrder, disciplines: readonly string[]): string[] => {
+  const unique = Array.from(new Set(disciplines.map((value) => value.trim()).filter(Boolean)));
+  return unique.filter((discipline) => Boolean(getOperationalGroupForDiscipline(schoolOrder, discipline)));
+};
+
 export const saveLocalOperationalProfile = (profile: LocalOperationalProfile): void => {
+  const disciplines = normalizeDisciplines(profile.schoolOrder, profile.disciplines);
+  if (!/^\d{4}\/\d{4}$/.test(profile.academicYear) || disciplines.length === 0) return;
   safeLocalStorageSetItem(OPERATIONAL_PROFILE_STORAGE.academicYear, profile.academicYear);
   safeLocalStorageSetItem(OPERATIONAL_PROFILE_STORAGE.schoolOrder, profile.schoolOrder);
-  safeLocalStorageSetItem(OPERATIONAL_PROFILE_STORAGE.disciplines, profile.disciplines.join(','));
-  safeLocalStorageSetItem(OPERATIONAL_PROFILE_STORAGE.coordinatorGroup, profile.coordinatorGroupCode ?? '');
+  safeLocalStorageSetItem(OPERATIONAL_PROFILE_STORAGE.disciplines, disciplines.join(','));
 };
 
 export const readLocalOperationalProfile = (): LocalOperationalProfile | null => {
   const academicYear = safeLocalStorageGetItem(OPERATIONAL_PROFILE_STORAGE.academicYear, '');
   const schoolOrder = safeLocalStorageGetItem(OPERATIONAL_PROFILE_STORAGE.schoolOrder, '');
-  const disciplines = safeLocalStorageGetItem(OPERATIONAL_PROFILE_STORAGE.disciplines, '')
-    .split(',')
-    .map((value) => value.trim())
-    .filter(Boolean);
-  const coordinatorRaw = safeLocalStorageGetItem(OPERATIONAL_PROFILE_STORAGE.coordinatorGroup, '');
-  if (!/^\d{4}\/\d{4}$/.test(academicYear) || !isOperationalOrder(schoolOrder) || disciplines.length === 0) return null;
-  const groups = getOperationalGroupsForDisciplines(schoolOrder, disciplines);
-  if (groups.length === 0) return null;
-  const coordinator = coordinatorRaw ? getOperationalGroupByCode(coordinatorRaw) : null;
-  return {
+  if (!/^\d{4}\/\d{4}$/.test(academicYear) || !isOperationalOrder(schoolOrder)) return null;
+  const disciplines = normalizeDisciplines(
+    schoolOrder,
+    safeLocalStorageGetItem(OPERATIONAL_PROFILE_STORAGE.disciplines, '').split(','),
+  );
+  if (disciplines.length === 0 || getOperationalGroupsForDisciplines(schoolOrder, disciplines).length === 0) return null;
+  return { academicYear, schoolOrder, disciplines };
+};
+
+/**
+ * Adds the discipline selected in the personal work profile to the provisional
+ * operational competence declaration. This never assigns a coordinator role.
+ */
+export const rememberOperationalDiscipline = (
+  academicYear: string,
+  schoolOrder: OperationalSchoolOrder,
+  discipline: string,
+): LocalOperationalProfile | null => {
+  if (!getOperationalGroupForDiscipline(schoolOrder, discipline)) return null;
+  const current = readLocalOperationalProfile();
+  const disciplines = current
+    && current.academicYear === academicYear
+    && current.schoolOrder === schoolOrder
+    ? [...current.disciplines, discipline]
+    : [discipline];
+  const profile: LocalOperationalProfile = {
     academicYear,
     schoolOrder,
-    disciplines,
-    coordinatorGroupCode: coordinator && coordinator.order === schoolOrder && groups.some((group) => group.code === coordinator.code)
-      ? coordinator.code
-      : null,
+    disciplines: normalizeDisciplines(schoolOrder, disciplines),
   };
+  saveLocalOperationalProfile(profile);
+  return profile;
 };
 
 export const syncOperationalProfile = async (
@@ -62,7 +80,8 @@ export const syncOperationalProfile = async (
     p_academic_year: profile.academicYear,
     p_school_order: profile.schoolOrder,
     p_disciplines: profile.disciplines,
-    p_coordinator_group_code: profile.coordinatorGroupCode,
+    // Kept only for RPC signature compatibility. Self-service coordination is forbidden server-side.
+    p_coordinator_group_code: null,
   });
   if (error) throw new Error(`Profilo operativo non sincronizzato: ${error.message}`);
   return true;
