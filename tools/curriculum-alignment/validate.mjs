@@ -21,6 +21,7 @@ const canonicalFontiWorkspace = readText('src/features/documents/components/Font
 const technologyPilotDomain = readText('src/domain/curriculum/validation/technologyClass1Review.ts');
 const revisionSurface = readText('src/features/curriculum/components/RevisioneTab.tsx');
 const progressHook = readText('src/features/curriculum/hooks/useCurriculumProgressStats.ts');
+const teamReviewDomain = readText('src/domain/revision/teamReview.ts');
 const teamWorkspace = readText('src/features/beta/TeamReviewWorkspace.tsx');
 
 assert(registry.registry_id === 'REG-CURR-00', 'registry_id deve essere REG-CURR-00');
@@ -129,9 +130,9 @@ assert(technologyPilotDomain.includes('Internet, Web e servizi'), 'N4 R2 non dis
 assert(progressHook.includes('resolveOperationalReviewProposals(discipline, order, fallbackCurrent)'), 'Revisione non usa resolver pilot');
 assert(revisionSurface.includes('current.sourceRefs'), 'Revisione non espone provenienza su richiesta');
 
-// Confini del lavoro di team: verifiche strutturali, non dipendenti da una frase UI.
+// Confini del lavoro di team: verifiche strutturali sul punto in cui l'invariante vive davvero.
 assert(teamWorkspace.includes("['dipartimento', 'referente'].includes(selectedMembership.role)"), 'esito team non riservato a dipartimento/referente');
-assert(teamWorkspace.includes('expectedContributorCount === 1'), 'workspace non protegge il caso di un solo componente attivo');
+assert(teamReviewDomain.includes('expectedContributorCount >= 2'), 'dominio team non protegge il caso di un solo componente attivo');
 assert(teamWorkspace.includes('item.coverageComplete'), 'workspace non richiede copertura completa per punti condivisi');
 assert(teamWorkspace.includes('recordTeamOutcome'), 'workspace privo di registrazione esplicita esito team');
 assert(teamWorkspace.includes('proposalFingerprint'), 'esito/contributo team non vincolato alla fingerprint della proposta');
