@@ -89,15 +89,15 @@ export function FontiTab({
         data-hcm-level="3"
       >
         <summary className="cursor-pointer list-none marker:content-none">
-          <div className="flex items-start gap-3">
+          <span className="flex items-start gap-3">
             <Archive className="mt-0.5 h-5 w-5 shrink-0 text-slate-500" aria-hidden="true" />
-            <div className="min-w-0 flex-1">
-              <h2 className="text-base font-black text-slate-900">Archivio locale e fonti personali</h2>
-              <p className="mt-1 text-sm leading-5 text-slate-600">
+            <span className="min-w-0 flex-1">
+              <span className="block text-base font-black text-slate-900">Archivio locale e fonti personali</span>
+              <span className="mt-1 block text-sm leading-5 text-slate-600">
                 Materiali di supporto separati dalle fonti che sostengono il curricolo corrente.
-              </p>
-            </div>
-          </div>
+              </span>
+            </span>
+          </span>
         </summary>
 
         <div className="mt-4 space-y-4 border-t border-slate-200 pt-4">
