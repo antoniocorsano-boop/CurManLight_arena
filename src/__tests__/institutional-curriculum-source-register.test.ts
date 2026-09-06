@@ -12,7 +12,7 @@ import localRegistrySource from '../features/documents/components/FontiTab.tsx?r
 import workspaceSource from '../features/documents/components/FontiWorkspace.tsx?raw';
 
 describe('institutional curriculum source register', () => {
-  it('binds ALL-CURR-A 1.1 to the current master 1.2 without creating a competing baseline', () => {
+  it('binds ALL-CURR-A 1.1 to the current master 1.3 without creating a competing baseline', () => {
     expect(INSTITUTE_CURRICULUM_SOURCE_REPERTORY.repertoryId).toBe('ALL-CURR-A');
     expect(INSTITUTE_CURRICULUM_SOURCE_REPERTORY.driveFileId).toBe(
       '1MBZKbis6i6xg50z6fKgbh9yUianJXdhZ5jsK4r852PQ',
@@ -23,7 +23,7 @@ describe('institutional curriculum source register', () => {
       INSTITUTE_CURRICULUM_SOURCE_REPERTORY.driveFileId,
     );
     expect(INSTITUTE_CURRICULUM_CURRENT_SOURCE.sourceRepertory.alignmentState).toBe(
-      'ALIGNED_TO_MASTER_1_2',
+      'ALIGNED_TO_MASTER_1_3',
     );
   });
 
@@ -38,12 +38,12 @@ describe('institutional curriculum source register', () => {
     expect(INSTITUTE_CURRICULUM_SOURCE_CHAIN[0].driveFileId).toBe(
       '12eWTPUZBJxZixd6-p8drNAaW5_eL8qWpXZUSDyZZAv4',
     );
-    expect(INSTITUTE_CURRICULUM_SOURCE_CHAIN[0].version).toBe('1.2');
+    expect(INSTITUTE_CURRICULUM_SOURCE_CHAIN[0].version).toBe('1.3');
     expect(INSTITUTE_CURRICULUM_SOURCE_CHAIN[1].role).toBe('CONTROL_ATTACHMENT_NOT_CURRICULUM_BASELINE');
     expect(INSTITUTE_CURRICULUM_SOURCE_CHAIN[3].role).toBe('PRIMARY_CORRECTED_PROVENANCE');
   });
 
-  it('registers the authoritative sources used by master 1.2 with unique codes and verifiable locators', () => {
+  it('registers the authoritative sources used by master 1.3 with unique codes and verifiable locators', () => {
     expect(INSTITUTE_CURRICULUM_AUTHORITATIVE_SOURCE_COUNT).toBe(11);
     const codes = INSTITUTE_CURRICULUM_AUTHORITATIVE_SOURCES.map((source) => source.code);
     expect(new Set(codes).size).toBe(codes.length);
