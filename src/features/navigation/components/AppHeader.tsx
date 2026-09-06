@@ -1,6 +1,8 @@
-import { Bot, DownloadCloud, Layers3, RotateCcw, Save, ServerCog, Settings, ShieldAlert, UserCog, X } from 'lucide-react';
+import { Bot, DownloadCloud, Layers3, LogIn, LogOut, RotateCcw, Save, ServerCog, Settings, ShieldAlert, UserCog, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { getOptionalSupabaseBrowserClient } from '../../../infrastructure/supabase/client';
 import { UiConfirmDialog } from '../../../ui/components/UiConfirmDialog';
+import { resolveRouterBasename } from '../routerBasename';
 
 interface AppHeaderProps {
   toggleSidebar: () => void;
@@ -31,20 +33,45 @@ export function AppHeader(props: AppHeaderProps) {
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [mobileNavigationOpen, setMobileNavigationOpen] = useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+  const [teamSessionEmail, setTeamSessionEmail] = useState('');
 
   const assistantReady = props.localAgentStatus === 'ready'
     || (props.localAgentType === 'ollama' && props.ollamaStatus === 'connected');
+  const teamAuthAvailable = Boolean(getOptionalSupabaseBrowserClient().client);
+  const hasTeamSession = Boolean(teamSessionEmail);
 
-  const activeProfileLabel = !props.isWorkspaceLoggedIn
-    ? 'Sessione locale'
-    : props.cloudAccountType === 'scolastica'
-      ? 'Profilo istituzionale'
-      : 'Profilo personale';
+  const activeProfileLabel = hasTeamSession
+    ? 'Lavoro del team'
+    : !props.isWorkspaceLoggedIn
+      ? 'Sessione locale'
+      : props.cloudAccountType === 'scolastica'
+        ? 'Profilo istituzionale'
+        : 'Profilo personale';
 
   useEffect(() => {
     const closeMobileNavigation = () => setMobileNavigationOpen(false);
     window.addEventListener('arena:mobile-navigation-closed', closeMobileNavigation);
     return () => window.removeEventListener('arena:mobile-navigation-closed', closeMobileNavigation);
+  }, []);
+
+  useEffect(() => {
+    const client = getOptionalSupabaseBrowserClient().client;
+    if (!client) return undefined;
+
+    let mounted = true;
+    const applySession = (email: string | null | undefined) => {
+      if (mounted) setTeamSessionEmail(email ?? '');
+    };
+
+    void client.auth.getSession().then(({ data }) => applySession(data.session?.user.email));
+    const { data: authListener } = client.auth.onAuthStateChange((_event, session) => {
+      applySession(session?.user.email);
+    });
+
+    return () => {
+      mounted = false;
+      authListener.subscription.unsubscribe();
+    };
   }, []);
 
   const handleNavigationToggle = () => {
@@ -74,6 +101,29 @@ export function AppHeader(props: AppHeaderProps) {
   const toggleProfile = () => {
     props.setRoleDropdownOpen(false);
     setProfileMenuOpen((open) => !open);
+  };
+
+  const handleTeamLogin = () => {
+    const basename = resolveRouterBasename(import.meta.env.MODE, window.location.pathname);
+    const entryPath = basename === '/' ? '/' : `${basename}/`;
+    const target = new URL(entryPath, window.location.origin);
+    target.searchParams.set('betaIdentity', '1');
+    window.location.assign(target.toString());
+  };
+
+  const handleTeamLogout = async () => {
+    const client = getOptionalSupabaseBrowserClient().client;
+    if (!client || !teamSessionEmail) return;
+
+    const { error } = await client.auth.signOut({ scope: 'local' });
+    if (error) {
+      props.showToast('Non è stato possibile uscire dal lavoro del team. Riprova.', false);
+      return;
+    }
+
+    setTeamSessionEmail('');
+    setProfileMenuOpen(false);
+    props.showToast('Sei uscito dal lavoro del team. Il profilo locale resta disponibile su questo dispositivo.');
   };
 
   return (
@@ -175,7 +225,7 @@ export function AppHeader(props: AppHeaderProps) {
                   aria-expanded={profileMenuOpen}
                   data-profile-entry="canonical"
                 >
-                  {props.isWorkspaceLoggedIn ? 'CL' : 'U'}
+                  {props.isWorkspaceLoggedIn || hasTeamSession ? 'CL' : 'U'}
                 </button>
 
                 {profileMenuOpen && (
@@ -183,9 +233,10 @@ export function AppHeader(props: AppHeaderProps) {
                     <div className="px-4 py-3">
                       <p className="font-extrabold text-slate-100">Profilo e accesso</p>
                       <p className="mt-1 truncate text-slate-400">
-                        {props.isWorkspaceLoggedIn
-                          ? (props.workspaceUserEmail || 'Account collegato')
-                          : 'Stai lavorando in locale su questo dispositivo.'}
+                        {teamSessionEmail
+                          || (props.isWorkspaceLoggedIn
+                            ? (props.workspaceUserEmail || 'Account collegato')
+                            : 'Stai lavorando in locale su questo dispositivo.')}
                       </p>
                     </div>
 
@@ -244,7 +295,7 @@ export function AppHeader(props: AppHeaderProps) {
                             className="flex w-full items-center gap-2.5 px-4 py-2.5 text-left font-semibold text-slate-400 hover:bg-slate-700"
                           >
                             <ServerCog className="h-4 w-4" aria-hidden="true" />
-                            <span>Disconnetti account</span>
+                            <span>Disconnetti account cloud</span>
                           </button>
                         </>
                       ) : (
@@ -254,10 +305,41 @@ export function AppHeader(props: AppHeaderProps) {
                           className="flex w-full items-center gap-2.5 px-4 py-2.5 text-left font-bold text-indigo-300 hover:bg-slate-700"
                         >
                           <DownloadCloud className="h-4 w-4" aria-hidden="true" />
-                          <span>Collega un account (facoltativo)</span>
+                          <span>Collega account cloud (facoltativo)</span>
                         </button>
                       )}
                     </div>
+
+                    {teamAuthAvailable && (
+                      <div className="border-t border-slate-700 py-1">
+                        {hasTeamSession ? (
+                          <button
+                            type="button"
+                            onClick={() => void handleTeamLogout()}
+                            className="flex w-full items-center gap-2.5 px-4 py-2.5 text-left font-bold text-rose-300 hover:bg-slate-700"
+                            data-team-signout="canonical"
+                          >
+                            <LogOut className="h-4 w-4" aria-hidden="true" />
+                            <span>Esci</span>
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={handleTeamLogin}
+                            className="flex w-full items-center gap-2.5 px-4 py-2.5 text-left font-bold text-indigo-300 hover:bg-slate-700"
+                            data-team-signin="canonical"
+                          >
+                            <LogIn className="h-4 w-4" aria-hidden="true" />
+                            <span>Entra</span>
+                          </button>
+                        )}
+                        <p className="px-4 pb-2 text-[10px] leading-relaxed text-slate-500">
+                          {hasTeamSession
+                            ? 'Termina la sessione del lavoro del team; il profilo locale resta sul dispositivo.'
+                            : 'Accedi al lavoro del team con il tuo account Beta. Il profilo locale resta separato.'}
+                        </p>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>

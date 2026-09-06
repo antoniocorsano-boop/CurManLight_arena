@@ -113,8 +113,8 @@ async function noHorizontalOverflow(page) {
 
       check('provenance inspection entry point is visible', await nextAction.isVisible());
       await nextAction.click();
-      await page.waitForURL(/\/fonti(?:\/|$|\?)/, { timeout: 5000 });
-      check('provenance entry reaches the canonical /fonti route', page.url().includes('/fonti'));
+      await page.waitForURL(/\/fascicolo(?:\/|$|\?)/, { timeout: 5000 });
+      check('provenance entry reaches the canonical /fascicolo route', page.url().includes('/fascicolo'));
 
       await page.screenshot({
         path: path.join(artifactDir, `${profile.id}-curriculum-context.png`),

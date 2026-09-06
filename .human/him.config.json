@@ -11,14 +11,11 @@
     "accessibility_required": true,
     "hia_required": true,
     "operational_communication_contract_required": true,
-    "curriculum_alignment_registry_required": true
+    "curriculum_alignment_registry_required": true,
+    "curriculum_lifecycle_contract_required": true,
+    "product_documentation_registry_required": true
   },
-  "consequential_actions": {
-    "preview_required": true,
-    "explicit_human_decision_required": true,
-    "receipt_required": true,
-    "recovery_required": true
-  },
+  "consequential_actions": {"preview_required":true,"explicit_human_decision_required":true,"receipt_required":true,"recovery_required":true},
   "operational_communication": {
     "contract": ".human/operational-communication.contract.json",
     "surface_registry": ".human/operational-communication.surfaces.json",
@@ -29,8 +26,16 @@
     "documentation": "docs/curriculum/REG-CURR-00_MASTER_ALIGNMENT.md",
     "drive_register_id": "1IMKwWWukefIDIOsbHQByiXLN7YuU7He0V5b01tjitG4"
   },
-  "compatibility": {
-    "domain_human_task_contract": "src/features/guided-workflow/humanTask.ts",
-    "domain_contract_remains_authoritative": true
-  }
+  "curriculum_lifecycle": {
+    "contract": ".human/curriculum-lifecycle.contract.json",
+    "version": "1.1.1",
+    "institutional_document_drive_id": "1M8LriHG1zASUq7jE2xiyJfvX4gVnnmZNmYBrrfYS7fE"
+  },
+  "product_documentation": {
+    "registry": "docs/04_product_experience/PRODUCT_DOCS.registry.json",
+    "vision": "docs/04_product_experience/00_VISION.md",
+    "vision_version": "1.0.0",
+    "vision_drive_file_id": "1s17jJCslSIJIXQfiTEzyRcD5q-Baopj6-l14aaFEWik"
+  },
+  "compatibility": {"domain_human_task_contract":"src/features/guided-workflow/humanTask.ts","domain_contract_remains_authoritative":true}
 }

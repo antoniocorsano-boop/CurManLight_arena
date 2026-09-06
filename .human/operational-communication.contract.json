@@ -1,8 +1,8 @@
 {
   "contract_id": "CCO",
   "name": "Contratto di comunicazione operativa di Arena",
-  "version": "1.3.0",
-  "purpose": "Separare uso operativo, rassicurazione contestuale e formazione affinché l'utente possa agire con fiducia senza dover studiare ogni vista prima di usarla.",
+  "version": "1.4.1",
+  "purpose": "Separare orientamento operativo, spiegazione del processo e verifica tecnica affinché il docente possa agire con linguaggio istituzionale senza essere esposto al funzionamento interno del sistema.",
   "principles": {
     "structure_before_explanation": true,
     "state_before_explanation": true,
@@ -23,7 +23,36 @@
     "progression_requires_real_state_transition": true,
     "one_visible_process_hierarchy_per_task_context": true,
     "secondary_navigation_must_not_interrupt_primary_flow": true,
-    "draft_actions_must_not_claim_completion_before_commit": true
+    "draft_actions_must_not_claim_completion_before_commit": true,
+    "teacher_language_must_be_institutional_not_system_centered": true,
+    "technical_traceability_must_not_occupy_level_1": true,
+    "coordinator_personal_contribution_precedes_coordination": true,
+    "shared_stage_requires_persisted_current_contribution": true,
+    "stale_persisted_share_must_reopen_share": true
+  },
+  "teacher_progressive_levels": {
+    "level_1": {
+      "name": "Orientamento e azione",
+      "default_visible": true,
+      "must_answer": ["dove_sono", "cosa_devo_fare", "stato_del_mio_lavoro", "effetto_immediato"],
+      "language": "istituzionale, professionale, naturale",
+      "system_jargon_forbidden": ["membership", "assurance", "gate", "SHA", "handoff", "export", "blocker", "esito locale", "workflow interno"],
+      "technical_ids_forbidden": true
+    },
+    "level_2": {
+      "name": "Spiegazione del processo",
+      "default_collapsed": true,
+      "purpose": "Spiegare motivazione, criteri e passaggi successivi a chi desidera comprendere meglio il lavoro.",
+      "language": "istituzionale e comprensibile al personale docente",
+      "must_not_be_required_to_complete_primary_task": true
+    },
+    "level_3": {
+      "name": "Verifica e tracciabilità",
+      "default_collapsed": true,
+      "purpose": "Rendere disponibili fonti, versioni, riferimenti interni e identificativi a chi deve verificare o approfondire.",
+      "may_include": ["documenti_di_riferimento", "versioni", "riferimenti_interni", "identificativi_tecnici"],
+      "must_not_compete_with_primary_task": true
+    }
   },
   "layers": {
     "operational": {
@@ -62,7 +91,8 @@
       "explicit_continue_action_must_change_active_stage": true,
       "scrolling_alone_is_not_a_stage_transition": true,
       "duplicate_progress_rails_are_forbidden": true,
-      "secondary_filters_must_use_progressive_disclosure": true
+      "secondary_filters_must_use_progressive_disclosure": true,
+      "shared_progress_requires_persisted_current_state": true
     }
   },
   "action_grammar": [
@@ -71,7 +101,8 @@
     {"verb": "Modifica", "meaning": "apri la formulazione di un'alternativa senza registrarla come completata"},
     {"verb": "Registra modifica", "meaning": "salva la formulazione alternativa come orientamento personale completo"},
     {"verb": "Mantieni", "meaning": "mantieni il testo precedente nel contesto corrente"},
-    {"verb": "Condividi", "meaning": "rendi visibile al team un contributo personale"},
+    {"verb": "Condividi", "meaning": "registra e rende visibile al gruppo un contributo personale corrente"},
+    {"verb": "Confronta", "meaning": "esamina con il gruppo i punti che richiedono realmente discussione dopo una condivisione verificata"},
     {"verb": "Registra l'esito", "meaning": "documenta un esito già maturato nel gruppo autorizzato"}
   ],
   "reserved_authority_verbs": ["Approva", "Adotta"],
@@ -100,7 +131,14 @@
     "stage_transition_must_change_rendered_task_context": true,
     "no_duplicate_progress_hierarchies": true,
     "secondary_filters_under_progressive_disclosure": true,
-    "draft_requires_explicit_commit": true
+    "draft_requires_explicit_commit": true,
+    "teacher_level_1_must_not_contain_system_jargon": true,
+    "level_2_and_level_3_default_collapsed": true,
+    "work_session_has_single_progression": true,
+    "coordinator_must_not_skip_personal_contribution": true,
+    "compare_requires_persisted_current_share": true,
+    "changed_personal_orientation_invalidates_previous_share": true,
+    "local_confirmation_must_not_simulate_persisted_share": true
   },
   "pilot_surfaces": [
     {
@@ -109,18 +147,42 @@
         "data-beta-home=\"role-work-queue\"",
         "data-home-queue=\"actionable\"",
         "data-home-work-action=",
-        "data-hcm-secondary-content",
-        "Il tuo spazio nel curricolo",
-        "Da fare"
+        "data-hcm-level=\"1\"",
+        "data-hcm-level=\"2\"",
+        "data-hcm-level=\"3\"",
+        "Il mio lavoro sul curricolo",
+        "Da fare",
+        "Il percorso di lavoro",
+        "Ruoli e condizioni di accesso"
       ]
     },
     {
       "path": "src/features/beta/RevisionWorkspace.tsx",
       "required_tokens": [
+        "data-curriculum-work-session",
+        "data-work-session-stage={stage}",
+        "data-persisted-share-ready={sharePersistence.complete ? 'true' : 'false'}",
         "data-revision-stage=\"review\"",
         "data-revision-stage=\"sharing\"",
-        "setPersonalStage('sharing')",
-        "Rivedi la revisione personale"
+        "setStage('SHARE')",
+        "Rivedi il mio contributo",
+        "Anche il coordinatore completa prima il proprio contributo personale.",
+        "data-team-comparison-blocked-by-share",
+        "Condivisione verificata",
+        "Apri il confronto del gruppo"
+      ]
+    },
+    {
+      "path": "src/features/beta/TeamContributionPublisher.tsx",
+      "required_tokens": [
+        "data-team-contribution-publisher",
+        "data-contribution-persistence-complete={persistedCurrentContributionComplete ? 'true' : 'false'}",
+        "data-professional-contribution-persisted",
+        "contributionMatchesCurrentWork",
+        "proposalFingerprint",
+        "contribution.orientation !== expectedOrientation",
+        "normalizeText(contribution.customText) === normalizeText(customTexts[contribution.proposalRef])",
+        "Il contributo corrente è registrato e verificato nel team."
       ]
     },
     {
@@ -131,12 +193,16 @@
         "data-revision-current-card",
         "data-revision-completed-card",
         "data-revision-assurance-on-demand",
-        "Precedente",
-        "Proposta",
-        ">Conferma<",
-        ">Modifica<",
-        "current.keepLabel || 'Mantieni precedente'",
+        "data-hcm-level=\"1\"",
+        "data-hcm-level=\"2\"",
+        "data-hcm-level=\"3\"",
+        "Testo precedente",
+        "Proposta da esaminare",
+        "Conferma la proposta",
+        "Proponi una modifica",
+        "Mantieni testo precedente",
         "Registra modifica",
+        "Fonti e tracciabilità",
         "Tutte le schede"
       ]
     }

@@ -1,122 +1,225 @@
-# 00 — VISION
+# 00 — VISIONE DI PRODOTTO
 
-**CurManLight — Product Experience 2.0**
-**Milestone:** CML-600
-
----
-
-## Missione
-
-CurManLight esiste per aiutare le scuole italiane a costruire, gestire e far evolvere il proprio curricolo verticale di istituto, in piena allineamento con il D.M. 221/2025 (Indicazioni per il Curricolo) e il D.M. 14/2024 (Certificazione delle Competenze).
-
-La piattaforma nasce dall'esigenza reale dell'I.C. Calvario-Covotta "don Lorenzo Milani" di Ariano Irpino (AV) — un istituto comprensivo con scuola dell'infanzia, primaria e secondaria di primo grado, con plessi distribuiti sul territorio e una minoranza storica italo-albanese (Arbëreshë) — di avere uno strumento unico, offline, che traduca la complessità normativa in azioni concrete di programmazione e progettazione didattica.
-
-CurManLight non è un gestionale generico. È uno strumento *di scuola*, pensato *dalla scuola*, per la scuola.
+**Vision ID:** `ARENA-PRODUCT-VISION`  
+**Versione:** `1.0.0`  
+**Data:** 2026-09-06  
+**Stato:** `CANONICAL_PRODUCT_DIRECTION`  
+**Controparte Drive:** `ARENA-PRODUCT-00_Visione_di_prodotto_e_governo_documentazione_2026-2027` — `1s17jJCslSIJIXQfiTEzyRcD5q-Baopj6-l14aaFEWik`
 
 ---
 
-## Utenti
+## 1. Missione
 
-CurManLight definisce **6 ruoli utente**, ciascuno con un cruscotto, delle azioni prioritarie e un livello di accesso diverso. Il ruolo si seleziona durante l'onboarding al primo avvio e può essere modificato in qualsiasi momento dal profilo.
+CurManLight Arena non è un archivio di documenti sul curricolo e non è un gestionale generico. È l'ambiente professionale con cui una scuola costruisce, valida, utilizza, osserva e fa evolvere il proprio curricolo verticale mantenendo distinti:
 
-| Ruolo | Chi è | Cosa fa in CurManLight |
-|-------|-------|------------------------|
-| **Insegnante** | Docente di cattedra, singola disciplina | Consulta il curricolo verticale, compila le UDA nel Wizard a 5 passi, esporta documenti per la propria materia, registra gli esiti degli alunni in classe |
-| **Dipartimento** | Coordinatore di area disciplinare (es. Dipartimento di Lettere) | Vota i gap ordinamentali tra i livelli scolastici, esamina le proposte di raccordo, esporta il file .cml dipartimentale da inviare al Referente |
-| **Referente** | Referente PTOF / Curricolo d'Istituto | Unisce i file .cml dei vari dipartimenti (merger), monitora il tasso di adesione alle Linee Guida 2025, verifica la copertura delle 8 Competenze Chiave Europee |
-| **Dirigente** | Dirigente Scolastico | Esamina la bozza di delibera consiliare, monitora la conformità PA (AgID, GDPR, ACN), scarica la dichiarazione di accessibilità per invio telematico |
-| **Collegio** | Collegio Docenti (vista collettiva) | Simile al Dirigente con widget condivisi per la delibera d'adozione del curricolo, conformità tecnologica e avanzamento plessi |
-| **Amministratore** | Responsabile IT d'Istituto / gestore tecnico | Monitora lo stato di IndexedDB e del Service Worker, gestisce i backup e i ripristini, verifica la cache PWA e gli aggiornamenti |
+`fonte normativa != elaborazione d'Istituto != contributo professionale != esito del gruppo != decisione istituzionale != curricolo vigente`.
+
+La promessa di prodotto è: **ogni scelta curricolare deve poter essere ricostruita dalla fonte alla progettazione didattica e, dopo l'attuazione, dalla pratica professionale a un eventuale riesame, senza perdere provenienza, responsabilità e storia.**
 
 ---
 
-## Valori
+## 2. North Star
 
-### 1. Offline-First
-I dati restano sul dispositivo. Nessuna dipendenza da server, connessione internet o servizi cloud. L'app funziona da una chiavetta USB, da un file locale, o da una rete interna. Google Workspace è l'unica eccezione, ed è opzionale.
+Arena deve trasformare il curricolo da documento statico a **sistema operativo professionale della progettazione educativa e didattica**.
 
-### 2. Centrato sulla scuola italiana
-Ogni funzionalità è mappata su un bisogno reale della scuola italiana: dal RAV al PTOF, dalla certificazione AgID al D.M. 14/2024, dall'infanzia alla secondaria. La terminologia è quella della scuola, non quella dello sviluppo software.
+Un docente deve poter capire in pochi secondi:
+- che cosa si applica alla propria classe, disciplina o campo di esperienza;
+- che cosa deve esaminare o validare;
+- quale decisione gli compete e quale non gli compete;
+- come il curricolo alimenta programmazione, UDA e attività;
+- come segnalare un problema emerso nella pratica senza modificare automaticamente il curricolo.
 
-### 3. Privacy-by-Design
-I dati sensibili degli studenti (nomi, diagnosi, PEI/PDP) vengono cifrati localmente con AES-GCM a 256 bit. Nessun motore IA (WikiLLM o Copilota) può leggere questi dati in chiaro. L'IA riceve unicamente token anonimi mascherati.
-
-### 4. Memoria Istituzionale
-Nulla va perduto. Il Second Brain d'Istituto conserva 19 volumi di conoscenza pedagogica e ordinamentale in formato Markdown, consultabili e interrogabili. Ogni decisione del dipartimento, ogni UDA validata, ogni delibera è preservata.
-
-### 5. Progettazione Collaborativa
-La piattaforma supporta il lavoro in team: votazioni sui gap, unione file .cml tra dipartimenti, bacheca social per il riuso di UDA, registro di classe condiviso, gruppi cooperativi.
-
----
-
-## Principi UX
-
-### 1. Zero-friction per l'uso quotidiano
-L'insegnante non tecnico deve poter aprire CurManLight, trovare ciò che gli serve, e completare la propria azione in pochi clic. Nessun tutorial obbligatorio dopo l'onboarding. I percorsi più comuni (consulta curricolo, compila UDA, esporta Word) sono accessibili in massimo 2 clic dalla dashboard.
-
-### 2. Offline-First (funziona sempre)
-L'app deve funzionare da una chiavetta USB, in una rete locale senza internet, oppure connessa al cloud. Il Service Worker gestisce la cache degli asset. L'utente non deve mai pensare alla connessione.
-
-### 3. Memoria Istituzionale (nulla si perde)
-Ogni azione dell'utente è preservata. Le decisioni dei dipartimenti sono salvate localmente e non si sovrascrivono. Il sistema di backup JSON permette di ripristinare lo stato completo dell'istituto in qualsiasi momento.
-
-### 4. Disclosure Progressivo
-La superficie è semplice: una sidebar con 5 aree principali e una dashboard. Ma sotto ogni area ci sono sotto-aree, filtri, opzioni avanzate e strumenti IA. L'utente sceglie quanto approfondire. Il Wizard UDA a 5 passi è l'esempio perfetto: si può completare un'UDA in modo guidato, oppure personalizzare ogni singolo campo.
-
-### 5. Accessibilità (WCAG 2.1 Livello A minimo)
-L'app è testata con MAUVE++ (CNR/AgID) e deve conformarsi alle linee guida WCAG 2.1 AA. Supporto semantico HTML5, contrasto sufficiente, navigazione da tastiera, lettori di schermo. L'obiettivo è il 98% di accessibilità come attualmente misurato.
+Un istituto deve poter dimostrare:
+- da quali fonti deriva ogni elemento rilevante;
+- quale versione è stata esaminata;
+- quali esiti professionali sono stati registrati;
+- quale decisione istituzionale è stata realmente assunta;
+- quale versione è in uso;
+- come le scelte adottate sono state tradotte nella progettazione;
+- quali osservazioni dalla pratica hanno motivato eventuali revisioni successive.
 
 ---
 
-## Linguaggio
+## 3. Ciclo professionale canonico
 
-CurManLight parla la lingua della scuola. Non la lingua della tecnologia.
+Il processo umano visibile è:
 
-| Si dice | Non si dice |
-|---------|-------------|
-| Curricolo | Database |
-| Progettazione | Workflow |
-| Consiglio | Team meeting |
-| UDA | Record |
-| Traguardi | Target |
-| Obiettivi di apprendimento | Goals |
-| Esiti | Risultati |
-| Gap ordinamentali | Differenze strutturali |
-| Delibera | Approvazione formale |
-| Registro d'Aula | Student management |
-| PTOF | Piano strategico |
-| Second Brain | Knowledge base |
-| Copilota | Chatbot |
-| Popolamento PTOF | Data entry |
+**QUADRO APPLICABILE → VALIDAZIONE PROFESSIONALE → RIESAME VERTICALE → ITER ISTITUZIONALE → USO NELLA PROGETTAZIONE DIDATTICA → RIESAME DALLA PRATICA → eventuale nuova VALIDAZIONE PROFESSIONALE.**
+
+Le fonti, i fingerprint, le versioni, le membership, gli audit, le ricevute e gli export sono servizi di supporto. Non sono il processo principale percepito dal docente.
+
+Il contratto macchina che protegge questo ciclo è `.human/curriculum-lifecycle.contract.json@1.1.1`.
 
 ---
 
-## Obiettivi
+## 4. Revisione innescata da eventi futuri
 
-### 1. Ridurre del 60% il tempo di produzione dei documenti curricolari
-Prima di CurManLight, la compilazione manuale del curricolo verticale per 14 discipline su 3 ordini scolastici richiedeva settimane di lavoro distribuito. L'obiettivo è portare questo processo a poche ore di lavoro concentato, grazie al Wizard UDA, al sistema di popolamento IA e all'esportazione automatica nei formati d'ufficio.
+Arena deve poter riaprire il ciclo in modo controllato mediante un `RevisionTrigger`.
 
-### 2. Abilitare la revisione collaborativa in tempo reale durante le riunioni di dipartimento
-Durante le riunioni, i docenti devono poter votare i raccordi, commentare le proposte, e esportare il risultato condiviso. Il file .cml dipartimentale è il prodotto intermedio che il Referente unisce per costruire la proposta finale al Collegio.
+Trigger previsti:
+- **normativo esterno** — legge, decreto, Indicazioni, linee guida, nota o circolare applicabile;
+- **istituzionale interno** — esigenza motivata dell'Istituto, del Collegio, di un Dipartimento o di una commissione;
+- **dalla pratica didattica** — ricorrenza di problemi di prerequisiti, sequenza, carico, duplicazione, evidenze o raccordi;
+- **periodico** — riesame programmato annuale o pluriennale.
 
-### 3. Garantire che il 100% della conoscenza istituzionale sia catturata e interrogabile
-Il Second Brain d'Istituto raccoglie 19 volumi di documentazione (dal RAV al Piano di Miglioramento, dalla normativa alla relazione della scuola in chiaro). Il Copilota WikiLLM risponde a domande pedagogiche citando le fonti d'Istituto, senza allucinazioni.
+Un trigger **non modifica mai il curricolo**. Prima deve essere qualificato per fonte, applicabilità, ambito e impatto; solo dopo può aprire uno o più `CurriculumReviewCase`.
+
+Le esigenze interne restano riconoscibili come scelte d'Istituto e non vengono presentate come prescrizioni nazionali.
 
 ---
 
-## Vincoli
+## 5. Oggetto canonico di lavoro
 
-### 1. Singolo file HTML (nessun server richiesto)
-Il bundle finale è un unico file `index.html` generato da Vite 5. Non richiede installazione, configurazione server, o dipendenze runtime. Si apre con un doppio clic nel browser.
+L'oggetto centrale è la `CurriculumUnit`, non il file e non la singola frase.
 
-### 2. Funziona sui Chromebook assegnati alle scuole (specifiche basse)
-L'app deve funzionare fluidamente su Chromebook con 4 GB di RAM e processore dual-core. Nessun framework pesante, nessuna animazione complessa, nessuna dipendenza non essenziale.
+Ogni unità mantiene identità stabile e collega almeno:
+- ordine / classe / coorte o fascia d'età;
+- disciplina / campo / asse trasversale;
+- nucleo o dominio;
+- requisito nazionale o fonte specifica;
+- annualizzazione d'Istituto;
+- competenze o traguardi;
+- obiettivi;
+- conoscenze essenziali;
+- evidenze osservabili;
+- raccordi verticali;
+- provenienza;
+- versione o fingerprint;
+- stato di validazione.
 
-### 3. Deve funzionare completamente offline
-Nessuna funzionalità deve essere compromessa dalla mancanza di connessione. Google Workspace è l'unica eccezione: la sync cloud è un'opzione, non un requisito.
+Da essa derivano oggetti distinti: `CurriculumReviewCase`, `ProfessionalContribution`, `TeamProfessionalOutcome`, `VerticalReviewOutcome`, `InstitutionalDecision`, `AdoptionReceipt`, `DidacticBinding`, `ImplementationObservation`, `RevisionTrigger`.
 
-### 4. Conforme GDPR (i dati restano locali se non si sceglie la sync)
-I dati personali degli studenti non lasciano mai il dispositivo. La sincronizzazione con Google Drive è esplicitamente opt-in e avviene solo con il consenso dell'utente. La chiave di cifratura AES-GCM resta locale.
+---
 
-### 5. Nessuna chiamata API esterna tranne Google Workspace (opzionale)
-L'unica connessione HTTP attiva è verso le API Google (Drive, userinfo) durante la sincronizzazione cloud. Nessun analytics, nessun tracker, nessuna telemetria esterna. Il Service Worker gestisce la cache localmente.
+## 6. Autorità e responsabilità
+
+I confini sono strutturali:
+
+`profilo personale != ruolo verificato`  
+`competenza disciplinare != autorità istituzionale`  
+`contributo individuale != esito professionale del team`  
+`esito del team != decisione istituzionale`  
+`decisione istituzionale != adozione finché non è registrata`  
+`PASS tecnico != avanzamento umano o istituzionale`
+
+L'autorità non deriva da un ruolo scelto in un profilo, ma da identità autenticata, appartenenza valida, competenza e stato del processo.
+
+---
+
+## 7. Curricolo → progettazione
+
+Il curricolo adottato alimenta la progettazione mediante `DidacticBinding`.
+
+Programmazione annuale, UDA e attività non copiano il curricolo creando nuove fonti di verità: referenziano l'identità e la versione delle `CurriculumUnit` utilizzate.
+
+Per Educazione civica la tracciabilità deve poter collegare:
+
+`risultato civico → nucleo → attività/UDA → ore → responsabilità → evidenza reale`.
+
+L'alfabetizzazione all'intelligenza artificiale conta come contributo all'Educazione civica soltanto quando esiste un risultato civico esplicito.
+
+---
+
+## 8. Riesame dalla pratica
+
+Arena consente osservazioni professionali aggregate senza richiedere dati personali degli alunni.
+
+Segnali ammessi comprendono: `ADEQUATE`, `TOO_EARLY`, `TOO_LATE`, `DUPLICATED`, `MISSING_PREREQUISITE`, `WEAK_EVIDENCE`, `UNSUSTAINABLE_LOAD`, `EFFECTIVE_VERTICAL_LINK`, `OTHER`.
+
+Le `ImplementationObservation` possono generare un riesame mirato; non modificano automaticamente il curricolo.
+
+---
+
+## 9. Navigazione target
+
+La navigazione primaria è:
+
+**IL MIO LAVORO · CURRICOLO · PROGETTAZIONE · RIESAME**
+
+`FASCICOLO` è una superficie subordinata per fonti, versioni, registri, ricevute, export e tracciabilità.
+
+Le azioni istituzionali compaiono soltanto quando ruolo e stato le rendono pertinenti.
+
+Le superfici oggi separate “Il mio contributo”, “Condivisione”, “Lavoro del team” e “Coordinamento del team” devono convergere in una sola `CurriculumWorkSession` progressiva:
+
+**ESAMINA → CONDIVIDI → CONFRONTA → REGISTRA L'ESITO**.
+
+`CONDIVIDI` è completato soltanto quando il `ProfessionalContribution` persistito corrisponde alla scheda/versione corrente, all'orientamento personale corrente e all'eventuale testo di modifica corrente. Se il docente modifica successivamente il proprio orientamento, la condivisione precedente non abilita più `CONFRONTA` finché non viene aggiornata e verificata.
+
+---
+
+## 10. Principi di prodotto
+
+- lavoro prima dei documenti;
+- una sola baseline curricolare canonica;
+- riconoscimento prima dell'interpretazione;
+- un solo oggetto dominante per contesto;
+- divulgazione progressiva di fonti, motivazioni e dati tecnici;
+- linguaggio della scuola, non del software;
+- tracciabilità completa senza sovraccarico visivo;
+- nessuna promozione automatica di decisioni;
+- privacy e minimizzazione dei dati;
+- IA come supporto citabile e verificabile, mai come autorità;
+- nessun punteggio pedagogico automatico e nessun ranking dei docenti.
+
+---
+
+## 11. Misure di qualità ammesse
+
+Arena può misurare:
+- completamento della validazione professionale;
+- questioni verticali irrisolte;
+- copertura dei `DidacticBinding`;
+- ricorrenza delle `ImplementationObservation`;
+- tracciabilità di ore/evidenze di Educazione civica;
+- completezza delle ricevute di fonte/versione/decisione.
+
+Arena non deve produrre un “punteggio di qualità pedagogica” sintetico né classifiche dei docenti.
+
+---
+
+## 12. Non-obiettivi
+
+Arena non sostituisce Collegio, Dipartimenti, Dirigente o altri organi; non decide il curricolo; non rende una norma automaticamente didattica; non è un registro elettronico degli alunni; non è un LMS generalista; non usa l'IA per assumere decisioni professionali o istituzionali.
+
+---
+
+## 13. Governo della documentazione di prodotto
+
+La documentazione segue questa gerarchia:
+
+1. **Visione canonica** — questo documento e la controparte Drive `ARENA-PRODUCT-00`;
+2. **Architettura informativa** — `01_INFORMATION_ARCHITECTURE.md`;
+3. **Navigazione** — `02_NAVIGATION_MODEL.md`;
+4. **Flussi critici** — `09_USER_FLOWS.md`;
+5. **Contratti** — Curriculum Lifecycle, CCO e HIM;
+6. **Specifiche di implementazione** — layout, componenti e schermate, subordinate alla visione.
+
+Ogni modifica di governance che altera ciclo, autorità, oggetti canonici, navigazione primaria, collegamento alla progettazione o modalità di riesame deve aggiornare la visione e i documenti derivati pertinenti nello stesso incremento.
+
+Il registro macchina `docs/04_product_experience/PRODUCT_DOCS.registry.json` mantiene versione, stato e responsabilità di sincronizzazione dei documenti di prodotto. La CI deve fallire in caso di disallineamento.
+
+---
+
+## 14. Stato corrente
+
+- curricolo canonico: `CAN-CURR-MASTER-00@1.3`;
+- copertura documentale: completa;
+- validazione professionale: aperta;
+- curricolo vigente: no;
+- contratto ciclo professionale: `.human/curriculum-lifecycle.contract.json@1.1.1`;
+- governance `RevisionTrigger`: definita nel contratto lifecycle 1.1.1;
+- `CurriculumWorkSession`: progressione unica implementata; il confronto richiede una condivisione persistita corrispondente al lavoro personale corrente;
+- UI complessiva: ancora in convergenza verso la navigazione e i servizi target.
+
+---
+
+## 15. Criterio di successo
+
+Arena raggiunge la propria visione quando:
+- un docente completa il proprio compito professionale senza conoscere la struttura tecnica del fascicolo;
+- un team registra un esito senza confonderlo con una decisione istituzionale;
+- il curricolo adottato alimenta realmente programmazioni e UDA;
+- la pratica può innescare revisioni mirate;
+- una nuova norma o circolare può riaprire il ciclo senza creare baseline parallele;
+- l'intera catena resta ricostruibile nel tempo.

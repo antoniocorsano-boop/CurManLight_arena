@@ -2,8 +2,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 const root = process.cwd();
-const readJson = (relativePath) => JSON.parse(fs.readFileSync(path.join(root, relativePath), 'utf8'));
-const readText = (relativePath) => fs.readFileSync(path.join(root, relativePath), 'utf8');
+const readJson = (p) => JSON.parse(fs.readFileSync(path.join(root, p), 'utf8'));
+const readText = (p) => fs.readFileSync(path.join(root, p), 'utf8');
 const assert = (condition, message) => {
   if (!condition) {
     console.error(`REG-CURR-00_ALIGNMENT_FAIL: ${message}`);
@@ -17,159 +17,168 @@ const surfaces = readJson('.human/operational-communication.surfaces.json');
 const him = readJson('.human/him.config.json');
 const mirror = readText('docs/curriculum/REG-CURR-00_MASTER_ALIGNMENT.md');
 const currentSourceDomain = readText('src/domain/curriculum/institute/currentSource.ts');
-const canonicalFontiWorkspace = readText('src/features/documents/components/FontiWorkspace.tsx');
+const sourceRegisterDomain = readText('src/domain/curriculum/institute/sourceRegister.ts');
+const currentSourcePanel = readText('src/features/documents/components/InstituteCurrentSourcePanel.tsx');
+const sourceRegisterPanel = readText('src/features/documents/components/InstituteCurriculumSourceRegisterPanel.tsx');
+const fontiWorkspace = readText('src/features/documents/components/FontiWorkspace.tsx');
 const technologyPilotDomain = readText('src/domain/curriculum/validation/technologyClass1Review.ts');
-const revisionSurface = readText('src/features/curriculum/components/RevisioneTab.tsx');
-const progressHook = readText('src/features/curriculum/hooks/useCurriculumProgressStats.ts');
+const teamReviewDomain = readText('src/domain/revision/teamReview.ts');
 const teamWorkspace = readText('src/features/beta/TeamReviewWorkspace.tsx');
 
-assert(registry.registry_id === 'REG-CURR-00', 'registry_id deve essere REG-CURR-00');
-assert(registry.version === '1.6.0', 'versione del registro inattesa');
+assert(registry.registry_id === 'REG-CURR-00', 'registry_id inatteso');
+assert(registry.version === '1.13.0', 'versione registro inattesa');
 
-const source = registry.drive?.current_curriculum_source;
-assert(source?.title === 'CURRICOLO_VERTICALE_CORRETTO_PROPOSTA_2026-09-03.docx', 'fonte curricolare corrente non canonica');
-assert(source?.file_id === '1DPdK_EIZsE3lI-LIzTJG776cU1PcAcnf', 'Drive file ID della fonte corrente inatteso');
-assert(/^[a-f0-9]{64}$/.test(source?.sha256 ?? ''), 'SHA-256 della fonte corrente mancante o invalido');
-assert(source?.status === 'PROPOSTA_D_ISTITUTO_DA_VALIDARE', 'la fonte corretta deve restare una proposta da validare');
-assert(currentSourceDomain.includes(source.title), 'dominio sorgente privo del titolo corrente');
-assert(currentSourceDomain.includes(source.file_id), 'dominio sorgente privo del Drive ID corrente');
-assert(currentSourceDomain.includes(source.sha256), 'dominio sorgente privo dello SHA corrente');
-assert(currentSourceDomain.includes("lifecycleState: 'PROPOSAL_PENDING_HUMAN_VALIDATION'"), 'fonte non mantenuta in attesa di validazione umana');
-assert(currentSourceDomain.includes("role: 'HISTORICAL_TECHNICAL_BASELINE'"), 'ricostruzione v3 non preservata come storico tecnico');
-assert(currentSourceDomain.includes('canonicalPromotionAuthorized: false'), 'promozione canonica automatica non deve essere autorizzata');
-assert(canonicalFontiWorkspace.includes('<InstituteCurrentSourcePanel />'), 'Fonti non monta la fonte corrente');
-assert(!canonicalFontiWorkspace.includes('<InstituteSourceReviewPanel />'), 'Fonti riapre impropriamente il vecchio workbench di remediation');
+const master = registry.drive?.current_curriculum_master;
+assert(master?.title === 'CAN-CURR-MASTER-00_Curricolo_verticale_integrale_unificato_3-14_2026-2027', 'master corrente inatteso');
+assert(master?.file_id === '12eWTPUZBJxZixd6-p8drNAaW5_eL8qWpXZUSDyZZAv4', 'Drive ID master inatteso');
+assert(master?.version === '1.3', 'versione master inattesa');
+assert(master?.materialization === 'COMPLETE', 'master non materializzato integralmente');
+assert(master?.human_professional_validation === 'OPEN', 'validazione umana anticipata');
+assert(master?.ready_for_collegio === 'NOT_YET', 'READY_FOR_COLLEGIO anticipato');
+assert(master?.curriculum_in_force === false, 'master non può risultare vigente');
+assert(master?.continuity_rule === 'UPDATE_SAME_MASTER_AFTER_VALIDATED_OUTCOME', 'regola di continuità mancante');
+
+const normativeMatrix = registry.drive?.normative_compliance_matrix;
+assert(normativeMatrix?.title === 'MATR-CURR-MASTER-01_Matrice_conformita_normativa_IN2025_e_atti_collegati_2026-2027', 'matrice normativa inattesa');
+assert(normativeMatrix?.file_id === '1Wiw8Wsifls1-wr_GPYuqIAoB8GnwXMChO8Mz_kwiLKY', 'Drive ID matrice normativa inatteso');
+assert(normativeMatrix?.role === 'CONTROL_ATTACHMENT_NOT_CURRICULUM_BASELINE', 'la matrice normativa non deve diventare baseline');
+assert(normativeMatrix?.identified_curricular_gaps === 6, 'numero lacune normative iniziali inatteso');
+assert(normativeMatrix?.materialized_curricular_gaps === 6, 'lacune normative iniziali non interamente materializzate');
+assert(normativeMatrix?.osa_one_to_one_gate === 'COMPLETE_FOR_DOCUMENTARY_COVERAGE', 'gate OSA documentale non chiuso');
+assert(normativeMatrix?.osa_documentary_coverage_complete === true, 'copertura documentale OSA non registrata');
+assert(normativeMatrix?.osa_verified_integrations_materialized_in_master_1_3 === true, 'integrazioni OSA non registrate nel master 1.3');
+assert(normativeMatrix?.osa_completion_claim_scope === 'DOCUMENTARY_ONLY', 'scope del claim OSA non limitato al documentale');
+
+const sourceRepertory = registry.drive?.source_repertory;
+assert(sourceRepertory?.title === 'ALL-CURR-A_Repertorio_fonti_normative_e_istituzionali_2026-2027', 'repertorio fonti inatteso');
+assert(sourceRepertory?.file_id === '1MBZKbis6i6xg50z6fKgbh9yUianJXdhZ5jsK4r852PQ', 'Drive ID repertorio fonti inatteso');
+assert(sourceRepertory?.version === '1.1', 'versione repertorio fonti inattesa');
+assert(sourceRepertory?.role === 'INSTRUCTIONAL_SOURCE_REPERTORY', 'il repertorio fonti non deve essere una baseline curricolare');
+assert(sourceRepertory?.status === 'CURRENT_ALIGNED_TO_MASTER_1_3', 'repertorio fonti non allineato al master 1.3');
+
+const provenance = registry.drive?.primary_corrected_source;
+assert(provenance?.title === 'CURRICOLO_VERTICALE_CORRETTO_PROPOSTA_2026-09-03.docx', 'provenienza corretta inattesa');
+assert(provenance?.file_id === '1DPdK_EIZsE3lI-LIzTJG776cU1PcAcnf', 'Drive ID provenienza inatteso');
+assert(/^[a-f0-9]{64}$/.test(provenance?.sha256 ?? ''), 'SHA provenienza non valido');
+assert(provenance?.role === 'PRIMARY_CORRECTED_PROVENANCE', 'la fonte del 3 settembre non deve essere baseline corrente');
+
+for (const token of [master.title, master.file_id, master.version, normativeMatrix.title, normativeMatrix.file_id, sourceRepertory.title, sourceRepertory.file_id, sourceRepertory.version, provenance.title, provenance.file_id, provenance.sha256]) {
+  assert(currentSourceDomain.includes(token) || sourceRegisterDomain.includes(token), `contratto curricolare privo di ${token}`);
+}
+assert(currentSourceDomain.includes("sourceVersion: '1.3'"), 'dominio curricolare non punta al master 1.3');
+assert(currentSourceDomain.includes("lifecycleState: 'CANONICAL_BASELINE_PENDING_HUMAN_VALIDATION'"), 'lifecycle master inatteso');
+assert(currentSourceDomain.includes("materializationState: 'COMPLETE'"), 'materializzazione non registrata nel dominio');
+assert(currentSourceDomain.includes('curriculumInForce: false'), 'non vigenza non protetta nel dominio');
+assert(currentSourceDomain.includes("role: 'PRIMARY_CORRECTED_PROVENANCE'"), 'provenienza primaria non qualificata');
+assert(currentSourceDomain.includes("role: 'HISTORICAL_TECHNICAL_BASELINE'"), 'storico v3 non preservato');
+assert(currentSourceDomain.includes('canonicalPromotionAuthorized: false'), 'promozione automatica non vietata');
+assert(currentSourceDomain.includes("osaOneToOneGate: 'COMPLETE_FOR_DOCUMENTARY_COVERAGE'"), 'gate OSA documentale non registrato nel dominio');
+assert(currentSourceDomain.includes('osaDocumentaryCoverageComplete: true'), 'dominio non registra copertura documentale OSA');
+assert(currentSourceDomain.includes('osaVerifiedIntegrationsMaterializedInMaster13: true'), 'materializzazione integrazioni OSA non registrata nel dominio');
+assert(currentSourceDomain.includes("osaCompletionClaimScope: 'DOCUMENTARY_ONLY'"), 'dominio estende impropriamente il claim OSA');
+assert(currentSourceDomain.includes("alignmentState: 'ALIGNED_TO_MASTER_1_3'"), 'master non collegato al repertorio fonti 1.3');
+assert(currentSourceDomain.includes("primary: 'NATIONAL_BENCHMARKS_END_III_AND_V_WITH_INSTITUTE_ANNUALIZATION'"), 'semantica benchmark Primaria assente');
+assert(currentSourceDomain.includes("lowerSecondary: 'NATIONAL_BENCHMARK_END_III_WITH_INSTITUTE_ANNUALIZATION'"), 'semantica benchmark Secondaria assente');
+assert(currentSourceDomain.includes('noRetroactiveRewriteOf2012Cohorts: true'), 'protezione coorti transitorie assente');
+
+assert(sourceRegisterDomain.includes("repertoryId: 'ALL-CURR-A'"), 'registro macchina fonti privo di ALL-CURR-A');
+assert(sourceRegisterDomain.includes("version: '1.3'"), 'catena documentale non punta al master 1.3');
+assert(sourceRegisterDomain.includes("authorityInferenceFromPresence: false"), 'autorità delle fonti inferita dalla presenza');
+assert(sourceRegisterDomain.includes("locatorKind: 'INSTITUTIONAL_MIRROR'"), 'manca distinzione per copia istituzionale');
+assert(sourceRegisterDomain.includes("verificationState: 'ACT_VERIFIED_INSTITUTIONAL_MIRROR'"), 'manca stato di verifica della copia istituzionale');
+assert(sourceRegisterDomain.includes('INSTITUTE_CURRICULUM_AUTHORITATIVE_SOURCE_COUNT'), 'manca conteggio fonti applicate');
+
+assert(fontiWorkspace.includes('<InstituteCurrentSourcePanel />'), 'Fonti non monta la baseline corrente');
+assert(fontiWorkspace.includes('<InstituteCurriculumSourceRegisterPanel />'), 'Fonti non monta il repertorio istituzionale');
+assert(fontiWorkspace.indexOf('<InstituteCurrentSourcePanel />') < fontiWorkspace.indexOf('<InstituteCurriculumSourceRegisterPanel />'), 'repertorio fonti precede impropriamente il master');
+assert(fontiWorkspace.indexOf('<InstituteCurriculumSourceRegisterPanel />') < fontiWorkspace.indexOf('<SourceRegistry {...props} />'), 'archivio locale precede impropriamente le fonti istituzionali');
+assert(!fontiWorkspace.includes('<InstituteSourceReviewPanel />'), 'Fonti riapre il vecchio workbench');
+for (const token of ['Baseline corrente', 'Materializzazione 3–14 completa', 'Fonti e tracciabilità', 'non è più la rappresentazione corrente del curricolo']) {
+  assert(currentSourcePanel.includes(token), `pannello Fonti privo di: ${token}`);
+}
+for (const token of ['Fonti normative e istituzionali del curricolo', 'Apri la fonte ufficiale', 'Apri la copia istituzionale di trasmissione', 'Applicabilità:', 'Ultima verifica:', 'Verifica della fonte ≠ validazione del contenuto curricolare ≠ decisione istituzionale ≠ curricolo vigente.']) {
+  assert(sourceRegisterPanel.includes(token), `pannello repertorio fonti privo di: ${token}`);
+}
+
+const curriculumProcess = registry.curriculum_process;
+assert(curriculumProcess?.path_coverage_metric === 'DEPRECATED_FOR_COMPLETENESS', 'vecchia metrica non deprecata');
+assert(curriculumProcess?.master_materialization === 'COMPLETE', 'materializzazione master incompleta');
+for (const key of ['ordinary_curriculum_3_14','infanzia_3_4_5','primaria_i_v','secondaria_i_iii','irc_i_v_and_i_iii','latino_lel_ii_iii','educazione_civica_3_14','ai_literacy_3_14']) {
+  assert(curriculumProcess?.[key] === 'MATERIALIZED', `segmento non materializzato: ${key}`);
+}
+assert(curriculumProcess?.normative_alignment === 'OSA_DOCUMENTARY_COVERAGE_COMPLETE', 'allineamento normativo/OSA inatteso');
+assert(curriculumProcess?.normative_gaps_identified === 6, 'conteggio lacune normative iniziali inatteso');
+assert(curriculumProcess?.normative_gaps_materialized === 6, 'lacune normative iniziali non materializzate');
+assert(curriculumProcess?.osa_one_to_one_gate === 'COMPLETE_FOR_DOCUMENTARY_COVERAGE', 'processo non registra chiusura documentale OSA');
+assert(curriculumProcess?.osa_documentary_coverage_complete === true, 'processo non registra copertura documentale completa');
+assert(curriculumProcess?.osa_verified_integrations_materialized_in_master_1_3 === true, 'processo non registra integrazioni OSA nel master 1.3');
+assert(curriculumProcess?.osa_completion_claim_scope === 'DOCUMENTARY_ONLY', 'processo estende impropriamente il claim OSA');
+assert(curriculumProcess?.national_benchmark_semantics?.annual_class_osa_inference_forbidden === true, 'annualizzazioni locali possono essere confuse con OSA nazionali');
+assert(curriculumProcess?.national_benchmark_semantics?.retroactive_rewrite_of_2012_cohorts_forbidden === true, 'manca protezione non retroattività coorti 2012');
+assert(curriculumProcess?.source_repertory === 'ALL-CURR-A@1.1', 'repertorio fonti non registrato nel processo');
+assert(curriculumProcess?.source_traceability === 'ALIGNED_TO_MASTER_1_3', 'tracciabilità fonti non allineata al master 1.3');
+assert(curriculumProcess?.authoritative_sources_applied === 11, 'conteggio fonti applicate inatteso');
+assert(curriculumProcess?.document_chain_entries === 4, 'catena documentale inattesa');
+assert(curriculumProcess?.human_professional_validation === 'OPEN', 'validazione complessiva non aperta');
+assert(curriculumProcess?.verticality_final_review === 'OPEN', 'revisione verticale non aperta');
+assert(curriculumProcess?.ready_for_collegio === 'NOT_YET', 'pronto per Collegio non autorizzato');
+assert(curriculumProcess?.collegiate_approval === 'NOT_YET', 'approvazione collegiale non autorizzata');
+assert(curriculumProcess?.canonical_curriculum_promotion === 'NOT_AUTHORIZED', 'promozione curricolare non autorizzata');
+
+for (const key of ['current_master_must_match_across_drive_and_repo','primary_corrected_source_must_remain_provenance','no_parallel_curriculum_baselines','accepted_change_must_update_same_master','normative_matrix_is_control_attachment_not_baseline','normative_gap_closure_requires_same_master_update','osa_gate_must_not_claim_complete_without_full_mapping','osa_documentary_completion_never_implies_human_validation','osa_annualization_must_not_be_misrepresented_as_national_benchmark','transitional_2012_cohorts_must_not_be_rewritten_retroactively','source_repertory_must_match_drive_and_runtime','source_presence_never_implies_authority','source_locator_kind_must_be_explicit','institutional_mirror_must_not_be_presented_as_official']) {
+  assert(registry.alignment_rules?.[key] === true, `regola di allineamento mancante: ${key}`);
+}
+
+const sourceLogic = registry.source_logic;
+assert(sourceLogic?.source_repertory_contract === 'src/domain/curriculum/institute/sourceRegister.ts', 'contratto repertorio fonti inatteso');
+assert(sourceLogic?.source_repertory_surface === 'src/features/documents/components/InstituteCurriculumSourceRegisterPanel.tsx', 'superficie repertorio fonti inattesa');
+assert(sourceLogic?.source_repertory_version === '1.1', 'versione runtime repertorio inattesa');
+assert(sourceLogic?.authoritative_source_count === 11, 'conteggio runtime fonti inatteso');
+assert(sourceLogic?.document_chain_count === 4, 'catena runtime fonti inattesa');
+assert(sourceLogic?.source_locator_policy === 'OFFICIAL_OR_EXPLICIT_INSTITUTIONAL_MIRROR', 'policy localizzatori inattesa');
+assert(sourceLogic?.source_authority_inferred_from_presence === false, 'runtime inferisce autorità dalla presenza');
+assert(sourceLogic?.source_traceability_status === 'ALIGNED_TO_MASTER_1_3', 'runtime fonti non allineato al master 1.3');
 
 const baseline = registry.arena_product_baseline;
-assert(baseline?.pr === 198, 'baseline Arena non identificata');
-assert(baseline?.branch === 'feature/team-meeting-workspace', 'branch baseline Arena inatteso');
-assert(baseline?.product_head === '2317b57fef35695f0c8373208d5b5f4898671478', 'product head funzionale R2 inatteso');
-assert(baseline?.cco_version === cco.version, 'versione CCO disallineata');
-assert(baseline?.cco_surfaces_version === surfaces.version, 'versione superfici CCO disallineata');
+assert(baseline?.pr === 198 && baseline?.branch === 'feature/team-meeting-workspace', 'baseline prodotto inattesa');
+assert(baseline?.cco_version === cco.version, 'CCO disallineato');
+assert(baseline?.cco_surfaces_version === surfaces.version, 'superfici CCO disallineate');
 
 const pilot = registry.active_validation_pilot;
-assert(pilot?.pilot_id === 'TEC-SEC1-2026-01', 'pilot Tecnologia non registrato');
-assert(pilot?.revision === 2, 'revisione attiva diversa da R2');
-assert(pilot?.discipline === 'Tecnologia' && pilot?.order === 'secondaria' && pilot?.class_label === 'Classe prima', 'contesto pilot inatteso');
-assert(pilot?.status === 'READY_FOR_TEAM_COMPARISON', 'pilot non pronto al confronto del team');
-assert(pilot?.human_outcome === 'OPEN', 'esito umano del gruppo non può essere simulato');
-assert(pilot?.review_card_count === 5, 'pilot deve mantenere cinque decisioni R2');
-assert(pilot?.canonical_promotion === 'NOT_AUTHORIZED', 'pilot non può autorizzare promozione canonica');
+assert(pilot?.pilot_id === 'TEC-SEC1-2026-01' && pilot?.revision === 2, 'pilot R2 inatteso');
+assert(pilot?.canonical_promotion === 'NOT_AUTHORIZED', 'pilot non può promuovere il curricolo');
 assert(pilot?.decision_carry_forward === 'NOT_AUTHORIZED', 'carry-forward R1→R2 non autorizzato');
-assert(pilot?.implementation_head === baseline.product_head, 'pilot e baseline funzionale non coincidono');
-
-const activeR2Ids = [
-  'tec-sec1-2026-r2-n1',
-  'tec-sec1-2026-r2-n2',
-  'tec-sec1-2026-r2-n3',
-  'tec-sec1-2026-r2-n4',
-  'tec-sec1-2026-r2-verticalita',
-];
-const historicalR1Ids = [
-  'tec-sec1-2026-n1',
-  'tec-sec1-2026-n2',
-  'tec-sec1-2026-n3',
-  'tec-sec1-2026-n4',
-  'tec-sec1-2026-verticalita',
-];
-assert(JSON.stringify(pilot?.active_proposal_ids) === JSON.stringify(activeR2Ids), 'ID attivi R2 disallineati');
-assert(pilot?.previous_revision?.revision === 1, 'R1 non registrata come precedente');
-assert(pilot?.previous_revision?.status === 'SUPERSEDED_INSTRUCTIONAL_TEXT_PRESERVED', 'R1 non preservata come storico semantico');
-assert(JSON.stringify(pilot?.previous_revision?.proposal_ids) === JSON.stringify(historicalR1Ids), 'ID storici R1 disallineati');
-assert(pilot?.previous_revision?.decision_semantics === 'PRESERVED_AS_HISTORY_ONLY', 'decisioni R1 devono restare storiche');
-
-const audit = pilot?.instructional_audit;
-assert(audit?.audit_id === 'AUD-CURR-TEC-SEC1-01', 'audit Tecnologia non registrato');
-assert(audit?.file_id === '1SZ_lmaYXNF2Fx8ro1C-hTh5iUH-riECcqyZtRx9JRPM', 'Drive ID audit inatteso');
-assert(audit?.status === 'CORRECTIONS_APPLIED', 'correzioni audit non recepite');
-assert(audit?.human_outcome === 'OPEN', 'audit istruttorio non può chiudere esito umano');
-assert(audit?.canonical_promotion === 'NOT_AUTHORIZED', 'audit non può autorizzare promozione canonica');
-assert(Array.isArray(audit?.corrections_applied) && audit.corrections_applied.length === 4, 'quattro correzioni istruttorie devono restare registrate');
-
-const expectedBindings = {
-  source: '1DPdK_EIZsE3lI-LIzTJG776cU1PcAcnf',
-  proposal: '19nPCsAj_ItBscUwwcHwrVhxDbBy-MXIJ',
-  vertical_matrix: '1CMSESN73HCi_2jM_tZYhN9hd6oWzyHgK',
-  validation_gate: '1rxKy2IDD5V7l4Nc1LfJeLr407ltfa_vbt_EFK54s7mU',
-  decision_register: '1KmnrgWrNxVDUjOvdPo0oibqTvr1lQ72QepBE8KNsdZA',
-};
-for (const [key, expectedId] of Object.entries(expectedBindings)) {
-  assert(pilot?.[key]?.file_id === expectedId, `binding Drive inatteso: ${key}`);
-  assert(technologyPilotDomain.includes(expectedId), `dominio pilot privo del binding ${key}`);
-}
-assert(pilot?.proposal?.revision === '1.1' && pilot?.proposal?.updated_in_place === true, 'proposta R2 Drive disallineata');
-assert(pilot?.vertical_matrix?.revision === '1.1' && pilot?.vertical_matrix?.updated_in_place === true, 'matrice R2 Drive disallineata');
-assert(pilot?.work_manifest?.file_id === '1s2qZf53O6BqjgyrtzcXuL5lSdafoAmtAUEFv-4mwcog', 'manifesto operativo inatteso');
-assert(pilot?.work_manifest?.revision === '1.2', 'manifesto operativo deve registrare il passaggio al team');
-
-const contribution = pilot?.individual_contribution;
-assert(contribution?.contribution_id === 'CONTR-CURR-TEC-SEC1-R2-01', 'contributo individuale R2 non registrato');
-assert(contribution?.file_id === '17dnvfLP3YPghJlwT7FUwgO5p9J499Lw5kZVIAnXlvyk', 'Drive ID contributo individuale inatteso');
-assert(contribution?.status === 'COMPLETE_5_OF_5', 'contributo individuale non risulta 5/5 completo');
-assert(contribution?.authority === 'INDIVIDUAL_PROFESSIONAL_CONTRIBUTION', 'autorità contributo individuale inattesa');
-assert(contribution?.team_outcome === 'NOT_INFERRED', 'contributo individuale non può inferire esito team');
-assert(Object.keys(contribution?.decisions ?? {}).length === 5, 'contributo individuale deve contenere cinque decisioni');
-for (const id of activeR2Ids) assert(contribution?.decisions?.[id] === 'CONFIRM', `decisione individuale inattesa per ${id}`);
-
-const team = pilot?.team_comparison;
-assert(team?.package_id === 'TEAM-CURR-TEC-SEC1-R2-01', 'pacchetto confronto Dipartimento non registrato');
-assert(team?.file_id === '1V-yit_LYow1P5jLY5wSrbsrKzxgJF0WfHncV6BJyR-g', 'Drive ID pacchetto team inatteso');
-assert(team?.status === 'READY_TO_START', 'confronto Dipartimento non pronto');
-assert(team?.team_outcome === 'OPEN', 'esito team deve restare aperto');
-assert(JSON.stringify(team?.team_outcome_authorized_roles) === JSON.stringify(['dipartimento', 'referente']), 'ruoli autorizzati esito team inattesi');
-assert(team?.complete_workspace_coverage_required_for_shared_bucket === true, 'punti condivisi devono richiedere copertura completa');
-assert(team?.explicit_team_outcome_required === true, 'esito team deve richiedere registrazione esplicita');
-
+assert(pilot?.source?.role === 'PRIMARY_CORRECTED_PROVENANCE', 'fonte pilot non qualificata come provenienza');
+assert(pilot?.proposal?.file_id === '19nPCsAj_ItBscUwwcHwrVhxDbBy-MXIJ', 'proposta R2 inattesa');
+assert(pilot?.vertical_matrix?.file_id === '1CMSESN73HCi_2jM_tZYhN9hd6oWzyHgK', 'matrice R2 inattesa');
+assert(pilot?.validation_gate?.file_id === '1rxKy2IDD5V7l4Nc1LfJeLr407ltfa_vbt_EFK54s7mU', 'gate R2 inatteso');
+assert(pilot?.decision_register?.file_id === '1KmnrgWrNxVDUjOvdPo0oibqTvr1lQ72QepBE8KNsdZA', 'registro decisioni inatteso');
 assert(technologyPilotDomain.includes('revision: 2'), 'dominio pilot non dichiara R2');
-assert(technologyPilotDomain.includes('decisionCarryForwardAuthorized: false'), 'dominio pilot non vieta carry-forward R1→R2');
-for (const id of activeR2Ids) assert(technologyPilotDomain.includes(`id: '${id}'`), `scheda R2 mancante: ${id}`);
-for (const id of historicalR1Ids) assert(technologyPilotDomain.includes(`id: '${id}'`), `scheda R1 storica mancante: ${id}`);
-assert(technologyPilotDomain.includes('funzionamento essenziale di un sistema informatico'), 'N4 R2 non recepisce correzione strutturale');
-assert(technologyPilotDomain.includes('Internet, Web e servizi'), 'N4 R2 non distingue Internet, Web e servizi');
-assert(progressHook.includes('resolveOperationalReviewProposals(discipline, order, fallbackCurrent)'), 'Revisione non usa resolver pilot');
-assert(revisionSurface.includes('current.sourceRefs'), 'Revisione non espone provenienza su richiesta');
+assert(technologyPilotDomain.includes('decisionCarryForwardAuthorized: false'), 'dominio pilot non vieta carry-forward');
 
-// Confini del lavoro di team: verifiche strutturali, non dipendenti da una frase UI.
-assert(teamWorkspace.includes("['dipartimento', 'referente'].includes(selectedMembership.role)"), 'esito team non riservato a dipartimento/referente');
-assert(teamWorkspace.includes('expectedContributorCount === 1'), 'workspace non protegge il caso di un solo componente attivo');
-assert(teamWorkspace.includes('item.coverageComplete'), 'workspace non richiede copertura completa per punti condivisi');
-assert(teamWorkspace.includes('recordTeamOutcome'), 'workspace privo di registrazione esplicita esito team');
-assert(teamWorkspace.includes('proposalFingerprint'), 'esito/contributo team non vincolato alla fingerprint della proposta');
-assert(cco.authority_boundaries?.team_outcome_is_not_institutional_decision === true, 'CCO non separa esito team e decisione istituzionale');
-assert(cco.authority_boundaries?.individual_contribution_is_not_team_outcome === true, 'CCO non separa contributo individuale ed esito team');
-
-assert(registry.alignment_rules?.instructional_audit_must_not_be_promoted_as_human_outcome === true, 'audit istruttorio deve restare separato da esito umano');
-assert(registry.alignment_rules?.individual_contribution_must_not_be_promoted_as_team_outcome === true, 'contributo individuale deve restare separato da esito team');
-assert(registry.alignment_rules?.team_outcome_requires_authorized_membership === true, 'esito team deve richiedere membership autorizzata');
-assert(registry.alignment_rules?.team_shared_requires_complete_coverage === true, 'punto condiviso deve richiedere copertura completa');
-assert(registry.alignment_rules?.proposal_text_change_requires_new_proposal_identity === true, 'testo modificato deve avere nuova identità');
-assert(registry.alignment_rules?.previous_decision_carry_forward_requires_explicit_authority === true, 'carry-forward richiede autorità esplicita');
-
-assert(cco.principles?.recognition_before_interpretation === true, 'CCO deve mantenere recognition_before_interpretation');
-assert(cco.principles?.one_dominant_object_per_task_context === true, 'CCO deve mantenere un solo oggetto dominante');
-assert(cco.layers?.workflow_progression?.scrolling_alone_is_not_a_stage_transition === true, 'CCO deve vietare scroll come falsa transizione');
-assert(cco.acceptance?.draft_requires_explicit_commit === true, 'bozza richiede registrazione esplicita');
+assert(teamWorkspace.includes("['dipartimento', 'referente'].includes(selectedMembership.role)"), 'esito team non riservato ai ruoli previsti');
+assert(teamReviewDomain.includes('expectedContributorCount >= 2'), 'manca protezione sul singolo contributore');
+assert(teamWorkspace.includes('item.coverageComplete'), 'manca copertura completa');
+assert(teamWorkspace.includes('recordTeamOutcome'), 'manca registrazione esplicita esito team');
+assert(teamWorkspace.includes('proposalFingerprint'), 'esito team non vincolato alla proposta');
+assert(cco.authority_boundaries?.individual_contribution_is_not_team_outcome === true, 'CCO non separa contributo ed esito');
+assert(cco.authority_boundaries?.team_outcome_is_not_institutional_decision === true, 'CCO non separa esito e decisione istituzionale');
 
 const driveRegisterId = registry.drive?.master_register?.file_id;
-assert(driveRegisterId === '1IMKwWWukefIDIOsbHQByiXLN7YuU7He0V5b01tjitG4', 'registro maestro Drive inatteso');
-assert(him.requirements?.curriculum_alignment_registry_required === true, 'HIM deve richiedere REG-CURR-00');
+assert(driveRegisterId === '1IMKwWWukefIDIOsbHQByiXLN7YuU7He0V5b01tjitG4', 'registro Drive inatteso');
+assert(him.requirements?.curriculum_alignment_registry_required === true, 'HIM non richiede REG-CURR-00');
 assert(him.curriculum_alignment?.registry === 'docs/curriculum/REG-CURR-00.registry.json', 'HIM non punta al registro macchina');
 assert(him.curriculum_alignment?.documentation === 'docs/curriculum/REG-CURR-00_MASTER_ALIGNMENT.md', 'HIM non punta al mirror');
-assert(him.curriculum_alignment?.drive_register_id === driveRegisterId, 'HIM e REG-CURR-00 non concordano sul registro Drive');
+assert(him.curriculum_alignment?.drive_register_id === driveRegisterId, 'HIM e Drive non concordano sul registro');
 
 const downstream = registry.downstream_draft_stacks ?? [];
-assert(downstream.length === 2, 'le due catene Draft successive devono restare registrate');
-for (const stack of downstream) assert(stack.status === 'NOT_CANONICAL_UNTIL_REALIGNED', `catena PR ${stack.prs?.join('–')} non può essere canonica`);
+assert(downstream.length === 2, 'catene Draft non registrate');
+assert(downstream[0]?.status === 'DRAFT_BETA_CANDIDATE_NOT_CANONICAL', '#199–#201 devono restare Draft non canoniche');
+assert(downstream[1]?.status === 'NOT_CANONICAL_UNTIL_REALIGNED', '#202–#207 non possono essere canoniche');
+assert(registry.next_authorized_phase === 'HUMAN_PROFESSIONAL_VALIDATION_ON_CANONICAL_MASTER_1_3', 'fase successiva inattesa');
 
-assert(registry.curriculum_process?.human_professional_validation === 'OPEN', 'validazione professionale complessiva non può essere chiusa');
-assert(registry.curriculum_process?.ready_for_collegio === 'NOT_YET', 'READY_FOR_COLLEGIO non autorizzato');
-assert(registry.curriculum_process?.canonical_curriculum_promotion === 'NOT_AUTHORIZED', 'promozione canonica non autorizzata');
-assert(registry.next_authorized_phase === 'SECONDARY_DEPARTMENT_TEAM_COMPARISON_R2', 'fase successiva autorizzata inattesa');
-
-assert(mirror.includes('Versione:** 1.6'), 'mirror non dichiara REG-CURR-00 1.6');
-assert(mirror.includes('COMPLETE_5_OF_5'), 'mirror non registra contributo individuale 5/5');
-assert(mirror.includes('READY_TO_START'), 'mirror non registra confronto Dipartimento pronto');
-assert(mirror.includes('TEAM-CURR-TEC-SEC1-R2-01'), 'mirror non richiama pacchetto team');
-assert(mirror.includes('1V-yit_LYow1P5jLY5wSrbsrKzxgJF0WfHncV6BJyR-g'), 'mirror non richiama Drive ID pacchetto team');
+for (const token of ['Versione:** 1.13', master.title, master.file_id, 'versione `1.3`', normativeMatrix.title, normativeMatrix.file_id, sourceRepertory.title, sourceRepertory.file_id, 'ALL-CURR-A@1.1', 'OSA_ONE_TO_ONE_GATE = COMPLETE_FOR_DOCUMENTARY_COVERAGE', 'DOCUMENTARY_ONLY', 'MATERIALIZZAZIONE COMPLETA', 'fonte primaria di provenienza', 'non genera un nuovo curricolo parallelo']) {
+  assert(mirror.includes(token), `mirror non allineato: ${token}`);
+}
 
 console.log('REG-CURR-00_ALIGNMENT_PASS');

@@ -78,7 +78,7 @@ class ErrorBoundary extends React.Component<
 }
 
 const betaIdentityQueryEntry = new URLSearchParams(window.location.search).get('betaIdentity') === '1';
-const routerBasename = resolveRouterBasename(import.meta.env.MODE);
+const routerBasename = resolveRouterBasename(import.meta.env.MODE, window.location.pathname);
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
  <React.StrictMode>

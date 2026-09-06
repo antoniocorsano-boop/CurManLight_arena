@@ -64,7 +64,7 @@ export function ReferenteControlTower({ sources, curriculum, onOpenSources, onOp
         {snapshot.sourcePendingVerification > 0 && (
           <button type="button" onClick={onOpenSources} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-indigo-700 px-4 py-2.5 text-sm font-bold text-white hover:bg-indigo-600">
             <BookOpenCheck className="h-4 w-4" aria-hidden="true" />
-            Controlla le fonti
+            Apri il Fascicolo
             <ArrowRight className="h-4 w-4" aria-hidden="true" />
           </button>
         )}

@@ -1,6 +1,6 @@
 {
   "registry_id": "CCO-SURFACES",
-  "version": "1.4.1",
+  "version": "1.5.1",
   "contract": ".human/operational-communication.contract.json",
   "status_vocabulary": ["conformant", "migration", "guided-setup", "excluded"],
   "surfaces": [
@@ -8,37 +8,61 @@
       "id": "home-docente",
       "path": "src/features/session/components/DashboardView.tsx",
       "status": "conformant",
-      "operational_context": "Il tuo spazio nel curricolo",
-      "primary_task": "Orientarsi e aprire il lavoro pertinente al proprio profilo",
+      "operational_context": "Il mio lavoro sul curricolo",
+      "primary_task": "Riconoscere il lavoro personale corrente e aprire l'attività pertinente senza leggere spiegazioni tecniche del sistema",
+      "communication_levels": {
+        "level_1": "Orientamento, stato e azione docente",
+        "level_2": "Percorso di lavoro e documenti collegati",
+        "level_3": "Ruoli e condizioni di accesso"
+      },
       "required_tokens": [
         "data-beta-home=\"role-work-queue\"",
         "data-home-queue=\"actionable\"",
         "data-home-work-action=",
-        "data-hcm-secondary-content",
-        "Il tuo spazio nel curricolo",
-        "Da fare"
+        "data-hcm-level=\"1\"",
+        "data-hcm-level=\"2\"",
+        "data-hcm-level=\"3\"",
+        "Il mio lavoro sul curricolo",
+        "Attività che richiedono il tuo intervento."
       ]
     },
     {
-      "id": "revisione-personale",
+      "id": "curriculum-work-session",
       "path": "src/features/beta/RevisionWorkspace.tsx",
       "status": "conformant",
-      "operational_context": "Il mio contributo",
-      "primary_task": "Completare la revisione personale e passare alla condivisione solo tramite una vera transizione di stato",
+      "operational_context": "Validazione professionale — Il mio lavoro sul curricolo",
+      "primary_task": "Percorrere una sola sessione progressiva: esaminare, condividere, confrontare e, quando autorizzati, registrare l'esito professionale del gruppo come quarto stadio reale",
       "required_tokens": [
+        "data-curriculum-work-session",
+        "data-work-session-stage={stage}",
+        "data-persisted-share-ready={sharePersistence.complete ? 'true' : 'false'}",
+        "data-team-outcome-complete={coordinationState.allCurrentOutcomesRecorded ? 'true' : 'false'}",
+        "'RECORD_TEAM_OUTCOME'",
         "data-revision-stage=\"review\"",
         "data-revision-stage=\"sharing\"",
-        "setPersonalStage('sharing')",
-        "Rivedi la revisione personale",
-        "Ora il compito attivo è la condivisione con il team."
+        "data-revision-stage=\"compare\"",
+        "data-revision-stage=\"team-outcome\"",
+        "mode=\"status\"",
+        "mode=\"compare\"",
+        "mode=\"record\"",
+        "data-team-comparison-blocked-by-share",
+        "Condivisione verificata",
+        "Apri il confronto del gruppo",
+        "Registra l’esito del gruppo",
+        "data-curriculum-work-session-complete"
       ]
     },
     {
       "id": "revisione-scheda-personale",
       "path": "src/features/curriculum/components/RevisioneTab.tsx",
       "status": "conformant",
-      "operational_context": "Il mio contributo",
-      "primary_task": "Riconoscere la scheda corrente, confrontare precedente e proposta e scegliere senza leggere una spiegazione del processo",
+      "operational_context": "Il mio contributo alla revisione del curricolo",
+      "primary_task": "Confrontare testo precedente e proposta e registrare il proprio orientamento professionale",
+      "communication_levels": {
+        "level_1": "Confronto della scheda e azioni personali",
+        "level_2": "Motivazione e criteri di esame",
+        "level_3": "Fonti e tracciabilità"
+      },
       "required_tokens": [
         "data-revision-flow=\"recognition-first\"",
         "data-revision-recognition-header",
@@ -46,32 +70,60 @@
         "data-revision-completed-card",
         "data-revision-consequence",
         "data-revision-assurance-on-demand",
-        "Precedente",
-        "Proposta",
-        ">Conferma<",
-        ">Modifica<",
-        "current.keepLabel || 'Mantieni precedente'",
+        "data-hcm-level=\"1\"",
+        "data-hcm-level=\"2\"",
+        "data-hcm-level=\"3\"",
+        "Testo precedente",
+        "Proposta da esaminare",
+        "Conferma la proposta",
+        "Proponi una modifica",
+        "Mantieni testo precedente",
         "Registra modifica",
+        "Fonti e tracciabilità",
         "Tutte le schede"
       ]
     },
     {
       "id": "pubblicazione-contributo-personale",
       "path": "src/features/beta/TeamContributionPublisher.tsx",
-      "status": "migration",
-      "migration_goal": "Applicare il riconoscimento prima dell'interpretazione: un solo stato dominante, un'azione di condivisione evidente e rassicurazione persistente limitata all'effetto condiviso."
+      "status": "conformant",
+      "operational_context": "Condivisione del contributo personale",
+      "primary_task": "Registrare nel team il contributo personale corrente e rendere verificabile che la condivisione corrisponda alla versione e all'orientamento correnti",
+      "required_tokens": [
+        "data-team-contribution-publisher",
+        "data-contribution-persistence-complete={persistedCurrentContributionComplete ? 'true' : 'false'}",
+        "data-professional-contribution-persisted",
+        "contributionMatchesCurrentWork",
+        "proposalFingerprint",
+        "contribution.orientation !== expectedOrientation",
+        "normalizeText(contribution.customText) === normalizeText(customTexts[contribution.proposalRef])",
+        "Il contributo corrente è registrato e verificato nel team."
+      ]
     },
     {
-      "id": "lavoro-del-team",
+      "id": "lavoro-del-team-legacy",
       "path": "src/features/beta/TeamReviewWorkspace.tsx",
       "status": "migration",
-      "migration_goal": "Rendere motivo del punto, provenienza, stato del team e prossima azione riconoscibili senza richiedere lettura formativa preventiva."
+      "migration_goal": "Mantenere soltanto compatibilità temporanea; non deve essere una superficie primaria concorrente della CurriculumWorkSession."
     },
     {
-      "id": "coordinamento-del-team",
+      "id": "coordinamento-del-team-interno",
       "path": "src/features/beta/TeamCoordinationWorkspace.tsx",
-      "status": "migration",
-      "migration_goal": "Separare con chiarezza stato della riunione, coda da discutere e azioni del coordinatore dalle spiegazioni sul modello di governo."
+      "status": "conformant",
+      "operational_context": "Stadi interni Confronta / Registra l’esito della CurriculumWorkSession",
+      "primary_task": "Proiettare dentro la sessione unica tre modalità subordinate: stato per il docente, confronto per il gruppo, registrazione dell'esito per il ruolo autorizzato, senza creare un secondo percorso primario",
+      "required_tokens": [
+        "export type TeamCoordinationMode = 'status' | 'compare' | 'record'",
+        "data-team-coordination-workspace",
+        "data-team-coordination-mode=\"status\"",
+        "data-team-coordination-mode=\"compare\"",
+        "data-team-coordination-mode=\"record\"",
+        "Porta questo punto all’esito",
+        "Registra l’esito del gruppo",
+        "allCurrentOutcomesRecorded",
+        "recordTeamOutcome",
+        "non approvazione istituzionale"
+      ]
     },
     {
       "id": "profilo-di-lavoro-personale",

@@ -25,7 +25,12 @@ on:
       - 'src/domain/transfer/**'
       - 'scripts/audit-s3-critical-journeys.cjs'
       - 'scripts/verify-beta-g4-browser.cjs'
+      - 'docs/04_product_experience/00_VISION.md'
+      - 'docs/04_product_experience/01_INFORMATION_ARCHITECTURE.md'
+      - 'docs/04_product_experience/02_NAVIGATION_MODEL.md'
+      - 'docs/04_product_experience/09_USER_FLOWS.md'
       - 'docs/04_product_experience/11_OPERATIONAL_COMMUNICATION_CONTRACT.md'
+      - 'docs/04_product_experience/PRODUCT_DOCS.registry.json'
       - 'docs/evidence/BETA_G5_HUMAN_ACCEPTANCE_PROTOCOL_v2.md'
       - 'docs/evidence/BETA_G5_HUMAN_ACCEPTANCE_RECEIPT_TEMPLATE_v2.json'
       - 'src/__tests__/arena-s3-human-validation-contract.test.ts'
@@ -45,3 +50,7 @@ jobs:
           node-version: '22'
       - name: Validate HIM installation and CCO
         run: node tools/human-interaction-model/validate.mjs .
+      - name: Validate curriculum professional lifecycle
+        run: node tools/human-interaction-model/validate-curriculum-lifecycle.mjs
+      - name: Validate canonical product documentation
+        run: node tools/human-interaction-model/validate-product-docs.mjs
