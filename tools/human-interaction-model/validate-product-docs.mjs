@@ -23,7 +23,7 @@ try {
 
 if (registry) {
   assert(registry.registry_id === 'ARENA-PRODUCT-DOCS', 'registry_id prodotto corretto');
-  assert(registry.version === '1.0.4', 'versione registro prodotto 1.0.4');
+  assert(registry.version === '1.0.5', 'versione registro prodotto 1.0.5');
   assert(registry.product_vision?.id === 'ARENA-PRODUCT-VISION', 'vision id canonico');
   assert(registry.product_vision?.version === '1.0.0', 'vision version canonica');
   assert(registry.product_vision?.drive_file_id === '1s17jJCslSIJIXQfiTEzyRcD5q-Baopj6-l14aaFEWik', 'Drive ID vision canonica');
@@ -74,12 +74,12 @@ if (registry) {
   }
 
   const nav = readText('docs/04_product_experience/02_NAVIGATION_MODEL.md');
-  for (const token of ['CURRICULUM_LIFECYCLE@1.1.1', 'IL MIO LAVORO · CURRICOLO · PROGETTAZIONE · RIESAME', 'FASCICOLO', 'ESAMINA → CONDIVIDI → CONFRONTA → REGISTRA L\'ESITO', 'Azioni istituzionali proiettate', 'nessun pulsante di conferma locale può simulare l\'avvenuta condivisione']) {
+  for (const token of ['CURRICULUM_LIFECYCLE@1.1.1', 'IL MIO LAVORO · CURRICOLO · PROGETTAZIONE · RIESAME', 'FASCICOLO', 'ESAMINA → CONDIVIDI → CONFRONTA → REGISTRA L\'ESITO', 'Azioni istituzionali proiettate', 'nessun pulsante di conferma locale può simulare l\'avvenuta condivisione', 'FASCICOLO_NAVIGATION_CONVERGENCE', '/fascicolo', '/fonti']) {
     assert(nav.includes(token), `navigazione contiene: ${token}`);
   }
 
   const flows = readText('docs/04_product_experience/09_USER_FLOWS.md');
-  for (const token of ['CURRICULUM_LIFECYCLE@1.1.1', 'Nuova norma, linea guida, nota o circolare', "Esigenza dell'Istituto", 'RevisionTrigger', 'DidacticBinding', 'ImplementationObservation', 'la precedente condivisione non abilita più il passaggio successivo']) {
+  for (const token of ['CURRICULUM_LIFECYCLE@1.1.1', 'Nuova norma, linea guida, nota o circolare', "Esigenza dell'Istituto", 'RevisionTrigger', 'DidacticBinding', 'ImplementationObservation', 'la precedente condivisione non abilita più il passaggio successivo', 'Proiezione corrente del Fascicolo', '/fascicolo', '/fonti']) {
     assert(flows.includes(token), `user flow contiene: ${token}`);
   }
 
@@ -132,6 +132,12 @@ if (registry) {
   assert(state.team_outcome_recording_is_distinct_work_session_stage === true, 'registrazione esito è quarto stadio reale');
   assert(state.team_coordination_workspace_no_longer_primary_competing_surface === true, 'coordinamento non è più superficie primaria concorrente');
   assert(state.teacher_after_share_sees_status_not_coordination_actions === true, 'docente dopo SHARE vede stato e non azioni di coordinamento');
+  assert(state.fascicolo_secondary_navigation_implemented === true, 'Fascicolo implementato come navigazione secondaria');
+  assert(state.fonti_removed_from_primary_navigation === true, 'Fonti rimosso dalla navigazione primaria');
+  assert(state.mobile_primary_navigation_excludes_fascicolo === true, 'bottom navigation mobile esclude Fascicolo');
+  assert(state.fascicolo_public_route_is_canonical === true, 'route pubblica Fascicolo canonica');
+  assert(state.legacy_fonti_and_settings_routes_remain_compatibility_aliases === true, 'route legacy Fonti/Settings conservate come alias');
+  assert(state.home_journey_does_not_model_sources_or_institutional_decision_as_universal_stages === true, 'Home non tratta fonti o decisione istituzionale come stadi universali');
   assert(state.target_ui_fully_implemented === false, 'la documentazione non simula UI target già implementata');
   assert(state.human_end_to_end_pilot_complete === false, 'la documentazione non simula pilota umano concluso');
 }
