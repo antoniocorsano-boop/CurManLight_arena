@@ -43,7 +43,7 @@ export function AppViewsLayer(props: AppViewsLayerProps) {
           >
             <strong className="block text-base font-bold text-amber-950">Adesso: controlla se puoi usare questo curricolo</strong>
             <p className="mt-1">
-              Stai consultando una copia locale. Prima di usarla nella progettazione, verifica Fonti, Applicabilità e Stato.
+              Stai consultando una copia locale. Prima di usarla nella progettazione, verifica nel Fascicolo fonti, applicabilità e stato.
             </p>
             <button
               type="button"
@@ -75,7 +75,7 @@ export function AppViewsLayer(props: AppViewsLayerProps) {
                   type="button"
                   data-human-next-action="open-curriculum-revision"
                   onClick={() => safeHandleTabSwitch('revisione')}
-                  className="inline-flex min-h-11 items-center justify-center rounded-xl border border-slate-200 bg-white px-4 py-2.5 font-semibold text-slate-700 transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2"
+                  className="inline-flex min-h-11 items-center justify-center rounded-xl border border-slate-200 bg-white px-4 py-2.5 font-semibold text-slate-700 transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus-visible:ring-slate-400 focus:ring-offset-2"
                 >
                   Proponi una modifica
                 </button>
