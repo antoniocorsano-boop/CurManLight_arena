@@ -11,7 +11,8 @@
     "accessibility_required": true,
     "hia_required": true,
     "operational_communication_contract_required": true,
-    "curriculum_alignment_registry_required": true
+    "curriculum_alignment_registry_required": true,
+    "curriculum_lifecycle_contract_required": true
   },
   "consequential_actions": {
     "preview_required": true,
@@ -28,6 +29,12 @@
     "registry": "docs/curriculum/REG-CURR-00.registry.json",
     "documentation": "docs/curriculum/REG-CURR-00_MASTER_ALIGNMENT.md",
     "drive_register_id": "1IMKwWWukefIDIOsbHQByiXLN7YuU7He0V5b01tjitG4"
+  },
+  "curriculum_lifecycle": {
+    "contract": ".human/curriculum-lifecycle.contract.json",
+    "institutional_document": "ARENA-UX-01_Dal_documento_al_lavoro_dei_team_2026-2027",
+    "institutional_document_drive_id": "1M8LriHG1zASUq7jE2xiyJfvX4gVnnmZNmYBrrfYS7fE",
+    "institutional_document_section": "27. MODELLO DEFINITIVO — IL CURRICOLO COME CICLO EDUCATIVO E DIDATTICO"
   },
   "compatibility": {
     "domain_human_task_contract": "src/features/guided-workflow/humanTask.ts",
