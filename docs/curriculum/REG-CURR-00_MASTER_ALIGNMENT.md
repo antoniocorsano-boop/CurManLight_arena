@@ -1,6 +1,6 @@
 # REG-CURR-00 — Registro maestro del fascicolo curricolare e dell’allineamento Arena
 
-**Versione:** 1.4 — 6 settembre 2026  
+**Versione:** 1.6 — 6 settembre 2026  
 **Ambito:** Curricolo verticale d’Istituto — A.S. 2026/2027
 
 ## Funzione
@@ -11,16 +11,16 @@ Il registro macchina associato è `docs/curriculum/REG-CURR-00.registry.json`.
 
 ## Fonte curricolare corrente
 
-La base istruttoria corrente è:
+La base istruttoria corrente resta:
 
 - `CURRICOLO_VERTICALE_CORRETTO_PROPOSTA_2026-09-03.docx`;
 - Drive file ID `1DPdK_EIZsE3lI-LIzTJG776cU1PcAcnf`;
 - SHA-256 `c89fbbbe43432db8410913675381b7dc3654d2448f9f91a8c72b115b9ec6fc55`;
 - stato: **proposta d’Istituto da validare**.
 
-La precedente `source reconstruction v3` resta storico tecnico. La distinzione corrente resta:
+La precedente `source reconstruction v3` resta storico tecnico.
 
-**correzioni documentali recepite ≠ validazione professionale completata ≠ approvazione collegiale ≠ curricolo vigente**.
+**correzioni documentali recepite ≠ contributo individuale ≠ esito professionale del gruppo ≠ approvazione collegiale ≠ curricolo vigente**.
 
 ## Stato del processo
 
@@ -28,13 +28,16 @@ La precedente `source reconstruction v3` resta storico tecnico. La distinzione c
 |---|---|
 | Copertura istruttoria 3–14 | `PASS_ISTRUTTORIO` |
 | Audit istruttorio Tecnologia | correzioni recepite nella R2 |
-| Validazione professionale | `OPEN` |
+| Contributo individuale Tecnologia R2 | `COMPLETE_5_OF_5` |
+| Confronto del Dipartimento Tecnologia R2 | `READY_TO_START` |
+| Esito del Dipartimento | `OPEN` |
+| Validazione professionale complessiva | `OPEN` |
 | Revisione verticale finale | `OPEN` |
 | Pronto per il Collegio | `NOT_YET` |
 | Approvazione collegiale | `NOT_YET` |
 | Promozione canonica | `NOT_AUTHORIZED` |
 
-La prossima fase autorizzata è la **nuova validazione professionale dei contenuti R2**.
+La prossima fase autorizzata è **SECONDARY_DEPARTMENT_TEAM_COMPARISON_R2**.
 
 ## Baseline Arena
 
@@ -46,18 +49,18 @@ Per il lavoro corrente si assume:
 - CCO `1.3.0`;
 - registro superfici CCO `1.4.1`.
 
-Il product head R2 modifica il contenuto operativo di Tecnologia senza cambiare il confine di autorità della Revisione.
+Il runtime del pilot non viene modificato per trasformare una decisione personale in dato di gruppo: il passaggio individuale → team avviene mediante il workspace condiviso autenticato già previsto dalla #198.
 
 ## Pilota attivo — Tecnologia classe prima — Revisione R2
 
 **Pilot ID:** `TEC-SEC1-2026-01`  
 **Revisione attiva:** `R2`  
-**Stato:** `READY_FOR_HUMAN_DISCIPLINE_REVIEW`  
-**Esito umano:** `OPEN`  
+**Stato:** `READY_FOR_TEAM_COMPARISON`  
+**Esito umano del gruppo:** `OPEN`  
 **Carry-forward delle decisioni R1:** `NOT_AUTHORIZED`  
 **Promozione canonica:** `NOT_AUTHORIZED`
 
-La R2 espone cinque nuove identità di proposta:
+La R2 mantiene cinque identità correnti:
 
 1. `tec-sec1-2026-r2-n1` — osservare, misurare e rappresentare;
 2. `tec-sec1-2026-r2-n2` — progettare con problema e vincoli;
@@ -65,50 +68,68 @@ La R2 espone cinque nuove identità di proposta:
 4. `tec-sec1-2026-r2-n4` — Informatica integrata: sistemi, dati e processi;
 5. `tec-sec1-2026-r2-verticalita` — raccordo classe I → classi II–III.
 
-Le identità R1 `tec-sec1-2026-n1`, `tec-sec1-2026-n2`, `tec-sec1-2026-n3`, `tec-sec1-2026-n4`, `tec-sec1-2026-verticalita` restano conservate nel dominio applicativo come **storico semantico**. Le decisioni R1 già registrate non vengono cancellate, ma **non sono trasferite automaticamente alla R2**. La modifica del testo richiede una nuova identità di proposta e una nuova scelta professionale esplicita.
+Le identità R1 restano storico semantico; le decisioni R1 non sono trasferite alla R2.
+
+## Contributo individuale completato
+
+Il documento `CONTR-CURR-TEC-SEC1-R2-01_Contributo_individuale_Tecnologia_classe_prima_2026-09-06` (`17dnvfLP3YPghJlwT7FUwgO5p9J499Lw5kZVIAnXlvyk`) registra **cinque conferme su cinque** sulla R2.
+
+Autorità del documento: `INDIVIDUAL_PROFESSIONAL_CONTRIBUTION`.
+
+Questo stato significa soltanto che un contributo professionale individuale è completo. Non produce consenso del gruppo e non aggiorna `DEC-CURR-SEC1-00`.
+
+## Pacchetto di confronto del Dipartimento
+
+È stato creato il pacchetto:
+
+`TEAM-CURR-TEC-SEC1-R2-01_Pacchetto_confronto_Dipartimento_Tecnologia_classe_prima_2026-09-06` — Drive `1V-yit_LYow1P5jLY5wSrbsrKzxgJF0WfHncV6BJyR-g`.
+
+Stato: `READY_TO_START`.  
+Esito del team: `OPEN`.
+
+Tutti e cinque i punti restano aperti al Dipartimento. Il pacchetto porta al confronto il contributo disponibile ma **non precompila alcun esito collettivo**.
+
+## Regole del confronto condiviso
+
+Arena applica questi vincoli:
+
+- un contributo individuale completo non diventa automaticamente esito del team;
+- un punto può essere classificato come già condiviso solo con copertura completa dei contributori attivi attesi nel workspace;
+- con un solo componente attivo nessun punto è automaticamente condiviso;
+- l’esito professionale può essere registrato soltanto da una membership `dipartimento` o `referente` autenticata;
+- la ricevuta di esito resta vincolata alla fingerprint della proposta R2 corrente;
+- l’esito del Dipartimento non equivale ad approvazione istituzionale e non modifica automaticamente il curricolo vigente.
+
+Gli esiti disponibili per ciascun punto sono: accogliere la proposta R2; mantenere il testo precedente; definire un testo condiviso; rinviare con motivazione.
 
 ## Correzioni recepite nella R2
 
-L’audit `AUD-CURR-TEC-SEC1-01` (`1SZ_lmaYXNF2Fx8ro1C-hTh5iUH-riECcqyZtRx9JRPM`) è stato applicato senza chiudere alcun gate umano:
+L’audit `AUD-CURR-TEC-SEC1-01` (`1SZ_lmaYXNF2Fx8ro1C-hTh5iUH-riECcqyZtRx9JRPM`) resta applicato senza chiudere alcun gate collettivo:
 
-- la struttura è rappresentata come **tre nuclei fondanti di Tecnologia integrati con un asse d’Istituto di Informatica e sistemi digitali**, non come quattro nuclei nazionali;
-- le formulazioni della classe prima sono qualificate come **obiettivi annuali d’Istituto**;
-- N1 resta centrato su osservazione, misura e rappresentazione;
-- N3 distingue il raccordo d’Istituto relativo a economia circolare e sostenibilità;
-- N4 passa dalla semplice alfabetizzazione applicativa alla comprensione di **sistemi informatici, componenti fisiche e software, dati, processi, organizzazione dei file, Internet, Web e servizi, algoritmi, protezione dei dati e attendibilità delle informazioni**;
-- il raccordo digitale I→II→III è reso progressivo e mantiene esplicito il regime transitorio delle classi seconda e terza.
+- tre nuclei fondanti di Tecnologia integrati con un asse d’Istituto di Informatica e sistemi digitali;
+- formulazioni della classe prima qualificate come obiettivi annuali d’Istituto;
+- N1 centrato su osservazione, misura e rappresentazione;
+- N3 con provenienza esplicita dei raccordi di sostenibilità;
+- N4 centrato su sistemi informatici, dati, processi, Internet, Web, servizi, algoritmi, protezione dei dati e attendibilità delle informazioni;
+- raccordo digitale I→II→III progressivo nel rispetto del regime transitorio.
 
 ## Catena documentale esatta
 
 - fonte: `CURRICOLO_VERTICALE_CORRETTO_PROPOSTA_2026-09-03.docx` — `1DPdK_EIZsE3lI-LIzTJG776cU1PcAcnf`;
-- proposta R2, revisione documentale 1.1 nello stesso file Drive: `PROP-CURR-SEC1-TEC-1_Tecnologia_classe_prima_revisione_curricolare_da_validare_2026-2027.docx` — `19nPCsAj_ItBscUwwcHwrVhxDbBy-MXIJ`;
-- matrice transitoria R2, revisione documentale 1.1 nello stesso file Drive: `MATR-CURR-TEC-T01_Raccordo_transitorio_Tecnologia_2026-2027.docx` — `1CMSESN73HCi_2jM_tZYhN9hd6oWzyHgK`;
-- gate: `VAL-CURR-SEC1-01_Scheda_validazione_Dipartimenti_Secondaria_Classe_Prima_2026-2027` — `1rxKy2IDD5V7l4Nc1LfJeLr407ltfa_vbt_EFK54s7mU`;
-- registro decisioni: `DEC-CURR-SEC1-00_Registro_decisioni_validazione_Secondaria_Classe_Prima_2026-2027` — `1KmnrgWrNxVDUjOvdPo0oibqTvr1lQ72QepBE8KNsdZA`;
-- manifesto operativo, revisione 1.1: `WORK-CURR-TEC-01_Pacchetto_operativo_Arena_Tecnologia_classe_prima_2026-2027` — `1s2qZf53O6BqjgyrtzcXuL5lSdafoAmtAUEFv-4mwcog`;
-- audit: `AUD-CURR-TEC-SEC1-01_Audit_cinque_schede_Tecnologia_classe_prima_2026-2027` — `1SZ_lmaYXNF2Fx8ro1C-hTh5iUH-riECcqyZtRx9JRPM`.
+- proposta R2, revisione 1.1: `PROP-CURR-SEC1-TEC-1...` — `19nPCsAj_ItBscUwwcHwrVhxDbBy-MXIJ`;
+- matrice transitoria R2, revisione 1.1: `MATR-CURR-TEC-T01...` — `1CMSESN73HCi_2jM_tZYhN9hd6oWzyHgK`;
+- audit: `AUD-CURR-TEC-SEC1-01...` — `1SZ_lmaYXNF2Fx8ro1C-hTh5iUH-riECcqyZtRx9JRPM`;
+- contributo individuale: `CONTR-CURR-TEC-SEC1-R2-01...` — `17dnvfLP3YPghJlwT7FUwgO5p9J499Lw5kZVIAnXlvyk`;
+- pacchetto di confronto: `TEAM-CURR-TEC-SEC1-R2-01...` — `1V-yit_LYow1P5jLY5wSrbsrKzxgJF0WfHncV6BJyR-g`;
+- gate: `VAL-CURR-SEC1-01...` — `1rxKy2IDD5V7l4Nc1LfJeLr407ltfa_vbt_EFK54s7mU`;
+- registro decisioni: `DEC-CURR-SEC1-00...` — `1KmnrgWrNxVDUjOvdPo0oibqTvr1lQ72QepBE8KNsdZA`;
+- manifesto operativo, revisione 1.2: `WORK-CURR-TEC-01...` — `1s2qZf53O6BqjgyrtzcXuL5lSdafoAmtAUEFv-4mwcog`.
 
-Il contratto applicativo è `src/domain/curriculum/validation/technologyClass1Review.ts`.
-
-## Regola di identità e decisione
-
-`testo proposta R1 ≠ testo proposta R2`
-
-Di conseguenza:
-
-`decisione R1 ≠ decisione R2`
-
-anche quando una formulazione sia rimasta sostanzialmente invariata. Questo evita che una scelta precedente venga reinterpretata come approvazione di un testo successivamente corretto.
-
-## Regola di interazione corrente
-
-Il principio operativo resta **riconoscimento prima dell’interpretazione**. La modalità lavoro privilegia un solo oggetto dominante, confronto visivo, azioni adiacenti e provenienza sotto disclosure. Una modifica è completa soltanto dopo `Registra modifica`.
+Il contratto applicativo delle cinque schede resta `src/domain/curriculum/validation/technologyClass1Review.ts`. Il contratto del confronto condiviso resta implementato da `src/features/beta/TeamReviewWorkspace.tsx` e dal dominio `src/domain/revision/teamReview.ts`.
 
 ## Catena di autorità
 
 `fonte normativa ≠ elaborazione d’Istituto ≠ proposta professionale ≠ contributo individuale ≠ esito professionale del gruppo ≠ decisione istituzionale ≠ curricolo vigente`
-
-La compilazione della R2 produce soltanto un nuovo contributo personale. Il gate professionale resta aperto finché non esiste un esito umano reale del gruppo competente.
 
 ## PR successive
 
@@ -116,4 +137,4 @@ Le PR **#199–#201** e **#202–#207** restano Draft e non canoniche finché no
 
 ## Criterio di allineamento
 
-Drive, repository, logiche e documenti sono allineati soltanto se indicano la stessa fonte, la stessa revisione attiva del pilot, gli stessi ID delle proposte attive e storiche, lo stesso stato dei gate, la stessa baseline e gli stessi confini di autorità. In particolare, nessuna decisione R1 può diventare una decisione R2 senza un nuovo atto professionale esplicito.
+Drive, repository, logiche e documenti sono allineati soltanto se indicano la stessa fonte, la stessa revisione attiva del pilot, gli stessi ID delle proposte, lo stesso stato dei gate e gli stessi confini di autorità. In particolare, un contributo individuale `COMPLETE_5_OF_5` non può essere interpretato come `TEAM_OUTCOME`.
