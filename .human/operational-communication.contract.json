@@ -1,7 +1,7 @@
 {
   "contract_id": "CCO",
   "name": "Contratto di comunicazione operativa di Arena",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "purpose": "Separare orientamento operativo, spiegazione del processo e verifica tecnica affinché il docente possa agire con linguaggio istituzionale senza essere esposto al funzionamento interno del sistema.",
   "principles": {
     "structure_before_explanation": true,
@@ -26,7 +26,9 @@
     "draft_actions_must_not_claim_completion_before_commit": true,
     "teacher_language_must_be_institutional_not_system_centered": true,
     "technical_traceability_must_not_occupy_level_1": true,
-    "coordinator_personal_contribution_precedes_coordination": true
+    "coordinator_personal_contribution_precedes_coordination": true,
+    "shared_stage_requires_persisted_current_contribution": true,
+    "stale_persisted_share_must_reopen_share": true
   },
   "teacher_progressive_levels": {
     "level_1": {
@@ -89,7 +91,8 @@
       "explicit_continue_action_must_change_active_stage": true,
       "scrolling_alone_is_not_a_stage_transition": true,
       "duplicate_progress_rails_are_forbidden": true,
-      "secondary_filters_must_use_progressive_disclosure": true
+      "secondary_filters_must_use_progressive_disclosure": true,
+      "shared_progress_requires_persisted_current_state": true
     }
   },
   "action_grammar": [
@@ -98,8 +101,8 @@
     {"verb": "Modifica", "meaning": "apri la formulazione di un'alternativa senza registrarla come completata"},
     {"verb": "Registra modifica", "meaning": "salva la formulazione alternativa come orientamento personale completo"},
     {"verb": "Mantieni", "meaning": "mantieni il testo precedente nel contesto corrente"},
-    {"verb": "Condividi", "meaning": "rendi visibile al gruppo un contributo personale"},
-    {"verb": "Confronta", "meaning": "esamina con il gruppo i punti che richiedono realmente discussione"},
+    {"verb": "Condividi", "meaning": "registra e rende visibile al gruppo un contributo personale corrente"},
+    {"verb": "Confronta", "meaning": "esamina con il gruppo i punti che richiedono realmente discussione dopo una condivisione verificata"},
     {"verb": "Registra l'esito", "meaning": "documenta un esito già maturato nel gruppo autorizzato"}
   ],
   "reserved_authority_verbs": ["Approva", "Adotta"],
@@ -132,7 +135,10 @@
     "teacher_level_1_must_not_contain_system_jargon": true,
     "level_2_and_level_3_default_collapsed": true,
     "work_session_has_single_progression": true,
-    "coordinator_must_not_skip_personal_contribution": true
+    "coordinator_must_not_skip_personal_contribution": true,
+    "compare_requires_persisted_current_share": true,
+    "changed_personal_orientation_invalidates_previous_share": true,
+    "local_confirmation_must_not_simulate_persisted_share": true
   },
   "pilot_surfaces": [
     {
@@ -155,12 +161,28 @@
       "required_tokens": [
         "data-curriculum-work-session",
         "data-work-session-stage={stage}",
+        "data-persisted-share-ready={sharePersistence.complete ? 'true' : 'false'}",
         "data-revision-stage=\"review\"",
         "data-revision-stage=\"sharing\"",
         "setStage('SHARE')",
         "Rivedi il mio contributo",
         "Anche il coordinatore completa prima il proprio contributo personale.",
-        "Ho condiviso: apri il confronto del gruppo"
+        "data-team-comparison-blocked-by-share",
+        "Condivisione verificata",
+        "Apri il confronto del gruppo"
+      ]
+    },
+    {
+      "path": "src/features/beta/TeamContributionPublisher.tsx",
+      "required_tokens": [
+        "data-team-contribution-publisher",
+        "data-contribution-persistence-complete={persistedCurrentContributionComplete ? 'true' : 'false'}",
+        "data-professional-contribution-persisted",
+        "contributionMatchesCurrentWork",
+        "proposalFingerprint",
+        "contribution.orientation !== expectedOrientation",
+        "normalizeText(contribution.customText) === normalizeText(customTexts[contribution.proposalRef])",
+        "Il contributo corrente è registrato e verificato nel team."
       ]
     },
     {
