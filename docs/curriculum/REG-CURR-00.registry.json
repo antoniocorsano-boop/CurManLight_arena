@@ -1,8 +1,8 @@
 {
   "registry_id": "REG-CURR-00",
-  "version": "1.9.0",
+  "version": "1.10.0",
   "recorded_at": "2026-09-06",
-  "purpose": "Mantenere allineati fascicolo Drive, master curricolare canonico, provenienza, logiche di governo, baseline Arena e documentazione operativa senza creare baseline curricolari concorrenti.",
+  "purpose": "Mantenere allineati fascicolo Drive, master curricolare canonico, provenienza, conformita normativa, logiche di governo, baseline Arena e documentazione operativa senza creare baseline curricolari concorrenti.",
   "drive": {
     "master_register": {
       "title": "REG-CURR-00_Registro_maestro_fascicolo_curricolare_e_allineamento_Arena_2026-2027",
@@ -17,7 +17,7 @@
     "current_curriculum_master": {
       "title": "CAN-CURR-MASTER-00_Curricolo_verticale_integrale_unificato_3-14_2026-2027",
       "file_id": "12eWTPUZBJxZixd6-p8drNAaW5_eL8qWpXZUSDyZZAv4",
-      "version": "1.0",
+      "version": "1.1",
       "date": "2026-09-06",
       "status": "BASELINE_CANONICA_INTEGRALE_DA_VALIDARE",
       "materialization": "COMPLETE",
@@ -26,6 +26,14 @@
       "ready_for_collegio": "NOT_YET",
       "curriculum_in_force": false,
       "continuity_rule": "UPDATE_SAME_MASTER_AFTER_VALIDATED_OUTCOME"
+    },
+    "normative_compliance_matrix": {
+      "title": "MATR-CURR-MASTER-01_Matrice_conformita_normativa_IN2025_e_atti_collegati_2026-2027",
+      "file_id": "1Wiw8Wsifls1-wr_GPYuqIAoB8GnwXMChO8Mz_kwiLKY",
+      "role": "CONTROL_ATTACHMENT_NOT_CURRICULUM_BASELINE",
+      "status": "AUDIT_COMPLETE_GAPS_MATERIALIZED_IN_MASTER_1_1",
+      "identified_curricular_gaps": 6,
+      "materialized_curricular_gaps": 6
     },
     "primary_corrected_source": {
       "title": "CURRICOLO_VERTICALE_CORRETTO_PROPOSTA_2026-09-03.docx",
@@ -47,6 +55,9 @@
     "latino_lel_ii_iii": "MATERIALIZED",
     "educazione_civica_3_14": "MATERIALIZED",
     "ai_literacy_3_14": "MATERIALIZED",
+    "normative_alignment": "GAPS_MATERIALIZED_PENDING_HUMAN_VALIDATION",
+    "normative_gaps_identified": 6,
+    "normative_gaps_materialized": 6,
     "human_professional_validation": "OPEN",
     "verticality_final_review": "OPEN",
     "ready_for_collegio": "NOT_YET",
@@ -65,7 +76,7 @@
   "source_logic": {
     "current_master_contract": "src/domain/curriculum/institute/currentSource.ts",
     "canonical_surface": "src/features/documents/components/FontiWorkspace.tsx",
-    "status": "ALIGNED_TO_UNIFIED_CANONICAL_MASTER",
+    "status": "ALIGNED_TO_UNIFIED_CANONICAL_MASTER_1_1",
     "primary_corrected_source_role": "PRIMARY_CORRECTED_PROVENANCE",
     "historical_v3_role": "HISTORICAL_TECHNICAL_BASELINE",
     "historical_remediation_workbench_active_in_canonical_surface": false
@@ -119,7 +130,7 @@
         "Tre nuclei fondanti di Tecnologia distinti dall'asse integrato di Informatica e sistemi digitali.",
         "Formulazioni della classe prima qualificate come obiettivi annuali d'Istituto.",
         "N1 alleggerito dal richiamo autonomo all'energia e N3 qualificato nella provenienza del raccordo sull'economia circolare.",
-        "N4 riscalato verso funzionamento dei sistemi informatici, dati, processi, Internet, Web, servizi e attendibilità."
+        "N4 riscalato verso funzionamento dei sistemi informatici, dati, processi, Internet, Web, servizi e attendibilita."
       ]
     },
     "individual_contribution": {
@@ -194,7 +205,7 @@
       "prs": [199, 200, 201],
       "scope": "linguaggio_team_riunione_guidata_gruppi_operativi_e_allineamento_master",
       "status": "DRAFT_BETA_CANDIDATE_NOT_CANONICAL",
-      "reason": "La candidata Beta può essere validata tecnicamente, ma resta Draft e non modifica da sola la baseline istituzionale o la vigenza del curricolo."
+      "reason": "La candidata Beta puo essere validata tecnicamente, ma resta Draft e non modifica da sola la baseline istituzionale o la vigenza del curricolo."
     },
     {
       "prs": [202, 203, 204, 205, 206, 207],
@@ -211,6 +222,8 @@
     "primary_corrected_source_must_remain_provenance": true,
     "no_parallel_curriculum_baselines": true,
     "accepted_change_must_update_same_master": true,
+    "normative_matrix_is_control_attachment_not_baseline": true,
+    "normative_gap_closure_requires_same_master_update": true,
     "active_validation_pilot_requires_exact_drive_bindings": true,
     "human_outcome_must_not_be_inferred_from_app_state": true,
     "instructional_audit_must_not_be_promoted_as_human_outcome": true,
@@ -222,5 +235,5 @@
     "experimental_feature_must_be_marked_experimental": true,
     "tests_or_commits_never_imply_curriculum_approval": true
   },
-  "next_authorized_phase": "PROFESSIONAL_VALIDATION_ON_CANONICAL_MASTER"
+  "next_authorized_phase": "PROFESSIONAL_VALIDATION_ON_CANONICAL_MASTER_1_1"
 }
