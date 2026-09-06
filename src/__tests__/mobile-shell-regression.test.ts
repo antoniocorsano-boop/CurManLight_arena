@@ -51,13 +51,20 @@ describe('MOBILE-SHELL regression contract', () => {
     expect(headerSource).toContain('data-development-no-institution="explicit"');
     expect(headerSource).toContain('Puoi continuare a lavorare senza collegare una scuola.');
     expect(headerSource).toContain('Le decisioni istituzionali restano non disponibili.');
-    expect(headerSource).toContain('Collega un account (facoltativo)');
+    expect(headerSource).toContain('Collega account cloud (facoltativo)');
     expect(headerSource).toContain('Sincronizza i file');
-    expect(headerSource).toContain('Disconnetti account');
+    expect(headerSource).toContain('Disconnetti account cloud');
+    expect(headerSource).not.toContain('data-session-identity="status"');
+  });
+
+  it('alternates Entra and Esci for the authenticated team session', () => {
+    expect(headerSource).toContain('data-team-signin="canonical"');
+    expect(headerSource).toContain('<span>Entra</span>');
     expect(headerSource).toContain('data-team-signout="canonical"');
     expect(headerSource).toContain('<span>Esci</span>');
-    expect(headerSource).toContain('Il profilo locale resta disponibile su questo dispositivo.');
-    expect(headerSource).not.toContain('data-session-identity="status"');
+    expect(headerSource).toContain('Accedi al lavoro del team con il tuo account Beta.');
+    expect(headerSource).toContain('Termina la sessione del lavoro del team; il profilo locale resta sul dispositivo.');
+    expect(headerSource).toContain("target.searchParams.set('betaIdentity', '1')");
   });
 
   it('synchronizes the visual mobile-menu state when navigation closes', () => {
