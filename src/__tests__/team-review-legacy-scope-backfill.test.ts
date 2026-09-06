@@ -3,6 +3,7 @@ import { TECHNOLOGY_CLASS1_REVIEW_PROPOSALS } from '../domain/curriculum/validat
 import { fingerprintTeamReviewProposal } from '../domain/revision/teamReview';
 import preflightSource from '../../supabase/migrations/20260906094400_team_review_operational_scope_preflight.sql?raw';
 import migrationSource from '../../supabase/migrations/20260906094500_team_review_operational_scope.sql?raw';
+import provenanceCorrectionSource from '../../supabase/migrations/20260906101500_team_review_legacy_authority_provenance.sql?raw';
 
 const scope = {
   academicYear: '2026/2027',
@@ -64,10 +65,11 @@ describe('Arena legacy team-review scope backfill', () => {
       expect(actual).toBe(expectedLegacyFingerprints[proposal.id]);
       expect(preflightSource).toContain(actual);
       expect(migrationSource).toContain(actual);
+      expect(provenanceCorrectionSource).toContain(actual);
     }
   });
 
-  it('rekeys the same five proposals to the exact scoped fingerprint used by #201', async () => {
+  it('rekeys current contributions to the exact scoped fingerprint used by #201', async () => {
     for (const proposal of TECHNOLOGY_CLASS1_REVIEW_PROPOSALS) {
       const actual = await fingerprintTeamReviewProposal({
         ...scope,
@@ -82,11 +84,20 @@ describe('Arena legacy team-review scope backfill', () => {
     }
   });
 
-  it('keeps the pilot outcome professional and does not infer operational memberships during legacy continuity', () => {
+  it('does not fabricate an operational membership or coordinator role for pre-scope outcomes', () => {
     const block = legacyContinuityBlock();
-    expect(block).toContain("authority_state = 'OPERATIVO_PROVVISORIO'");
-    expect(block).toContain("recorded_by_operational_role = 'coordinatore'");
     expect(block).not.toContain('insert into public.team_operational_memberships');
+    expect(provenanceCorrectionSource).toContain("authority_state = 'PRE_SCOPE_LEGACY'");
+    expect(provenanceCorrectionSource).toContain('recorded_by_operational_role = null');
+    expect(provenanceCorrectionSource).toContain('v_actor_operational_role');
+    expect(provenanceCorrectionSource).toContain('operational.member_role = new.recorded_by_operational_role');
+  });
+
+  it('restores the original pre-scope outcome fingerprints so they cannot close the current #201 gate', () => {
+    for (const fingerprint of Object.values(expectedLegacyFingerprints)) {
+      expect(provenanceCorrectionSource).toContain(fingerprint);
+    }
+    expect(provenanceCorrectionSource).toContain('These five rows were recorded by a verified workspace Dipartimento role before');
   });
 
   it('scopes legacy Italian contributions without promoting their legacy fingerprint', () => {
