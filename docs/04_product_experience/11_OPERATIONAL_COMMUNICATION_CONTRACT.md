@@ -1,9 +1,9 @@
 # CCO — Contratto di comunicazione operativa di Arena
 
-**Versione:** 1.4.0  
+**Versione:** 1.4.1  
 **Stato:** normativo per le nuove superfici e per le superfici migrate  
-**Integrazione:** Human Interaction Model (HIM) e `CURRICULUM_LIFECYCLE@1.1.0`  
-**Registro superfici:** 1.5.0
+**Integrazione:** Human Interaction Model (HIM) e `CURRICULUM_LIFECYCLE@1.1.1`  
+**Registro superfici:** 1.5.1
 
 ## 1. Scopo
 
@@ -94,7 +94,8 @@ Per un flusso composto da più passaggi valgono questi vincoli:
 - uno scroll verso un blocco già presente non è una transizione di stato;
 - quando il passaggio successivo diventa attivo, quello precedente si riduce a una sintesi compatta e riapribile quando utile;
 - filtri e navigazione retrospettiva vivono dietro divulgazione progressiva;
-- il sistema non duplica la stessa conseguenza o lo stesso invito all'azione su più livelli.
+- il sistema non duplica la stessa conseguenza o lo stesso invito all'azione su più livelli;
+- un passaggio con effetto condiviso è completato soltanto quando l'effetto è realmente persistito e verificabile nello stato corrente.
 
 Per `CurriculumWorkSession` la progressione canonica è:
 
@@ -102,7 +103,9 @@ Per `CurriculumWorkSession` la progressione canonica è:
 
 Il coordinatore non salta `ESAMINA` o `CONDIVIDI`: quando lavora sul proprio contributo è un contributore come gli altri. Il ruolo di coordinamento diventa pertinente soltanto dopo il contributo personale e quando i prerequisiti del gruppo consentono il confronto.
 
-Per il docente senza ulteriori responsabilità il compito personale termina dopo la condivisione; Arena deve mostrare uno stato di attesa comprensibile senza proiettare come azione personale il lavoro futuro del coordinatore.
+`CONDIVIDI` si considera completato soltanto quando Arena ritrova nel team un `ProfessionalContribution` persistito dello stesso utente che corrisponde alla scheda/versione corrente, all'orientamento personale corrente e, quando presente, al testo di modifica corrente. Una dichiarazione locale non può simulare l'avvenuta condivisione. Se il docente modifica successivamente l'orientamento o il testo, il precedente contributo condiviso diventa non corrente e `CONFRONTA` torna indisponibile fino a una nuova registrazione coerente.
+
+Per il docente senza ulteriori responsabilità il compito personale termina dopo la condivisione verificata; Arena deve mostrare uno stato di attesa comprensibile senza proiettare come azione personale il lavoro futuro del coordinatore.
 
 ## 7. Grammatica delle azioni
 
@@ -115,8 +118,8 @@ Arena usa una grammatica stabile, ma ammette etichette brevi quando la relazione
 | **Modifica** | Apri la formulazione di un'alternativa; non registra ancora il lavoro. |
 | **Registra modifica** | Salva la formulazione alternativa come orientamento personale completo. |
 | **Mantieni** | Mantieni il testo precedente nel contesto corrente. |
-| **Condividi** | Rende visibile al team un contributo personale. |
-| **Confronta** | Esamina con il gruppo i punti che richiedono realmente discussione. |
+| **Condividi** | Registra e rende visibile al team un contributo personale corrente. |
+| **Confronta** | Esamina con il gruppo i punti che richiedono realmente discussione dopo una condivisione verificata. |
 | **Registra l'esito** | Documenta un esito già maturato nel gruppo autorizzato. |
 
 La distinzione **Modifica → Registra modifica** è obbligatoria: aprire o compilare una bozza non equivale a completarla.
@@ -142,6 +145,7 @@ La fiducia deriva dalla prevedibilità del sistema:
 - l'azione è vicina all'oggetto;
 - il completamento si vede perché la superficie cambia;
 - una bozza non viene dichiarata completata;
+- una condivisione non viene dichiarata completata finché non è persistita e coerente con il lavoro corrente;
 - il passaggio successivo non compete con quello corrente;
 - gli effetti condivisi dichiarano il proprio confine;
 - gli errori sono recuperabili;
@@ -163,8 +167,9 @@ Una vista conforme deve superare queste domande:
 10. Una bozza che richiede conferma non viene conteggiata come lavoro completato?
 11. Una rassicurazione persistente corrisponde a un rischio presente nell'azione corrente?
 12. Un coordinatore attraversa prima gli stessi passaggi personali richiesti agli altri contributori?
+13. `CONFRONTA` resta bloccato se il contributo condiviso non è persistito o non corrisponde più all'orientamento personale corrente?
 
-I controlli 2, 3, 5, 6, 8, 9 e 12 sono discriminanti.
+I controlli 2, 3, 5, 6, 8, 9, 12 e 13 sono discriminanti.
 
 ## 11. Integrazione con HIM
 
@@ -189,7 +194,7 @@ Il validatore HIM controlla gli invarianti del contratto, le superfici pilota e 
 | Home docente | **conformant** | Orientamento e accesso al lavoro pertinente. |
 | CurriculumWorkSession | **conformant** | Un'unica progressione Esamina → Condividi → Confronta → Esito, senza tab concorrenti. |
 | Revisione della singola scheda | **conformant** | Riconoscimento immediato: una scheda, un confronto, tre azioni. |
-| Pubblicazione del contributo personale | **migration** | Collegare l'avanzamento alla registrazione effettiva del contributo condiviso. |
+| Pubblicazione del contributo personale | **conformant** | Condivisione persistita, verificata sulla versione e sull'orientamento correnti. |
 | Lavoro del team legacy | **migration** | Restare solo compatibilità temporanea, non superficie primaria concorrente. |
 | Coordinamento del team | **migration** | Integrare completamente confronto ed esito nella sessione unica. |
 | Profilo di lavoro personale | **guided-setup** | Configurazione iniziale senza confondere preferenze, incarichi e autorità. |
@@ -214,13 +219,18 @@ CCO-R4 applica il lifecycle di prodotto alla validazione professionale.
 
 Le precedenti superfici **Il mio contributo**, **Condivisione**, **Lavoro del team** e **Coordinamento del team** non sono più considerate processi paralleli. Convergono nella `CurriculumWorkSession`.
 
-Il primo incremento implementato stabilisce che:
+Il primo incremento implementato ha stabilito che:
 
 - all'ingresso domina sempre **Esamina**, anche per il coordinatore;
 - il completamento personale abilita **Condividi** mediante una vera transizione di stato;
 - il docente senza responsabilità successive vede chiaramente che, dopo la condivisione, il lavoro passa al gruppo;
-- il coordinatore può entrare in **Confronta** soltanto dopo il proprio passaggio di condivisione;
-- il confronto e la registrazione dell'esito continuano a rispettare i controlli di ruolo, competenza e copertura già presenti;
-- la convergenza non è ancora dichiarata integralmente conclusa: il prossimo incremento deve collegare l'avanzamento alla registrazione effettiva del `ProfessionalContribution`, non a una sola conferma dell'utente.
+- il coordinatore non può saltare il proprio contributo personale;
+- il confronto e la registrazione dell'esito continuano a rispettare i controlli di ruolo, competenza e copertura già presenti.
 
-Questa revisione modifica il prodotto e la sua comunicazione operativa, non lo stato professionale o istituzionale del curricolo.
+## 17. CCO-R5 — condivisione persistita prima del confronto
+
+CCO-R5 chiude il secondo incremento della `CurriculumWorkSession`.
+
+Il passaggio `CONDIVIDI → CONFRONTA` non dipende più da una dichiarazione dell'utente. Arena verifica il `ProfessionalContribution` persistito sulla versione/fingerprint corrente e lo confronta con l'orientamento personale e l'eventuale testo personalizzato correnti. Se uno di questi elementi cambia, la precedente condivisione non è più sufficiente e la sessione torna a **Condividi**.
+
+Questo vincolo riguarda la correttezza del processo professionale nel prodotto. Non costituisce esito del gruppo, decisione istituzionale, approvazione o adozione del curricolo.
