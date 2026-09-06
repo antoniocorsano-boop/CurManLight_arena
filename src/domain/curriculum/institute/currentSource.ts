@@ -25,13 +25,14 @@ export const INSTITUTE_CURRICULUM_PRIMARY_CORRECTED_SOURCE = {
  * Il nome dell'export è conservato per compatibilità con i consumer esistenti:
  * da REG-CURR-00 1.9 la "current source" applicativa non è più la proposta
  * corretta del 3 settembre, ma il master unificato che la conserva come
- * provenienza primaria.
+ * provenienza primaria. La versione 1.1 incorpora l'audit di conformità
+ * IN2025/Nota MIM 1312 senza modificare lo stato di validazione o vigenza.
  */
 export const INSTITUTE_CURRICULUM_CURRENT_SOURCE = {
   schemaVersion: 'arena-institute-curriculum-current-source-v2',
   sourceFile: 'CAN-CURR-MASTER-00_Curricolo_verticale_integrale_unificato_3-14_2026-2027',
   driveFileId: '12eWTPUZBJxZixd6-p8drNAaW5_eL8qWpXZUSDyZZAv4',
-  sourceVersion: '1.0',
+  sourceVersion: '1.1',
   sourceDate: '2026-09-06',
   authority: 'INSTITUTE_CANONICAL_WORKING_BASELINE',
   lifecycleState: 'CANONICAL_BASELINE_PENDING_HUMAN_VALIDATION',
@@ -44,6 +45,11 @@ export const INSTITUTE_CURRICULUM_CURRENT_SOURCE = {
   collegiateApproval: false,
   canonicalPromotionAuthorized: false,
   continuityRule: 'UPDATE_SAME_MASTER_AFTER_VALIDATED_OUTCOME',
+  normativeAlignment: {
+    matrixId: 'MATR-CURR-MASTER-01',
+    matrixDriveFileId: '1Wiw8Wsifls1-wr_GPYuqIAoB8GnwXMChO8Mz_kwiLKY',
+    status: 'GAPS_MATERIALIZED_PENDING_HUMAN_VALIDATION',
+  },
 } as const;
 
 export function isPrimaryCorrectedSourceSha256(value: string): boolean {
