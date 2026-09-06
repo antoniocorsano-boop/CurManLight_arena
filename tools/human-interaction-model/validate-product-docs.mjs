@@ -84,7 +84,7 @@ if (registry) {
   }
 
   const ccoDocs = readText('docs/04_product_experience/11_OPERATIONAL_COMMUNICATION_CONTRACT.md');
-  for (const token of ['Versione:** 1.4.1', 'CURRICULUM_LIFECYCLE@1.1.1', 'Registro superfici:** 1.6.0', 'CCO-R5 — condivisione persistita prima del confronto', "CCO-R6 — confronto ed esito come stadi distinti della stessa sessione"]) {
+  for (const token of ['Versione:** 1.4.1', 'CURRICULUM_LIFECYCLE@1.1.1', 'Registro superfici:** 1.5.1', 'CCO-R5 — condivisione persistita prima del confronto', "CCO-R6 — confronto ed esito come stadi distinti della stessa sessione"]) {
     assert(ccoDocs.includes(token), `CCO docs contiene: ${token}`);
   }
 
