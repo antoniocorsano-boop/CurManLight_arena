@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { RevisioneTab } from '../curriculum';
 import { useCurriculumStore } from '../../store/useCurriculumStore';
 import type { AppViewsLayerProps } from '../session/types/appViewContracts';
-import { TeamContributionPublisher } from './TeamContributionPublisher';
+import { TeamContributionPublisher, type TeamContributionPersistenceState } from './TeamContributionPublisher';
 import { TeamCoordinationWorkspace } from './TeamCoordinationWorkspace';
 import { useTeamWorkspaceContext } from './useTeamWorkspaceContext';
 
@@ -23,10 +23,17 @@ const SESSION_STEPS = [
   { id: 'RECORD_TEAM_OUTCOME', label: 'Esito del gruppo' },
 ] as const;
 
+const emptyPersistenceState = (requiredCount = 0): TeamContributionPersistenceState => ({
+  requiredCount,
+  persistedCurrentCount: 0,
+  complete: false,
+});
+
 export function RevisionWorkspace(props: AppViewsLayerProps) {
   const { decisions, customTexts, schoolYear } = useCurriculumStore();
   const team = useTeamWorkspaceContext();
   const [stage, setStage] = useState<CurriculumWorkSessionStage>('EXAMINE');
+  const [sharePersistence, setSharePersistence] = useState<TeamContributionPersistenceState>(() => emptyPersistenceState());
 
   const selectedRole = team.selectedMembership?.role;
   const isCoordinator = selectedRole === 'dipartimento' || selectedRole === 'referente';
@@ -39,19 +46,59 @@ export function RevisionWorkspace(props: AppViewsLayerProps) {
     return true;
   }).length;
   const reviewComplete = totalReviewCount > 0 && preparedReviewCount === totalReviewCount;
+  const personalContributionIdentityKey = useMemo(
+    () => JSON.stringify([
+      props.discipline,
+      props.order,
+      schoolYear,
+      props.currentDisciplineProps.map((proposal) => [
+        proposal.id,
+        decisions[proposal.id] ?? null,
+        customTexts[proposal.id]?.trim().replace(/\s+/g, ' ') ?? '',
+      ]),
+    ]),
+    [props.discipline, props.order, props.currentDisciplineProps, schoolYear, decisions, customTexts],
+  );
+
+  const handlePersistenceStateChange = useCallback((next: TeamContributionPersistenceState) => {
+    setSharePersistence(next);
+  }, []);
 
   useEffect(() => {
     setStage('EXAMINE');
   }, [props.discipline, props.order]);
 
   useEffect(() => {
+    setSharePersistence(emptyPersistenceState(totalReviewCount));
+  }, [personalContributionIdentityKey, team.selectedMembership?.workspaceId, team.session?.user.id, totalReviewCount]);
+
+  useEffect(() => {
     if (!reviewComplete && stage !== 'EXAMINE') setStage('EXAMINE');
   }, [reviewComplete, stage]);
 
-  const activeStepIndex = stage === 'EXAMINE' ? 0 : stage === 'SHARE' ? 1 : 2;
+  useEffect(() => {
+    if (stage === 'COMPARE' && !sharePersistence.complete) setStage('SHARE');
+  }, [stage, sharePersistence.complete]);
+
+  const stepState = (index: number): 'complete' | 'active' | 'future' => {
+    if (stage === 'EXAMINE') return index === 0 ? 'active' : 'future';
+    if (stage === 'SHARE') {
+      if (index === 0) return 'complete';
+      if (index === 1) return sharePersistence.complete ? 'complete' : 'active';
+      return 'future';
+    }
+    if (index < 2) return 'complete';
+    return index === 2 ? 'active' : 'future';
+  };
 
   return (
-    <div className="space-y-3 pb-24 md:pb-0" data-revision-workspace data-curriculum-work-session data-work-session-stage={stage}>
+    <div
+      className="space-y-3 pb-24 md:pb-0"
+      data-revision-workspace
+      data-curriculum-work-session
+      data-work-session-stage={stage}
+      data-persisted-share-ready={sharePersistence.complete ? 'true' : 'false'}
+    >
       <section
         className="sticky top-0 z-40 -mx-3 border-b border-slate-200 bg-white/95 px-3 py-3 backdrop-blur sm:static sm:mx-0 sm:rounded-2xl sm:border sm:p-4"
         aria-label="Sessione di lavoro sul curricolo"
@@ -71,22 +118,21 @@ export function RevisionWorkspace(props: AppViewsLayerProps) {
 
         <ol className="mt-3 grid grid-cols-4 gap-1.5" aria-label="Avanzamento della sessione">
           {SESSION_STEPS.map((step, index) => {
-            const completed = index < activeStepIndex;
-            const active = index === activeStepIndex || (stage === 'COMPARE' && index === 3 && isCoordinator);
+            const state = stepState(index);
             return (
               <li
                 key={step.id}
                 data-work-session-step={step.id}
-                data-work-session-step-state={completed ? 'complete' : active ? 'active' : 'future'}
+                data-work-session-step-state={state}
                 className={`rounded-lg border px-2 py-2 text-center text-[10px] font-bold leading-tight ${
-                  completed
+                  state === 'complete'
                     ? 'border-emerald-200 bg-emerald-50 text-emerald-800'
-                    : active
+                    : state === 'active'
                       ? 'border-indigo-300 bg-indigo-50 text-indigo-800'
                       : 'border-slate-200 bg-slate-50 text-slate-400'
                 }`}
               >
-                <span className="block text-[9px] font-black">{completed ? '✓' : index + 1}</span>
+                <span className="block text-[9px] font-black">{state === 'complete' ? '✓' : index + 1}</span>
                 {step.label}
               </li>
             );
@@ -149,13 +195,23 @@ export function RevisionWorkspace(props: AppViewsLayerProps) {
             discipline={props.discipline}
             order={props.order}
             academicYear={schoolYear}
+            onPersistenceStateChange={handlePersistenceStateChange}
           />
 
-          {isCoordinator ? (
-            <section className="rounded-2xl border border-indigo-200 bg-white p-4" aria-label="Passaggio al confronto del gruppo">
-              <strong className="block text-sm text-slate-900">Dopo la condivisione</strong>
+          {isCoordinator && !sharePersistence.complete && (
+            <section className="rounded-2xl border border-amber-200 bg-amber-50 p-4" aria-label="Confronto non ancora disponibile" data-team-comparison-blocked-by-share>
+              <strong className="block text-sm text-amber-950">Il confronto si apre dopo la condivisione verificata</strong>
+              <p className="mt-1 text-xs leading-relaxed text-amber-900">
+                Arena abilita il confronto soltanto quando tutte le {sharePersistence.requiredCount || totalReviewCount} schede del tuo contributo corrente risultano registrate nel team.
+              </p>
+            </section>
+          )}
+
+          {isCoordinator && sharePersistence.complete && (
+            <section className="rounded-2xl border border-indigo-200 bg-white p-4" aria-label="Passaggio al confronto del gruppo" data-team-comparison-ready>
+              <strong className="block text-sm text-slate-900">Condivisione verificata</strong>
               <p className="mt-1 text-xs leading-relaxed text-slate-600">
-                Quando hai condiviso il tuo contributo personale, puoi aprire il confronto come coordinatore. Il ruolo di coordinamento non sostituisce il contributo individuale.
+                Il tuo contributo corrente è registrato nel team. Ora puoi aprire il confronto come coordinatore; il ruolo di coordinamento resta distinto dal contributo individuale.
               </p>
               <button
                 type="button"
@@ -163,14 +219,16 @@ export function RevisionWorkspace(props: AppViewsLayerProps) {
                 onClick={() => setStage('COMPARE')}
                 className="mt-3 min-h-11 w-full rounded-xl bg-indigo-700 px-4 py-3 text-sm font-bold text-white sm:w-auto"
               >
-                Ho condiviso: apri il confronto del gruppo
+                Apri il confronto del gruppo
               </button>
             </section>
-          ) : (
-            <section className="rounded-2xl border border-slate-200 bg-slate-50 p-4" aria-label="Attesa del confronto del gruppo">
-              <strong className="block text-sm text-slate-900">Poi il lavoro passa al gruppo</strong>
+          )}
+
+          {!isCoordinator && sharePersistence.complete && (
+            <section className="rounded-2xl border border-slate-200 bg-slate-50 p-4" aria-label="Attesa del confronto del gruppo" data-personal-work-complete>
+              <strong className="block text-sm text-slate-900">Il tuo contributo è condiviso</strong>
               <p className="mt-1 text-xs leading-relaxed text-slate-600">
-                Dopo aver condiviso il contributo, per ora non devi fare altro. Il coordinatore avvierà il confronto quando i contributi necessari saranno disponibili.
+                Per ora non devi fare altro. Il coordinatore avvierà il confronto quando i contributi necessari saranno disponibili.
               </p>
               <details className="mt-3 rounded-xl border border-slate-200 bg-white">
                 <summary className="cursor-pointer px-3 py-2 text-xs font-bold text-slate-700">Vedi lo stato del confronto</summary>
@@ -188,7 +246,7 @@ export function RevisionWorkspace(props: AppViewsLayerProps) {
         </div>
       )}
 
-      {stage === 'COMPARE' && isCoordinator && (
+      {stage === 'COMPARE' && isCoordinator && sharePersistence.complete && (
         <div className="space-y-3 fade-in" data-revision-stage="compare" aria-label="Confronto ed esito del gruppo">
           <section className="rounded-2xl border border-indigo-200 bg-indigo-50/50 p-4">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
