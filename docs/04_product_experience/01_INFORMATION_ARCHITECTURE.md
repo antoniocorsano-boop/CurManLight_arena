@@ -1,7 +1,7 @@
 # 01 — INFORMATION ARCHITECTURE
 
 **Product vision:** `ARENA-PRODUCT-VISION@1.0.0`  
-**Lifecycle:** `CURRICULUM_LIFECYCLE@1.1.0`  
+**Lifecycle:** `CURRICULUM_LIFECYCLE@1.1.1`  
 **Stato:** `CANONICAL_TARGET_ARCHITECTURE`  
 **Data:** 2026-09-06
 
@@ -136,7 +136,11 @@ Regole:
 - uno stadio completato si compatta;
 - lo scroll non è una transizione di fase;
 - il docente privo di ulteriori responsabilità termina a `SHARE`;
-- `COMPARE` e `RECORD_TEAM_OUTCOME` compaiono solo quando prerequisiti e autorità sono soddisfatti.
+- `SHARE` è completato solo quando esiste un `ProfessionalContribution` persistito per l'utente corrente e corrispondente a `proposalFingerprint`, orientamento personale ed eventuale testo personalizzato correnti;
+- una modifica successiva dell'orientamento personale invalida la precedente condivisione fino a una nuova registrazione coerente;
+- una dichiarazione locale dell'utente non può simulare una condivisione avvenuta;
+- `COMPARE` compare solo dopo la condivisione personale persistita corrente e quando gli ulteriori prerequisiti del gruppo e del ruolo sono soddisfatti;
+- `RECORD_TEAM_OUTCOME` compare solo quando prerequisiti e autorità sono soddisfatti.
 
 ---
 
@@ -265,6 +269,7 @@ L'architettura è conforme quando:
 - il Fascicolo non compete con il lavoro;
 - il processo istituzionale non è navigazione universale;
 - la sessione curricolare non duplica avanzamenti;
+- il passaggio al confronto non può essere abilitato da una dichiarazione locale o da un contributo persistito non più coerente con il lavoro personale corrente;
 - la progettazione referenzia il curricolo canonico;
 - il riesame può essere innescato da norme future, esigenze d'Istituto, pratica o periodicità;
 - nessun trigger o segnale modifica automaticamente il master;
