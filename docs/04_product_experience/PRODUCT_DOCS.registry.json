@@ -1,6 +1,6 @@
 {
   "registry_id": "ARENA-PRODUCT-DOCS",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "date": "2026-09-06",
   "product_vision": {
     "id": "ARENA-PRODUCT-VISION",
@@ -75,6 +75,10 @@
     "target_information_architecture_defined": true,
     "target_navigation_defined": true,
     "critical_flows_defined": true,
+    "curriculum_work_session_convergence_started": true,
+    "curriculum_work_session_single_progression_implemented": true,
+    "legacy_revision_tabs_removed_from_primary_flow": true,
+    "coordinator_personal_contribution_precedes_team_comparison": true,
     "target_ui_fully_implemented": false,
     "human_end_to_end_pilot_complete": false
   }
