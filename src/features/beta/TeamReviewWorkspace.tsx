@@ -36,6 +36,14 @@ export interface TeamReviewWorkspaceProps {
 type FingerprintMap = Record<string, string>;
 
 const VALID_ROLES: readonly WorkspaceMemberRole[] = ['docente', 'dipartimento', 'referente', 'collegio', 'dirigente', 'amministratore'];
+const ROLE_LABELS: Record<WorkspaceMemberRole, string> = {
+  docente: 'Docente',
+  dipartimento: 'Dipartimento',
+  referente: 'Referente',
+  collegio: 'Collegio',
+  dirigente: 'Dirigente',
+  amministratore: 'Amministratore',
+};
 const TEAM_OUTCOME_LABELS: Record<TeamReviewOutcome, string> = {
   'accept-proposal': 'Accogli proposta',
   'keep-previous': 'Mantieni testo precedente',
@@ -137,8 +145,8 @@ export function TeamReviewWorkspace({ proposals, decisions, customTexts }: TeamR
       ] as const));
       if (active) setFingerprints(Object.fromEntries(entries));
     };
-    void compute().catch((error) => {
-      if (active) setMessage(error instanceof Error ? error.message : 'Impossibile identificare le schede del team.');
+    void compute().catch(() => {
+      if (active) setMessage('Non riesco a preparare le schede del team. Riprova tra poco.');
     });
     return () => { active = false; };
   }, [proposalIdentityKey]);
@@ -158,7 +166,7 @@ export function TeamReviewWorkspace({ proposals, decisions, customTexts }: TeamR
         .eq('user_id', nextSession.user.id);
       if (error) {
         setMemberships([]);
-        setMessage(`Non riesco a verificare i team associati a questo account: ${error.message}`);
+        setMessage('Non riesco a verificare il tuo accesso al team. Riprova tra poco.');
         return;
       }
       const resolved = ((data ?? []) as MembershipRow[])
@@ -209,12 +217,12 @@ export function TeamReviewWorkspace({ proposals, decisions, customTexts }: TeamR
       setContributions(nextContributions);
       setOutcomes(nextOutcomes);
       setExpectedContributorCount(nextExpectedContributorCount);
-    }).catch((error) => {
+    }).catch(() => {
       if (!active) return;
       setContributions([]);
       setOutcomes([]);
       setExpectedContributorCount(null);
-      setMessage(error instanceof Error ? error.message : 'Lavoro del team non leggibile.');
+      setMessage('Non riesco a caricare il lavoro del team. Riprova tra poco.');
     });
     return () => { active = false; };
   }, [repository, selectedMembership?.workspaceId, selectedMembership?.role, session?.user.id, descriptors.length, proposalIdentityKey, refreshVersion]);
@@ -242,7 +250,7 @@ export function TeamReviewWorkspace({ proposals, decisions, customTexts }: TeamR
     return (
       <section aria-label="Lavoro del team" className="rounded-2xl border border-slate-200 bg-white p-4" data-team-meeting-workspace>
         <strong className="text-sm text-slate-900">Il lavoro del team</strong>
-        <p className="mt-1 text-xs leading-relaxed text-slate-600">La sintesi condivisa è disponibile nel workspace autenticato. In modalità locale restano visibili e modificabili solo le tue scelte preparatorie.</p>
+        <p className="mt-1 text-xs leading-relaxed text-slate-600">Per vedere ciò che il team ha condiviso devi accedere ad Arena. Senza accesso puoi comunque preparare le tue scelte.</p>
       </section>
     );
   }
@@ -258,7 +266,7 @@ export function TeamReviewWorkspace({ proposals, decisions, customTexts }: TeamR
       return;
     }
     if (publishable.length === 0) {
-      setShareFeedback({ kind: 'error', text: 'Non ci sono ancora orientamenti individuali da condividere con il team.' });
+      setShareFeedback({ kind: 'error', text: 'Non hai ancora preparato nessuna scheda da condividere con il team.' });
       return;
     }
 
@@ -280,10 +288,10 @@ export function TeamReviewWorkspace({ proposals, decisions, customTexts }: TeamR
       setRefreshVersion((value) => value + 1);
       setShareFeedback({
         kind: 'success',
-        text: `${publishable.length} ${publishable.length === 1 ? 'scheda condivisa' : 'schede condivise'} con il team. Il tuo contributo è registrato, ma non è ancora un esito del team.`,
+        text: `${publishable.length} ${publishable.length === 1 ? 'scheda condivisa' : 'schede condivise'} con il team. ${publishable.length === 1 ? 'È il tuo parere personale' : 'Sono i tuoi pareri personali'}: ${publishable.length === 1 ? 'non è' : 'non sono'} ancora una decisione del team.`,
       });
-    } catch (error) {
-      setShareFeedback({ kind: 'error', text: error instanceof Error ? error.message : 'Contributi non registrati.' });
+    } catch {
+      setShareFeedback({ kind: 'error', text: 'Non riesco a condividere il tuo lavoro con il team. Riprova.' });
     } finally {
       setBusy(false);
     }
@@ -292,7 +300,7 @@ export function TeamReviewWorkspace({ proposals, decisions, customTexts }: TeamR
   const recordOutcome = async () => {
     if (!repository || !selectedMembership || !session || !canRecordTeamOutcome || !selectedItem) return;
     if (!rationale.trim()) {
-      setMessage('Aggiungi la motivazione sintetica dell’esito concordato dal team.');
+      setMessage('Aggiungi una breve motivazione della decisione del team.');
       return;
     }
     if (teamOutcome === 'shared-text' && !sharedText.trim()) {
@@ -317,9 +325,9 @@ export function TeamReviewWorkspace({ proposals, decisions, customTexts }: TeamR
       setRationale('');
       setTeamOutcome('accept-proposal');
       setRefreshVersion((value) => value + 1);
-      setMessage('Esito del team registrato. Non è un’approvazione istituzionale e non modifica automaticamente il curricolo vigente.');
-    } catch (error) {
-      setMessage(error instanceof Error ? error.message : 'Esito del team non registrato.');
+      setMessage('Decisione del team registrata. Non è ancora l’approvazione dell’Istituto e non modifica da sola il curricolo vigente.');
+    } catch {
+      setMessage('Non riesco a registrare la decisione del team. Riprova.');
     } finally {
       setBusy(false);
     }
@@ -329,7 +337,7 @@ export function TeamReviewWorkspace({ proposals, decisions, customTexts }: TeamR
     if (!repository || !selectedMembership || !session || !canRecordTeamOutcome) return;
     const pendingShared = sharedItems.filter((item) => item.coverageComplete && !latestOutcomes[item.proposalRef]);
     if (pendingShared.length === 0) {
-      setMessage('Non ci sono punti con copertura completa ancora da registrare come esito del team.');
+      setMessage('Non ci sono punti già condivisi da confermare in riunione.');
       return;
     }
     const context: WorkspaceActorContext = { membership: selectedMembership, assurance: 'authenticated-workspace' };
@@ -344,14 +352,14 @@ export function TeamReviewWorkspace({ proposals, decisions, customTexts }: TeamR
           proposalFingerprint: item.proposalFingerprint,
           outcome,
           sharedText: null,
-          rationale: 'Punto confermato dal team come già condiviso durante la riunione, con copertura completa dei contributori del workspace.',
+          rationale: 'Il team ha confermato durante la riunione un punto su cui tutti avevano già espresso lo stesso orientamento.',
           clientRequestId: createRequestId(),
         });
       }
       setRefreshVersion((value) => value + 1);
-      setMessage(`${pendingShared.length} punti con copertura completa registrati come esito del team senza riaprire la lettura delle schede.`);
-    } catch (error) {
-      setMessage(error instanceof Error ? error.message : 'Esiti condivisi non registrati.');
+      setMessage(`${pendingShared.length} punti già condivisi registrati come decisione del team senza rileggerli uno per uno.`);
+    } catch {
+      setMessage('Non riesco a registrare i punti già condivisi. Riprova.');
     } finally {
       setBusy(false);
     }
@@ -361,7 +369,7 @@ export function TeamReviewWorkspace({ proposals, decisions, customTexts }: TeamR
     <section aria-label="Lavoro del team" className="space-y-4 rounded-2xl border border-indigo-200 bg-indigo-50/30 p-4" data-team-meeting-workspace>
       <div>
         <strong className="block text-base text-slate-900">Il lavoro del team</strong>
-        <p className="mt-1 max-w-3xl text-xs leading-relaxed text-slate-600">Arena raccoglie i contributi autenticati e porta in riunione soprattutto ciò che richiede confronto. Il parere individuale, l’esito del team e la decisione istituzionale restano tre passaggi distinti.</p>
+        <p className="mt-1 max-w-3xl text-xs leading-relaxed text-slate-600">Arena porta in riunione soprattutto ciò che richiede confronto. Quello che indichi tu è un parere personale; la decisione del team viene registrata a parte; l’approvazione dell’Istituto avviene ancora dopo.</p>
       </div>
 
       {!session ? (
@@ -375,9 +383,9 @@ export function TeamReviewWorkspace({ proposals, decisions, customTexts }: TeamR
       ) : (
         <>
           {activeMemberships.length > 1 && (
-            <label className="block text-xs font-semibold text-slate-700">Workspace
+            <label className="block text-xs font-semibold text-slate-700">Scegli il team
               <select value={workspaceId} onChange={(event) => setWorkspaceId(event.target.value)} className="mt-1 block w-full rounded-lg border border-slate-300 bg-white p-2">
-                {activeMemberships.map((membership) => <option key={membership.workspaceId} value={membership.workspaceId}>{membership.workspaceId} · {membership.role}</option>)}
+                {activeMemberships.map((membership, index) => <option key={membership.workspaceId} value={membership.workspaceId}>Team {index + 1} · {ROLE_LABELS[membership.role]}</option>)}
               </select>
             </label>
           )}
@@ -385,7 +393,7 @@ export function TeamReviewWorkspace({ proposals, decisions, customTexts }: TeamR
           <div className="rounded-xl border border-slate-200 bg-white p-3">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div className="text-xs text-slate-600">
-                <strong className="text-slate-800">Il tuo lavoro:</strong> {localPreparedCount} schede preparate localmente.
+                <strong className="text-slate-800">Il tuo lavoro:</strong> hai preparato {localPreparedCount} schede.
                 {currentUserContributionCount > 0 && <span className="mt-1 block font-semibold text-emerald-700">{currentUserContributionCount} {currentUserContributionCount === 1 ? 'scheda già condivisa' : 'schede già condivise'} con il team.</span>}
               </div>
               <button type="button" disabled={busy || !canContribute || localPreparedCount === 0} onClick={() => void publishPreparation()} className="min-h-10 rounded-lg bg-indigo-700 px-3 py-2 text-xs font-bold text-white disabled:cursor-not-allowed disabled:opacity-40">
@@ -400,19 +408,19 @@ export function TeamReviewWorkspace({ proposals, decisions, customTexts }: TeamR
           </div>
 
           <div className="rounded-xl border border-slate-200 bg-white p-3 text-xs text-slate-600" data-team-review-coverage>
-            <strong className="text-slate-800">Copertura del team:</strong>{' '}
+            <strong className="text-slate-800">Partecipazione del team:</strong>{' '}
             {expectedContributorCount === null
-              ? 'non verificabile — nessun punto può essere considerato già condiviso.'
+              ? 'non riesco a verificarla: nessun punto verrà considerato già condiviso.'
               : expectedContributorCount === 1
-                ? 'nel team c’è ancora un solo componente attivo. Puoi condividere il tuo lavoro, ma nessun punto sarà considerato condiviso finché non parteciperà almeno un secondo componente.'
-                : `${expectedContributorCount} contributori attivi attesi nel team selezionato.`}
+                ? 'nel team c’è ancora un solo componente attivo. Puoi condividere il tuo lavoro, ma nessun punto sarà considerato già condiviso finché non parteciperà almeno un secondo componente.'
+                : `Per considerare un punto già condiviso servono i pareri di tutti i ${expectedContributorCount} componenti attivi del team.`}
           </div>
 
           <div className="grid grid-cols-2 gap-2 lg:grid-cols-4" aria-label="Sintesi del lavoro del team">
-            <div className="rounded-xl bg-white p-3"><strong className="block text-xl text-slate-900">{summary.shared}</strong><span className="text-xs text-slate-600">punti già condivisi</span><span className="mt-1 block text-[10px] text-slate-400">solo con copertura completa</span></div>
+            <div className="rounded-xl bg-white p-3"><strong className="block text-xl text-slate-900">{summary.shared}</strong><span className="text-xs text-slate-600">punti già condivisi</span><span className="mt-1 block text-[10px] text-slate-400">solo quando hanno partecipato tutti</span></div>
             <div className="rounded-xl bg-white p-3"><strong className="block text-xl text-slate-900">{summary.changeProposed}</strong><span className="text-xs text-slate-600">modifiche proposte</span><span className="mt-1 block text-[10px] text-slate-400">da esaminare</span></div>
             <div className="rounded-xl bg-white p-3"><strong className="block text-xl text-slate-900">{summary.divergent}</strong><span className="text-xs text-slate-600">opinioni diverse</span><span className="mt-1 block text-[10px] text-slate-400">da decidere insieme</span></div>
-            <div className="rounded-xl bg-white p-3"><strong className="block text-xl text-slate-900">{summary.needsClarification}</strong><span className="text-xs text-slate-600">punti da chiarire</span><span className="mt-1 block text-[10px] text-slate-400">manca copertura o un contributo corrente</span></div>
+            <div className="rounded-xl bg-white p-3"><strong className="block text-xl text-slate-900">{summary.needsClarification}</strong><span className="text-xs text-slate-600">punti da chiarire</span><span className="mt-1 block text-[10px] text-slate-400">manca ancora qualche parere o va aggiornato</span></div>
           </div>
 
           {sharedItems.length > 0 && (
@@ -422,34 +430,34 @@ export function TeamReviewWorkspace({ proposals, decisions, customTexts }: TeamR
                 {sharedItems.map((item) => (
                   <div key={item.proposalRef} className="flex items-center justify-between gap-3 rounded-lg bg-white p-2 text-xs">
                     <span className="min-w-0 truncate text-slate-700">{item.focus}</span>
-                    <span className="shrink-0 text-[10px] font-semibold text-emerald-700">{item.contributionCount}/{item.expectedContributorCount ?? '—'} contributi correnti</span>
+                    <span className="shrink-0 text-[10px] font-semibold text-emerald-700">{item.contributionCount} di {item.expectedContributorCount ?? '—'} hanno partecipato</span>
                   </div>
                 ))}
-                {canRecordTeamOutcome && <button type="button" disabled={busy} onClick={() => void confirmSharedItems()} className="rounded-lg bg-emerald-700 px-3 py-2 text-xs font-bold text-white disabled:opacity-40">Registra i punti condivisi confermati dal team</button>}
+                {canRecordTeamOutcome && <button type="button" disabled={busy} onClick={() => void confirmSharedItems()} className="rounded-lg bg-emerald-700 px-3 py-2 text-xs font-bold text-white disabled:opacity-40">Conferma in riunione i punti già condivisi</button>}
               </div>
             </details>
           )}
 
           <div className="space-y-2">
             <div className="flex items-end justify-between gap-3">
-              <div><strong className="text-sm text-slate-900">Da discutere</strong><p className="text-xs text-slate-500">Solo i punti che richiedono confronto o chiarimento e non hanno ancora un esito del team.</p></div>
+              <div><strong className="text-sm text-slate-900">Da discutere</strong><p className="text-xs text-slate-500">Solo ciò che richiede ancora un confronto del team.</p></div>
               <span className="rounded-full bg-white px-2.5 py-1 text-[10px] font-bold text-slate-600">{openDiscussionItems.length} aperti</span>
             </div>
 
             {openDiscussionItems.length === 0 ? (
-              <div className="rounded-xl border border-emerald-200 bg-white p-3 text-xs text-emerald-800">Nessun punto aperto da discutere per le versioni correnti.</div>
+              <div className="rounded-xl border border-emerald-200 bg-white p-3 text-xs text-emerald-800">Non ci sono punti da discutere in questo momento.</div>
             ) : openDiscussionItems.map((item) => (
               <article key={item.proposalRef} className="rounded-xl border border-slate-200 bg-white p-3">
                 <div className="flex flex-wrap items-start justify-between gap-2">
                   <div className="min-w-0"><strong className="block text-sm text-slate-900">{item.focus}</strong><span className="mt-1 inline-block rounded-full bg-amber-50 px-2 py-1 text-[10px] font-bold text-amber-800">{BUCKET_LABELS[item.bucket]}</span></div>
-                  <span className="text-[10px] text-slate-500">{item.contributionCount}/{item.expectedContributorCount ?? '—'} contributi correnti</span>
+                  <span className="text-[10px] text-slate-500">{item.contributionCount} di {item.expectedContributorCount ?? '—'} hanno partecipato</span>
                 </div>
                 <div className="mt-3 flex flex-wrap gap-2 text-[11px] text-slate-600">
                   <span className="rounded-full bg-slate-100 px-2 py-1">{item.counts['confirm-proposal']} confermano</span>
                   <span className="rounded-full bg-slate-100 px-2 py-1">{item.counts['propose-change']} propongono modifica</span>
                   <span className="rounded-full bg-slate-100 px-2 py-1">{item.counts['keep-previous']} mantengono il precedente</span>
-                  {item.staleContributionCount > 0 && <span className="rounded-full bg-rose-50 px-2 py-1 text-rose-700">{item.staleContributionCount} contributi da aggiornare</span>}
-                  {!item.coverageComplete && item.bucket === 'needs-clarification' && <span className="rounded-full bg-amber-50 px-2 py-1 text-amber-800">copertura incompleta</span>}
+                  {item.staleContributionCount > 0 && <span className="rounded-full bg-rose-50 px-2 py-1 text-rose-700">{item.staleContributionCount} pareri da aggiornare</span>}
+                  {!item.coverageComplete && item.bucket === 'needs-clarification' && <span className="rounded-full bg-amber-50 px-2 py-1 text-amber-800">manca ancora qualche parere</span>}
                 </div>
                 {item.proposedTexts.length > 0 && (
                   <details className="mt-3 rounded-lg border border-amber-100 bg-amber-50/40">
@@ -458,27 +466,27 @@ export function TeamReviewWorkspace({ proposals, decisions, customTexts }: TeamR
                   </details>
                 )}
                 {canRecordTeamOutcome ? (
-                  <button type="button" onClick={() => { setSelectedProposalRef(item.proposalRef); setTeamOutcome('accept-proposal'); setSharedText(''); setRationale(''); }} className="mt-3 rounded-lg bg-indigo-700 px-3 py-2 text-xs font-bold text-white">Registra l’esito del team</button>
+                  <button type="button" onClick={() => { setSelectedProposalRef(item.proposalRef); setTeamOutcome('accept-proposal'); setSharedText(''); setRationale(''); }} className="mt-3 rounded-lg bg-indigo-700 px-3 py-2 text-xs font-bold text-white">Registra la decisione del team</button>
                 ) : (
-                  <p className="mt-3 text-[11px] leading-relaxed text-slate-500">Puoi consultare il confronto. L’esito del team può essere registrato da una membership di dipartimento o referente; non è una deliberazione istituzionale.</p>
+                  <p className="mt-3 text-[11px] leading-relaxed text-slate-500">Puoi consultare il confronto. La decisione del team può essere registrata da chi ha il ruolo di Dipartimento o Referente. Non è ancora l’approvazione dell’Istituto.</p>
                 )}
               </article>
             ))}
           </div>
 
           {selectedItem && canRecordTeamOutcome && (
-            <div className="rounded-xl border-2 border-indigo-200 bg-white p-4" aria-label="Esito del team">
-              <strong className="block text-sm text-slate-900">Esito del team · {selectedItem.focus}</strong>
-              <p className="mt-1 text-xs leading-relaxed text-slate-500">Registra ciò che il gruppo ha concordato durante il confronto. Questa ricevuta resta separata dalla successiva decisione istituzionale.</p>
+            <div className="rounded-xl border-2 border-indigo-200 bg-white p-4" aria-label="Decisione del team">
+              <strong className="block text-sm text-slate-900">Decisione del team · {selectedItem.focus}</strong>
+              <p className="mt-1 text-xs leading-relaxed text-slate-500">Registra ciò che il gruppo ha concordato durante il confronto. Questa registrazione non è l’approvazione dell’Istituto.</p>
               <div className="mt-3 grid gap-2 sm:grid-cols-2">
                 {(Object.entries(TEAM_OUTCOME_LABELS) as [TeamReviewOutcome, string][]).map(([value, label]) => (
                   <button key={value} type="button" onClick={() => setTeamOutcome(value)} className={`rounded-lg border px-3 py-2 text-xs font-bold ${teamOutcome === value ? 'border-indigo-700 bg-indigo-700 text-white' : 'border-slate-200 bg-white text-slate-700'}`}>{label}</button>
                 ))}
               </div>
               {teamOutcome === 'shared-text' && <textarea value={sharedText} onChange={(event) => setSharedText(event.target.value)} rows={4} className="mt-3 w-full rounded-lg border border-slate-300 p-3 text-sm" placeholder="Testo condiviso concordato dal team…" />}
-              <textarea value={rationale} onChange={(event) => setRationale(event.target.value)} rows={3} className="mt-3 w-full rounded-lg border border-slate-300 p-3 text-sm" placeholder="Motivazione sintetica dell’esito concordato…" />
+              <textarea value={rationale} onChange={(event) => setRationale(event.target.value)} rows={3} className="mt-3 w-full rounded-lg border border-slate-300 p-3 text-sm" placeholder="Breve motivazione della decisione…" />
               <div className="mt-3 flex flex-wrap gap-2">
-                <button type="button" disabled={busy} onClick={() => void recordOutcome()} className="rounded-lg bg-indigo-700 px-3 py-2 text-xs font-bold text-white disabled:opacity-40">Registra esito del team</button>
+                <button type="button" disabled={busy} onClick={() => void recordOutcome()} className="rounded-lg bg-indigo-700 px-3 py-2 text-xs font-bold text-white disabled:opacity-40">Registra decisione del team</button>
                 <button type="button" disabled={busy} onClick={() => setSelectedProposalRef(null)} className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-600">Annulla</button>
               </div>
             </div>
@@ -486,11 +494,11 @@ export function TeamReviewWorkspace({ proposals, decisions, customTexts }: TeamR
 
           {resolvedItems.length > 0 && (
             <details className="rounded-xl border border-slate-200 bg-white">
-              <summary className="cursor-pointer p-3 text-xs font-bold text-slate-700">{resolvedItems.length} esiti del team già registrati</summary>
+              <summary className="cursor-pointer p-3 text-xs font-bold text-slate-700">{resolvedItems.length} decisioni del team già registrate</summary>
               <div className="space-y-2 border-t border-slate-100 p-3">
                 {resolvedItems.map((item) => {
                   const receipt = latestOutcomes[item.proposalRef];
-                  return <div key={item.proposalRef} className="rounded-lg bg-slate-50 p-2 text-xs text-slate-700"><strong>{item.focus}</strong><span className="mt-1 block">{TEAM_OUTCOME_LABELS[receipt.outcome]} · {new Date(receipt.recordedAt).toLocaleString('it-IT')}</span><span className="mt-1 block text-[10px] text-slate-500">Esito del team, non approvazione istituzionale.</span></div>;
+                  return <div key={item.proposalRef} className="rounded-lg bg-slate-50 p-2 text-xs text-slate-700"><strong>{item.focus}</strong><span className="mt-1 block">{TEAM_OUTCOME_LABELS[receipt.outcome]} · {new Date(receipt.recordedAt).toLocaleString('it-IT')}</span><span className="mt-1 block text-[10px] text-slate-500">Decisione del team, non approvazione dell’Istituto.</span></div>;
                 })}
               </div>
             </details>
