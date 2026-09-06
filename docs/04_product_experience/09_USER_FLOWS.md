@@ -211,6 +211,22 @@ Per tutti i flow conseguenti:
 
 ---
 
+## 14. Proiezione corrente del Fascicolo
+
+Nel runtime della candidata Beta, il flow di verifica mantiene la chiave tecnica interna `fonti` per compatibilità, ma la destinazione utente è `Fascicolo`.
+
+Regole di attuazione:
+- `/fascicolo` è la route pubblica canonica;
+- `/fonti` e `/settings` restano deep-link storici leggibili e non vengono più emessi dalla navigazione nuova;
+- il Fascicolo non compare nella bottom navigation mobile primaria;
+- su desktop e nel drawer mobile è collocato nel livello secondario `Supporto`;
+- un'attività concreta di verifica fonte può aprire direttamente il Fascicolo senza trasformarlo in una fase obbligatoria del ciclo professionale;
+- Home e Curricolo possono offrire “Apri il Fascicolo” o “Vedi fonte” come azioni contestuali.
+
+Questa proiezione non modifica l'autorità delle fonti, il master curricolare o lo stato di validazione.
+
+---
+
 ## Criterio complessivo di accettazione
 
 I flow sono conformi quando il docente può svolgere il proprio compito senza conoscere pipeline, gate, membership IDs o struttura del repository; le autorità restano separate; la condivisione è verificabile e non simulabile localmente; le fonti sono verificabili; il curricolo alimenta la progettazione reale; nuove norme, esigenze d'Istituto e osservazioni dalla pratica possono riaprire il processo in modo mirato e tracciato.
