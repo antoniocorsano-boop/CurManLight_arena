@@ -3,10 +3,16 @@ import { Link } from 'react-router-dom';
 import type { DecisionStatus, Proposal, SchoolOrder } from '../../types/curriculum';
 import { getOperationalGroupForDiscipline } from '../../domain/institution/operationalGroups';
 import type { WorkspaceActorContext } from '../../domain/institution/sharedWorkspacePort';
-import type { OperationalGroupMembership, TeamReviewScope } from '../../domain/revision/teamReview';
+import type { OperationalGroupMembership, TeamReviewContribution, TeamReviewScope } from '../../domain/revision/teamReview';
 import { fingerprintTeamReviewProposal } from '../../domain/revision/teamReview';
 import { SupabaseSharedTeamReviewRepository } from '../../infrastructure/supabase/sharedTeamReviewRepository';
 import { useTeamWorkspaceContext } from './useTeamWorkspaceContext';
+
+export interface TeamContributionPersistenceState {
+  requiredCount: number;
+  persistedCurrentCount: number;
+  complete: boolean;
+}
 
 export interface TeamContributionPublisherProps {
   proposals: Proposal[];
@@ -15,6 +21,7 @@ export interface TeamContributionPublisherProps {
   discipline: string;
   order: SchoolOrder;
   academicYear: string;
+  onPersistenceStateChange?: (state: TeamContributionPersistenceState) => void;
 }
 
 type FingerprintMap = Record<string, string>;
@@ -26,6 +33,8 @@ const localOrientation = (decision?: DecisionStatus) => {
   return null;
 };
 
+const normalizeText = (value: string | null | undefined): string => value?.trim().replace(/\s+/g, ' ') ?? '';
+
 export function TeamContributionPublisher({
   proposals,
   decisions,
@@ -33,6 +42,7 @@ export function TeamContributionPublisher({
   discipline,
   order,
   academicYear,
+  onPersistenceStateChange,
 }: TeamContributionPublisherProps) {
   const team = useTeamWorkspaceContext();
   const repository = useMemo(
@@ -57,6 +67,22 @@ export function TeamContributionPublisher({
     () => JSON.stringify([academicYear, order, discipline, group?.code, proposals.map((proposal) => [proposal.id, proposal.focus, proposal.oldText, proposal.newText])]),
     [academicYear, order, discipline, group?.code, proposals],
   );
+  const localContributionIdentityKey = useMemo(
+    () => JSON.stringify(proposals.map((proposal) => [proposal.id, decisions[proposal.id] ?? null, normalizeText(customTexts[proposal.id])])),
+    [proposals, decisions, customTexts],
+  );
+  const proposalsById = useMemo(
+    () => new Map(proposals.map((proposal) => [proposal.id, proposal])),
+    [proposals],
+  );
+
+  const publishPersistenceState = (count: number) => {
+    onPersistenceStateChange?.({
+      requiredCount: proposals.length,
+      persistedCurrentCount: count,
+      complete: proposals.length > 0 && count === proposals.length,
+    });
+  };
 
   useEffect(() => {
     let active = true;
@@ -79,19 +105,32 @@ export function TeamContributionPublisher({
       if (active) setFingerprints({});
     });
     return () => { active = false; };
-  }, [proposalIdentityKey, scope]);
+  }, [proposalIdentityKey, scope, proposals]);
 
   useEffect(() => {
     let active = true;
     if (!repository || !team.selectedMembership || !team.session || !scope || Object.keys(fingerprints).length !== proposals.length) {
       setCurrentUserContributionCount(0);
       setOperationalMembership(null);
+      publishPersistenceState(0);
       return () => { active = false; };
     }
 
     const context: WorkspaceActorContext = {
       membership: team.selectedMembership,
       assurance: 'authenticated-workspace',
+    };
+
+    const contributionMatchesCurrentWork = (contribution: TeamReviewContribution): boolean => {
+      if (contribution.contributorUserId !== team.session?.user.id) return false;
+      if (fingerprints[contribution.proposalRef] !== contribution.proposalFingerprint) return false;
+      if (!proposalsById.has(contribution.proposalRef)) return false;
+      const expectedOrientation = localOrientation(decisions[contribution.proposalRef]);
+      if (!expectedOrientation || contribution.orientation !== expectedOrientation) return false;
+      if (expectedOrientation === 'propose-change') {
+        return normalizeText(contribution.customText) === normalizeText(customTexts[contribution.proposalRef]);
+      }
+      return true;
     };
 
     void Promise.all([
@@ -101,20 +140,21 @@ export function TeamContributionPublisher({
       if (!active) return;
       const current = new Set(
         contributions
-          .filter((contribution) => contribution.contributorUserId === team.session?.user.id
-            && fingerprints[contribution.proposalRef] === contribution.proposalFingerprint)
+          .filter(contributionMatchesCurrentWork)
           .map((contribution) => contribution.proposalRef),
       );
       setCurrentUserContributionCount(current.size);
       setOperationalMembership(nextOperationalMembership);
+      publishPersistenceState(current.size);
     }).catch(() => {
       if (!active) return;
       setCurrentUserContributionCount(0);
       setOperationalMembership(null);
+      publishPersistenceState(0);
     });
 
     return () => { active = false; };
-  }, [repository, team.selectedMembership?.workspaceId, team.session?.user.id, proposalIdentityKey, fingerprints, refreshVersion, scope]);
+  }, [repository, team.selectedMembership?.workspaceId, team.session?.user.id, proposalIdentityKey, localContributionIdentityKey, fingerprints, refreshVersion, scope, proposals.length, proposalsById, onPersistenceStateChange]);
 
   const localPreparedCount = proposals.filter((proposal) => {
     const decision = decisions[proposal.id];
@@ -125,6 +165,7 @@ export function TeamContributionPublisher({
   const incompleteCustomCount = proposals.filter(
     (proposal) => decisions[proposal.id] === 'custom' && !customTexts[proposal.id]?.trim(),
   ).length;
+  const persistedCurrentContributionComplete = proposals.length > 0 && currentUserContributionCount === proposals.length;
   const hasDisciplineCompetence = Boolean(operationalMembership?.disciplines.includes(discipline));
   const canContribute = Boolean(
     team.selectedMembership
@@ -169,7 +210,7 @@ export function TeamContributionPublisher({
       setRefreshVersion((value) => value + 1);
       setFeedback({
         kind: 'success',
-        text: `${publishable.length} ${publishable.length === 1 ? 'scheda condivisa' : 'schede condivise'} con il team. Il contributo resta personale e non costituisce un esito del gruppo.`,
+        text: `${publishable.length} ${publishable.length === 1 ? 'scheda registrata' : 'schede registrate'} nel team. Arena verifica ora che il contributo persistito corrisponda al lavoro corrente.`,
       });
     } catch (error) {
       setFeedback({ kind: 'error', text: error instanceof Error ? error.message : 'Contributi non registrati.' });
@@ -224,7 +265,12 @@ export function TeamContributionPublisher({
   }
 
   return (
-    <section className="space-y-3 rounded-2xl border border-indigo-200 bg-indigo-50/30 p-4" aria-label="Condivisione del contributo" data-team-contribution-publisher>
+    <section
+      className="space-y-3 rounded-2xl border border-indigo-200 bg-indigo-50/30 p-4"
+      aria-label="Condivisione del contributo"
+      data-team-contribution-publisher
+      data-contribution-persistence-complete={persistedCurrentContributionComplete ? 'true' : 'false'}
+    >
       <div>
         <strong className="block text-base text-slate-900">Condividi il mio contributo</strong>
         <p className="mt-1 text-xs leading-relaxed text-slate-600">Solo questa azione rende visibile al team il lavoro personale già preparato.</p>
@@ -249,7 +295,12 @@ export function TeamContributionPublisher({
       {team.selectedMembership && (
         <div className="rounded-xl border border-slate-200 bg-white p-3 text-xs text-slate-600" data-team-contribution-status>
           <strong className="text-slate-800">Team selezionato:</strong> {team.selectedMembership.workspaceName}
-          <span className="mt-1 block"><strong className="text-slate-800">Pronte:</strong> {localPreparedCount} · <strong className="text-slate-800">già condivise:</strong> {currentUserContributionCount}</span>
+          <span className="mt-1 block"><strong className="text-slate-800">Pronte:</strong> {localPreparedCount} · <strong className="text-slate-800">condivisione corrente verificata:</strong> {currentUserContributionCount} di {proposals.length}</span>
+          {persistedCurrentContributionComplete && (
+            <span className="mt-2 block rounded-lg bg-emerald-50 px-2 py-1.5 font-bold text-emerald-800" data-professional-contribution-persisted>
+              ✓ Il contributo corrente è registrato e verificato nel team.
+            </span>
+          )}
           {incompleteCustomCount > 0 && <span className="mt-1 block font-semibold text-amber-800">{incompleteCustomCount === 1 ? '1 modifica deve essere completata.' : `${incompleteCustomCount} modifiche devono essere completate.`}</span>}
           {!operationalMembership && <span className="mt-1 block font-semibold text-amber-800">Salva il profilo personale con questa disciplina per registrare la competenza operativa.</span>}
           {operationalMembership && !hasDisciplineCompetence && <span className="mt-1 block font-semibold text-amber-800">Questa disciplina non risulta tra le competenze operative dichiarate.</span>}
@@ -262,7 +313,7 @@ export function TeamContributionPublisher({
         onClick={() => void publishPreparation()}
         className="min-h-11 w-full rounded-xl bg-indigo-700 px-4 py-3 text-sm font-bold text-white disabled:cursor-not-allowed disabled:opacity-40"
       >
-        {busy ? 'Condivisione in corso…' : currentUserContributionCount > 0 ? 'Aggiorna il mio contributo condiviso' : 'Condividi il mio lavoro con il team'}
+        {busy ? 'Condivisione in corso…' : persistedCurrentContributionComplete ? 'Aggiorna il mio contributo condiviso' : 'Condividi il mio lavoro con il team'}
       </button>
       <p className="text-[11px] font-semibold leading-relaxed text-indigo-950">Il contributo condiviso resta personale: non è un voto, un esito del team o una decisione della scuola.</p>
 
