@@ -7,22 +7,26 @@ on:
       - 'src/App.tsx'
       - 'src/features/navigation/**'
       - 'src/features/session/hooks/useAppWorkflowState.ts'
+      - 'src/features/session/hooks/useOnboardingProfile.ts'
       - 'src/features/curriculum/components/RevisioneTab.tsx'
       - 'src/features/documents/components/SecondBrainTab.tsx'
       - 'src/features/documents/components/KnowledgeModals.tsx'
       - 'src/features/documents/components/AddKnowledgeSourceModal.tsx'
       - 'src/features/documents/hooks/useKnowledgeBaseHandlers.ts'
       - 'src/features/documents/lib/**'
-      - 'src/__tests__/knowledge-experience-shell.test.ts'
-      - 'scripts/audit-kx-mobile.cjs'
       - 'src/features/beta/**'
+      - 'src/domain/institution/operationalGroups.ts'
       - 'src/domain/revision/repository.ts'
       - 'src/domain/revision/sharedDecisionPort.ts'
+      - 'src/domain/revision/teamReview.ts'
       - 'src/domain/revision/versionFingerprint.ts'
       - 'src/domain/revision/index.ts'
       - 'src/domain/transfer/**'
       - 'src/infrastructure/supabase/sharedRevisionDecisionRepository.ts'
+      - 'src/infrastructure/supabase/sharedTeamReviewRepository.ts'
+      - 'src/infrastructure/supabase/operationalProfile.ts'
       - 'src/infrastructure/supabase/index.ts'
+      - 'src/__tests__/knowledge-experience-shell.test.ts'
       - 'src/__tests__/revision-initial-version-reference.test.ts'
       - 'src/__tests__/beta-shared-decision-boundary.test.ts'
       - 'src/__tests__/beta-institutional-decision-boundary.test.ts'
@@ -31,11 +35,20 @@ on:
       - 'src/__tests__/beta-revision-routing-contract.test.ts'
       - 'src/__tests__/beta-revision-version-fingerprint.test.ts'
       - 'src/__tests__/beta-router-basename-contract.test.ts'
+      - 'src/__tests__/operational-groups.test.ts'
+      - 'src/__tests__/operational-onboarding.test.ts'
+      - 'src/__tests__/team-organizational-binding.test.ts'
+      - 'src/__tests__/team-review-provenance.test.ts'
+      - 'src/__tests__/team-review-legacy-scope-backfill.test.ts'
+      - 'scripts/audit-kx-mobile.cjs'
       - 'scripts/verify-beta-g4-browser.cjs'
       - 'scripts/serve-beta-pages-preview.cjs'
       - 'supabase/migrations/20260827111500_b3_institutional_revision_decisions.sql'
       - 'supabase/migrations/20260827133000_b3_decision_sequence_guard.sql'
       - 'supabase/migrations/20260827114500_b3_revoke_anon_decision_rpc.sql'
+      - 'supabase/migrations/20260904180000_team_organizational_binding.sql'
+      - 'supabase/migrations/20260906091500_team_review_authority_hardening.sql'
+      - 'supabase/migrations/20260906093000_team_review_legacy_scope_backfill.sql'
       - 'docs/architecture/CML_ARENA_BETA_B3_ACCEPTANCE_v1.json'
       - '.github/workflows/beta-e2e-workflow.yml'
   push:
@@ -45,22 +58,26 @@ on:
       - 'src/App.tsx'
       - 'src/features/navigation/**'
       - 'src/features/session/hooks/useAppWorkflowState.ts'
+      - 'src/features/session/hooks/useOnboardingProfile.ts'
       - 'src/features/curriculum/components/RevisioneTab.tsx'
       - 'src/features/documents/components/SecondBrainTab.tsx'
       - 'src/features/documents/components/KnowledgeModals.tsx'
       - 'src/features/documents/components/AddKnowledgeSourceModal.tsx'
       - 'src/features/documents/hooks/useKnowledgeBaseHandlers.ts'
       - 'src/features/documents/lib/**'
-      - 'src/__tests__/knowledge-experience-shell.test.ts'
-      - 'scripts/audit-kx-mobile.cjs'
       - 'src/features/beta/**'
+      - 'src/domain/institution/operationalGroups.ts'
       - 'src/domain/revision/repository.ts'
       - 'src/domain/revision/sharedDecisionPort.ts'
+      - 'src/domain/revision/teamReview.ts'
       - 'src/domain/revision/versionFingerprint.ts'
       - 'src/domain/revision/index.ts'
       - 'src/domain/transfer/**'
       - 'src/infrastructure/supabase/sharedRevisionDecisionRepository.ts'
+      - 'src/infrastructure/supabase/sharedTeamReviewRepository.ts'
+      - 'src/infrastructure/supabase/operationalProfile.ts'
       - 'src/infrastructure/supabase/index.ts'
+      - 'src/__tests__/knowledge-experience-shell.test.ts'
       - 'src/__tests__/revision-initial-version-reference.test.ts'
       - 'src/__tests__/beta-shared-decision-boundary.test.ts'
       - 'src/__tests__/beta-institutional-decision-boundary.test.ts'
@@ -69,11 +86,20 @@ on:
       - 'src/__tests__/beta-revision-routing-contract.test.ts'
       - 'src/__tests__/beta-revision-version-fingerprint.test.ts'
       - 'src/__tests__/beta-router-basename-contract.test.ts'
+      - 'src/__tests__/operational-groups.test.ts'
+      - 'src/__tests__/operational-onboarding.test.ts'
+      - 'src/__tests__/team-organizational-binding.test.ts'
+      - 'src/__tests__/team-review-provenance.test.ts'
+      - 'src/__tests__/team-review-legacy-scope-backfill.test.ts'
+      - 'scripts/audit-kx-mobile.cjs'
       - 'scripts/verify-beta-g4-browser.cjs'
       - 'scripts/serve-beta-pages-preview.cjs'
       - 'supabase/migrations/20260827111500_b3_institutional_revision_decisions.sql'
       - 'supabase/migrations/20260827133000_b3_decision_sequence_guard.sql'
       - 'supabase/migrations/20260827114500_b3_revoke_anon_decision_rpc.sql'
+      - 'supabase/migrations/20260904180000_team_organizational_binding.sql'
+      - 'supabase/migrations/20260906091500_team_review_authority_hardening.sql'
+      - 'supabase/migrations/20260906093000_team_review_legacy_scope_backfill.sql'
       - 'docs/architecture/CML_ARENA_BETA_B3_ACCEPTANCE_v1.json'
       - '.github/workflows/beta-e2e-workflow.yml'
 
@@ -103,6 +129,11 @@ jobs:
           src/__tests__/beta-revision-version-fingerprint.test.ts
           src/__tests__/beta-router-basename-contract.test.ts
           src/__tests__/beta-identity-authority.test.ts
+          src/__tests__/operational-groups.test.ts
+          src/__tests__/operational-onboarding.test.ts
+          src/__tests__/team-organizational-binding.test.ts
+          src/__tests__/team-review-provenance.test.ts
+          src/__tests__/team-review-legacy-scope-backfill.test.ts
 
       - name: BETA-G4 server authority invariants
         run: |
@@ -110,6 +141,10 @@ jobs:
           base_file='supabase/migrations/20260827111500_b3_institutional_revision_decisions.sql'
           guard_file='supabase/migrations/20260827133000_b3_decision_sequence_guard.sql'
           acl_file='supabase/migrations/20260827114500_b3_revoke_anon_decision_rpc.sql'
+          team_file='supabase/migrations/20260904180000_team_organizational_binding.sql'
+          authority_file='supabase/migrations/20260906091500_team_review_authority_hardening.sql'
+          legacy_file='supabase/migrations/20260906093000_team_review_legacy_scope_backfill.sql'
+
           grep -Fq 'alter table public.institutional_revision_decisions enable row level security' "$base_file"
           grep -Fq 'security definer' "$base_file"
           grep -Fq "v_role is distinct from 'collegio'" "$base_file"
@@ -130,6 +165,21 @@ jobs:
           grep -Fq 'revoke execute on function public.record_institutional_revision_decision' "$acl_file"
           grep -Fq ') from anon;' "$acl_file"
           grep -Fq ') to authenticated;' "$acl_file"
+
+          grep -Fq 'create table if not exists public.team_operational_memberships' "$team_file"
+          grep -Fq 'get_team_review_eligible_contributor_count_v3' "$team_file"
+          grep -Fq 'SELF_ASSIGNED_OPERATIONAL_COORDINATOR_FORBIDDEN' "$authority_file"
+          grep -Fq "v_workspace_role not in ('dipartimento','referente')" "$authority_file"
+          grep -Fq 'VERIFIED_TEAM_OUTCOME_AUTHORITY_REQUIRED' "$authority_file"
+          grep -Fq 'TEAM_REVIEW_COVERAGE_INCOMPLETE' "$authority_file"
+          grep -Fq 'LEGACY_TECHNOLOGY_CONTRIBUTION_FINGERPRINT_MISMATCH' "$legacy_file"
+          grep -Fq 'LEGACY_TECHNOLOGY_OUTCOME_AUTHORITY_MISMATCH' "$legacy_file"
+          grep -Fq "authority_state = 'OPERATIVO_PROVVISORIO'" "$legacy_file"
+          grep -Fq "where proposal_ref in ('it-sec-1','it-sec-2')" "$legacy_file"
+          if grep -Fq 'insert into public.team_operational_memberships' "$legacy_file"; then
+            echo 'legacy backfill must not infer operational memberships' >&2
+            exit 1
+          fi
 
       - name: TypeScript
         run: npx tsc --noEmit
