@@ -1,0 +1,98 @@
+name: Recovery Hotfix Pages
+
+on:
+  push:
+    branches:
+      - hotfix/password-recovery-pages-20260906
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: arena-beta-pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    outputs:
+      release_sha: ${{ steps.release.outputs.sha }}
+    steps:
+      - name: Checkout recovery hotfix
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Resolve immutable release SHA
+        id: release
+        shell: bash
+        run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Fast regression tests
+        run: npm run test:fast
+
+      - name: TypeScript
+        run: npx tsc --noEmit
+
+      - name: Build Beta artifact
+        env:
+          CML_RELEASE_SHA: ${{ steps.release.outputs.sha }}
+        run: npm run build:beta
+
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+        with:
+          enablement: true
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    timeout-minutes: 10
+    outputs:
+      page_url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy recovery hotfix to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+  smoke:
+    runs-on: ubuntu-latest
+    needs: [build, deploy]
+    timeout-minutes: 5
+    env:
+      BETA_URL: ${{ needs.deploy.outputs.page_url }}
+      EXPECTED_SHA: ${{ needs.build.outputs.release_sha }}
+    steps:
+      - name: Verify published application
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --silent --show-error --location --retry 6 --retry-delay 5 "${BETA_URL}" >/tmp/index.html
+          test -s /tmp/index.html
+
+      - name: Verify recovery route is published
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --silent --show-error --location --retry 6 --retry-delay 5 "${BETA_URL%/}/beta-identity" >/tmp/recovery.html
+          test -s /tmp/recovery.html
