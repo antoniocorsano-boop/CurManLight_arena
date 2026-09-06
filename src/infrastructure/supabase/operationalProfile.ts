@@ -20,15 +20,41 @@ export interface LocalOperationalProfile {
 
 const isOperationalOrder = (value: string): value is OperationalSchoolOrder => value === 'primaria' || value === 'secondaria';
 
+/**
+ * Resolves the personal working academic year without assigning institutional
+ * meaning to it. Explicit YYYY/YYYY or YYYY-YYYY values are normalized; when
+ * the local store has not selected a year yet, the current school year is used
+ * only as the provisional working context (September → August).
+ */
+export const resolveOperationalAcademicYear = (
+  value: string,
+  now: Date = new Date(),
+): string | null => {
+  const trimmed = value.trim();
+  if (trimmed) {
+    const match = /^(\d{4})[\/-](\d{4})$/.exec(trimmed);
+    if (!match) return null;
+    const startYear = Number(match[1]);
+    const endYear = Number(match[2]);
+    if (endYear !== startYear + 1) return null;
+    return `${startYear}/${endYear}`;
+  }
+
+  const calendarYear = now.getFullYear();
+  const startYear = now.getMonth() >= 8 ? calendarYear : calendarYear - 1;
+  return `${startYear}/${startYear + 1}`;
+};
+
 const normalizeDisciplines = (schoolOrder: OperationalSchoolOrder, disciplines: readonly string[]): string[] => {
   const unique = Array.from(new Set(disciplines.map((value) => value.trim()).filter(Boolean)));
   return unique.filter((discipline) => Boolean(getOperationalGroupForDiscipline(schoolOrder, discipline)));
 };
 
 export const saveLocalOperationalProfile = (profile: LocalOperationalProfile): void => {
+  const academicYear = resolveOperationalAcademicYear(profile.academicYear);
   const disciplines = normalizeDisciplines(profile.schoolOrder, profile.disciplines);
-  if (!/^\d{4}\/\d{4}$/.test(profile.academicYear) || disciplines.length === 0) return;
-  safeLocalStorageSetItem(OPERATIONAL_PROFILE_STORAGE.academicYear, profile.academicYear);
+  if (!academicYear || disciplines.length === 0) return;
+  safeLocalStorageSetItem(OPERATIONAL_PROFILE_STORAGE.academicYear, academicYear);
   safeLocalStorageSetItem(OPERATIONAL_PROFILE_STORAGE.schoolOrder, profile.schoolOrder);
   safeLocalStorageSetItem(OPERATIONAL_PROFILE_STORAGE.disciplines, disciplines.join(','));
 };
@@ -54,15 +80,16 @@ export const rememberOperationalDiscipline = (
   schoolOrder: OperationalSchoolOrder,
   discipline: string,
 ): LocalOperationalProfile | null => {
-  if (!getOperationalGroupForDiscipline(schoolOrder, discipline)) return null;
+  const resolvedAcademicYear = resolveOperationalAcademicYear(academicYear);
+  if (!resolvedAcademicYear || !getOperationalGroupForDiscipline(schoolOrder, discipline)) return null;
   const current = readLocalOperationalProfile();
   const disciplines = current
-    && current.academicYear === academicYear
+    && current.academicYear === resolvedAcademicYear
     && current.schoolOrder === schoolOrder
     ? [...current.disciplines, discipline]
     : [discipline];
   const profile: LocalOperationalProfile = {
-    academicYear,
+    academicYear: resolvedAcademicYear,
     schoolOrder,
     disciplines: normalizeDisciplines(schoolOrder, disciplines),
   };
@@ -74,10 +101,12 @@ export const syncOperationalProfile = async (
   client: SupabaseClient,
   profile: LocalOperationalProfile,
 ): Promise<boolean> => {
+  const academicYear = resolveOperationalAcademicYear(profile.academicYear);
+  if (!academicYear) return false;
   const { data: sessionData, error: sessionError } = await client.auth.getSession();
   if (sessionError || !sessionData.session) return false;
   const { error } = await client.rpc('upsert_my_operational_profile_v1', {
-    p_academic_year: profile.academicYear,
+    p_academic_year: academicYear,
     p_school_order: profile.schoolOrder,
     p_disciplines: profile.disciplines,
     // Kept only for RPC signature compatibility. Self-service coordination is forbidden server-side.
