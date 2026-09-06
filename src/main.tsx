@@ -83,11 +83,17 @@ const recoveryHint = window.location.hash.includes('type=recovery')
   || window.location.search.includes('type=recovery');
 
 // Supabase may fall back to the configured Site URL when a preview redirect is
-// not allow-listed. Preserve the one-time recovery fragment and move it to the
-// identity route that knows how to complete the password change.
-if (recoveryHint && !window.location.pathname.endsWith('/beta-identity')) {
-  const identityPath = routerBasename === '/' ? '/beta-identity' : `${routerBasename}/beta-identity`;
-  window.location.replace(`${identityPath}${window.location.search}${window.location.hash}`);
+// not allow-listed. On GitHub Pages a deep SPA route is not a physical file, so
+// use the existing query entry point and keep the one-time recovery fragment.
+if (recoveryHint && !betaIdentityQueryEntry && !window.location.pathname.endsWith('/beta-identity')) {
+  if (routerBasename === '/') {
+    window.location.replace(`/beta-identity${window.location.search}${window.location.hash}`);
+  } else {
+    const redirectUrl = new URL(window.location.href);
+    redirectUrl.pathname = `${routerBasename}/`;
+    redirectUrl.searchParams.set('betaIdentity', '1');
+    window.location.replace(`${redirectUrl.pathname}${redirectUrl.search}${redirectUrl.hash}`);
+  }
 }
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
