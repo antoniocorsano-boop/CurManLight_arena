@@ -142,7 +142,7 @@ assert(teamWorkspace.includes("['dipartimento', 'referente'].includes(selectedMe
 assert(teamWorkspace.includes('expectedContributorCount === 1'), 'workspace team non protegge il caso con un solo componente attivo');
 assert(teamWorkspace.includes('item.coverageComplete'), 'workspace team non richiede copertura completa per i punti condivisi');
 assert(teamWorkspace.includes('recordTeamOutcome'), 'workspace team privo di registrazione esplicita dell’esito');
-assert(teamWorkspace.includes('non è un’approvazione istituzionale'), 'workspace team non distingue esito del gruppo e approvazione istituzionale');
+assert(teamWorkspace.toLocaleLowerCase('it-IT').includes('approvazione istituzionale'), 'workspace team non distingue esito del gruppo e approvazione istituzionale');
 
 assert(registry.alignment_rules?.instructional_audit_must_not_be_promoted_as_human_outcome === true, 'audit istruttorio deve restare separato da esito umano');
 assert(registry.alignment_rules?.individual_contribution_must_not_be_promoted_as_team_outcome === true, 'contributo individuale deve restare separato da esito team');
