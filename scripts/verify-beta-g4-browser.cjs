@@ -63,17 +63,17 @@ async function readPlanningHandoffState(page) {
 
     const personalAssurance = page.locator('[data-revision-assurance-on-demand]').first();
     await personalAssurance.waitFor({ state: 'attached', timeout: 3000 });
-    const personalMarkerVisible = await personalAssurance.getByText('Personale', { exact: true }).isVisible();
+    const personalMarkerVisible = await personalAssurance.getByText('Contributo personale', { exact: true }).isVisible();
     const personalAssuranceText = ((await personalAssurance.textContent()) || '').toLocaleLowerCase('it-IT');
     check(
-      '2. Personal authority boundary stays reachable on demand without occupying the work surface',
-      personalMarkerVisible && personalAssuranceText.includes('non approva il curricolo'),
+      '2. Personal contribution boundary stays reachable on demand without occupying the work surface',
+      personalMarkerVisible && personalAssuranceText.includes('la decisione del gruppo è un passaggio distinto'),
     );
 
-    const localChoice = page.getByRole('button', { name: 'Conferma proposta', exact: true }).first();
+    const localChoice = page.getByRole('button', { name: 'Conferma la proposta', exact: true }).first();
     await localChoice.waitFor({ state: 'visible', timeout: 8000 });
     await localChoice.click();
-    await expectVisibleText(page, 'Confermata');
+    await expectVisibleText(page, 'Proposta confermata');
     check('3. A teacher can record a professional orientation through the recognition-first action', true);
 
     const forbidden = ['Crea proposta strutturata', 'Prepara per revisione', 'Invia', 'Prendi in carico', 'Ammetti alla decisione'];
@@ -85,7 +85,7 @@ async function readPlanningHandoffState(page) {
     const refreshResponse = await page.reload({ waitUntil: 'domcontentloaded', timeout: 30000 });
     await closeLocalProfileIfPresent(page);
     await expectVisibleText(page, 'Revisione del curricolo');
-    await expectVisibleText(page, 'Confermata');
+    await expectVisibleText(page, 'Proposta confermata');
     check('10. Refresh preserves the teacher orientation without creating an institutional workflow', Boolean(refreshResponse));
     check('11. No institutional-decision RPC is called by local review or refresh', decisionRpcCalls === 0);
 
