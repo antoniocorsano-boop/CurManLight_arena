@@ -1,6 +1,6 @@
 {
   "registry_id": "CCO-SURFACES",
-  "version": "1.5.1",
+  "version": "1.6.0",
   "contract": ".human/operational-communication.contract.json",
   "status_vocabulary": ["conformant", "migration", "guided-setup", "excluded"],
   "surfaces": [
@@ -31,19 +31,25 @@
       "path": "src/features/beta/RevisionWorkspace.tsx",
       "status": "conformant",
       "operational_context": "Validazione professionale — Il mio lavoro sul curricolo",
-      "primary_task": "Percorrere una sola sessione progressiva: esaminare, condividere e, soltanto dopo una condivisione persistita corrente e se autorizzati, confrontare e registrare l'esito del gruppo",
+      "primary_task": "Percorrere una sola sessione progressiva: esaminare, condividere, confrontare e, quando autorizzati, registrare l'esito professionale del gruppo come quarto stadio reale",
       "required_tokens": [
         "data-curriculum-work-session",
         "data-work-session-stage={stage}",
         "data-persisted-share-ready={sharePersistence.complete ? 'true' : 'false'}",
+        "data-team-outcome-complete={coordinationState.allCurrentOutcomesRecorded ? 'true' : 'false'}",
+        "'RECORD_TEAM_OUTCOME'",
         "data-revision-stage=\"review\"",
         "data-revision-stage=\"sharing\"",
-        "setStage('SHARE')",
-        "Rivedi il mio contributo",
-        "Anche il coordinatore completa prima il proprio contributo personale.",
+        "data-revision-stage=\"compare\"",
+        "data-revision-stage=\"team-outcome\"",
+        "mode=\"status\"",
+        "mode=\"compare\"",
+        "mode=\"record\"",
         "data-team-comparison-blocked-by-share",
         "Condivisione verificata",
-        "Apri il confronto del gruppo"
+        "Apri il confronto del gruppo",
+        "Registra l’esito del gruppo",
+        "data-curriculum-work-session-complete"
       ]
     },
     {
@@ -98,13 +104,26 @@
       "id": "lavoro-del-team-legacy",
       "path": "src/features/beta/TeamReviewWorkspace.tsx",
       "status": "migration",
-      "migration_goal": "Mantenere soltanto compatibilità temporanea; il confronto canonico deve essere proiettato dentro CurriculumWorkSession e non costituire una superficie primaria concorrente."
+      "migration_goal": "Mantenere soltanto compatibilità temporanea; non deve essere una superficie primaria concorrente della CurriculumWorkSession."
     },
     {
-      "id": "coordinamento-del-team",
+      "id": "coordinamento-del-team-interno",
       "path": "src/features/beta/TeamCoordinationWorkspace.tsx",
-      "status": "migration",
-      "migration_goal": "Integrare confronto ed esito come stadi della CurriculumWorkSession, separando coda da discutere e azioni del coordinatore dalle spiegazioni di governance e tracciabilità."
+      "status": "conformant",
+      "operational_context": "Stadi interni Confronta / Registra l’esito della CurriculumWorkSession",
+      "primary_task": "Proiettare dentro la sessione unica tre modalità subordinate: stato per il docente, confronto per il gruppo, registrazione dell'esito per il ruolo autorizzato, senza creare un secondo percorso primario",
+      "required_tokens": [
+        "export type TeamCoordinationMode = 'status' | 'compare' | 'record'",
+        "data-team-coordination-workspace",
+        "data-team-coordination-mode=\"status\"",
+        "data-team-coordination-mode=\"compare\"",
+        "data-team-coordination-mode=\"record\"",
+        "Porta questo punto all’esito",
+        "Registra l’esito del gruppo",
+        "allCurrentOutcomesRecorded",
+        "recordTeamOutcome",
+        "non approvazione istituzionale"
+      ]
     },
     {
       "id": "profilo-di-lavoro-personale",
