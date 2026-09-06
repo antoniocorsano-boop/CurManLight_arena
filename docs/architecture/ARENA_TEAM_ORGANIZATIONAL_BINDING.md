@@ -92,7 +92,24 @@ La registrazione dell’esito richiede contemporaneamente:
 
 Un utente con sola membership `docente` può contribuire e consultare il confronto, ma **non può registrare l’esito del team**. Una competenza disciplinare auto-dichiarata non può elevare questa facoltà.
 
+Il campo di ruolo operativo nella ricevuta registra il ruolo operativo **effettivamente posseduto al momento della nuova registrazione** (`docente` oppure `coordinatore`); non viene mai valorizzato artificialmente e non è la fonte dell’autorità di scrittura, che resta il ruolo condiviso verificato `dipartimento`/`referente`.
+
 `Rinvia` resta disponibile all’autorità verificata quando il confronto non può ancora essere chiuso.
+
+## Ricevute precedenti all'introduzione dello scope #201
+
+Le ricevute prodotte prima dell’introduzione di `anno scolastico + gruppo + disciplina` sono conservate come evidenza storica, ma **non vengono promosse retroattivamente a esiti correnti #201**.
+
+Per le cinque ricevute del pilota Tecnologia R2 già registrate prima di #201:
+
+- il ruolo condiviso originario `dipartimento` resta conservato;
+- l’impronta originaria pre-scope resta conservata;
+- `recorded_by_operational_role` resta `NULL`, perché allora non esisteva una membership operativa disciplinare da cui ricavarlo;
+- `authority_state = PRE_SCOPE_LEGACY` identifica esplicitamente la natura storica della ricevuta;
+- nessuna membership operativa viene inferita o creata dal backfill;
+- tali ricevute non chiudono il gate corrente, che richiede una nuova registrazione reale dopo la sincronizzazione delle competenze #201.
+
+I contributi individuali possono invece essere riallineati deterministicamente alla nuova impronta quando il testo della proposta e la provenienza risultano identici e verificati; questo non equivale alla promozione dell’esito di team.
 
 ## Confine istituzionale
 
@@ -120,7 +137,7 @@ La configurazione comprende:
 
 `upsert_my_operational_profile_v1` conserva la firma compatibile, ma accetta esclusivamente competenze disciplinari: un tentativo di valorizzare il parametro di coordinamento viene respinto in modo fail-closed.
 
-I contributi e gli esiti sono legati a:
+I contributi e gli esiti correnti sono legati a:
 
 `anno scolastico + gruppo + disciplina + proposta + impronta della versione`
 
@@ -135,7 +152,9 @@ Il confine di autorità viene applicato su più livelli:
 3. la RPC del profilo rifiuta esplicitamente ogni tentativo di autoattribuzione;
 4. il repository applicativo rifiuta la registrazione dell’esito senza ruolo Dipartimento/Referente;
 5. la RPC di registrazione verifica nuovamente ruolo, competenza, scope e copertura;
-6. un trigger protegge anche insert diretti o percorsi legacy.
+6. un trigger protegge anche insert diretti o percorsi legacy;
+7. le RPC pre-scope `v1` non sono eseguibili né da `anon` né da `authenticated`;
+8. le API correnti sono eseguibili dal client soltanto in sessione autenticata e applicano internamente le verifiche di autorità.
 
 ## Privacy minima
 
