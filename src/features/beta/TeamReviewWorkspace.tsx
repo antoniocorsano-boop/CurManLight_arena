@@ -185,7 +185,7 @@ export function TeamReviewWorkspace({
   );
   const canRecordTeamOutcome = Boolean(
     selectedMembership
-    && ['docente', 'dipartimento', 'referente'].includes(selectedMembership.role)
+    && ['dipartimento', 'referente'].includes(selectedMembership.role)
     && operationalMembership?.memberRole === 'coordinatore',
   );
 
@@ -453,7 +453,7 @@ export function TeamReviewWorkspace({
           <span className={`rounded-full px-2 py-1 text-[10px] font-bold ${operationalMembership?.membershipState === 'FORMALIZZATO' ? 'bg-emerald-50 text-emerald-800' : 'bg-amber-50 text-amber-800'}`}>{stateLabel(operationalMembership)}</span>
         </div>
         <p className="mt-2">L’appartenenza al gruppo e la competenza disciplinare restano distinte. Per questa scheda Arena considera soltanto chi ha dichiarato competenza in <strong>{discipline}</strong>.</p>
-        {operationalMembership?.memberRole === 'coordinatore' && <p className="mt-1 font-semibold text-indigo-900">Sei coordinatore operativo di questo gruppo. Puoi guidare il confronto e registrare l’esito; questo non ti attribuisce competenza nelle altre discipline.</p>}
+        {operationalMembership?.memberRole === 'coordinatore' && <p className="mt-1 font-semibold text-indigo-900">Sei coordinatore operativo di questo gruppo. Puoi guidare il confronto e, solo con un ruolo condiviso verificato di Dipartimento o Referente, registrare l’esito; questo non ti attribuisce competenza nelle altre discipline.</p>}
         {operationalMembership?.membershipState === 'OPERATIVO_PROVVISORIO' && <p className="mt-1 text-amber-800">Gli esiti registrati restano esiti professionali del gruppo operativo provvisorio e non costituiscono approvazione istituzionale.</p>}
       </div>
 
@@ -543,7 +543,7 @@ export function TeamReviewWorkspace({
                   <div className="flex flex-wrap items-start justify-between gap-2"><div className="min-w-0"><strong className="block text-sm text-slate-900">{item.focus}</strong><span className="mt-1 inline-block rounded-full bg-amber-50 px-2 py-1 text-[10px] font-bold text-amber-800">{BUCKET_LABELS[item.bucket]}</span></div><span className="text-[10px] text-slate-500">{item.contributionCount} di {item.expectedContributorCount ?? '—'} hanno partecipato</span></div>
                   <div className="mt-3 flex flex-wrap gap-2 text-[11px] text-slate-600"><span className="rounded-full bg-slate-100 px-2 py-1">{item.counts['confirm-proposal']} confermano</span><span className="rounded-full bg-slate-100 px-2 py-1">{item.counts['propose-change']} propongono modifica</span><span className="rounded-full bg-slate-100 px-2 py-1">{item.counts['keep-previous']} mantengono il precedente</span>{item.staleContributionCount > 0 && <span className="rounded-full bg-rose-50 px-2 py-1 text-rose-700">{item.staleContributionCount} pareri da aggiornare</span>}{!item.coverageComplete && item.bucket === 'needs-clarification' && <span className="rounded-full bg-amber-50 px-2 py-1 text-amber-800">manca ancora qualche parere</span>}</div>
                   {item.proposedTexts.length > 0 && <details className="mt-3 rounded-lg border border-amber-100 bg-amber-50/40"><summary className="cursor-pointer p-2 text-xs font-semibold text-amber-900">Leggi le modifiche proposte</summary><div className="space-y-2 border-t border-amber-100 p-2 text-xs leading-relaxed text-slate-700">{item.proposedTexts.map((text) => <p key={text} className="rounded-lg bg-white p-2">{text}</p>)}</div></details>}
-                  {canRecordTeamOutcome ? <button type="button" onClick={() => openDecision(item.proposalRef)} className="mt-3 rounded-lg bg-indigo-700 px-3 py-2 text-xs font-bold text-white">Registra la decisione del team</button> : <p className="mt-3 text-[11px] leading-relaxed text-slate-500">Puoi consultare il confronto. La decisione del team viene registrata dal coordinatore operativo. Non è ancora l’approvazione dell’Istituto.</p>}
+                  {canRecordTeamOutcome ? <button type="button" onClick={() => openDecision(item.proposalRef)} className="mt-3 rounded-lg bg-indigo-700 px-3 py-2 text-xs font-bold text-white">Registra la decisione del team</button> : <p className="mt-3 text-[11px] leading-relaxed text-slate-500">Puoi consultare il confronto. La decisione del team richiede un coordinatore operativo con ruolo condiviso verificato di Dipartimento o Referente. Non è ancora l’approvazione dell’Istituto.</p>}
                 </article>
               ))}
             </div>
