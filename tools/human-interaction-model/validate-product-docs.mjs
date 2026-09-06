@@ -23,7 +23,7 @@ try {
 
 if (registry) {
   assert(registry.registry_id === 'ARENA-PRODUCT-DOCS', 'registry_id prodotto corretto');
-  assert(registry.version === '1.0.1', 'versione registro prodotto 1.0.1');
+  assert(registry.version === '1.0.2', 'versione registro prodotto 1.0.2');
   assert(registry.product_vision?.id === 'ARENA-PRODUCT-VISION', 'vision id canonico');
   assert(registry.product_vision?.version === '1.0.0', 'vision version canonica');
   assert(registry.product_vision?.drive_file_id === '1s17jJCslSIJIXQfiTEzyRcD5q-Baopj6-l14aaFEWik', 'Drive ID vision canonica');
@@ -112,6 +112,10 @@ if (registry) {
   assert(state.vision_defined === true, 'visione definita');
   assert(state.lifecycle_contract_validated === true, 'lifecycle validato');
   assert(state.revision_trigger_governance_defined === true, 'governo RevisionTrigger definito');
+  assert(state.curriculum_work_session_convergence_started === true, 'convergenza CurriculumWorkSession registrata');
+  assert(state.curriculum_work_session_single_progression_implemented === true, 'progressione unica CurriculumWorkSession registrata');
+  assert(state.legacy_revision_tabs_removed_from_primary_flow === true, 'tab legacy rimossi dal flusso primario');
+  assert(state.coordinator_personal_contribution_precedes_team_comparison === true, 'contributo personale del coordinatore precede il confronto');
   assert(state.target_ui_fully_implemented === false, 'la documentazione non simula UI target già implementata');
   assert(state.human_end_to_end_pilot_complete === false, 'la documentazione non simula pilota umano concluso');
 }
