@@ -2,6 +2,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import {
   getOperationalGroupByCode,
   type OperationalGroupCode,
+  type OperationalGroupMemberRole,
   type OperationalGroupStatus,
   type OperationalSchoolOrder,
 } from '../../domain/institution/operationalGroups';
@@ -10,6 +11,7 @@ import type {
   OperationalGroupMembership,
   RecordTeamReviewOutcomeInput,
   SharedTeamReviewRepository,
+  TeamReviewAuthorityState,
   TeamReviewContribution,
   TeamReviewOrientation,
   TeamReviewOutcome,
@@ -45,7 +47,7 @@ interface OutcomeRow {
   rationale: string;
   recorded_by_user_id: string;
   recorded_by_role: string;
-  recorded_by_operational_role: string;
+  recorded_by_operational_role: string | null;
   authority_state: string;
   recorded_at: string;
   client_request_id: string;
@@ -74,8 +76,9 @@ const TEAM_OUTCOMES: readonly TeamReviewOutcome[] = [
 ];
 const CONTRIBUTOR_ROLES: readonly WorkspaceMemberRole[] = ['docente', 'dipartimento', 'referente'];
 const TEAM_OUTCOME_ROLES: readonly WorkspaceMemberRole[] = ['dipartimento', 'referente'];
+const OPERATIONAL_MEMBER_ROLES: readonly OperationalGroupMemberRole[] = ['docente', 'coordinatore'];
 const FINGERPRINT_RE = /^[0-9a-f]{64}$/;
-const AUTHORITY_STATES: readonly OperationalGroupStatus[] = ['OPERATIVO_PROVVISORIO', 'FORMALIZZATO'];
+const AUTHORITY_STATES: readonly TeamReviewAuthorityState[] = ['PRE_SCOPE_LEGACY', 'OPERATIVO_PROVVISORIO', 'FORMALIZZATO'];
 
 const assertContextWorkspace = (context: WorkspaceActorContext, workspaceId: string): void => {
   if (context.assurance !== 'authenticated-workspace') throw new Error('TEAM_REVIEW_AUTHORITY_UNAVAILABLE');
@@ -107,8 +110,12 @@ const isTeamOutcomeRole = (value: string): value is Extract<WorkspaceMemberRole,
 const isOrientation = (value: string): value is TeamReviewOrientation =>
   CONTRIBUTION_ORIENTATIONS.includes(value as TeamReviewOrientation);
 const isOutcome = (value: string): value is TeamReviewOutcome => TEAM_OUTCOMES.includes(value as TeamReviewOutcome);
-const isAuthorityState = (value: string): value is OperationalGroupStatus =>
-  AUTHORITY_STATES.includes(value as OperationalGroupStatus);
+const isAuthorityState = (value: string): value is TeamReviewAuthorityState =>
+  AUTHORITY_STATES.includes(value as TeamReviewAuthorityState);
+const isOperationalMemberRole = (value: string | null): value is OperationalGroupMemberRole =>
+  value !== null && OPERATIONAL_MEMBER_ROLES.includes(value as OperationalGroupMemberRole);
+const isOperationalStatus = (value: string): value is OperationalGroupStatus =>
+  value === 'OPERATIVO_PROVVISORIO' || value === 'FORMALIZZATO';
 const isOperationalOrder = (value: string): value is OperationalSchoolOrder => value === 'primaria' || value === 'secondaria';
 const isOperationalGroupCode = (value: string): value is OperationalGroupCode => Boolean(getOperationalGroupByCode(value));
 
@@ -136,14 +143,12 @@ const toContribution = (row: ContributionRow): TeamReviewContribution => {
 };
 
 const toOutcome = (row: OutcomeRow): TeamReviewOutcomeReceipt => {
-  if (
-    !isTeamOutcomeRole(row.recorded_by_role)
-    || !isOutcome(row.outcome)
-    || !isOperationalGroupCode(row.group_code)
-    || row.recorded_by_operational_role !== 'coordinatore'
-    || !isAuthorityState(row.authority_state)
-  ) {
+  if (!isTeamOutcomeRole(row.recorded_by_role) || !isOutcome(row.outcome) || !isOperationalGroupCode(row.group_code) || !isAuthorityState(row.authority_state)) {
     throw new Error('Esito del gruppo non valido.');
+  }
+  const historical = row.authority_state === 'PRE_SCOPE_LEGACY';
+  if (historical ? row.recorded_by_operational_role !== null : !isOperationalMemberRole(row.recorded_by_operational_role)) {
+    throw new Error('Tracciabilità del ruolo operativo dell’esito non valida.');
   }
   const group = getOperationalGroupByCode(row.group_code);
   if (!group || !group.disciplines.includes(row.discipline)) throw new Error('Competenza disciplinare dell’esito non valida.');
@@ -162,7 +167,7 @@ const toOutcome = (row: OutcomeRow): TeamReviewOutcomeReceipt => {
     rationale: row.rationale,
     recordedByUserId: row.recorded_by_user_id,
     recordedByRole: row.recorded_by_role,
-    recordedByOperationalRole: 'coordinatore',
+    recordedByOperationalRole: historical ? null : row.recorded_by_operational_role as OperationalGroupMemberRole,
     authorityState: row.authority_state,
     recordedAt: row.recorded_at,
     clientRequestId: row.client_request_id,
@@ -173,8 +178,8 @@ const toOperationalMembership = (row: OperationalMembershipRow): OperationalGrou
   if (
     !isOperationalOrder(row.school_order)
     || !isOperationalGroupCode(row.group_code)
-    || !['docente', 'coordinatore'].includes(row.member_role)
-    || !isAuthorityState(row.membership_state)
+    || !isOperationalMemberRole(row.member_role)
+    || !isOperationalStatus(row.membership_state)
   ) {
     throw new Error('Appartenenza al gruppo operativo non valida.');
   }
@@ -187,7 +192,7 @@ const toOperationalMembership = (row: OperationalMembershipRow): OperationalGrou
     academicYear: row.academic_year,
     schoolOrder: row.school_order,
     groupCode: row.group_code,
-    memberRole: row.member_role as OperationalGroupMembership['memberRole'],
+    memberRole: row.member_role,
     membershipState: row.membership_state,
     disciplines: row.disciplines,
   };
@@ -327,7 +332,8 @@ export class SupabaseSharedTeamReviewRepository implements SharedTeamReviewRepos
     if (!data || typeof data !== 'object') throw new Error('Il server non ha restituito la ricevuta dell’esito del gruppo.');
     const receipt = toOutcome(data as OutcomeRow);
     if (
-      receipt.workspaceId !== input.workspaceId
+      receipt.authorityState === 'PRE_SCOPE_LEGACY'
+      || receipt.workspaceId !== input.workspaceId
       || receipt.recordedByUserId !== context.membership.userId
       || receipt.proposalRef !== input.proposalRef
       || receipt.groupCode !== input.groupCode
