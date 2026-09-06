@@ -7,6 +7,7 @@ import {
   INSTITUTE_CURRICULUM_SOURCE_REPERTORY,
 } from '../domain/curriculum/institute/sourceRegister';
 import panelSource from '../features/documents/components/InstituteCurriculumSourceRegisterPanel.tsx?raw';
+import localRegistrySource from '../features/documents/components/FontiTab.tsx?raw';
 import workspaceSource from '../features/documents/components/FontiWorkspace.tsx?raw';
 
 describe('institutional curriculum source register', () => {
@@ -79,8 +80,25 @@ describe('institutional curriculum source register', () => {
     expect(workspaceSource).toContain('non acquistano autorità per il solo fatto di essere presenti in Arena');
   });
 
-  it('shows authority, applicability, verification and the non-claim boundary in the source panel', () => {
-    expect(panelSource).toContain('Fonti normative e istituzionali del curricolo');
+  it('applies CCO progressive disclosure to the institutional source panel', () => {
+    expect(panelSource).toContain('data-hcm-level="1"');
+    expect(panelSource).toContain('data-hcm-level="2"');
+    expect(panelSource).toContain('data-hcm-level="3"');
+    expect(panelSource).toContain('Consulta le {INSTITUTE_CURRICULUM_AUTHORITATIVE_SOURCE_COUNT} fonti');
+    expect(panelSource).toContain('Dati di tracciabilità');
+    expect(panelSource).toContain('Verifica la catena documentale');
+
+    const level1Start = panelSource.indexOf('data-hcm-level="1"');
+    const level2Start = panelSource.indexOf('data-hcm-level="2"');
+    const level1 = panelSource.slice(level1Start, level2Start);
+    expect(level1).toContain('Fonti normative e istituzionali del curricolo');
+    expect(level1).toContain('Fonti verificate; validazione professionale del curricolo ancora aperta.');
+    expect(level1).not.toContain('Drive:');
+    expect(level1).not.toContain('Ultima verifica:');
+    expect(level1).not.toContain('Data atto:');
+  });
+
+  it('keeps source authority and technical traceability available without showing every field by default', () => {
     expect(panelSource).toContain('data-source-locator-kind');
     expect(panelSource).toContain('data-source-verification');
     expect(panelSource).toContain('Uso nel master:');
@@ -89,5 +107,15 @@ describe('institutional curriculum source register', () => {
     expect(panelSource).toContain('Apri la fonte ufficiale');
     expect(panelSource).toContain('Apri la copia istituzionale di trasmissione');
     expect(panelSource).toContain('Verifica della fonte ≠ validazione del contenuto curricolare ≠ decisione istituzionale ≠ curricolo vigente.');
+  });
+
+  it('demotes the legacy/local registry to one collapsed secondary surface and removes the duplicate Fonti header', () => {
+    expect(localRegistrySource).toContain('data-local-source-registry');
+    expect(localRegistrySource).toContain('data-hcm-level="2"');
+    expect(localRegistrySource).toContain('Archivio locale e fonti personali');
+    expect(localRegistrySource).toContain('Materiali inclusi in Arena');
+    expect(localRegistrySource).toContain('Fonti personali');
+    expect(localRegistrySource).not.toContain('<h1 className="text-lg font-black text-slate-900">Fonti</h1>');
+    expect(localRegistrySource).not.toContain('Fonti incluse nella copia locale');
   });
 });
