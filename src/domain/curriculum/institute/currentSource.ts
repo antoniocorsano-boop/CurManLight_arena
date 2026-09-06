@@ -24,16 +24,18 @@ export const INSTITUTE_CURRICULUM_PRIMARY_CORRECTED_SOURCE = {
  * Baseline curricolare canonica corrente di lavoro.
  *
  * Il nome dell'export è conservato per compatibilità con i consumer esistenti:
- * da REG-CURR-00 1.9 la "current source" applicativa non è più la proposta
- * corretta del 3 settembre, ma il master unificato che la conserva come
- * provenienza primaria. La versione 1.1 incorpora l'audit di conformità
- * IN2025/Nota MIM 1312 senza modificare lo stato di validazione o vigenza.
+ * la "current source" applicativa non è più la proposta corretta del 3 settembre,
+ * ma il master unificato che la conserva come provenienza primaria.
+ *
+ * La versione 1.2 incorpora nello stesso master le integrazioni emerse dal gate
+ * OSA uno-a-uno. Il gate resta IN_PROGRESS: nessun test o mapping autorizza da
+ * solo una validazione professionale, una promozione istituzionale o la vigenza.
  */
 export const INSTITUTE_CURRICULUM_CURRENT_SOURCE = {
   schemaVersion: 'arena-institute-curriculum-current-source-v2',
   sourceFile: 'CAN-CURR-MASTER-00_Curricolo_verticale_integrale_unificato_3-14_2026-2027',
   driveFileId: '12eWTPUZBJxZixd6-p8drNAaW5_eL8qWpXZUSDyZZAv4',
-  sourceVersion: '1.1',
+  sourceVersion: '1.2',
   sourceDate: '2026-09-06',
   authority: 'INSTITUTE_CANONICAL_WORKING_BASELINE',
   lifecycleState: 'CANONICAL_BASELINE_PENDING_HUMAN_VALIDATION',
@@ -44,7 +46,7 @@ export const INSTITUTE_CURRICULUM_CURRENT_SOURCE = {
     ...INSTITUTE_CURRICULUM_SOURCE_REPERTORY,
     machineContract: 'src/domain/curriculum/institute/sourceRegister.ts',
     canonicalSurface: 'src/features/documents/components/InstituteCurriculumSourceRegisterPanel.tsx',
-    alignmentState: 'ALIGNED_TO_MASTER_1_1',
+    alignmentState: 'ALIGNED_TO_MASTER_1_2',
   },
   humanProfessionalValidation: 'OPEN',
   verticalityFinalReview: 'OPEN',
@@ -60,6 +62,14 @@ export const INSTITUTE_CURRICULUM_CURRENT_SOURCE = {
     identifiedCurricularGaps: 6,
     materializedCurricularGaps: 6,
     status: 'GAPS_MATERIALIZED_PENDING_HUMAN_VALIDATION',
+    osaOneToOneGate: 'IN_PROGRESS',
+    osaVerifiedIntegrationsMaterializedInMaster12: true,
+    osaCompletionClaimAuthorized: false,
+    benchmarkSemantics: {
+      primary: 'NATIONAL_BENCHMARKS_END_III_AND_V_WITH_INSTITUTE_ANNUALIZATION',
+      lowerSecondary: 'NATIONAL_BENCHMARK_END_III_WITH_INSTITUTE_ANNUALIZATION',
+      noRetroactiveRewriteOf2012Cohorts: true,
+    },
   },
 } as const;
 
