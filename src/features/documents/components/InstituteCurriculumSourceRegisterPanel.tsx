@@ -31,7 +31,7 @@ export function InstituteCurriculumSourceRegisterPanel() {
       <div className="flex items-start gap-3" data-hcm-level="1">
         <Landmark className="mt-0.5 h-5 w-5 shrink-0 text-indigo-700" aria-hidden="true" />
         <div className="min-w-0 flex-1">
-          <h2 className="text-base font-black text-slate-900">Fonti applicate</h2>
+          <h2 className="text-base font-black text-slate-900">Fonti normative e istituzionali del curricolo</h2>
           <p className="mt-1 text-sm leading-6 text-slate-700">
             {INSTITUTE_CURRICULUM_AUTHORITATIVE_SOURCE_COUNT} fonti tracciate · {officialCount} ufficiali · {institutionalMirrorCount} tramite copia istituzionale.
           </p>
