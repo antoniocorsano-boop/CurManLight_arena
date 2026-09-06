@@ -39,7 +39,7 @@ export const INSTITUTE_CURRICULUM_SOURCE_CHAIN = [
     id: 'CAN-CURR-MASTER-00',
     title: 'CAN-CURR-MASTER-00_Curricolo_verticale_integrale_unificato_3-14_2026-2027',
     driveFileId: '12eWTPUZBJxZixd6-p8drNAaW5_eL8qWpXZUSDyZZAv4',
-    version: '1.1',
+    version: '1.2',
     role: 'CANONICAL_WORKING_BASELINE',
   },
   {
