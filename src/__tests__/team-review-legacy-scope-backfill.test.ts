@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { TECHNOLOGY_CLASS1_REVIEW_PROPOSALS } from '../domain/curriculum/validation/technologyClass1Review';
 import { fingerprintTeamReviewProposal } from '../domain/revision/teamReview';
-import migrationSource from '../../supabase/migrations/20260906093000_team_review_legacy_scope_backfill.sql?raw';
+import preflightSource from '../../supabase/migrations/20260906094400_team_review_operational_scope_preflight.sql?raw';
+import migrationSource from '../../supabase/migrations/20260906094500_team_review_operational_scope.sql?raw';
 
 const scope = {
   academicYear: '2026/2027',
@@ -43,6 +44,14 @@ const legacyFingerprint = async (input: {
   return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, '0')).join('');
 };
 
+const legacyContinuityBlock = (): string => {
+  const start = migrationSource.indexOf('-- 4. Deterministic continuity of known pre-scope Beta evidence');
+  const end = migrationSource.indexOf('-- 5. Scoped contribution API and privacy-minimal denominator');
+  expect(start).toBeGreaterThanOrEqual(0);
+  expect(end).toBeGreaterThan(start);
+  return migrationSource.slice(start, end);
+};
+
 describe('Arena legacy team-review scope backfill', () => {
   it('proves that every stored legacy Technology fingerprint belongs to the unchanged R2 proposal text', async () => {
     for (const proposal of TECHNOLOGY_CLASS1_REVIEW_PROPOSALS) {
@@ -53,6 +62,7 @@ describe('Arena legacy team-review scope backfill', () => {
         newText: proposal.newText,
       });
       expect(actual).toBe(expectedLegacyFingerprints[proposal.id]);
+      expect(preflightSource).toContain(actual);
       expect(migrationSource).toContain(actual);
     }
   });
@@ -67,27 +77,31 @@ describe('Arena legacy team-review scope backfill', () => {
         newText: proposal.newText,
       });
       expect(actual).toBe(expectedScopedFingerprints[proposal.id]);
+      expect(preflightSource).toContain(actual);
       expect(migrationSource).toContain(actual);
     }
   });
 
-  it('keeps the pilot outcome professional and does not infer operational memberships', () => {
-    expect(migrationSource).toContain("authority_state = 'OPERATIVO_PROVVISORIO'");
-    expect(migrationSource).toContain("recorded_by_operational_role = 'coordinatore'");
-    expect(migrationSource).not.toContain('insert into public.team_operational_memberships');
+  it('keeps the pilot outcome professional and does not infer operational memberships during legacy continuity', () => {
+    const block = legacyContinuityBlock();
+    expect(block).toContain("authority_state = 'OPERATIVO_PROVVISORIO'");
+    expect(block).toContain("recorded_by_operational_role = 'coordinatore'");
+    expect(block).not.toContain('insert into public.team_operational_memberships');
   });
 
   it('scopes legacy Italian contributions without promoting their legacy fingerprint', () => {
     expect(migrationSource).toContain("where proposal_ref in ('it-sec-1','it-sec-2')");
     expect(migrationSource).toContain("group_code = 'S-G01'");
     expect(migrationSource).toContain("discipline = 'italiano'");
-    expect(migrationSource).toContain('La vecchia impronta viene deliberatamente conservata');
+    expect(migrationSource).toContain('old fingerprint is deliberately NOT promoted');
   });
 
-  it('fails closed on mismatched legacy Technology evidence', () => {
-    expect(migrationSource).toContain('LEGACY_TECHNOLOGY_CONTRIBUTION_FINGERPRINT_MISMATCH');
-    expect(migrationSource).toContain('LEGACY_TECHNOLOGY_OUTCOME_FINGERPRINT_MISMATCH');
-    expect(migrationSource).toContain('LEGACY_TECHNOLOGY_OUTCOME_AUTHORITY_MISMATCH');
+  it('fails closed on mismatched proposal-specific legacy evidence before the atomic mutation', () => {
+    expect(preflightSource).toContain('LEGACY_TECHNOLOGY_CONTRIBUTION_FINGERPRINT_MISMATCH');
+    expect(preflightSource).toContain('LEGACY_TECHNOLOGY_OUTCOME_FINGERPRINT_MISMATCH');
+    expect(preflightSource).toContain('LEGACY_TECHNOLOGY_OUTCOME_AUTHORITY_MISMATCH');
+    expect(preflightSource).toContain('join expected e on e.proposal_ref = c.proposal_ref');
+    expect(preflightSource).toContain('join expected e on e.proposal_ref = o.proposal_ref');
     expect(migrationSource).toContain('LEGACY_TEAM_REVIEW_OUTCOME_SCOPE_BACKFILL_INCOMPLETE');
   });
 });
