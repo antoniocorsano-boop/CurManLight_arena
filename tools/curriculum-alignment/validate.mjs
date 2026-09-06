@@ -24,17 +24,24 @@ const teamReviewDomain = readText('src/domain/revision/teamReview.ts');
 const teamWorkspace = readText('src/features/beta/TeamReviewWorkspace.tsx');
 
 assert(registry.registry_id === 'REG-CURR-00', 'registry_id inatteso');
-assert(registry.version === '1.9.0', 'versione registro inattesa');
+assert(registry.version === '1.10.0', 'versione registro inattesa');
 
 const master = registry.drive?.current_curriculum_master;
 assert(master?.title === 'CAN-CURR-MASTER-00_Curricolo_verticale_integrale_unificato_3-14_2026-2027', 'master corrente inatteso');
 assert(master?.file_id === '12eWTPUZBJxZixd6-p8drNAaW5_eL8qWpXZUSDyZZAv4', 'Drive ID master inatteso');
-assert(master?.version === '1.0', 'versione master inattesa');
+assert(master?.version === '1.1', 'versione master inattesa');
 assert(master?.materialization === 'COMPLETE', 'master non materializzato integralmente');
 assert(master?.human_professional_validation === 'OPEN', 'validazione umana anticipata');
 assert(master?.ready_for_collegio === 'NOT_YET', 'READY_FOR_COLLEGIO anticipato');
 assert(master?.curriculum_in_force === false, 'master non può risultare vigente');
 assert(master?.continuity_rule === 'UPDATE_SAME_MASTER_AFTER_VALIDATED_OUTCOME', 'regola di continuità mancante');
+
+const normativeMatrix = registry.drive?.normative_compliance_matrix;
+assert(normativeMatrix?.title === 'MATR-CURR-MASTER-01_Matrice_conformita_normativa_IN2025_e_atti_collegati_2026-2027', 'matrice normativa inattesa');
+assert(normativeMatrix?.file_id === '1Wiw8Wsifls1-wr_GPYuqIAoB8GnwXMChO8Mz_kwiLKY', 'Drive ID matrice normativa inatteso');
+assert(normativeMatrix?.role === 'CONTROL_ATTACHMENT_NOT_CURRICULUM_BASELINE', 'la matrice normativa non deve diventare baseline');
+assert(normativeMatrix?.identified_curricular_gaps === 6, 'numero lacune normative individuate inatteso');
+assert(normativeMatrix?.materialized_curricular_gaps === 6, 'lacune normative non interamente materializzate nel master');
 
 const provenance = registry.drive?.primary_corrected_source;
 assert(provenance?.title === 'CURRICOLO_VERTICALE_CORRETTO_PROPOSTA_2026-09-03.docx', 'provenienza corretta inattesa');
@@ -42,7 +49,7 @@ assert(provenance?.file_id === '1DPdK_EIZsE3lI-LIzTJG776cU1PcAcnf', 'Drive ID pr
 assert(/^[a-f0-9]{64}$/.test(provenance?.sha256 ?? ''), 'SHA provenienza non valido');
 assert(provenance?.role === 'PRIMARY_CORRECTED_PROVENANCE', 'la fonte del 3 settembre non deve essere baseline corrente');
 
-for (const token of [master.title, master.file_id, provenance.title, provenance.file_id, provenance.sha256]) {
+for (const token of [master.title, master.file_id, master.version, normativeMatrix.title, normativeMatrix.file_id, provenance.title, provenance.file_id, provenance.sha256]) {
   assert(currentSourceDomain.includes(token), `contratto curricolare privo di ${token}`);
 }
 assert(currentSourceDomain.includes("lifecycleState: 'CANONICAL_BASELINE_PENDING_HUMAN_VALIDATION'"), 'lifecycle master inatteso');
@@ -51,6 +58,7 @@ assert(currentSourceDomain.includes('curriculumInForce: false'), 'non vigenza no
 assert(currentSourceDomain.includes("role: 'PRIMARY_CORRECTED_PROVENANCE'"), 'provenienza primaria non qualificata');
 assert(currentSourceDomain.includes("role: 'HISTORICAL_TECHNICAL_BASELINE'"), 'storico v3 non preservato');
 assert(currentSourceDomain.includes('canonicalPromotionAuthorized: false'), 'promozione automatica non vietata');
+assert(currentSourceDomain.includes("status: 'GAPS_MATERIALIZED_PENDING_HUMAN_VALIDATION'"), 'stato audit normativo non registrato nel dominio');
 
 assert(fontiWorkspace.includes('<InstituteCurrentSourcePanel />'), 'Fonti non monta la baseline corrente');
 assert(!fontiWorkspace.includes('<InstituteSourceReviewPanel />'), 'Fonti riapre il vecchio workbench');
@@ -64,13 +72,16 @@ assert(curriculumProcess?.master_materialization === 'COMPLETE', 'materializzazi
 for (const key of ['ordinary_curriculum_3_14','infanzia_3_4_5','primaria_i_v','secondaria_i_iii','irc_i_v_and_i_iii','latino_lel_ii_iii','educazione_civica_3_14','ai_literacy_3_14']) {
   assert(curriculumProcess?.[key] === 'MATERIALIZED', `segmento non materializzato: ${key}`);
 }
+assert(curriculumProcess?.normative_alignment === 'GAPS_MATERIALIZED_PENDING_HUMAN_VALIDATION', 'allineamento normativo non registrato');
+assert(curriculumProcess?.normative_gaps_identified === 6, 'conteggio lacune normative inatteso');
+assert(curriculumProcess?.normative_gaps_materialized === 6, 'lacune normative non materializzate');
 assert(curriculumProcess?.human_professional_validation === 'OPEN', 'validazione complessiva non aperta');
 assert(curriculumProcess?.verticality_final_review === 'OPEN', 'revisione verticale non aperta');
 assert(curriculumProcess?.ready_for_collegio === 'NOT_YET', 'pronto per Collegio non autorizzato');
 assert(curriculumProcess?.collegiate_approval === 'NOT_YET', 'approvazione collegiale non autorizzata');
 assert(curriculumProcess?.canonical_curriculum_promotion === 'NOT_AUTHORIZED', 'promozione curricolare non autorizzata');
 
-for (const key of ['current_master_must_match_across_drive_and_repo','primary_corrected_source_must_remain_provenance','no_parallel_curriculum_baselines','accepted_change_must_update_same_master']) {
+for (const key of ['current_master_must_match_across_drive_and_repo','primary_corrected_source_must_remain_provenance','no_parallel_curriculum_baselines','accepted_change_must_update_same_master','normative_matrix_is_control_attachment_not_baseline','normative_gap_closure_requires_same_master_update']) {
   assert(registry.alignment_rules?.[key] === true, `regola di allineamento mancante: ${key}`);
 }
 
@@ -110,9 +121,9 @@ const downstream = registry.downstream_draft_stacks ?? [];
 assert(downstream.length === 2, 'catene Draft non registrate');
 assert(downstream[0]?.status === 'DRAFT_BETA_CANDIDATE_NOT_CANONICAL', '#199–#201 devono restare Draft non canoniche');
 assert(downstream[1]?.status === 'NOT_CANONICAL_UNTIL_REALIGNED', '#202–#207 non possono essere canoniche');
-assert(registry.next_authorized_phase === 'PROFESSIONAL_VALIDATION_ON_CANONICAL_MASTER', 'fase successiva inattesa');
+assert(registry.next_authorized_phase === 'PROFESSIONAL_VALIDATION_ON_CANONICAL_MASTER_1_1', 'fase successiva inattesa');
 
-for (const token of ['Versione:** 1.9', master.title, master.file_id, 'MATERIALIZZAZIONE COMPLETA', 'fonte primaria di provenienza', 'non genera un nuovo curricolo parallelo']) {
+for (const token of ['Versione:** 1.10', master.title, master.file_id, 'versione `1.1`', normativeMatrix.title, normativeMatrix.file_id, 'MATERIALIZZAZIONE COMPLETA', 'fonte primaria di provenienza', 'non genera un nuovo curricolo parallelo']) {
   assert(mirror.includes(token), `mirror non allineato: ${token}`);
 }
 
