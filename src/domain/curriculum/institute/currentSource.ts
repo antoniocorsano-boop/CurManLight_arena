@@ -47,7 +47,11 @@ export const INSTITUTE_CURRICULUM_CURRENT_SOURCE = {
   continuityRule: 'UPDATE_SAME_MASTER_AFTER_VALIDATED_OUTCOME',
   normativeAlignment: {
     matrixId: 'MATR-CURR-MASTER-01',
+    matrixTitle: 'MATR-CURR-MASTER-01_Matrice_conformita_normativa_IN2025_e_atti_collegati_2026-2027',
     matrixDriveFileId: '1Wiw8Wsifls1-wr_GPYuqIAoB8GnwXMChO8Mz_kwiLKY',
+    role: 'CONTROL_ATTACHMENT_NOT_CURRICULUM_BASELINE',
+    identifiedCurricularGaps: 6,
+    materializedCurricularGaps: 6,
     status: 'GAPS_MATERIALIZED_PENDING_HUMAN_VALIDATION',
   },
 } as const;
