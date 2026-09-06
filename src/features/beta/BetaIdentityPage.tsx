@@ -34,6 +34,22 @@ const panelStyle = {
   border: '1px solid #dee2e6',
 };
 
+const inputStyle = {
+  display: 'block',
+  width: '100%',
+  boxSizing: 'border-box' as const,
+  padding: 10,
+  marginTop: 4,
+  color: '#212529',
+  background: '#fff',
+};
+
+function hasRecoveryHint() {
+  if (typeof window === 'undefined') return false;
+  return window.location.hash.includes('type=recovery')
+    || window.location.search.includes('type=recovery');
+}
+
 export default function BetaIdentityPage() {
   const optional = useMemo(() => getOptionalSupabaseBrowserClient(), []);
   const client = optional.client;
@@ -43,6 +59,9 @@ export default function BetaIdentityPage() {
   const [memberships, setMemberships] = useState<MembershipRow[]>([]);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [newPasswordConfirm, setNewPasswordConfirm] = useState('');
+  const [recoveryMode, setRecoveryMode] = useState(hasRecoveryHint);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [transportProbe, setTransportProbe] = useState<ProbeState>({ status: 'idle', detail: 'Non verificato' });
@@ -128,11 +147,16 @@ export default function BetaIdentityPage() {
     void probeSupabase();
     void client.auth.getSession().then(({ data }) => {
       setSession(data.session);
+      if (data.session && hasRecoveryHint()) setRecoveryMode(true);
       void refreshMemberships(data.session);
     });
 
-    const { data: subscription } = client.auth.onAuthStateChange((_event, nextSession) => {
+    const { data: subscription } = client.auth.onAuthStateChange((event, nextSession) => {
       setSession(nextSession);
+      if (event === 'PASSWORD_RECOVERY') {
+        setRecoveryMode(true);
+        setMessage('Link di recupero verificato. Imposta ora una nuova password.');
+      }
       void refreshMemberships(nextSession);
     });
 
@@ -144,10 +168,10 @@ export default function BetaIdentityPage() {
     if (!client) return;
     setBusy(true);
     setMessage(null);
-    const { error } = await client.auth.signInWithPassword({ email, password });
+    const { error } = await client.auth.signInWithPassword({ email: email.trim(), password });
     setBusy(false);
     if (error) {
-      setMessage(`Accesso non riuscito: ${error.message}`);
+      setMessage('Accesso non riuscito. Controlla email e password oppure usa “Password dimenticata?”.');
       if (/failed to fetch|network/i.test(error.message)) void probeSupabase();
       return;
     }
@@ -158,7 +182,7 @@ export default function BetaIdentityPage() {
     if (!client) return;
     setBusy(true);
     setMessage(null);
-    const { data, error } = await client.auth.signUp({ email, password });
+    const { data, error } = await client.auth.signUp({ email: email.trim(), password });
     setBusy(false);
     if (error) {
       setMessage(`Creazione account non riuscita: ${error.message}`);
@@ -168,11 +192,58 @@ export default function BetaIdentityPage() {
     setMessage(data.session ? 'Account creato e sessione autenticata attiva.' : 'Account creato. Controlla l’email se Supabase richiede conferma prima dell’accesso.');
   };
 
+  const requestPasswordReset = async () => {
+    if (!client || !email.trim()) {
+      setMessage('Inserisci prima l’indirizzo email dell’account Beta.');
+      return;
+    }
+    setBusy(true);
+    setMessage(null);
+    // Nessun redirectTo esplicito: usiamo il Site URL già autorizzato da Supabase.
+    // main.tsx intercetta poi il recovery fragment e lo porta su /beta-identity.
+    const { error } = await client.auth.resetPasswordForEmail(email.trim());
+    setBusy(false);
+    if (error) {
+      setMessage('Non riesco a inviare il messaggio di recupero. Riprova tra poco.');
+      return;
+    }
+    setMessage('Se l’indirizzo corrisponde a un account Beta, riceverai un’email di recupero. Apri il nuovo link ricevuto.');
+  };
+
+  const updateRecoveredPassword = async (event: FormEvent) => {
+    event.preventDefault();
+    if (!client) return;
+    if (newPassword.length < 8) {
+      setMessage('La nuova password deve contenere almeno 8 caratteri.');
+      return;
+    }
+    if (newPassword !== newPasswordConfirm) {
+      setMessage('Le due nuove password non coincidono.');
+      return;
+    }
+    setBusy(true);
+    setMessage(null);
+    const { error } = await client.auth.updateUser({ password: newPassword });
+    setBusy(false);
+    if (error) {
+      setMessage('Il link di recupero non è valido o è scaduto. Richiedi una nuova email di recupero.');
+      return;
+    }
+    setNewPassword('');
+    setNewPasswordConfirm('');
+    setRecoveryMode(false);
+    setMessage('Password aggiornata. Puoi continuare con questa sessione oppure accedere di nuovo dalla preview #201.');
+    if (typeof window !== 'undefined' && window.location.hash) {
+      window.history.replaceState(null, '', window.location.pathname);
+    }
+  };
+
   const signOut = async () => {
     if (!client) return;
     setBusy(true);
     await client.auth.signOut();
     setBusy(false);
+    setRecoveryMode(false);
     setMessage('Sessione terminata.');
   };
 
@@ -192,9 +263,9 @@ export default function BetaIdentityPage() {
   const transportReachable = transportProbe.status === 'reachable';
   const apiBlocked = apiProbe.status === 'unreachable';
   const diagnosticMessage = transportReachable && apiBlocked
-    ? 'Il telefono raggiunge Supabase via HTTPS, ma il browser blocca la richiesta API cross-origin. Il problema è quindi CORS/preflight, filtro privacy o browser, non DNS o disponibilità Supabase.'
+    ? 'Il telefono raggiunge Supabase via HTTPS, ma il browser blocca la richiesta API cross-origin.'
     : transportProbe.status === 'unreachable'
-      ? 'Il telefono non raggiunge nemmeno il trasporto HTTPS verso Supabase. Il problema è compatibile con DNS privato, VPN, filtro contenuti o rete.'
+      ? 'Il telefono non raggiunge il trasporto HTTPS verso Supabase.'
       : apiProbe.status === 'reachable'
         ? 'Trasporto e API/CORS sono entrambi raggiungibili.'
         : 'Diagnostica in corso o non ancora conclusiva.';
@@ -202,31 +273,43 @@ export default function BetaIdentityPage() {
   return (
     <main style={pageStyle}>
       <section style={panelStyle}>
-        <p style={{ marginBottom: 8, fontWeight: 700 }}>CurManLight Arena · BETA-G3</p>
-        <h1 style={{ marginTop: 0 }}>Identità e autorità</h1>
+        <p style={{ marginBottom: 8, fontWeight: 700 }}>CurManLight Arena · BETA</p>
+        <h1 style={{ marginTop: 0 }}>{recoveryMode ? 'Imposta una nuova password' : 'Identità e autorità'}</h1>
         <p>
-          Questo punto di verifica usa esclusivamente la sessione Supabase e la membership letta dal database.
-          Il ruolo locale dell’app non attribuisce autorità istituzionale.
+          L’accesso identifica la persona. Il recupero password non attribuisce ruoli o autorità istituzionale.
         </p>
 
-        <section aria-label="Diagnostica connessione Supabase" style={{ marginTop: 20, padding: 16, border: '1px solid #dee2e6', borderRadius: 8, background: '#f8f9fa' }}>
-          <strong>Connessione Supabase</strong>
-          <p style={{ margin: '8px 0 4px' }}>Trasporto HTTPS: <code>{transportProbe.status.toUpperCase()}</code> · {transportProbe.detail}</p>
-          <p style={{ margin: '4px 0' }}>API/CORS: <code>{apiProbe.status.toUpperCase()}</code> · {apiProbe.detail}</p>
-          <p style={{ margin: '4px 0' }}>Browser online: <strong>{browserOnline}</strong></p>
-          <p style={{ margin: '4px 0' }}>Endpoint: <code>{endpointHost}</code></p>
-          <button type="button" onClick={() => void probeSupabase()} disabled={transportProbe.status === 'checking' || apiProbe.status === 'checking'} style={{ padding: '8px 12px', marginTop: 8 }}>
-            Verifica connessione
-          </button>
-          {supabaseUrl && (
-            <p style={{ margin: '12px 0 0' }}>
-              <a href={`${supabaseUrl.replace(/\/$/, '')}/auth/v1/health`} target="_blank" rel="noreferrer">Apri endpoint Auth in una nuova scheda</a>
-            </p>
-          )}
-          <p role="status" style={{ marginBottom: 0 }}>{diagnosticMessage}</p>
-        </section>
-
-        {!session ? (
+        {recoveryMode ? (
+          <form onSubmit={updateRecoveredPassword} style={{ display: 'grid', gap: 12, marginTop: 24 }}>
+            <label>
+              Nuova password
+              <input
+                type="password"
+                value={newPassword}
+                onChange={(event) => setNewPassword(event.target.value)}
+                required
+                minLength={8}
+                autoComplete="new-password"
+                style={inputStyle}
+              />
+            </label>
+            <label>
+              Conferma nuova password
+              <input
+                type="password"
+                value={newPasswordConfirm}
+                onChange={(event) => setNewPasswordConfirm(event.target.value)}
+                required
+                minLength={8}
+                autoComplete="new-password"
+                style={inputStyle}
+              />
+            </label>
+            <button type="submit" disabled={busy} style={{ padding: '10px 16px' }}>
+              {busy ? 'Aggiornamento…' : 'Aggiorna password'}
+            </button>
+          </form>
+        ) : !session ? (
           <form onSubmit={signIn} style={{ display: 'grid', gap: 12, marginTop: 24 }}>
             <label>
               Email
@@ -236,7 +319,7 @@ export default function BetaIdentityPage() {
                 onChange={(event) => setEmail(event.target.value)}
                 required
                 autoComplete="email"
-                style={{ display: 'block', width: '100%', boxSizing: 'border-box', padding: 10, marginTop: 4, color: '#212529', background: '#fff' }}
+                style={inputStyle}
               />
             </label>
             <label>
@@ -248,13 +331,16 @@ export default function BetaIdentityPage() {
                 required
                 minLength={8}
                 autoComplete="current-password"
-                style={{ display: 'block', width: '100%', boxSizing: 'border-box', padding: 10, marginTop: 4, color: '#212529', background: '#fff' }}
+                style={inputStyle}
               />
             </label>
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
               <button type="submit" disabled={busy} style={{ padding: '10px 16px' }}>Accedi</button>
               <button type="button" disabled={busy || !email || password.length < 8} onClick={signUp} style={{ padding: '10px 16px' }}>
                 Crea account Beta
+              </button>
+              <button type="button" disabled={busy || !email.trim()} onClick={() => void requestPasswordReset()} style={{ padding: '10px 16px' }}>
+                Password dimenticata?
               </button>
             </div>
           </form>
@@ -283,7 +369,21 @@ export default function BetaIdentityPage() {
           </section>
         )}
 
-        {message && <p role="status" style={{ marginTop: 20 }}>{message}</p>}
+        {message && <p role="status" style={{ marginTop: 20, fontWeight: 700 }}>{message}</p>}
+
+        <details style={{ marginTop: 24 }}>
+          <summary style={{ cursor: 'pointer', fontWeight: 700 }}>Problemi di connessione?</summary>
+          <section aria-label="Diagnostica connessione Supabase" style={{ marginTop: 12, padding: 16, border: '1px solid #dee2e6', borderRadius: 8, background: '#f8f9fa' }}>
+            <p style={{ margin: '4px 0' }}>Trasporto HTTPS: <code>{transportProbe.status.toUpperCase()}</code></p>
+            <p style={{ margin: '4px 0' }}>API/CORS: <code>{apiProbe.status.toUpperCase()}</code></p>
+            <p style={{ margin: '4px 0' }}>Browser online: <strong>{browserOnline}</strong></p>
+            <p style={{ margin: '4px 0' }}>Endpoint: <code>{endpointHost}</code></p>
+            <button type="button" onClick={() => void probeSupabase()} disabled={transportProbe.status === 'checking' || apiProbe.status === 'checking'} style={{ padding: '8px 12px', marginTop: 8 }}>
+              Verifica connessione
+            </button>
+            <p role="status" style={{ marginBottom: 0 }}>{diagnosticMessage}</p>
+          </section>
+        </details>
       </section>
     </main>
   );
