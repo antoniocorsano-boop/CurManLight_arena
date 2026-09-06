@@ -7,19 +7,37 @@ import panelSource from '../features/documents/components/InstituteCurrentSource
 import workspaceSource from '../features/documents/components/FontiWorkspace.tsx?raw';
 
 describe('current institute curriculum master', () => {
-  it('uses the unified 3–14 master as the current working baseline', () => {
+  it('uses the unified 3–14 master 1.1 as the current working baseline', () => {
     expect(INSTITUTE_CURRICULUM_CURRENT_SOURCE.sourceFile).toBe(
       'CAN-CURR-MASTER-00_Curricolo_verticale_integrale_unificato_3-14_2026-2027',
     );
     expect(INSTITUTE_CURRICULUM_CURRENT_SOURCE.driveFileId).toBe(
       '12eWTPUZBJxZixd6-p8drNAaW5_eL8qWpXZUSDyZZAv4',
     );
-    expect(INSTITUTE_CURRICULUM_CURRENT_SOURCE.sourceVersion).toBe('1.0');
+    expect(INSTITUTE_CURRICULUM_CURRENT_SOURCE.sourceVersion).toBe('1.1');
     expect(INSTITUTE_CURRICULUM_CURRENT_SOURCE.materializationState).toBe('COMPLETE');
     expect(INSTITUTE_CURRICULUM_CURRENT_SOURCE.lifecycleState).toBe(
       'CANONICAL_BASELINE_PENDING_HUMAN_VALIDATION',
     );
     expect(INSTITUTE_CURRICULUM_CURRENT_SOURCE.curriculumInForce).toBe(false);
+  });
+
+  it('registers normative compliance as a control attachment, not a competing curriculum', () => {
+    expect(INSTITUTE_CURRICULUM_CURRENT_SOURCE.normativeAlignment.matrixId).toBe('MATR-CURR-MASTER-01');
+    expect(INSTITUTE_CURRICULUM_CURRENT_SOURCE.normativeAlignment.matrixTitle).toBe(
+      'MATR-CURR-MASTER-01_Matrice_conformita_normativa_IN2025_e_atti_collegati_2026-2027',
+    );
+    expect(INSTITUTE_CURRICULUM_CURRENT_SOURCE.normativeAlignment.matrixDriveFileId).toBe(
+      '1Wiw8Wsifls1-wr_GPYuqIAoB8GnwXMChO8Mz_kwiLKY',
+    );
+    expect(INSTITUTE_CURRICULUM_CURRENT_SOURCE.normativeAlignment.role).toBe(
+      'CONTROL_ATTACHMENT_NOT_CURRICULUM_BASELINE',
+    );
+    expect(INSTITUTE_CURRICULUM_CURRENT_SOURCE.normativeAlignment.identifiedCurricularGaps).toBe(6);
+    expect(INSTITUTE_CURRICULUM_CURRENT_SOURCE.normativeAlignment.materializedCurricularGaps).toBe(6);
+    expect(INSTITUTE_CURRICULUM_CURRENT_SOURCE.normativeAlignment.status).toBe(
+      'GAPS_MATERIALIZED_PENDING_HUMAN_VALIDATION',
+    );
   });
 
   it('keeps the corrected 3 September proposal as provenance, not as a competing baseline', () => {
