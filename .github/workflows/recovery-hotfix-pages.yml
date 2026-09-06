@@ -91,9 +91,10 @@ jobs:
           curl --fail --silent --show-error --location --retry 6 --retry-delay 5 "${BETA_URL}" >/tmp/index.html
           test -s /tmp/index.html
 
-      - name: Verify recovery route is published
+      - name: Verify query recovery entry is published
         shell: bash
         run: |
           set -euo pipefail
-          curl --fail --silent --show-error --location --retry 6 --retry-delay 5 "${BETA_URL%/}/beta-identity" >/tmp/recovery.html
+          curl --fail --silent --show-error --location --retry 6 --retry-delay 5 "${BETA_URL%/}/?betaIdentity=1" >/tmp/recovery.html
           test -s /tmp/recovery.html
+          grep -q '<div id="root"' /tmp/recovery.html
