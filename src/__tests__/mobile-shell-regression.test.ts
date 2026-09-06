@@ -54,6 +54,9 @@ describe('MOBILE-SHELL regression contract', () => {
     expect(headerSource).toContain('Collega un account (facoltativo)');
     expect(headerSource).toContain('Sincronizza i file');
     expect(headerSource).toContain('Disconnetti account');
+    expect(headerSource).toContain('data-team-signout="canonical"');
+    expect(headerSource).toContain('<span>Esci</span>');
+    expect(headerSource).toContain('Il profilo locale resta disponibile su questo dispositivo.');
     expect(headerSource).not.toContain('data-session-identity="status"');
   });
 
