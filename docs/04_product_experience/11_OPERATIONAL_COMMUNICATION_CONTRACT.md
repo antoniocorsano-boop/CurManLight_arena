@@ -3,7 +3,7 @@
 **Versione:** 1.4.1  
 **Stato:** normativo per le nuove superfici e per le superfici migrate  
 **Integrazione:** Human Interaction Model (HIM) e `CURRICULUM_LIFECYCLE@1.1.1`  
-**Registro superfici:** 1.6.0
+**Registro superfici:** 1.5.1
 
 ## 1. Scopo
 
