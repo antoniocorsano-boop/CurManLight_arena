@@ -1,7 +1,7 @@
 # 09 — USER FLOWS CRITICI
 
 **Product vision:** `ARENA-PRODUCT-VISION@1.0.0`  
-**Lifecycle:** `CURRICULUM_LIFECYCLE@1.1.0`  
+**Lifecycle:** `CURRICULUM_LIFECYCLE@1.1.1`  
 **Stato:** `CANONICAL_TARGET_FLOWS`  
 **Data:** 2026-09-06
 
@@ -35,9 +35,11 @@ Questo documento descrive i percorsi che Arena deve rendere semplici e verificab
 1. `ESAMINA` — confronto fra testo/proposta e contesto applicabile.
 2. Il docente sceglie l'azione professionale prevista: confermare, proporre modifica, mantenere il testo precedente o rinviare al confronto.
 3. L'effetto resta personale finché non viene esplicitamente registrato/condiviso.
-4. `CONDIVIDI` — il contributo diventa `ProfessionalContribution` tracciato.
+4. `CONDIVIDI` — il contributo diventa `ProfessionalContribution` persistito e tracciato.
+5. Arena considera la condivisione corrente solo se il contributo persistito corrisponde a utente, scheda/versione o fingerprint, orientamento personale ed eventuale testo di modifica correnti.
+6. Se il docente cambia successivamente il proprio orientamento, la precedente condivisione non abilita più il passaggio successivo finché non viene aggiornata.
 
-**Successo:** il docente termina il proprio compito senza dover interpretare stati tecnici o autorità future.
+**Successo:** il docente termina il proprio compito senza dover interpretare stati tecnici o autorità future e senza che una semplice dichiarazione locale possa simulare una condivisione registrata.
 
 **Confine:** `ProfessionalContribution != TeamProfessionalOutcome`.
 
@@ -45,16 +47,17 @@ Questo documento descrive i percorsi che Arena deve rendere semplici e verificab
 
 ## 3. Confronto del gruppo ed esito professionale
 
-**Trigger:** sono disponibili contributi sufficienti e un attore autorizzato al confronto.
+**Trigger:** il contributo personale dell'attore è persistito e corrente; sono inoltre disponibili i contributi richiesti dal gruppo e un attore autorizzato al confronto.
 
 **Passi:**
-1. Arena compatta i contributi convergenti.
-2. Porta in primo piano solo differenze, proposte alternative e punti da discutere.
-3. `CONFRONTA` — il gruppo esamina i punti realmente aperti.
-4. Solo con prerequisiti e autorità soddisfatti compare `REGISTRA L'ESITO`.
-5. L'esito registrato diventa `TeamProfessionalOutcome` legato alla stessa versione/fingerprint.
+1. Arena verifica che la condivisione personale corrente corrisponda ancora al lavoro individuale corrente.
+2. Arena compatta i contributi convergenti.
+3. Porta in primo piano solo differenze, proposte alternative e punti da discutere.
+4. `CONFRONTA` — il gruppo esamina i punti realmente aperti.
+5. Solo con prerequisiti e autorità soddisfatti compare `REGISTRA L'ESITO`.
+6. L'esito registrato diventa `TeamProfessionalOutcome` legato alla stessa versione/fingerprint.
 
-**Successo:** il gruppo non deve rileggere tutto e l'esito è ricostruibile.
+**Successo:** il gruppo non deve rileggere tutto, l'esito è ricostruibile e nessun attore può entrare nel confronto attraverso una dichiarazione di condivisione non verificata.
 
 **Confine:** `TeamProfessionalOutcome != InstitutionalDecision`.
 
@@ -201,6 +204,7 @@ Per tutti i flow conseguenti:
 - una bozza non diventa esito senza commit esplicito;
 - uscire da una sessione non deve perdere lavoro senza avviso;
 - refresh/re-entry devono ricostruire oggetto, stato e fase compatibili;
+- la fase `CONFRONTA` non può essere ripristinata se la condivisione persistita non corrisponde più all'orientamento personale corrente;
 - una versione/fingerprint diversa deve impedire il riuso implicito di una decisione precedente;
 - errori tecnici non devono cambiare lo stato umano o istituzionale;
 - un `RevisionTrigger` deve sempre restare legato all'identità/versione del master da cui è nato.
@@ -209,4 +213,4 @@ Per tutti i flow conseguenti:
 
 ## Criterio complessivo di accettazione
 
-I flow sono conformi quando il docente può svolgere il proprio compito senza conoscere pipeline, gate, membership IDs o struttura del repository; le autorità restano separate; le fonti sono verificabili; il curricolo alimenta la progettazione reale; nuove norme, esigenze d'Istituto e osservazioni dalla pratica possono riaprire il processo in modo mirato e tracciato.
+I flow sono conformi quando il docente può svolgere il proprio compito senza conoscere pipeline, gate, membership IDs o struttura del repository; le autorità restano separate; la condivisione è verificabile e non simulabile localmente; le fonti sono verificabili; il curricolo alimenta la progettazione reale; nuove norme, esigenze d'Istituto e osservazioni dalla pratica possono riaprire il processo in modo mirato e tracciato.
