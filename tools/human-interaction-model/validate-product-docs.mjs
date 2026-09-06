@@ -23,12 +23,12 @@ try {
 
 if (registry) {
   assert(registry.registry_id === 'ARENA-PRODUCT-DOCS', 'registry_id prodotto corretto');
-  assert(registry.version === '1.0.2', 'versione registro prodotto 1.0.2');
+  assert(registry.version === '1.0.3', 'versione registro prodotto 1.0.3');
   assert(registry.product_vision?.id === 'ARENA-PRODUCT-VISION', 'vision id canonico');
   assert(registry.product_vision?.version === '1.0.0', 'vision version canonica');
   assert(registry.product_vision?.drive_file_id === '1s17jJCslSIJIXQfiTEzyRcD5q-Baopj6-l14aaFEWik', 'Drive ID vision canonica');
   assert(registry.lifecycle_contract?.id === 'CURRICULUM_LIFECYCLE', 'lifecycle id canonico');
-  assert(registry.lifecycle_contract?.version === '1.1.0', 'lifecycle version canonica');
+  assert(registry.lifecycle_contract?.version === '1.1.1', 'lifecycle version canonica');
 
   const lifecycle = readJson(registry.lifecycle_contract.path);
   assert(lifecycle.version === registry.lifecycle_contract.version, 'lifecycle version allineata al registro');
@@ -37,6 +37,8 @@ if (registry) {
   assert(lifecycle.derived_objects?.includes('RevisionTrigger'), 'RevisionTrigger presente nel lifecycle');
   assert(lifecycle.revision_triggers?.automatic_curriculum_change_forbidden === true, 'RevisionTrigger non modifica automaticamente il curricolo');
   assert(lifecycle.revision_triggers?.parallel_curriculum_baseline_creation_forbidden === true, 'RevisionTrigger non crea baseline parallele');
+  assert(lifecycle.work_session?.share_completion_requires_persisted_current_professional_contribution === true, 'lifecycle non vincola SHARE alla persistenza corrente');
+  assert(lifecycle.work_session?.compare_stage_fail_closed_without_current_persisted_share === true, 'lifecycle non chiude COMPARE in assenza di share corrente');
 
   const canonical = registry.canonical_documents ?? [];
   const requiredRoles = ['PRODUCT_VISION', 'INFORMATION_ARCHITECTURE', 'NAVIGATION_MODEL', 'CRITICAL_USER_FLOWS', 'OPERATIONAL_COMMUNICATION'];
@@ -61,22 +63,28 @@ if (registry) {
     'IL MIO LAVORO · CURRICOLO · PROGETTAZIONE · RIESAME',
     'nuova norma o circolare può riaprire il ciclo',
     '1s17jJCslSIJIXQfiTEzyRcD5q-Baopj6-l14aaFEWik',
-    'curriculum-lifecycle.contract.json@1.1.0'
+    'curriculum-lifecycle.contract.json@1.1.1',
+    'ProfessionalContribution` persistito corrisponde alla scheda/versione corrente'
   ]) assert(vision.includes(token), `vision contiene: ${token}`);
 
   const ia = readText('docs/04_product_experience/01_INFORMATION_ARCHITECTURE.md');
-  for (const token of ['CURRICULUM_LIFECYCLE@1.1.0', 'CurriculumUnit', 'CurriculumWorkSession', 'RevisionTrigger', 'DidacticBinding', 'Fascicolo', 'TeamProfessionalOutcome']) {
+  for (const token of ['CURRICULUM_LIFECYCLE@1.1.1', 'CurriculumUnit', 'CurriculumWorkSession', 'RevisionTrigger', 'DidacticBinding', 'Fascicolo', 'TeamProfessionalOutcome', 'una dichiarazione locale dell\'utente non può simulare una condivisione avvenuta']) {
     assert(ia.includes(token), `IA contiene: ${token}`);
   }
 
   const nav = readText('docs/04_product_experience/02_NAVIGATION_MODEL.md');
-  for (const token of ['CURRICULUM_LIFECYCLE@1.1.0', 'IL MIO LAVORO · CURRICOLO · PROGETTAZIONE · RIESAME', 'FASCICOLO', 'ESAMINA → CONDIVIDI → CONFRONTA → REGISTRA L\'ESITO', 'Azioni istituzionali proiettate']) {
+  for (const token of ['CURRICULUM_LIFECYCLE@1.1.1', 'IL MIO LAVORO · CURRICOLO · PROGETTAZIONE · RIESAME', 'FASCICOLO', 'ESAMINA → CONDIVIDI → CONFRONTA → REGISTRA L\'ESITO', 'Azioni istituzionali proiettate', 'nessun pulsante di conferma locale può simulare l\'avvenuta condivisione']) {
     assert(nav.includes(token), `navigazione contiene: ${token}`);
   }
 
   const flows = readText('docs/04_product_experience/09_USER_FLOWS.md');
-  for (const token of ['CURRICULUM_LIFECYCLE@1.1.0', 'Nuova norma, linea guida, nota o circolare', "Esigenza dell'Istituto", 'RevisionTrigger', 'DidacticBinding', 'ImplementationObservation']) {
+  for (const token of ['CURRICULUM_LIFECYCLE@1.1.1', 'Nuova norma, linea guida, nota o circolare', "Esigenza dell'Istituto", 'RevisionTrigger', 'DidacticBinding', 'ImplementationObservation', 'la precedente condivisione non abilita più il passaggio successivo']) {
     assert(flows.includes(token), `user flow contiene: ${token}`);
+  }
+
+  const ccoDocs = readText('docs/04_product_experience/11_OPERATIONAL_COMMUNICATION_CONTRACT.md');
+  for (const token of ['Versione:** 1.4.1', 'CURRICULUM_LIFECYCLE@1.1.1', 'Registro superfici:** 1.5.1', 'CCO-R5 — condivisione persistita prima del confronto']) {
+    assert(ccoDocs.includes(token), `CCO docs contiene: ${token}`);
   }
 
   const forbiddenStale = [
@@ -116,6 +124,9 @@ if (registry) {
   assert(state.curriculum_work_session_single_progression_implemented === true, 'progressione unica CurriculumWorkSession registrata');
   assert(state.legacy_revision_tabs_removed_from_primary_flow === true, 'tab legacy rimossi dal flusso primario');
   assert(state.coordinator_personal_contribution_precedes_team_comparison === true, 'contributo personale del coordinatore precede il confronto');
+  assert(state.persisted_current_professional_contribution_gates_comparison === true, 'share persistito corrente governa il confronto');
+  assert(state.local_personal_change_invalidates_previous_share_completion === true, 'modifica personale invalida share precedente');
+  assert(state.team_contribution_publisher_integrated_with_work_session_state === true, 'publisher integrato nello stato della sessione');
   assert(state.target_ui_fully_implemented === false, 'la documentazione non simula UI target già implementata');
   assert(state.human_end_to_end_pilot_complete === false, 'la documentazione non simula pilota umano concluso');
 }
