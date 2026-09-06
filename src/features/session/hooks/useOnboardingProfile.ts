@@ -1,6 +1,12 @@
 import { useEffect, useState } from 'react';
 import type { SchoolOrder, UserRole } from '../../../types/curriculum';
 import { safeLocalStorageGetItem, safeLocalStorageSetItem } from '../../../lib/consolidatedStorage';
+import { getOptionalSupabaseBrowserClient } from '../../../infrastructure/supabase/client';
+import {
+  rememberOperationalDiscipline,
+  syncStoredOperationalProfile,
+} from '../../../infrastructure/supabase/operationalProfile';
+import { useCurriculumStore } from '../../../store/useCurriculumStore';
 import {
   PERSONAL_WORK_PROFILE_SCHEMA_VERSION,
   PERSONAL_WORK_PROFILE_STORAGE_KEY,
@@ -21,6 +27,7 @@ interface UseOnboardingProfileArgs {
 }
 
 const splitStoredList = (value: string): string[] => value ? value.split(',').filter(Boolean) : [];
+const isOperationalOrder = (value: SchoolOrder): value is 'primaria' | 'secondaria' => value === 'primaria' || value === 'secondaria';
 
 export const useOnboardingProfile = ({
   role,
@@ -32,6 +39,7 @@ export const useOnboardingProfile = ({
   setShowOnboardingModal,
   showToast
 }: UseOnboardingProfileArgs) => {
+  const schoolYear = useCurriculumStore((state) => state.schoolYear);
   const storedProfile = parsePersonalWorkProfile(
     safeLocalStorageGetItem(PERSONAL_WORK_PROFILE_STORAGE_KEY, '')
   );
@@ -92,11 +100,8 @@ export const useOnboardingProfile = ({
   const handleToggleOnboardingCombination = (combo: string) => {
     const list = [...onboardingCombinations];
     const idx = list.indexOf(combo);
-    if (idx > -1) {
-      list.splice(idx, 1);
-    } else {
-      list.push(combo);
-    }
+    if (idx > -1) list.splice(idx, 1);
+    else list.push(combo);
     setOnboardingCombinations(list);
   };
 
@@ -166,19 +171,30 @@ export const useOnboardingProfile = ({
     setAssignedClasses(onboardingAssignedClasses);
     setAssignedCombinations(onboardingCombinations);
 
-    // Canonical local profile for the new onboarding contract.
     safeLocalStorageSetItem(PERSONAL_WORK_PROFILE_STORAGE_KEY, JSON.stringify(profile));
-
-    // Compatibility mirrors for legacy consumers. They are written only on Save:
-    // editing or closing the onboarding dialog cannot mutate persisted profile data.
     safeLocalStorageSetItem('curman_teacherType', onboardingTeacherType);
     safeLocalStorageSetItem('curman_isSostegno', onboardingIsSostegno ? 'true' : 'false');
     safeLocalStorageSetItem('curman_assignedClasses', onboardingAssignedClasses.join(','));
     safeLocalStorageSetItem('curman_assignedCombinations', onboardingCombinations.join(','));
     safeLocalStorageSetItem('curman_availableSections', availableSections.join(','));
 
+    const operationalProfile = !onboardingIsSostegno && isOperationalOrder(onboardingOrd)
+      ? rememberOperationalDiscipline(schoolYear, onboardingOrd, savedDiscipline)
+      : null;
+
+    if (operationalProfile) {
+      const optional = getOptionalSupabaseBrowserClient();
+      if (optional.client) {
+        void syncStoredOperationalProfile(optional.client)
+          .then((synced) => {
+            if (synced) showToast('Profilo di lavoro e competenza disciplinare aggiornati. Gli incarichi nel team restano verificati separatamente.');
+          })
+          .catch(() => showToast('Profilo salvato sul dispositivo; la competenza disciplinare verrà sincronizzata al prossimo accesso condiviso.', false));
+      }
+    }
+
     setShowOnboardingModal(false);
-    showToast('Profilo di lavoro personale salvato. Gli incarichi nel team restano separati e richiedono una membership verificata.');
+    showToast('Profilo di lavoro personale salvato. Le competenze dichiarate non attribuiscono incarichi o autorità istituzionale.');
   };
 
   return {
