@@ -1,7 +1,7 @@
 # 02 — NAVIGATION MODEL
 
 **Product vision:** `ARENA-PRODUCT-VISION@1.0.0`  
-**Lifecycle:** `CURRICULUM_LIFECYCLE@1.1.0`  
+**Lifecycle:** `CURRICULUM_LIFECYCLE@1.1.1`  
 **Stato:** `CANONICAL_TARGET_NAVIGATION`  
 **Data:** 2026-09-06
 
@@ -72,7 +72,10 @@ Regole:
 - uno stadio completato diventa un riepilogo compatto;
 - lo scroll non cambia fase;
 - il docente termina il proprio compito a `CONDIVIDI` se non ha ulteriori responsabilità;
-- `CONFRONTA` compare quando esistono contributi sufficienti e un ruolo pertinente;
+- `CONDIVIDI` risulta completato soltanto quando il sistema verifica un `ProfessionalContribution` persistito per l'utente corrente, riferito alla versione/fingerprint corrente e coerente con l'orientamento personale e l'eventuale testo di modifica correnti;
+- se l'orientamento personale cambia dopo la condivisione, `CONFRONTA` torna non disponibile finché il contributo condiviso non viene aggiornato;
+- nessun pulsante di conferma locale può simulare l'avvenuta condivisione;
+- `CONFRONTA` compare soltanto dopo la verifica della condivisione personale corrente, oltre agli altri prerequisiti del gruppo e del ruolo;
 - `REGISTRA L'ESITO` compare soltanto a chi possiede l'autorità richiesta e dopo la copertura necessaria.
 
 La navigazione non deve creare voci distinte per contributo, condivisione, team e coordinamento.
@@ -182,6 +185,8 @@ Ogni sessione deve conservare:
 
 La navigazione indietro non deve trasformare una bozza in decisione né perdere il lavoro non registrato senza avviso.
 
+Su refresh/re-entry la fase deve essere ricostruita dallo stato verificabile: una vecchia condivisione non più coerente con l'orientamento corrente non può riaprire direttamente il confronto.
+
 ---
 
 ## 12. Migrazione dalle voci precedenti
@@ -212,4 +217,5 @@ Le vecchie chiavi di routing/tab possono restare temporaneamente per compatibili
 - nessun ID tecnico al livello 1 del docente;
 - stato e prossima azione riconoscibili senza testo formativo persistente;
 - l'interfaccia deve rimanere utilizzabile anche rimuovendo la copy didattica non essenziale;
+- `CONFRONTA` non può essere raggiunto senza una condivisione persistita e corrente;
 - tutte le azioni conseguenti devono rispettare i confini di autorità.
