@@ -79,6 +79,16 @@ class ErrorBoundary extends React.Component<
 
 const betaIdentityQueryEntry = new URLSearchParams(window.location.search).get('betaIdentity') === '1';
 const routerBasename = resolveRouterBasename(import.meta.env.MODE);
+const recoveryHint = window.location.hash.includes('type=recovery')
+  || window.location.search.includes('type=recovery');
+
+// Supabase may fall back to the configured Site URL when a preview redirect is
+// not allow-listed. Preserve the one-time recovery fragment and move it to the
+// identity route that knows how to complete the password change.
+if (recoveryHint && !window.location.pathname.endsWith('/beta-identity')) {
+  const identityPath = routerBasename === '/' ? '/beta-identity' : `${routerBasename}/beta-identity`;
+  window.location.replace(`${identityPath}${window.location.search}${window.location.hash}`);
+}
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
  <React.StrictMode>
