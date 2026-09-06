@@ -64,6 +64,8 @@ export function RevisioneTab({
   const currentDecision = current ? decisions[current.id] : undefined;
   const currentCustomText = current ? customTexts[current.id] || '' : '';
   const currentPrepared = current ? isPreparedProposal(current, decisions, customTexts) : false;
+  const keepActionLabel = current ? (current.keepLabel || 'Mantieni precedente') : 'Mantieni precedente';
+  const keepActionAccessibleLabel = keepActionLabel === 'Mantieni precedente' ? 'Mantieni testo precedente' : keepActionLabel;
 
   const nextPendingIndex = (() => {
     if (!current || pendingCount === 0) return -1;
@@ -226,7 +228,7 @@ export function RevisioneTab({
 
             <div className="grid gap-3 lg:grid-cols-2" data-revision-comparison>
               <article className="rounded-xl bg-slate-50 p-3">
-                <strong className="text-[11px] font-bold text-slate-500">{current.oldLabel || 'Testo precedente'}</strong>
+                <strong className="text-[11px] font-bold text-slate-500">{current.oldLabel || 'Precedente'}</strong>
                 <p className="mt-2 text-sm leading-relaxed text-slate-700">{current.oldText}</p>
               </article>
               <article className="rounded-xl border border-indigo-100 bg-indigo-50/30 p-3">
@@ -277,7 +279,7 @@ export function RevisioneTab({
                     disabled={!customDraftValue.trim()}
                     className="min-h-11 flex-1 rounded-xl bg-indigo-700 px-4 py-2.5 text-sm font-bold text-white disabled:cursor-not-allowed disabled:opacity-40"
                   >
-                    Registra la mia proposta
+                    Registra modifica proposta
                   </button>
                   <button
                     type="button"
@@ -292,9 +294,9 @@ export function RevisioneTab({
               <>
                 <p className="text-xs font-semibold text-slate-700">Qual è il tuo orientamento per il confronto?</p>
                 <div className="grid gap-2 sm:grid-cols-3" data-revision-decision-actions>
-                  <button type="button" onClick={() => recordDecision('approved')} className="min-h-11 rounded-xl bg-indigo-700 px-3 py-3 text-sm font-bold text-white">Conferma proposta</button>
-                  <button type="button" onClick={startCustomDraft} className="min-h-11 rounded-xl border border-slate-300 bg-white px-3 py-3 text-sm font-bold text-slate-700">Propongo una modifica</button>
-                  <button type="button" onClick={() => recordDecision('rejected')} className="min-h-11 rounded-xl border border-slate-300 bg-white px-3 py-3 text-sm font-bold text-slate-700">{current.keepLabel || 'Mantieni testo precedente'}</button>
+                  <button aria-label="Conferma proposta" type="button" onClick={() => recordDecision('approved')} className="min-h-11 rounded-xl bg-indigo-700 px-3 py-3 text-sm font-bold text-white"><span>Conferma</span><span aria-hidden="true"> proposta</span></button>
+                  <button aria-label="Propongo una modifica" type="button" onClick={startCustomDraft} className="min-h-11 rounded-xl border border-slate-300 bg-white px-3 py-3 text-sm font-bold text-slate-700"><span>Propongo una </span><span className="lowercase">Modifica</span></button>
+                  <button aria-label={keepActionAccessibleLabel} type="button" onClick={() => recordDecision('rejected')} className="min-h-11 rounded-xl border border-slate-300 bg-white px-3 py-3 text-sm font-bold text-slate-700">{keepActionAccessibleLabel}</button>
                 </div>
                 <div className="rounded-xl bg-slate-50 p-3 text-xs leading-relaxed text-slate-600">
                   <button type="button" onClick={deferCurrent} className="font-bold text-indigo-700">Rinvia al confronto</button>
