@@ -16,8 +16,10 @@ assert(contractPath === '.human/curriculum-lifecycle.contract.json', 'riferiment
 const contract = readJson(contractPath);
 
 assert(contract.contract_id === 'CURRICULUM_LIFECYCLE', 'contract_id inatteso');
-assert(/^1\./.test(contract.version ?? ''), 'versione contratto non 1.x');
+assert(contract.version === '1.1.0', 'versione contratto lifecycle inattesa');
+assert(him.curriculum_lifecycle?.version === contract.version, 'HIM e lifecycle non hanno la stessa versione');
 assert(contract.institutional_source?.drive_file_id === '1M8LriHG1zASUq7jE2xiyJfvX4gVnnmZNmYBrrfYS7fE', 'ARENA-UX-01 non collegato');
+assert(contract.institutional_source?.product_vision_drive_file_id === '1s17jJCslSIJIXQfiTEzyRcD5q-Baopj6-l14aaFEWik', 'visione Drive non collegata al lifecycle');
 assert(contract.canonical_curriculum?.id === 'CAN-CURR-MASTER-00', 'master canonico inatteso');
 assert(contract.canonical_curriculum?.version === '1.3', 'contratto non allineato al master 1.3');
 assert(contract.canonical_curriculum?.curriculum_in_force === false, 'il contratto non può dichiarare il curricolo vigente');
@@ -54,9 +56,24 @@ for (const boundary of [
   assert(contract.authority_boundaries?.[boundary] === true, `confine di autorità mancante: ${boundary}`);
 }
 
-assert(contract.derived_objects?.includes('TeamProfessionalOutcome'), 'esito professionale del team non modellato esplicitamente');
-assert(contract.derived_objects?.includes('DidacticBinding'), 'DidacticBinding mancante');
-assert(contract.derived_objects?.includes('ImplementationObservation'), 'ImplementationObservation mancante');
+for (const object of ['TeamProfessionalOutcome', 'DidacticBinding', 'ImplementationObservation', 'RevisionTrigger']) {
+  assert(contract.derived_objects?.includes(object), `${object} mancante`);
+}
+
+const triggers = contract.revision_triggers ?? {};
+assert(JSON.stringify(triggers.allowed_types) === JSON.stringify(['EXTERNAL_NORMATIVE', 'INSTITUTE_NEED', 'PRACTICE_SIGNAL', 'PERIODIC_REVIEW']), 'tipi RevisionTrigger inattesi');
+for (const key of [
+  'external_normative_requires_source_qualification',
+  'external_normative_requires_applicability_assessment',
+  'institute_need_must_remain_explicitly_non_national',
+  'practice_signal_requires_aggregation_or_explicit_professional_reason',
+  'periodic_review_must_not_reopen_stable_units_without_reason',
+  'must_reference_current_master_identity_and_version',
+  'may_open_targeted_review_cases',
+  'automatic_curriculum_change_forbidden',
+  'parallel_curriculum_baseline_creation_forbidden',
+]) assert(triggers[key] === true, `invariante RevisionTrigger mancante: ${key}`);
+assert(triggers.cycle_reentry_phase === 'H1_APPLICABLE_CURRICULUM', 'RevisionTrigger non rientra dal Quadro applicabile');
 
 const work = contract.work_session ?? {};
 assert(work.name === 'CurriculumWorkSession', 'sessione curricolare unificata non definita');
@@ -76,7 +93,11 @@ const practice = contract.practice_review ?? {};
 assert(practice.student_personal_data_required === false, 'riesame curricolare richiede impropriamente dati personali degli alunni');
 assert(practice.automatic_curriculum_change_forbidden === true, 'osservazioni dalla pratica possono modificare automaticamente il curricolo');
 assert(practice.aggregation_may_create_targeted_review_case === true, 'riesame dalla pratica non alimenta revisioni mirate');
+assert(practice.aggregation_may_create_practice_revision_trigger === true, 'pratica non può generare RevisionTrigger');
 
+assert(contract.acceptance?.future_normative_change_can_reopen_targeted_review === true, 'nuova norma non può riaprire riesame mirato');
+assert(contract.acceptance?.institute_need_can_reopen_targeted_review_without_becoming_national_source === true, 'esigenza Istituto non modellata correttamente');
+assert(contract.acceptance?.revision_trigger_never_changes_curriculum_automatically === true, 'RevisionTrigger può modificare automaticamente il curricolo');
 assert(contract.quality_metrics?.pedagogical_quality_score_forbidden === true, 'scoring pedagogico automatico non vietato');
 assert(contract.quality_metrics?.teacher_ranking_forbidden === true, 'ranking docenti non vietato');
 assert(contract.promotion?.design_contract_is_not_institutional_curriculum_validation === true, 'contratto prodotto confuso con validazione curricolare');

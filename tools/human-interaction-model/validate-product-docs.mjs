@@ -23,28 +23,29 @@ try {
 
 if (registry) {
   assert(registry.registry_id === 'ARENA-PRODUCT-DOCS', 'registry_id prodotto corretto');
-  assert(registry.version === '1.0.0', 'versione registro prodotto 1.0.0');
+  assert(registry.version === '1.0.1', 'versione registro prodotto 1.0.1');
   assert(registry.product_vision?.id === 'ARENA-PRODUCT-VISION', 'vision id canonico');
   assert(registry.product_vision?.version === '1.0.0', 'vision version canonica');
   assert(registry.product_vision?.drive_file_id === '1s17jJCslSIJIXQfiTEzyRcD5q-Baopj6-l14aaFEWik', 'Drive ID vision canonica');
   assert(registry.lifecycle_contract?.id === 'CURRICULUM_LIFECYCLE', 'lifecycle id canonico');
-  assert(registry.lifecycle_contract?.version === '1.0.0', 'lifecycle version canonica');
+  assert(registry.lifecycle_contract?.version === '1.1.0', 'lifecycle version canonica');
 
   const lifecycle = readJson(registry.lifecycle_contract.path);
   assert(lifecycle.version === registry.lifecycle_contract.version, 'lifecycle version allineata al registro');
+  assert(him.curriculum_lifecycle?.version === lifecycle.version, 'HIM allineato alla versione lifecycle');
   assert(lifecycle.canonical_curriculum?.version === '1.3', 'lifecycle punta al master 1.3');
+  assert(lifecycle.derived_objects?.includes('RevisionTrigger'), 'RevisionTrigger presente nel lifecycle');
+  assert(lifecycle.revision_triggers?.automatic_curriculum_change_forbidden === true, 'RevisionTrigger non modifica automaticamente il curricolo');
+  assert(lifecycle.revision_triggers?.parallel_curriculum_baseline_creation_forbidden === true, 'RevisionTrigger non crea baseline parallele');
 
   const canonical = registry.canonical_documents ?? [];
   const requiredRoles = ['PRODUCT_VISION', 'INFORMATION_ARCHITECTURE', 'NAVIGATION_MODEL', 'CRITICAL_USER_FLOWS', 'OPERATIONAL_COMMUNICATION'];
-  for (const role of requiredRoles) {
-    assert(canonical.some((d) => d.role === role), `documento canonico presente: ${role}`);
-  }
-
+  for (const role of requiredRoles) assert(canonical.some((d) => d.role === role), `documento canonico presente: ${role}`);
   for (const doc of canonical) {
     try {
       readText(doc.path);
       pass(`documento leggibile: ${doc.path}`);
-    } catch (error) {
+    } catch {
       fail(`documento mancante: ${doc.path}`);
     }
   }
@@ -59,21 +60,22 @@ if (registry) {
     'ImplementationObservation',
     'IL MIO LAVORO · CURRICOLO · PROGETTAZIONE · RIESAME',
     'nuova norma o circolare può riaprire il ciclo',
-    '1s17jJCslSIJIXQfiTEzyRcD5q-Baopj6-l14aaFEWik'
+    '1s17jJCslSIJIXQfiTEzyRcD5q-Baopj6-l14aaFEWik',
+    'curriculum-lifecycle.contract.json@1.1.0'
   ]) assert(vision.includes(token), `vision contiene: ${token}`);
 
   const ia = readText('docs/04_product_experience/01_INFORMATION_ARCHITECTURE.md');
-  for (const token of ['CurriculumUnit', 'CurriculumWorkSession', 'RevisionTrigger', 'DidacticBinding', 'Fascicolo', 'TeamProfessionalOutcome']) {
+  for (const token of ['CURRICULUM_LIFECYCLE@1.1.0', 'CurriculumUnit', 'CurriculumWorkSession', 'RevisionTrigger', 'DidacticBinding', 'Fascicolo', 'TeamProfessionalOutcome']) {
     assert(ia.includes(token), `IA contiene: ${token}`);
   }
 
   const nav = readText('docs/04_product_experience/02_NAVIGATION_MODEL.md');
-  for (const token of ['IL MIO LAVORO · CURRICOLO · PROGETTAZIONE · RIESAME', 'FASCICOLO', 'ESAMINA → CONDIVIDI → CONFRONTA → REGISTRA L\'ESITO', 'Azioni istituzionali proiettate']) {
+  for (const token of ['CURRICULUM_LIFECYCLE@1.1.0', 'IL MIO LAVORO · CURRICOLO · PROGETTAZIONE · RIESAME', 'FASCICOLO', 'ESAMINA → CONDIVIDI → CONFRONTA → REGISTRA L\'ESITO', 'Azioni istituzionali proiettate']) {
     assert(nav.includes(token), `navigazione contiene: ${token}`);
   }
 
   const flows = readText('docs/04_product_experience/09_USER_FLOWS.md');
-  for (const token of ['Nuova norma, linea guida, nota o circolare', "Esigenza dell'Istituto", 'RevisionTrigger', 'DidacticBinding', 'ImplementationObservation']) {
+  for (const token of ['CURRICULUM_LIFECYCLE@1.1.0', 'Nuova norma, linea guida, nota o circolare', "Esigenza dell'Istituto", 'RevisionTrigger', 'DidacticBinding', 'ImplementationObservation']) {
     assert(flows.includes(token), `user flow contiene: ${token}`);
   }
 
@@ -89,9 +91,7 @@ if (registry) {
       'docs/04_product_experience/01_INFORMATION_ARCHITECTURE.md',
       'docs/04_product_experience/02_NAVIGATION_MODEL.md',
       'docs/04_product_experience/09_USER_FLOWS.md'
-    ]) {
-      assert(!readText(p).includes(stale), `nessun concetto legacy canonico in ${p}: ${stale}`);
-    }
+    ]) assert(!readText(p).includes(stale), `nessun concetto legacy canonico in ${p}: ${stale}`);
   }
 
   const rules = registry.update_rules ?? {};
@@ -111,6 +111,7 @@ if (registry) {
   const state = registry.implementation_state ?? {};
   assert(state.vision_defined === true, 'visione definita');
   assert(state.lifecycle_contract_validated === true, 'lifecycle validato');
+  assert(state.revision_trigger_governance_defined === true, 'governo RevisionTrigger definito');
   assert(state.target_ui_fully_implemented === false, 'la documentazione non simula UI target già implementata');
   assert(state.human_end_to_end_pilot_complete === false, 'la documentazione non simula pilota umano concluso');
 }

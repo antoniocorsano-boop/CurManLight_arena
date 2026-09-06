@@ -1,7 +1,7 @@
 # 09 — USER FLOWS CRITICI
 
 **Product vision:** `ARENA-PRODUCT-VISION@1.0.0`  
-**Lifecycle:** `CURRICULUM_LIFECYCLE@1.0.0`  
+**Lifecycle:** `CURRICULUM_LIFECYCLE@1.1.0`  
 **Stato:** `CANONICAL_TARGET_FLOWS`  
 **Data:** 2026-09-06
 
@@ -127,9 +127,10 @@ Questo documento descrive i percorsi che Arena deve rendere semplici e verificab
 2. Vengono verificati identità, provenienza e localizzatore.
 3. Arena qualifica applicabilità per ordine, coorte, disciplina/asse e decorrenza.
 4. Nasce un `RevisionTrigger` di tipo `EXTERNAL_NORMATIVE`.
-5. Viene eseguita un'analisi di impatto sul master corrente.
-6. Solo gli elementi interessati diventano `CurriculumReviewCase`.
-7. Il ciclo riparte dal `Quadro applicabile` e dalla `Validazione professionale`.
+5. Il trigger registra il master corrente e l'ambito potenzialmente interessato.
+6. Viene eseguita un'analisi di impatto sul master corrente.
+7. Solo gli elementi interessati diventano `CurriculumReviewCase`.
+8. Il ciclo riparte dal `Quadro applicabile` e dalla `Validazione professionale`.
 
 **Successo:** una nuova norma può riaprire il processo senza creare una baseline parallela e senza cambiare automaticamente il curricolo.
 
@@ -158,14 +159,29 @@ Questo documento descrive i percorsi che Arena deve rendere semplici e verificab
 **Passi:**
 1. Arena crea `RevisionTrigger` di tipo `PERIODIC_REVIEW`.
 2. Mostra solo unità con questioni aperte, osservazioni ricorrenti, versioni normative cambiate o necessità di verifica.
-3. Le unità stabili non vengono forzatamente riaperte.
+3. Le unità stabili non vengono forzatamente riaperte senza una ragione registrata.
 4. Gli esiti seguono il normale ciclo professionale.
 
 **Successo:** il riesame periodico non diventa una riscrittura rituale dell'intero curricolo.
 
 ---
 
-## 11. Verificare una fonte o una decisione
+## 11. Segnale dalla pratica come trigger
+
+**Trigger:** più `ImplementationObservation` convergono oppure un professionista registra una motivazione sufficientemente forte.
+
+**Passi:**
+1. Arena qualifica il segnale come `PRACTICE_SIGNAL`.
+2. Verifica ricorrenza, ambito e unità interessate.
+3. Non usa dati personali degli alunni come requisito del riesame.
+4. Se il segnale è qualificato, apre un `RevisionTrigger` collegato al master corrente.
+5. Il ciclo rientra dal `Quadro applicabile`.
+
+**Successo:** la pratica può attivare il riesame senza trasformare impressioni isolate in modifiche automatiche.
+
+---
+
+## 12. Verificare una fonte o una decisione
 
 **Trigger:** un utente chiede “da dove viene?” o deve controllare una scelta.
 
@@ -179,14 +195,15 @@ Questo documento descrive i percorsi che Arena deve rendere semplici e verificab
 
 ---
 
-## 12. Recupero e continuità
+## 13. Recupero e continuità
 
 Per tutti i flow conseguenti:
 - una bozza non diventa esito senza commit esplicito;
 - uscire da una sessione non deve perdere lavoro senza avviso;
 - refresh/re-entry devono ricostruire oggetto, stato e fase compatibili;
 - una versione/fingerprint diversa deve impedire il riuso implicito di una decisione precedente;
-- errori tecnici non devono cambiare lo stato umano o istituzionale.
+- errori tecnici non devono cambiare lo stato umano o istituzionale;
+- un `RevisionTrigger` deve sempre restare legato all'identità/versione del master da cui è nato.
 
 ---
 

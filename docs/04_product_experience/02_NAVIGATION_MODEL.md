@@ -1,7 +1,7 @@
 # 02 — NAVIGATION MODEL
 
 **Product vision:** `ARENA-PRODUCT-VISION@1.0.0`  
-**Lifecycle:** `CURRICULUM_LIFECYCLE@1.0.0`  
+**Lifecycle:** `CURRICULUM_LIFECYCLE@1.1.0`  
 **Stato:** `CANONICAL_TARGET_NAVIGATION`  
 **Data:** 2026-09-06
 

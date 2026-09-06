@@ -1,6 +1,6 @@
 {
   "registry_id": "ARENA-PRODUCT-DOCS",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "date": "2026-09-06",
   "product_vision": {
     "id": "ARENA-PRODUCT-VISION",
@@ -12,7 +12,7 @@
   },
   "lifecycle_contract": {
     "id": "CURRICULUM_LIFECYCLE",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "path": ".human/curriculum-lifecycle.contract.json"
   },
   "canonical_documents": [
@@ -48,34 +48,13 @@
     }
   ],
   "subordinate_documents": [
-    {
-      "path": "docs/04_product_experience/03_DESIGN_SYSTEM.md",
-      "status": "IMPLEMENTATION_REFERENCE_REVIEW_REQUIRED"
-    },
-    {
-      "path": "docs/04_product_experience/04_COMPONENT_LIBRARY.md",
-      "status": "IMPLEMENTATION_REFERENCE_REVIEW_REQUIRED"
-    },
-    {
-      "path": "docs/04_product_experience/05_DESKTOP_LAYOUTS.md",
-      "status": "IMPLEMENTATION_SNAPSHOT"
-    },
-    {
-      "path": "docs/04_product_experience/06_TABLET_LAYOUTS.md",
-      "status": "IMPLEMENTATION_SNAPSHOT"
-    },
-    {
-      "path": "docs/04_product_experience/07_MOBILE_LAYOUTS.md",
-      "status": "IMPLEMENTATION_SNAPSHOT"
-    },
-    {
-      "path": "docs/04_product_experience/08_SCREEN_SPECIFICATIONS.md",
-      "status": "IMPLEMENTATION_SNAPSHOT"
-    },
-    {
-      "path": "docs/04_product_experience/10_ACCESSIBILITY.md",
-      "status": "QUALITY_CONSTRAINT_REVIEW_REQUIRED"
-    }
+    {"path":"docs/04_product_experience/03_DESIGN_SYSTEM.md","status":"IMPLEMENTATION_REFERENCE_REVIEW_REQUIRED"},
+    {"path":"docs/04_product_experience/04_COMPONENT_LIBRARY.md","status":"IMPLEMENTATION_REFERENCE_REVIEW_REQUIRED"},
+    {"path":"docs/04_product_experience/05_DESKTOP_LAYOUTS.md","status":"IMPLEMENTATION_SNAPSHOT"},
+    {"path":"docs/04_product_experience/06_TABLET_LAYOUTS.md","status":"IMPLEMENTATION_SNAPSHOT"},
+    {"path":"docs/04_product_experience/07_MOBILE_LAYOUTS.md","status":"IMPLEMENTATION_SNAPSHOT"},
+    {"path":"docs/04_product_experience/08_SCREEN_SPECIFICATIONS.md","status":"IMPLEMENTATION_SNAPSHOT"},
+    {"path":"docs/04_product_experience/10_ACCESSIBILITY.md","status":"QUALITY_CONSTRAINT_REVIEW_REQUIRED"}
   ],
   "update_rules": {
     "product_governance_change_requires_vision_review": true,
@@ -92,6 +71,7 @@
   "implementation_state": {
     "vision_defined": true,
     "lifecycle_contract_validated": true,
+    "revision_trigger_governance_defined": true,
     "target_information_architecture_defined": true,
     "target_navigation_defined": true,
     "critical_flows_defined": true,

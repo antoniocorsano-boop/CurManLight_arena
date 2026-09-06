@@ -1,12 +1,14 @@
 {
   "contract_id": "CURRICULUM_LIFECYCLE",
   "name": "Ciclo professionale del curricolo in CurManLight Arena",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "date": "2026-09-06",
   "institutional_source": {
     "document": "ARENA-UX-01_Dal_documento_al_lavoro_dei_team_2026-2027",
     "drive_file_id": "1M8LriHG1zASUq7jE2xiyJfvX4gVnnmZNmYBrrfYS7fE",
-    "section": "27. MODELLO DEFINITIVO — IL CURRICOLO COME CICLO EDUCATIVO E DIDATTICO"
+    "section": "27. MODELLO DEFINITIVO — IL CURRICOLO COME CICLO EDUCATIVO E DIDATTICO",
+    "product_vision_document": "ARENA-PRODUCT-00_Visione_di_prodotto_e_governo_documentazione_2026-2027",
+    "product_vision_drive_file_id": "1s17jJCslSIJIXQfiTEzyRcD5q-Baopj6-l14aaFEWik"
   },
   "canonical_curriculum": {
     "id": "CAN-CURR-MASTER-00",
@@ -54,7 +56,7 @@
       "output": "implementation-observations"
     }
   ],
-  "cycle_rule": "H1 -> H2 -> H3 -> H4 -> H5 -> H6 -> H2_when_review_is_required",
+  "cycle_rule": "H1 -> H2 -> H3 -> H4 -> H5 -> H6 -> H1_when_a_qualified_revision_trigger_opens_targeted_review",
   "support_services": [
     "source-qualification",
     "normative-applicability",
@@ -94,8 +96,37 @@
     "InstitutionalDecision",
     "AdoptionReceipt",
     "DidacticBinding",
-    "ImplementationObservation"
+    "ImplementationObservation",
+    "RevisionTrigger"
   ],
+  "revision_triggers": {
+    "allowed_types": [
+      "EXTERNAL_NORMATIVE",
+      "INSTITUTE_NEED",
+      "PRACTICE_SIGNAL",
+      "PERIODIC_REVIEW"
+    ],
+    "required_fields": [
+      "trigger-id",
+      "trigger-type",
+      "origin-or-source",
+      "recorded-at",
+      "applicability",
+      "potential-curriculum-scope",
+      "qualification-state",
+      "current-master-version"
+    ],
+    "external_normative_requires_source_qualification": true,
+    "external_normative_requires_applicability_assessment": true,
+    "institute_need_must_remain_explicitly_non_national": true,
+    "practice_signal_requires_aggregation_or_explicit_professional_reason": true,
+    "periodic_review_must_not_reopen_stable_units_without_reason": true,
+    "must_reference_current_master_identity_and_version": true,
+    "may_open_targeted_review_cases": true,
+    "automatic_curriculum_change_forbidden": true,
+    "parallel_curriculum_baseline_creation_forbidden": true,
+    "cycle_reentry_phase": "H1_APPLICABLE_CURRICULUM"
+  },
   "authority_boundaries": {
     "personal_profile_is_not_verified_role": true,
     "discipline_competence_is_not_institutional_authority": true,
@@ -149,7 +180,8 @@
       "OTHER"
     ],
     "automatic_curriculum_change_forbidden": true,
-    "aggregation_may_create_targeted_review_case": true
+    "aggregation_may_create_targeted_review_case": true,
+    "aggregation_may_create_practice_revision_trigger": true
   },
   "quality_metrics": {
     "allowed": [
@@ -171,6 +203,7 @@
     "DEMOTE_SOURCES_TO_FASCICLE",
     "ADD_DIDACTIC_BINDING",
     "ADD_IMPLEMENTATION_OBSERVATION_AND_PERIODIC_REVIEW",
+    "ADD_REVISION_TRIGGER_GOVERNANCE",
     "ADD_INSTITUTIONAL_READINESS_AND_RECEIPTS",
     "RUN_END_TO_END_HUMAN_PILOT_BEFORE_PROMOTION"
   ],
@@ -181,6 +214,9 @@
     "authority_states_never_collapsed": true,
     "adopted_curriculum_drives_real_planning_through_stable_bindings": true,
     "practice_can_feed_targeted_review_without_student_personal_data": true,
+    "future_normative_change_can_reopen_targeted_review": true,
+    "institute_need_can_reopen_targeted_review_without_becoming_national_source": true,
+    "revision_trigger_never_changes_curriculum_automatically": true,
     "sources_versions_decisions_receipts_remain_reconstructible": true,
     "no_parallel_curriculum_baseline": true
   },

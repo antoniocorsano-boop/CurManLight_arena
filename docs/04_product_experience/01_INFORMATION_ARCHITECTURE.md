@@ -1,7 +1,7 @@
 # 01 — INFORMATION ARCHITECTURE
 
 **Product vision:** `ARENA-PRODUCT-VISION@1.0.0`  
-**Lifecycle:** `CURRICULUM_LIFECYCLE@1.0.0`  
+**Lifecycle:** `CURRICULUM_LIFECYCLE@1.1.0`  
 **Stato:** `CANONICAL_TARGET_ARCHITECTURE`  
 **Data:** 2026-09-06
 
@@ -158,9 +158,16 @@ Campi minimi:
 - applicabilità;
 - ambito curricolare potenzialmente interessato;
 - stato di qualificazione;
+- versione del master corrente;
 - eventuali `CurriculumReviewCase` generati.
 
-Le fonti esterne richiedono qualificazione della fonte e dell'applicabilità. Le esigenze interne devono restare esplicitamente qualificate come scelte o bisogni d'Istituto.
+Regole:
+- le fonti esterne richiedono qualificazione della fonte e dell'applicabilità;
+- le esigenze interne devono restare esplicitamente qualificate come scelte o bisogni d'Istituto;
+- i segnali dalla pratica richiedono aggregazione o motivazione professionale esplicita;
+- il riesame periodico non riapre automaticamente unità stabili senza motivo;
+- nessun trigger crea una baseline curricolare parallela;
+- il rientro nel ciclo avviene dal `Quadro applicabile`.
 
 ---
 
@@ -196,7 +203,7 @@ Segnali previsti:
 - `EFFECTIVE_VERTICAL_LINK`
 - `OTHER`
 
-L'aggregazione può suggerire o aprire un caso di riesame; la modifica automatica del curricolo è vietata.
+L'aggregazione può suggerire o aprire un caso di riesame o un `RevisionTrigger`; la modifica automatica del curricolo è vietata.
 
 ---
 

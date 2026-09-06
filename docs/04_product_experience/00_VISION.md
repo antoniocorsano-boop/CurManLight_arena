@@ -48,7 +48,7 @@ Il processo umano visibile è:
 
 Le fonti, i fingerprint, le versioni, le membership, gli audit, le ricevute e gli export sono servizi di supporto. Non sono il processo principale percepito dal docente.
 
-Il contratto macchina che protegge questo ciclo è `.human/curriculum-lifecycle.contract.json`.
+Il contratto macchina che protegge questo ciclo è `.human/curriculum-lifecycle.contract.json@1.1.0`.
 
 ---
 
@@ -205,7 +205,8 @@ Il registro macchina `docs/04_product_experience/PRODUCT_DOCS.registry.json` man
 - copertura documentale: completa;
 - validazione professionale: aperta;
 - curricolo vigente: no;
-- contratto ciclo professionale: `.human/curriculum-lifecycle.contract.json@1.0.0`;
+- contratto ciclo professionale: `.human/curriculum-lifecycle.contract.json@1.1.0`;
+- governance `RevisionTrigger`: definita nel contratto lifecycle 1.1.0;
 - UI: in convergenza verso questa visione; una preview precedente non costituisce prova di implementazione del modello target.
 
 ---
