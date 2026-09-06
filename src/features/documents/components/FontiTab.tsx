@@ -86,7 +86,7 @@ export function FontiTab({
       <details
         className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-5"
         data-local-source-registry
-        data-hcm-level="2"
+        data-hcm-level="3"
       >
         <summary className="cursor-pointer list-none marker:content-none">
           <div className="flex items-start gap-3">
