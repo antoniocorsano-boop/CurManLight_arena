@@ -1,7 +1,7 @@
 {
   "contract_id": "CURRICULUM_LIFECYCLE",
   "name": "Ciclo professionale del curricolo in CurManLight Arena",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "date": "2026-09-06",
   "institutional_source": {
     "document": "ARENA-UX-01_Dal_documento_al_lavoro_dei_team_2026-2027",
@@ -19,103 +19,26 @@
   },
   "principle": "Il processo visibile è il ciclo professionale del curricolo; fonti, versioni, audit, fingerprint, membership e ricevute sono servizi di supporto e non navigazione primaria.",
   "human_cycle": [
-    {
-      "id": "H1_APPLICABLE_CURRICULUM",
-      "label": "Quadro applicabile",
-      "human_question": "Che cosa si applica alla mia classe, disciplina o campo di esperienza?",
-      "output": "applicable-curriculum-context"
-    },
-    {
-      "id": "H2_PROFESSIONAL_VALIDATION",
-      "label": "Validazione professionale",
-      "human_question": "Questa annualizzazione è sostenibile, coerente e adeguata al lavoro educativo e didattico?",
-      "output": "professional-validation-outcomes"
-    },
-    {
-      "id": "H3_VERTICAL_REVIEW",
-      "label": "Riesame verticale",
-      "human_question": "La progressione 3–14 è coerente e continua?",
-      "output": "vertical-review-outcome"
-    },
-    {
-      "id": "H4_INSTITUTIONAL_PROCESS",
-      "label": "Iter istituzionale",
-      "human_question": "Il curricolo è pronto per il passaggio istituzionale e che cosa viene realmente deciso?",
-      "output": "institutional-decision-or-adoption-receipt"
-    },
-    {
-      "id": "H5_DIDACTIC_USE",
-      "label": "Uso nella progettazione didattica",
-      "human_question": "Come uso questo curricolo nella programmazione reale della classe?",
-      "output": "didactic-bindings"
-    },
-    {
-      "id": "H6_PRACTICE_REVIEW",
-      "label": "Riesame dalla pratica",
-      "human_question": "Che cosa ci dice l'attuazione reale sulla qualità e sostenibilità del curricolo?",
-      "output": "implementation-observations"
-    }
+    {"id":"H1_APPLICABLE_CURRICULUM","label":"Quadro applicabile","human_question":"Che cosa si applica alla mia classe, disciplina o campo di esperienza?","output":"applicable-curriculum-context"},
+    {"id":"H2_PROFESSIONAL_VALIDATION","label":"Validazione professionale","human_question":"Questa annualizzazione è sostenibile, coerente e adeguata al lavoro educativo e didattico?","output":"professional-validation-outcomes"},
+    {"id":"H3_VERTICAL_REVIEW","label":"Riesame verticale","human_question":"La progressione 3–14 è coerente e continua?","output":"vertical-review-outcome"},
+    {"id":"H4_INSTITUTIONAL_PROCESS","label":"Iter istituzionale","human_question":"Il curricolo è pronto per il passaggio istituzionale e che cosa viene realmente deciso?","output":"institutional-decision-or-adoption-receipt"},
+    {"id":"H5_DIDACTIC_USE","label":"Uso nella progettazione didattica","human_question":"Come uso questo curricolo nella programmazione reale della classe?","output":"didactic-bindings"},
+    {"id":"H6_PRACTICE_REVIEW","label":"Riesame dalla pratica","human_question":"Che cosa ci dice l'attuazione reale sulla qualità e sostenibilità del curricolo?","output":"implementation-observations"}
   ],
   "cycle_rule": "H1 -> H2 -> H3 -> H4 -> H5 -> H6 -> H1_when_a_qualified_revision_trigger_opens_targeted_review",
-  "support_services": [
-    "source-qualification",
-    "normative-applicability",
-    "normative-coverage-control",
-    "versioning-and-fingerprint",
-    "evidence-provenance",
-    "identity-membership-authority",
-    "receipt-generation",
-    "publication-and-export"
-  ],
+  "support_services": ["source-qualification","normative-applicability","normative-coverage-control","versioning-and-fingerprint","evidence-provenance","identity-membership-authority","receipt-generation","publication-and-export"],
   "canonical_work_object": {
     "type": "CurriculumUnit",
     "identity_required": true,
-    "required_dimensions": [
-      "school-order-or-age-class-cohort",
-      "discipline-field-or-transversal-axis",
-      "nucleus-or-domain",
-      "national-requirement-or-specific-source",
-      "institute-annualization",
-      "competences-or-targets",
-      "objectives",
-      "essential-knowledge",
-      "observable-evidence",
-      "vertical-previous-next-links",
-      "provenance",
-      "version-or-fingerprint",
-      "validation-state"
-    ],
+    "required_dimensions": ["school-order-or-age-class-cohort","discipline-field-or-transversal-axis","nucleus-or-domain","national-requirement-or-specific-source","institute-annualization","competences-or-targets","objectives","essential-knowledge","observable-evidence","vertical-previous-next-links","provenance","version-or-fingerprint","validation-state"],
     "national_benchmarks_must_remain_distinct_from_institute_annualization": true,
     "retroactive_rewrite_of_transitional_2012_cohorts_forbidden": true
   },
-  "derived_objects": [
-    "CurriculumReviewCase",
-    "ProfessionalContribution",
-    "TeamProfessionalOutcome",
-    "VerticalReviewOutcome",
-    "InstitutionalDecision",
-    "AdoptionReceipt",
-    "DidacticBinding",
-    "ImplementationObservation",
-    "RevisionTrigger"
-  ],
+  "derived_objects": ["CurriculumReviewCase","ProfessionalContribution","TeamProfessionalOutcome","VerticalReviewOutcome","InstitutionalDecision","AdoptionReceipt","DidacticBinding","ImplementationObservation","RevisionTrigger"],
   "revision_triggers": {
-    "allowed_types": [
-      "EXTERNAL_NORMATIVE",
-      "INSTITUTE_NEED",
-      "PRACTICE_SIGNAL",
-      "PERIODIC_REVIEW"
-    ],
-    "required_fields": [
-      "trigger-id",
-      "trigger-type",
-      "origin-or-source",
-      "recorded-at",
-      "applicability",
-      "potential-curriculum-scope",
-      "qualification-state",
-      "current-master-version"
-    ],
+    "allowed_types": ["EXTERNAL_NORMATIVE","INSTITUTE_NEED","PRACTICE_SIGNAL","PERIODIC_REVIEW"],
+    "required_fields": ["trigger-id","trigger-type","origin-or-source","recorded-at","applicability","potential-curriculum-scope","qualification-state","current-master-version"],
     "external_normative_requires_source_qualification": true,
     "external_normative_requires_applicability_assessment": true,
     "institute_need_must_remain_explicitly_non_national": true,
@@ -137,21 +60,22 @@
   },
   "work_session": {
     "name": "CurriculumWorkSession",
-    "progression": ["EXAMINE", "SHARE", "COMPARE", "RECORD_TEAM_OUTCOME"],
+    "progression": ["EXAMINE","SHARE","COMPARE","RECORD_TEAM_OUTCOME"],
     "single_dominant_stage": true,
     "completed_stage_compacts": true,
     "future_stage_hidden_until_relevant": true,
     "scrolling_is_not_progression": true,
     "duplicate_progress_hierarchies_forbidden": true,
     "teacher_finishes_at_share_when_no_further_role_action": true,
-    "coordinator_gets_compare_action_only_when_prerequisites_hold": true
+    "coordinator_gets_compare_action_only_when_prerequisites_hold": true,
+    "share_completion_requires_persisted_current_professional_contribution": true,
+    "persisted_share_must_match_current_proposal_fingerprint": true,
+    "persisted_share_must_match_current_personal_orientation": true,
+    "persisted_custom_text_must_match_current_personal_text": true,
+    "local_personal_change_invalidates_share_completion": true,
+    "compare_stage_fail_closed_without_current_persisted_share": true
   },
-  "primary_navigation": [
-    "IL_MIO_LAVORO",
-    "CURRICOLO",
-    "PROGETTAZIONE",
-    "RIESAME"
-  ],
+  "primary_navigation": ["IL_MIO_LAVORO","CURRICOLO","PROGETTAZIONE","RIESAME"],
   "secondary_navigation": ["FASCICOLO"],
   "navigation_invariants": {
     "sources_are_not_a_primary_human_phase": true,
@@ -161,52 +85,24 @@
   "didactic_binding": {
     "must_reference_curriculum_unit_identity_and_version": true,
     "must_not_copy_curriculum_as_new_source_of_truth": true,
-    "targets": ["annual-planning", "uda", "learning-activity"],
+    "targets": ["annual-planning","uda","learning-activity"],
     "planning_coverage_is_not_teacher_performance_score": true,
     "educazione_civica_hours_require_real_activity_binding": true,
     "ai_literacy_counts_as_civic_only_with_explicit_civic_result": true
   },
   "practice_review": {
     "student_personal_data_required": false,
-    "allowed_signals": [
-      "ADEQUATE",
-      "TOO_EARLY",
-      "TOO_LATE",
-      "DUPLICATED",
-      "MISSING_PREREQUISITE",
-      "WEAK_EVIDENCE",
-      "UNSUSTAINABLE_LOAD",
-      "EFFECTIVE_VERTICAL_LINK",
-      "OTHER"
-    ],
+    "allowed_signals": ["ADEQUATE","TOO_EARLY","TOO_LATE","DUPLICATED","MISSING_PREREQUISITE","WEAK_EVIDENCE","UNSUSTAINABLE_LOAD","EFFECTIVE_VERTICAL_LINK","OTHER"],
     "automatic_curriculum_change_forbidden": true,
     "aggregation_may_create_targeted_review_case": true,
     "aggregation_may_create_practice_revision_trigger": true
   },
   "quality_metrics": {
-    "allowed": [
-      "professional-validation-completion",
-      "unresolved-vertical-issues",
-      "didactic-binding-coverage",
-      "recurring-implementation-observations",
-      "educazione-civica-hours-and-evidence-traceability",
-      "source-version-receipt-completeness"
-    ],
+    "allowed": ["professional-validation-completion","unresolved-vertical-issues","didactic-binding-coverage","recurring-implementation-observations","educazione-civica-hours-and-evidence-traceability","source-version-receipt-completeness"],
     "pedagogical_quality_score_forbidden": true,
     "teacher_ranking_forbidden": true
   },
-  "migration_order": [
-    "FREEZE_NEW_PRIMARY_SURFACES",
-    "SEPARATE_HUMAN_PHASES_FROM_TECHNICAL_SERVICES",
-    "MODEL_TEAM_PROFESSIONAL_OUTCOME_EXPLICITLY",
-    "UNIFY_REVISION_SHARE_TEAM_COORDINATION_IN_CURRICULUM_WORK_SESSION",
-    "DEMOTE_SOURCES_TO_FASCICLE",
-    "ADD_DIDACTIC_BINDING",
-    "ADD_IMPLEMENTATION_OBSERVATION_AND_PERIODIC_REVIEW",
-    "ADD_REVISION_TRIGGER_GOVERNANCE",
-    "ADD_INSTITUTIONAL_READINESS_AND_RECEIPTS",
-    "RUN_END_TO_END_HUMAN_PILOT_BEFORE_PROMOTION"
-  ],
+  "migration_order": ["FREEZE_NEW_PRIMARY_SURFACES","SEPARATE_HUMAN_PHASES_FROM_TECHNICAL_SERVICES","MODEL_TEAM_PROFESSIONAL_OUTCOME_EXPLICITLY","UNIFY_REVISION_SHARE_TEAM_COORDINATION_IN_CURRICULUM_WORK_SESSION","DEMOTE_SOURCES_TO_FASCICLE","ADD_DIDACTIC_BINDING","ADD_IMPLEMENTATION_OBSERVATION_AND_PERIODIC_REVIEW","ADD_REVISION_TRIGGER_GOVERNANCE","ADD_INSTITUTIONAL_READINESS_AND_RECEIPTS","RUN_END_TO_END_HUMAN_PILOT_BEFORE_PROMOTION"],
   "acceptance": {
     "teacher_understands_current_task_without_training_copy": true,
     "teacher_can_complete_personal_responsibility_without_technical_fascicle": true,
