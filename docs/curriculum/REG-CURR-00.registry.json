@@ -1,8 +1,8 @@
 {
   "registry_id": "REG-CURR-00",
-  "version": "1.6.0",
+  "version": "1.9.0",
   "recorded_at": "2026-09-06",
-  "purpose": "Mantenere allineati fascicolo Drive, fonte curricolare corrente, logiche di governo, baseline Arena e documentazione operativa.",
+  "purpose": "Mantenere allineati fascicolo Drive, master curricolare canonico, provenienza, logiche di governo, baseline Arena e documentazione operativa senza creare baseline curricolari concorrenti.",
   "drive": {
     "master_register": {
       "title": "REG-CURR-00_Registro_maestro_fascicolo_curricolare_e_allineamento_Arena_2026-2027",
@@ -14,16 +14,39 @@
       "file_id": "1M8LriHG1zASUq7jE2xiyJfvX4gVnnmZNmYBrrfYS7fE",
       "alignment_addendum": "26. PILOTA OPERATIVO — TECNOLOGIA CLASSE PRIMA"
     },
-    "current_curriculum_source": {
+    "current_curriculum_master": {
+      "title": "CAN-CURR-MASTER-00_Curricolo_verticale_integrale_unificato_3-14_2026-2027",
+      "file_id": "12eWTPUZBJxZixd6-p8drNAaW5_eL8qWpXZUSDyZZAv4",
+      "version": "1.0",
+      "date": "2026-09-06",
+      "status": "BASELINE_CANONICA_INTEGRALE_DA_VALIDARE",
+      "materialization": "COMPLETE",
+      "human_professional_validation": "OPEN",
+      "verticality_final_review": "OPEN",
+      "ready_for_collegio": "NOT_YET",
+      "curriculum_in_force": false,
+      "continuity_rule": "UPDATE_SAME_MASTER_AFTER_VALIDATED_OUTCOME"
+    },
+    "primary_corrected_source": {
       "title": "CURRICOLO_VERTICALE_CORRETTO_PROPOSTA_2026-09-03.docx",
       "file_id": "1DPdK_EIZsE3lI-LIzTJG776cU1PcAcnf",
       "sha256": "c89fbbbe43432db8410913675381b7dc3654d2448f9f91a8c72b115b9ec6fc55",
       "status": "PROPOSTA_D_ISTITUTO_DA_VALIDARE",
-      "supersedes_for_current_work": "source-reconstruction-v3"
+      "role": "PRIMARY_CORRECTED_PROVENANCE",
+      "supersedes_for_provenance": "source-reconstruction-v3"
     }
   },
   "curriculum_process": {
-    "instructional_coverage_3_14": "PASS_ISTRUTTORIO",
+    "path_coverage_metric": "DEPRECATED_FOR_COMPLETENESS",
+    "master_materialization": "COMPLETE",
+    "ordinary_curriculum_3_14": "MATERIALIZED",
+    "infanzia_3_4_5": "MATERIALIZED",
+    "primaria_i_v": "MATERIALIZED",
+    "secondaria_i_iii": "MATERIALIZED",
+    "irc_i_v_and_i_iii": "MATERIALIZED",
+    "latino_lel_ii_iii": "MATERIALIZED",
+    "educazione_civica_3_14": "MATERIALIZED",
+    "ai_literacy_3_14": "MATERIALIZED",
     "human_professional_validation": "OPEN",
     "verticality_final_review": "OPEN",
     "ready_for_collegio": "NOT_YET",
@@ -40,9 +63,10 @@
     "cco_surfaces_version": "1.4.1"
   },
   "source_logic": {
-    "current_source_contract": "src/domain/curriculum/institute/currentSource.ts",
+    "current_master_contract": "src/domain/curriculum/institute/currentSource.ts",
     "canonical_surface": "src/features/documents/components/FontiWorkspace.tsx",
-    "status": "ALIGNED_TO_CORRECTED_SOURCE",
+    "status": "ALIGNED_TO_UNIFIED_CANONICAL_MASTER",
+    "primary_corrected_source_role": "PRIMARY_CORRECTED_PROVENANCE",
     "historical_v3_role": "HISTORICAL_TECHNICAL_BASELINE",
     "historical_remediation_workbench_active_in_canonical_surface": false
   },
@@ -125,7 +149,8 @@
     },
     "source": {
       "title": "CURRICOLO_VERTICALE_CORRETTO_PROPOSTA_2026-09-03.docx",
-      "file_id": "1DPdK_EIZsE3lI-LIzTJG776cU1PcAcnf"
+      "file_id": "1DPdK_EIZsE3lI-LIzTJG776cU1PcAcnf",
+      "role": "PRIMARY_CORRECTED_PROVENANCE"
     },
     "proposal": {
       "title": "PROP-CURR-SEC1-TEC-1_Tecnologia_classe_prima_revisione_curricolare_da_validare_2026-2027.docx",
@@ -167,22 +192,25 @@
   "downstream_draft_stacks": [
     {
       "prs": [199, 200, 201],
-      "scope": "linguaggio_team_riunione_guidata_gruppi_operativi",
-      "status": "NOT_CANONICAL_UNTIL_REALIGNED",
-      "reason": "La catena deriva da una baseline precedente della PR 198 e deve essere riallineata sul current product head prima di una nuova validazione."
+      "scope": "linguaggio_team_riunione_guidata_gruppi_operativi_e_allineamento_master",
+      "status": "DRAFT_BETA_CANDIDATE_NOT_CANONICAL",
+      "reason": "La candidata Beta può essere validata tecnicamente, ma resta Draft e non modifica da sola la baseline istituzionale o la vigenza del curricolo."
     },
     {
       "prs": [202, 203, 204, 205, 206, 207],
       "scope": "source_registry_backup_restore_drive",
       "status": "NOT_CANONICAL_UNTIL_REALIGNED",
-      "reason": "La catena parte dal commit cc8bcab2971587fbda0205f0b343e5f8f0fb782c della PR 198 ed è divergente dalla baseline CCO corrente."
+      "reason": "La catena parte da una baseline precedente e resta fuori dalla baseline corrente fino a riallineamento e nuova validazione."
     }
   ],
   "alignment_rules": {
     "draft_pr_does_not_change_institutional_fascicle": true,
     "product_governance_change_requires_registry_update": true,
     "cco_change_requires_operational_doc_review": true,
-    "current_source_must_match_across_drive_and_repo": true,
+    "current_master_must_match_across_drive_and_repo": true,
+    "primary_corrected_source_must_remain_provenance": true,
+    "no_parallel_curriculum_baselines": true,
+    "accepted_change_must_update_same_master": true,
     "active_validation_pilot_requires_exact_drive_bindings": true,
     "human_outcome_must_not_be_inferred_from_app_state": true,
     "instructional_audit_must_not_be_promoted_as_human_outcome": true,
@@ -194,5 +222,5 @@
     "experimental_feature_must_be_marked_experimental": true,
     "tests_or_commits_never_imply_curriculum_approval": true
   },
-  "next_authorized_phase": "SECONDARY_DEPARTMENT_TEAM_COMPARISON_R2"
+  "next_authorized_phase": "PROFESSIONAL_VALIDATION_ON_CANONICAL_MASTER"
 }
