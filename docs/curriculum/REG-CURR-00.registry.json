@@ -96,8 +96,8 @@
     "branch": "feature/team-meeting-workspace",
     "product_head": "2317b57fef35695f0c8373208d5b5f4898671478",
     "status": "DRAFT_OPERATIONAL_BASELINE",
-    "cco_version": "1.3.0",
-    "cco_surfaces_version": "1.4.1"
+    "cco_version": "1.4.0",
+    "cco_surfaces_version": "1.5.0"
   },
   "source_logic": {
     "current_master_contract": "src/domain/curriculum/institute/currentSource.ts",
