@@ -74,17 +74,33 @@ for (const key of [
 
 const workSessionSource = readText('src/features/beta/RevisionWorkspace.tsx');
 assert(workSessionSource.includes('data-curriculum-work-session'), 'RevisionWorkspace non espone la CurriculumWorkSession');
-assert(workSessionSource.includes("type CurriculumWorkSessionStage = 'EXAMINE' | 'SHARE' | 'COMPARE';"), 'stadi della CurriculumWorkSession non espliciti');
+assert(workSessionSource.includes("type CurriculumWorkSessionStage = 'EXAMINE' | 'SHARE' | 'COMPARE' | 'RECORD_TEAM_OUTCOME';"), 'stadi della CurriculumWorkSession non espliciti');
 assert(!workSessionSource.includes('role="tablist"'), 'la revisione è tornata a tab concorrenti invece di una sessione progressiva');
 for (const label of ['Esamina', 'Condividi', 'Confronta', 'Esito del gruppo']) assert(workSessionSource.includes(label), `passaggio visibile mancante: ${label}`);
 assert(workSessionSource.includes('Anche il coordinatore completa prima il proprio contributo personale.'), 'il coordinatore può saltare il contributo personale');
 assert(workSessionSource.includes('data-persisted-share-ready={sharePersistence.complete'), 'la sessione non espone lo stato di condivisione persistita');
-assert(workSessionSource.includes("if (stage === 'COMPARE' && !sharePersistence.complete) setStage('SHARE');"), 'COMPARE non torna fail-closed quando manca la condivisione corrente');
+assert(workSessionSource.includes("(stage === 'COMPARE' || stage === 'RECORD_TEAM_OUTCOME') && !sharePersistence.complete"), 'COMPARE/RECORD non tornano fail-closed quando manca la condivisione corrente');
 assert(workSessionSource.includes('isCoordinator && !sharePersistence.complete'), 'il confronto non mostra il blocco quando la condivisione non è verificata');
 assert(workSessionSource.includes('isCoordinator && sharePersistence.complete'), 'il confronto non è vincolato alla condivisione verificata');
 assert(workSessionSource.includes('Apri il confronto del gruppo'), 'azione di confronto mancante dopo la verifica');
+assert(workSessionSource.includes('data-revision-stage="compare"'), 'COMPARE non è uno stato realmente renderizzato');
+assert(workSessionSource.includes('data-revision-stage="team-outcome"'), 'RECORD_TEAM_OUTCOME non è uno stato realmente renderizzato');
+assert(workSessionSource.includes('mode="status"'), 'il docente dopo SHARE non riceve una proiezione di solo stato');
+assert(workSessionSource.includes('mode="compare"'), 'il confronto non è proiettato nella sessione');
+assert(workSessionSource.includes('mode="record"'), 'la registrazione esito non è proiettata nella sessione');
+assert(workSessionSource.includes('data-curriculum-work-session-complete'), 'manca la conseguenza visibile della chiusura degli esiti correnti');
 assert(!workSessionSource.includes('Ho condiviso: apri il confronto del gruppo'), 'una dichiarazione utente può ancora simulare la condivisione');
 assert(workSessionSource.includes('Il tuo contributo è condiviso'), 'stato terminale del docente dopo persistenza mancante');
+
+const coordinationSource = readText('src/features/beta/TeamCoordinationWorkspace.tsx');
+assert(coordinationSource.includes("export type TeamCoordinationMode = 'status' | 'compare' | 'record'"), 'coordinamento non espone modalità subordinate alla sessione');
+assert(coordinationSource.includes('data-team-coordination-mode="status"'), 'modalità stato mancante');
+assert(coordinationSource.includes('data-team-coordination-mode="compare"'), 'modalità confronto mancante');
+assert(coordinationSource.includes('data-team-coordination-mode="record"'), 'modalità registrazione esito mancante');
+assert(coordinationSource.includes('Porta questo punto all’esito'), 'transizione umana confronto→esito mancante');
+assert(coordinationSource.includes('repository.recordTeamOutcome'), 'registrazione esito non usa il repository condiviso governato');
+assert(coordinationSource.includes("['dipartimento', 'referente'].includes(team.selectedMembership.role)"), 'autorità di coordinamento non verificata');
+assert(coordinationSource.includes('hasDisciplineCompetence'), 'competenza disciplinare non richiesta per registrare esito');
 
 const publisherSource = readText('src/features/beta/TeamContributionPublisher.tsx');
 assert(publisherSource.includes('onPersistenceStateChange'), 'publisher non comunica lo stato persistito alla sessione');
