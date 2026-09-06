@@ -23,6 +23,14 @@ const technologyReviewSource = firstSource(import.meta.glob('../domain/curriculu
   query: '?raw', import: 'default', eager: true,
 }) as Record<string, string>);
 
+const workSessionSource = firstSource(import.meta.glob('../features/beta/RevisionWorkspace.tsx', {
+  query: '?raw', import: 'default', eager: true,
+}) as Record<string, string>);
+
+const coordinationSource = firstSource(import.meta.glob('../features/beta/TeamCoordinationWorkspace.tsx', {
+  query: '?raw', import: 'default', eager: true,
+}) as Record<string, string>);
+
 describe('Teacher three-level institutional communication', () => {
   it('keeps Home level 1 institutional, actionable and free of system jargon', () => {
     const level1 = between(homeSource, 'data-hcm-level="1"', 'data-hcm-level="2"');
@@ -77,5 +85,33 @@ describe('Teacher three-level institutional communication', () => {
     expect(r2).toContain("newLabel: 'Proposta da esaminare'");
     expect(r2).toContain("keepLabel: 'Mantieni testo precedente'");
     expect(r2).not.toMatch(/contextSummary: '.*audit/i);
+  });
+
+  it('implements Compare and Record outcome as two real stages of the same CurriculumWorkSession', () => {
+    expect(workSessionSource).toContain("'EXAMINE' | 'SHARE' | 'COMPARE' | 'RECORD_TEAM_OUTCOME'");
+    expect(workSessionSource).toContain('data-revision-stage="compare"');
+    expect(workSessionSource).toContain('data-revision-stage="team-outcome"');
+    expect(workSessionSource).toContain('mode="compare"');
+    expect(workSessionSource).toContain('mode="record"');
+    expect(workSessionSource).toContain('data-curriculum-work-session-complete');
+    expect(coordinationSource).toContain("export type TeamCoordinationMode = 'status' | 'compare' | 'record'");
+    expect(coordinationSource).toContain('Porta questo punto all’esito');
+    expect(coordinationSource).toContain('Registra l’esito del gruppo');
+  });
+
+  it('keeps the ordinary teacher at status-only after Share and fails closed if Share becomes stale', () => {
+    expect(workSessionSource).toContain('!isCoordinator && sharePersistence.complete');
+    expect(workSessionSource).toContain('mode="status"');
+    expect(workSessionSource).toContain("(stage === 'COMPARE' || stage === 'RECORD_TEAM_OUTCOME') && !sharePersistence.complete");
+    expect(workSessionSource).toContain("setStage('SHARE')");
+    expect(coordinationSource).toContain('data-team-coordination-mode="status"');
+  });
+
+  it('keeps team outcome authority distinct from institutional approval', () => {
+    expect(coordinationSource).toContain("['dipartimento', 'referente'].includes(team.selectedMembership.role)");
+    expect(coordinationSource).toContain('hasDisciplineCompetence');
+    expect(coordinationSource).toContain('repository.recordTeamOutcome');
+    expect(coordinationSource).toContain('non approvazione istituzionale');
+    expect(workSessionSource).toContain('non approva il curricolo');
   });
 });
