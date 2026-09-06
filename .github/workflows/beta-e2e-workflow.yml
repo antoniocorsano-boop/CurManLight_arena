@@ -47,6 +47,7 @@ on:
       - 'src/__tests__/team-review-provenance.test.ts'
       - 'src/__tests__/team-review-legacy-scope-backfill.test.ts'
       - 'src/__tests__/teacher-three-level-communication.test.ts'
+      - 'src/__tests__/fascicolo-navigation-convergence.test.ts'
       - 'scripts/audit-kx-mobile.cjs'
       - 'scripts/verify-beta-g4-browser.cjs'
       - 'scripts/serve-beta-pages-preview.cjs'
@@ -106,6 +107,7 @@ on:
       - 'src/__tests__/team-review-provenance.test.ts'
       - 'src/__tests__/team-review-legacy-scope-backfill.test.ts'
       - 'src/__tests__/teacher-three-level-communication.test.ts'
+      - 'src/__tests__/fascicolo-navigation-convergence.test.ts'
       - 'scripts/audit-kx-mobile.cjs'
       - 'scripts/verify-beta-g4-browser.cjs'
       - 'scripts/serve-beta-pages-preview.cjs'
@@ -152,6 +154,7 @@ jobs:
           src/__tests__/team-review-legacy-scope-backfill.test.ts
           src/__tests__/teacher-three-level-communication.test.ts
           src/__tests__/institutional-curriculum-source-register.test.ts
+          src/__tests__/fascicolo-navigation-convergence.test.ts
 
       - name: BETA-G4 server authority invariants
         run: |
