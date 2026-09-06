@@ -13,11 +13,13 @@ on:
       - 'src/lib/curriculumBaseline.ts'
       - 'src/domain/curriculum/institute/currentSource.ts'
       - 'src/domain/curriculum/validation/technologyClass1Review.ts'
+      - 'src/features/curriculum/CurriculumWorkspace.tsx'
       - 'src/features/curriculum/components/RevisioneTab.tsx'
       - 'src/features/curriculum/hooks/useCurriculumProgressStats.ts'
       - 'src/features/documents/components/InstituteCurrentSourcePanel.tsx'
       - 'src/features/documents/components/FontiWorkspace.tsx'
       - 'src/types/curriculum.ts'
+      - 'src/__tests__/canonical-curriculum-entry.test.ts'
       - 'src/__tests__/current-institute-curriculum-source.test.ts'
       - 'src/__tests__/technology-class1-professional-review.test.ts'
       - 'tools/curriculum-alignment/validate.mjs'
@@ -35,11 +37,13 @@ on:
       - 'src/lib/curriculumBaseline.ts'
       - 'src/domain/curriculum/institute/currentSource.ts'
       - 'src/domain/curriculum/validation/technologyClass1Review.ts'
+      - 'src/features/curriculum/CurriculumWorkspace.tsx'
       - 'src/features/curriculum/components/RevisioneTab.tsx'
       - 'src/features/curriculum/hooks/useCurriculumProgressStats.ts'
       - 'src/features/documents/components/InstituteCurrentSourcePanel.tsx'
       - 'src/features/documents/components/FontiWorkspace.tsx'
       - 'src/types/curriculum.ts'
+      - 'src/__tests__/canonical-curriculum-entry.test.ts'
       - 'src/__tests__/current-institute-curriculum-source.test.ts'
       - 'src/__tests__/technology-class1-professional-review.test.ts'
       - 'tools/curriculum-alignment/validate.mjs'
@@ -57,9 +61,19 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '22'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
 
       - name: Validate REG-CURR-00
         run: node tools/curriculum-alignment/validate.mjs
 
       - name: Validate canonical master versus legacy boundary
         run: node tools/curriculum-alignment/validate-legacy-boundary.mjs
+
+      - name: Validate canonical curriculum entry
+        run: >-
+          npx vitest run
+          src/__tests__/canonical-curriculum-entry.test.ts
+          src/__tests__/current-institute-curriculum-source.test.ts
