@@ -1,8 +1,8 @@
 {
   "registry_id": "REG-CURR-00",
-  "version": "1.10.0",
+  "version": "1.11.0",
   "recorded_at": "2026-09-06",
-  "purpose": "Mantenere allineati fascicolo Drive, master curricolare canonico, provenienza, conformita normativa, logiche di governo, baseline Arena e documentazione operativa senza creare baseline curricolari concorrenti.",
+  "purpose": "Mantenere allineati fascicolo Drive, master curricolare canonico, provenienza, repertorio delle fonti, conformita normativa, logiche di governo, baseline Arena e documentazione operativa senza creare baseline curricolari concorrenti.",
   "drive": {
     "master_register": {
       "title": "REG-CURR-00_Registro_maestro_fascicolo_curricolare_e_allineamento_Arena_2026-2027",
@@ -35,6 +35,14 @@
       "identified_curricular_gaps": 6,
       "materialized_curricular_gaps": 6
     },
+    "source_repertory": {
+      "title": "ALL-CURR-A_Repertorio_fonti_normative_e_istituzionali_2026-2027",
+      "file_id": "1MBZKbis6i6xg50z6fKgbh9yUianJXdhZ5jsK4r852PQ",
+      "version": "1.1",
+      "date": "2026-09-06",
+      "role": "INSTRUCTIONAL_SOURCE_REPERTORY",
+      "status": "CURRENT_ALIGNED_TO_MASTER_1_1"
+    },
     "primary_corrected_source": {
       "title": "CURRICOLO_VERTICALE_CORRETTO_PROPOSTA_2026-09-03.docx",
       "file_id": "1DPdK_EIZsE3lI-LIzTJG776cU1PcAcnf",
@@ -58,6 +66,10 @@
     "normative_alignment": "GAPS_MATERIALIZED_PENDING_HUMAN_VALIDATION",
     "normative_gaps_identified": 6,
     "normative_gaps_materialized": 6,
+    "source_repertory": "ALL-CURR-A@1.1",
+    "source_traceability": "ALIGNED_TO_MASTER_1_1",
+    "authoritative_sources_applied": 11,
+    "document_chain_entries": 4,
     "human_professional_validation": "OPEN",
     "verticality_final_review": "OPEN",
     "ready_for_collegio": "NOT_YET",
@@ -75,8 +87,16 @@
   },
   "source_logic": {
     "current_master_contract": "src/domain/curriculum/institute/currentSource.ts",
+    "source_repertory_contract": "src/domain/curriculum/institute/sourceRegister.ts",
     "canonical_surface": "src/features/documents/components/FontiWorkspace.tsx",
+    "source_repertory_surface": "src/features/documents/components/InstituteCurriculumSourceRegisterPanel.tsx",
     "status": "ALIGNED_TO_UNIFIED_CANONICAL_MASTER_1_1",
+    "source_repertory_version": "1.1",
+    "authoritative_source_count": 11,
+    "document_chain_count": 4,
+    "source_locator_policy": "OFFICIAL_OR_EXPLICIT_INSTITUTIONAL_MIRROR",
+    "source_authority_inferred_from_presence": false,
+    "source_traceability_status": "ALIGNED_TO_MASTER_1_1",
     "primary_corrected_source_role": "PRIMARY_CORRECTED_PROVENANCE",
     "historical_v3_role": "HISTORICAL_TECHNICAL_BASELINE",
     "historical_remediation_workbench_active_in_canonical_surface": false
@@ -193,6 +213,7 @@
   },
   "authority_chain": [
     "fonte_normativa",
+    "repertorio_fonti",
     "elaborazione_istituto",
     "proposta_professionale",
     "contributo_individuale",
@@ -224,6 +245,10 @@
     "accepted_change_must_update_same_master": true,
     "normative_matrix_is_control_attachment_not_baseline": true,
     "normative_gap_closure_requires_same_master_update": true,
+    "source_repertory_must_match_drive_and_runtime": true,
+    "source_presence_never_implies_authority": true,
+    "source_locator_kind_must_be_explicit": true,
+    "institutional_mirror_must_not_be_presented_as_official": true,
     "active_validation_pilot_requires_exact_drive_bindings": true,
     "human_outcome_must_not_be_inferred_from_app_state": true,
     "instructional_audit_must_not_be_promoted_as_human_outcome": true,
