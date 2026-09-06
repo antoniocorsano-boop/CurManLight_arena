@@ -1,0 +1,52 @@
+name: Curriculum Alignment
+
+on:
+  pull_request:
+    paths:
+      - 'docs/curriculum/REG-CURR-00.registry.json'
+      - 'docs/curriculum/REG-CURR-00_MASTER_ALIGNMENT.md'
+      - '.human/him.config.json'
+      - '.human/operational-communication.contract.json'
+      - '.human/operational-communication.surfaces.json'
+      - 'src/domain/curriculum/institute/currentSource.ts'
+      - 'src/domain/curriculum/validation/technologyClass1Review.ts'
+      - 'src/features/curriculum/components/RevisioneTab.tsx'
+      - 'src/features/curriculum/hooks/useCurriculumProgressStats.ts'
+      - 'src/features/documents/components/InstituteCurrentSourcePanel.tsx'
+      - 'src/features/documents/components/FontiWorkspace.tsx'
+      - 'src/types/curriculum.ts'
+      - 'src/__tests__/technology-class1-professional-review.test.ts'
+      - 'tools/curriculum-alignment/validate.mjs'
+      - '.github/workflows/curriculum-alignment.yml'
+  push:
+    paths:
+      - 'docs/curriculum/REG-CURR-00.registry.json'
+      - 'docs/curriculum/REG-CURR-00_MASTER_ALIGNMENT.md'
+      - '.human/him.config.json'
+      - '.human/operational-communication.contract.json'
+      - '.human/operational-communication.surfaces.json'
+      - 'src/domain/curriculum/institute/currentSource.ts'
+      - 'src/domain/curriculum/validation/technologyClass1Review.ts'
+      - 'src/features/curriculum/components/RevisioneTab.tsx'
+      - 'src/features/curriculum/hooks/useCurriculumProgressStats.ts'
+      - 'src/features/documents/components/InstituteCurrentSourcePanel.tsx'
+      - 'src/features/documents/components/FontiWorkspace.tsx'
+      - 'src/types/curriculum.ts'
+      - 'src/__tests__/technology-class1-professional-review.test.ts'
+      - 'tools/curriculum-alignment/validate.mjs'
+      - '.github/workflows/curriculum-alignment.yml'
+
+jobs:
+  alignment:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Validate REG-CURR-00
+        run: node tools/curriculum-alignment/validate.mjs

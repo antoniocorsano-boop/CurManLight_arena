@@ -1,4 +1,4 @@
-import { Bot, DownloadCloud, Layers3, RotateCcw, Save, ServerCog, Settings, ShieldAlert, X } from 'lucide-react';
+import { Bot, DownloadCloud, Layers3, RotateCcw, Save, ServerCog, Settings, ShieldAlert, UserCog, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { UiConfirmDialog } from '../../../ui/components/UiConfirmDialog';
 
@@ -22,6 +22,7 @@ interface AppHeaderProps {
   showToast: (message: string, success?: boolean) => void;
   handleClearLocalStorageWithReset: () => void;
   handleWorkspaceLogout: () => void;
+  openLocalProfileEditor: () => void;
   setShowCloudAccountModal: (value: boolean) => void;
 }
 
@@ -212,6 +213,18 @@ export function AppHeader(props: AppHeaderProps) {
                             : 'Puoi continuare a lavorare senza collegare una scuola. Le decisioni istituzionali restano non disponibili.'}
                         </p>
                       </div>
+                    </div>
+
+                    <div className="border-t border-slate-700 py-1">
+                      <button
+                        type="button"
+                        onClick={() => { props.openLocalProfileEditor(); setProfileMenuOpen(false); }}
+                        className="flex w-full items-center gap-2.5 px-4 py-2.5 text-left font-bold text-slate-200 hover:bg-slate-700"
+                        data-local-profile-editor="avatar"
+                      >
+                        <UserCog className="h-4 w-4" aria-hidden="true" />
+                        <span>Modifica profilo locale</span>
+                      </button>
                     </div>
 
                     <div className="border-t border-slate-700 py-1">

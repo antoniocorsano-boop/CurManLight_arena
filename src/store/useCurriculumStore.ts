@@ -31,13 +31,17 @@ import { GuidedTeacherWorkflowState } from '../features/guided-workflow/types';
 
 const getCurriculumBaselineData = () => {
   if (typeof window !== 'undefined') {
-    const saved = localStorage.getItem('curmanlight-custom-curriculum-v2');
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch (e) {
-        // Fallback
+    try {
+      const saved = localStorage.getItem('curmanlight-custom-curriculum-v2');
+      if (saved) {
+        try {
+          return JSON.parse(saved);
+        } catch {
+          // Invalid override: fall back to the bundled baseline.
+        }
       }
+    } catch (error) {
+      console.warn('[CurManLight Storage Guard] Lettura curriculum personalizzato da localStorage non disponibile:', error);
     }
   }
   return getCurriculumBaseline();
@@ -48,16 +52,27 @@ type PersistedStateRecord = {
   value: string;
 };
 
+function markStorageVolatile(reason: unknown) {
+  if (typeof window === 'undefined') return;
+  (window as Window & { __curmanStorageVolatile?: boolean }).__curmanStorageVolatile = true;
+  window.dispatchEvent(new CustomEvent('arena:storage-volatile', {
+    detail: { reason: reason instanceof Error ? reason.message : String(reason) },
+  }));
+}
+
 let db: Dexie | null = null;
 try {
   if (typeof window !== 'undefined' && window.indexedDB) {
     db = createCurriculumDatabase();
   }
 } catch (e) {
+  markStorageVolatile(e);
   console.warn("[CurManLight Storage Guard] Impossibile configurare Dexie/IndexedDB:", e);
 }
 
 const memoryStore: Record<string, string> = {};
+
+export const CURRICULUM_STATE_STORAGE_KEY = 'curmanlight-react-db-state-v1.4.0';
 
 const indexedDBStorage = {
   getItem: async (name: string): Promise<string | null> => {
@@ -66,6 +81,7 @@ const indexedDBStorage = {
       const val = (await db.table('state').get(name)) as PersistedStateRecord | undefined;
       return val ? val.value : null;
     } catch (e) {
+      markStorageVolatile(e);
       console.warn("[CurManLight Storage Guard] Impossibile leggere da IndexedDB, uso la memoria temporanea:", e);
       return memoryStore[name] || null;
     }
@@ -75,6 +91,7 @@ const indexedDBStorage = {
       if (!db) throw new Error("IndexedDB non inizializzato");
       await db.table('state').put({ key: name, value });
     } catch (e) {
+      markStorageVolatile(e);
       console.warn("[CurManLight Storage Guard] Impossibile scrivere in IndexedDB, uso la memoria temporanea:", e);
       memoryStore[name] = value;
     }
@@ -84,11 +101,28 @@ const indexedDBStorage = {
       if (!db) throw new Error("IndexedDB non inizializzato");
       await db.table('state').delete(name);
     } catch (e) {
+      markStorageVolatile(e);
       console.warn("[CurManLight Storage Guard] Impossibile eliminare da IndexedDB, uso la memoria temporanea:", e);
       delete memoryStore[name];
     }
   }
 };
+
+export async function hasPersistedCurriculumState(): Promise<boolean> {
+  if (!db) {
+    const error = new Error('IndexedDB non inizializzato');
+    markStorageVolatile(error);
+    throw error;
+  }
+
+  try {
+    const record = (await db.table('state').get(CURRICULUM_STATE_STORAGE_KEY)) as PersistedStateRecord | undefined;
+    return record !== undefined;
+  } catch (error) {
+    markStorageVolatile(error);
+    throw error;
+  }
+}
 
 type CurriculumStoreState = UserState & {
   institutionalArchive: InstitutionalArchive;
@@ -307,7 +341,7 @@ export const useCurriculumStore = create<StoreActions>()(
       resetGuidedWorkflowState: () => set({ guidedWorkflowState: undefined }),
     }),
     {
-      name: 'curmanlight-react-db-state-v1.4.0',
+      name: CURRICULUM_STATE_STORAGE_KEY,
       storage: createJSONStorage(() => indexedDBStorage),
       merge: (persistedState, currentState) => {
         const persisted = isRecord(persistedState) ? persistedState : {};

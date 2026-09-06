@@ -1,6 +1,8 @@
 import { useEffect, type Dispatch, type SetStateAction } from 'react';
 import type { SchoolOrder, UserRole } from '../../../types/curriculum';
-import { safeLocalStorageGetItem, safeLocalStorageSetItem } from '../../../lib/consolidatedStorage';
+import { safeLocalStorageSetItem } from '../../../lib/consolidatedStorage';
+import { ARENA_STORAGE_VOLATILE_EVENT, verifyBrowserStorage } from '../../../lib/storageRuntimeHealth';
+import { hasPersistedCurriculumState } from '../../../store/useCurriculumStore';
 
 interface UseAppStartupEffectsArgs {
  role: UserRole;
@@ -44,6 +46,7 @@ export function useAppStartupEffects({
 }: UseAppStartupEffectsArgs) {
  useEffect(() => {
   let onboardingTimer: ReturnType<typeof setTimeout> | null = null;
+  let disposed = false;
 
   const cancelPendingOnboarding = () => {
    if (onboardingTimer !== null) {
@@ -57,22 +60,50 @@ export function useAppStartupEffects({
    setShowOnboardingModal(false);
   };
 
+  const markRuntimeStorageVolatile = () => {
+   setIsDatabaseVolatile(true);
+  };
+
   // An explicit focused interaction wins over deferred automatic onboarding.
   // This does not persist or complete the profile; it only prevents startup
   // onboarding from interrupting the task the user explicitly opened.
   window.addEventListener('arena:assistant-open', cancelPendingOnboarding);
   window.addEventListener('arena:knowledge-open', deferAutomaticOnboardingForFocusedTask);
+  window.addEventListener(ARENA_STORAGE_VOLATILE_EVENT, markRuntimeStorageVolatile);
 
-  try {
-   if (!window.indexedDB) {
+  void verifyBrowserStorage()
+   .then((storageStatus) => {
+    const runtimeFallback = Boolean(
+     (window as Window & { __curmanStorageVolatile?: boolean }).__curmanStorageVolatile
+    );
+
+    if (!storageStatus.indexedDbOperational || runtimeFallback) {
+     setIsDatabaseVolatile(true);
+     console.error(
+      '[CurManLight Storage Guard] IndexedDB non operativo: Arena sta usando memoria temporanea. Il test reale non è valido.',
+      storageStatus.reason ?? ''
+     );
+     return;
+    }
+
+    setIsDatabaseVolatile(false);
+    if (storageStatus.mode === 'indexeddb-persistent') {
+     console.info(
+      '[CurManLight Storage Guard] IndexedDB verificato con scrittura/lettura. Protezione anti-eviction concessa dal browser.'
+     );
+    } else {
+     console.info(
+      '[CurManLight Storage Guard] IndexedDB verificato con scrittura/lettura. Storage best-effort attivo: non è memoria temporanea e il test può proseguire.'
+     );
+    }
+   })
+   .catch((error) => {
     setIsDatabaseVolatile(true);
-   } else {
-    const testReq = window.indexedDB.open('CurManLightDB_Test_Volume_Check', 1);
-    testReq.onerror = () => setIsDatabaseVolatile(true);
-   }
-  } catch (e) {
-   setIsDatabaseVolatile(true);
-  }
+    console.error(
+     '[CurManLight Storage Guard] Verifica IndexedDB fallita: Arena deve essere considerata volatile.',
+     error
+    );
+   });
 
   if (typeof window !== 'undefined' && window.innerWidth < 1280) {
    setProgettazioneMode('wizard');
@@ -80,20 +111,6 @@ export function useAppStartupEffects({
 
   if (typeof window !== 'undefined' && window.location.protocol === 'file:') {
    setIsFileProtocol(true);
-  }
-
-  if (navigator.storage && navigator.storage.persist) {
-   navigator.storage.persisted().then((persisted) => {
-    if (!persisted) {
-     navigator.storage.persist().then((granted) => {
-      if (granted) {
-        console.log("[CurManLight Storage Guard] Il browser ha concesso la persistenza locale; durata e protezione non sono garantite.");
-      } else {
-       console.warn('[CurManLight Storage Guard] Memoria persistente rifiutata o non supportata dal browser.');
-      }
-     });
-    }
-   });
   }
 
   if (window.location.hash) {
@@ -137,16 +154,23 @@ export function useAppStartupEffects({
    }
   }
 
-  const isNew = !safeLocalStorageGetItem('curmanlight-react-db-state-v1.4.0', '');
-  if (isNew) {
-   onboardingTimer = setTimeout(() => {
-    onboardingTimer = null;
-    setOnboardingRoleLocal(role);
-    setOnboardingDiscLocal(discipline);
-    setOnboardingOrdLocal(order);
-    setShowOnboardingModal(true);
-   }, 1000);
-  }
+  void hasPersistedCurriculumState()
+   .then((hasPersistedState) => {
+    if (disposed || hasPersistedState) return;
+    onboardingTimer = setTimeout(() => {
+     onboardingTimer = null;
+     if (disposed) return;
+     setOnboardingRoleLocal(role);
+     setOnboardingDiscLocal(discipline);
+     setOnboardingOrdLocal(order);
+     setShowOnboardingModal(true);
+    }, 1000);
+   })
+   .catch((error) => {
+    if (disposed) return;
+    setIsDatabaseVolatile(true);
+    console.error('[CurManLight Storage Guard] Impossibile determinare la presenza dello stato persistito in IndexedDB.', error);
+   });
 
   try {
    const allKeys = Object.keys(localStorage);
@@ -170,9 +194,11 @@ export function useAppStartupEffects({
   }
 
   return () => {
+   disposed = true;
    cancelPendingOnboarding();
    window.removeEventListener('arena:assistant-open', cancelPendingOnboarding);
    window.removeEventListener('arena:knowledge-open', deferAutomaticOnboardingForFocusedTask);
+   window.removeEventListener(ARENA_STORAGE_VOLATILE_EVENT, markRuntimeStorageVolatile);
   };
  }, []);
 }
