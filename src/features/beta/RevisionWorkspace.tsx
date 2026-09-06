@@ -3,10 +3,13 @@ import { RevisioneTab } from '../curriculum';
 import { useCurriculumStore } from '../../store/useCurriculumStore';
 import type { AppViewsLayerProps } from '../session/types/appViewContracts';
 import { TeamContributionPublisher, type TeamContributionPersistenceState } from './TeamContributionPublisher';
-import { TeamCoordinationWorkspace } from './TeamCoordinationWorkspace';
+import {
+  TeamCoordinationWorkspace,
+  type TeamCoordinationSessionState,
+} from './TeamCoordinationWorkspace';
 import { useTeamWorkspaceContext } from './useTeamWorkspaceContext';
 
-type CurriculumWorkSessionStage = 'EXAMINE' | 'SHARE' | 'COMPARE';
+type CurriculumWorkSessionStage = 'EXAMINE' | 'SHARE' | 'COMPARE' | 'RECORD_TEAM_OUTCOME';
 
 const roleLabel = (role: string | undefined): string | null => {
   if (!role) return null;
@@ -29,11 +32,23 @@ const emptyPersistenceState = (requiredCount = 0): TeamContributionPersistenceSt
   complete: false,
 });
 
+const emptyCoordinationState = (): TeamCoordinationSessionState => ({
+  total: 0,
+  openDiscussionCount: 0,
+  pendingSharedOutcomeCount: 0,
+  resolvedCount: 0,
+  remainingOutcomeCount: 0,
+  allCurrentOutcomesRecorded: false,
+  canRecordTeamOutcome: false,
+});
+
 export function RevisionWorkspace(props: AppViewsLayerProps) {
   const { decisions, customTexts, schoolYear } = useCurriculumStore();
   const team = useTeamWorkspaceContext();
   const [stage, setStage] = useState<CurriculumWorkSessionStage>('EXAMINE');
   const [sharePersistence, setSharePersistence] = useState<TeamContributionPersistenceState>(() => emptyPersistenceState());
+  const [coordinationState, setCoordinationState] = useState<TeamCoordinationSessionState>(() => emptyCoordinationState());
+  const [outcomeProposalRef, setOutcomeProposalRef] = useState<string | null>(null);
 
   const selectedRole = team.selectedMembership?.role;
   const isCoordinator = selectedRole === 'dipartimento' || selectedRole === 'referente';
@@ -64,8 +79,19 @@ export function RevisionWorkspace(props: AppViewsLayerProps) {
     setSharePersistence(next);
   }, []);
 
+  const handleCoordinationStateChange = useCallback((next: TeamCoordinationSessionState) => {
+    setCoordinationState(next);
+  }, []);
+
+  const openOutcomeStage = useCallback((proposalRef: string | null) => {
+    setOutcomeProposalRef(proposalRef);
+    setStage('RECORD_TEAM_OUTCOME');
+  }, []);
+
   useEffect(() => {
     setStage('EXAMINE');
+    setOutcomeProposalRef(null);
+    setCoordinationState(emptyCoordinationState());
   }, [props.discipline, props.order]);
 
   useEffect(() => {
@@ -77,7 +103,10 @@ export function RevisionWorkspace(props: AppViewsLayerProps) {
   }, [reviewComplete, stage]);
 
   useEffect(() => {
-    if (stage === 'COMPARE' && !sharePersistence.complete) setStage('SHARE');
+    if ((stage === 'COMPARE' || stage === 'RECORD_TEAM_OUTCOME') && !sharePersistence.complete) {
+      setOutcomeProposalRef(null);
+      setStage('SHARE');
+    }
   }, [stage, sharePersistence.complete]);
 
   const stepState = (index: number): 'complete' | 'active' | 'future' => {
@@ -87,8 +116,12 @@ export function RevisionWorkspace(props: AppViewsLayerProps) {
       if (index === 1) return sharePersistence.complete ? 'complete' : 'active';
       return 'future';
     }
-    if (index < 2) return 'complete';
-    return index === 2 ? 'active' : 'future';
+    if (stage === 'COMPARE') {
+      if (index < 2) return 'complete';
+      return index === 2 ? 'active' : 'future';
+    }
+    if (index < 3) return 'complete';
+    return coordinationState.allCurrentOutcomesRecorded ? 'complete' : 'active';
   };
 
   return (
@@ -98,6 +131,7 @@ export function RevisionWorkspace(props: AppViewsLayerProps) {
       data-curriculum-work-session
       data-work-session-stage={stage}
       data-persisted-share-ready={sharePersistence.complete ? 'true' : 'false'}
+      data-team-outcome-complete={coordinationState.allCurrentOutcomesRecorded ? 'true' : 'false'}
     >
       <section
         className="sticky top-0 z-40 -mx-3 border-b border-slate-200 bg-white/95 px-3 py-3 backdrop-blur sm:static sm:mx-0 sm:rounded-2xl sm:border sm:p-4"
@@ -108,7 +142,7 @@ export function RevisionWorkspace(props: AppViewsLayerProps) {
             <span className="text-[10px] font-black uppercase tracking-wide text-indigo-600">Validazione professionale</span>
             <strong className="mt-1 block text-base text-slate-900">Il mio lavoro sul curricolo</strong>
             <p className="mt-1 text-xs leading-relaxed text-slate-600">
-              Un solo percorso: prima esamini e condividi il tuo contributo; il confronto del gruppo arriva dopo.
+              Un solo percorso: esamina, condividi, confronta e registra l’esito del gruppo quando ti compete.
             </p>
           </div>
           {selectedRoleLabel && (
@@ -202,7 +236,7 @@ export function RevisionWorkspace(props: AppViewsLayerProps) {
             <section className="rounded-2xl border border-amber-200 bg-amber-50 p-4" aria-label="Confronto non ancora disponibile" data-team-comparison-blocked-by-share>
               <strong className="block text-sm text-amber-950">Il confronto si apre dopo la condivisione verificata</strong>
               <p className="mt-1 text-xs leading-relaxed text-amber-900">
-                Arena abilita il confronto soltanto quando tutte le {sharePersistence.requiredCount || totalReviewCount} schede del tuo contributo corrente risultano registrate nel team.
+                Arena abilita il confronto soltanto quando tutte le {sharePersistence.requiredCount || totalReviewCount} schede del tuo contributo corrente risultano registrate nel gruppo.
               </p>
             </section>
           )}
@@ -211,7 +245,7 @@ export function RevisionWorkspace(props: AppViewsLayerProps) {
             <section className="rounded-2xl border border-indigo-200 bg-white p-4" aria-label="Passaggio al confronto del gruppo" data-team-comparison-ready>
               <strong className="block text-sm text-slate-900">Condivisione verificata</strong>
               <p className="mt-1 text-xs leading-relaxed text-slate-600">
-                Il tuo contributo corrente è registrato nel team. Ora puoi aprire il confronto come coordinatore; il ruolo di coordinamento resta distinto dal contributo individuale.
+                Il tuo contributo corrente è registrato nel gruppo. Ora puoi aprire il confronto come coordinatore; il ruolo di coordinamento resta distinto dal contributo individuale.
               </p>
               <button
                 type="button"
@@ -228,7 +262,7 @@ export function RevisionWorkspace(props: AppViewsLayerProps) {
             <section className="rounded-2xl border border-slate-200 bg-slate-50 p-4" aria-label="Attesa del confronto del gruppo" data-personal-work-complete>
               <strong className="block text-sm text-slate-900">Il tuo contributo è condiviso</strong>
               <p className="mt-1 text-xs leading-relaxed text-slate-600">
-                Per ora non devi fare altro. Il coordinatore avvierà il confronto quando i contributi necessari saranno disponibili.
+                Per ora non devi fare altro. Il coordinatore proseguirà con il confronto e la registrazione degli esiti quando il gruppo sarà pronto.
               </p>
               <details className="mt-3 rounded-xl border border-slate-200 bg-white">
                 <summary className="cursor-pointer px-3 py-2 text-xs font-bold text-slate-700">Vedi lo stato del confronto</summary>
@@ -238,6 +272,7 @@ export function RevisionWorkspace(props: AppViewsLayerProps) {
                     discipline={props.discipline}
                     order={props.order}
                     academicYear={schoolYear}
+                    mode="status"
                   />
                 </div>
               </details>
@@ -247,13 +282,13 @@ export function RevisionWorkspace(props: AppViewsLayerProps) {
       )}
 
       {stage === 'COMPARE' && isCoordinator && sharePersistence.complete && (
-        <div className="space-y-3 fade-in" data-revision-stage="compare" aria-label="Confronto ed esito del gruppo">
+        <div className="space-y-3 fade-in" data-revision-stage="compare" aria-label="Confronto del gruppo">
           <section className="rounded-2xl border border-indigo-200 bg-indigo-50/50 p-4">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <strong className="block text-base text-indigo-950">Confronto del gruppo</strong>
+                <strong className="block text-base text-indigo-950">Confronta i punti aperti</strong>
                 <p className="mt-1 text-xs leading-relaxed text-indigo-800">
-                  Ora lavori come coordinatore: confronta i contributi e registra l’esito solo quando i prerequisiti del gruppo sono soddisfatti.
+                  Leggi i contributi e porta all’esito soltanto il punto su cui il gruppo ha maturato una decisione professionale.
                 </p>
               </div>
               <button
@@ -271,7 +306,57 @@ export function RevisionWorkspace(props: AppViewsLayerProps) {
             discipline={props.discipline}
             order={props.order}
             academicYear={schoolYear}
+            mode="compare"
+            onSessionStateChange={handleCoordinationStateChange}
+            onRequestRecordOutcome={openOutcomeStage}
           />
+        </div>
+      )}
+
+      {stage === 'RECORD_TEAM_OUTCOME' && isCoordinator && sharePersistence.complete && (
+        <div className="space-y-3 fade-in" data-revision-stage="team-outcome" aria-label="Registra l’esito del gruppo">
+          <section className="rounded-2xl border border-indigo-200 bg-indigo-50/50 p-4">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <strong className="block text-base text-indigo-950">Registra l’esito del gruppo</strong>
+                <p className="mt-1 text-xs leading-relaxed text-indigo-800">
+                  Registra soltanto ciò che il gruppo ha già concordato. L’esito professionale resta distinto dalla successiva decisione istituzionale.
+                </p>
+              </div>
+              <button
+                type="button"
+                data-human-next-action="return-to-team-comparison"
+                onClick={() => {
+                  setOutcomeProposalRef(null);
+                  setStage('COMPARE');
+                }}
+                className="min-h-10 rounded-xl border border-indigo-300 bg-white px-3 py-2 text-xs font-bold text-indigo-900"
+              >
+                Torna al confronto
+              </button>
+            </div>
+          </section>
+
+          <TeamCoordinationWorkspace
+            proposals={props.currentDisciplineProps}
+            discipline={props.discipline}
+            order={props.order}
+            academicYear={schoolYear}
+            mode="record"
+            outcomeProposalRef={outcomeProposalRef}
+            onSessionStateChange={handleCoordinationStateChange}
+            onRequestRecordOutcome={setOutcomeProposalRef}
+            onOutcomeRecorded={() => setOutcomeProposalRef(null)}
+          />
+
+          {coordinationState.allCurrentOutcomesRecorded && (
+            <section className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4" data-curriculum-work-session-complete>
+              <strong className="block text-sm text-emerald-950">Sessione professionale del gruppo completata per queste schede</strong>
+              <p className="mt-1 text-xs leading-relaxed text-emerald-800">
+                Gli esiti correnti sono registrati. Questo non approva il curricolo: il riesame verticale e l’eventuale iter istituzionale sono passaggi successivi e separati.
+              </p>
+            </section>
+          )}
         </div>
       )}
     </div>
