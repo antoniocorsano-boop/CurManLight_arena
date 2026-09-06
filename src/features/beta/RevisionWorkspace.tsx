@@ -18,7 +18,7 @@ const roleLabel = (role: string | undefined): string | null => {
 };
 
 export function RevisionWorkspace(props: AppViewsLayerProps) {
-  const { decisions, customTexts } = useCurriculumStore();
+  const { decisions, customTexts, schoolYear } = useCurriculumStore();
   const team = useTeamWorkspaceContext();
   const [pane, setPane] = useState<RevisionWorkspacePane>('mine');
   const [userSelectedPane, setUserSelectedPane] = useState(false);
@@ -136,6 +136,9 @@ export function RevisionWorkspace(props: AppViewsLayerProps) {
                 proposals={props.currentDisciplineProps}
                 decisions={decisions}
                 customTexts={customTexts}
+                discipline={props.discipline}
+                order={props.order}
+                academicYear={schoolYear}
               />
             </div>
           )}
@@ -146,6 +149,7 @@ export function RevisionWorkspace(props: AppViewsLayerProps) {
             proposals={props.currentDisciplineProps}
             discipline={props.discipline}
             order={props.order}
+            academicYear={schoolYear}
           />
         </div>
       )}
