@@ -1,4 +1,5 @@
 import { INSTITUTE_CURRICULUM_SOURCE_RECONSTRUCTION_V3 } from './sourceReconstructionReadiness';
+import { INSTITUTE_CURRICULUM_SOURCE_REPERTORY } from './sourceRegister';
 
 export const INSTITUTE_CURRICULUM_PRIMARY_CORRECTED_SOURCE = {
   sourceFile: 'CURRICOLO_VERTICALE_CORRETTO_PROPOSTA_2026-09-03.docx',
@@ -39,6 +40,12 @@ export const INSTITUTE_CURRICULUM_CURRENT_SOURCE = {
   materializationState: 'COMPLETE',
   curriculumInForce: false,
   primaryCorrectedSource: INSTITUTE_CURRICULUM_PRIMARY_CORRECTED_SOURCE,
+  sourceRepertory: {
+    ...INSTITUTE_CURRICULUM_SOURCE_REPERTORY,
+    machineContract: 'src/domain/curriculum/institute/sourceRegister.ts',
+    canonicalSurface: 'src/features/documents/components/InstituteCurriculumSourceRegisterPanel.tsx',
+    alignmentState: 'ALIGNED_TO_MASTER_1_1',
+  },
   humanProfessionalValidation: 'OPEN',
   verticalityFinalReview: 'OPEN',
   readyForCollegio: false,
