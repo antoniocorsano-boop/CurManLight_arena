@@ -1,5 +1,6 @@
-import { Bot, DownloadCloud, Layers3, RotateCcw, Save, ServerCog, Settings, ShieldAlert, UserCog, X } from 'lucide-react';
+import { Bot, DownloadCloud, Layers3, LogOut, RotateCcw, Save, ServerCog, Settings, ShieldAlert, UserCog, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { getOptionalSupabaseBrowserClient } from '../../../infrastructure/supabase/client';
 import { UiConfirmDialog } from '../../../ui/components/UiConfirmDialog';
 
 interface AppHeaderProps {
@@ -31,20 +32,44 @@ export function AppHeader(props: AppHeaderProps) {
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [mobileNavigationOpen, setMobileNavigationOpen] = useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+  const [teamSessionEmail, setTeamSessionEmail] = useState('');
 
   const assistantReady = props.localAgentStatus === 'ready'
     || (props.localAgentType === 'ollama' && props.ollamaStatus === 'connected');
+  const hasTeamSession = Boolean(teamSessionEmail);
 
-  const activeProfileLabel = !props.isWorkspaceLoggedIn
-    ? 'Sessione locale'
-    : props.cloudAccountType === 'scolastica'
-      ? 'Profilo istituzionale'
-      : 'Profilo personale';
+  const activeProfileLabel = hasTeamSession
+    ? 'Lavoro del team'
+    : !props.isWorkspaceLoggedIn
+      ? 'Sessione locale'
+      : props.cloudAccountType === 'scolastica'
+        ? 'Profilo istituzionale'
+        : 'Profilo personale';
 
   useEffect(() => {
     const closeMobileNavigation = () => setMobileNavigationOpen(false);
     window.addEventListener('arena:mobile-navigation-closed', closeMobileNavigation);
     return () => window.removeEventListener('arena:mobile-navigation-closed', closeMobileNavigation);
+  }, []);
+
+  useEffect(() => {
+    const client = getOptionalSupabaseBrowserClient().client;
+    if (!client) return undefined;
+
+    let mounted = true;
+    const applySession = (email: string | null | undefined) => {
+      if (mounted) setTeamSessionEmail(email ?? '');
+    };
+
+    void client.auth.getSession().then(({ data }) => applySession(data.session?.user.email));
+    const { data: authListener } = client.auth.onAuthStateChange((_event, session) => {
+      applySession(session?.user.email);
+    });
+
+    return () => {
+      mounted = false;
+      authListener.subscription.unsubscribe();
+    };
   }, []);
 
   const handleNavigationToggle = () => {
@@ -74,6 +99,21 @@ export function AppHeader(props: AppHeaderProps) {
   const toggleProfile = () => {
     props.setRoleDropdownOpen(false);
     setProfileMenuOpen((open) => !open);
+  };
+
+  const handleTeamLogout = async () => {
+    const client = getOptionalSupabaseBrowserClient().client;
+    if (!client || !teamSessionEmail) return;
+
+    const { error } = await client.auth.signOut({ scope: 'local' });
+    if (error) {
+      props.showToast('Non è stato possibile uscire dal lavoro del team. Riprova.', false);
+      return;
+    }
+
+    setTeamSessionEmail('');
+    setProfileMenuOpen(false);
+    props.showToast('Sei uscito dal lavoro del team. Il profilo locale resta disponibile su questo dispositivo.');
   };
 
   return (
@@ -175,7 +215,7 @@ export function AppHeader(props: AppHeaderProps) {
                   aria-expanded={profileMenuOpen}
                   data-profile-entry="canonical"
                 >
-                  {props.isWorkspaceLoggedIn ? 'CL' : 'U'}
+                  {props.isWorkspaceLoggedIn || hasTeamSession ? 'CL' : 'U'}
                 </button>
 
                 {profileMenuOpen && (
@@ -183,9 +223,10 @@ export function AppHeader(props: AppHeaderProps) {
                     <div className="px-4 py-3">
                       <p className="font-extrabold text-slate-100">Profilo e accesso</p>
                       <p className="mt-1 truncate text-slate-400">
-                        {props.isWorkspaceLoggedIn
-                          ? (props.workspaceUserEmail || 'Account collegato')
-                          : 'Stai lavorando in locale su questo dispositivo.'}
+                        {teamSessionEmail
+                          || (props.isWorkspaceLoggedIn
+                            ? (props.workspaceUserEmail || 'Account collegato')
+                            : 'Stai lavorando in locale su questo dispositivo.')}
                       </p>
                     </div>
 
@@ -258,6 +299,23 @@ export function AppHeader(props: AppHeaderProps) {
                         </button>
                       )}
                     </div>
+
+                    {hasTeamSession && (
+                      <div className="border-t border-slate-700 py-1">
+                        <button
+                          type="button"
+                          onClick={() => void handleTeamLogout()}
+                          className="flex w-full items-center gap-2.5 px-4 py-2.5 text-left font-bold text-rose-300 hover:bg-slate-700"
+                          data-team-signout="canonical"
+                        >
+                          <LogOut className="h-4 w-4" aria-hidden="true" />
+                          <span>Esci</span>
+                        </button>
+                        <p className="px-4 pb-2 text-[10px] leading-relaxed text-slate-500">
+                          Termina la sessione del lavoro del team; il profilo locale resta sul dispositivo.
+                        </p>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
