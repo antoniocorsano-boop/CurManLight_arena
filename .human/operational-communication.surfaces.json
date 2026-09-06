@@ -1,6 +1,6 @@
 {
   "registry_id": "CCO-SURFACES",
-  "version": "1.4.1",
+  "version": "1.5.0",
   "contract": ".human/operational-communication.contract.json",
   "status_vocabulary": ["conformant", "migration", "guided-setup", "excluded"],
   "surfaces": [
@@ -8,15 +8,22 @@
       "id": "home-docente",
       "path": "src/features/session/components/DashboardView.tsx",
       "status": "conformant",
-      "operational_context": "Il tuo spazio nel curricolo",
-      "primary_task": "Orientarsi e aprire il lavoro pertinente al proprio profilo",
+      "operational_context": "Il mio lavoro sul curricolo",
+      "primary_task": "Riconoscere il lavoro personale corrente e aprire l'attività pertinente senza leggere spiegazioni tecniche del sistema",
+      "communication_levels": {
+        "level_1": "Orientamento, stato e azione docente",
+        "level_2": "Percorso di lavoro e documenti collegati",
+        "level_3": "Ruoli e condizioni di accesso"
+      },
       "required_tokens": [
         "data-beta-home=\"role-work-queue\"",
         "data-home-queue=\"actionable\"",
         "data-home-work-action=",
-        "data-hcm-secondary-content",
-        "Il tuo spazio nel curricolo",
-        "Da fare"
+        "data-hcm-level=\"1\"",
+        "data-hcm-level=\"2\"",
+        "data-hcm-level=\"3\"",
+        "Il mio lavoro sul curricolo",
+        "Attività che richiedono il tuo intervento."
       ]
     },
     {
@@ -37,8 +44,13 @@
       "id": "revisione-scheda-personale",
       "path": "src/features/curriculum/components/RevisioneTab.tsx",
       "status": "conformant",
-      "operational_context": "Il mio contributo",
-      "primary_task": "Riconoscere la scheda corrente, confrontare precedente e proposta e scegliere senza leggere una spiegazione del processo",
+      "operational_context": "Il mio contributo alla revisione del curricolo",
+      "primary_task": "Confrontare testo precedente e proposta e registrare il proprio orientamento professionale",
+      "communication_levels": {
+        "level_1": "Confronto della scheda e azioni personali",
+        "level_2": "Motivazione e criteri di esame",
+        "level_3": "Fonti e tracciabilità"
+      },
       "required_tokens": [
         "data-revision-flow=\"recognition-first\"",
         "data-revision-recognition-header",
@@ -46,12 +58,16 @@
         "data-revision-completed-card",
         "data-revision-consequence",
         "data-revision-assurance-on-demand",
-        "Precedente",
-        "Proposta",
-        ">Conferma<",
-        ">Modifica<",
-        "current.keepLabel || 'Mantieni precedente'",
+        "data-hcm-level=\"1\"",
+        "data-hcm-level=\"2\"",
+        "data-hcm-level=\"3\"",
+        "Testo precedente",
+        "Proposta da esaminare",
+        "Conferma la proposta",
+        "Proponi una modifica",
+        "Mantieni testo precedente",
         "Registra modifica",
+        "Fonti e tracciabilità",
         "Tutte le schede"
       ]
     },
@@ -59,19 +75,19 @@
       "id": "pubblicazione-contributo-personale",
       "path": "src/features/beta/TeamContributionPublisher.tsx",
       "status": "migration",
-      "migration_goal": "Applicare il riconoscimento prima dell'interpretazione: un solo stato dominante, un'azione di condivisione evidente e rassicurazione persistente limitata all'effetto condiviso."
+      "migration_goal": "Applicare i tre livelli anche alla condivisione: azione e conseguenza al primo livello, spiegazione del passaggio al secondo, tracciabilità tecnica al terzo."
     },
     {
       "id": "lavoro-del-team",
       "path": "src/features/beta/TeamReviewWorkspace.tsx",
       "status": "migration",
-      "migration_goal": "Rendere motivo del punto, provenienza, stato del team e prossima azione riconoscibili senza richiedere lettura formativa preventiva."
+      "migration_goal": "Rendere motivo del punto, stato del gruppo e prossima azione riconoscibili al primo livello; spostare governance e dettagli tecnici ai livelli successivi."
     },
     {
       "id": "coordinamento-del-team",
       "path": "src/features/beta/TeamCoordinationWorkspace.tsx",
       "status": "migration",
-      "migration_goal": "Separare con chiarezza stato della riunione, coda da discutere e azioni del coordinatore dalle spiegazioni sul modello di governo."
+      "migration_goal": "Separare stato della riunione, coda da discutere e azioni del coordinatore dalle spiegazioni sul modello di governo e dalla tracciabilità tecnica."
     },
     {
       "id": "profilo-di-lavoro-personale",
