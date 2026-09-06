@@ -48,6 +48,7 @@ on:
       - 'supabase/migrations/20260827114500_b3_revoke_anon_decision_rpc.sql'
       - 'supabase/migrations/20260906094400_team_review_operational_scope_preflight.sql'
       - 'supabase/migrations/20260906094500_team_review_operational_scope.sql'
+      - 'supabase/migrations/20260906095500_team_review_rpc_acl_hardening.sql'
       - 'docs/architecture/CML_ARENA_BETA_B3_ACCEPTANCE_v1.json'
       - '.github/workflows/beta-e2e-workflow.yml'
   push:
@@ -98,6 +99,7 @@ on:
       - 'supabase/migrations/20260827114500_b3_revoke_anon_decision_rpc.sql'
       - 'supabase/migrations/20260906094400_team_review_operational_scope_preflight.sql'
       - 'supabase/migrations/20260906094500_team_review_operational_scope.sql'
+      - 'supabase/migrations/20260906095500_team_review_rpc_acl_hardening.sql'
       - 'docs/architecture/CML_ARENA_BETA_B3_ACCEPTANCE_v1.json'
       - '.github/workflows/beta-e2e-workflow.yml'
 
@@ -141,6 +143,7 @@ jobs:
           acl_file='supabase/migrations/20260827114500_b3_revoke_anon_decision_rpc.sql'
           preflight_file='supabase/migrations/20260906094400_team_review_operational_scope_preflight.sql'
           scope_file='supabase/migrations/20260906094500_team_review_operational_scope.sql'
+          acl201_file='supabase/migrations/20260906095500_team_review_rpc_acl_hardening.sql'
 
           grep -Fq 'alter table public.institutional_revision_decisions enable row level security' "$base_file"
           grep -Fq 'security definer' "$base_file"
@@ -169,9 +172,6 @@ jobs:
           grep -Fq "v_workspace_role not in ('dipartimento','referente')" "$scope_file"
           grep -Fq 'VERIFIED_TEAM_OUTCOME_AUTHORITY_REQUIRED' "$scope_file"
           grep -Fq 'TEAM_REVIEW_COVERAGE_INCOMPLETE' "$scope_file"
-          grep -Fq 'revoke all on function public.upsert_team_review_contribution_v1' "$scope_file"
-          grep -Fq 'revoke all on function public.record_team_review_outcome_v1' "$scope_file"
-          grep -Fq 'revoke all on function public.get_team_review_eligible_contributor_count_v1' "$scope_file"
 
           grep -Fq 'LEGACY_TECHNOLOGY_CONTRIBUTION_FINGERPRINT_MISMATCH' "$preflight_file"
           grep -Fq 'LEGACY_TECHNOLOGY_OUTCOME_FINGERPRINT_MISMATCH' "$preflight_file"
@@ -180,6 +180,14 @@ jobs:
           grep -Fq 'join expected e on e.proposal_ref = o.proposal_ref' "$preflight_file"
           grep -Fq "authority_state = 'OPERATIVO_PROVVISORIO'" "$scope_file"
           grep -Fq "where proposal_ref in ('it-sec-1','it-sec-2')" "$scope_file"
+
+          grep -Fq 'revoke all on function public.upsert_team_review_contribution_v1' "$acl201_file"
+          grep -Fq 'revoke all on function public.record_team_review_outcome_v1' "$acl201_file"
+          grep -Fq 'revoke all on function public.get_team_review_eligible_contributor_count_v1' "$acl201_file"
+          grep -Fq 'from public, anon, authenticated' "$acl201_file"
+          grep -Fq 'grant execute on function public.upsert_team_review_contribution_v2' "$acl201_file"
+          grep -Fq 'grant execute on function public.get_team_review_eligible_contributor_count_v3' "$acl201_file"
+          grep -Fq 'grant execute on function public.record_team_review_outcome_v2' "$acl201_file"
 
           legacy_block=$(awk '/-- 4\. Deterministic continuity of known pre-scope Beta evidence/{flag=1} /-- 5\. Scoped contribution API and privacy-minimal denominator/{flag=0} flag' "$scope_file")
           if printf '%s' "$legacy_block" | grep -Fq 'insert into public.team_operational_memberships'; then
