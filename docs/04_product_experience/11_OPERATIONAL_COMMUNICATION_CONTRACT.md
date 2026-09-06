@@ -3,7 +3,7 @@
 **Versione:** 1.4.1  
 **Stato:** normativo per le nuove superfici e per le superfici migrate  
 **Integrazione:** Human Interaction Model (HIM) e `CURRICULUM_LIFECYCLE@1.1.1`  
-**Registro superfici:** 1.5.1
+**Registro superfici:** 1.6.0
 
 ## 1. Scopo
 
@@ -105,7 +105,9 @@ Il coordinatore non salta `ESAMINA` o `CONDIVIDI`: quando lavora sul proprio con
 
 `CONDIVIDI` si considera completato soltanto quando Arena ritrova nel team un `ProfessionalContribution` persistito dello stesso utente che corrisponde alla scheda/versione corrente, all'orientamento personale corrente e, quando presente, al testo di modifica corrente. Una dichiarazione locale non può simulare l'avvenuta condivisione. Se il docente modifica successivamente l'orientamento o il testo, il precedente contributo condiviso diventa non corrente e `CONFRONTA` torna indisponibile fino a una nuova registrazione coerente.
 
-Per il docente senza ulteriori responsabilità il compito personale termina dopo la condivisione verificata; Arena deve mostrare uno stato di attesa comprensibile senza proiettare come azione personale il lavoro futuro del coordinatore.
+`CONFRONTA` e `REGISTRA L'ESITO` sono due compiti distinti della stessa sessione. Il primo serve a leggere i contributi e maturare una decisione professionale; il secondo compare soltanto quando il coordinatore porta un punto all'esito o deve registrare punti già condivisi confermati dal gruppo. Il modulo di registrazione non deve occupare la superficie durante il confronto.
+
+Per il docente senza ulteriori responsabilità il compito personale termina dopo la condivisione verificata; Arena mostra soltanto lo stato del confronto, senza proiettare come azione personale il lavoro futuro del coordinatore.
 
 ## 7. Grammatica delle azioni
 
@@ -168,8 +170,10 @@ Una vista conforme deve superare queste domande:
 11. Una rassicurazione persistente corrisponde a un rischio presente nell'azione corrente?
 12. Un coordinatore attraversa prima gli stessi passaggi personali richiesti agli altri contributori?
 13. `CONFRONTA` resta bloccato se il contributo condiviso non è persistito o non corrisponde più all'orientamento personale corrente?
+14. Il modulo per registrare l'esito resta assente durante `CONFRONTA` e compare solo nello stadio `REGISTRA L'ESITO`?
+15. Il docente senza responsabilità di coordinamento vede soltanto lo stato del confronto dopo la propria condivisione?
 
-I controlli 2, 3, 5, 6, 8, 9, 12 e 13 sono discriminanti.
+I controlli 2, 3, 5, 6, 8, 9, 12, 13, 14 e 15 sono discriminanti.
 
 ## 11. Integrazione con HIM
 
@@ -192,11 +196,11 @@ Il validatore HIM controlla gli invarianti del contratto, le superfici pilota e 
 | Superficie | Stato CCO | Obiettivo |
 |---|---|---|
 | Home docente | **conformant** | Orientamento e accesso al lavoro pertinente. |
-| CurriculumWorkSession | **conformant** | Un'unica progressione Esamina → Condividi → Confronta → Esito, senza tab concorrenti. |
+| CurriculumWorkSession | **conformant** | Un'unica progressione Esamina → Condividi → Confronta → Esito, con quattro stati reali. |
 | Revisione della singola scheda | **conformant** | Riconoscimento immediato: una scheda, un confronto, tre azioni. |
 | Pubblicazione del contributo personale | **conformant** | Condivisione persistita, verificata sulla versione e sull'orientamento correnti. |
 | Lavoro del team legacy | **migration** | Restare solo compatibilità temporanea, non superficie primaria concorrente. |
-| Coordinamento del team | **migration** | Integrare completamente confronto ed esito nella sessione unica. |
+| Coordinamento del team interno | **conformant** | Renderer subordinato della sessione per stato, confronto e registrazione esito; non percorso autonomo. |
 | Profilo di lavoro personale | **guided-setup** | Configurazione iniziale senza confondere preferenze, incarichi e autorità. |
 
 ## 13. CCO-R1 — comunicazione operativa
@@ -234,3 +238,15 @@ CCO-R5 chiude il secondo incremento della `CurriculumWorkSession`.
 Il passaggio `CONDIVIDI → CONFRONTA` non dipende più da una dichiarazione dell'utente. Arena verifica il `ProfessionalContribution` persistito sulla versione/fingerprint corrente e lo confronta con l'orientamento personale e l'eventuale testo personalizzato correnti. Se uno di questi elementi cambia, la precedente condivisione non è più sufficiente e la sessione torna a **Condividi**.
 
 Questo vincolo riguarda la correttezza del processo professionale nel prodotto. Non costituisce esito del gruppo, decisione istituzionale, approvazione o adozione del curricolo.
+
+## 18. CCO-R6 — confronto ed esito come stadi distinti della stessa sessione
+
+CCO-R6 chiude il terzo incremento della `CurriculumWorkSession`.
+
+`CONFRONTA` e `REGISTRA L'ESITO` sono ora due stati realmente renderizzati. Durante il confronto Arena mostra sintesi e punti aperti; il modulo di registrazione non è presente come azione concorrente. Quando il coordinatore porta un punto all'esito, la sessione passa al quarto stadio e mostra il solo compito di registrazione pertinente. Al termine, gli esiti già registrati diventano riepilogo e il completamento della sessione professionale è visibile senza essere confuso con riesame verticale o iter istituzionale.
+
+Il componente tecnico di coordinamento resta riutilizzato come renderer interno `status / compare / record`, ma non costituisce più una superficie primaria concorrente. Il docente che ha terminato la propria responsabilità personale vede soltanto lo stato del confronto. Il coordinatore conserva i medesimi controlli di ruolo, competenza disciplinare e autorità già applicati alla registrazione degli esiti.
+
+Regola finale del terzo incremento:
+
+**CONFRONTO DEL GRUPPO ≠ REGISTRAZIONE DELL'ESITO ≠ DECISIONE ISTITUZIONALE ≠ CURRICOLO VIGENTE.**
