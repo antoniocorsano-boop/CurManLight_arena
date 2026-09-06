@@ -1,6 +1,6 @@
 {
   "registry_id": "ARENA-PRODUCT-DOCS",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "date": "2026-09-06",
   "product_vision": {
     "id": "ARENA-PRODUCT-VISION",
@@ -57,6 +57,10 @@
     "persisted_current_professional_contribution_gates_comparison": true,
     "local_personal_change_invalidates_previous_share_completion": true,
     "team_contribution_publisher_integrated_with_work_session_state": true,
+    "team_comparison_integrated_with_work_session_state": true,
+    "team_outcome_recording_is_distinct_work_session_stage": true,
+    "team_coordination_workspace_no_longer_primary_competing_surface": true,
+    "teacher_after_share_sees_status_not_coordination_actions": true,
     "target_ui_fully_implemented": false,
     "human_end_to_end_pilot_complete": false
   }
