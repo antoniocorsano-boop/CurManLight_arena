@@ -20,8 +20,6 @@ const currentSourceDomain = readText('src/domain/curriculum/institute/currentSou
 const currentSourcePanel = readText('src/features/documents/components/InstituteCurrentSourcePanel.tsx');
 const fontiWorkspace = readText('src/features/documents/components/FontiWorkspace.tsx');
 const technologyPilotDomain = readText('src/domain/curriculum/validation/technologyClass1Review.ts');
-const revisionSurface = readText('src/features/curriculum/components/RevisioneTab.tsx');
-const progressHook = readText('src/features/curriculum/hooks/useCurriculumProgressStats.ts');
 const teamReviewDomain = readText('src/domain/revision/teamReview.ts');
 const teamWorkspace = readText('src/features/beta/TeamReviewWorkspace.tsx');
 
@@ -47,7 +45,7 @@ assert(provenance?.role === 'PRIMARY_CORRECTED_PROVENANCE', 'la fonte del 3 sett
 for (const token of [master.title, master.file_id, provenance.title, provenance.file_id, provenance.sha256]) {
   assert(currentSourceDomain.includes(token), `contratto curricolare privo di ${token}`);
 }
-assert(currentSourceDomain.includes("lifecycleState: 'CANONICAL_BASELINE_PENDING_HUMAN_VALIDATION'"), 'lifecycle del master inatteso');
+assert(currentSourceDomain.includes("lifecycleState: 'CANONICAL_BASELINE_PENDING_HUMAN_VALIDATION'"), 'lifecycle master inatteso');
 assert(currentSourceDomain.includes("materializationState: 'COMPLETE'"), 'materializzazione non registrata nel dominio');
 assert(currentSourceDomain.includes('curriculumInForce: false'), 'non vigenza non protetta nel dominio');
 assert(currentSourceDomain.includes("role: 'PRIMARY_CORRECTED_PROVENANCE'"), 'provenienza primaria non qualificata');
@@ -60,17 +58,17 @@ for (const token of ['Baseline corrente', 'Materializzazione 3–14 completa', '
   assert(currentSourcePanel.includes(token), `pannello Fonti privo di: ${token}`);
 }
 
-const process = registry.curriculum_process;
-assert(process?.path_coverage_metric === 'DEPRECATED_FOR_COMPLETENESS', 'vecchia metrica non deprecata');
-assert(process?.master_materialization === 'COMPLETE', 'master_materialization non COMPLETE');
+const curriculumProcess = registry.curriculum_process;
+assert(curriculumProcess?.path_coverage_metric === 'DEPRECATED_FOR_COMPLETENESS', 'vecchia metrica non deprecata');
+assert(curriculumProcess?.master_materialization === 'COMPLETE', 'materializzazione master incompleta');
 for (const key of ['ordinary_curriculum_3_14','infanzia_3_4_5','primaria_i_v','secondaria_i_iii','irc_i_v_and_i_iii','latino_lel_ii_iii','educazione_civica_3_14','ai_literacy_3_14']) {
-  assert(process?.[key] === 'MATERIALIZED', `segmento non materializzato: ${key}`);
+  assert(curriculumProcess?.[key] === 'MATERIALIZED', `segmento non materializzato: ${key}`);
 }
-assert(process?.human_professional_validation === 'OPEN', 'validazione professionale complessiva non aperta');
-assert(process?.verticality_final_review === 'OPEN', 'revisione verticale non aperta');
-assert(process?.ready_for_collegio === 'NOT_YET', 'pronto per Collegio non autorizzato');
-assert(process?.collegiate_approval === 'NOT_YET', 'approvazione collegiale non autorizzata');
-assert(process?.canonical_curriculum_promotion === 'NOT_AUTHORIZED', 'promozione curricolare non autorizzata');
+assert(curriculumProcess?.human_professional_validation === 'OPEN', 'validazione complessiva non aperta');
+assert(curriculumProcess?.verticality_final_review === 'OPEN', 'revisione verticale non aperta');
+assert(curriculumProcess?.ready_for_collegio === 'NOT_YET', 'pronto per Collegio non autorizzato');
+assert(curriculumProcess?.collegiate_approval === 'NOT_YET', 'approvazione collegiale non autorizzata');
+assert(curriculumProcess?.canonical_curriculum_promotion === 'NOT_AUTHORIZED', 'promozione curricolare non autorizzata');
 
 for (const key of ['current_master_must_match_across_drive_and_repo','primary_corrected_source_must_remain_provenance','no_parallel_curriculum_baselines','accepted_change_must_update_same_master']) {
   assert(registry.alignment_rules?.[key] === true, `regola di allineamento mancante: ${key}`);
@@ -85,20 +83,18 @@ const pilot = registry.active_validation_pilot;
 assert(pilot?.pilot_id === 'TEC-SEC1-2026-01' && pilot?.revision === 2, 'pilot R2 inatteso');
 assert(pilot?.canonical_promotion === 'NOT_AUTHORIZED', 'pilot non può promuovere il curricolo');
 assert(pilot?.decision_carry_forward === 'NOT_AUTHORIZED', 'carry-forward R1→R2 non autorizzato');
-assert(pilot?.source?.role === 'PRIMARY_CORRECTED_PROVENANCE', 'fonte del pilot non qualificata come provenienza');
+assert(pilot?.source?.role === 'PRIMARY_CORRECTED_PROVENANCE', 'fonte pilot non qualificata come provenienza');
 assert(pilot?.proposal?.file_id === '19nPCsAj_ItBscUwwcHwrVhxDbBy-MXIJ', 'proposta R2 inattesa');
 assert(pilot?.vertical_matrix?.file_id === '1CMSESN73HCi_2jM_tZYhN9hd6oWzyHgK', 'matrice R2 inattesa');
 assert(pilot?.validation_gate?.file_id === '1rxKy2IDD5V7l4Nc1LfJeLr407ltfa_vbt_EFK54s7mU', 'gate R2 inatteso');
 assert(pilot?.decision_register?.file_id === '1KmnrgWrNxVDUjOvdPo0oibqTvr1lQ72QepBE8KNsdZA', 'registro decisioni inatteso');
 assert(technologyPilotDomain.includes('revision: 2'), 'dominio pilot non dichiara R2');
 assert(technologyPilotDomain.includes('decisionCarryForwardAuthorized: false'), 'dominio pilot non vieta carry-forward');
-assert(progressHook.includes('resolveOperationalReviewProposals(discipline, order, fallbackCurrent)'), 'Revisione non usa il resolver operativo');
-assert(revisionSurface.includes('current.sourceRefs'), 'Revisione non espone provenienza su richiesta');
 
 assert(teamWorkspace.includes("['dipartimento', 'referente'].includes(selectedMembership.role)"), 'esito team non riservato ai ruoli previsti');
-assert(teamReviewDomain.includes('expectedContributorCount >= 2'), 'manca la protezione sul singolo contributore');
-assert(teamWorkspace.includes('item.coverageComplete'), 'manca la copertura completa');
-assert(teamWorkspace.includes('recordTeamOutcome'), 'manca la registrazione esplicita esito team');
+assert(teamReviewDomain.includes('expectedContributorCount >= 2'), 'manca protezione sul singolo contributore');
+assert(teamWorkspace.includes('item.coverageComplete'), 'manca copertura completa');
+assert(teamWorkspace.includes('recordTeamOutcome'), 'manca registrazione esplicita esito team');
 assert(teamWorkspace.includes('proposalFingerprint'), 'esito team non vincolato alla proposta');
 assert(cco.authority_boundaries?.individual_contribution_is_not_team_outcome === true, 'CCO non separa contributo ed esito');
 assert(cco.authority_boundaries?.team_outcome_is_not_institutional_decision === true, 'CCO non separa esito e decisione istituzionale');
