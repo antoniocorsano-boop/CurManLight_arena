@@ -219,3 +219,19 @@ Le vecchie chiavi di routing/tab possono restare temporaneamente per compatibili
 - l'interfaccia deve rimanere utilizzabile anche rimuovendo la copy didattica non essenziale;
 - `CONFRONTA` non può essere raggiunto senza una condivisione persistita e corrente;
 - tutte le azioni conseguenti devono rispettare i confini di autorità.
+
+---
+
+## 14. Stato di attuazione — FASCICOLO_NAVIGATION_CONVERGENCE
+
+La candidata Beta implementa il primo incremento di convergenza della navigazione secondaria:
+
+- la voce docente `Controlla le fonti` non compare più nel blocco primario del Curricolo;
+- la destinazione è presentata come `Fascicolo` nel blocco secondario `Supporto`;
+- la bottom navigation mobile non contiene più `Fonti`; il Fascicolo resta raggiungibile dal menu secondario aperto dal controllo di navigazione nell'header;
+- la Home non presenta più Fonti o una decisione istituzionale come tappe universali del percorso professionale;
+- la route pubblica canonica è `/fascicolo`;
+- `/fonti` e `/settings` restano leggibili come alias storici di compatibilità e risolvono la stessa superficie interna;
+- la chiave tecnica interna `fonti` può restare temporaneamente per compatibilità e non definisce la nomenclatura di prodotto.
+
+Questo incremento non modifica le fonti, il master curricolare, la loro autorità o i relativi registri. Cambia esclusivamente la proiezione navigazionale del servizio di tracciabilità.
