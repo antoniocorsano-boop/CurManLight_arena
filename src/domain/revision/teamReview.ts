@@ -23,6 +23,8 @@ export type TeamReviewOutcome =
   | 'shared-text'
   | 'defer';
 
+export type TeamReviewAuthorityState = OperationalGroupStatus | 'PRE_SCOPE_LEGACY';
+
 export interface TeamReviewScope {
   academicYear: string;
   order: OperationalSchoolOrder;
@@ -109,8 +111,8 @@ export interface TeamReviewOutcomeReceipt extends TeamReviewScope {
   rationale: string;
   recordedByUserId: string;
   recordedByRole: Extract<WorkspaceMemberRole, 'docente' | 'dipartimento' | 'referente'>;
-  recordedByOperationalRole: Extract<OperationalGroupMemberRole, 'coordinatore'>;
-  authorityState: OperationalGroupStatus;
+  recordedByOperationalRole: OperationalGroupMemberRole | null;
+  authorityState: TeamReviewAuthorityState;
   recordedAt: string;
   clientRequestId: string;
 }
