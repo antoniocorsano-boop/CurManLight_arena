@@ -1,6 +1,6 @@
 {
   "registry_id": "REG-CURR-00",
-  "version": "1.4.0",
+  "version": "1.6.0",
   "recorded_at": "2026-09-06",
   "purpose": "Mantenere allineati fascicolo Drive, fonte curricolare corrente, logiche di governo, baseline Arena e documentazione operativa.",
   "drive": {
@@ -52,7 +52,7 @@
     "discipline": "Tecnologia",
     "order": "secondaria",
     "class_label": "Classe prima",
-    "status": "READY_FOR_HUMAN_DISCIPLINE_REVIEW",
+    "status": "READY_FOR_TEAM_COMPARISON",
     "human_outcome": "OPEN",
     "review_card_count": 5,
     "canonical_promotion": "NOT_AUTHORIZED",
@@ -81,7 +81,7 @@
     "work_manifest": {
       "title": "WORK-CURR-TEC-01_Pacchetto_operativo_Arena_Tecnologia_classe_prima_2026-2027",
       "file_id": "1s2qZf53O6BqjgyrtzcXuL5lSdafoAmtAUEFv-4mwcog",
-      "revision": "1.1"
+      "revision": "1.2"
     },
     "instructional_audit": {
       "audit_id": "AUD-CURR-TEC-SEC1-01",
@@ -97,6 +97,31 @@
         "N1 alleggerito dal richiamo autonomo all'energia e N3 qualificato nella provenienza del raccordo sull'economia circolare.",
         "N4 riscalato verso funzionamento dei sistemi informatici, dati, processi, Internet, Web, servizi e attendibilità."
       ]
+    },
+    "individual_contribution": {
+      "contribution_id": "CONTR-CURR-TEC-SEC1-R2-01",
+      "title": "CONTR-CURR-TEC-SEC1-R2-01_Contributo_individuale_Tecnologia_classe_prima_2026-09-06",
+      "file_id": "17dnvfLP3YPghJlwT7FUwgO5p9J499Lw5kZVIAnXlvyk",
+      "status": "COMPLETE_5_OF_5",
+      "authority": "INDIVIDUAL_PROFESSIONAL_CONTRIBUTION",
+      "team_outcome": "NOT_INFERRED",
+      "decisions": {
+        "tec-sec1-2026-r2-n1": "CONFIRM",
+        "tec-sec1-2026-r2-n2": "CONFIRM",
+        "tec-sec1-2026-r2-n3": "CONFIRM",
+        "tec-sec1-2026-r2-n4": "CONFIRM",
+        "tec-sec1-2026-r2-verticalita": "CONFIRM"
+      }
+    },
+    "team_comparison": {
+      "package_id": "TEAM-CURR-TEC-SEC1-R2-01",
+      "title": "TEAM-CURR-TEC-SEC1-R2-01_Pacchetto_confronto_Dipartimento_Tecnologia_classe_prima_2026-09-06",
+      "file_id": "1V-yit_LYow1P5jLY5wSrbsrKzxgJF0WfHncV6BJyR-g",
+      "status": "READY_TO_START",
+      "team_outcome": "OPEN",
+      "team_outcome_authorized_roles": ["dipartimento", "referente"],
+      "complete_workspace_coverage_required_for_shared_bucket": true,
+      "explicit_team_outcome_required": true
     },
     "source": {
       "title": "CURRICOLO_VERTICALE_CORRETTO_PROPOSTA_2026-09-03.docx",
@@ -161,10 +186,13 @@
     "active_validation_pilot_requires_exact_drive_bindings": true,
     "human_outcome_must_not_be_inferred_from_app_state": true,
     "instructional_audit_must_not_be_promoted_as_human_outcome": true,
+    "individual_contribution_must_not_be_promoted_as_team_outcome": true,
+    "team_outcome_requires_authorized_membership": true,
+    "team_shared_requires_complete_coverage": true,
     "proposal_text_change_requires_new_proposal_identity": true,
     "previous_decision_carry_forward_requires_explicit_authority": true,
     "experimental_feature_must_be_marked_experimental": true,
     "tests_or_commits_never_imply_curriculum_approval": true
   },
-  "next_authorized_phase": "HUMAN_PROFESSIONAL_CONTENT_VALIDATION_R2"
+  "next_authorized_phase": "SECONDARY_DEPARTMENT_TEAM_COMPARISON_R2"
 }
