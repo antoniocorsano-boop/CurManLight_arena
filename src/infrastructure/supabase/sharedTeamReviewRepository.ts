@@ -73,6 +73,7 @@ const TEAM_OUTCOMES: readonly TeamReviewOutcome[] = [
   'defer',
 ];
 const CONTRIBUTOR_ROLES: readonly WorkspaceMemberRole[] = ['docente', 'dipartimento', 'referente'];
+const TEAM_OUTCOME_ROLES: readonly WorkspaceMemberRole[] = ['dipartimento', 'referente'];
 const FINGERPRINT_RE = /^[0-9a-f]{64}$/;
 const AUTHORITY_STATES: readonly OperationalGroupStatus[] = ['OPERATIVO_PROVVISORIO', 'FORMALIZZATO'];
 
@@ -101,6 +102,8 @@ const assertScope = (scope: TeamReviewScope): void => {
 
 const isContributorRole = (value: string): value is Extract<WorkspaceMemberRole, 'docente' | 'dipartimento' | 'referente'> =>
   CONTRIBUTOR_ROLES.includes(value as WorkspaceMemberRole);
+const isTeamOutcomeRole = (value: string): value is Extract<WorkspaceMemberRole, 'dipartimento' | 'referente'> =>
+  TEAM_OUTCOME_ROLES.includes(value as WorkspaceMemberRole);
 const isOrientation = (value: string): value is TeamReviewOrientation =>
   CONTRIBUTION_ORIENTATIONS.includes(value as TeamReviewOrientation);
 const isOutcome = (value: string): value is TeamReviewOutcome => TEAM_OUTCOMES.includes(value as TeamReviewOutcome);
@@ -134,7 +137,7 @@ const toContribution = (row: ContributionRow): TeamReviewContribution => {
 
 const toOutcome = (row: OutcomeRow): TeamReviewOutcomeReceipt => {
   if (
-    !isContributorRole(row.recorded_by_role)
+    !isTeamOutcomeRole(row.recorded_by_role)
     || !isOutcome(row.outcome)
     || !isOperationalGroupCode(row.group_code)
     || row.recorded_by_operational_role !== 'coordinatore'
@@ -191,11 +194,14 @@ const toOperationalMembership = (row: OperationalMembershipRow): OperationalGrou
 };
 
 const operationalError = (message: string): Error => {
+  if (message.includes('SELF_ASSIGNED_OPERATIONAL_COORDINATOR_FORBIDDEN')) {
+    return new Error('Il coordinamento non può essere autoassegnato dal profilo personale.');
+  }
+  if (message.includes('TEAM_REVIEW_DECIDE_REQUIRED') || message.includes('VERIFIED_TEAM_OUTCOME_AUTHORITY_REQUIRED')) {
+    return new Error('Solo una membership verificata di Dipartimento o Referente può registrare l’esito del team.');
+  }
   if (message.includes('OPERATIONAL_DISCIPLINE_MEMBERSHIP_REQUIRED')) {
     return new Error('Questa disciplina non è tra le competenze dichiarate nel tuo gruppo operativo.');
-  }
-  if (message.includes('OPERATIONAL_COORDINATOR_REQUIRED')) {
-    return new Error('Per registrare la decisione devi risultare coordinatore operativo del gruppo.');
   }
   if (message.includes('TEAM_REVIEW_COVERAGE_INCOMPLETE')) {
     return new Error('Mancano ancora pareri dei docenti competenti per questa disciplina. Puoi rinviare il punto oppure attendere i contributi mancanti.');
@@ -296,7 +302,9 @@ export class SupabaseSharedTeamReviewRepository implements SharedTeamReviewRepos
     assertRef(input.proposalRef, 'proposalRef');
     assertFingerprint(input.proposalFingerprint);
     assertRef(input.clientRequestId, 'clientRequestId');
-    if (!CONTRIBUTOR_ROLES.includes(context.membership.role)) throw new Error('TEAM_REVIEW_DECIDE_REQUIRED');
+    if (!TEAM_OUTCOME_ROLES.includes(context.membership.role)) {
+      throw new Error('Solo una membership verificata di Dipartimento o Referente può registrare l’esito del team.');
+    }
     if (!TEAM_OUTCOMES.includes(input.outcome)) throw new Error('Esito del gruppo non valido.');
     if (!input.rationale.trim()) throw new Error('La motivazione dell’esito del gruppo è obbligatoria.');
     if (input.outcome === 'shared-text' && !input.sharedText?.trim()) {
