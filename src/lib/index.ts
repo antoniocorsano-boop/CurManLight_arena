@@ -10,4 +10,9 @@ export { testOllamaConnection, generateWithOllama } from './ollamaClient';
 export { googleAuth, exchangeCode, uploadToDrive, downloadFromDrive, listFiles } from './googleDrive';
 export { parseCsv, importCsvToCurriculum } from './csvParser';
 export { parseSchoolYear } from './academicYear';
-export { getCurriculumBaseline } from './curriculumBaseline';
+export {
+  getCurriculumBaseline,
+  getCurriculumBaselineProvenance,
+  getCurriculumBaselineAuthority,
+  getCanonicalCurriculumMasterIdentity,
+} from './curriculumBaseline';
