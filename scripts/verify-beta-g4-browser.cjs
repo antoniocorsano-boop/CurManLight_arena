@@ -70,7 +70,7 @@ async function readPlanningHandoffState(page) {
       personalMarkerVisible && personalAssuranceText.includes('non approva il curricolo'),
     );
 
-    const localChoice = page.getByRole('button', { name: 'Conferma', exact: true }).first();
+    const localChoice = page.getByRole('button', { name: 'Conferma proposta', exact: true }).first();
     await localChoice.waitFor({ state: 'visible', timeout: 8000 });
     await localChoice.click();
     await expectVisibleText(page, 'Confermata');
