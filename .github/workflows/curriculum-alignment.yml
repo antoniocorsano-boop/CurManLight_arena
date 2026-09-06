@@ -12,15 +12,18 @@ on:
       - 'src/data/curriculumKB.ts'
       - 'src/lib/curriculumBaseline.ts'
       - 'src/domain/curriculum/institute/currentSource.ts'
+      - 'src/domain/curriculum/institute/sourceRegister.ts'
       - 'src/domain/curriculum/validation/technologyClass1Review.ts'
       - 'src/features/curriculum/CurriculumWorkspace.tsx'
       - 'src/features/curriculum/components/RevisioneTab.tsx'
       - 'src/features/curriculum/hooks/useCurriculumProgressStats.ts'
       - 'src/features/documents/components/InstituteCurrentSourcePanel.tsx'
+      - 'src/features/documents/components/InstituteCurriculumSourceRegisterPanel.tsx'
       - 'src/features/documents/components/FontiWorkspace.tsx'
       - 'src/types/curriculum.ts'
       - 'src/__tests__/canonical-curriculum-entry.test.ts'
       - 'src/__tests__/current-institute-curriculum-source.test.ts'
+      - 'src/__tests__/institutional-curriculum-source-register.test.ts'
       - 'src/__tests__/technology-class1-professional-review.test.ts'
       - 'tools/curriculum-alignment/validate.mjs'
       - 'tools/curriculum-alignment/validate-legacy-boundary.mjs'
@@ -36,15 +39,18 @@ on:
       - 'src/data/curriculumKB.ts'
       - 'src/lib/curriculumBaseline.ts'
       - 'src/domain/curriculum/institute/currentSource.ts'
+      - 'src/domain/curriculum/institute/sourceRegister.ts'
       - 'src/domain/curriculum/validation/technologyClass1Review.ts'
       - 'src/features/curriculum/CurriculumWorkspace.tsx'
       - 'src/features/curriculum/components/RevisioneTab.tsx'
       - 'src/features/curriculum/hooks/useCurriculumProgressStats.ts'
       - 'src/features/documents/components/InstituteCurrentSourcePanel.tsx'
+      - 'src/features/documents/components/InstituteCurriculumSourceRegisterPanel.tsx'
       - 'src/features/documents/components/FontiWorkspace.tsx'
       - 'src/types/curriculum.ts'
       - 'src/__tests__/canonical-curriculum-entry.test.ts'
       - 'src/__tests__/current-institute-curriculum-source.test.ts'
+      - 'src/__tests__/institutional-curriculum-source-register.test.ts'
       - 'src/__tests__/technology-class1-professional-review.test.ts'
       - 'tools/curriculum-alignment/validate.mjs'
       - 'tools/curriculum-alignment/validate-legacy-boundary.mjs'
@@ -72,8 +78,9 @@ jobs:
       - name: Validate canonical master versus legacy boundary
         run: node tools/curriculum-alignment/validate-legacy-boundary.mjs
 
-      - name: Validate canonical curriculum entry
+      - name: Validate canonical curriculum entry and source traceability
         run: >-
           npx vitest run
           src/__tests__/canonical-curriculum-entry.test.ts
           src/__tests__/current-institute-curriculum-source.test.ts
+          src/__tests__/institutional-curriculum-source-register.test.ts
