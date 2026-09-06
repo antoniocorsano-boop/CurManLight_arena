@@ -4,6 +4,7 @@ import operationalProfileSource from '../infrastructure/supabase/operationalProf
 import onboardingHookSource from '../features/session/hooks/useOnboardingProfile.ts?raw';
 import teamRepositorySource from '../infrastructure/supabase/sharedTeamReviewRepository.ts?raw';
 import authorityMigrationSource from '../../supabase/migrations/20260906094500_team_review_operational_scope.sql?raw';
+import disciplineOrderFixSource from '../../supabase/migrations/20260906123000_fix_operational_discipline_order_validation.sql?raw';
 
 describe('Arena operational onboarding authority boundary', () => {
   it('allows discipline competence but exposes no self-service coordinator field', () => {
@@ -22,6 +23,14 @@ describe('Arena operational onboarding authority boundary', () => {
     expect(resolveOperationalAcademicYear('', new Date(2026, 8, 6))).toBe('2026/2027');
     expect(resolveOperationalAcademicYear('', new Date(2026, 5, 6))).toBe('2025/2026');
     expect(resolveOperationalAcademicYear('2026/2028', new Date(2026, 8, 6))).toBeNull();
+  });
+
+  it('accepts a discipline when at least one active mapping exists for the requested school order', () => {
+    expect(disciplineOrderFixSource).toContain('where not exists (');
+    expect(disciplineOrderFixSource).toContain('map.discipline = selected.discipline');
+    expect(disciplineOrderFixSource).toContain('defs.school_order = p_school_order');
+    expect(disciplineOrderFixSource).toContain('defs.active = true');
+    expect(disciplineOrderFixSource).not.toContain('left join public.operational_group_discipline_map map');
   });
 
   it('fails closed when a client tries to self-assign coordination', () => {
