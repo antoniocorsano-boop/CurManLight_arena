@@ -13,9 +13,13 @@ on:
       - 'src/features/documents/components/SecondBrainTab.tsx'
       - 'src/features/documents/components/KnowledgeModals.tsx'
       - 'src/features/documents/components/AddKnowledgeSourceModal.tsx'
+      - 'src/features/documents/components/FontiWorkspace.tsx'
+      - 'src/features/documents/components/InstituteCurrentSourcePanel.tsx'
+      - 'src/features/documents/components/InstituteCurriculumSourceRegisterPanel.tsx'
       - 'src/features/documents/hooks/useKnowledgeBaseHandlers.ts'
       - 'src/features/documents/lib/**'
       - 'src/features/beta/**'
+      - 'src/domain/curriculum/institute/**'
       - 'src/domain/institution/operationalGroups.ts'
       - 'src/domain/revision/repository.ts'
       - 'src/domain/revision/sharedDecisionPort.ts'
@@ -36,6 +40,7 @@ on:
       - 'src/__tests__/beta-revision-routing-contract.test.ts'
       - 'src/__tests__/beta-revision-version-fingerprint.test.ts'
       - 'src/__tests__/beta-router-basename-contract.test.ts'
+      - 'src/__tests__/institutional-curriculum-source-register.test.ts'
       - 'src/__tests__/operational-groups.test.ts'
       - 'src/__tests__/operational-onboarding.test.ts'
       - 'src/__tests__/team-organizational-binding.test.ts'
@@ -67,9 +72,13 @@ on:
       - 'src/features/documents/components/SecondBrainTab.tsx'
       - 'src/features/documents/components/KnowledgeModals.tsx'
       - 'src/features/documents/components/AddKnowledgeSourceModal.tsx'
+      - 'src/features/documents/components/FontiWorkspace.tsx'
+      - 'src/features/documents/components/InstituteCurrentSourcePanel.tsx'
+      - 'src/features/documents/components/InstituteCurriculumSourceRegisterPanel.tsx'
       - 'src/features/documents/hooks/useKnowledgeBaseHandlers.ts'
       - 'src/features/documents/lib/**'
       - 'src/features/beta/**'
+      - 'src/domain/curriculum/institute/**'
       - 'src/domain/institution/operationalGroups.ts'
       - 'src/domain/revision/repository.ts'
       - 'src/domain/revision/sharedDecisionPort.ts'
@@ -90,6 +99,7 @@ on:
       - 'src/__tests__/beta-revision-routing-contract.test.ts'
       - 'src/__tests__/beta-revision-version-fingerprint.test.ts'
       - 'src/__tests__/beta-router-basename-contract.test.ts'
+      - 'src/__tests__/institutional-curriculum-source-register.test.ts'
       - 'src/__tests__/operational-groups.test.ts'
       - 'src/__tests__/operational-onboarding.test.ts'
       - 'src/__tests__/team-organizational-binding.test.ts'
@@ -141,6 +151,7 @@ jobs:
           src/__tests__/team-review-provenance.test.ts
           src/__tests__/team-review-legacy-scope-backfill.test.ts
           src/__tests__/teacher-three-level-communication.test.ts
+          src/__tests__/institutional-curriculum-source-register.test.ts
 
       - name: BETA-G4 server authority invariants
         run: |
