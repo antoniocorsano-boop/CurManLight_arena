@@ -1,4 +1,4 @@
-import { ArrowRight, BookOpenCheck, Eye, FileText, Layers, RotateCcw, ShieldCheck } from 'lucide-react';
+import { ArrowRight, BookOpenCheck, Eye, FileText, Layers, RotateCcw } from 'lucide-react';
 import type { DocumentExportEvent, Proposal, UdaModel, UserRole } from '../../../types/curriculum';
 import type { InstitutionalRole } from '../../../domain/curriculum/types';
 import {
