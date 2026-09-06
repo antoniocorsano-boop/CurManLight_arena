@@ -1,11 +1,5 @@
-import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
-
-const migration = readFileSync(
-  resolve(process.cwd(), 'supabase/migrations/20260906062000_team_review_active_contributor_guard.sql'),
-  'utf8',
-);
+import migration from '../../supabase/migrations/20260906062000_team_review_active_contributor_guard.sql?raw';
 
 describe('team review active contributor coverage guard', () => {
   it('exposes current contributions only when the contributor is still active and eligible', () => {
