@@ -49,6 +49,7 @@ on:
       - 'supabase/migrations/20260906094400_team_review_operational_scope_preflight.sql'
       - 'supabase/migrations/20260906094500_team_review_operational_scope.sql'
       - 'supabase/migrations/20260906095500_team_review_rpc_acl_hardening.sql'
+      - 'supabase/migrations/20260906101500_team_review_legacy_authority_provenance.sql'
       - 'docs/architecture/CML_ARENA_BETA_B3_ACCEPTANCE_v1.json'
       - '.github/workflows/beta-e2e-workflow.yml'
   push:
@@ -100,6 +101,7 @@ on:
       - 'supabase/migrations/20260906094400_team_review_operational_scope_preflight.sql'
       - 'supabase/migrations/20260906094500_team_review_operational_scope.sql'
       - 'supabase/migrations/20260906095500_team_review_rpc_acl_hardening.sql'
+      - 'supabase/migrations/20260906101500_team_review_legacy_authority_provenance.sql'
       - 'docs/architecture/CML_ARENA_BETA_B3_ACCEPTANCE_v1.json'
       - '.github/workflows/beta-e2e-workflow.yml'
 
@@ -144,6 +146,7 @@ jobs:
           preflight_file='supabase/migrations/20260906094400_team_review_operational_scope_preflight.sql'
           scope_file='supabase/migrations/20260906094500_team_review_operational_scope.sql'
           acl201_file='supabase/migrations/20260906095500_team_review_rpc_acl_hardening.sql'
+          provenance_file='supabase/migrations/20260906101500_team_review_legacy_authority_provenance.sql'
 
           grep -Fq 'alter table public.institutional_revision_decisions enable row level security' "$base_file"
           grep -Fq 'security definer' "$base_file"
@@ -178,7 +181,6 @@ jobs:
           grep -Fq 'LEGACY_TECHNOLOGY_OUTCOME_AUTHORITY_MISMATCH' "$preflight_file"
           grep -Fq 'join expected e on e.proposal_ref = c.proposal_ref' "$preflight_file"
           grep -Fq 'join expected e on e.proposal_ref = o.proposal_ref' "$preflight_file"
-          grep -Fq "authority_state = 'OPERATIVO_PROVVISORIO'" "$scope_file"
           grep -Fq "where proposal_ref in ('it-sec-1','it-sec-2')" "$scope_file"
 
           grep -Fq 'revoke all on function public.upsert_team_review_contribution_v1' "$acl201_file"
@@ -188,6 +190,12 @@ jobs:
           grep -Fq 'grant execute on function public.upsert_team_review_contribution_v2' "$acl201_file"
           grep -Fq 'grant execute on function public.get_team_review_eligible_contributor_count_v3' "$acl201_file"
           grep -Fq 'grant execute on function public.record_team_review_outcome_v2' "$acl201_file"
+
+          grep -Fq "authority_state = 'PRE_SCOPE_LEGACY'" "$provenance_file"
+          grep -Fq 'recorded_by_operational_role = null' "$provenance_file"
+          grep -Fq 'v_actor_operational_role' "$provenance_file"
+          grep -Fq 'operational.member_role = new.recorded_by_operational_role' "$provenance_file"
+          grep -Fq "new.authority_state not in ('OPERATIVO_PROVVISORIO','FORMALIZZATO')" "$provenance_file"
 
           legacy_block=$(awk '/-- 4\. Deterministic continuity of known pre-scope Beta evidence/{flag=1} /-- 5\. Scoped contribution API and privacy-minimal denominator/{flag=0} flag' "$scope_file")
           if printf '%s' "$legacy_block" | grep -Fq 'insert into public.team_operational_memberships'; then
