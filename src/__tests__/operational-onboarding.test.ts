@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { resolveOperationalAcademicYear } from '../infrastructure/supabase/operationalProfile';
 import operationalProfileSource from '../infrastructure/supabase/operationalProfile.ts?raw';
 import onboardingHookSource from '../features/session/hooks/useOnboardingProfile.ts?raw';
 import teamRepositorySource from '../infrastructure/supabase/sharedTeamReviewRepository.ts?raw';
@@ -13,6 +14,14 @@ describe('Arena operational onboarding authority boundary', () => {
     expect(operationalProfileSource).toContain('Self-service coordination is forbidden server-side.');
     expect(onboardingHookSource).not.toContain('coordinatorGroupCode');
     expect(onboardingHookSource).toContain('rememberOperationalDiscipline');
+  });
+
+  it('normalizes an explicit academic year and derives the current working year when the local store is empty', () => {
+    expect(resolveOperationalAcademicYear('2026-2027', new Date(2026, 8, 6))).toBe('2026/2027');
+    expect(resolveOperationalAcademicYear('2026/2027', new Date(2026, 8, 6))).toBe('2026/2027');
+    expect(resolveOperationalAcademicYear('', new Date(2026, 8, 6))).toBe('2026/2027');
+    expect(resolveOperationalAcademicYear('', new Date(2026, 5, 6))).toBe('2025/2026');
+    expect(resolveOperationalAcademicYear('2026/2028', new Date(2026, 8, 6))).toBeNull();
   });
 
   it('fails closed when a client tries to self-assign coordination', () => {
