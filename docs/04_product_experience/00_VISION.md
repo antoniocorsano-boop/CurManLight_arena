@@ -48,7 +48,7 @@ Il processo umano visibile è:
 
 Le fonti, i fingerprint, le versioni, le membership, gli audit, le ricevute e gli export sono servizi di supporto. Non sono il processo principale percepito dal docente.
 
-Il contratto macchina che protegge questo ciclo è `.human/curriculum-lifecycle.contract.json@1.1.0`.
+Il contratto macchina che protegge questo ciclo è `.human/curriculum-lifecycle.contract.json@1.1.1`.
 
 ---
 
@@ -144,6 +144,8 @@ Le superfici oggi separate “Il mio contributo”, “Condivisione”, “Lavor
 
 **ESAMINA → CONDIVIDI → CONFRONTA → REGISTRA L'ESITO**.
 
+`CONDIVIDI` è completato soltanto quando il `ProfessionalContribution` persistito corrisponde alla scheda/versione corrente, all'orientamento personale corrente e all'eventuale testo di modifica corrente. Se il docente modifica successivamente il proprio orientamento, la condivisione precedente non abilita più `CONFRONTA` finché non viene aggiornata e verificata.
+
 ---
 
 ## 10. Principi di prodotto
@@ -205,9 +207,10 @@ Il registro macchina `docs/04_product_experience/PRODUCT_DOCS.registry.json` man
 - copertura documentale: completa;
 - validazione professionale: aperta;
 - curricolo vigente: no;
-- contratto ciclo professionale: `.human/curriculum-lifecycle.contract.json@1.1.0`;
-- governance `RevisionTrigger`: definita nel contratto lifecycle 1.1.0;
-- UI: in convergenza verso questa visione; una preview precedente non costituisce prova di implementazione del modello target.
+- contratto ciclo professionale: `.human/curriculum-lifecycle.contract.json@1.1.1`;
+- governance `RevisionTrigger`: definita nel contratto lifecycle 1.1.1;
+- `CurriculumWorkSession`: progressione unica implementata; il confronto richiede una condivisione persistita corrispondente al lavoro personale corrente;
+- UI complessiva: ancora in convergenza verso la navigazione e i servizi target.
 
 ---
 
