@@ -7,14 +7,14 @@ import panelSource from '../features/documents/components/InstituteCurrentSource
 import workspaceSource from '../features/documents/components/FontiWorkspace.tsx?raw';
 
 describe('current institute curriculum master', () => {
-  it('uses the unified 3–14 master 1.2 as the current working baseline', () => {
+  it('uses the unified 3–14 master 1.3 as the current working baseline', () => {
     expect(INSTITUTE_CURRICULUM_CURRENT_SOURCE.sourceFile).toBe(
       'CAN-CURR-MASTER-00_Curricolo_verticale_integrale_unificato_3-14_2026-2027',
     );
     expect(INSTITUTE_CURRICULUM_CURRENT_SOURCE.driveFileId).toBe(
       '12eWTPUZBJxZixd6-p8drNAaW5_eL8qWpXZUSDyZZAv4',
     );
-    expect(INSTITUTE_CURRICULUM_CURRENT_SOURCE.sourceVersion).toBe('1.2');
+    expect(INSTITUTE_CURRICULUM_CURRENT_SOURCE.sourceVersion).toBe('1.3');
     expect(INSTITUTE_CURRICULUM_CURRENT_SOURCE.materializationState).toBe('COMPLETE');
     expect(INSTITUTE_CURRICULUM_CURRENT_SOURCE.lifecycleState).toBe(
       'CANONICAL_BASELINE_PENDING_HUMAN_VALIDATION',
@@ -22,7 +22,7 @@ describe('current institute curriculum master', () => {
     expect(INSTITUTE_CURRICULUM_CURRENT_SOURCE.curriculumInForce).toBe(false);
   });
 
-  it('registers normative compliance and the OSA gate as controls, not competing curricula', () => {
+  it('closes OSA documentary coverage without claiming human validation', () => {
     const alignment = INSTITUTE_CURRICULUM_CURRENT_SOURCE.normativeAlignment;
     expect(alignment.matrixId).toBe('MATR-CURR-MASTER-01');
     expect(alignment.matrixTitle).toBe(
@@ -34,10 +34,14 @@ describe('current institute curriculum master', () => {
     expect(alignment.role).toBe('CONTROL_ATTACHMENT_NOT_CURRICULUM_BASELINE');
     expect(alignment.identifiedCurricularGaps).toBe(6);
     expect(alignment.materializedCurricularGaps).toBe(6);
-    expect(alignment.status).toBe('GAPS_MATERIALIZED_PENDING_HUMAN_VALIDATION');
-    expect(alignment.osaOneToOneGate).toBe('IN_PROGRESS');
-    expect(alignment.osaVerifiedIntegrationsMaterializedInMaster12).toBe(true);
-    expect(alignment.osaCompletionClaimAuthorized).toBe(false);
+    expect(alignment.status).toBe('DOCUMENTARY_COVERAGE_COMPLETE_PENDING_HUMAN_VALIDATION');
+    expect(alignment.osaOneToOneGate).toBe('COMPLETE_FOR_DOCUMENTARY_COVERAGE');
+    expect(alignment.osaDocumentaryCoverageComplete).toBe(true);
+    expect(alignment.osaVerifiedIntegrationsMaterializedInMaster13).toBe(true);
+    expect(alignment.osaCompletionClaimScope).toBe('DOCUMENTARY_ONLY');
+    expect(INSTITUTE_CURRICULUM_CURRENT_SOURCE.humanProfessionalValidation).toBe('OPEN');
+    expect(INSTITUTE_CURRICULUM_CURRENT_SOURCE.readyForCollegio).toBe(false);
+    expect(INSTITUTE_CURRICULUM_CURRENT_SOURCE.curriculumInForce).toBe(false);
   });
 
   it('protects national benchmark semantics from annualization drift', () => {
