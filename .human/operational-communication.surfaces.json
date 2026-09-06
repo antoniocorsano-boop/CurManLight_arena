@@ -1,6 +1,6 @@
 {
   "registry_id": "CCO-SURFACES",
-  "version": "1.4.1",
+  "version": "1.5.0",
   "contract": ".human/operational-communication.contract.json",
   "status_vocabulary": ["conformant", "migration", "guided-setup", "excluded"],
   "surfaces": [
@@ -27,17 +27,21 @@
       ]
     },
     {
-      "id": "revisione-personale",
+      "id": "curriculum-work-session",
       "path": "src/features/beta/RevisionWorkspace.tsx",
       "status": "conformant",
-      "operational_context": "Il mio contributo",
-      "primary_task": "Completare la revisione personale e passare alla condivisione solo tramite una vera transizione di stato",
+      "operational_context": "Validazione professionale — Il mio lavoro sul curricolo",
+      "primary_task": "Percorrere una sola sessione progressiva: esaminare, condividere e, solo se autorizzati e dopo il contributo personale, confrontare e registrare l'esito del gruppo",
       "required_tokens": [
+        "data-curriculum-work-session",
+        "data-work-session-stage={stage}",
         "data-revision-stage=\"review\"",
         "data-revision-stage=\"sharing\"",
-        "setPersonalStage('sharing')",
-        "Rivedi la revisione personale",
-        "Ora il compito attivo è la condivisione con il team."
+        "setStage('SHARE')",
+        "Rivedi il mio contributo",
+        "Anche il coordinatore completa prima il proprio contributo personale.",
+        "Ho condiviso: apri il confronto del gruppo",
+        "Dopo aver condiviso il contributo, per ora non devi fare altro."
       ]
     },
     {
@@ -75,19 +79,19 @@
       "id": "pubblicazione-contributo-personale",
       "path": "src/features/beta/TeamContributionPublisher.tsx",
       "status": "migration",
-      "migration_goal": "Applicare i tre livelli anche alla condivisione: azione e conseguenza al primo livello, spiegazione del passaggio al secondo, tracciabilità tecnica al terzo."
+      "migration_goal": "Integrare completamente lo stato di condivisione nella CurriculumWorkSession: l'avanzamento deve dipendere dalla registrazione effettiva del ProfessionalContribution e non da una sola dichiarazione dell'utente."
     },
     {
-      "id": "lavoro-del-team",
+      "id": "lavoro-del-team-legacy",
       "path": "src/features/beta/TeamReviewWorkspace.tsx",
       "status": "migration",
-      "migration_goal": "Rendere motivo del punto, stato del gruppo e prossima azione riconoscibili al primo livello; spostare governance e dettagli tecnici ai livelli successivi."
+      "migration_goal": "Mantenere soltanto compatibilità temporanea; il confronto canonico deve essere proiettato dentro CurriculumWorkSession e non costituire una superficie primaria concorrente."
     },
     {
       "id": "coordinamento-del-team",
       "path": "src/features/beta/TeamCoordinationWorkspace.tsx",
       "status": "migration",
-      "migration_goal": "Separare stato della riunione, coda da discutere e azioni del coordinatore dalle spiegazioni sul modello di governo e dalla tracciabilità tecnica."
+      "migration_goal": "Integrare confronto ed esito come stadi della CurriculumWorkSession, separando coda da discutere e azioni del coordinatore dalle spiegazioni di governance e tracciabilità."
     },
     {
       "id": "profilo-di-lavoro-personale",
