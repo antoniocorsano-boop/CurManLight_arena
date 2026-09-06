@@ -5,9 +5,12 @@ on:
     paths:
       - 'docs/curriculum/REG-CURR-00.registry.json'
       - 'docs/curriculum/REG-CURR-00_MASTER_ALIGNMENT.md'
+      - 'docs/foundation/CML_633C_CURRICULUMKB_MIGRATION_MATRIX.md'
       - '.human/him.config.json'
       - '.human/operational-communication.contract.json'
       - '.human/operational-communication.surfaces.json'
+      - 'src/data/curriculumKB.ts'
+      - 'src/lib/curriculumBaseline.ts'
       - 'src/domain/curriculum/institute/currentSource.ts'
       - 'src/domain/curriculum/validation/technologyClass1Review.ts'
       - 'src/features/curriculum/components/RevisioneTab.tsx'
@@ -15,16 +18,21 @@ on:
       - 'src/features/documents/components/InstituteCurrentSourcePanel.tsx'
       - 'src/features/documents/components/FontiWorkspace.tsx'
       - 'src/types/curriculum.ts'
+      - 'src/__tests__/current-institute-curriculum-source.test.ts'
       - 'src/__tests__/technology-class1-professional-review.test.ts'
       - 'tools/curriculum-alignment/validate.mjs'
+      - 'tools/curriculum-alignment/validate-legacy-boundary.mjs'
       - '.github/workflows/curriculum-alignment.yml'
   push:
     paths:
       - 'docs/curriculum/REG-CURR-00.registry.json'
       - 'docs/curriculum/REG-CURR-00_MASTER_ALIGNMENT.md'
+      - 'docs/foundation/CML_633C_CURRICULUMKB_MIGRATION_MATRIX.md'
       - '.human/him.config.json'
       - '.human/operational-communication.contract.json'
       - '.human/operational-communication.surfaces.json'
+      - 'src/data/curriculumKB.ts'
+      - 'src/lib/curriculumBaseline.ts'
       - 'src/domain/curriculum/institute/currentSource.ts'
       - 'src/domain/curriculum/validation/technologyClass1Review.ts'
       - 'src/features/curriculum/components/RevisioneTab.tsx'
@@ -32,8 +40,10 @@ on:
       - 'src/features/documents/components/InstituteCurrentSourcePanel.tsx'
       - 'src/features/documents/components/FontiWorkspace.tsx'
       - 'src/types/curriculum.ts'
+      - 'src/__tests__/current-institute-curriculum-source.test.ts'
       - 'src/__tests__/technology-class1-professional-review.test.ts'
       - 'tools/curriculum-alignment/validate.mjs'
+      - 'tools/curriculum-alignment/validate-legacy-boundary.mjs'
       - '.github/workflows/curriculum-alignment.yml'
 
 jobs:
@@ -50,3 +60,6 @@ jobs:
 
       - name: Validate REG-CURR-00
         run: node tools/curriculum-alignment/validate.mjs
+
+      - name: Validate canonical master versus legacy boundary
+        run: node tools/curriculum-alignment/validate-legacy-boundary.mjs
