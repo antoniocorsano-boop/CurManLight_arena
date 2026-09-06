@@ -1,441 +1,215 @@
-# Modello di Navigazione — CurManLight
+# 02 — NAVIGATION MODEL
 
-> Documento derivato dall'analisi dell'architettura di navigazione inline in `App.tsx`.
-> Ultimo aggiornamento: 2026-07-19
-
----
-
-## 1. Architettura Generale
-
-CurManLight utilizza un sistema di navigazione basato su `useState` senza React Router.
-Il tab attivo è governato dallo stato `activeTab` che può assumere 11 valori discreti:
-
-```
-'dashboard' | 'curricolo' | 'revisione' | 'progetta-evidenze' |
-'progetta-annuale' | 'processo' | 'esportazioni' | 'certificazione-pa' |
-'fonti' | 'guida' | 'second-brain'
-```
-
-La navigazione secondaria è gestita da sotto-stati complementari:
-- `activeCurricoloView`: `'albero' | 'mappa' | 'popolamento'` (per il curricolo)
-- `activeProgTab`: `'annuale' | 'uda' | 'certificazione' | 'social' | 'classe'` (per la progettazione)
-- `activeProcessoTab`: `'flusso' | 'verifica'` (per il processo)
-- `activeGeneralSubtab`: `'premessa' | 'riforma' | 'obiettivi' | 'livelli'`
-- `classeSubTab`: `'registro' | 'strumenti' | 'pianificazione'`
-- `popolamentoTab`: `'copilot' | 'csv' | 'security'`
+**Product vision:** `ARENA-PRODUCT-VISION@1.0.0`  
+**Lifecycle:** `CURRICULUM_LIFECYCLE@1.0.0`  
+**Stato:** `CANONICAL_TARGET_NAVIGATION`  
+**Data:** 2026-09-06
 
 ---
 
-## 2. Layout Desktop (≥768px)
+## 1. Principio
 
-```
-┌──────────────────────────────────────────────────────────────────────┐
-│  HEADER  (h-16, sticky top-0, z-50, bg-slate-900)                 │
-│  [☰] [Logo] CurManLight    [Co-pilota Chat] [Stato IA] [💾] [👤] │
-├─────────────┬────────────────────────────────────────────────────────┤
-│             │                                                        │
-│  SIDEBAR    │   MAIN CONTENT                                         │
-│  (w-64)     │   (flex-1, overflow-y-auto)                           │
-│  collaps.   │                                                        │
-│             │   ┌──────────────────────────────────────────────┐     │
-│  [Nav Glob] │   │                                              │     │
-│  · Home     │   │   Contenuto del tab attivo                   │     │
-│             │   │                                              │     │
-│  [Curricol] │   │   (dashboard, curricolo, revisione, ...)     │     │
-│  · Albero   │   │                                              │     │
-│  · Mappa    │   │                                              │     │
-│  · Popolam. │   │                                              │     │
-│  · Revisione│   └──────────────────────────────────────────────┘     │
-│  · Fonti    │                                                        │
-│             │                                                        │
-│  [Progettaz]│                                                        │
-│  · Wizard   │                                                        │
-│  · Archivio │                                                        │
-│  · Matrice  │                                                        │
-│  · Processo │                                                        │
-│  · Esporta  │                                                        │
-│             │                                                        │
-│  [Classe]   │                                                        │
-│  · Ambiente │                                                        │
-│  · Osservat.│                                                        │
-│             │                                                        │
-│  [Supporto] │                                                        │
-│  · Certif.  │                                                        │
-│  · WikiLLM  │                                                        │
-│  · Guida    │                                                        │
-└─────────────┴────────────────────────────────────────────────────────┘
-```
+La navigazione non deve riprodurre l'architettura tecnica dell'app. Deve seguire il lavoro reale del docente e proiettare soltanto le azioni pertinenti al ruolo e allo stato.
 
-### Specifiche Desktop
+La navigazione primaria target è:
 
-| Elemento | Proprietà CSS | Comportamento |
-|----------|---------------|---------------|
-| Header | `sticky top-0 z-50 h-16 bg-slate-900` | Fisso in alto durante lo scroll |
-| Sidebar | `w-64 shrink-0` | Collassabile con `sidebarCollapsed` state; su mobile diventa overlay |
-| Main Content | `flex-1 min-w-0 overflow-hidden` | Scroll indipendente via `overflow-y-auto` |
-| Container principale | `flex flex-col md:flex-row gap-6` | Sidebar + main affiancati |
+**IL MIO LAVORO · CURRICOLO · PROGETTAZIONE · RIESAME**
 
-### Comportamento Sidebar Desktop
+La navigazione secondaria è:
 
-Quando il pulsante ☰ viene premuto su desktop:
-- `sidebarCollapsed` viene invertito (`false → true` o viceversa)
-- La sidebar passa da `hidden md:block` a `hidden` (nascosta) e viceversa
-- La transizione è gestita da `transition-all duration-300`
+**FASCICOLO**
+
+Le funzioni istituzionali non sono una voce universale: compaiono contestualmente quando identità, membership, competenza e stato lo consentono.
 
 ---
 
-## 3. Layout Tablet (<768px ma non mobile strettamente)
+## 2. Il mio lavoro
 
-Il rilevamento dispositivo avviene via `navigator.userAgent` e `navigator.maxTouchPoints`.
-Lo stato `detectedDeviceType` determina `'desktop' | 'mobile'`.
+È il punto di ingresso ordinario.
 
-Su tablet/mobile il sidebar si comporta come overlay:
+Deve rispondere a tre domande:
+1. Che cosa devo fare adesso?
+2. Qual è lo stato del mio lavoro?
+3. Qual è la prossima azione reale?
 
-```
-┌──────────────────────────────────┐
-│  HEADER  (h-16, sticky)         │
-│  [☰] [Logo] CurManLight  [👤]  │
-├──────────────────────────────────┤
-│                                  │
-│   MAIN CONTENT                   │
-│   (occupa tutta la larghezza)    │
-│                                  │
-├──────────────────────────────────┤
-│  BOTTOM NAV  (h-16, fixed)      │
-│  [Home][Consulta][Rev][Progetta]│
-│           [Esporta]              │
-└──────────────────────────────────┘
-```
+Non deve mostrare l'intero ciclo, le fasi future o metadati tecnici come contenuto principale.
 
-Quando si preme ☰ su mobile:
-1. Il sidebar viene reso visibile come overlay fisso
-2. Classe applicata: `fixed inset-y-16 left-4 bg-white border-2 border-slate-200 shadow-2xl z-40 p-4 rounded-2xl w-[280px]`
-3. Lo sfondo non ha backdrop scuro — il sidebar è un pannello flottante
-4. Cliccando su un voce di menu, il sidebar si chiude automaticamente
+Esempi di card:
+- annualizzazione da esaminare;
+- contributo da completare;
+- confronto del gruppo disponibile;
+- riesame verticale richiesto;
+- progettazione da collegare al curricolo;
+- caso di riesame aperto.
 
 ---
 
-## 4. Layout Mobile (<768px)
+## 3. Curricolo
 
-### Barra di Navigazione Inferiore (Bottom Nav)
+La voce `CURRICOLO` apre il master canonico e il contesto applicabile.
 
-La bottom nav è sempre visibile su dispositivi mobile (`md:hidden`):
+Azioni principali:
+- consultare la progressione;
+- filtrare per ordine, classe/coorte, disciplina/campo/asse;
+- vedere annualizzazione d'Istituto e benchmark/fonte distinti;
+- aprire una `CurriculumWorkSession` quando esiste un caso pertinente;
+- vedere raccordi verticali;
+- aprire la fonte o la tracciabilità su richiesta.
 
-```
-┌──────────────────────────────┐
-│  HEADER  (h-16, sticky)     │
-│  [☰] [Logo] CurManLight    │
-├──────────────────────────────┤
-│                              │
-│   MAIN CONTENT               │
-│   (con padding-bottom: 4rem │
-│    per evitare sovrapposiz.) │
-│                              │
-├──────────────────────────────┤
-│  BOTTOM NAV (h-16, fixed)   │
-│  [Home][Consulta][Rev][Pro] │
-│           [Esporta]          │
-└──────────────────────────────┘
-```
-
-| Voce | Icona | Tab target | Badge |
-|------|-------|------------|-------|
-| Home | FolderOpen | `dashboard` | — |
-| Consulta | Layers | `curricolo` | — |
-| Revisione | RotateCcw | `revisione` | Conteggio pending (se > 0) |
-| Progetta | Calendar | `progetta-annuale` | — |
-| Esporta | DownloadCloud | `esportazioni` | — |
-
-**Stato attivo**: `text-primary-600 font-extrabold`
-**Stato inattivo**: `text-slate-400 font-medium`
-
-**Nota**: Solo 5 voci sono presenti nella bottom nav. Le voci `certificazione-pa`, `second-brain`, `guida`, `fonti`, `processo` non sono accessibili direttamente dalla bottom nav mobile — l'utente deve usare il sidebar overlay (☰) per raggiungerle.
+La vecchia KB locale non è la rappresentazione corrente del curricolo e rimane subordinata nel Fascicolo come archivio legacy quando necessario.
 
 ---
 
-## 5. Struttura Sidebar (Dettaglio Completo)
+## 4. CurriculumWorkSession
 
-Il sidebar è organizzato in 5 sezioni con separatore visivo (`border-t border-slate-100`):
+Dentro il lavoro curricolare la navigazione è verticale e progressiva:
 
-### Sezione 1: Navigazione Globale
-| Voce | Tab | Icona | Note |
-|------|-----|-------|------|
-| Home Dashboard | `dashboard` | `FolderOpen` | Sempre visibile |
+**ESAMINA → CONDIVIDI → CONFRONTA → REGISTRA L'ESITO**
 
-### Sezione 2: Consulta Curricolo
-| Voce | Tab + View/State | Condizione visibilità |
-|------|------------------|-----------------------|
-| **Consulta Curricolo** (header) | `curricolo` | Attivo se tab è curricolo/revisione/fonti |
-| Vista Strutturata (Albero) | `curricolo` + `albero` | Sez. curricolo attiva |
-| Raccordo Diacronico (Mappa) | `curricolo` + `mappa` | Sez. curricolo attiva |
-| Integrazione & Popolamento | `curricolo` + `popolamento` | Sez. curricolo attiva |
-| Revisione (Gap 2025) | `revisione` | Sez. curricolo attiva, con badge pending |
-| Fonti d'Istituto | `fonti` | Sez. curricolo attiva |
+Regole:
+- una sola fase domina la superficie;
+- le fasi future non competono con quella corrente;
+- uno stadio completato diventa un riepilogo compatto;
+- lo scroll non cambia fase;
+- il docente termina il proprio compito a `CONDIVIDI` se non ha ulteriori responsabilità;
+- `CONFRONTA` compare quando esistono contributi sufficienti e un ruolo pertinente;
+- `REGISTRA L'ESITO` compare soltanto a chi possiede l'autorità richiesta e dopo la copertura necessaria.
 
-### Sezione 3: Progettazione UDA
-| Voce | Tab + Tab | Condizione visibilità |
-|------|-----------|-----------------------|
-| **Progettazione UDA** (header) | `progetta-annuale` | Attivo se tab è progetta-annuale/processo/esportazioni |
-| Compilatore UDA (Wizard) | `progetta-annuale` + `annuale` | Sez. progettazione attiva |
-| Archivio UDA d'Istituto | `progetta-annuale` + `uda` | Sez. progettazione attiva |
-| Matrice delle Competenze | `progetta-annuale` + `certificazione` | Sez. progettazione attiva |
-| Processo & Consenso | `processo` | Sez. progettazione attiva |
-| Esportazione File d'Ufficio | `esportazioni` | Sez. progettazione attiva |
-
-### Sezione 4: Spazio d'Aula e Classe
-| Voce | Tab + Tab | Condizione visibilità |
-|------|-----------|-----------------------|
-| **Spazio d'Aula e Classe** (header) | `progetta-annuale` | Attivo se progTab è classe/social |
-| Ambiente & Esiti Classe | `progetta-annuale` + `classe` | Sez. classe attiva |
-| Osservatorio dei Riusi d'UDA | `progetta-annuale` + `social` | Sez. classe attiva |
-
-### Sezione 5: Supporto & Certificazioni
-| Voce | Tab | Icona |
-|------|-----|-------|
-| Certificazione PA (AgID) | `certificazione-pa` | `ShieldCheck` (verde) |
-| WikiLLM & Brain d'Istituto | `second-brain` | `Sparkles` (indaco) |
-| Guida Operativa | `guida` | `HelpCircle` (blu) |
+La navigazione non deve creare voci distinte per contributo, condivisione, team e coordinamento.
 
 ---
 
-## 6. Header / Topbar
+## 5. Progettazione
 
-L'header è un elemento `sticky top-0 z-50` con sfondo `bg-slate-900` e altezza fissa `h-16`.
+`PROGETTAZIONE` raccoglie programmazione annuale, UDA e attività.
 
-```
-┌──────────────────────────────────────────────────────────────┐
-│  [☰]  [Logo CML]  CurManLight    [🤖 Co-pilota] [IA] [💾] [👤] │
-└──────────────────────────────────────────────────────────────┘
-```
+Il punto di ingresso mostra il curricolo pertinente e consente di creare `DidacticBinding`.
 
-### Elementi Header (da sinistra a destra)
+La navigazione interna deve privilegiare:
+- cosa del curricolo è già collegato;
+- cosa manca ancora nella progettazione;
+- quali collegamenti sono trasversali;
+- quali ore/evidenze di Educazione civica sono realmente sostenute da attività.
 
-| Elemento | Componente | Comportamento |
-|----------|------------|---------------|
-| Menu toggle | `Menu` icon | Apre/chiude sidebar (overlay su mobile) |
-| Logo | `<img>` curmanlight_v20_logo.png | Solo decorativo, h-9 |
-| Titolo | Testo "CurManLight" | Gradient text `from-white to-slate-300` |
-| Co-pilota Chat | `Sparkles` + testo | Apre il pannello laterale copilot |
-| Stato IA | Badge圆点 + testo | Indica stato WebGPU/Ollama, click per configurare |
-| Salva | `Save` icon | Apre modal salvataggio |
-| Avatar utente | Cerchio gradient | Apre dropdown menu utente |
-
-### Menu Dropdown Utente
-
-L'avatar (`h-9 w-9 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600`) apre un dropdown con:
-
-| Sezione | Voci |
-|---------|------|
-| Intestazione | Nome utente + email (o "Utente Scolastico") |
-| Azioni Cloud | Sincronizza Drive, Condividi Classroom, Importa Alunni Cifrati |
-| Azioni Pericolose | Azzera Memoria d'Istituto |
-| Account | Disconnetti Account / Connetti Cloud |
-
-Il dropdown ha z-index `z-[180]` e sfondo `bg-slate-800`.
+Non deve trasformare la “copertura” in un punteggio di prestazione del docente.
 
 ---
 
-## 7. Navigazione Indietro (Back Navigation)
+## 6. Riesame
 
-### Meccanismo Attuale
+`RIESAME` è la porta per il ritorno dalla pratica o per l'apertura di nuove revisioni.
 
-Non esiste un pulsante "Indietro" esplicito. La navigazione indietro avviene tramite:
+Contiene:
+- `ImplementationObservation` aggregate;
+- `RevisionTrigger` normativi;
+- trigger per esigenze d'Istituto;
+- trigger periodici;
+- casi di riesame aperti;
+- questioni verticali irrisolte.
 
-1. **Sidebar**: cliccando su un'altra voce di sezione si cambia tab
-2. **Bottom Nav mobile**: cliccando su un'altra icona
-3. **Chiusura automatica sidebar mobile**: dopo ogni `handleTabSwitch`, la sidebar overlay si chiude
-
-La funzione `handleTabSwitch` esegue:
-```typescript
-const handleTabSwitch = (tab) => {
-  setActiveTab(tab);
-  if (window.innerWidth < 768) {
-    // Chiudi sidebar overlay mobile
-  }
-  // Reset scroll a 0
-  mainEl.scrollTop = 0;
-  window.scrollTo({ top: 0, behavior: 'auto' });
-};
-```
-
-### Back Navigation Tra Sub-Tab
-
-Per tornare da una sotto-vista alla vista principale:
-- Dalla **Vista Strutturata (Albero)** al **Dashboard**: cliccare "Home" nel sidebar/bottom nav
-- Dalla **Mappa** all'**Albero**: cliccare "Vista Strutturata (Albero)" nel sidebar
-- Dall'**Archivio UDA** al **Wizard**: cliccare "Compilatore UDA (Wizard)" nel sidebar
-
-Non esiste un breadcrumb o un pulsante "← Indietro" esplicito.
+Azione primaria: qualificare o aprire un riesame mirato, non modificare direttamente il master.
 
 ---
 
-## 8. Breadcrumb — Stato Attuale
+## 7. Fascicolo
 
-**Non implementato.** Il percorso di navigazione è implicito dalla combinazione:
-- `activeTab` + `activeCurricoloView` (per curricolo)
-- `activeTab` + `activeProgTab` (per progettazione)
-- `activeTab` + `activeProcessoTab` (per processo)
+`FASCICOLO` è secondario ma sempre raggiungibile.
 
-Esempio di percorso implicito:
-```
-Dashboard → Consulta Curricolo → Vista Strutturata (Albero) → Disciplina Italiano
-```
+Contiene:
+- master e relative versioni;
+- repertorio fonti;
+- fonti normative/istituzionali;
+- matrici di conformità;
+- registri e ricevute;
+- decisioni e verbali collegati;
+- export/backup;
+- storico tecnico e archivi legacy.
 
-**Stato attuale**: Nessun breadcrumb visibile. Il titolo della vista corrente è mostrato inline nel contenuto principale.
-
----
-
-## 9. Azioni Rapide (Quick Actions)
-
-### Toast Notifications
-
-Sistema di notifiche inline posizionato in basso a destra:
-
-```
-┌──────────────────────────────┐
-│                              │
-│   (contenuto pagina)         │
-│                              │
-│                    ┌────────┐│
-│                    │ ✓ Mess ││
-│                    └────────┘│
-└──────────────────────────────┘
-```
-
-- Posizione: `fixed bottom-6 right-6`
-- Z-index: `z-[200]`
-- Sfondo: `bg-slate-950`
-- Durata: 3500ms auto-dismiss
-- Tipi: successo (verde) / errore (rosso)
-
-### Copilot Chat Overlay
-
-Pannello laterale fisso sul lato destro:
-
-```
-┌──────────────────────────────┬────────────┐
-│                              │ CO-PILOTA  │
-│   (contenuto pagina)         │ [✕]       │
-│                              │            │
-│                              │ Messaggi   │
-│                              │ ...        │
-│                              │            │
-│                              │ [Suggerim.]│
-│                              │ [Input]    │
-└──────────────────────────────┴────────────┘
-```
-
-- Posizione: `fixed top-20 bottom-4 right-4 left-4 md:left-auto md:w-80`
-- Z-index: `z-[150]`
-- Comportamento: su mobile occupa tutta la larghezza, su desktop 320px a destra
-
-### Input Vocale
-
-Integrato nel copilot chat tramite Web Speech API:
-- `isVoiceListening` state
-- Trascrizione automatica nel campo input
-- Feedback visivo con icona microfono
+Il Fascicolo usa divulgazione progressiva. Drive ID, fingerprint, stati tecnici e dettagli di verifica non occupano il livello 1.
 
 ---
 
-## 10. Navigazione Sub-Tab — Percorsi Tipici
+## 8. Azioni istituzionali proiettate
 
-### Percorso Curricolo
-```
-Dashboard
-  → Consulta Curricolo
-    → Vista Strutturata (Albero)
-    → Raccordo Diacronico (Mappa)
-    → Integrazione & Popolamento
-      → Copilot | CSV | Sicurezza
-  → Revisione (Gap 2025)
-  → Fonti d'Istituto
-```
+Esempi di azioni non universali:
+- avvia confronto del gruppo;
+- registra esito professionale;
+- chiudi riesame verticale;
+- verifica readiness per l'iter istituzionale;
+- registra decisione istituzionale;
+- registra adozione.
 
-### Percorso Progettazione
-```
-Dashboard
-  → Progettazione UDA
-    → Compilatore UDA (Wizard)
-    → Archivio UDA d'Istituto
-    → Matrice delle Competenze
-  → Processo & Consenso
-  → Esportazione File d'Ufficio
-```
-
-### Percorso Classe
-```
-Dashboard
-  → Spazio d'Aula e Classe
-    → Ambiente & Esiti Classe
-    → Osservatorio dei Riusi d'UDA
-```
-
-### Percorso Supporto
-```
-Dashboard
-  → Certificazione PA (AgID)
-  → WikiLLM & Brain d'Istituto
-  → Guida Operativa
-```
+Queste azioni appaiono nel contesto dell'oggetto pertinente e non in una sezione “amministrazione” sempre visibile.
 
 ---
 
-## 11. Diagramma di Stato Navigazione
+## 9. Desktop
 
-```
-                          ┌─────────────┐
-                          │  dashboard  │◄─────────────────┐
-                          └──────┬──────┘                  │
-                                 │                         │
-            ┌────────────────────┼────────────────────┐    │
-            │                    │                    │    │
-            ▼                    ▼                    ▼    │
-   ┌────────────────┐  ┌──────────────────┐  ┌──────────┐│
-   │   curricolo    │  │ progetta-annuale │  │ esporta  ││
-   │  ┌───────────┐ │  │  ┌────────────┐  │  └──────────┘│
-   │  │  albero   │ │  │  │  annuale   │  │              │
-   │  │  mappa    │ │  │  │  uda       │  │              │
-   │  │  popolam. │ │  │  │  certific. │  │              │
-   │  └───────────┘ │  │  │  classe    │  │              │
-   └────────────────┘  │  │  social    │  │              │
-            │          │  └────────────┘  │              │
-            ▼          └────────┬─────────┘              │
-   ┌────────────────┐          │                         │
-   │   revisione    │          │                         │
-   └────────────────┘          │                         │
-            │                  │                         │
-            ▼                  ▼                         │
-   ┌────────────────┐  ┌──────────────────┐              │
-   │     fonti      │  │     processo     │              │
-   └────────────────┘  └──────────────────┘              │
-                                                          │
-            ┌────────────────────────────────────────────┘
-            │
-            ▼
-   ┌────────────────────┐  ┌──────────────────┐  ┌──────────┐
-   │ certificazione-pa  │  │   second-brain   │  │   guida  │
-   └────────────────────┘  └──────────────────┘  └──────────┘
-```
+Target:
+- navigazione primaria persistente e compatta;
+- un solo titolo di contesto;
+- un solo oggetto dominante;
+- comandi secondari nel contesto o in overflow;
+- Fascicolo separato dalla navigazione primaria;
+- nessuna sidebar con decine di sotto-voci che espongano l'intera architettura interna.
 
 ---
 
-## 12. Lacune e Raccomandazioni
+## 10. Mobile
 
-### Assenti
+La bottom navigation target contiene le quattro aree primarie:
 
-| Funzionalità | Stato | Impatto |
-|-------------|-------|---------|
-| Breadcrumb | Non implementato | L'utente perde il percorso in viste profonde |
-| Pulsante "← Indietro" | Non implementato | Navigazione unidirezionale via sidebar |
-| Bottom Nav completa | Solo 5 voci su 11 tab | Su mobile, 6 tab non sono direttamente accessibili |
-| Indicatore di profondità | Non implementato | Non è chiaro in che sotto-vista ci si trova |
-| Transizioni animate tra tab | Solo `fade-in` sul contenuto | Nessuna transizione di slide o crossfade |
+`Il mio lavoro · Curricolo · Progettazione · Riesame`
 
-### Raccomandazioni
+`Fascicolo` è raggiungibile dal menu secondario/overflow.
 
-1. **Breadcrumb**: aggiungere un percorso visivo del tipo `Home > Consulta Curricolo > Albero` nel contenuto principale
-2. **Bottom Nav estesa**: considerare 6-7 voci o un menu "Altri" per le voci mancanti
-3. **Pulsante ← Indietro**: implementare nella sub-viste (Albero, Mappa, Popolamento) per tornare alla vista padre
-4. **Gestione storia browser**: implementare `popstate` per supportare il tasto ← del browser
-5. **Indicatore sub-tab**: mostrare visivamente quale sotto-vista è attiva (es. underline o dot indicator)
+Regole mobile:
+- nessuna duplicazione tra bottom nav e una seconda rail di avanzamento;
+- la fase corrente della `CurriculumWorkSession` domina lo schermo;
+- azioni conseguenti restano vicine all'oggetto;
+- fonti e dati tecnici si aprono su richiesta;
+- il ritorno al contesto precedente deve essere esplicito e recuperabile.
+
+---
+
+## 11. Navigazione indietro e recupero
+
+Ogni sessione deve conservare:
+- CurriculumUnit o caso corrente;
+- fase attiva;
+- bozza personale non ancora registrata;
+- filtri contestuali essenziali.
+
+La navigazione indietro non deve trasformare una bozza in decisione né perdere il lavoro non registrato senza avviso.
+
+---
+
+## 12. Migrazione dalle voci precedenti
+
+| Precedente | Target |
+|---|---|
+| Home / Dashboard | Il mio lavoro |
+| Consulta / Albero / Mappa | Curricolo |
+| Revisione | CurriculumWorkSession |
+| Condivisione | CurriculumWorkSession |
+| Lavoro del team | CurriculumWorkSession |
+| Coordinamento | azione proiettata nella CurriculumWorkSession |
+| Fonti | Fascicolo |
+| Processo / Delibera | azione istituzionale proiettata |
+| Progettazione UDA | Progettazione |
+| feedback sparso | Riesame |
+
+Le vecchie chiavi di routing/tab possono restare temporaneamente per compatibilità tecnica, ma non definiscono la nomenclatura o la gerarchia di prodotto.
+
+---
+
+## 13. Vincoli di accettazione
+
+- massimo una gerarchia di navigazione primaria;
+- massimo una progressione visibile per un'attività multistadio;
+- nessuna voce `Fonti` come fase primaria;
+- nessuna voce `Decisione istituzionale` universale;
+- nessun ID tecnico al livello 1 del docente;
+- stato e prossima azione riconoscibili senza testo formativo persistente;
+- l'interfaccia deve rimanere utilizzabile anche rimuovendo la copy didattica non essenziale;
+- tutte le azioni conseguenti devono rispettare i confini di autorità.

@@ -12,7 +12,8 @@
     "hia_required": true,
     "operational_communication_contract_required": true,
     "curriculum_alignment_registry_required": true,
-    "curriculum_lifecycle_contract_required": true
+    "curriculum_lifecycle_contract_required": true,
+    "product_documentation_registry_required": true
   },
   "consequential_actions": {
     "preview_required": true,
@@ -32,9 +33,14 @@
   },
   "curriculum_lifecycle": {
     "contract": ".human/curriculum-lifecycle.contract.json",
-    "institutional_document": "ARENA-UX-01_Dal_documento_al_lavoro_dei_team_2026-2027",
-    "institutional_document_drive_id": "1M8LriHG1zASUq7jE2xiyJfvX4gVnnmZNmYBrrfYS7fE",
-    "institutional_document_section": "27. MODELLO DEFINITIVO — IL CURRICOLO COME CICLO EDUCATIVO E DIDATTICO"
+    "version": "1.0.0",
+    "institutional_document_drive_id": "1M8LriHG1zASUq7jE2xiyJfvX4gVnnmZNmYBrrfYS7fE"
+  },
+  "product_documentation": {
+    "registry": "docs/04_product_experience/PRODUCT_DOCS.registry.json",
+    "vision": "docs/04_product_experience/00_VISION.md",
+    "vision_version": "1.0.0",
+    "vision_drive_file_id": "1s17jJCslSIJIXQfiTEzyRcD5q-Baopj6-l14aaFEWik"
   },
   "compatibility": {
     "domain_human_task_contract": "src/features/guided-workflow/humanTask.ts",

@@ -1,0 +1,101 @@
+{
+  "registry_id": "ARENA-PRODUCT-DOCS",
+  "version": "1.0.0",
+  "date": "2026-09-06",
+  "product_vision": {
+    "id": "ARENA-PRODUCT-VISION",
+    "version": "1.0.0",
+    "drive_title": "ARENA-PRODUCT-00_Visione_di_prodotto_e_governo_documentazione_2026-2027",
+    "drive_file_id": "1s17jJCslSIJIXQfiTEzyRcD5q-Baopj6-l14aaFEWik",
+    "repo_path": "docs/04_product_experience/00_VISION.md",
+    "status": "CANONICAL_PRODUCT_DIRECTION"
+  },
+  "lifecycle_contract": {
+    "id": "CURRICULUM_LIFECYCLE",
+    "version": "1.0.0",
+    "path": ".human/curriculum-lifecycle.contract.json"
+  },
+  "canonical_documents": [
+    {
+      "path": "docs/04_product_experience/00_VISION.md",
+      "role": "PRODUCT_VISION",
+      "status": "CURRENT",
+      "must_align_with_lifecycle": true
+    },
+    {
+      "path": "docs/04_product_experience/01_INFORMATION_ARCHITECTURE.md",
+      "role": "INFORMATION_ARCHITECTURE",
+      "status": "CURRENT_TARGET",
+      "must_align_with_lifecycle": true
+    },
+    {
+      "path": "docs/04_product_experience/02_NAVIGATION_MODEL.md",
+      "role": "NAVIGATION_MODEL",
+      "status": "CURRENT_TARGET",
+      "must_align_with_lifecycle": true
+    },
+    {
+      "path": "docs/04_product_experience/09_USER_FLOWS.md",
+      "role": "CRITICAL_USER_FLOWS",
+      "status": "CURRENT_TARGET",
+      "must_align_with_lifecycle": true
+    },
+    {
+      "path": "docs/04_product_experience/11_OPERATIONAL_COMMUNICATION_CONTRACT.md",
+      "role": "OPERATIONAL_COMMUNICATION",
+      "status": "CURRENT",
+      "must_align_with_lifecycle": false
+    }
+  ],
+  "subordinate_documents": [
+    {
+      "path": "docs/04_product_experience/03_DESIGN_SYSTEM.md",
+      "status": "IMPLEMENTATION_REFERENCE_REVIEW_REQUIRED"
+    },
+    {
+      "path": "docs/04_product_experience/04_COMPONENT_LIBRARY.md",
+      "status": "IMPLEMENTATION_REFERENCE_REVIEW_REQUIRED"
+    },
+    {
+      "path": "docs/04_product_experience/05_DESKTOP_LAYOUTS.md",
+      "status": "IMPLEMENTATION_SNAPSHOT"
+    },
+    {
+      "path": "docs/04_product_experience/06_TABLET_LAYOUTS.md",
+      "status": "IMPLEMENTATION_SNAPSHOT"
+    },
+    {
+      "path": "docs/04_product_experience/07_MOBILE_LAYOUTS.md",
+      "status": "IMPLEMENTATION_SNAPSHOT"
+    },
+    {
+      "path": "docs/04_product_experience/08_SCREEN_SPECIFICATIONS.md",
+      "status": "IMPLEMENTATION_SNAPSHOT"
+    },
+    {
+      "path": "docs/04_product_experience/10_ACCESSIBILITY.md",
+      "status": "QUALITY_CONSTRAINT_REVIEW_REQUIRED"
+    }
+  ],
+  "update_rules": {
+    "product_governance_change_requires_vision_review": true,
+    "lifecycle_change_requires_vision_ia_navigation_flows_review": true,
+    "primary_navigation_change_requires_navigation_and_flows_update": true,
+    "canonical_object_change_requires_vision_ia_flows_update": true,
+    "authority_boundary_change_requires_vision_ia_flows_and_cco_review": true,
+    "didactic_binding_change_requires_vision_ia_and_flows_update": true,
+    "revision_trigger_change_requires_vision_ia_and_flows_update": true,
+    "implementation_snapshot_never_overrides_product_direction": true,
+    "drive_and_repo_product_vision_identity_must_match": true,
+    "ci_must_fail_on_canonical_document_drift": true
+  },
+  "implementation_state": {
+    "vision_defined": true,
+    "lifecycle_contract_validated": true,
+    "target_information_architecture_defined": true,
+    "target_navigation_defined": true,
+    "critical_flows_defined": true,
+    "target_ui_fully_implemented": false,
+    "human_end_to_end_pilot_complete": false
+  }
+}
