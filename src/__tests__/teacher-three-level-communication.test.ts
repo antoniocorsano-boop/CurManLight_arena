@@ -27,7 +27,8 @@ describe('Teacher three-level institutional communication', () => {
   it('keeps Home level 1 institutional, actionable and free of system jargon', () => {
     const level1 = between(homeSource, 'data-hcm-level="1"', 'data-hcm-level="2"');
     expect(level1).not.toBe('');
-    expect(level1).toContain('Il mio lavoro sul curricolo');
+    expect(homeSource).toContain("title: 'Il mio lavoro sul curricolo'");
+    expect(level1).toContain('{orientation.title}');
     expect(level1).toContain('Attività che richiedono il tuo intervento.');
     expect(level1).toContain('Non ci sono attività da completare in questo momento.');
     expect(level1).not.toMatch(/membership|assurance|\bgate\b|\bsha\b|handoff|\bexport\b|blocker|esito locale|workflow interno/i);
@@ -54,7 +55,8 @@ describe('Teacher three-level institutional communication', () => {
     expect(level1).toContain('Il mio contributo alla revisione del curricolo');
     expect(level1).toContain('Conferma la proposta');
     expect(level1).toContain('Proponi una modifica');
-    expect(level1).toContain('Mantieni testo precedente');
+    expect(revisionSource).toContain("current.keepLabel || 'Mantieni testo precedente'");
+    expect(level1).toContain('{keepActionLabel}');
     expect(level1).not.toMatch(/\bgate\b|Drive|audit|TECHNOLOGY_REWORK|NON_DUPLICATION_CHECK/i);
   });
 
