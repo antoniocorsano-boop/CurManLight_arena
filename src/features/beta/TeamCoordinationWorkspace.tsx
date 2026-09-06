@@ -1,12 +1,15 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import type { Proposal, SchoolOrder } from '../../types/curriculum';
+import { getOperationalGroupForDiscipline } from '../../domain/institution/operationalGroups';
 import type { WorkspaceActorContext } from '../../domain/institution/sharedWorkspacePort';
 import type {
+  OperationalGroupMembership,
   TeamReviewItemSummary,
   TeamReviewOutcome,
   TeamReviewOutcomeReceipt,
   TeamReviewProposalDescriptor,
+  TeamReviewScope,
 } from '../../domain/revision/teamReview';
 import {
   deriveTeamReviewSummary,
@@ -27,6 +30,7 @@ export interface TeamCoordinationWorkspaceProps {
   proposals: Proposal[];
   discipline: string;
   order: SchoolOrder;
+  academicYear: string;
 }
 
 type FingerprintMap = Record<string, string>;
@@ -78,12 +82,20 @@ const latestCurrentOutcomes = (
 
 const shortFingerprint = (value: string): string => value.length > 16 ? `${value.slice(0, 12)}…${value.slice(-4)}` : value;
 
-export function TeamCoordinationWorkspace({ proposals, discipline, order }: TeamCoordinationWorkspaceProps) {
+export function TeamCoordinationWorkspace({ proposals, discipline, order, academicYear }: TeamCoordinationWorkspaceProps) {
   const team = useTeamWorkspaceContext();
   const repository = useMemo(
     () => (team.client ? new SupabaseSharedTeamReviewRepository(team.client) : null),
     [team.client],
   );
+  const group = useMemo(() => getOperationalGroupForDiscipline(order, discipline), [order, discipline]);
+  const scope = useMemo<TeamReviewScope | null>(() => group ? ({
+    academicYear,
+    order: group.order,
+    groupCode: group.code,
+    discipline,
+  }) : null, [academicYear, group, discipline]);
+  const [operationalMembership, setOperationalMembership] = useState<OperationalGroupMembership | null>(null);
   const [fingerprints, setFingerprints] = useState<FingerprintMap>({});
   const [contributions, setContributions] = useState<Awaited<ReturnType<SupabaseSharedTeamReviewRepository['listContributions']>>>([]);
   const [outcomes, setOutcomes] = useState<TeamReviewOutcomeReceipt[]>([]);
@@ -97,15 +109,20 @@ export function TeamCoordinationWorkspace({ proposals, discipline, order }: Team
   const [rationale, setRationale] = useState('');
 
   const proposalIdentityKey = useMemo(
-    () => JSON.stringify(proposals.map((proposal) => [proposal.id, proposal.focus, proposal.oldText, proposal.newText])),
-    [proposals],
+    () => JSON.stringify([academicYear, order, discipline, group?.code, proposals.map((proposal) => [proposal.id, proposal.focus, proposal.oldText, proposal.newText])]),
+    [academicYear, order, discipline, group?.code, proposals],
   );
 
   useEffect(() => {
     let active = true;
+    if (!scope) {
+      setFingerprints({});
+      return () => { active = false; };
+    }
     void Promise.all(proposals.map(async (proposal) => [
       proposal.id,
       await fingerprintTeamReviewProposal({
+        ...scope,
         proposalRef: proposal.id,
         focus: proposal.focus,
         oldText: proposal.oldText,
@@ -117,22 +134,24 @@ export function TeamCoordinationWorkspace({ proposals, discipline, order }: Team
       if (active) setMessage(error instanceof Error ? error.message : 'Impossibile identificare le versioni delle schede.');
     });
     return () => { active = false; };
-  }, [proposalIdentityKey]);
+  }, [proposalIdentityKey, scope]);
 
-  const descriptors = useMemo<TeamReviewProposalDescriptor[]>(() => proposals
+  const descriptors = useMemo<TeamReviewProposalDescriptor[]>(() => scope ? proposals
     .filter((proposal) => Boolean(fingerprints[proposal.id]))
     .map((proposal) => ({
+      ...scope,
       proposalRef: proposal.id,
       focus: proposal.focus,
       proposalFingerprint: fingerprints[proposal.id],
-    })), [proposals, fingerprints]);
+    })) : [], [proposals, fingerprints, scope]);
 
   useEffect(() => {
     let active = true;
-    if (!repository || !team.selectedMembership || !team.session || descriptors.length !== proposals.length) {
+    if (!repository || !team.selectedMembership || !team.session || !scope || descriptors.length !== proposals.length) {
       setContributions([]);
       setOutcomes([]);
       setExpectedContributorCount(null);
+      setOperationalMembership(null);
       return () => { active = false; };
     }
 
@@ -143,24 +162,27 @@ export function TeamCoordinationWorkspace({ proposals, discipline, order }: Team
     setMessage(null);
 
     void Promise.all([
-      repository.listContributions(context, team.selectedMembership.workspaceId),
-      repository.listTeamOutcomes(context, team.selectedMembership.workspaceId),
-      repository.getEligibleContributorCount(context, team.selectedMembership.workspaceId),
-    ]).then(([nextContributions, nextOutcomes, nextExpectedContributorCount]) => {
+      repository.listContributions(context, team.selectedMembership.workspaceId, scope),
+      repository.listTeamOutcomes(context, team.selectedMembership.workspaceId, scope),
+      repository.getEligibleContributorCount(context, team.selectedMembership.workspaceId, scope),
+      repository.getMyOperationalMembership(context, scope),
+    ]).then(([nextContributions, nextOutcomes, nextExpectedContributorCount, nextOperationalMembership]) => {
       if (!active) return;
       setContributions(nextContributions);
       setOutcomes(nextOutcomes);
       setExpectedContributorCount(nextExpectedContributorCount);
+      setOperationalMembership(nextOperationalMembership);
     }).catch((error) => {
       if (!active) return;
       setContributions([]);
       setOutcomes([]);
       setExpectedContributorCount(null);
+      setOperationalMembership(null);
       setMessage(error instanceof Error ? error.message : 'Lavoro del team non leggibile.');
     });
 
     return () => { active = false; };
-  }, [repository, team.selectedMembership?.workspaceId, team.selectedMembership?.role, team.session?.user.id, descriptors.length, proposalIdentityKey, refreshVersion]);
+  }, [repository, team.selectedMembership?.workspaceId, team.selectedMembership?.role, team.session?.user.id, descriptors.length, proposalIdentityKey, refreshVersion, scope]);
 
   const summary = useMemo(
     () => deriveTeamReviewSummary(descriptors, contributions, expectedContributorCount),
@@ -171,11 +193,13 @@ export function TeamCoordinationWorkspace({ proposals, discipline, order }: Team
   const sharedItems = summary.items.filter((item) => item.bucket === 'shared');
   const resolvedItems = summary.items.filter((item) => Boolean(latestOutcomes[item.proposalRef]));
   const selectedItem = summary.items.find((item) => item.proposalRef === selectedProposalRef) ?? null;
-  const canRecordTeamOutcome = Boolean(team.selectedMembership && ['dipartimento', 'referente'].includes(team.selectedMembership.role));
-  const isCoordinator = canRecordTeamOutcome;
+  const hasDisciplineCompetence = Boolean(operationalMembership?.disciplines.includes(discipline));
+  const hasVerifiedCoordinationRole = Boolean(team.selectedMembership && ['dipartimento', 'referente'].includes(team.selectedMembership.role));
+  const canRecordTeamOutcome = hasVerifiedCoordinationRole && hasDisciplineCompetence;
+  const isCoordinator = hasVerifiedCoordinationRole;
 
   const recordOutcome = async () => {
-    if (!repository || !team.selectedMembership || !team.session || !canRecordTeamOutcome || !selectedItem) return;
+    if (!repository || !team.selectedMembership || !team.session || !scope || !canRecordTeamOutcome || !selectedItem) return;
     if (!rationale.trim()) {
       setMessage('Aggiungi la motivazione sintetica dell’esito concordato dal team.');
       return;
@@ -194,6 +218,7 @@ export function TeamCoordinationWorkspace({ proposals, discipline, order }: Team
     try {
       await repository.recordTeamOutcome(context, {
         workspaceId: team.selectedMembership.workspaceId,
+        ...scope,
         proposalRef: selectedItem.proposalRef,
         proposalFingerprint: selectedItem.proposalFingerprint,
         outcome: teamOutcome,
@@ -215,7 +240,7 @@ export function TeamCoordinationWorkspace({ proposals, discipline, order }: Team
   };
 
   const confirmSharedItems = async () => {
-    if (!repository || !team.selectedMembership || !team.session || !canRecordTeamOutcome) return;
+    if (!repository || !team.selectedMembership || !team.session || !scope || !canRecordTeamOutcome) return;
     const pendingShared = sharedItems.filter((item) => item.coverageComplete && !latestOutcomes[item.proposalRef]);
     if (pendingShared.length === 0) {
       setMessage('Non ci sono punti con copertura completa ancora da registrare come esito del team.');
@@ -233,11 +258,12 @@ export function TeamCoordinationWorkspace({ proposals, discipline, order }: Team
         const outcome: TeamReviewOutcome = item.counts['keep-previous'] > 0 ? 'keep-previous' : 'accept-proposal';
         await repository.recordTeamOutcome(context, {
           workspaceId: team.selectedMembership.workspaceId,
+          ...scope,
           proposalRef: item.proposalRef,
           proposalFingerprint: item.proposalFingerprint,
           outcome,
           sharedText: null,
-          rationale: 'Punto confermato dal team con copertura completa dei contributori correnti.',
+          rationale: 'Punto confermato dal team con copertura completa dei docenti competenti nella disciplina.',
           clientRequestId: createRequestId(),
         });
       }
@@ -249,6 +275,19 @@ export function TeamCoordinationWorkspace({ proposals, discipline, order }: Team
       setBusy(false);
     }
   };
+
+  if (!scope || !group) {
+    return (
+      <section className="rounded-2xl border border-amber-200 bg-amber-50 p-4" aria-label="Lavoro del team">
+        <strong className="block text-sm text-amber-950">Coordinamento disciplinare non configurato</strong>
+        <p className="mt-1 text-xs leading-relaxed text-amber-900">
+          {discipline === 'educazioneCivica'
+            ? 'Educazione civica resta un asse trasversale: prima di aprire un esito di gruppo serve l’instradamento per nucleo.'
+            : 'I gruppi operativi di questa fase riguardano le discipline della scuola primaria e secondaria di primo grado.'}
+        </p>
+      </section>
+    );
+  }
 
   if (!team.configured) {
     return (
@@ -312,14 +351,31 @@ export function TeamCoordinationWorkspace({ proposals, discipline, order }: Team
         ) : null}
       </header>
 
+      <section className="rounded-2xl border border-indigo-200 bg-white p-4" data-operational-group-context>
+        <div className="flex flex-wrap items-center gap-2">
+          <strong className="text-sm text-indigo-950">{group.code} · {group.label}</strong>
+          <span className="rounded-full bg-indigo-50 px-2 py-1 text-[10px] font-bold text-indigo-800">{discipline}</span>
+          {operationalMembership && (
+            <span className={`rounded-full px-2 py-1 text-[10px] font-bold ${operationalMembership.membershipState === 'FORMALIZZATO' ? 'bg-emerald-50 text-emerald-800' : 'bg-amber-50 text-amber-800'}`}>
+              {operationalMembership.membershipState === 'FORMALIZZATO' ? 'Competenza formalizzata' : 'Competenza dichiarata'}
+            </span>
+          )}
+        </div>
+        <p className="mt-2 text-xs leading-relaxed text-slate-600">Arena conta e confronta soltanto i docenti attivi che risultano competenti in <strong>{discipline}</strong> per l’anno scolastico {academicYear}.</p>
+        <p className="mt-1 text-[11px] leading-relaxed text-slate-500">La competenza disciplinare non attribuisce il coordinamento. La facoltà di registrare l’esito deriva dal ruolo condiviso verificato di Dipartimento o Referente.</p>
+        {isCoordinator && !hasDisciplineCompetence && (
+          <p className="mt-2 rounded-lg bg-amber-50 p-2 text-xs font-semibold text-amber-900">Il tuo ruolo di coordinamento è verificato, ma questa disciplina non risulta tra le competenze operative dichiarate: puoi consultare il confronto, non registrare l’esito disciplinare.</p>
+        )}
+      </section>
+
       <section className="rounded-2xl border border-slate-200 bg-white p-4" data-team-review-coverage>
         <strong className="text-sm text-slate-900">Copertura del team</strong>
         <p className="mt-1 text-xs leading-relaxed text-slate-600">
           {expectedContributorCount === null
             ? 'Copertura non verificabile: nessun punto può essere considerato già condiviso.'
             : expectedContributorCount === 1
-              ? 'È presente un solo contributore attivo: Arena non può interpretare un singolo contributo come consenso del team.'
-              : `${expectedContributorCount} contributori attivi attesi per la versione corrente delle schede.`}
+              ? `È presente un solo docente competente in ${discipline}: Arena non può interpretare un singolo contributo come consenso del team.`
+              : `${expectedContributorCount} docenti attivi competenti in ${discipline} sono attesi per la versione corrente delle schede.`}
         </p>
       </section>
 
@@ -436,7 +492,7 @@ export function TeamCoordinationWorkspace({ proposals, discipline, order }: Team
                   Registra l’esito del team
                 </button>
               ) : (
-                <p className="mt-3 text-[11px] leading-relaxed text-slate-500">Puoi consultare il confronto. Solo una membership di dipartimento o referente può registrare l’esito del team.</p>
+                <p className="mt-3 text-[11px] leading-relaxed text-slate-500">Puoi consultare il confronto. Per registrare l’esito servono sia il ruolo verificato di Dipartimento/Referente sia la competenza dichiarata nella disciplina.</p>
               )}
             </article>
           );
@@ -488,7 +544,7 @@ export function TeamCoordinationWorkspace({ proposals, discipline, order }: Team
                 <div key={item.proposalRef} className="rounded-lg bg-slate-50 p-3 text-xs text-slate-700">
                   <strong>{item.focus}</strong>
                   <span className="mt-1 block">{TEAM_OUTCOME_LABELS[receipt.outcome]} · {new Date(receipt.recordedAt).toLocaleString('it-IT')}</span>
-                  <span className="mt-1 block text-[10px] text-slate-500">Registrato da ruolo {roleLabel(receipt.recordedByRole)}. Esito del team, non approvazione istituzionale.</span>
+                  <span className="mt-1 block text-[10px] text-slate-500">Registrato da ruolo {roleLabel(receipt.recordedByRole)} · {receipt.authorityState === 'FORMALIZZATO' ? 'competenza formalizzata' : 'competenza dichiarata'}. Esito del team, non approvazione istituzionale.</span>
                 </div>
               );
             })}
