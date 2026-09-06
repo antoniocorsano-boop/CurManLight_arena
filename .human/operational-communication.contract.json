@@ -94,7 +94,7 @@
   "action_grammar": [
     {"verb": "Esamina", "meaning": "leggi e valuta una scheda"},
     {"verb": "Conferma", "meaning": "esprimi accordo con la proposta visibile nel contesto corrente"},
-    {"verb": "Proponi una modifica", "meaning": "apri la formulazione di un'alternativa senza registrarla come completata"},
+    {"verb": "Modifica", "meaning": "apri la formulazione di un'alternativa senza registrarla come completata"},
     {"verb": "Registra modifica", "meaning": "salva la formulazione alternativa come orientamento personale completo"},
     {"verb": "Mantieni", "meaning": "mantieni il testo precedente nel contesto corrente"},
     {"verb": "Condividi", "meaning": "rendi visibile al gruppo un contributo personale"},
