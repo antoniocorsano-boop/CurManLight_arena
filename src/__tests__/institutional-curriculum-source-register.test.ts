@@ -6,6 +6,7 @@ import {
   INSTITUTE_CURRICULUM_SOURCE_CHAIN,
   INSTITUTE_CURRICULUM_SOURCE_REPERTORY,
 } from '../domain/curriculum/institute/sourceRegister';
+import currentPanelSource from '../features/documents/components/InstituteCurrentSourcePanel.tsx?raw';
 import panelSource from '../features/documents/components/InstituteCurriculumSourceRegisterPanel.tsx?raw';
 import localRegistrySource from '../features/documents/components/FontiTab.tsx?raw';
 import workspaceSource from '../features/documents/components/FontiWorkspace.tsx?raw';
@@ -69,36 +70,33 @@ describe('institutional curriculum source register', () => {
     expect(otherSources.every((source) => source.verificationState === 'OFFICIAL_SOURCE_VERIFIED')).toBe(true);
   });
 
-  it('places canonical institutional sources before the local source registry in Arena', () => {
+  it('places master, institutional sources and local archive in the intended hierarchy', () => {
     const currentMasterIndex = workspaceSource.indexOf('<InstituteCurrentSourcePanel />');
     const sourceRegisterIndex = workspaceSource.indexOf('<InstituteCurriculumSourceRegisterPanel />');
     const localRegistryIndex = workspaceSource.indexOf('<SourceRegistry {...props} />');
     expect(currentMasterIndex).toBeGreaterThan(-1);
     expect(sourceRegisterIndex).toBeGreaterThan(currentMasterIndex);
     expect(localRegistryIndex).toBeGreaterThan(sourceRegisterIndex);
-    expect(workspaceSource).toContain('Fonti del curricolo');
-    expect(workspaceSource).toContain('non acquistano autorità per il solo fatto di essere presenti in Arena');
+    expect(workspaceSource).not.toContain('data-source-authority-entry');
+    expect(workspaceSource).toContain('Controlli tecnici');
+    expect(workspaceSource).toContain('data-hcm-level="3"');
   });
 
-  it('applies CCO progressive disclosure to the institutional source panel', () => {
-    expect(panelSource).toContain('data-hcm-level="1"');
+  it('keeps one dominant level 1 and demotes source interpretation and traceability', () => {
+    expect(currentPanelSource).toContain('data-hcm-level="1"');
+    expect(currentPanelSource).toContain('Baseline corrente');
+    expect(currentPanelSource).toContain('Materializzazione 3–14 completa · Validazione professionale aperta');
+
+    expect(panelSource).not.toContain('data-hcm-level="1"');
     expect(panelSource).toContain('data-hcm-level="2"');
     expect(panelSource).toContain('data-hcm-level="3"');
     expect(panelSource).toContain('Consulta le {INSTITUTE_CURRICULUM_AUTHORITATIVE_SOURCE_COUNT} fonti');
     expect(panelSource).toContain('Dati di tracciabilità');
     expect(panelSource).toContain('Verifica la catena documentale');
-
-    const level1Start = panelSource.indexOf('data-hcm-level="1"');
-    const level2Start = panelSource.indexOf('data-hcm-level="2"');
-    const level1 = panelSource.slice(level1Start, level2Start);
-    expect(level1).toContain('Fonti normative e istituzionali del curricolo');
-    expect(level1).toContain('Fonti verificate; validazione professionale del curricolo ancora aperta.');
-    expect(level1).not.toContain('Drive:');
-    expect(level1).not.toContain('Ultima verifica:');
-    expect(level1).not.toContain('Data atto:');
   });
 
   it('keeps source authority and technical traceability available without showing every field by default', () => {
+    expect(panelSource).toContain('Fonti normative e istituzionali del curricolo');
     expect(panelSource).toContain('data-source-locator-kind');
     expect(panelSource).toContain('data-source-verification');
     expect(panelSource).toContain('Uso nel master:');
@@ -109,9 +107,11 @@ describe('institutional curriculum source register', () => {
     expect(panelSource).toContain('Verifica della fonte ≠ validazione del contenuto curricolare ≠ decisione istituzionale ≠ curricolo vigente.');
   });
 
-  it('demotes the legacy/local registry to one collapsed secondary surface and removes the duplicate Fonti header', () => {
-    expect(localRegistrySource).toContain('data-local-source-registry');
-    expect(localRegistrySource).toContain('data-hcm-level="2"');
+  it('demotes the legacy/local registry to one collapsed tertiary surface and removes the duplicate Fonti header', () => {
+    const localStart = localRegistrySource.indexOf('data-local-source-registry');
+    const localOpening = localRegistrySource.slice(localStart, localStart + 300);
+    expect(localStart).toBeGreaterThan(-1);
+    expect(localOpening).toContain('data-hcm-level="3"');
     expect(localRegistrySource).toContain('Archivio locale e fonti personali');
     expect(localRegistrySource).toContain('Materiali inclusi in Arena');
     expect(localRegistrySource).toContain('Fonti personali');
