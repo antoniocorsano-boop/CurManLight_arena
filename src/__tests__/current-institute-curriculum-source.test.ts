@@ -7,14 +7,14 @@ import panelSource from '../features/documents/components/InstituteCurrentSource
 import workspaceSource from '../features/documents/components/FontiWorkspace.tsx?raw';
 
 describe('current institute curriculum master', () => {
-  it('uses the unified 3–14 master 1.1 as the current working baseline', () => {
+  it('uses the unified 3–14 master 1.2 as the current working baseline', () => {
     expect(INSTITUTE_CURRICULUM_CURRENT_SOURCE.sourceFile).toBe(
       'CAN-CURR-MASTER-00_Curricolo_verticale_integrale_unificato_3-14_2026-2027',
     );
     expect(INSTITUTE_CURRICULUM_CURRENT_SOURCE.driveFileId).toBe(
       '12eWTPUZBJxZixd6-p8drNAaW5_eL8qWpXZUSDyZZAv4',
     );
-    expect(INSTITUTE_CURRICULUM_CURRENT_SOURCE.sourceVersion).toBe('1.1');
+    expect(INSTITUTE_CURRICULUM_CURRENT_SOURCE.sourceVersion).toBe('1.2');
     expect(INSTITUTE_CURRICULUM_CURRENT_SOURCE.materializationState).toBe('COMPLETE');
     expect(INSTITUTE_CURRICULUM_CURRENT_SOURCE.lifecycleState).toBe(
       'CANONICAL_BASELINE_PENDING_HUMAN_VALIDATION',
@@ -22,22 +22,29 @@ describe('current institute curriculum master', () => {
     expect(INSTITUTE_CURRICULUM_CURRENT_SOURCE.curriculumInForce).toBe(false);
   });
 
-  it('registers normative compliance as a control attachment, not a competing curriculum', () => {
-    expect(INSTITUTE_CURRICULUM_CURRENT_SOURCE.normativeAlignment.matrixId).toBe('MATR-CURR-MASTER-01');
-    expect(INSTITUTE_CURRICULUM_CURRENT_SOURCE.normativeAlignment.matrixTitle).toBe(
+  it('registers normative compliance and the OSA gate as controls, not competing curricula', () => {
+    const alignment = INSTITUTE_CURRICULUM_CURRENT_SOURCE.normativeAlignment;
+    expect(alignment.matrixId).toBe('MATR-CURR-MASTER-01');
+    expect(alignment.matrixTitle).toBe(
       'MATR-CURR-MASTER-01_Matrice_conformita_normativa_IN2025_e_atti_collegati_2026-2027',
     );
-    expect(INSTITUTE_CURRICULUM_CURRENT_SOURCE.normativeAlignment.matrixDriveFileId).toBe(
+    expect(alignment.matrixDriveFileId).toBe(
       '1Wiw8Wsifls1-wr_GPYuqIAoB8GnwXMChO8Mz_kwiLKY',
     );
-    expect(INSTITUTE_CURRICULUM_CURRENT_SOURCE.normativeAlignment.role).toBe(
-      'CONTROL_ATTACHMENT_NOT_CURRICULUM_BASELINE',
-    );
-    expect(INSTITUTE_CURRICULUM_CURRENT_SOURCE.normativeAlignment.identifiedCurricularGaps).toBe(6);
-    expect(INSTITUTE_CURRICULUM_CURRENT_SOURCE.normativeAlignment.materializedCurricularGaps).toBe(6);
-    expect(INSTITUTE_CURRICULUM_CURRENT_SOURCE.normativeAlignment.status).toBe(
-      'GAPS_MATERIALIZED_PENDING_HUMAN_VALIDATION',
-    );
+    expect(alignment.role).toBe('CONTROL_ATTACHMENT_NOT_CURRICULUM_BASELINE');
+    expect(alignment.identifiedCurricularGaps).toBe(6);
+    expect(alignment.materializedCurricularGaps).toBe(6);
+    expect(alignment.status).toBe('GAPS_MATERIALIZED_PENDING_HUMAN_VALIDATION');
+    expect(alignment.osaOneToOneGate).toBe('IN_PROGRESS');
+    expect(alignment.osaVerifiedIntegrationsMaterializedInMaster12).toBe(true);
+    expect(alignment.osaCompletionClaimAuthorized).toBe(false);
+  });
+
+  it('protects national benchmark semantics from annualization drift', () => {
+    const semantics = INSTITUTE_CURRICULUM_CURRENT_SOURCE.normativeAlignment.benchmarkSemantics;
+    expect(semantics.primary).toBe('NATIONAL_BENCHMARKS_END_III_AND_V_WITH_INSTITUTE_ANNUALIZATION');
+    expect(semantics.lowerSecondary).toBe('NATIONAL_BENCHMARK_END_III_WITH_INSTITUTE_ANNUALIZATION');
+    expect(semantics.noRetroactiveRewriteOf2012Cohorts).toBe(true);
   });
 
   it('keeps the corrected 3 September proposal as provenance, not as a competing baseline', () => {
@@ -50,9 +57,7 @@ describe('current institute curriculum master', () => {
     expect(INSTITUTE_CURRICULUM_PRIMARY_CORRECTED_SOURCE.sourceSha256).toBe(
       'c89fbbbe43432db8410913675381b7dc3654d2448f9f91a8c72b115b9ec6fc55',
     );
-    expect(INSTITUTE_CURRICULUM_PRIMARY_CORRECTED_SOURCE.role).toBe(
-      'PRIMARY_CORRECTED_PROVENANCE',
-    );
+    expect(INSTITUTE_CURRICULUM_PRIMARY_CORRECTED_SOURCE.role).toBe('PRIMARY_CORRECTED_PROVENANCE');
     expect(INSTITUTE_CURRICULUM_CURRENT_SOURCE.primaryCorrectedSource).toBe(
       INSTITUTE_CURRICULUM_PRIMARY_CORRECTED_SOURCE,
     );
@@ -64,18 +69,12 @@ describe('current institute curriculum master', () => {
     expect(INSTITUTE_CURRICULUM_CURRENT_SOURCE.readyForCollegio).toBe(false);
     expect(INSTITUTE_CURRICULUM_CURRENT_SOURCE.collegiateApproval).toBe(false);
     expect(INSTITUTE_CURRICULUM_CURRENT_SOURCE.canonicalPromotionAuthorized).toBe(false);
-    expect(INSTITUTE_CURRICULUM_CURRENT_SOURCE.continuityRule).toBe(
-      'UPDATE_SAME_MASTER_AFTER_VALIDATED_OUTCOME',
-    );
+    expect(INSTITUTE_CURRICULUM_CURRENT_SOURCE.continuityRule).toBe('UPDATE_SAME_MASTER_AFTER_VALIDATED_OUTCOME');
   });
 
   it('preserves reconstruction v3 only behind the corrected provenance source', () => {
-    expect(INSTITUTE_CURRICULUM_PRIMARY_CORRECTED_SOURCE.predecessor.sourceFile).toBe(
-      'CURRICOLO VERTICALE .docx',
-    );
-    expect(INSTITUTE_CURRICULUM_PRIMARY_CORRECTED_SOURCE.predecessor.role).toBe(
-      'HISTORICAL_TECHNICAL_BASELINE',
-    );
+    expect(INSTITUTE_CURRICULUM_PRIMARY_CORRECTED_SOURCE.predecessor.sourceFile).toBe('CURRICOLO VERTICALE .docx');
+    expect(INSTITUTE_CURRICULUM_PRIMARY_CORRECTED_SOURCE.predecessor.role).toBe('HISTORICAL_TECHNICAL_BASELINE');
   });
 
   it('shows the master in Fonti and keeps provenance under traceability', () => {
