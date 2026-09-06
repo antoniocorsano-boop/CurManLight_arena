@@ -82,6 +82,17 @@ for (const key of ['single_dominant_stage', 'completed_stage_compacts', 'future_
   assert(work[key] === true, `invariante sessione mancante: ${key}`);
 }
 
+const workSessionSource = fs.readFileSync(path.join(root, 'src/features/beta/RevisionWorkspace.tsx'), 'utf8');
+assert(workSessionSource.includes('data-curriculum-work-session'), 'RevisionWorkspace non espone la CurriculumWorkSession');
+assert(workSessionSource.includes("type CurriculumWorkSessionStage = 'EXAMINE' | 'SHARE' | 'COMPARE';"), 'stadi della CurriculumWorkSession non espliciti');
+assert(!workSessionSource.includes('role="tablist"'), 'la revisione è tornata a tab concorrenti invece di una sessione progressiva');
+for (const label of ['Esamina', 'Condividi', 'Confronta', 'Esito del gruppo']) {
+  assert(workSessionSource.includes(label), `passaggio visibile mancante nella CurriculumWorkSession: ${label}`);
+}
+assert(workSessionSource.includes('Anche il coordinatore completa prima il proprio contributo personale.'), 'il coordinatore può saltare il contributo personale');
+assert(workSessionSource.includes('Ho condiviso: apri il confronto del gruppo'), 'manca il passaggio esplicito condivisione → confronto');
+assert(workSessionSource.includes('Dopo aver condiviso il contributo, per ora non devi fare altro.'), 'il docente non ha uno stato di fine compito chiaro dopo la condivisione');
+
 const binding = contract.didactic_binding ?? {};
 assert(binding.must_reference_curriculum_unit_identity_and_version === true, 'binding didattico non vincolato a identità/versione');
 assert(binding.must_not_copy_curriculum_as_new_source_of_truth === true, 'la progettazione può duplicare la verità curricolare');
