@@ -47,7 +47,7 @@ const ROLE_ORIENTATION: Record<UserRole, RoleOrientation> = {
     primaryTab: 'curricolo',
   },
   insegnante: {
-    title: 'Il curricolo che riguarda il tuo lavoro',
+    title: 'Il tuo spazio nel curricolo',
     summary: 'Controlla fonti e contenuti, prepara eventuali proposte e porta alla progettazione solo ciò che è pronto.',
     primaryLabel: 'Apri il curricolo',
     primaryTab: 'curricolo',

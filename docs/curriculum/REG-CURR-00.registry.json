@@ -1,0 +1,198 @@
+{
+  "registry_id": "REG-CURR-00",
+  "version": "1.6.0",
+  "recorded_at": "2026-09-06",
+  "purpose": "Mantenere allineati fascicolo Drive, fonte curricolare corrente, logiche di governo, baseline Arena e documentazione operativa.",
+  "drive": {
+    "master_register": {
+      "title": "REG-CURR-00_Registro_maestro_fascicolo_curricolare_e_allineamento_Arena_2026-2027",
+      "file_id": "1IMKwWWukefIDIOsbHQByiXLN7YuU7He0V5b01tjitG4",
+      "parent_folder_id": "1WXvNeMAuQZ21njUq6xo49bxf2we7o9I3"
+    },
+    "arena_operational_document": {
+      "title": "ARENA-UX-01_Dal_documento_al_lavoro_dei_team_2026-2027",
+      "file_id": "1M8LriHG1zASUq7jE2xiyJfvX4gVnnmZNmYBrrfYS7fE",
+      "alignment_addendum": "26. PILOTA OPERATIVO — TECNOLOGIA CLASSE PRIMA"
+    },
+    "current_curriculum_source": {
+      "title": "CURRICOLO_VERTICALE_CORRETTO_PROPOSTA_2026-09-03.docx",
+      "file_id": "1DPdK_EIZsE3lI-LIzTJG776cU1PcAcnf",
+      "sha256": "c89fbbbe43432db8410913675381b7dc3654d2448f9f91a8c72b115b9ec6fc55",
+      "status": "PROPOSTA_D_ISTITUTO_DA_VALIDARE",
+      "supersedes_for_current_work": "source-reconstruction-v3"
+    }
+  },
+  "curriculum_process": {
+    "instructional_coverage_3_14": "PASS_ISTRUTTORIO",
+    "human_professional_validation": "OPEN",
+    "verticality_final_review": "OPEN",
+    "ready_for_collegio": "NOT_YET",
+    "collegiate_approval": "NOT_YET",
+    "canonical_curriculum_promotion": "NOT_AUTHORIZED"
+  },
+  "arena_product_baseline": {
+    "repository": "antoniocorsano-boop/CurManLight_arena",
+    "pr": 198,
+    "branch": "feature/team-meeting-workspace",
+    "product_head": "2317b57fef35695f0c8373208d5b5f4898671478",
+    "status": "DRAFT_OPERATIONAL_BASELINE",
+    "cco_version": "1.3.0",
+    "cco_surfaces_version": "1.4.1"
+  },
+  "source_logic": {
+    "current_source_contract": "src/domain/curriculum/institute/currentSource.ts",
+    "canonical_surface": "src/features/documents/components/FontiWorkspace.tsx",
+    "status": "ALIGNED_TO_CORRECTED_SOURCE",
+    "historical_v3_role": "HISTORICAL_TECHNICAL_BASELINE",
+    "historical_remediation_workbench_active_in_canonical_surface": false
+  },
+  "active_validation_pilot": {
+    "pilot_id": "TEC-SEC1-2026-01",
+    "revision": 2,
+    "discipline": "Tecnologia",
+    "order": "secondaria",
+    "class_label": "Classe prima",
+    "status": "READY_FOR_TEAM_COMPARISON",
+    "human_outcome": "OPEN",
+    "review_card_count": 5,
+    "canonical_promotion": "NOT_AUTHORIZED",
+    "decision_carry_forward": "NOT_AUTHORIZED",
+    "implementation_head": "2317b57fef35695f0c8373208d5b5f4898671478",
+    "domain_contract": "src/domain/curriculum/validation/technologyClass1Review.ts",
+    "active_proposal_ids": [
+      "tec-sec1-2026-r2-n1",
+      "tec-sec1-2026-r2-n2",
+      "tec-sec1-2026-r2-n3",
+      "tec-sec1-2026-r2-n4",
+      "tec-sec1-2026-r2-verticalita"
+    ],
+    "previous_revision": {
+      "revision": 1,
+      "status": "SUPERSEDED_INSTRUCTIONAL_TEXT_PRESERVED",
+      "proposal_ids": [
+        "tec-sec1-2026-n1",
+        "tec-sec1-2026-n2",
+        "tec-sec1-2026-n3",
+        "tec-sec1-2026-n4",
+        "tec-sec1-2026-verticalita"
+      ],
+      "decision_semantics": "PRESERVED_AS_HISTORY_ONLY"
+    },
+    "work_manifest": {
+      "title": "WORK-CURR-TEC-01_Pacchetto_operativo_Arena_Tecnologia_classe_prima_2026-2027",
+      "file_id": "1s2qZf53O6BqjgyrtzcXuL5lSdafoAmtAUEFv-4mwcog",
+      "revision": "1.2"
+    },
+    "instructional_audit": {
+      "audit_id": "AUD-CURR-TEC-SEC1-01",
+      "title": "AUD-CURR-TEC-SEC1-01_Audit_cinque_schede_Tecnologia_classe_prima_2026-2027",
+      "file_id": "1SZ_lmaYXNF2Fx8ro1C-hTh5iUH-riECcqyZtRx9JRPM",
+      "status": "CORRECTIONS_APPLIED",
+      "instructional_outcome": "R2_READY_FOR_NEW_HUMAN_REVIEW",
+      "human_outcome": "OPEN",
+      "canonical_promotion": "NOT_AUTHORIZED",
+      "corrections_applied": [
+        "Tre nuclei fondanti di Tecnologia distinti dall'asse integrato di Informatica e sistemi digitali.",
+        "Formulazioni della classe prima qualificate come obiettivi annuali d'Istituto.",
+        "N1 alleggerito dal richiamo autonomo all'energia e N3 qualificato nella provenienza del raccordo sull'economia circolare.",
+        "N4 riscalato verso funzionamento dei sistemi informatici, dati, processi, Internet, Web, servizi e attendibilità."
+      ]
+    },
+    "individual_contribution": {
+      "contribution_id": "CONTR-CURR-TEC-SEC1-R2-01",
+      "title": "CONTR-CURR-TEC-SEC1-R2-01_Contributo_individuale_Tecnologia_classe_prima_2026-09-06",
+      "file_id": "17dnvfLP3YPghJlwT7FUwgO5p9J499Lw5kZVIAnXlvyk",
+      "status": "COMPLETE_5_OF_5",
+      "authority": "INDIVIDUAL_PROFESSIONAL_CONTRIBUTION",
+      "team_outcome": "NOT_INFERRED",
+      "decisions": {
+        "tec-sec1-2026-r2-n1": "CONFIRM",
+        "tec-sec1-2026-r2-n2": "CONFIRM",
+        "tec-sec1-2026-r2-n3": "CONFIRM",
+        "tec-sec1-2026-r2-n4": "CONFIRM",
+        "tec-sec1-2026-r2-verticalita": "CONFIRM"
+      }
+    },
+    "team_comparison": {
+      "package_id": "TEAM-CURR-TEC-SEC1-R2-01",
+      "title": "TEAM-CURR-TEC-SEC1-R2-01_Pacchetto_confronto_Dipartimento_Tecnologia_classe_prima_2026-09-06",
+      "file_id": "1V-yit_LYow1P5jLY5wSrbsrKzxgJF0WfHncV6BJyR-g",
+      "status": "READY_TO_START",
+      "team_outcome": "OPEN",
+      "team_outcome_authorized_roles": ["dipartimento", "referente"],
+      "complete_workspace_coverage_required_for_shared_bucket": true,
+      "explicit_team_outcome_required": true
+    },
+    "source": {
+      "title": "CURRICOLO_VERTICALE_CORRETTO_PROPOSTA_2026-09-03.docx",
+      "file_id": "1DPdK_EIZsE3lI-LIzTJG776cU1PcAcnf"
+    },
+    "proposal": {
+      "title": "PROP-CURR-SEC1-TEC-1_Tecnologia_classe_prima_revisione_curricolare_da_validare_2026-2027.docx",
+      "file_id": "19nPCsAj_ItBscUwwcHwrVhxDbBy-MXIJ",
+      "revision": "1.1",
+      "updated_in_place": true
+    },
+    "vertical_matrix": {
+      "title": "MATR-CURR-TEC-T01_Raccordo_transitorio_Tecnologia_2026-2027.docx",
+      "file_id": "1CMSESN73HCi_2jM_tZYhN9hd6oWzyHgK",
+      "revision": "1.1",
+      "updated_in_place": true
+    },
+    "validation_gate": {
+      "title": "VAL-CURR-SEC1-01_Scheda_validazione_Dipartimenti_Secondaria_Classe_Prima_2026-2027",
+      "file_id": "1rxKy2IDD5V7l4Nc1LfJeLr407ltfa_vbt_EFK54s7mU"
+    },
+    "decision_register": {
+      "title": "DEC-CURR-SEC1-00_Registro_decisioni_validazione_Secondaria_Classe_Prima_2026-2027",
+      "file_id": "1KmnrgWrNxVDUjOvdPo0oibqTvr1lQ72QepBE8KNsdZA"
+    }
+  },
+  "interaction_contract": {
+    "primary_principle": "recognition_before_interpretation",
+    "work_mode_default": true,
+    "one_dominant_object_per_task_context": true,
+    "scrolling_alone_is_not_a_stage_transition": true,
+    "draft_requires_explicit_commit": true
+  },
+  "authority_chain": [
+    "fonte_normativa",
+    "elaborazione_istituto",
+    "proposta_professionale",
+    "contributo_individuale",
+    "esito_professionale_gruppo",
+    "decisione_istituzionale",
+    "curricolo_vigente"
+  ],
+  "downstream_draft_stacks": [
+    {
+      "prs": [199, 200, 201],
+      "scope": "linguaggio_team_riunione_guidata_gruppi_operativi",
+      "status": "NOT_CANONICAL_UNTIL_REALIGNED",
+      "reason": "La catena deriva da una baseline precedente della PR 198 e deve essere riallineata sul current product head prima di una nuova validazione."
+    },
+    {
+      "prs": [202, 203, 204, 205, 206, 207],
+      "scope": "source_registry_backup_restore_drive",
+      "status": "NOT_CANONICAL_UNTIL_REALIGNED",
+      "reason": "La catena parte dal commit cc8bcab2971587fbda0205f0b343e5f8f0fb782c della PR 198 ed è divergente dalla baseline CCO corrente."
+    }
+  ],
+  "alignment_rules": {
+    "draft_pr_does_not_change_institutional_fascicle": true,
+    "product_governance_change_requires_registry_update": true,
+    "cco_change_requires_operational_doc_review": true,
+    "current_source_must_match_across_drive_and_repo": true,
+    "active_validation_pilot_requires_exact_drive_bindings": true,
+    "human_outcome_must_not_be_inferred_from_app_state": true,
+    "instructional_audit_must_not_be_promoted_as_human_outcome": true,
+    "individual_contribution_must_not_be_promoted_as_team_outcome": true,
+    "team_outcome_requires_authorized_membership": true,
+    "team_shared_requires_complete_coverage": true,
+    "proposal_text_change_requires_new_proposal_identity": true,
+    "previous_decision_carry_forward_requires_explicit_authority": true,
+    "experimental_feature_must_be_marked_experimental": true,
+    "tests_or_commits_never_imply_curriculum_approval": true
+  },
+  "next_authorized_phase": "SECONDARY_DEPARTMENT_TEAM_COMPARISON_R2"
+}

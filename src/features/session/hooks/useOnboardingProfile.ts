@@ -1,8 +1,17 @@
 import { useEffect, useState } from 'react';
 import type { SchoolOrder, UserRole } from '../../../types/curriculum';
 import { safeLocalStorageGetItem, safeLocalStorageSetItem } from '../../../lib/consolidatedStorage';
+import {
+  PERSONAL_WORK_PROFILE_SCHEMA_VERSION,
+  PERSONAL_WORK_PROFILE_STORAGE_KEY,
+  parsePersonalWorkProfile,
+  toPersonalProfileRole,
+  type PersonalWorkProfileV1,
+} from '../domain/personalWorkProfile';
 
 interface UseOnboardingProfileArgs {
+  role: UserRole;
+  discipline: string;
   order: SchoolOrder;
   setRole: (role: UserRole) => void;
   setDiscipline: (discipline: string) => void;
@@ -11,41 +20,61 @@ interface UseOnboardingProfileArgs {
   showToast: (msg: string, success?: boolean) => void;
 }
 
+const splitStoredList = (value: string): string[] => value ? value.split(',').filter(Boolean) : [];
+
 export const useOnboardingProfile = ({
+  role,
+  discipline,
+  order,
   setRole,
   setDiscipline,
   setOrder,
   setShowOnboardingModal,
   showToast
 }: UseOnboardingProfileArgs) => {
+  const storedProfile = parsePersonalWorkProfile(
+    safeLocalStorageGetItem(PERSONAL_WORK_PROFILE_STORAGE_KEY, '')
+  );
+
   const [, setTeacherType] = useState<'comune' | 'specialista'>(() => {
-    return safeLocalStorageGetItem('curman_teacherType', 'comune') as 'comune' | 'specialista';
+    return storedProfile?.teacherType
+      ?? safeLocalStorageGetItem('curman_teacherType', 'comune') as 'comune' | 'specialista';
   });
   const [, setAssignedClasses] = useState<string[]>(() => {
-    const saved = safeLocalStorageGetItem('curman_assignedClasses', '');
-    return saved ? saved.split(',') : [];
+    return storedProfile?.assignedClasses
+      ?? splitStoredList(safeLocalStorageGetItem('curman_assignedClasses', ''));
   });
   const [assignedCombinations, setAssignedCombinations] = useState<string[]>(() => {
-    const saved = safeLocalStorageGetItem('curman_assignedCombinations', '');
-    if (saved) return saved.split(',');
-    return [];
+    return storedProfile?.assignedCombinations
+      ?? splitStoredList(safeLocalStorageGetItem('curman_assignedCombinations', ''));
   });
   const [availableSections, setAvailableSections] = useState<string[]>(() => {
-    const saved = safeLocalStorageGetItem('curman_availableSections', '');
-    if (saved) return saved.split(',');
-    return [];
+    return storedProfile?.availableSections
+      ?? splitStoredList(safeLocalStorageGetItem('curman_availableSections', ''));
   });
   const [newSectionInput, setNewSectionInput] = useState<string>('');
 
-  const [onboardingRole, setOnboardingRoleLocal] = useState<UserRole>('non-dichiarato');
-  const [onboardingDisc, setOnboardingDiscLocal] = useState('italiano');
-  const [onboardingOrd, setOnboardingOrdLocal] = useState<SchoolOrder>('secondaria');
+  const [onboardingRole, setOnboardingRoleState] = useState<UserRole>(() =>
+    storedProfile?.role ?? 'non-dichiarato'
+  );
+  const setOnboardingRoleLocal = (nextRole: UserRole) => {
+    setOnboardingRoleState(toPersonalProfileRole(nextRole));
+  };
+
+  const [onboardingDisc, setOnboardingDiscLocal] = useState(() => storedProfile?.discipline ?? 'italiano');
+  const [onboardingOrd, setOnboardingOrdLocal] = useState<SchoolOrder>(() => storedProfile?.order ?? 'secondaria');
   const [onboardingStep, setOnboardingStep] = useState<number>(1);
-  const [onboardingAssignedClasses, setOnboardingAssignedClasses] = useState<string[]>([]);
-  const [onboardingTeacherType] = useState<'comune' | 'specialista'>('comune');
-  const [, setIsSostegno] = useState(() => safeLocalStorageGetItem('curman_isSostegno', 'false') === 'true');
-  const [onboardingIsSostegno, setOnboardingIsSostegno] = useState(() => safeLocalStorageGetItem('curman_isSostegno', 'false') === 'true');
-  const [onboardingCombinations, setOnboardingCombinations] = useState<string[]>([]);
+  const [onboardingAssignedClasses, setOnboardingAssignedClasses] = useState<string[]>(() => storedProfile?.assignedClasses ?? []);
+  const [onboardingTeacherType] = useState<'comune' | 'specialista'>(() => storedProfile?.teacherType ?? 'comune');
+  const [, setIsSostegno] = useState(() =>
+    storedProfile?.teachingActivity === 'sostegno'
+      || safeLocalStorageGetItem('curman_isSostegno', 'false') === 'true'
+  );
+  const [onboardingIsSostegno, setOnboardingIsSostegno] = useState(() =>
+    storedProfile?.teachingActivity === 'sostegno'
+      || safeLocalStorageGetItem('curman_isSostegno', 'false') === 'true'
+  );
+  const [onboardingCombinations, setOnboardingCombinations] = useState<string[]>(() => storedProfile?.assignedCombinations ?? []);
 
   useEffect(() => {
     const handleAssistantOpen = () => setShowOnboardingModal(false);
@@ -53,12 +82,11 @@ export const useOnboardingProfile = ({
     return () => window.removeEventListener('arena:assistant-open', handleAssistantOpen);
   }, [setShowOnboardingModal]);
 
-  const handleSetOnboardingOrdLocal = (ord: SchoolOrder) => {
-    setOnboardingOrdLocal(ord);
+  const handleSetOnboardingOrdLocal = (nextOrder: SchoolOrder) => {
+    setOnboardingOrdLocal(nextOrder);
     setOnboardingAssignedClasses([]);
     setOnboardingCombinations([]);
     setAvailableSections([]);
-    safeLocalStorageSetItem('curman_availableSections', '');
   };
 
   const handleToggleOnboardingCombination = (combo: string) => {
@@ -76,38 +104,81 @@ export const useOnboardingProfile = ({
     if (!newSectionInput.trim()) return;
     const cleanSec = newSectionInput.toUpperCase().trim();
     if (availableSections.includes(cleanSec)) {
-      showToast("Questa sezione locale è già presente in elenco.", false);
+      showToast('Questa sezione locale è già presente in elenco.', false);
       return;
     }
-    const updated = [...availableSections, cleanSec];
-    setAvailableSections(updated);
-    safeLocalStorageSetItem('curman_availableSections', updated.join(','));
+    setAvailableSections([...availableSections, cleanSec]);
     setNewSectionInput('');
-    showToast(`Sezione '${cleanSec}' aggiunta al contesto personale.`);
+  };
+
+  const openOnboardingProfileEditor = () => {
+    const profile = parsePersonalWorkProfile(
+      safeLocalStorageGetItem(PERSONAL_WORK_PROFILE_STORAGE_KEY, '')
+    );
+    const savedClasses = profile?.assignedClasses
+      ?? splitStoredList(safeLocalStorageGetItem('curman_assignedClasses', ''));
+    const savedCombinations = profile?.assignedCombinations
+      ?? splitStoredList(safeLocalStorageGetItem('curman_assignedCombinations', ''));
+    const savedSections = profile?.availableSections
+      ?? splitStoredList(safeLocalStorageGetItem('curman_availableSections', ''));
+
+    setOnboardingRoleState(profile?.role ?? toPersonalProfileRole(role));
+    setOnboardingDiscLocal(profile?.discipline ?? discipline);
+    setOnboardingOrdLocal(profile?.order ?? order);
+    setOnboardingAssignedClasses(savedClasses);
+    setOnboardingCombinations(savedCombinations);
+    setAvailableSections(savedSections);
+    setOnboardingIsSostegno(
+      profile?.teachingActivity === 'sostegno'
+        || safeLocalStorageGetItem('curman_isSostegno', 'false') === 'true'
+    );
+    setNewSectionInput('');
+    setOnboardingStep(1);
+    setShowOnboardingModal(true);
   };
 
   const saveOnboardingProfile = () => {
-    setRole(onboardingRole);
+    const personalRole = toPersonalProfileRole(onboardingRole);
+    const savedDiscipline = onboardingIsSostegno
+      ? 'italiano'
+      : onboardingOrd === 'infanzia' && onboardingTeacherType === 'comune'
+        ? 'italiano'
+        : onboardingDisc;
+
+    const profile: PersonalWorkProfileV1 = {
+      schemaVersion: PERSONAL_WORK_PROFILE_SCHEMA_VERSION,
+      completedAt: new Date().toISOString(),
+      role: personalRole,
+      order: onboardingOrd,
+      discipline: savedDiscipline,
+      teachingActivity: onboardingIsSostegno ? 'sostegno' : 'disciplinare',
+      teacherType: onboardingTeacherType,
+      assignedClasses: [...onboardingAssignedClasses],
+      assignedCombinations: [...onboardingCombinations],
+      availableSections: [...availableSections],
+    };
+
+    setRole(personalRole);
     setOrder(onboardingOrd);
     setTeacherType(onboardingTeacherType);
-    safeLocalStorageSetItem('curman_teacherType', onboardingTeacherType);
     setIsSostegno(onboardingIsSostegno);
-    safeLocalStorageSetItem('curman_isSostegno', onboardingIsSostegno ? 'true' : 'false');
-
-    if (onboardingIsSostegno) {
-      setDiscipline('italiano');
-    } else if (onboardingOrd === 'infanzia' && onboardingTeacherType === 'comune') {
-      setDiscipline('italiano');
-    } else {
-      setDiscipline(onboardingDisc);
-    }
-
+    setDiscipline(savedDiscipline);
     setAssignedClasses(onboardingAssignedClasses);
-    safeLocalStorageSetItem('curman_assignedClasses', onboardingAssignedClasses.join(','));
     setAssignedCombinations(onboardingCombinations);
+
+    // Canonical local profile for the new onboarding contract.
+    safeLocalStorageSetItem(PERSONAL_WORK_PROFILE_STORAGE_KEY, JSON.stringify(profile));
+
+    // Compatibility mirrors for legacy consumers. They are written only on Save:
+    // editing or closing the onboarding dialog cannot mutate persisted profile data.
+    safeLocalStorageSetItem('curman_teacherType', onboardingTeacherType);
+    safeLocalStorageSetItem('curman_isSostegno', onboardingIsSostegno ? 'true' : 'false');
+    safeLocalStorageSetItem('curman_assignedClasses', onboardingAssignedClasses.join(','));
     safeLocalStorageSetItem('curman_assignedCombinations', onboardingCombinations.join(','));
+    safeLocalStorageSetItem('curman_availableSections', availableSections.join(','));
+
     setShowOnboardingModal(false);
-    showToast('Profilo personale locale salvato. Il ruolo dichiarato non è autenticato.');
+    showToast('Profilo di lavoro personale salvato. Gli incarichi nel team restano separati e richiedono una membership verificata.');
   };
 
   return {
@@ -131,6 +202,7 @@ export const useOnboardingProfile = ({
     handleSetOnboardingOrdLocal,
     handleToggleOnboardingCombination,
     handleAddSectionLocal,
+    openOnboardingProfileEditor,
     saveOnboardingProfile
   };
 };

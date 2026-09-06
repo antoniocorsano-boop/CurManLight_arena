@@ -23,7 +23,6 @@ export function PlanningHandoffPreview() {
     discipline,
     order,
     schoolYear,
-    revisionArchive,
     institutionalArchive,
   } = useCurriculumStore();
 
@@ -48,7 +47,6 @@ export function PlanningHandoffPreview() {
     ...classContext,
     disciplineRef: discipline,
     curriculumMap: localCurriculum,
-    revisionArchive,
   }), [
     classContext,
     discipline,
@@ -57,7 +55,6 @@ export function PlanningHandoffPreview() {
     localCurriculum,
     order,
     resolvedSchoolYear,
-    revisionArchive,
   ]);
 
   const classLabel = order === 'infanzia'

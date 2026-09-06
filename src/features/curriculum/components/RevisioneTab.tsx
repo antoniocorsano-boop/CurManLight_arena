@@ -1,148 +1,9 @@
-import { ChevronLeft, ChevronRight, FileSearch, History, Info, Layers, Milestone } from 'lucide-react';
+import { FileSearch } from 'lucide-react';
+import { useState } from 'react';
 import { useCurriculumStore } from '../../../store/useCurriculumStore';
 import { UiEmptyState } from '../../../ui/components/UiEmptyState';
 import type { DecisionStatus, Proposal } from '../../../types/curriculum';
 import type { AppViewsLayerProps } from '../../session';
-import { PROPOSAL_STATUS_LABELS } from '../../../domain/revision/vocabularies';
-import { findDecisionsByProposal, getEventsByProposal, getLatestProposalVersion } from '../../../domain/revision';
-import type { RevisionProposal } from '../../../domain/revision';
-import { addProposal, transitionProposalStatus } from '../../../domain/revision/repository';
-import { createEntityReference } from '../../../domain/curriculum/identity';
-import type { EntityId } from '../../../domain/curriculum/identity/types';
-import { InstitutionalDecisionPanel, StructuredProposalStarter } from '../../beta';
-
-function useCanonicalRevisionActions() {
-  const { revisionArchive, replaceRevisionArchive } = useCurriculumStore();
-
-  const transitionProposal = (proposalId: string, newStatus: RevisionProposal['status'], rationale?: string) => {
-    const result = transitionProposalStatus(revisionArchive, proposalId as EntityId, newStatus, undefined, rationale);
-    if (result.success) replaceRevisionArchive(result.archive);
-    return result;
-  };
-
-  const createDraft = (targetLabel: string, currentText: string) => {
-    const result = addProposal(revisionArchive, {
-      targetNodeRef: createEntityReference(`node-${Date.now()}` as never, 'curriculum-node' as never, targetLabel),
-      curriculumVersionRef: createEntityReference('cv-current' as never, 'curriculum-version' as never),
-      currentTextSnapshot: currentText,
-      proposedText: currentText,
-      rationale: '',
-    });
-    if (result.success) replaceRevisionArchive(result.archive);
-    return result;
-  };
-
-  return { transitionProposal, createDraft };
-}
-
-function CanonicalProposalsSection() {
-  const { revisionArchive } = useCurriculumStore();
-  const { transitionProposal } = useCanonicalRevisionActions();
-  const proposals = revisionArchive.proposals.filter((proposal) => proposal.status !== 'legacy');
-
-  if (proposals.length === 0) return null;
-
-  return (
-    <details open className="rounded-2xl border border-indigo-100 bg-white" data-revision-secondary="structured-proposals">
-      <summary className="cursor-pointer list-none p-4">
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex min-w-0 items-center gap-2">
-            <Layers className="h-4 w-4 shrink-0 text-indigo-600" aria-hidden="true" />
-            <div className="min-w-0">
-              <strong className="block text-sm text-slate-900">Proposte già preparate</strong>
-              <span className="block text-xs text-slate-500">{proposals.length} da seguire nel percorso di revisione</span>
-            </div>
-          </div>
-          <span className="text-xs font-semibold text-indigo-700">Apri / chiudi</span>
-        </div>
-      </summary>
-
-      <div className="space-y-3 border-t border-slate-100 p-3 sm:p-4">
-        {proposals.map((proposal) => {
-          const version = getLatestProposalVersion(revisionArchive, proposal);
-          const proposalDecisions = findDecisionsByProposal(revisionArchive, proposal.id);
-          const latestDecision = proposalDecisions.length > 0 ? proposalDecisions[proposalDecisions.length - 1] : undefined;
-          const events = getEventsByProposal(revisionArchive, proposal.id);
-          const nodeLabel = proposal.targetNodeRef.snapshotLabel || proposal.targetNodeRef.id;
-
-          return (
-            <article key={proposal.id} className="overflow-hidden rounded-xl border border-slate-200 bg-white">
-              <header className="flex items-start justify-between gap-3 bg-slate-50 px-3 py-3">
-                <div className="min-w-0">
-                  <strong className="block truncate text-sm text-slate-900">{nodeLabel}</strong>
-                  <span className="mt-0.5 block text-xs text-slate-500">{PROPOSAL_STATUS_LABELS[proposal.status]}</span>
-                </div>
-                <span className="shrink-0 rounded-full bg-white px-2 py-1 text-[10px] font-bold text-slate-500">v{version?.versionNumber ?? 1}</span>
-              </header>
-
-              <div className="space-y-3 p-3 text-xs leading-relaxed sm:p-4">
-                <div className="grid gap-2 sm:grid-cols-2">
-                  <div className="rounded-xl bg-slate-50 p-3">
-                    <span className="text-[10px] font-bold uppercase text-slate-400">Testo vigente</span>
-                    <p className="mt-1 text-slate-700">{proposal.currentTextSnapshot}</p>
-                  </div>
-                  <div className="rounded-xl border border-indigo-100 bg-indigo-50/30 p-3">
-                    <span className="text-[10px] font-bold uppercase text-indigo-500">Testo proposto</span>
-                    <p className="mt-1 text-slate-800">{version?.proposedText ?? proposal.proposedText}</p>
-                  </div>
-                </div>
-
-                {proposal.rationale && <p className="text-slate-600"><strong>Motivazione:</strong> {proposal.rationale}</p>}
-
-                {latestDecision && (
-                  <div className="rounded-xl border border-emerald-100 bg-emerald-50 p-3 text-slate-700">
-                    <strong>Decisione registrata:</strong> {String(latestDecision.outcome)}
-                    {latestDecision.rationale ? ` — ${latestDecision.rationale}` : ''}
-                  </div>
-                )}
-
-                {events.length > 0 && (
-                  <details>
-                    <summary className="cursor-pointer text-xs font-semibold text-slate-500"><History className="mr-1 inline h-3 w-3" aria-hidden="true" />Cronologia locale</summary>
-                    <div className="mt-2 space-y-1 rounded-xl bg-slate-50 p-3 text-[11px] text-slate-500">
-                      {events.slice(-5).reverse().map((event) => <div key={event.id}>{event.eventType}{event.rationale ? ` — ${event.rationale.slice(0, 80)}` : ''}</div>)}
-                    </div>
-                  </details>
-                )}
-              </div>
-
-              <div className="flex flex-wrap gap-2 border-t border-slate-100 bg-slate-50 px-3 py-3">
-                {proposal.status === 'draft' && (
-                  <>
-                    <button disabled={!proposal.rationale} onClick={() => transitionProposal(proposal.id, 'ready-for-review', proposal.rationale || undefined)} className="rounded-lg bg-indigo-700 px-3 py-2 text-xs font-bold text-white disabled:cursor-not-allowed disabled:opacity-40">Prepara per revisione</button>
-                    <button onClick={() => transitionProposal(proposal.id, 'archived')} className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-700">Archivia</button>
-                  </>
-                )}
-                {proposal.status === 'ready-for-review' && <button onClick={() => transitionProposal(proposal.id, 'submitted')} className="rounded-lg bg-indigo-700 px-3 py-2 text-xs font-bold text-white">Invia</button>}
-                {proposal.status === 'submitted' && (
-                  <>
-                    <button onClick={() => transitionProposal(proposal.id, 'under-review')} className="rounded-lg bg-indigo-700 px-3 py-2 text-xs font-bold text-white">Prendi in carico</button>
-                    <button onClick={() => transitionProposal(proposal.id, 'withdrawn')} className="rounded-lg border border-rose-200 bg-white px-3 py-2 text-xs font-bold text-rose-700">Ritira</button>
-                  </>
-                )}
-                {proposal.status === 'under-review' && (
-                  <>
-                    <button onClick={() => transitionProposal(proposal.id, 'changes-requested', 'Modifiche richieste dal revisore')} className="rounded-lg border border-amber-200 bg-white px-3 py-2 text-xs font-bold text-amber-800">Richiedi modifiche</button>
-                    <button onClick={() => transitionProposal(proposal.id, 'accepted-for-decision')} className="rounded-lg bg-emerald-700 px-3 py-2 text-xs font-bold text-white">Ammetti alla decisione</button>
-                    <button onClick={() => transitionProposal(proposal.id, 'rejected')} className="rounded-lg border border-rose-200 bg-white px-3 py-2 text-xs font-bold text-rose-700">Rigetta</button>
-                  </>
-                )}
-                {proposal.status === 'changes-requested' && <button onClick={() => transitionProposal(proposal.id, 'ready-for-review')} className="rounded-lg bg-indigo-700 px-3 py-2 text-xs font-bold text-white">Nuova versione pronta</button>}
-                {(proposal.status === 'rejected' || proposal.status === 'withdrawn') && <button onClick={() => transitionProposal(proposal.id, 'archived')} className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-700">Archivia</button>}
-              </div>
-
-              {proposal.status === 'accepted-for-decision' && version && (
-                <div className="border-t border-emerald-100 p-3 sm:p-4">
-                  <InstitutionalDecisionPanel proposal={proposal} version={version} />
-                </div>
-              )}
-            </article>
-          );
-        })}
-      </div>
-    </details>
-  );
-}
 
 export type RevisioneTabProps = Pick<AppViewsLayerProps,
   | 'currentDisciplineProps'
@@ -151,218 +12,268 @@ export type RevisioneTabProps = Pick<AppViewsLayerProps,
   | 'setRevisioneMode'
   | 'revisioneWizardIndex'
   | 'setRevisioneWizardIndex'
->;
+> & {
+  onContinueAfterReview?: () => void;
+};
 
-function filterProposals(items: Proposal[], decisions: Record<string, DecisionStatus>, filter: string) {
-  return items.filter((proposal) => {
-    const state = decisions[proposal.id];
-    if (filter === 'pending') return !state;
-    if (filter === 'approved') return state === 'approved' || state === 'custom';
-    if (filter === 'rejected') return state === 'rejected';
-    return true;
-  });
+type CustomDraft = {
+  proposalId: string;
+  text: string;
+};
+
+function isPreparedProposal(
+  proposal: Proposal,
+  decisions: Record<string, DecisionStatus>,
+  customTexts: Record<string, string>,
+) {
+  const decision = decisions[proposal.id];
+  if (!decision) return false;
+  if (decision === 'custom') return Boolean(customTexts[proposal.id]?.trim());
+  return true;
 }
 
-function reviewStatusLabel(decision?: DecisionStatus) {
-  if (decision === 'approved') return 'Proposta confermata';
-  if (decision === 'custom') return 'Modifica proposta';
-  if (decision === 'rejected') return 'Testo precedente';
+function reviewStatusLabel(decision?: DecisionStatus, customText = '') {
+  if (decision === 'approved') return 'Confermata';
+  if (decision === 'custom' && customText.trim()) return 'Modifica registrata';
+  if (decision === 'custom') return 'Modifica da completare';
+  if (decision === 'rejected') return 'Stato corrente mantenuto';
   return 'Da esaminare';
 }
 
 export function RevisioneTab({
   currentDisciplineProps,
-  currentDisciplineDecided,
   revisioneWizardIndex,
   setRevisioneWizardIndex,
+  onContinueAfterReview,
 }: RevisioneTabProps) {
   const {
     decisions,
     customTexts,
-    activeRevisionFilter,
-    setActiveRevisionFilter,
     setDecision,
     resetDecision,
     setCustomText,
-    discipline,
-    order,
   } = useCurriculumStore();
+  const [customDraft, setCustomDraft] = useState<CustomDraft | null>(null);
 
-  const filtered = filterProposals(currentDisciplineProps, decisions, activeRevisionFilter);
-  const safeIndex = Math.max(0, Math.min(revisioneWizardIndex, Math.max(0, filtered.length - 1)));
-  const current = filtered[safeIndex];
+  const totalCount = currentDisciplineProps.length;
+  const preparedCount = currentDisciplineProps.filter((proposal) => isPreparedProposal(proposal, decisions, customTexts)).length;
+  const pendingCount = Math.max(0, totalCount - preparedCount);
+  const safeIndex = Math.max(0, Math.min(revisioneWizardIndex, Math.max(0, totalCount - 1)));
+  const current = currentDisciplineProps[safeIndex];
   const currentDecision = current ? decisions[current.id] : undefined;
   const currentCustomText = current ? customTexts[current.id] || '' : '';
-  const totalCount = currentDisciplineProps.length;
-  const pendingCount = Math.max(0, totalCount - currentDisciplineDecided);
-  const localChangeCount = currentDisciplineProps.filter((proposal) => decisions[proposal.id] === 'custom').length;
+  const currentPrepared = current ? isPreparedProposal(current, decisions, customTexts) : false;
 
-  const moveTo = (next: number) => {
-    setRevisioneWizardIndex(Math.max(0, Math.min(filtered.length - 1, next)));
+  const nextPendingIndex = (() => {
+    if (!current || pendingCount === 0) return -1;
+    for (let index = safeIndex + 1; index < totalCount; index += 1) {
+      if (!isPreparedProposal(currentDisciplineProps[index], decisions, customTexts)) return index;
+    }
+    for (let index = 0; index < safeIndex; index += 1) {
+      if (!isPreparedProposal(currentDisciplineProps[index], decisions, customTexts)) return index;
+    }
+    return -1;
+  })();
+
+  const moveToProposal = (index: number) => {
+    setCustomDraft(null);
+    setRevisioneWizardIndex(Math.max(0, Math.min(totalCount - 1, index)));
     if (typeof window !== 'undefined') window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  const recordDecision = (decision: 'approved' | 'rejected') => {
+    if (!current) return;
+    setCustomDraft(null);
+    setDecision(current.id, decision);
+  };
+
+  const startCustomDraft = () => {
+    if (!current) return;
+    setCustomDraft({ proposalId: current.id, text: currentCustomText });
+  };
+
+  const cancelCustomDraft = () => {
+    if (current && currentDecision === 'custom' && !currentPrepared) resetDecision(current.id);
+    setCustomDraft(null);
+  };
+
+  const commitCustomDraft = () => {
+    if (!current) return;
+    const value = customDraft?.proposalId === current.id ? customDraft.text.trim() : currentCustomText.trim();
+    if (!value) return;
+    setCustomText(current.id, value);
+    setDecision(current.id, 'custom');
+    setCustomDraft(null);
+  };
+
+  const reopenCurrent = () => {
+    if (!current) return;
+    setCustomDraft(null);
+    resetDecision(current.id);
+  };
+
+  const customEditorOpen = Boolean(
+    current
+      && ((customDraft?.proposalId === current.id) || (currentDecision === 'custom' && !currentPrepared)),
+  );
+  const customDraftValue = customDraft?.proposalId === current?.id ? customDraft.text : currentCustomText;
+
+  if (totalCount === 0) {
+    return (
+      <div className="fade-in text-left" data-revision-flow="recognition-first">
+        <UiEmptyState icon={FileSearch} title="Nessuna scheda da revisionare" description="Non ci sono schede nel contesto personale corrente." />
+      </div>
+    );
+  }
+
   return (
-    <div className="space-y-4 fade-in pb-24 text-left sm:pb-6" data-revision-flow="focused">
-      <section className="rounded-2xl border border-indigo-100 bg-indigo-50/40 p-4" aria-labelledby="team-review-work-title" data-team-review-overview>
-        <div className="flex items-start justify-between gap-3">
-          <div className="min-w-0">
-            <div className="flex items-center gap-2">
-              <Milestone className="h-4 w-4 shrink-0 text-indigo-600" aria-hidden="true" />
-              <h1 id="team-review-work-title" className="text-base font-extrabold text-slate-900 sm:text-lg">Il mio lavoro nel curricolo</h1>
-              <span aria-hidden="true" className="sr-only">Revisione del Curricolo: Gap 2025</span>
-            </div>
-            <p className="mt-1 max-w-2xl text-xs leading-relaxed text-slate-600 sm:text-sm">
-              Esamina una scheda alla volta e prepara il confronto con il team o il dipartimento. Quello che scegli qui è un orientamento di lavoro: non approva e non modifica da solo il curricolo dell’Istituto.
-            </p>
+    <div className="space-y-3 fade-in text-left" data-revision-flow="recognition-first">
+      <header className="flex items-center justify-between gap-3 px-1" data-revision-recognition-header>
+        <span className="text-xs font-bold text-slate-500">{safeIndex + 1} di {totalCount}</span>
+        <details className="relative" data-revision-assurance-on-demand>
+          <summary className="cursor-pointer list-none rounded-full bg-slate-100 px-3 py-1.5 text-[11px] font-bold text-slate-600">Personale</summary>
+          <div className="absolute right-0 z-20 mt-2 w-64 rounded-xl border border-slate-200 bg-white p-3 text-xs leading-relaxed text-slate-600 shadow-lg">
+            Il tuo contributo resta personale. Non approva il curricolo.
           </div>
-        </div>
-
-        <div className="mt-4 grid grid-cols-3 gap-2" aria-label="Stato del mio lavoro">
-          <div className="rounded-xl bg-white p-3 text-center shadow-sm">
-            <strong className="block text-lg text-slate-900">{pendingCount}</strong>
-            <span className="text-[11px] text-slate-500">da esaminare</span>
-          </div>
-          <div className="rounded-xl bg-white p-3 text-center shadow-sm">
-            <strong className="block text-lg text-slate-900">{currentDisciplineDecided}</strong>
-            <span className="text-[11px] text-slate-500">già esaminate</span>
-          </div>
-          <div className="rounded-xl bg-white p-3 text-center shadow-sm">
-            <strong className="block text-lg text-slate-900">{localChangeCount}</strong>
-            <span className="text-[11px] text-slate-500">modifiche proposte</span>
-          </div>
-        </div>
-      </section>
-
-      <header className="sticky top-16 z-30 -mx-3 border-b border-slate-200 bg-white/95 px-3 py-3 backdrop-blur sm:static sm:mx-0 sm:rounded-2xl sm:border sm:p-4" data-revision-sticky-context>
-        <div className="flex items-start justify-between gap-3">
-          <div className="min-w-0">
-            <strong className="block text-sm text-slate-900">Che cosa vuoi esaminare?</strong>
-            <p className="mt-1 text-xs text-slate-500">Puoi tornare sulle schede già viste in qualsiasi momento.</p>
-          </div>
-          <span className="shrink-0 rounded-full bg-slate-100 px-2.5 py-1 text-[10px] font-bold text-slate-600">{currentDisciplineDecided}/{totalCount}</span>
-        </div>
-
-        <div className="mt-3 flex gap-1 overflow-x-auto pb-1 text-xs font-semibold" aria-label="Filtra revisioni">
-          {(['all', 'pending', 'approved', 'rejected'] as const).map((filter) => (
-            <button
-              key={filter}
-              type="button"
-              onClick={() => { setActiveRevisionFilter(filter); setRevisioneWizardIndex(0); }}
-              className={`shrink-0 rounded-full px-3 py-1.5 transition ${activeRevisionFilter === filter ? 'bg-indigo-700 text-white' : 'bg-slate-100 text-slate-600'}`}
-            >
-              {filter === 'all' ? 'Tutte' : filter === 'pending' ? 'Da esaminare' : filter === 'approved' ? 'Con una proposta' : 'Testo precedente'}
-            </button>
-          ))}
-        </div>
+        </details>
       </header>
 
-      {current ? (
-        <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm" aria-labelledby="current-revision-title" data-revision-current-card>
-          <header className="flex items-start justify-between gap-3 border-b border-slate-100 bg-slate-50 p-4">
+      {currentPrepared ? (
+        <section className="rounded-2xl border border-emerald-200 bg-white p-4 shadow-sm" data-revision-completed-card>
+          <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
-              <span className="text-[10px] font-black uppercase tracking-wide text-indigo-600">Scheda {safeIndex + 1} di {filtered.length}</span>
-              <h2 id="current-revision-title" className="mt-1 text-base font-extrabold leading-tight text-slate-900">{current.focus}</h2>
+              {current.scopeLabel && <p className="mb-1 text-[10px] font-bold uppercase tracking-wide text-slate-400">{current.scopeLabel}</p>}
+              <h2 className="text-base font-extrabold leading-tight text-slate-900">{current.focus}</h2>
+              <p className="mt-1 text-xs font-bold text-emerald-700">✓ {reviewStatusLabel(currentDecision, currentCustomText)}</p>
             </div>
-            <span className={`shrink-0 rounded-full px-2.5 py-1 text-[10px] font-bold ${currentDecision ? 'bg-indigo-100 text-indigo-800' : 'bg-amber-100 text-amber-800'}`}>
-              {reviewStatusLabel(currentDecision)}
-            </span>
+          </div>
+
+          {currentDecision === 'custom' && (
+            <p className="mt-3 rounded-xl bg-slate-50 p-3 text-sm leading-relaxed text-slate-700">{currentCustomText}</p>
+          )}
+
+          <div className="mt-4 flex flex-col gap-2 sm:flex-row" data-revision-consequence>
+            {nextPendingIndex >= 0 ? (
+              <button
+                type="button"
+                onClick={() => moveToProposal(nextPendingIndex)}
+                className="min-h-11 flex-1 rounded-xl bg-indigo-700 px-4 py-2.5 text-sm font-bold text-white"
+              >
+                Prossima scheda
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={onContinueAfterReview}
+                disabled={!onContinueAfterReview}
+                className="min-h-11 flex-1 rounded-xl bg-indigo-700 px-4 py-2.5 text-sm font-bold text-white disabled:opacity-50"
+              >
+                Vai alla condivisione
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={reopenCurrent}
+              className="min-h-11 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-bold text-slate-600"
+            >
+              Cambia scelta
+            </button>
+          </div>
+        </section>
+      ) : (
+        <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm" aria-labelledby="current-revision-title" data-revision-current-card>
+          <header className="border-b border-slate-100 px-4 py-3">
+            {current.scopeLabel && <p className="mb-1 text-[10px] font-bold uppercase tracking-wide text-slate-400">{current.scopeLabel}</p>}
+            <h2 id="current-revision-title" className="text-base font-extrabold leading-tight text-slate-900">{current.focus}</h2>
           </header>
 
           <div className="space-y-3 p-4">
-            <aside className="rounded-xl border border-amber-100 bg-amber-50/70 p-3" data-team-review-why>
-              <strong className="text-xs text-amber-900">Perché è in revisione?</strong>
-              <p className="mt-1 text-xs leading-relaxed text-slate-700">
-                Stiamo confrontando il testo precedente con una proposta aggiornata. Il tuo compito è verificare se la proposta è chiara, adeguata e coerente con il percorso degli alunni. La decisione del team o del dipartimento verrà registrata separatamente.
-              </p>
-            </aside>
-
-            <div className="grid gap-3 lg:grid-cols-2">
+            <div className="grid gap-3 lg:grid-cols-2" data-revision-comparison>
               <article className="rounded-xl bg-slate-50 p-3">
-                <div className="flex items-center justify-between gap-2">
-                  <strong className="text-[10px] uppercase tracking-wide text-slate-500">Prima · quadro 2012</strong>
-                  <span className="rounded-full bg-white px-2 py-1 text-[10px] font-semibold text-slate-500">testo precedente</span>
-                </div>
+                <strong className="text-[11px] font-bold text-slate-500">{current.oldLabel || 'Precedente'}</strong>
                 <p className="mt-2 text-sm leading-relaxed text-slate-700">{current.oldText}</p>
               </article>
               <article className="rounded-xl border border-indigo-100 bg-indigo-50/30 p-3">
-                <div className="flex items-center justify-between gap-2">
-                  <strong className="text-[10px] uppercase tracking-wide text-indigo-600">Proposta aggiornata · quadro 2025</strong>
-                  <span className="rounded-full bg-white px-2 py-1 text-[10px] font-semibold text-indigo-600">da esaminare</span>
-                </div>
+                <strong className="text-[11px] font-bold text-indigo-700">{current.newLabel || 'Proposta'}</strong>
                 <p className="mt-2 text-sm leading-relaxed text-slate-800">{current.newText}</p>
               </article>
             </div>
 
-            <details className="rounded-xl border border-slate-200 bg-white" data-team-review-source>
-              <summary className="cursor-pointer px-3 py-2.5 text-xs font-bold text-slate-700">Da dove vengono questi testi?</summary>
-              <div className="border-t border-slate-100 px-3 py-3 text-xs leading-relaxed text-slate-600">
-                <p><strong>Testo precedente:</strong> collegato al quadro nazionale 2012.</p>
-                <p className="mt-1"><strong>Proposta aggiornata:</strong> costruita per il confronto con il quadro 2025. Eventuali adattamenti dell’Istituto restano proposte finché non vengono esaminati dagli organi competenti.</p>
+            <details className="rounded-xl border border-slate-200 bg-white" data-revision-secondary="context">
+              <summary className="cursor-pointer px-3 py-2.5 text-xs font-bold text-slate-600">Contesto e fonti</summary>
+              <div className="space-y-3 border-t border-slate-100 px-3 py-3 text-xs leading-relaxed text-slate-600">
+                <p>{current.contextSummary || 'Il testo precedente e la proposta appartengono a due stati distinti del lavoro curricolare. Verifica formulazione, continuità verticale e adeguatezza al contesto.'}</p>
+                {current.gateId && <p><strong>Gate:</strong> {current.gateId}</p>}
+                {current.sourceRefs && current.sourceRefs.length > 0 && (
+                  <ul className="space-y-1" data-revision-source-refs>
+                    {current.sourceRefs.map((sourceRef) => <li key={sourceRef}>• {sourceRef}</li>)}
+                  </ul>
+                )}
+                {current.notes && <p className="text-slate-500">{current.notes}</p>}
               </div>
             </details>
 
-            <div className="rounded-xl border border-slate-200 bg-white p-3" data-team-review-continuity>
-              <strong className="text-xs text-slate-800">Prima di scegliere, controlla tre cose</strong>
-              <ul className="mt-2 space-y-1 text-xs leading-relaxed text-slate-600">
-                <li>• È adatto alla classe e comprensibile?</li>
-                <li>• Evita ripetizioni inutili con ciò che viene prima?</li>
-                <li>• Prepara bene ciò che gli alunni dovranno affrontare dopo?</li>
-              </ul>
-            </div>
-
-            {currentDecision === 'custom' && (
-              <div className="rounded-xl border border-amber-200 bg-amber-50/30 p-3">
-                <label htmlFor={`custom-${current.id}`} className="text-xs font-bold text-slate-700">La modifica che proponi al team</label>
+            {customEditorOpen ? (
+              <section className="rounded-xl border border-amber-200 bg-amber-50/30 p-3" data-revision-custom-draft>
+                <label htmlFor={`custom-${current.id}`} className="text-xs font-bold text-slate-800">La tua modifica</label>
                 <textarea
                   id={`custom-${current.id}`}
-                  value={currentCustomText}
-                  onChange={(event) => setCustomText(current.id, event.target.value)}
+                  value={customDraftValue}
+                  onChange={(event) => setCustomDraft({ proposalId: current.id, text: event.target.value })}
                   rows={4}
                   className="mt-2 w-full rounded-xl border border-amber-200 bg-white p-3 text-sm leading-relaxed outline-none focus:ring-2 focus:ring-amber-400/30"
-                  placeholder="Scrivi la formulazione che vorresti discutere con il team…"
+                  placeholder="Scrivi la formulazione alternativa…"
                 />
-                <p className="mt-2 text-[11px] leading-relaxed text-slate-500">Questa è una proposta di lavoro. Non sostituisce il testo dell’Istituto finché il percorso di revisione non è concluso.</p>
+                <div className="mt-3 flex flex-col gap-2 sm:flex-row">
+                  <button
+                    type="button"
+                    onClick={commitCustomDraft}
+                    disabled={!customDraftValue.trim()}
+                    className="min-h-11 flex-1 rounded-xl bg-indigo-700 px-4 py-2.5 text-sm font-bold text-white disabled:cursor-not-allowed disabled:opacity-40"
+                  >
+                    Registra modifica
+                  </button>
+                  <button
+                    type="button"
+                    onClick={cancelCustomDraft}
+                    className="min-h-11 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-bold text-slate-600"
+                  >
+                    Annulla
+                  </button>
+                </div>
+              </section>
+            ) : (
+              <div className="grid gap-2 sm:grid-cols-3" data-revision-decision-actions>
+                <button type="button" onClick={() => recordDecision('approved')} className="min-h-11 rounded-xl bg-indigo-700 px-3 py-3 text-sm font-bold text-white">Conferma</button>
+                <button type="button" onClick={startCustomDraft} className="min-h-11 rounded-xl border border-slate-300 bg-white px-3 py-3 text-sm font-bold text-slate-700">Modifica</button>
+                <button type="button" onClick={() => recordDecision('rejected')} className="min-h-11 rounded-xl border border-slate-300 bg-white px-3 py-3 text-sm font-bold text-slate-700">{current.keepLabel || 'Mantieni precedente'}</button>
               </div>
             )}
           </div>
-
-          <div className="sticky bottom-16 z-20 border-t border-slate-200 bg-white/95 p-3 backdrop-blur sm:static" data-revision-sticky-actions>
-            <p className="mb-2 text-xs font-semibold text-slate-700">Qual è il tuo orientamento per il confronto?</p>
-            <div className="grid gap-2 sm:grid-cols-3">
-              <button type="button" onClick={() => setDecision(current.id, 'approved')} className={`rounded-xl px-3 py-3 text-xs font-bold ${currentDecision === 'approved' ? 'bg-emerald-700 text-white' : 'border border-slate-200 bg-white text-slate-700'}`}>Conferma proposta</button>
-              <button type="button" onClick={() => setDecision(current.id, 'custom')} className={`rounded-xl px-3 py-3 text-xs font-bold ${currentDecision === 'custom' ? 'bg-amber-500 text-white' : 'border border-slate-200 bg-white text-slate-700'}`}>Propongo una modifica</button>
-              <button type="button" onClick={() => setDecision(current.id, 'rejected')} className={`rounded-xl px-3 py-3 text-xs font-bold ${currentDecision === 'rejected' ? 'bg-slate-700 text-white' : 'border border-slate-200 bg-white text-slate-700'}`}>Mantieni testo precedente</button>
-            </div>
-
-            <div className="mt-3 flex flex-wrap items-center gap-2">
-              <button type="button" disabled={safeIndex === 0} onClick={() => moveTo(safeIndex - 1)} className="flex flex-1 items-center justify-center gap-1 rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-xs font-bold text-slate-700 disabled:opacity-30"><ChevronLeft className="h-4 w-4" aria-hidden="true" />Precedente</button>
-              {currentDecision && <button type="button" onClick={() => resetDecision(current.id)} className="rounded-xl px-3 py-2 text-xs font-semibold text-slate-500">Rinvia al confronto</button>}
-              <button type="button" disabled={safeIndex === filtered.length - 1} onClick={() => moveTo(safeIndex + 1)} className="flex flex-1 items-center justify-center gap-1 rounded-xl bg-indigo-700 px-3 py-2.5 text-xs font-bold text-white disabled:bg-slate-200 disabled:text-slate-400">Successivo<ChevronRight className="h-4 w-4" aria-hidden="true" /></button>
-            </div>
-            <p className="mt-2 text-center text-[11px] leading-relaxed text-slate-500">“Rinvia al confronto” lascia la scheda tra quelle da esaminare: non registra una decisione del team.</p>
-          </div>
         </section>
-      ) : (
-        <UiEmptyState icon={FileSearch} title="Niente da esaminare qui" description="Non ci sono schede corrispondenti al filtro scelto." />
       )}
 
-      <StructuredProposalStarter
-        proposals={currentDisciplineProps}
-        decisions={decisions}
-        customTexts={customTexts}
-        discipline={discipline}
-        order={order}
-      />
-
-      <CanonicalProposalsSection />
-
-      <details className="rounded-2xl border border-slate-200 bg-white" data-revision-secondary="help">
-        <summary className="cursor-pointer list-none p-4">
-          <div className="flex items-center gap-2 text-sm font-bold text-slate-700"><Info className="h-4 w-4 text-amber-500" aria-hidden="true" />Che cosa succede dopo?</div>
-        </summary>
-        <div className="border-t border-slate-100 p-4 text-xs leading-relaxed text-slate-600">
-          Le scelte di questa schermata servono a preparare il confronto professionale. Non sono voti e non sono approvazioni. Le proposte che il gruppo decide di portare avanti seguono poi il percorso di revisione previsto dall’Istituto; la decisione istituzionale resta separata e richiede le responsabilità previste.
+      <details className="rounded-xl border border-slate-200 bg-white" data-revision-secondary="review-list">
+        <summary className="cursor-pointer px-4 py-3 text-xs font-bold text-slate-600">Tutte le schede · {preparedCount}/{totalCount}</summary>
+        <div className="grid gap-2 border-t border-slate-100 p-3">
+          {currentDisciplineProps.map((proposal, index) => {
+            const decision = decisions[proposal.id];
+            const customText = customTexts[proposal.id] || '';
+            const prepared = isPreparedProposal(proposal, decisions, customTexts);
+            return (
+              <button
+                key={proposal.id}
+                type="button"
+                onClick={() => moveToProposal(index)}
+                className={`flex min-h-11 items-center justify-between gap-3 rounded-xl border px-3 py-2 text-left ${index === safeIndex ? 'border-indigo-300 bg-indigo-50' : 'border-slate-200 bg-white'}`}
+              >
+                <span className="min-w-0 text-xs font-semibold text-slate-800">{proposal.focus}</span>
+                <span className={`shrink-0 text-[10px] font-bold ${prepared ? 'text-emerald-700' : 'text-slate-500'}`}>
+                  {prepared ? '✓' : reviewStatusLabel(decision, customText)}
+                </span>
+              </button>
+            );
+          })}
         </div>
       </details>
     </div>
