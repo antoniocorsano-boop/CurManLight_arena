@@ -11,6 +11,10 @@ import {
 const fingerprint = 'a'.repeat(64);
 
 const baseItem = (overrides: Partial<TeamReviewItemSummary> = {}): TeamReviewItemSummary => ({
+  academicYear: '2026/2027',
+  order: 'secondaria',
+  groupCode: 'S-G01',
+  discipline: 'italiano',
   proposalRef: 'it-sec-1',
   focus: 'Morfosintassi e Latino (LEL)',
   proposalFingerprint: fingerprint,
