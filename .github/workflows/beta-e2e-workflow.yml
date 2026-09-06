@@ -6,6 +6,7 @@ on:
       - 'src/main.tsx'
       - 'src/App.tsx'
       - 'src/features/navigation/**'
+      - 'src/features/session/components/DashboardView.tsx'
       - 'src/features/session/hooks/useAppWorkflowState.ts'
       - 'src/features/session/hooks/useOnboardingProfile.ts'
       - 'src/features/curriculum/components/RevisioneTab.tsx'
@@ -40,6 +41,7 @@ on:
       - 'src/__tests__/team-organizational-binding.test.ts'
       - 'src/__tests__/team-review-provenance.test.ts'
       - 'src/__tests__/team-review-legacy-scope-backfill.test.ts'
+      - 'src/__tests__/teacher-three-level-communication.test.ts'
       - 'scripts/audit-kx-mobile.cjs'
       - 'scripts/verify-beta-g4-browser.cjs'
       - 'scripts/serve-beta-pages-preview.cjs'
@@ -58,6 +60,7 @@ on:
       - 'src/main.tsx'
       - 'src/App.tsx'
       - 'src/features/navigation/**'
+      - 'src/features/session/components/DashboardView.tsx'
       - 'src/features/session/hooks/useAppWorkflowState.ts'
       - 'src/features/session/hooks/useOnboardingProfile.ts'
       - 'src/features/curriculum/components/RevisioneTab.tsx'
@@ -92,6 +95,7 @@ on:
       - 'src/__tests__/team-organizational-binding.test.ts'
       - 'src/__tests__/team-review-provenance.test.ts'
       - 'src/__tests__/team-review-legacy-scope-backfill.test.ts'
+      - 'src/__tests__/teacher-three-level-communication.test.ts'
       - 'scripts/audit-kx-mobile.cjs'
       - 'scripts/verify-beta-g4-browser.cjs'
       - 'scripts/serve-beta-pages-preview.cjs'
@@ -136,6 +140,7 @@ jobs:
           src/__tests__/team-organizational-binding.test.ts
           src/__tests__/team-review-provenance.test.ts
           src/__tests__/team-review-legacy-scope-backfill.test.ts
+          src/__tests__/teacher-three-level-communication.test.ts
 
       - name: BETA-G4 server authority invariants
         run: |
