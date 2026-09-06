@@ -86,9 +86,8 @@ const ROLE_ORIENTATION: Record<UserRole, RoleOrientation> = {
 
 const JOURNEY = [
   { number: 1, icon: Layers, title: 'Curricolo', text: 'Contesto disciplinare e stato del lavoro.', tab: 'curricolo' },
-  { number: 2, icon: BookOpenCheck, title: 'Fonti', text: 'Documenti e riferimenti utilizzati.', tab: 'fonti' },
-  { number: 3, icon: RotateCcw, title: 'Revisione', text: 'Contributi personali e confronto professionale.', tab: 'revisione' },
-  { number: 4, icon: ShieldCheck, title: 'Decisione', text: 'Registrata dal soggetto competente previsto dal processo.', tab: 'revisione' },
+  { number: 2, icon: RotateCcw, title: 'Revisione', text: 'Contributi personali e confronto professionale.', tab: 'revisione' },
+  { number: 3, icon: FileText, title: 'Progettazione', text: 'Programmazione e UDA collegate al curricolo.', tab: 'progetta-annuale' },
 ] as const;
 
 const toInstitutionalRole = (role: UserRole): InstitutionalRole =>
@@ -123,7 +122,7 @@ const deriveRuntimeWorkSeeds = (props: DashboardViewProps): ArenaWorkItemSeed[] 
       queueState: 'TO_VERIFY',
       evidenceState: 'NOT_REQUIRED',
       requiredCapability: 'CURRICULUM_READ',
-      nextActionLabel: 'Controlla le fonti',
+      nextActionLabel: 'Apri il Fascicolo',
       nextActorRole: 'referente',
       consequential: false,
       authenticatedAuthorityRequired: false,
@@ -272,7 +271,7 @@ export function DashboardView(props: DashboardViewProps) {
       <details className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-5" data-hcm-level="2" data-hcm-secondary-content>
         <summary className="cursor-pointer text-sm font-extrabold text-slate-800">Il percorso di lavoro</summary>
         <p className="mt-2 text-xs leading-5 text-slate-600">Apri questa sezione solo se vuoi vedere come il lavoro corrente si collega ai passaggi successivi.</p>
-        <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
+        <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-3">
           {JOURNEY.map(({ number, icon: Icon, title, text, tab }) => (
             <button
               key={number}
@@ -289,8 +288,20 @@ export function DashboardView(props: DashboardViewProps) {
             </button>
           ))}
         </div>
-        <div className="mt-4 border-t border-slate-100 pt-4">
-          <div className="flex items-start gap-3">
+
+        <div className="mt-4 grid gap-3 border-t border-slate-100 pt-4 sm:grid-cols-2" data-secondary-services>
+          <div className="flex items-start gap-3 rounded-xl border border-slate-100 bg-slate-50/60 p-3" data-secondary-service="fascicolo">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-indigo-700" aria-hidden="true">
+              <BookOpenCheck className="h-4 w-4" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <strong className="text-sm text-slate-900">Fascicolo</strong>
+              <p className="mt-1 text-xs leading-5 text-slate-600">Fonti, versioni, registri e ricevute restano consultabili senza diventare una fase del lavoro.</p>
+              <button type="button" onClick={() => props.handleTabSwitch('fonti')} className="mt-3 rounded-xl border border-indigo-200 bg-white px-4 py-2.5 text-sm font-bold text-indigo-800 hover:bg-indigo-50">Apri il Fascicolo</button>
+            </div>
+          </div>
+
+          <div className="flex items-start gap-3 rounded-xl border border-slate-100 bg-slate-50/60 p-3" data-secondary-service="documents">
             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-emerald-700" aria-hidden="true">
               <FileText className="h-4 w-4" />
             </div>
