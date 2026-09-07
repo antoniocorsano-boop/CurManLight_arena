@@ -18,7 +18,20 @@ assert(cco.version === '1.5.0', 'CCO deve essere 1.5.0');
 assert(surfaces.version === '1.6.1', 'CCO-SURFACES deve essere 1.6.1 dopo il retest visivo R1.1');
 assert(visualAcceptance.human_verdict === 'PASS', 'il retest visivo umano R1.1 deve risultare PASS');
 assert(visualAcceptance.governance_effect?.new_status === 'conformant', 'il retest R1.1 deve autorizzare conformant');
-assert(Object.values(visualAcceptance.acceptance_checks ?? {}).every((value) => value === true), 'tutti i controlli del retest visivo R1.1 devono essere true');
+const visualChecks = visualAcceptance.acceptance_checks ?? {};
+for (const key of [
+  'return_to_general_context_starts_at_top',
+  'one_dominant_current_task_in_general_review',
+  'personal_contribution_and_targeted_review_are_explicit_non_stacked_entries',
+  'assigned_cases_are_subordinate_support',
+  'process_rail_is_single_and_non_competing',
+  'primary_action_is_not_obscured_by_mobile_navigation',
+  'technical_traceability_is_not_in_default_level_1',
+]) assert(visualChecks[key] === true, `controllo visivo non superato: ${key}`);
+assert(
+  visualChecks.previous_r1_general_return_failure_reproduced === false,
+  'il difetto R1 di rientro generale non deve riprodursi',
+);
 
 for (const principle of [
   'process_awareness_is_part_of_operational_usability',
