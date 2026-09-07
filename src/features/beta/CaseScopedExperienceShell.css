@@ -1,0 +1,39 @@
+[data-case-ux-consolidated-shell] [data-case-scoped-curriculum-work-session] > section:first-child {
+  display: none;
+}
+
+[data-case-ux-workframe] {
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+  scroll-behavior: auto;
+}
+
+[data-case-ux-consolidated-shell] [data-case-team-contribution-publisher] > div:first-child > p,
+[data-case-ux-consolidated-shell] [data-case-team-contribution-publisher] > div:nth-child(2),
+[data-case-ux-consolidated-shell] [data-case-team-contribution-publisher] > p:last-child,
+[data-case-ux-consolidated-shell] [data-case-team-comparison] > div:first-child {
+  display: none;
+}
+
+[data-case-ux-consolidated-shell] [data-case-team-contribution-publisher][data-contribution-persistence-complete="true"] > p[role="status"] {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  [data-case-ux-workframe] {
+    height: clamp(24rem, calc(100dvh - 13.5rem), 44rem);
+    overflow-y: auto;
+    padding-right: 1px;
+  }
+
+  [data-case-ux-workframe] [data-case-scoped-curriculum-work-session] {
+    min-height: 100%;
+    padding-bottom: 0.5rem;
+  }
+}
+
+@media (min-width: 768px) {
+  [data-case-ux-workframe] {
+    overflow: visible;
+  }
+}

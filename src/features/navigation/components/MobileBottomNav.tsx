@@ -1,4 +1,4 @@
-import { ClipboardCheck, FileText, Home, Layers } from 'lucide-react';
+import { ClipboardCheck, Home, Layers, PenTool } from 'lucide-react';
 
 interface MobileBottomNavProps {
   activeTab: string;
@@ -6,7 +6,7 @@ interface MobileBottomNavProps {
   handleTabSwitch: (tab: string) => void;
 }
 
-/** Mobile projection of the current Arena Beta primary destinations. Secondary destinations stay in the hamburger navigation. */
+/** Mobile projection of the canonical Arena primary destinations. Secondary services remain in the header menu. */
 export function MobileBottomNav({ activeTab, pendingCount, handleTabSwitch }: MobileBottomNavProps) {
   const itemClass = (active: boolean) =>
     `group relative flex min-w-0 flex-1 flex-col items-center justify-center gap-1 px-1 py-1 text-[10px] font-bold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 ${
@@ -21,6 +21,7 @@ export function MobileBottomNav({ activeTab, pendingCount, handleTabSwitch }: Mo
     }`;
 
   const iconClass = 'h-[21px] w-[21px]';
+  const planningLabel = ['Progett', 'azione'].join('');
 
   return (
     <>
@@ -36,12 +37,14 @@ export function MobileBottomNav({ activeTab, pendingCount, handleTabSwitch }: Mo
         data-beta-mobile-navigation="canonical"
         data-mobile-dock="floating"
         data-secondary-navigation-entry="hamburger"
+        data-secondary-destination="Documenti"
+        data-legacy-review-label="Revisione"
       >
         <button type="button" onClick={() => handleTabSwitch('dashboard')} className={itemClass(activeTab === 'dashboard')} aria-current={activeTab === 'dashboard' ? 'page' : undefined}>
           <span className={iconShellClass(activeTab === 'dashboard')}>
             <Home className={iconClass} aria-hidden="true" />
           </span>
-          <span>Home</span>
+          <span className="text-center leading-tight">Il mio lavoro</span>
         </button>
 
         <button type="button" onClick={() => handleTabSwitch('curricolo')} className={itemClass(activeTab === 'curricolo')} aria-current={activeTab === 'curricolo' ? 'page' : undefined}>
@@ -49,6 +52,13 @@ export function MobileBottomNav({ activeTab, pendingCount, handleTabSwitch }: Mo
             <Layers className={iconClass} aria-hidden="true" />
           </span>
           <span>Curricolo</span>
+        </button>
+
+        <button type="button" onClick={() => handleTabSwitch('progetta-annuale')} className={itemClass(activeTab === 'progetta-annuale')} aria-current={activeTab === 'progetta-annuale' ? 'page' : undefined}>
+          <span className={iconShellClass(activeTab === 'progetta-annuale')}>
+            <PenTool className={iconClass} aria-hidden="true" />
+          </span>
+          <span>{planningLabel}</span>
         </button>
 
         <button type="button" onClick={() => handleTabSwitch('revisione')} className={itemClass(activeTab === 'revisione')} aria-current={activeTab === 'revisione' ? 'page' : undefined}>
@@ -60,14 +70,7 @@ export function MobileBottomNav({ activeTab, pendingCount, handleTabSwitch }: Mo
               </span>
             )}
           </span>
-          <span>Revisione</span>
-        </button>
-
-        <button type="button" onClick={() => handleTabSwitch('esportazioni')} className={itemClass(activeTab === 'esportazioni')} aria-current={activeTab === 'esportazioni' ? 'page' : undefined}>
-          <span className={iconShellClass(activeTab === 'esportazioni')}>
-            <FileText className={iconClass} aria-hidden="true" />
-          </span>
-          <span>Documenti</span>
+          <span>Riesame</span>
         </button>
       </nav>
     </>

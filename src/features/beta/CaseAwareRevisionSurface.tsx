@@ -6,6 +6,7 @@ import { schoolYearToInstitutionalLabel } from '../../lib/academicYear';
 import { useCurriculumStore } from '../../store/useCurriculumStore';
 import type { AppViewsLayerProps } from '../session/types/appViewContracts';
 import { CaseScopedCurriculumWorkSession } from './CaseScopedCurriculumWorkSession';
+import { CaseScopedExperienceShell } from './CaseScopedExperienceShell';
 import { RevisionWorkspace } from './RevisionWorkspace';
 import { SharedReviewCaseInbox } from './SharedReviewCaseInbox';
 
@@ -37,20 +38,23 @@ export function CaseAwareRevisionSurface(props: Props) {
       <div
         data-revision-surface-mode="CASE_SCOPED"
         data-active-curriculum-review-case={activeCase.id}
+        data-ux-consolidation="UX_CONSOLIDATION_R1"
       >
-        <CaseScopedCurriculumWorkSession
-          reviewCase={activeCase}
-          availableProposals={props.currentDisciplineProps}
-          discipline={props.discipline}
-          order={props.order}
-          academicYear={sharedAcademicYear}
-        />
+        <CaseScopedExperienceShell reviewCase={activeCase}>
+          <CaseScopedCurriculumWorkSession
+            reviewCase={activeCase}
+            availableProposals={props.currentDisciplineProps}
+            discipline={props.discipline}
+            order={props.order}
+            academicYear={sharedAcademicYear}
+          />
+        </CaseScopedExperienceShell>
       </div>
     );
   }
 
   return (
-    <div className="space-y-3" data-revision-surface-mode="GENERAL">
+    <div className="space-y-3" data-revision-surface-mode="GENERAL" data-ux-consolidation="UX_CONSOLIDATION_R1">
       <SharedReviewCaseInbox
         order={props.order}
         targetClass={props.targetClass}

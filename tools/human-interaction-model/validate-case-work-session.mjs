@@ -82,10 +82,12 @@ const surface = readText('src/features/beta/CaseAwareRevisionSurface.tsx');
 for (const token of [
   'data-revision-surface-mode="CASE_SCOPED"',
   "reviewCase.workSession?.sessionState === 'ACTIVE'",
+  '<CaseScopedExperienceShell',
   '<CaseScopedCurriculumWorkSession',
   'data-revision-surface-mode="GENERAL"',
   '<SharedReviewCaseInbox',
   '<RevisionWorkspace',
+  'data-ux-consolidation="UX_CONSOLIDATION_R1"',
 ]) assert(surface.includes(token), `superficie dominante non presidiata: ${token}`);
 
 const betaIndex = readText('src/features/beta/index.ts');
@@ -102,6 +104,51 @@ for (const token of [
   "caseState: 'PROFESSIONAL_REVIEW_COMPLETE'",
   "professionalValidationState: 'TEAM_OUTCOMES_RECORDED'",
 ]) assert(sessionUi.includes(token), `UI CurriculumWorkSession case-scoped non presidiata: ${token}`);
+
+const uxShell = readText('src/features/beta/CaseScopedExperienceShell.tsx');
+for (const token of [
+  'data-case-ux-consolidated-shell',
+  'data-ux-layering="L1-L2-L3"',
+  'data-hcm-level="1"',
+  'data-hcm-level="2"',
+  'data-hcm-level="3"',
+  'data-case-ux-workframe',
+  'data-viewport-anchor="stable-current-task"',
+  'workframeRef.current.scrollTop = 0',
+  'Passo {stageIndex + 1} di {STAGES.length}',
+  'Perché questo riesame?',
+  'Verifica e tracciabilità',
+]) assert(uxShell.includes(token), `UX_CONSOLIDATION_R1 case shell non presidiato: ${token}`);
+
+const uxCss = readText('src/features/beta/CaseScopedExperienceShell.css');
+for (const token of [
+  '[data-case-ux-workframe]',
+  'overflow-y: auto',
+  'scrollbar-gutter: stable',
+  '[data-case-scoped-curriculum-work-session] > section:first-child',
+  '[data-case-team-comparison] > div:first-child',
+]) assert(uxCss.includes(token), `stabilità viewport case-scoped non presidiata: ${token}`);
+
+const sharedInbox = readText('src/features/beta/SharedReviewCaseInbox.tsx');
+for (const token of [
+  'data-ux-layering="L1-L2-L3"',
+  'data-hcm-level="1"',
+  'data-hcm-level="2"',
+  'data-hcm-level="3"',
+  'Casi assegnati al mio gruppo',
+  'Ricevere un caso non avvia automaticamente la validazione.',
+  'Come funziona l’assegnazione',
+  'Verifica e tracciabilità',
+]) assert(sharedInbox.includes(token), `layering shared case non presidiato: ${token}`);
+
+const mobileNav = readText('src/features/navigation/components/MobileBottomNav.tsx');
+for (const token of [
+  'Il mio lavoro',
+  'Curricolo',
+  "handleTabSwitch('progetta-annuale')",
+  'Riesame',
+  'data-secondary-navigation-entry="hamburger"',
+]) assert(mobileNav.includes(token), `navigazione mobile canonica non presidiata: ${token}`);
 
 const docs = readJson('docs/04_product_experience/PRODUCT_DOCS.registry.json');
 const state = docs.implementation_state ?? {};
@@ -120,6 +167,7 @@ for (const key of [
   'shared_review_case_discovery_implemented',
 ]) assert(state[key] === true, `stato prodotto non registra ${key}`);
 assert(state.human_end_to_end_pilot_complete === true, 'il pilot umano multi-attore deve risultare concluso dopo la prova reale');
+assert(state.target_ui_fully_implemented === false, 'UX_CONSOLIDATION_R1 non deve dichiarare completata tutta la UI target');
 
 if (failures.length) {
   for (const failure of failures) console.error(`CASE_WORK_SESSION_FAIL: ${failure}`);

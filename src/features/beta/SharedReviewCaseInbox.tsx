@@ -113,7 +113,7 @@ export function SharedReviewCaseInbox({ order, targetClass, discipline, academic
   useEffect(() => {
     if (!team.configured || !team.session || !team.selectedMembership || !group) return;
     if (!operationalMembership) {
-      setMessage('La membership operativa verificata non espone un anno univoco per questa disciplina e questo gruppo.');
+      setMessage('Non è disponibile un incarico operativo univoco per questa disciplina e questo gruppo.');
       return;
     }
     void syncAssigned(true);
@@ -134,7 +134,7 @@ export function SharedReviewCaseInbox({ order, targetClass, discipline, academic
       useCurriculumStore.setState((state) => ({
         curriculumReviewCases: mergeAssignedReviewCases(state.curriculumReviewCases ?? [], [receipt.reviewCase]),
       }));
-      setMessage(`Caso assegnato a ${receipt.assignmentCount} partecipant${receipt.assignmentCount === 1 ? 'e' : 'i'} attiv${receipt.assignmentCount === 1 ? 'o' : 'i'} e competent${receipt.assignmentCount === 1 ? 'e' : 'i'}. Nessuna sessione professionale è stata avviata automaticamente.`);
+      setMessage(`Caso assegnato a ${receipt.assignmentCount} partecipant${receipt.assignmentCount === 1 ? 'e' : 'i'}. Nessun riesame personale è stato avviato automaticamente.`);
     } catch (error) {
       setMessage(error instanceof Error ? error.message : 'Caso non assegnato al gruppo.');
     } finally {
@@ -168,68 +168,88 @@ export function SharedReviewCaseInbox({ order, targetClass, discipline, academic
   if (assignedCases.length === 0 && publishableCases.length === 0 && !message) return null;
 
   return (
-    <section className="rounded-2xl border border-indigo-200 bg-white p-4 shadow-sm" data-shared-review-case-inbox data-last-sync-at={lastSyncAt ?? ''} data-shared-academic-year={sharedAcademicYear}>
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <span className="text-[10px] font-black uppercase tracking-wide text-indigo-700">Riesame condiviso</span>
-          <h2 className="mt-1 text-sm font-extrabold text-slate-900">Casi assegnati al mio gruppo</h2>
-          <p className="mt-1 text-xs leading-5 text-slate-600">Arena mostra soltanto i casi che il server assegna alla tua membership attiva e alla tua competenza disciplinare. Ricevere un caso non avvia automaticamente la validazione.</p>
+    <section
+      className="rounded-2xl border border-indigo-200 bg-white p-3 shadow-sm"
+      data-shared-review-case-inbox
+      data-last-sync-at={lastSyncAt ?? ''}
+      data-shared-academic-year={sharedAcademicYear}
+      data-ux-layering="L1-L2-L3"
+    >
+      <div data-hcm-level="1">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <span className="text-[10px] font-black uppercase tracking-wide text-indigo-700">Riesame condiviso</span>
+            <h2 className="mt-1 text-sm font-extrabold text-slate-900">Casi assegnati al mio gruppo</h2>
+            <p className="mt-1 text-xs leading-5 text-slate-600">Ricevere un caso non avvia automaticamente la validazione.</p>
+          </div>
+          <button type="button" disabled={busy || !operationalMembership} onClick={() => void syncAssigned()} className="min-h-10 shrink-0 rounded-xl border border-indigo-200 bg-indigo-50 px-3 py-2 text-xs font-bold text-indigo-800 disabled:opacity-40">
+            {busy ? 'Aggiornamento…' : 'Aggiorna casi'}
+          </button>
         </div>
-        <button type="button" disabled={busy || !operationalMembership} onClick={() => void syncAssigned()} className="min-h-10 rounded-xl border border-indigo-200 bg-indigo-50 px-3 py-2 text-xs font-bold text-indigo-800 disabled:opacity-40">{busy ? 'Aggiornamento…' : 'Aggiorna casi'}</button>
+
+        {assignedCases.length > 0 && (
+          <div className="mt-3 space-y-2" data-assigned-review-case-list>
+            {assignedCases.map((reviewCase) => {
+              const missing = reviewCase.targetedProposalRefs.filter((proposalRef) => !proposals.some((proposal) => proposal.id === proposalRef));
+              return (
+                <article key={reviewCase.id} className="rounded-xl border border-slate-200 bg-slate-50/70 p-3" data-assigned-review-case={reviewCase.id}>
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <strong className="block text-sm leading-5 text-slate-900">{reviewCase.scopeReason}</strong>
+                      <p className="mt-1 text-xs text-slate-600">{reviewCase.targetedProposalRefs.length} {reviewCase.targetedProposalRefs.length === 1 ? 'scheda da riesaminare' : 'schede da riesaminare'}</p>
+                    </div>
+                    <span className="shrink-0 rounded-full bg-indigo-50 px-2.5 py-1 text-[10px] font-bold text-indigo-800">Assegnato</span>
+                  </div>
+                  {missing.length > 0 ? (
+                    <p className="mt-3 rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs leading-5 text-amber-900">Il caso non può essere avviato perché una parte del perimetro non è disponibile nel contesto corrente.</p>
+                  ) : reviewCase.workSession?.sessionState === 'COMPLETE' ? (
+                    <p className="mt-3 text-xs font-semibold text-emerald-800">Il tuo lavoro professionale su questo caso risulta completato.</p>
+                  ) : (
+                    <button type="button" onClick={() => startOrResume(reviewCase)} data-human-next-action="start-assigned-review-case" className="mt-3 min-h-11 w-full rounded-xl bg-indigo-700 px-4 py-2.5 text-sm font-bold text-white sm:w-auto">
+                      {reviewCase.workSession ? 'Riprendi il riesame assegnato' : 'Avvia il riesame assegnato'}
+                    </button>
+                  )}
+                </article>
+              );
+            })}
+          </div>
+        )}
+
+        {canAssign && publishableCases.length > 0 && operationalMembership && (
+          <div className="mt-3 border-t border-slate-100 pt-3" data-review-case-assignment-actions>
+            <strong className="text-xs text-slate-800">Casi pronti per il gruppo</strong>
+            <div className="mt-2 space-y-2">
+              {publishableCases.map((reviewCase) => (
+                <div key={reviewCase.id} className="rounded-xl border border-slate-200 p-3">
+                  <span className="block text-xs leading-5 text-slate-700"><strong>{reviewCase.targetedProposalRefs.length} {reviewCase.targetedProposalRefs.length === 1 ? 'scheda' : 'schede'}</strong> · {reviewCase.scopeReason}</span>
+                  <button type="button" disabled={busy} onClick={() => void publish(reviewCase)} data-human-next-action="assign-review-case-to-team" className="mt-2 min-h-10 w-full rounded-xl bg-indigo-700 px-3 py-2 text-xs font-bold text-white disabled:opacity-40 sm:w-auto">Condividi e assegna al gruppo</button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {message && <p role="status" className="mt-3 rounded-lg bg-indigo-50 p-3 text-xs leading-5 text-slate-700">{message}</p>}
       </div>
 
-      {operationalMembership && (
-        <p className="mt-3 rounded-lg bg-slate-50 p-3 text-[11px] leading-5 text-slate-600" data-operational-review-scope>
-          Ambito operativo verificato: {operationalMembership.academicYear} · {group.code} · {discipline} · {operationalMembership.membershipState === 'FORMALIZZATO' ? 'formalizzato' : 'operativo provvisorio'}.
-        </p>
-      )}
+      <details className="mt-3 rounded-xl border border-slate-200 bg-white" data-hcm-level="2">
+        <summary className="cursor-pointer px-3 py-2.5 text-xs font-bold text-slate-700">Come funziona l’assegnazione</summary>
+        <div className="border-t border-slate-100 p-3 text-xs leading-5 text-slate-600">
+          <p>Arena mostra soltanto i casi assegnati al gruppo di lavoro pertinente e alla disciplina corrente. L’assegnazione rende disponibile il caso, ma ogni docente avvia e compila il proprio riesame personalmente.</p>
+        </div>
+      </details>
 
-      {assignedCases.length > 0 && (
-        <div className="mt-4 space-y-2" data-assigned-review-case-list>
+      <details className="mt-2 rounded-xl border border-slate-200 bg-slate-50" data-hcm-level="3">
+        <summary className="cursor-pointer px-3 py-2.5 text-xs font-bold text-slate-600">Verifica e tracciabilità</summary>
+        <div className="space-y-2 border-t border-slate-200 p-3 text-[11px] leading-5 text-slate-600">
+          {operationalMembership && <p>Ambito operativo verificato: {operationalMembership.academicYear} · {group.code} · {discipline} · {operationalMembership.membershipState === 'FORMALIZZATO' ? 'formalizzato' : 'operativo provvisorio'}.</p>}
           {assignedCases.map((reviewCase) => {
             const shared = getSharedReviewCaseContext(reviewCase);
-            const missing = reviewCase.targetedProposalRefs.filter((proposalRef) => !proposals.some((proposal) => proposal.id === proposalRef));
-            return (
-              <article key={reviewCase.id} className="rounded-xl border border-slate-200 bg-slate-50/60 p-3" data-assigned-review-case={reviewCase.id}>
-                <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-                  <div>
-                    <strong className="block text-sm text-slate-900">{reviewCase.targetedProposalRefs.length} schede · {reviewCase.scopeReason}</strong>
-                    <p className="mt-1 text-[11px] leading-5 text-slate-500">Caso {reviewCase.id} · master {reviewCase.currentMaster.version} · assegnati {shared?.assignmentCount ?? 0}</p>
-                  </div>
-                  <span className="shrink-0 rounded-full bg-indigo-50 px-2.5 py-1 text-[10px] font-bold text-indigo-800">Assegnato</span>
-                </div>
-                {missing.length > 0 ? (
-                  <p className="mt-3 rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs leading-5 text-amber-900">Il caso resta bloccato: {missing.length} scheda{missing.length === 1 ? '' : 'e'} del perimetro congelato non è disponibile nel contesto corrente.</p>
-                ) : reviewCase.workSession?.sessionState === 'COMPLETE' ? (
-                  <p className="mt-3 text-xs font-semibold text-emerald-800">Il tuo lavoro professionale su questo caso risulta completato.</p>
-                ) : (
-                  <button type="button" onClick={() => startOrResume(reviewCase)} data-human-next-action="start-assigned-review-case" className="mt-3 min-h-11 rounded-xl bg-indigo-700 px-4 py-2.5 text-sm font-bold text-white">
-                    {reviewCase.workSession ? 'Riprendi il riesame assegnato' : 'Avvia il riesame assegnato'}
-                  </button>
-                )}
-              </article>
-            );
+            return <p key={reviewCase.id} className="break-all">Caso {reviewCase.id} · master {reviewCase.currentMaster.version} · assegnati {shared?.assignmentCount ?? 0}</p>;
           })}
+          <p>Assegnazione del caso ≠ avvio H2 ≠ contributo professionale ≠ esito del gruppo ≠ decisione istituzionale.</p>
         </div>
-      )}
-
-      {canAssign && publishableCases.length > 0 && operationalMembership && (
-        <div className="mt-4 border-t border-slate-100 pt-4" data-review-case-assignment-actions>
-          <strong className="text-xs text-slate-800">Casi locali da assegnare</strong>
-          <p className="mt-1 text-[11px] leading-5 text-slate-500">L’assegnazione è un’azione distinta dall’apertura del caso. Il server individua i partecipanti attivi e competenti; non puoi autoattribuire ruoli o membership.</p>
-          <div className="mt-2 space-y-2">
-            {publishableCases.map((reviewCase) => (
-              <div key={reviewCase.id} className="flex flex-col gap-2 rounded-xl border border-slate-200 p-3 sm:flex-row sm:items-center sm:justify-between">
-                <span className="text-xs leading-5 text-slate-700"><strong>{reviewCase.targetedProposalRefs.length} schede</strong> · {reviewCase.scopeReason}</span>
-                <button type="button" disabled={busy} onClick={() => void publish(reviewCase)} data-human-next-action="assign-review-case-to-team" className="min-h-10 shrink-0 rounded-xl bg-indigo-700 px-3 py-2 text-xs font-bold text-white disabled:opacity-40">Condividi e assegna al gruppo</button>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {message && <p role="status" className="mt-3 rounded-lg bg-indigo-50 p-3 text-xs leading-5 text-slate-700">{message}</p>}
-      <p className="mt-3 text-[11px] leading-5 text-slate-500">Assegnazione del caso ≠ avvio H2 ≠ contributo professionale ≠ esito del gruppo ≠ decisione istituzionale.</p>
+      </details>
     </section>
   );
 }

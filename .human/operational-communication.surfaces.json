@@ -130,6 +130,67 @@
       "path": "src/features/session/components/PersonalWorkProfileModal.tsx",
       "status": "guided-setup",
       "reason": "È una configurazione iniziale intenzionalmente guidata: una quota maggiore di testo formativo è ammessa, purché non confonda profilo personale, incarico verificato e autorità."
+    },
+    {
+      "id": "case-scoped-experience-shell",
+      "path": "src/features/beta/CaseScopedExperienceShell.tsx",
+      "status": "conformant",
+      "operational_context": "Riesame mirato — sessione professionale case-scoped",
+      "primary_task": "Mantenere stabile il compito corrente e separare orientamento operativo, spiegazione e tracciabilità tecnica",
+      "communication_levels": {
+        "level_1": "Fase corrente, ruolo verificato, oggetto e uscita dal caso",
+        "level_2": "Motivo e confini professionali del riesame",
+        "level_3": "Identificativo del caso, master, account e stato interno"
+      },
+      "required_tokens": [
+        "data-case-ux-consolidated-shell",
+        "data-ux-layering=\"L1-L2-L3\"",
+        "data-hcm-level=\"1\"",
+        "data-hcm-level=\"2\"",
+        "data-hcm-level=\"3\"",
+        "data-case-ux-workframe",
+        "data-viewport-anchor=\"stable-current-task\"",
+        "Passo {stageIndex + 1} di {STAGES.length}",
+        "Verifica e tracciabilità"
+      ]
+    },
+    {
+      "id": "shared-review-case-inbox",
+      "path": "src/features/beta/SharedReviewCaseInbox.tsx",
+      "status": "conformant",
+      "operational_context": "Riesame condiviso — casi assegnati",
+      "primary_task": "Riconoscere un caso assegnato o assegnabile e compiere una sola azione pertinente senza esporre metadati tecnici nel livello operativo",
+      "communication_levels": {
+        "level_1": "Caso, stato e azione",
+        "level_2": "Spiegazione dell'assegnazione",
+        "level_3": "Ambito operativo, ID caso, master e catena di autorità"
+      },
+      "required_tokens": [
+        "data-shared-review-case-inbox",
+        "data-ux-layering=\"L1-L2-L3\"",
+        "data-hcm-level=\"1\"",
+        "data-hcm-level=\"2\"",
+        "data-hcm-level=\"3\"",
+        "Casi assegnati al mio gruppo",
+        "Avvia il riesame assegnato",
+        "Condividi e assegna al gruppo",
+        "Verifica e tracciabilità"
+      ]
+    },
+    {
+      "id": "mobile-primary-navigation",
+      "path": "src/features/navigation/components/MobileBottomNav.tsx",
+      "status": "conformant",
+      "operational_context": "Navigazione primaria mobile",
+      "primary_task": "Proiettare soltanto le quattro aree primarie canoniche mantenendo i servizi documentali nel menu secondario",
+      "required_tokens": [
+        "Il mio lavoro",
+        "Curricolo",
+        "handleTabSwitch('progetta-annuale')",
+        "Riesame",
+        "data-secondary-navigation-entry=\"hamburger\"",
+        "grid-cols-4"
+      ]
     }
   ]
 }
