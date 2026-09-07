@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { CurriculumTab } from '../../curriculum';
 import { EsportazioniTab, FontiTab, SecondBrainTab } from '../../documents';
 import { PlanningHandoffPreview } from '../../beta/PlanningHandoffPreview';
@@ -18,12 +19,19 @@ const isAppTab = (tab: string): tab is AppTab => (APP_TABS as readonly string[])
 const isActiveProgTab = (tab: string): tab is ActiveProgTab => (ACTIVE_PROG_TABS as readonly string[]).includes(tab);
 
 export function AppViewsLayer(props: AppViewsLayerProps) {
+  const [normativeReviewSourceCode, setNormativeReviewSourceCode] = useState<string | null>(null);
+
   const safeHandleTabSwitch = (tab: string) => {
     if (isAppTab(tab)) props.handleTabSwitch(tab);
   };
 
   const safeSetActiveProgTab = (tab: string) => {
     if (isActiveProgTab(tab)) props.setActiveProgTab(tab);
+  };
+
+  const openNormativeReview = (sourceCode: string) => {
+    setNormativeReviewSourceCode(sourceCode);
+    safeHandleTabSwitch('revisione');
   };
 
   return (
@@ -92,7 +100,11 @@ export function AppViewsLayer(props: AppViewsLayerProps) {
 
       {props.activeTab === 'revisione' && (
         <div className="space-y-3" data-teacher-surface="revision">
-          <RevisionWorkspace {...props} />
+          <RevisionWorkspace
+            {...props}
+            initialNormativeSourceCode={normativeReviewSourceCode}
+            onInitialNormativeSourceConsumed={() => setNormativeReviewSourceCode(null)}
+          />
         </div>
       )}
 
@@ -118,7 +130,12 @@ export function AppViewsLayer(props: AppViewsLayerProps) {
         </div>
       )}
 
-      {props.activeTab === 'fonti' && <FontiTab {...props} />}
+      {props.activeTab === 'fonti' && (
+        <FontiTab
+          {...props}
+          onRequestNormativeReview={openNormativeReview}
+        />
+      )}
 
       {props.activeTab !== 'fonti' && (
         <InfoViews
