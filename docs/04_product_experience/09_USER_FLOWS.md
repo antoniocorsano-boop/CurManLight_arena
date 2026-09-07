@@ -218,7 +218,9 @@ Per tutti i flow conseguenti:
 - errori tecnici non devono cambiare lo stato umano o istituzionale;
 - un `RevisionTrigger` deve sempre restare legato all'identità/versione del master da cui è nato;
 - un `CurriculumReviewCase` deve conservare trigger d'origine, master/versione, `CurriculumUnit`, perimetro di schede e readiness all'apertura;
-- l'apertura di un nuovo caso non può riutilizzare implicitamente contributi personali o decisioni registrati in un riesame precedente.
+- l'apertura di un nuovo caso non può riutilizzare implicitamente contributi personali o decisioni registrati in un riesame precedente;
+- una `CurriculumWorkSession` case-scoped deve ripristinare `reviewCaseId`, perimetro congelato, decisioni della sessione e fase corrente senza importare orientamenti dalla sessione generale;
+- una condivisione di caso non può essere considerata corrente se `review_case_id`, fingerprint, attore o orientamento non corrispondono più.
 
 ---
 
@@ -315,6 +317,30 @@ Nel primo incremento `TARGETED_REVIEW_CASE_OPENING` della candidata Beta:
 
 ---
 
+## 20. Proiezione corrente della CurriculumWorkSession case-scoped
+
+Nel primo incremento `CASE_SCOPED_CURRICULUM_WORK_SESSION` della candidata Beta:
+- da un `CurriculumReviewCase` aperto l'utente sceglie esplicitamente **Avvia il riesame mirato**; nessuna sessione parte per effetto automatico del trigger o dell'apertura del caso;
+- la nuova sessione conserva `reviewCaseId`, `CurriculumUnit`, master/versione e le sole `targetedProposalRefs` congelate nel caso;
+- la sessione nasce con decisioni e testi personalizzati vuoti: **nessun carry-forward** dalla revisione generale o da casi precedenti;
+- una scheda esterna al caso o non più risolvibile nella versione corrente blocca il lavoro invece di essere inclusa implicitamente;
+- quando la sessione del caso è `ACTIVE`, **Riesame mostra una sola progressione dominante** e non rende in parallelo la sessione generale;
+- `ESAMINA` registra orientamenti esclusivamente nello stato della sessione del caso;
+- `CONDIVIDI` è completato soltanto da ricevute server che corrispondono a `review_case_id`, scheda, fingerprint, attore, orientamento ed eventuale testo personalizzato correnti;
+- il fingerprint del contributo comprende `reviewCaseId`, quindi un contributo relativo allo stesso testo ma a un caso diverso non è considerato corrente;
+- `CONFRONTA` legge soltanto contributi con lo stesso `review_case_id`; i contributi generali o di casi precedenti non entrano nel confronto;
+- `REGISTRA L'ESITO` calcola la copertura del gruppo soltanto sulle contribuzioni dello stesso caso e dello stesso fingerprint;
+- il docente senza responsabilità di coordinamento termina il proprio compito dopo la condivisione verificata; il coordinatore può avanzare soltanto con prerequisiti e autorità già previsti dal lifecycle;
+- pausa e rientro ricostruiscono la sessione del caso e non sostituiscono implicitamente l'attore autenticato già associato;
+- la chiusura della sessione produce soltanto il completamento professionale del `CurriculumReviewCase`; non apre automaticamente H3, non genera `InstitutionalDecision`, non modifica il master e non crea baseline parallele;
+- i record condivisi storici senza `review_case_id` restano validi come storia generale ma **non soddisfano** una sessione case-scoped.
+
+**Limite corrente dichiarato:** Arena non dispone ancora di una discovery/assegnazione server del `CurriculumReviewCase` tra client diversi. Il caso e la sessione sono persistiti nel client Arena; contributi ed esiti del team sono invece condivisi e isolati sul server tramite `review_case_id`. Per questo `shared_review_case_discovery_implemented = false` e il pilota umano end-to-end resta aperto.
+
+**Confine:** `CurriculumReviewCase != CurriculumWorkSession != ProfessionalContribution != TeamProfessionalOutcome != InstitutionalDecision`.
+
+---
+
 ## Criterio complessivo di accettazione
 
-I flow sono conformi quando il docente può svolgere il proprio compito senza conoscere pipeline, gate, membership IDs o struttura del repository; le autorità restano separate; la condivisione è verificabile e non simulabile localmente; le fonti sono verificabili; il curricolo alimenta la progettazione reale mediante binding versionati; un master non vigente resta riconoscibile come riferimento di lavoro; la pratica produce osservazioni professionali collegate e prive di dati personali degli alunni; ogni motivo di riesame richiede la qualificazione prevista dalla propria origine e non apre automaticamente un caso; l'apertura di un caso richiede una scelta umana esplicita, un perimetro verificabile e non riutilizza automaticamente decisioni pregresse; nuove norme, esigenze d'Istituto, riesami periodici e osservazioni dalla pratica possono riaprire il processo in modo mirato e tracciato senza creare baseline parallele.
+I flow sono conformi quando il docente può svolgere il proprio compito senza conoscere pipeline, gate, membership IDs o struttura del repository; le autorità restano separate; la condivisione è verificabile e non simulabile localmente; le fonti sono verificabili; il curricolo alimenta la progettazione reale mediante binding versionati; un master non vigente resta riconoscibile come riferimento di lavoro; la pratica produce osservazioni professionali collegate e prive di dati personali degli alunni; ogni motivo di riesame richiede la qualificazione prevista dalla propria origine e non apre automaticamente un caso; l'apertura di un caso richiede una scelta umana esplicita e un perimetro verificabile; la nuova sessione case-scoped parte senza decisioni pregresse, usa soltanto le schede congelate e richiede ricevute condivise legate allo stesso caso; nuove norme, esigenze d'Istituto, riesami periodici e osservazioni dalla pratica possono riaprire il processo in modo mirato e tracciato senza creare baseline parallele.
