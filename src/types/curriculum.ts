@@ -63,6 +63,36 @@ export interface DidacticBinding {
   createdAt: string;
 }
 
+export type ImplementationSignal =
+  | 'ADEQUATE'
+  | 'TOO_EARLY'
+  | 'TOO_LATE'
+  | 'DUPLICATED'
+  | 'MISSING_PREREQUISITE'
+  | 'WEAK_EVIDENCE'
+  | 'UNSUSTAINABLE_LOAD'
+  | 'EFFECTIVE_VERTICAL_LINK'
+  | 'OTHER';
+
+export interface ImplementationObservation {
+  id: string;
+  kind: 'IMPLEMENTATION_OBSERVATION';
+  signal: ImplementationSignal;
+  note?: string;
+  didacticBindingId: string;
+  curriculumUnit: CurriculumUnitReference;
+  sourceArtifact: {
+    type: 'uda';
+    id: string;
+    title: string;
+  };
+  personalDataDeclaration: 'DECLARED_ABSENT';
+  containsStudentPersonalData: false;
+  automaticCurriculumChange: false;
+  reviewState: 'RECORDED_FOR_AGGREGATION';
+  createdAt: string;
+}
+
 export interface UdaModel {
   id: string;
   title: string;
@@ -77,6 +107,7 @@ export interface UdaModel {
   realTask: string;
   notes: string;
   curriculumBindings?: DidacticBinding[];
+  implementationObservations?: ImplementationObservation[];
   createdAt: string;
   updatedAt?: string;
 }
