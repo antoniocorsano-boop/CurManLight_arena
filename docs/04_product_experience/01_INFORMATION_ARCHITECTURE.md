@@ -311,4 +311,18 @@ Regole di attuazione:
 - pausa e ripresa conservano la sessione del caso; un attore già associato non può essere sostituito implicitamente da un altro attore autenticato;
 - la conclusione della sessione professionale registra soltanto il completamento professionale del caso: non apre automaticamente il riesame verticale, non genera una decisione istituzionale e non modifica o promuove il master.
 
-**Confine di implementazione corrente:** il `CurriculumReviewCase` e la sua sessione sono persistiti nello stato Arena del client; contributi ed esiti sono condivisi e case-scoped sul server, ma la **discovery/assegnazione condivisa del caso stesso tra client diversi non è ancora implementata**. Questo limite deve restare visibile nella documentazione di prodotto e impedisce di dichiarare concluso il pilota umano end-to-end.
+### Discovery e assegnazione condivisa
+
+Il `CurriculumReviewCase` è ora distribuibile tra client diversi senza condividere la `CurriculumWorkSession` personale.
+
+- il server conserva uno **snapshot immutabile dell'apertura**: caso, trigger, master/versione, `CurriculumUnit`, perimetro congelato e motivazione;
+- lo snapshot condiviso non contiene `decisions`, `customTexts` o avanzamento personale della `CurriculumWorkSession`;
+- l'azione **Condividi e assegna al gruppo** è distinta dall'apertura del caso ed è autorizzata soltanto a una membership verificata `dipartimento` o `referente` con competenza operativa sulla disciplina;
+- gli assegnatari sono derivati dal server da membership workspace attive e competenza operativa per anno, gruppo e disciplina: non vengono introdotte liste locali di ID né autoattribuzioni di ruolo;
+- il destinatario scopre soltanto casi realmente assegnati alla propria identità autenticata nello stesso workspace/anno/gruppo/disciplina;
+- la hydration del caso condiviso ricostruisce `H1_APPLICABLE_CURRICULUM`, `professionalValidationState = NOT_STARTED` e nessuna sessione personale;
+- l'ingresso in H2 richiede ancora l'azione umana esplicita **Avvia il riesame assegnato**;
+- lo stesso identificativo con snapshot o perimetro diverso fallisce chiuso; lo stesso caso e stesso perimetro congelato possono invece essere riconciliati preservando l'eventuale sessione personale già presente sul client;
+- l'assegnazione non genera `ProfessionalContribution`, `TeamProfessionalOutcome`, `InstitutionalDecision`, modifica o promozione del master e non crea baseline parallele.
+
+**Confine:** `shared case assignment != CurriculumWorkSession != ProfessionalContribution != TeamProfessionalOutcome != InstitutionalDecision`.
