@@ -5,6 +5,7 @@ import { useCurriculumStore } from '../../store/useCurriculumStore';
 import type { AppViewsLayerProps } from '../session/types/appViewContracts';
 import { CaseScopedCurriculumWorkSession } from './CaseScopedCurriculumWorkSession';
 import { RevisionWorkspace } from './RevisionWorkspace';
+import { SharedReviewCaseInbox } from './SharedReviewCaseInbox';
 
 type Props = AppViewsLayerProps & {
   initialNormativeSourceCode?: string | null;
@@ -45,7 +46,14 @@ export function CaseAwareRevisionSurface(props: Props) {
   }
 
   return (
-    <div data-revision-surface-mode="GENERAL">
+    <div className="space-y-3" data-revision-surface-mode="GENERAL">
+      <SharedReviewCaseInbox
+        order={props.order}
+        targetClass={props.targetClass}
+        discipline={props.discipline}
+        academicYear={schoolYear}
+        proposals={props.currentDisciplineProps}
+      />
       <RevisionWorkspace
         {...props}
         initialNormativeSourceCode={props.initialNormativeSourceCode}
