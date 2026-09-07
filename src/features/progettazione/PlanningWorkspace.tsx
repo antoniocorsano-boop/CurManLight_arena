@@ -2,6 +2,8 @@ import { useCurriculumStore } from '../../store/useCurriculumStore';
 import { INSTITUTE_CURRICULUM_CURRENT_SOURCE } from '../../domain/curriculum/institute/currentSource';
 import { ProgettazioneTab as ProgettazioneTabBase, type ProgettazioneTabProps } from './components/ProgettazioneTab';
 
+const CANONICAL_MASTER_ID = 'CAN-CURR-MASTER-00';
+
 const ORDER_LABELS: Record<string, string> = {
   infanzia: "Scuola dell’infanzia",
   primaria: 'Scuola primaria',
@@ -37,8 +39,8 @@ export function PlanningWorkspace(props: ProgettazioneTabProps) {
   const disciplineLabel = DISCIPLINE_LABELS[discipline] ?? discipline;
   const orderLabel = ORDER_LABELS[order] ?? order;
   const authorityLabel = INSTITUTE_CURRICULUM_CURRENT_SOURCE.curriculumInForce
-    ? `Curricolo vigente · master ${INSTITUTE_CURRICULUM_CURRENT_SOURCE.version}`
-    : `Riferimento di lavoro · master ${INSTITUTE_CURRICULUM_CURRENT_SOURCE.version} non vigente`;
+    ? `Curricolo vigente · master ${INSTITUTE_CURRICULUM_CURRENT_SOURCE.sourceVersion}`
+    : `Riferimento di lavoro · master ${INSTITUTE_CURRICULUM_CURRENT_SOURCE.sourceVersion} non vigente`;
 
   if (activeProgTab === 'home') {
     return (
@@ -93,7 +95,7 @@ export function PlanningWorkspace(props: ProgettazioneTabProps) {
         <details className="rounded-xl border border-slate-200 bg-white p-4" data-hcm-level="3">
           <summary className="cursor-pointer text-sm font-bold text-slate-600">Verifica e tracciabilità</summary>
           <div className="mt-3 space-y-1 text-xs leading-5 text-slate-600">
-            <p>Master: {INSTITUTE_CURRICULUM_CURRENT_SOURCE.id}@{INSTITUTE_CURRICULUM_CURRENT_SOURCE.version}</p>
+            <p>Master: {CANONICAL_MASTER_ID}@{INSTITUTE_CURRICULUM_CURRENT_SOURCE.sourceVersion}</p>
             <p>Stato: validazione professionale {INSTITUTE_CURRICULUM_CURRENT_SOURCE.humanProfessionalValidation.toLowerCase()} · curricolo vigente: {INSTITUTE_CURRICULUM_CURRENT_SOURCE.curriculumInForce ? 'sì' : 'no'}.</p>
             <p>La progettazione conserva un riferimento al curricolo; eventuali testi copiati restano snapshot di lavoro e non diventano una nuova fonte curricolare.</p>
           </div>
