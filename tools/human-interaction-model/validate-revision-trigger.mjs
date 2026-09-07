@@ -89,6 +89,14 @@ for (const token of [
 assert(!domain.match(/PRACTICE_TRIGGER_ELIGIBLE_SIGNALS[\s\S]*?'ADEQUATE'/), 'ADEQUATE non deve generare automaticamente un trigger problematico');
 assert(!domain.match(/PRACTICE_TRIGGER_ELIGIBLE_SIGNALS[\s\S]*?'EFFECTIVE_VERTICAL_LINK'/), 'EFFECTIVE_VERTICAL_LINK non deve generare automaticamente un trigger problematico');
 
+const didacticBinding = readText('src/domain/curriculum/didacticBinding.ts');
+for (const token of [
+  'resolveCurriculumUnitReference',
+  "masterId: 'CAN-CURR-MASTER-00'",
+  "identityKind: 'ARENA_MASTER_CONTEXT_KEY'",
+  "resolutionState: 'CONTEXT_BOUND'",
+]) assert(didacticBinding.includes(token), `identità CurriculumUnit condivisa non presidiata: ${token}`);
+
 const hook = readText('src/features/progettazione/hooks/usePracticeRevisionTrigger.ts');
 for (const token of [
   'qualifyPracticeSignal(allObservations, unitKey)',
@@ -103,7 +111,7 @@ assert(store.includes("'revisionTriggers',"), 'revisionTriggers non inclusi nel 
 assert(store.includes('revisionTriggers: []'), 'revisionTriggers non inizializzati');
 assert(store.includes('savedUda: [], revisionTriggers: []'), 'reset non azzera i trigger insieme al lavoro locale');
 
-const panel = readText('src/features/progettazione/components/PracticeRevisionTriggerPanel.tsx');
+const practicePanel = readText('src/features/progettazione/components/PracticeRevisionTriggerPanel.tsx');
 for (const token of [
   'Valuta un possibile riesame',
   'Queste osservazioni meritano un riesame del curricolo?',
@@ -113,10 +121,48 @@ for (const token of [
   'Motivo di riesame qualificato',
   'Questo passaggio non apre ancora una revisione e non modifica il curricolo.',
   'Motivo di riesame ≠ caso di revisione ≠ modifica del master.',
-]) assert(panel.includes(token), `superficie qualificazione trigger non presidiata: ${token}`);
+]) assert(practicePanel.includes(token), `superficie qualificazione PRACTICE_SIGNAL non presidiata: ${token}`);
 
 const udaDetail = readText('src/features/progettazione/components/UdaModals.tsx');
 assert(udaDetail.includes('<PracticeRevisionTriggerPanel uda={selectedUda} />'), 'qualificazione PRACTICE_SIGNAL non integrata nella UDA');
+
+const qualificationPanel = readText('src/features/curriculum/components/RevisionTriggerQualificationPanel.tsx');
+for (const token of [
+  'data-revision-trigger-qualification',
+  'Nuova norma o circolare',
+  'Esigenza dell’Istituto',
+  'Riesame periodico',
+  'INSTITUTE_CURRICULUM_AUTHORITATIVE_SOURCES',
+  "sourceQualification: 'QUALIFIED'",
+  'applicabilityAssessment',
+  'declaredNonNational: true',
+  'il semplice decorso del tempo non riapre unità stabili',
+  'Motivo qualificato ≠ caso di riesame ≠ modifica del master ≠ decisione istituzionale.',
+]) assert(qualificationPanel.includes(token), `superficie unica RevisionTrigger non presidiata: ${token}`);
+assert(!qualificationPanel.includes('customKbDocs'), 'una fonte personale non deve qualificare EXTERNAL_NORMATIVE');
+
+const revisionWorkspace = readText('src/features/beta/RevisionWorkspace.tsx');
+assert(revisionWorkspace.includes('<RevisionTriggerQualificationPanel'), 'qualificazione delle cause non integrata nel Riesame esistente');
+assert(revisionWorkspace.includes('data-curriculum-work-session'), 'integrazione trigger ha sostituito la CurriculumWorkSession');
+
+const sourceRegister = readText('src/features/documents/components/InstituteCurriculumSourceRegisterPanel.tsx');
+for (const token of [
+  'data-source-review-action',
+  'Valuta l’impatto sul curricolo',
+  'onRequestNormativeReview(source.code)',
+  'non crea automaticamente un caso e non modifica il master',
+]) assert(sourceRegister.includes(token), `ingresso fonte normativa non presidiato: ${token}`);
+
+const appViews = readText('src/features/session/components/AppViewsLayer.tsx');
+for (const token of [
+  'setNormativeReviewSourceCode(sourceCode)',
+  "safeHandleTabSwitch('revisione')",
+  'initialNormativeSourceCode={normativeReviewSourceCode}',
+  'onRequestNormativeReview={openNormativeReview}',
+]) assert(appViews.includes(token), `instradamento Fascicolo → Riesame non presidiato: ${token}`);
+for (const forbiddenRoute of ["'revision-trigger'", "'normative-review'", "'periodic-review'"]) {
+  assert(!appViews.includes(forbiddenRoute), `nuova superficie primaria non autorizzata: ${forbiddenRoute}`);
+}
 
 const docs = readJson('docs/04_product_experience/PRODUCT_DOCS.registry.json');
 const state = docs.implementation_state ?? {};
@@ -136,12 +182,18 @@ for (const key of [
   'periodic_review_trigger_domain_implemented',
   'periodic_review_trigger_requires_explicit_reason',
   'all_revision_trigger_origins_share_current_master_scope_and_no_automatic_consequences',
+  'external_normative_trigger_ux_implemented',
+  'external_normative_trigger_reuses_fascicolo_to_revision_flow',
+  'institute_need_trigger_ux_implemented',
+  'institute_need_trigger_reuses_revision_surface',
+  'periodic_review_trigger_ux_implemented',
+  'periodic_review_trigger_reuses_revision_surface',
+  'revision_trigger_single_existing_surface_integration_implemented',
+  'revision_trigger_ux_implemented',
 ]) assert(state[key] === true, `stato prodotto non registra ${key}`);
-assert(docs.version === '1.0.9', 'versione registro documentazione prodotto inattesa');
-assert(state.external_normative_trigger_ux_implemented === false, 'UX normativa futura anticipata');
-assert(state.institute_need_trigger_ux_implemented === false, 'UX esigenza istituto anticipata');
-assert(state.periodic_review_trigger_ux_implemented === false, 'UX riesame periodico anticipata');
-assert(state.revision_trigger_ux_implemented === false, 'dominio completo non deve dichiarare completa la UX RevisionTrigger');
-assert(state.target_ui_fully_implemented === false, 'implementazione dominio non deve dichiarare completa la UI target');
+assert(docs.version === '1.0.10', 'versione registro documentazione prodotto inattesa');
+assert(state.revision_trigger_new_primary_surface_created === false, 'l’incremento non deve creare una nuova superficie primaria');
+assert(state.target_ui_fully_implemented === false, 'implementazione RevisionTrigger non deve dichiarare completa la UI target');
+assert(state.human_end_to_end_pilot_complete === false, 'implementazione RevisionTrigger non deve dichiarare concluso il pilota umano');
 
 console.log('REVISION_TRIGGER_PASS');
