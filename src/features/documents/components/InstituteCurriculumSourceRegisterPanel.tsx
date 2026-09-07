@@ -1,4 +1,4 @@
-import { ExternalLink, FileText, Landmark, Link2, ShieldCheck } from 'lucide-react';
+import { ArrowRight, ExternalLink, FileText, Landmark, Link2, ShieldCheck } from 'lucide-react';
 import {
   INSTITUTE_CURRICULUM_AUTHORITATIVE_SOURCE_COUNT,
   INSTITUTE_CURRICULUM_AUTHORITATIVE_SOURCES,
@@ -16,7 +16,13 @@ const describeChainRole = (role: string): string => {
   }
 };
 
-export function InstituteCurriculumSourceRegisterPanel() {
+type InstituteCurriculumSourceRegisterPanelProps = {
+  onRequestNormativeReview?: (sourceCode: string) => void;
+};
+
+export function InstituteCurriculumSourceRegisterPanel({
+  onRequestNormativeReview,
+}: InstituteCurriculumSourceRegisterPanelProps) {
   const institutionalMirrorCount = INSTITUTE_CURRICULUM_AUTHORITATIVE_SOURCES.filter(
     (source) => source.locatorKind === 'INSTITUTIONAL_MIRROR',
   ).length;
@@ -79,15 +85,32 @@ export function InstituteCurriculumSourceRegisterPanel() {
                     <div><dt className="inline font-bold text-slate-800">Applicabilità: </dt><dd className="inline">{source.applicability}</dd></div>
                   </dl>
 
-                  <a
-                    href={source.locator}
-                    target="_blank"
-                    rel="noreferrer noopener"
-                    className="mt-3 inline-flex min-h-11 items-center gap-2 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-800"
-                  >
-                    {official ? <ExternalLink className="h-4 w-4" aria-hidden="true" /> : <Link2 className="h-4 w-4" aria-hidden="true" />}
-                    {official ? 'Apri la fonte ufficiale' : 'Apri la copia istituzionale di trasmissione'}
-                  </a>
+                  <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+                    <a
+                      href={source.locator}
+                      target="_blank"
+                      rel="noreferrer noopener"
+                      className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-800"
+                    >
+                      {official ? <ExternalLink className="h-4 w-4" aria-hidden="true" /> : <Link2 className="h-4 w-4" aria-hidden="true" />}
+                      {official ? 'Apri la fonte ufficiale' : 'Apri la copia istituzionale di trasmissione'}
+                    </a>
+                    {onRequestNormativeReview && (
+                      <button
+                        type="button"
+                        onClick={() => onRequestNormativeReview(source.code)}
+                        data-source-review-action={source.code}
+                        className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-indigo-700 px-3 py-2 text-sm font-bold text-white"
+                      >
+                        Valuta l’impatto sul curricolo
+                        <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                      </button>
+                    )}
+                  </div>
+
+                  <p className="mt-2 text-xs leading-5 text-slate-500">
+                    L’azione apre il Riesame con questa fonte come origine; non crea automaticamente un caso e non modifica il master.
+                  </p>
 
                   <details className="mt-3 border-t border-slate-200 pt-3" data-hcm-level="3">
                     <summary className="cursor-pointer text-xs font-bold text-slate-600">Dati di tracciabilità</summary>
