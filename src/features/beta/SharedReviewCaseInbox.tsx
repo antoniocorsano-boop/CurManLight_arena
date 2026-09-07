@@ -9,6 +9,7 @@ import { resolveCurriculumUnitReference } from '../../domain/curriculum/didactic
 import { getOperationalGroupForDiscipline } from '../../domain/institution/operationalGroups';
 import type { WorkspaceActorContext } from '../../domain/institution/sharedWorkspacePort';
 import { SupabaseSharedCurriculumReviewCaseRepository } from '../../infrastructure/supabase/sharedCurriculumReviewCaseRepository';
+import { schoolYearToInstitutionalLabel } from '../../lib/academicYear';
 import { useCurriculumStore } from '../../store/useCurriculumStore';
 import type { CurriculumReviewCase, Proposal, SchoolOrder } from '../../types/curriculum';
 import { useTeamWorkspaceContext } from './useTeamWorkspaceContext';
@@ -43,16 +44,29 @@ export function SharedReviewCaseInbox({ order, targetClass, discipline, academic
   const [message, setMessage] = useState<string | null>(null);
   const [lastSyncAt, setLastSyncAt] = useState<string | null>(null);
 
+  const preferredAcademicYear = useMemo(() => schoolYearToInstitutionalLabel(academicYear), [academicYear]);
+  const operationalMembership = useMemo(() => {
+    if (!group) return null;
+    const matches = team.operationalMemberships.filter((membership) => (
+      membership.schoolOrder === group.order
+      && membership.groupCode === group.code
+      && membership.disciplines.includes(discipline)
+    ));
+    return matches.find((membership) => membership.academicYear === preferredAcademicYear)
+      ?? (matches.length === 1 ? matches[0] : null);
+  }, [discipline, group, preferredAcademicYear, team.operationalMemberships]);
+  const sharedAcademicYear = operationalMembership?.academicYear ?? '';
+
   const relevantCases = useMemo(() => curriculumReviewCases.filter((reviewCase) => (
     reviewCaseMatchesCurrentUnit(reviewCase, curriculumUnit)
   )), [curriculumReviewCases, curriculumUnit]);
   const assignedCases = useMemo(() => relevantCases.filter((reviewCase) => {
     const shared = getSharedReviewCaseContext(reviewCase);
     return shared?.source === 'SERVER_ASSIGNMENT'
-      && shared.academicYear === academicYear
+      && shared.academicYear === sharedAcademicYear
       && shared.discipline === discipline
       && (!group || shared.groupCode === group.code);
-  }), [academicYear, discipline, group, relevantCases]);
+  }), [discipline, group, relevantCases, sharedAcademicYear]);
   const selectedRole = team.selectedMembership?.role;
   const canAssign = selectedRole === 'dipartimento' || selectedRole === 'referente';
   const publishableCases = useMemo(() => relevantCases.filter((reviewCase) => (
@@ -70,13 +84,13 @@ export function SharedReviewCaseInbox({ order, targetClass, discipline, academic
   ), [team.selectedMembership, team.session]);
 
   const syncAssigned = useCallback(async (silent = false) => {
-    if (!repository || !context || !group) return;
+    if (!repository || !context || !group || !operationalMembership) return;
     if (!silent) setBusy(true);
     setMessage(null);
     try {
       const assigned = await repository.listMyAssignedCases(context, {
         workspaceId: context.membership.workspaceId,
-        academicYear,
+        academicYear: operationalMembership.academicYear,
         groupCode: group.code,
         discipline,
       });
@@ -94,21 +108,25 @@ export function SharedReviewCaseInbox({ order, targetClass, discipline, academic
     } finally {
       if (!silent) setBusy(false);
     }
-  }, [academicYear, context, discipline, group, repository]);
+  }, [context, discipline, group, operationalMembership, repository]);
 
   useEffect(() => {
     if (!team.configured || !team.session || !team.selectedMembership || !group) return;
+    if (!operationalMembership) {
+      setMessage('La membership operativa verificata non espone un anno univoco per questa disciplina e questo gruppo.');
+      return;
+    }
     void syncAssigned(true);
-  }, [group, syncAssigned, team.configured, team.selectedMembership?.workspaceId, team.session?.user.id]);
+  }, [group, operationalMembership, syncAssigned, team.configured, team.selectedMembership?.workspaceId, team.session?.user.id]);
 
   const publish = async (reviewCase: CurriculumReviewCase) => {
-    if (!repository || !context || !group || !canAssign) return;
+    if (!repository || !context || !group || !canAssign || !operationalMembership) return;
     setBusy(true);
     setMessage(null);
     try {
       const receipt = await repository.publishCase(context, {
         workspaceId: context.membership.workspaceId,
-        academicYear,
+        academicYear: operationalMembership.academicYear,
         groupCode: group.code,
         discipline,
         reviewCase,
@@ -150,15 +168,21 @@ export function SharedReviewCaseInbox({ order, targetClass, discipline, academic
   if (assignedCases.length === 0 && publishableCases.length === 0 && !message) return null;
 
   return (
-    <section className="rounded-2xl border border-indigo-200 bg-white p-4 shadow-sm" data-shared-review-case-inbox data-last-sync-at={lastSyncAt ?? ''}>
+    <section className="rounded-2xl border border-indigo-200 bg-white p-4 shadow-sm" data-shared-review-case-inbox data-last-sync-at={lastSyncAt ?? ''} data-shared-academic-year={sharedAcademicYear}>
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <span className="text-[10px] font-black uppercase tracking-wide text-indigo-700">Riesame condiviso</span>
           <h2 className="mt-1 text-sm font-extrabold text-slate-900">Casi assegnati al mio gruppo</h2>
           <p className="mt-1 text-xs leading-5 text-slate-600">Arena mostra soltanto i casi che il server assegna alla tua membership attiva e alla tua competenza disciplinare. Ricevere un caso non avvia automaticamente la validazione.</p>
         </div>
-        <button type="button" disabled={busy} onClick={() => void syncAssigned()} className="min-h-10 rounded-xl border border-indigo-200 bg-indigo-50 px-3 py-2 text-xs font-bold text-indigo-800 disabled:opacity-40">{busy ? 'Aggiornamento…' : 'Aggiorna casi'}</button>
+        <button type="button" disabled={busy || !operationalMembership} onClick={() => void syncAssigned()} className="min-h-10 rounded-xl border border-indigo-200 bg-indigo-50 px-3 py-2 text-xs font-bold text-indigo-800 disabled:opacity-40">{busy ? 'Aggiornamento…' : 'Aggiorna casi'}</button>
       </div>
+
+      {operationalMembership && (
+        <p className="mt-3 rounded-lg bg-slate-50 p-3 text-[11px] leading-5 text-slate-600" data-operational-review-scope>
+          Ambito operativo verificato: {operationalMembership.academicYear} · {group.code} · {discipline} · {operationalMembership.membershipState === 'FORMALIZZATO' ? 'formalizzato' : 'operativo provvisorio'}.
+        </p>
+      )}
 
       {assignedCases.length > 0 && (
         <div className="mt-4 space-y-2" data-assigned-review-case-list>
@@ -189,7 +213,7 @@ export function SharedReviewCaseInbox({ order, targetClass, discipline, academic
         </div>
       )}
 
-      {canAssign && publishableCases.length > 0 && (
+      {canAssign && publishableCases.length > 0 && operationalMembership && (
         <div className="mt-4 border-t border-slate-100 pt-4" data-review-case-assignment-actions>
           <strong className="text-xs text-slate-800">Casi locali da assegnare</strong>
           <p className="mt-1 text-[11px] leading-5 text-slate-500">L’assegnazione è un’azione distinta dall’apertura del caso. Il server individua i partecipanti attivi e competenti; non puoi autoattribuire ruoli o membership.</p>
