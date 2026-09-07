@@ -87,7 +87,7 @@ for (const key of [
   'case_scoped_session_single_dominant_progression_implemented',
 ]) assert(state[key] === true, `stato prodotto non registra ${key}`);
 assert(state.target_ui_fully_implemented === false, 'la discovery non deve dichiarare completa tutta la UI target');
-assert(state.human_end_to_end_pilot_complete === false, 'la discovery non conclude da sola il pilota umano');
+assert(state.human_end_to_end_pilot_complete === true, 'il pilota umano multi-attore deve risultare concluso solo dopo la prova reale');
 
 const flows = readText('docs/04_product_experience/09_USER_FLOWS.md');
 for (const token of [
