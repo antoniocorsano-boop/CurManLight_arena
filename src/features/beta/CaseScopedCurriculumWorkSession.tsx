@@ -4,7 +4,6 @@ import {
   completeCaseWorkSession,
   getCaseScopedProposals,
   isCasePersonalReviewComplete,
-  pauseCaseWorkSession,
   recordCaseDecision,
   resetCaseDecision,
   transitionCaseWorkSessionStage,
@@ -25,18 +24,6 @@ type Props = {
 
 const emptyShare = (count: number): CaseScopedContributionPersistenceState => ({ requiredCount: count, persistedCurrentCount: 0, complete: false });
 const emptyTeam = (): CaseScopedTeamCoordinationState => ({ total: 0, resolvedCount: 0, remainingOutcomeCount: 0, allCurrentOutcomesRecorded: false, canRecordTeamOutcome: false });
-
-const activeRoleLabel = (role: string | null): string => {
-  switch (role) {
-    case 'docente': return 'Docente';
-    case 'dipartimento': return 'Dipartimento';
-    case 'referente': return 'Referente';
-    case 'collegio': return 'Collegio';
-    case 'dirigente': return 'Dirigente';
-    case 'amministratore': return 'Amministratore';
-    default: return 'Identità in verifica';
-  }
-};
 
 const updateStoredCase = (reviewCaseId: string, updater: (reviewCase: CurriculumReviewCase) => CurriculumReviewCase) => {
   useCurriculumStore.setState((state) => ({
@@ -75,8 +62,6 @@ export function CaseScopedCurriculumWorkSession({ reviewCase, availableProposals
   const currentDecision = current ? session.decisions[current.id] : undefined;
   const currentCustomText = current ? session.customTexts[current.id] ?? '' : '';
   const activeRole = team.selectedMembership?.role ?? null;
-  const activeAccount = team.session?.user.email ?? team.session?.user.id ?? null;
-  const activeIdentityVerified = Boolean(team.session && team.selectedMembership);
   const isCoordinator = activeRole === 'dipartimento' || activeRole === 'referente';
 
   const replaceSession = (nextSession: NonNullable<CurriculumReviewCase['workSession']>, casePatch?: Partial<CurriculumReviewCase>) => {
@@ -92,7 +77,7 @@ export function CaseScopedCurriculumWorkSession({ reviewCase, availableProposals
       const nextPending = proposals.findIndex((proposal, proposalIndex) => proposalIndex > safeIndex && !next.decisions[proposal.id]);
       if (nextPending >= 0) setIndex(nextPending);
     } catch {
-      // The UI keeps the current card open; explicit validation messages are rendered below.
+      // La scheda corrente resta visibile; le transizioni non vengono anticipate.
     }
   };
 
@@ -112,7 +97,7 @@ export function CaseScopedCurriculumWorkSession({ reviewCase, availableProposals
       });
       replaceSession(next);
     } catch {
-      // Fail closed: a stage is never advanced when prerequisites are missing.
+      // Fail closed: nessuna fase avanza senza i prerequisiti correnti.
     }
   };
 
@@ -122,12 +107,10 @@ export function CaseScopedCurriculumWorkSession({ reviewCase, availableProposals
         const next = transitionCaseWorkSessionStage({ session, nextStage: 'SHARE' });
         replaceSession(next);
       } catch {
-        // Personal review may have changed; the session remains at EXAMINE in that case.
+        // Se il lavoro personale non è più completo, il dominio impedisce avanzamenti incoerenti.
       }
     }
   }, [session.stage, share.complete]);
-
-  const pause = () => replaceSession(pauseCaseWorkSession(session));
 
   const closeProfessionalSession = () => {
     if (!coordination.allCurrentOutcomesRecorded) return;
@@ -140,45 +123,12 @@ export function CaseScopedCurriculumWorkSession({ reviewCase, availableProposals
   };
 
   return (
-    <div className="space-y-3" data-case-scoped-curriculum-work-session data-review-case-id={reviewCase.id} data-work-session-stage={session.stage}>
-      <section className="rounded-2xl border border-indigo-300 bg-indigo-50 p-4">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-          <div>
-            <span className="text-[10px] font-black uppercase tracking-wide text-indigo-700">Riesame mirato · caso attivo</span>
-            <h1 className="mt-1 text-base font-extrabold text-indigo-950">Lavora solo sulle {proposals.length} schede del caso</h1>
-            <p className="mt-1 text-xs leading-5 text-indigo-800">{reviewCase.scopeReason}</p>
-            <div
-              className={`mt-3 rounded-xl border px-3 py-2 ${activeIdentityVerified ? 'border-indigo-200 bg-white/90 text-indigo-950' : 'border-amber-200 bg-amber-50 text-amber-950'}`}
-              data-case-active-identity
-              data-case-active-role={activeRole ?? 'unverified'}
-              data-case-active-user-id={team.session?.user.id ?? 'unverified'}
-            >
-              <p className="text-xs font-bold">Stai lavorando come: <span className="font-extrabold">{activeRoleLabel(activeRole)}</span></p>
-              <p className="mt-0.5 break-all text-[11px] leading-4 opacity-80">
-                {activeIdentityVerified && activeAccount
-                  ? activeAccount
-                  : 'Identità del team in verifica. Non condividere finché account e ruolo non sono visibili.'}
-              </p>
-            </div>
-          </div>
-          <button type="button" onClick={pause} className="min-h-10 rounded-xl border border-indigo-300 bg-white px-3 py-2 text-xs font-bold text-indigo-900">Esci dal caso</button>
-        </div>
-        <div className="mt-3 grid grid-cols-4 gap-1.5" aria-label="Avanzamento del riesame mirato">
-          {(['EXAMINE','SHARE','COMPARE','RECORD_TEAM_OUTCOME'] as const).map((step, stepIndex) => {
-            const currentIndex = ['EXAMINE','SHARE','COMPARE','RECORD_TEAM_OUTCOME'].indexOf(session.stage);
-            const state = stepIndex < currentIndex ? 'complete' : stepIndex === currentIndex ? 'active' : 'future';
-            const labels = ['Esamina','Condividi','Confronta','Esito'];
-            return <div key={step} data-case-work-session-step={step} data-case-work-session-step-state={state} className={`rounded-lg border px-2 py-2 text-center text-[10px] font-bold ${state === 'complete' ? 'border-emerald-200 bg-emerald-50 text-emerald-800' : state === 'active' ? 'border-indigo-300 bg-white text-indigo-800' : 'border-slate-200 bg-slate-50 text-slate-400'}`}>{labels[stepIndex]}</div>;
-          })}
-        </div>
-        <p className="mt-3 text-[11px] leading-5 text-indigo-800">Caso {reviewCase.id} · master {reviewCase.currentMaster.version}. Le decisioni della sessione generale non vengono importate.</p>
-      </section>
-
+    <div className="space-y-3" data-case-scoped-curriculum-work-session data-review-case-id={reviewCase.id} data-work-session-stage={session.stage} data-case-content-hierarchy="CURRENT_TASK_ONLY">
       {session.stage === 'EXAMINE' && current && (
-        <section className="space-y-3 rounded-2xl border border-slate-200 bg-white p-4" data-case-review-examine>
+        <section className="space-y-3 rounded-2xl border border-slate-200 bg-white p-4" data-case-review-examine data-hcm-level="1">
           <div className="flex items-center justify-between gap-3">
             <span className="text-xs font-bold text-slate-500">Scheda {safeIndex + 1} di {proposals.length}</span>
-            <span className="text-xs font-bold text-indigo-700">{preparedCount}/{proposals.length} esaminate nel caso</span>
+            <span className="text-xs font-bold text-indigo-700">{preparedCount}/{proposals.length} esaminate</span>
           </div>
           <div>
             {current.scopeLabel && <p className="text-[10px] font-bold uppercase tracking-wide text-slate-400">{current.scopeLabel}</p>}
@@ -190,7 +140,7 @@ export function CaseScopedCurriculumWorkSession({ reviewCase, availableProposals
           </div>
           {currentDecision ? (
             <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-xs text-emerald-900">
-              <strong>Orientamento del caso registrato</strong>
+              <strong>Orientamento registrato</strong>
               <span className="mt-1 block">{currentDecision === 'approved' ? 'Conferma della proposta' : currentDecision === 'rejected' ? 'Mantenimento del testo precedente' : `Modifica proposta: ${currentCustomText}`}</span>
               <button type="button" onClick={reset} className="mt-2 min-h-9 rounded-lg border border-emerald-300 bg-white px-3 text-xs font-bold">Rivedi questa scelta</button>
             </div>
@@ -212,7 +162,7 @@ export function CaseScopedCurriculumWorkSession({ reviewCase, availableProposals
           <div className="flex flex-wrap gap-2">
             {safeIndex > 0 && <button type="button" onClick={() => setIndex(safeIndex - 1)} className="min-h-10 rounded-xl border border-slate-200 px-3 text-xs font-bold">Precedente</button>}
             {safeIndex < proposals.length - 1 && <button type="button" onClick={() => setIndex(safeIndex + 1)} className="min-h-10 rounded-xl border border-slate-200 px-3 text-xs font-bold">Successiva</button>}
-            {personalComplete && <button type="button" onClick={() => setStage('SHARE')} data-human-next-action="share-case-contribution" className="min-h-10 rounded-xl bg-indigo-700 px-4 text-xs font-bold text-white">Passa alla condivisione del caso</button>}
+            {personalComplete && <button type="button" onClick={() => setStage('SHARE')} data-human-next-action="share-case-contribution" className="min-h-10 rounded-xl bg-indigo-700 px-4 text-xs font-bold text-white">Passa alla condivisione</button>}
           </div>
         </section>
       )}
@@ -222,9 +172,9 @@ export function CaseScopedCurriculumWorkSession({ reviewCase, availableProposals
           <CaseScopedTeamContributionPublisher reviewCaseId={reviewCase.id} proposals={proposals} decisions={session.decisions} customTexts={session.customTexts} discipline={discipline} order={order} academicYear={academicYear} onPersistenceStateChange={setShare} />
           {share.complete && isCoordinator && <button type="button" onClick={() => setStage('COMPARE')} data-human-next-action="compare-case-team" className="min-h-11 w-full rounded-xl bg-indigo-700 px-4 py-3 text-sm font-bold text-white">Apri il confronto del caso</button>}
           {share.complete && !isCoordinator && (
-            <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4"><strong className="text-sm text-emerald-950">Il tuo contributo al caso è condiviso</strong><p className="mt-1 text-xs text-emerald-800">Per ora il tuo compito termina qui. Il coordinatore proseguirà quando il gruppo avrà la copertura richiesta.</p><div className="mt-3"><CaseScopedTeamCoordinationWorkspace reviewCaseId={reviewCase.id} proposals={proposals} discipline={discipline} order={order} academicYear={academicYear} mode="status" /></div></div>
+            <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4"><strong className="text-sm text-emerald-950">Il tuo contributo è condiviso</strong><p className="mt-1 text-xs text-emerald-800">Per ora il tuo compito termina qui. Il coordinatore proseguirà quando il gruppo avrà la copertura richiesta.</p><div className="mt-3"><CaseScopedTeamCoordinationWorkspace reviewCaseId={reviewCase.id} proposals={proposals} discipline={discipline} order={order} academicYear={academicYear} mode="status" /></div></div>
           )}
-          <button type="button" onClick={() => setStage('EXAMINE')} className="min-h-10 rounded-xl border border-slate-200 bg-white px-3 text-xs font-bold text-slate-700">Rivedi il contributo del caso</button>
+          <button type="button" onClick={() => setStage('EXAMINE')} className="min-h-10 rounded-xl border border-slate-200 bg-white px-3 text-xs font-bold text-slate-700">Rivedi il contributo</button>
         </div>
       )}
 
@@ -243,10 +193,10 @@ export function CaseScopedCurriculumWorkSession({ reviewCase, availableProposals
       )}
 
       {coordination.allCurrentOutcomesRecorded && session.stage === 'COMPARE' && (
-        <section className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4" data-case-professional-review-ready-to-close>
+        <section className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4" data-case-professional-review-ready-to-close data-hcm-level="1">
           <strong className="text-sm text-emerald-950">Tutti gli esiti professionali del caso sono registrati</strong>
-          <p className="mt-1 text-xs leading-5 text-emerald-800">La chiusura di questa sessione non modifica il master e non equivale a decisione istituzionale.</p>
-          <button type="button" onClick={closeProfessionalSession} className="mt-3 min-h-11 rounded-xl bg-emerald-700 px-4 py-2 text-sm font-bold text-white">Chiudi la sessione professionale del caso</button>
+          <p className="mt-1 text-xs leading-5 text-emerald-800">Puoi concludere il lavoro professionale. La conclusione non modifica il master e non equivale a una decisione istituzionale.</p>
+          <button type="button" onClick={closeProfessionalSession} data-human-next-action="complete-case-professional-review" className="mt-3 min-h-11 rounded-xl bg-emerald-700 px-4 py-2 text-sm font-bold text-white">Concludi il riesame professionale</button>
         </section>
       )}
     </div>
