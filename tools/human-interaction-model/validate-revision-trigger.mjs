@@ -201,11 +201,12 @@ for (const key of [
   'revision_trigger_single_existing_surface_integration_implemented',
   'revision_trigger_ux_implemented',
 ]) assert(state[key] === true, `stato prodotto non registra ${key}`);
-assert(docs.version === '1.0.12', 'versione registro documentazione prodotto inattesa');
+assert(docs.version === '1.0.13', 'versione registro documentazione prodotto inattesa');
 assert(state.curriculum_review_case_domain_model_implemented === true, 'il successivo caso mirato non risulta implementato');
 assert(state.curriculum_review_case_professional_validation_not_auto_started === true, 'l’apertura del caso non deve avviare automaticamente H2');
 assert(state.targeted_review_case_work_session_case_scoping_implemented === true, 'la sessione case-scoped deve risultare implementata');
-assert(state.shared_review_case_discovery_implemented === false, 'la discovery condivisa dei casi non deve essere anticipata');
+assert(state.shared_review_case_discovery_implemented === true, 'la discovery condivisa dei casi deve risultare implementata');
+assert(state.shared_review_case_hydration_never_starts_h2_automatically === true, 'la discovery non deve avviare automaticamente H2');
 assert(state.revision_trigger_new_primary_surface_created === false, 'l’incremento non deve creare una nuova superficie primaria');
 assert(state.target_ui_fully_implemented === false, 'implementazione RevisionTrigger non deve dichiarare completa la UI target');
 assert(state.human_end_to_end_pilot_complete === false, 'implementazione RevisionTrigger non deve dichiarare concluso il pilota umano');
