@@ -14,7 +14,9 @@ on:
       - 'src/features/progettazione/**'
       - 'src/domain/curriculum/didacticBinding.ts'
       - 'src/domain/curriculum/implementationObservation.ts'
+      - 'src/domain/curriculum/revisionTrigger.ts'
       - 'src/types/curriculum.ts'
+      - 'src/store/useCurriculumStore.ts'
       - 'src/features/documents/components/EsportazioniTab.tsx'
       - 'src/features/documents/components/SecondBrainTab.tsx'
       - 'src/features/documents/components/KnowledgeModals.tsx'
@@ -23,6 +25,7 @@ on:
       - 'src/features/documents/lib/**'
       - 'src/__tests__/knowledge-experience-shell.test.ts'
       - 'src/__tests__/implementation-observation.test.ts'
+      - 'src/__tests__/revision-trigger.test.ts'
       - 'scripts/audit-kx-mobile.cjs'
       - 'src/features/beta/**'
       - 'src/domain/revision/**'
@@ -58,5 +61,7 @@ jobs:
         run: node tools/human-interaction-model/validate-curriculum-lifecycle.mjs
       - name: Validate practice review implementation
         run: node tools/human-interaction-model/validate-practice-review.mjs
+      - name: Validate practice revision trigger qualification
+        run: node tools/human-interaction-model/validate-revision-trigger.mjs
       - name: Validate canonical product documentation
         run: node tools/human-interaction-model/validate-product-docs.mjs
