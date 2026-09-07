@@ -67,6 +67,8 @@ jobs:
           node-version: '22'
       - name: Validate HIM installation and CCO
         run: node tools/human-interaction-model/validate.mjs .
+      - name: Validate UX process awareness and viewport continuity
+        run: node tools/human-interaction-model/validate-ux-process-awareness.mjs
       - name: Validate curriculum professional lifecycle
         run: node tools/human-interaction-model/validate-curriculum-lifecycle.mjs
       - name: Validate practice review implementation
