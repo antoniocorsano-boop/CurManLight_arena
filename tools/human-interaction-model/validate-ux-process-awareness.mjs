@@ -110,8 +110,29 @@ for (const token of [
   'data-case-completion-awaiting-acknowledgement',
   'data-general-review-primary-work',
   'data-general-review-assignment-support',
+  'returnToGeneralRequested',
+  "window.scrollTo({ top: 0, left: 0, behavior: 'auto' })",
+  'data-general-return-anchor',
+  'UX_CONSOLIDATION_R1_1',
 ]) assert(caseAware.includes(token), `CaseAwareRevisionSurface priva del presidio UX: ${token}`);
 assert(caseAware.indexOf('<RevisionWorkspace') < caseAware.indexOf('<SharedReviewCaseInbox'), 'il lavoro generale deve precedere il supporto di assegnazione');
+
+const generalWorkspace = readText('src/features/beta/RevisionWorkspace.tsx');
+for (const token of [
+  "type ExamineSurface = 'OVERVIEW' | 'PERSONAL_REVIEW' | 'REOPEN_CASE'",
+  'data-examine-surface=',
+  'data-general-review-overview',
+  'data-human-next-action="open-personal-review"',
+  'data-human-secondary-action="open-targeted-review-tools"',
+  "examineSurface === 'PERSONAL_REVIEW'",
+  "examineSurface === 'REOPEN_CASE'",
+  'data-targeted-review-tools',
+  'Torna alla panoramica',
+]) assert(generalWorkspace.includes(token), `Riesame generale privo del consolidamento verticale: ${token}`);
+assert(
+  generalWorkspace.indexOf("examineSurface === 'REOPEN_CASE'") < generalWorkspace.indexOf('<RevisionTriggerQualificationPanel'),
+  'gli strumenti di riapertura devono essere subordinati a una scelta esplicita',
+);
 
 const sessionUi = readText('src/features/beta/CaseScopedCurriculumWorkSession.tsx');
 for (const token of [
