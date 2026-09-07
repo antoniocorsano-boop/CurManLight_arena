@@ -41,6 +41,7 @@ export function UdaDetailModal({
     archiviata: { label: 'Archiviata', color: 'bg-slate-400' },
   };
   const status = statusLabel[selectedUda.status] ?? { label: selectedUda.status, color: 'bg-slate-400' };
+  const didacticBinding = selectedUda.curriculumBindings?.[0];
   return (
     <div role="dialog" aria-modal="true" className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[150] flex items-center justify-center p-4">
      <div className="bg-white border border-slate-200 max-w-3xl w-full rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] md:max-h-[85vh] h-auto fade-in text-left">
@@ -55,6 +56,37 @@ export function UdaDetailModal({
       </div>
        <div className="p-6 overflow-y-auto space-y-6 text-xs text-slate-700 flex-1 leading-relaxed">
         {institutionalProfile.warning && <div role="status" className="border border-amber-300 bg-amber-50 text-amber-900 rounded-lg px-3 py-2 font-semibold">{institutionalProfile.warning} Puoi comunque usare le esportazioni personali o dimostrative.</div>}
+        {didacticBinding && (
+          <section
+            data-didactic-binding="canonical-master-reference"
+            className={`rounded-xl border p-4 ${didacticBinding.curriculumInForce ? 'border-emerald-200 bg-emerald-50/60' : 'border-amber-200 bg-amber-50/70'}`}
+          >
+            <div className="flex flex-wrap items-start justify-between gap-2">
+              <div>
+                <span className="text-[10px] font-black uppercase tracking-wider text-indigo-600">Collegamento al curricolo</span>
+                <p className="mt-1 font-bold text-slate-800">
+                  {didacticBinding.curriculumUnit.masterId}@{didacticBinding.curriculumUnit.masterVersion} · {didacticBinding.curriculumUnit.order} · {didacticBinding.curriculumUnit.classOrAgeBand.replace(/-/g, ' ')} · {didacticBinding.curriculumUnit.disciplineOrField}
+                </p>
+              </div>
+              <span className={`rounded-full px-2.5 py-1 text-[9px] font-black uppercase tracking-wider ${didacticBinding.curriculumInForce ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-900'}`}>
+                {didacticBinding.curriculumInForce ? 'Curricolo vigente' : 'Riferimento di lavoro'}
+              </span>
+            </div>
+            {!didacticBinding.curriculumInForce && (
+              <p className="mt-2 text-[11px] font-semibold leading-relaxed text-amber-900">
+                Il master collegato è ancora in validazione professionale e non è vigente. Questo collegamento documenta la provenienza della bozza didattica, ma non anticipa approvazione o adozione.
+              </p>
+            )}
+            <details className="mt-3 border-t border-slate-200/80 pt-2" data-didactic-binding-traceability>
+              <summary className="cursor-pointer text-[10px] font-bold text-slate-600">Tracciabilità del collegamento</summary>
+              <dl className="mt-2 grid gap-1 text-[10px] text-slate-600">
+                <div><dt className="inline font-bold">Chiave unità: </dt><dd className="inline font-mono break-all">{didacticBinding.curriculumUnit.unitKey}</dd></div>
+                <div><dt className="inline font-bold">Stato risoluzione: </dt><dd className="inline">{didacticBinding.curriculumUnit.resolutionState}</dd></div>
+                <div><dt className="inline font-bold">Uso: </dt><dd className="inline">{didacticBinding.useScope}</dd></div>
+              </dl>
+            </details>
+          </section>
+        )}
        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 bg-slate-50 p-4 border rounded-xl font-semibold">
         <div><span className="text-[10px] text-slate-400 uppercase tracking-wider block"> Codice Identificativo</span><span className="text-xs text-slate-800 font-mono">{selectedUda.id}</span></div>
         <div><span className="text-[10px] text-slate-400 uppercase tracking-wider block"> Monte Ore Previsto</span><span className="text-xs text-slate-800">{selectedUda.hours} Ore</span></div>
