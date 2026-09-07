@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import { X, Code, Copy } from 'lucide-react';
 import type { UdaModel } from '../../../types/curriculum';
 import type { A07InstitutionalDocumentRead } from '../../../domain/institution';
+import { ImplementationObservationPanel } from './ImplementationObservationPanel';
 
 export interface UdaDetailModalProps {
   selectedUda: UdaModel | null;
@@ -87,6 +88,7 @@ export function UdaDetailModal({
             </details>
           </section>
         )}
+        <ImplementationObservationPanel uda={selectedUda} onUdaUpdated={setSelectedUda} />
        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 bg-slate-50 p-4 border rounded-xl font-semibold">
         <div><span className="text-[10px] text-slate-400 uppercase tracking-wider block"> Codice Identificativo</span><span className="text-xs text-slate-800 font-mono">{selectedUda.id}</span></div>
         <div><span className="text-[10px] text-slate-400 uppercase tracking-wider block"> Monte Ore Previsto</span><span className="text-xs text-slate-800">{selectedUda.hours} Ore</span></div>
