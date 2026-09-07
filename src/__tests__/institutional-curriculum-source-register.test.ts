@@ -10,6 +10,8 @@ import currentPanelSource from '../features/documents/components/InstituteCurren
 import panelSource from '../features/documents/components/InstituteCurriculumSourceRegisterPanel.tsx?raw';
 import localRegistrySource from '../features/documents/components/FontiTab.tsx?raw';
 import workspaceSource from '../features/documents/components/FontiWorkspace.tsx?raw';
+import appViewsSource from '../features/session/components/AppViewsLayer.tsx?raw';
+import qualificationPanelSource from '../features/curriculum/components/RevisionTriggerQualificationPanel.tsx?raw';
 
 describe('institutional curriculum source register', () => {
   it('binds ALL-CURR-A 1.1 to the current master 1.3 without creating a competing baseline', () => {
@@ -71,7 +73,7 @@ describe('institutional curriculum source register', () => {
 
   it('places master, institutional sources and local archive in the intended hierarchy', () => {
     const currentMasterIndex = workspaceSource.indexOf('<InstituteCurrentSourcePanel />');
-    const sourceRegisterIndex = workspaceSource.indexOf('<InstituteCurriculumSourceRegisterPanel />');
+    const sourceRegisterIndex = workspaceSource.indexOf('<InstituteCurriculumSourceRegisterPanel onRequestNormativeReview={onRequestNormativeReview} />');
     const localRegistryIndex = workspaceSource.indexOf('<SourceRegistry {...props} />');
     expect(currentMasterIndex).toBeGreaterThan(-1);
     expect(sourceRegisterIndex).toBeGreaterThan(currentMasterIndex);
@@ -104,6 +106,27 @@ describe('institutional curriculum source register', () => {
     expect(panelSource).toContain('Apri la fonte ufficiale');
     expect(panelSource).toContain('Apri la copia istituzionale di trasmissione');
     expect(panelSource).toContain('Verifica della fonte ≠ validazione del contenuto curricolare ≠ decisione istituzionale ≠ curricolo vigente.');
+  });
+
+  it('routes only the qualified institutional repertory to the existing revision surface', () => {
+    expect(panelSource).toContain('data-source-review-action');
+    expect(panelSource).toContain('Valuta l’impatto sul curricolo');
+    expect(panelSource).toContain('onRequestNormativeReview(source.code)');
+    expect(panelSource).toContain('non crea automaticamente un caso e non modifica il master');
+    expect(workspaceSource).toContain('onRequestNormativeReview={onRequestNormativeReview}');
+    expect(appViewsSource).toContain('setNormativeReviewSourceCode(sourceCode)');
+    expect(appViewsSource).toContain("safeHandleTabSwitch('revisione')");
+    expect(appViewsSource).toContain('initialNormativeSourceCode={normativeReviewSourceCode}');
+    expect(qualificationPanelSource).toContain('INSTITUTE_CURRICULUM_AUTHORITATIVE_SOURCES');
+    expect(qualificationPanelSource).toContain("sourceQualification: 'QUALIFIED'");
+    expect(qualificationPanelSource).not.toContain('customKbDocs');
+  });
+
+  it('does not create a new primary route for normative review', () => {
+    expect(appViewsSource).not.toContain("'revision-trigger'");
+    expect(appViewsSource).not.toContain("'normative-review'");
+    expect(appViewsSource).not.toContain("'periodic-review'");
+    expect(appViewsSource).toContain("'dashboard', 'curricolo', 'revisione'");
   });
 
   it('demotes the legacy/local registry to one collapsed tertiary surface and removes the duplicate Fonti header', () => {
