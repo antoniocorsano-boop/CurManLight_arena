@@ -1,6 +1,6 @@
 {
   "registry_id": "ARENA-PRODUCT-DOCS",
-  "version": "1.0.11",
+  "version": "1.0.12",
   "date": "2026-09-07",
   "product_vision": {
     "id": "ARENA-PRODUCT-VISION",
@@ -121,7 +121,19 @@
     "curriculum_review_case_never_creates_parallel_baseline": true,
     "curriculum_review_case_ux_implemented": true,
     "curriculum_review_case_reuses_revision_surface": true,
-    "targeted_review_case_work_session_case_scoping_implemented": false,
+    "targeted_review_case_work_session_case_scoping_implemented": true,
+    "case_scoped_curriculum_work_session_domain_implemented": true,
+    "case_scoped_curriculum_work_session_reuses_revision_surface": true,
+    "case_scoped_session_uses_only_frozen_case_proposals": true,
+    "case_scoped_session_starts_without_decision_carry_forward": true,
+    "case_scoped_session_persists_local_progress_with_review_case": true,
+    "case_scoped_session_single_dominant_progression_implemented": true,
+    "case_scoped_professional_contributions_require_review_case_identity": true,
+    "case_scoped_professional_contribution_fingerprint_includes_review_case": true,
+    "case_scoped_team_outcomes_require_same_review_case_coverage": true,
+    "case_scoped_server_receipts_preserve_general_review_history": true,
+    "case_scoped_session_never_advances_institutional_state_automatically": true,
+    "shared_review_case_discovery_implemented": false,
     "target_ui_fully_implemented": false,
     "human_end_to_end_pilot_complete": false
   }
