@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import guardMigration from '../../supabase/migrations/20260907071500_team_review_case_assignment_authority.sql?raw';
+import actorFixMigration from '../../supabase/migrations/20260907072000_fix_team_review_case_assignment_guard_actor.sql?raw';
 import discoveryMigration from '../../supabase/migrations/20260907064000_shared_curriculum_review_case_discovery.sql?raw';
 import caseScopeMigration from '../../supabase/migrations/20260907043000_team_review_case_scope.sql?raw';
 
@@ -17,6 +18,14 @@ describe('shared CurriculumReviewCase server authority', () => {
       'team_review_contributions_case_assignment_guard',
       'team_review_outcomes_case_assignment_guard',
     ]) expect(guardMigration).toContain(token);
+  });
+
+  it('resolves the polymorphic trigger actor without referencing a missing NEW field', () => {
+    expect(actorFixMigration).toContain('v_row jsonb := to_jsonb(new)');
+    expect(actorFixMigration).toContain("v_row->>'contributor_user_id'");
+    expect(actorFixMigration).toContain("v_row->>'recorded_by_user_id'");
+    expect(actorFixMigration).toContain('SHARED_REVIEW_CASE_SCOPE_REQUIRED');
+    expect(actorFixMigration).toContain('SHARED_REVIEW_CASE_ASSIGNMENT_REQUIRED');
   });
 
   it('preserves general review while protecting SECURITY DEFINER case-scoped writes at table level', () => {
