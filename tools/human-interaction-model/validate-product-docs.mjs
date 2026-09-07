@@ -289,7 +289,13 @@ if (registry) {
   for (const key of requiredTrueStates) assert(state[key] === true, `stato prodotto attivo: ${key}`);
   assert(state.revision_trigger_new_primary_surface_created === false, 'nessuna nuova superficie primaria per RevisionTrigger');
   assert(state.target_ui_fully_implemented === false, 'la documentazione non simula UI target già implementata');
-  assert(state.human_end_to_end_pilot_complete === false, 'la documentazione non simula pilota umano concluso');
+  assert(state.human_end_to_end_pilot_complete === true, 'la documentazione registra il pilot umano multi-attore completato');
+
+  const pilotProof = readJson('docs/04_product_experience/evidence/HUMAN_MULTI_ACTOR_SHARED_REVIEW_CASE_END_TO_END_PROOF_2026-09-07.json');
+  assert(pilotProof.pilot_result === 'PASS', 'ricevuta pilot umano PASS');
+  assert(pilotProof.human_end_to_end_pilot_complete === true, 'ricevuta pilot umano conclusa');
+  assert(pilotProof.authority_non_consequences_verified?.matching_institutional_decisions === 0, 'pilot senza decisione istituzionale automatica');
+  assert(pilotProof.team_professional_outcome?.outcome === 'defer', 'pilot registra esito professionale defer');
 }
 
 for (const item of passes) console.log(`PASS ${item}`);
