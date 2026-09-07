@@ -3,7 +3,7 @@
 **Versione:** 1.5.0  
 **Stato:** normativo per le nuove superfici e per le superfici migrate  
 **Integrazione:** Human Interaction Model (HIM) e `CURRICULUM_LIFECYCLE@1.2.0`  
-**Registro superfici:** 1.6.0
+**Registro superfici:** 1.6.1
 
 ## 1. Scopo
 
@@ -194,7 +194,7 @@ Il **Registro delle superfici** è:
 
 `.human/operational-communication.surfaces.json`
 
-Il validatore HIM controlla gli invarianti del contratto, le superfici pilota e lo stato di migrazione delle superfici registrate.
+Il validatore HIM controlla gli invarianti del contratto, le superfici pilota e lo stato delle superfici registrate.
 
 ## 12. Stato delle superfici
 
@@ -207,11 +207,11 @@ Il validatore HIM controlla gli invarianti del contratto, le superfici pilota e 
 | Lavoro del team legacy | **migration** | Restare solo compatibilità temporanea, non superficie primaria concorrente. |
 | Coordinamento del team interno generale | **conformant** | Renderer subordinato della sessione per stato, confronto e registrazione esito; non percorso autonomo. |
 | Profilo di lavoro personale | **guided-setup** | Configurazione iniziale senza confondere preferenze, incarichi e autorità. |
-| CaseAwareRevisionSurface | **migration** | Un solo contesto dominante anche in modalità generale; inbox subordinato e nessuna seconda gerarchia verticale. |
-| CaseScopedExperienceShell | **migration** | Completare rail di orientamento non interattiva, stabilità del viewport e conclusione nello stesso workframe. |
-| CaseScopedCurriculumWorkSession | **migration** | Eliminare testata/rail duplicate e lasciare al workframe solo il compito corrente. |
-| CaseScopedTeamContributionPublisher | **migration** | Portare persistenza e identificativi in L3, mantenendo in L1 solo effetto condiviso e azione. |
-| CaseScopedTeamCoordinationWorkspace | **migration** | Rendere Confronta ed Esito compiti distinti e tecnicamente subordinati nello stesso workframe. |
+| CaseAwareRevisionSurface | **conformant** | Contesti GENERAL e CASE_SCOPED percettivamente esclusivi; inbox subordinato e rientro al contesto generale dall'inizio. |
+| CaseScopedExperienceShell | **conformant** | Unica rail di orientamento, stabilità del workframe e conclusione prima del ritorno esplicito. |
+| CaseScopedCurriculumWorkSession | **conformant** | Solo compito corrente nel workframe, senza testata o rail duplicate. |
+| CaseScopedTeamContributionPublisher | **conformant** | Effetto condiviso e azione in L1; persistenza e identificativi in L3. |
+| CaseScopedTeamCoordinationWorkspace | **conformant** | Confronto ed esito distinti e subordinati nello stesso workframe. |
 | SharedReviewCaseInbox | **conformant** | Separazione L1/L2/L3 per casi assegnati e assegnabili. |
 | Navigazione primaria mobile | **conformant** | Il mio lavoro · Curricolo · Progettazione · Riesame; supporto documentale subordinato. |
 
@@ -301,4 +301,6 @@ Regola di consolidamento:
 
 > **Arena nasconde la complessità tecnica, non il senso del processo.**
 
-Il completamento di CCO-R7 richiede accettazione visiva reale, con riferimento mobile `390×844`, sulle superfici case-scoped registrate come `migration` in CCO-SURFACES 1.6.0.
+CCO-R7 ha superato l'accettazione visiva umana `HUMAN_VISUAL_RETEST_R1_1` del 7 settembre 2026 sulla candidata mobile reale. La prova ha verificato il rientro al principio del Riesame generale, un solo compito dominante, la subordinazione dei casi assegnati, la singola rail di processo e la non interferenza della navigazione primaria con l'azione corrente. La ricevuta è registrata in `docs/04_product_experience/evidence/HUMAN_VISUAL_RETEST_R1_1_2026-09-07.json`.
+
+Il Registro delle superfici `CCO-SURFACES@1.6.1` promuove quindi `CaseAwareRevisionSurface`, `CaseScopedExperienceShell`, `CaseScopedCurriculumWorkSession`, `CaseScopedTeamContributionPublisher` e `CaseScopedTeamCoordinationWorkspace` a **conformant**. Questa promozione riguarda esclusivamente la conformità comunicativa e percettiva delle superfici: non modifica `CURRICULUM_LIFECYCLE@1.2.0`, autorità, schema dati, master curricolare, decisioni istituzionali o stato di vigenza del curricolo.
