@@ -83,17 +83,19 @@ const routerBasename = resolveRouterBasename(import.meta.env.MODE, window.locati
 ReactDOM.createRoot(document.getElementById('root')!).render(
  <React.StrictMode>
   <ErrorBoundary>
-   {betaIdentityQueryEntry ? (
-    <BetaIdentityPage />
-   ) : (
-    <BrowserRouter basename={routerBasename}>
-     <Routes>
-      <Route path="/beta-identity" element={<BetaIdentityPage />} />
-      <Route path="*" element={<App />} />
-     </Routes>
-     <HvaRecorder />
-    </BrowserRouter>
-   )}
+   <BrowserRouter basename={routerBasename}>
+    {betaIdentityQueryEntry ? (
+     <BetaIdentityPage />
+    ) : (
+     <>
+      <Routes>
+       <Route path="/beta-identity" element={<BetaIdentityPage />} />
+       <Route path="*" element={<App />} />
+      </Routes>
+      <HvaRecorder />
+     </>
+    )}
+   </BrowserRouter>
   </ErrorBoundary>
  </React.StrictMode>,
 )
