@@ -1,6 +1,12 @@
 import type {
+  CurriculumUnitReference,
+  ExternalNormativeRevisionTrigger,
+  ExternalNormativeSourceType,
   ImplementationObservation,
   ImplementationSignal,
+  InstituteNeedRevisionTrigger,
+  PeriodicReviewRevisionTrigger,
+  PracticeRevisionTrigger,
   RevisionTrigger,
 } from '../../types/curriculum';
 
@@ -16,16 +22,65 @@ export const PRACTICE_TRIGGER_ELIGIBLE_SIGNALS: readonly ImplementationSignal[] 
 
 export interface PracticeTriggerQualification {
   qualified: boolean;
-  basis?: RevisionTrigger['qualificationBasis'];
+  basis?: PracticeRevisionTrigger['qualificationBasis'];
   recurringSignal?: ImplementationSignal;
   recurringCount: number;
   relatedObservations: ImplementationObservation[];
 }
 
-const normalizeReason = (value: string | undefined): string | undefined => {
+const normalizeText = (value: string | undefined, maxLength = 800): string | undefined => {
   const trimmed = value?.trim();
   if (!trimmed) return undefined;
-  return trimmed.slice(0, 800);
+  return trimmed.slice(0, maxLength);
+};
+
+const requireText = (value: string | undefined, errorCode: string, maxLength = 800): string => {
+  const normalized = normalizeText(value, maxLength);
+  if (!normalized) throw new Error(errorCode);
+  return normalized;
+};
+
+const assertCurrentMasterReference = (curriculumUnit: CurriculumUnitReference): void => {
+  if (
+    curriculumUnit.masterId !== 'CAN-CURR-MASTER-00'
+    || !normalizeText(curriculumUnit.masterDriveFileId)
+    || !normalizeText(curriculumUnit.masterVersion)
+    || !normalizeText(curriculumUnit.unitKey)
+  ) {
+    throw new Error('CURRENT_MASTER_REFERENCE_REQUIRED');
+  }
+};
+
+const buildCommonFields = (
+  curriculumUnit: CurriculumUnitReference,
+  recordedAt: string,
+  professionalReason?: string,
+  signal?: ImplementationSignal,
+) => {
+  assertCurrentMasterReference(curriculumUnit);
+  return {
+    recordedAt,
+    applicability: {
+      order: curriculumUnit.order,
+      classOrAgeBand: curriculumUnit.classOrAgeBand,
+      disciplineOrField: curriculumUnit.disciplineOrField,
+    },
+    potentialCurriculumScope: {
+      curriculumUnitKey: curriculumUnit.unitKey,
+      signal,
+    },
+    qualificationState: 'QUALIFIED_FOR_TARGETED_REVIEW' as const,
+    professionalReason,
+    currentMaster: {
+      id: curriculumUnit.masterId,
+      driveFileId: curriculumUnit.masterDriveFileId,
+      version: curriculumUnit.masterVersion,
+    },
+    cycleReentryPhase: 'H1_APPLICABLE_CURRICULUM' as const,
+    automaticCurriculumChange: false as const,
+    automaticReviewCaseOpening: false as const,
+    parallelCurriculumBaselineCreation: false as const,
+  };
 };
 
 export function collectObservationsForCurriculumUnit(
@@ -67,7 +122,7 @@ export function qualifyPracticeSignal(
     };
   }
 
-  if (normalizeReason(explicitProfessionalReason)) {
+  if (normalizeText(explicitProfessionalReason)) {
     return {
       qualified: true,
       basis: 'EXPLICIT_PROFESSIONAL_REASON',
@@ -97,7 +152,7 @@ export function buildPracticeRevisionTrigger({
   curriculumUnitKey,
   explicitProfessionalReason,
   recordedAt = new Date().toISOString(),
-}: BuildPracticeRevisionTriggerInput): RevisionTrigger {
+}: BuildPracticeRevisionTriggerInput): PracticeRevisionTrigger {
   const qualification = qualifyPracticeSignal(observations, curriculumUnitKey, explicitProfessionalReason);
   if (!qualification.qualified || !qualification.basis) {
     throw new Error('PRACTICE_SIGNAL_NOT_QUALIFIED');
@@ -118,7 +173,7 @@ export function buildPracticeRevisionTrigger({
     throw new Error('MIXED_CURRICULUM_SCOPE');
   }
 
-  const professionalReason = normalizeReason(explicitProfessionalReason);
+  const professionalReason = normalizeText(explicitProfessionalReason);
   const signal = qualification.basis === 'AGGREGATED_PRACTICE_SIGNAL'
     ? qualification.recurringSignal
     : undefined;
@@ -132,27 +187,125 @@ export function buildPracticeRevisionTrigger({
       observationIds: qualification.relatedObservations.map((observation) => observation.id),
       sourceArtifactIds: [...new Set(qualification.relatedObservations.map((observation) => observation.sourceArtifact.id))],
     },
-    recordedAt,
-    applicability: {
-      order: reference.curriculumUnit.order,
-      classOrAgeBand: reference.curriculumUnit.classOrAgeBand,
-      disciplineOrField: reference.curriculumUnit.disciplineOrField,
-    },
-    potentialCurriculumScope: {
-      curriculumUnitKey: reference.curriculumUnit.unitKey,
-      signal,
-    },
-    qualificationState: 'QUALIFIED_FOR_TARGETED_REVIEW',
+    ...buildCommonFields(reference.curriculumUnit, recordedAt, professionalReason, signal),
     qualificationBasis: qualification.basis,
-    professionalReason,
-    currentMaster: {
-      id: reference.curriculumUnit.masterId,
-      driveFileId: reference.curriculumUnit.masterDriveFileId,
-      version: reference.curriculumUnit.masterVersion,
-    },
-    cycleReentryPhase: 'H1_APPLICABLE_CURRICULUM',
-    automaticCurriculumChange: false,
-    automaticReviewCaseOpening: false,
-    parallelCurriculumBaselineCreation: false,
   };
+}
+
+export interface BuildExternalNormativeRevisionTriggerInput {
+  curriculumUnit: CurriculumUnitReference;
+  sourceReference: string;
+  sourceType: ExternalNormativeSourceType;
+  sourceQualification: 'QUALIFIED' | 'UNQUALIFIED';
+  applicabilityAssessment: string;
+  recordedAt?: string;
+}
+
+export function buildExternalNormativeRevisionTrigger({
+  curriculumUnit,
+  sourceReference,
+  sourceType,
+  sourceQualification,
+  applicabilityAssessment,
+  recordedAt = new Date().toISOString(),
+}: BuildExternalNormativeRevisionTriggerInput): ExternalNormativeRevisionTrigger {
+  if (sourceQualification !== 'QUALIFIED') {
+    throw new Error('EXTERNAL_NORMATIVE_SOURCE_NOT_QUALIFIED');
+  }
+  const normalizedSourceReference = requireText(sourceReference, 'EXTERNAL_NORMATIVE_SOURCE_REQUIRED');
+  const normalizedApplicability = requireText(
+    applicabilityAssessment,
+    'EXTERNAL_NORMATIVE_APPLICABILITY_REQUIRED',
+    1200,
+  );
+
+  return {
+    id: `RT:NORMATIVE:${curriculumUnit.unitKey}:${recordedAt}`,
+    kind: 'REVISION_TRIGGER',
+    triggerType: 'EXTERNAL_NORMATIVE',
+    originOrSource: {
+      kind: 'EXTERNAL_NORMATIVE_SOURCE',
+      sourceReference: normalizedSourceReference,
+      sourceType,
+      sourceQualification: 'QUALIFIED',
+      applicabilityAssessment: normalizedApplicability,
+    },
+    ...buildCommonFields(curriculumUnit, recordedAt),
+    qualificationBasis: 'QUALIFIED_EXTERNAL_NORMATIVE_SOURCE',
+  };
+}
+
+export interface BuildInstituteNeedRevisionTriggerInput {
+  curriculumUnit: CurriculumUnitReference;
+  needReference: string;
+  needStatement: string;
+  declaredNonNational: boolean;
+  recordedAt?: string;
+}
+
+export function buildInstituteNeedRevisionTrigger({
+  curriculumUnit,
+  needReference,
+  needStatement,
+  declaredNonNational,
+  recordedAt = new Date().toISOString(),
+}: BuildInstituteNeedRevisionTriggerInput): InstituteNeedRevisionTrigger {
+  if (!declaredNonNational) {
+    throw new Error('INSTITUTE_NEED_MUST_REMAIN_NON_NATIONAL');
+  }
+  const normalizedReference = requireText(needReference, 'INSTITUTE_NEED_REFERENCE_REQUIRED');
+  const normalizedNeed = requireText(needStatement, 'INSTITUTE_NEED_REQUIRED', 1200);
+
+  return {
+    id: `RT:INSTITUTE:${curriculumUnit.unitKey}:${recordedAt}`,
+    kind: 'REVISION_TRIGGER',
+    triggerType: 'INSTITUTE_NEED',
+    originOrSource: {
+      kind: 'INSTITUTE_NEED',
+      needReference: normalizedReference,
+      needStatement: normalizedNeed,
+      nationalSource: false,
+    },
+    ...buildCommonFields(curriculumUnit, recordedAt, normalizedNeed),
+    qualificationBasis: 'EXPLICIT_INSTITUTE_NEED',
+    professionalReason: normalizedNeed,
+  };
+}
+
+export interface BuildPeriodicReviewRevisionTriggerInput {
+  curriculumUnit: CurriculumUnitReference;
+  reviewCycle: 'ANNUAL' | 'MULTIYEAR' | 'OTHER';
+  reviewReason: string;
+  recordedAt?: string;
+}
+
+export function buildPeriodicReviewRevisionTrigger({
+  curriculumUnit,
+  reviewCycle,
+  reviewReason,
+  recordedAt = new Date().toISOString(),
+}: BuildPeriodicReviewRevisionTriggerInput): PeriodicReviewRevisionTrigger {
+  const normalizedReason = requireText(reviewReason, 'PERIODIC_REVIEW_REASON_REQUIRED', 1200);
+
+  return {
+    id: `RT:PERIODIC:${curriculumUnit.unitKey}:${recordedAt}`,
+    kind: 'REVISION_TRIGGER',
+    triggerType: 'PERIODIC_REVIEW',
+    originOrSource: {
+      kind: 'PERIODIC_REVIEW',
+      reviewCycle,
+    },
+    ...buildCommonFields(curriculumUnit, recordedAt, normalizedReason),
+    qualificationBasis: 'PERIODIC_REVIEW_WITH_EXPLICIT_REASON',
+    professionalReason: normalizedReason,
+  };
+}
+
+export function isQualifiedRevisionTrigger(trigger: RevisionTrigger): boolean {
+  return trigger.qualificationState === 'QUALIFIED_FOR_TARGETED_REVIEW'
+    && trigger.currentMaster.id === 'CAN-CURR-MASTER-00'
+    && trigger.cycleReentryPhase === 'H1_APPLICABLE_CURRICULUM'
+    && trigger.automaticCurriculumChange === false
+    && trigger.automaticReviewCaseOpening === false
+    && trigger.parallelCurriculumBaselineCreation === false;
 }
