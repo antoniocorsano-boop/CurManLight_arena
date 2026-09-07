@@ -7,7 +7,7 @@ import {
 import { buildInstituteNeedRevisionTrigger } from '../domain/curriculum/revisionTrigger';
 import panelSource from '../features/curriculum/components/CurriculumReviewCasePanel.tsx?raw';
 import workspaceSource from '../features/beta/RevisionWorkspace.tsx?raw';
-import wrapperSource from '../features/beta/RevisionWorkspaceCaseAware.tsx?raw';
+import wrapperSource from '../features/beta/CaseAwareRevisionSurface.tsx?raw';
 import inboxSource from '../features/beta/SharedReviewCaseInbox.tsx?raw';
 import betaIndexSource from '../features/beta/index.ts?raw';
 import storeSource from '../store/useCurriculumStore.ts?raw';
@@ -128,12 +128,12 @@ describe('CurriculumReviewCase — apertura mirata e fail-closed', () => {
     expect(panelSource).not.toContain('TeamContributionPublisher');
   });
 
-  it('routes the real Riesame entry through the case-aware wrapper and keeps one dominant progression', () => {
-    expect(betaIndexSource).toContain("export { RevisionWorkspace } from './RevisionWorkspaceCaseAware';");
+  it('routes the real Riesame entry through the canonical case-aware surface and keeps one dominant progression', () => {
+    expect(betaIndexSource).toContain("export { CaseAwareRevisionSurface as RevisionWorkspace } from './CaseAwareRevisionSurface';");
     expect(wrapperSource).toContain("reviewCase.workSession?.sessionState === 'ACTIVE'");
     expect(wrapperSource).toContain('<CaseScopedCurriculumWorkSession');
     expect(wrapperSource).toContain('<SharedReviewCaseInbox');
-    expect(wrapperSource).toContain('<GeneralRevisionWorkspace');
+    expect(wrapperSource).toContain('<RevisionWorkspace');
     expect(inboxSource).toContain('Casi assegnati al mio gruppo');
     expect(inboxSource).toContain('Ricevere un caso non avvia automaticamente la validazione');
     expect(inboxSource).toContain('data-human-next-action="start-assigned-review-case"');
