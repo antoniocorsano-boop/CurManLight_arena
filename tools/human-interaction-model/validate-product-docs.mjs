@@ -23,7 +23,7 @@ try {
 
 if (registry) {
   assert(registry.registry_id === 'ARENA-PRODUCT-DOCS', 'registry_id prodotto corretto');
-  assert(registry.version === '1.0.9', 'versione registro prodotto 1.0.9');
+  assert(registry.version === '1.0.10', 'versione registro prodotto 1.0.10');
   assert(registry.product_vision?.id === 'ARENA-PRODUCT-VISION', 'vision id canonico');
   assert(registry.product_vision?.version === '1.0.0', 'vision version canonica');
   assert(registry.product_vision?.drive_file_id === '1s17jJCslSIJIXQfiTEzyRcD5q-Baopj6-l14aaFEWik', 'Drive ID vision canonica');
@@ -38,6 +38,10 @@ if (registry) {
   assert(lifecycle.derived_objects?.includes('DidacticBinding'), 'DidacticBinding presente nel lifecycle');
   assert(lifecycle.derived_objects?.includes('ImplementationObservation'), 'ImplementationObservation presente nel lifecycle');
   assert(lifecycle.revision_triggers?.practice_signal_requires_aggregation_or_explicit_professional_reason === true, 'PRACTICE_SIGNAL richiede aggregazione o motivazione esplicita');
+  assert(lifecycle.revision_triggers?.external_normative_requires_source_qualification === true, 'EXTERNAL_NORMATIVE richiede fonte qualificata');
+  assert(lifecycle.revision_triggers?.external_normative_requires_applicability_assessment === true, 'EXTERNAL_NORMATIVE richiede applicabilità');
+  assert(lifecycle.revision_triggers?.institute_need_must_remain_explicitly_non_national === true, 'INSTITUTE_NEED resta non nazionale');
+  assert(lifecycle.revision_triggers?.periodic_review_must_not_reopen_stable_units_without_reason === true, 'PERIODIC_REVIEW richiede una ragione');
   assert(lifecycle.revision_triggers?.automatic_curriculum_change_forbidden === true, 'RevisionTrigger non modifica automaticamente il curricolo');
   assert(lifecycle.revision_triggers?.parallel_curriculum_baseline_creation_forbidden === true, 'RevisionTrigger non crea baseline parallele');
   assert(lifecycle.work_session?.share_completion_requires_persisted_current_professional_contribution === true, 'lifecycle vincola SHARE alla persistenza corrente');
@@ -92,6 +96,7 @@ if (registry) {
     'CURRICULUM_LIFECYCLE@1.2.0',
     'Nuova norma, linea guida, nota o circolare',
     "Esigenza dell'Istituto",
+    'Riesame periodico',
     'RevisionTrigger',
     'DidacticBinding',
     'ImplementationObservation',
@@ -105,7 +110,12 @@ if (registry) {
     'almeno due segnali problematici dello stesso tipo',
     'motivazione professionale esplicita',
     'automaticReviewCaseOpening = false',
-    'parallelCurriculumBaselineCreation = false'
+    'parallelCurriculumBaselineCreation = false',
+    'Proiezione corrente delle altre cause RevisionTrigger',
+    'Valuta l’impatto sul curricolo',
+    'una fonte personale o soltanto verificata localmente non può essere promossa implicitamente a fonte normativa',
+    'il semplice decorso del tempo non riapre unità stabili',
+    'non viene introdotta alcuna nuova route o superficie primaria'
   ]) assert(flows.includes(token), `user flow contiene: ${token}`);
 
   const ccoDocs = readText('docs/04_product_experience/11_OPERATIONAL_COMMUNICATION_CONTRACT.md');
@@ -183,10 +193,22 @@ if (registry) {
   assert(state.practice_revision_trigger_never_opens_review_case_automatically === true, 'PRACTICE_SIGNAL non apre automaticamente casi');
   assert(state.practice_revision_trigger_never_changes_curriculum_automatically === true, 'PRACTICE_SIGNAL non modifica automaticamente il curricolo');
   assert(state.practice_revision_trigger_never_creates_parallel_baseline === true, 'PRACTICE_SIGNAL non crea baseline parallele');
-  assert(state.external_normative_trigger_ux_implemented === false, 'UX trigger normativo non anticipata');
-  assert(state.institute_need_trigger_ux_implemented === false, 'UX esigenza istituto non anticipata');
-  assert(state.periodic_review_trigger_ux_implemented === false, 'UX riesame periodico non anticipata');
-  assert(state.revision_trigger_ux_implemented === false, 'UX RevisionTrigger complessiva resta incompleta');
+  assert(state.external_normative_trigger_domain_implemented === true, 'dominio EXTERNAL_NORMATIVE implementato');
+  assert(state.external_normative_trigger_requires_qualified_source_and_applicability === true, 'EXTERNAL_NORMATIVE richiede fonte e applicabilità');
+  assert(state.external_normative_trigger_ux_implemented === true, 'UX EXTERNAL_NORMATIVE implementata');
+  assert(state.external_normative_trigger_reuses_fascicolo_to_revision_flow === true, 'EXTERNAL_NORMATIVE riusa Fascicolo → Riesame');
+  assert(state.institute_need_trigger_domain_implemented === true, 'dominio INSTITUTE_NEED implementato');
+  assert(state.institute_need_trigger_remains_explicitly_non_national === true, 'INSTITUTE_NEED resta non nazionale');
+  assert(state.institute_need_trigger_ux_implemented === true, 'UX INSTITUTE_NEED implementata');
+  assert(state.institute_need_trigger_reuses_revision_surface === true, 'INSTITUTE_NEED riusa Riesame');
+  assert(state.periodic_review_trigger_domain_implemented === true, 'dominio PERIODIC_REVIEW implementato');
+  assert(state.periodic_review_trigger_requires_explicit_reason === true, 'PERIODIC_REVIEW richiede ragione esplicita');
+  assert(state.periodic_review_trigger_ux_implemented === true, 'UX PERIODIC_REVIEW implementata');
+  assert(state.periodic_review_trigger_reuses_revision_surface === true, 'PERIODIC_REVIEW riusa Riesame');
+  assert(state.all_revision_trigger_origins_share_current_master_scope_and_no_automatic_consequences === true, 'le quattro cause condividono gli invarianti di autorità');
+  assert(state.revision_trigger_single_existing_surface_integration_implemented === true, 'qualificazione integrata nelle superfici esistenti');
+  assert(state.revision_trigger_ux_implemented === true, 'UX delle quattro cause RevisionTrigger implementata');
+  assert(state.revision_trigger_new_primary_surface_created === false, 'nessuna nuova superficie primaria creata');
   assert(state.target_ui_fully_implemented === false, 'la documentazione non simula UI target già implementata');
   assert(state.human_end_to_end_pilot_complete === false, 'la documentazione non simula pilota umano concluso');
 }
