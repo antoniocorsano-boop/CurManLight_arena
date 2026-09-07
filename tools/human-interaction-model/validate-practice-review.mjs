@@ -84,6 +84,8 @@ for (const key of [
   'implementation_observation_never_changes_curriculum_automatically',
   'practice_signal_aggregation_available',
 ]) assert(state[key] === true, `stato prodotto non registra ${key}`);
-assert(state.revision_trigger_ux_implemented === false, 'ImplementationObservation anticipa impropriamente la UX RevisionTrigger');
+assert(state.revision_trigger_ux_implemented === true, 'UX RevisionTrigger non registrata dopo la sua effettiva implementazione');
+assert(state.practice_revision_trigger_qualification_implemented === true, 'PRACTICE_SIGNAL non resta governato dopo l’estensione della UX');
+assert(state.revision_trigger_new_primary_surface_created === false, 'l’estensione RevisionTrigger ha creato una nuova superficie primaria');
 
 console.log('PRACTICE_REVIEW_PASS');
