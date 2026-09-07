@@ -187,7 +187,7 @@ for (const key of [
   'practice_revision_trigger_never_creates_parallel_baseline',
   'external_normative_trigger_domain_implemented',
   'external_normative_trigger_requires_qualified_source_and_applicability',
-  'institute_need_trigger_domain_implemented',
+  'institute_need_trigger_domain_model_implemented',
   'institute_need_trigger_remains_explicitly_non_national',
   'periodic_review_trigger_domain_implemented',
   'periodic_review_trigger_requires_explicit_reason',
@@ -209,6 +209,6 @@ assert(state.shared_review_case_discovery_implemented === true, 'la discovery co
 assert(state.shared_review_case_hydration_never_starts_h2_automatically === true, 'la discovery non deve avviare automaticamente H2');
 assert(state.revision_trigger_new_primary_surface_created === false, 'l’incremento non deve creare una nuova superficie primaria');
 assert(state.target_ui_fully_implemented === false, 'implementazione RevisionTrigger non deve dichiarare completa la UI target');
-assert(state.human_end_to_end_pilot_complete === false, 'implementazione RevisionTrigger non deve dichiarare concluso il pilota umano');
+assert(state.human_end_to_end_pilot_complete === true, 'il pilot umano multi-attore deve risultare concluso dopo la prova reale');
 
 console.log('REVISION_TRIGGER_PASS');
