@@ -19,7 +19,11 @@ assert(JSON.stringify(triggers.allowed_types) === JSON.stringify([
   'PRACTICE_SIGNAL',
   'PERIODIC_REVIEW',
 ]), 'tipi RevisionTrigger inattesi');
+assert(triggers.external_normative_requires_source_qualification === true, 'EXTERNAL_NORMATIVE non richiede fonte qualificata');
+assert(triggers.external_normative_requires_applicability_assessment === true, 'EXTERNAL_NORMATIVE non richiede valutazione di applicabilità');
+assert(triggers.institute_need_must_remain_explicitly_non_national === true, 'INSTITUTE_NEED può confondersi con una fonte nazionale');
 assert(triggers.practice_signal_requires_aggregation_or_explicit_professional_reason === true, 'PRACTICE_SIGNAL non richiede ricorrenza o motivazione esplicita');
+assert(triggers.periodic_review_must_not_reopen_stable_units_without_reason === true, 'PERIODIC_REVIEW può riaprire unità stabili senza motivo');
 assert(triggers.must_reference_current_master_identity_and_version === true, 'RevisionTrigger non vincolato al master corrente');
 assert(triggers.automatic_curriculum_change_forbidden === true, 'RevisionTrigger può modificare automaticamente il curricolo');
 assert(triggers.parallel_curriculum_baseline_creation_forbidden === true, 'RevisionTrigger può creare una baseline parallela');
@@ -28,9 +32,17 @@ assert(triggers.cycle_reentry_phase === 'H1_APPLICABLE_CURRICULUM', 'rientro del
 const types = readText('src/types/curriculum.ts');
 for (const token of [
   "kind: 'REVISION_TRIGGER'",
-  "triggerType: RevisionTriggerType",
+  "triggerType: 'PRACTICE_SIGNAL'",
+  "triggerType: 'EXTERNAL_NORMATIVE'",
+  "triggerType: 'INSTITUTE_NEED'",
+  "triggerType: 'PERIODIC_REVIEW'",
+  "kind: 'PRACTICE_OBSERVATIONS'",
+  "kind: 'EXTERNAL_NORMATIVE_SOURCE'",
+  "sourceQualification: 'QUALIFIED'",
+  "kind: 'INSTITUTE_NEED'",
+  'nationalSource: false',
+  "kind: 'PERIODIC_REVIEW'",
   "qualificationState: 'QUALIFIED_FOR_TARGETED_REVIEW'",
-  "qualificationBasis: RevisionTriggerQualificationBasis",
   "cycleReentryPhase: 'H1_APPLICABLE_CURRICULUM'",
   'automaticCurriculumChange: false',
   'automaticReviewCaseOpening: false',
@@ -53,6 +65,21 @@ for (const token of [
   'PRACTICE_SIGNAL_NOT_QUALIFIED',
   'MIXED_CURRICULUM_SCOPE',
   "triggerType: 'PRACTICE_SIGNAL'",
+  'buildExternalNormativeRevisionTrigger',
+  'EXTERNAL_NORMATIVE_SOURCE_NOT_QUALIFIED',
+  'EXTERNAL_NORMATIVE_APPLICABILITY_REQUIRED',
+  "triggerType: 'EXTERNAL_NORMATIVE'",
+  "qualificationBasis: 'QUALIFIED_EXTERNAL_NORMATIVE_SOURCE'",
+  'buildInstituteNeedRevisionTrigger',
+  'INSTITUTE_NEED_MUST_REMAIN_NON_NATIONAL',
+  "triggerType: 'INSTITUTE_NEED'",
+  'nationalSource: false',
+  "qualificationBasis: 'EXPLICIT_INSTITUTE_NEED'",
+  'buildPeriodicReviewRevisionTrigger',
+  'PERIODIC_REVIEW_REASON_REQUIRED',
+  "triggerType: 'PERIODIC_REVIEW'",
+  "qualificationBasis: 'PERIODIC_REVIEW_WITH_EXPLICIT_REASON'",
+  'assertCurrentMasterReference',
   "qualificationState: 'QUALIFIED_FOR_TARGETED_REVIEW'",
   "cycleReentryPhase: 'H1_APPLICABLE_CURRICULUM'",
   'automaticCurriculumChange: false',
@@ -102,10 +129,19 @@ for (const key of [
   'practice_revision_trigger_never_opens_review_case_automatically',
   'practice_revision_trigger_never_changes_curriculum_automatically',
   'practice_revision_trigger_never_creates_parallel_baseline',
+  'external_normative_trigger_domain_implemented',
+  'external_normative_trigger_requires_qualified_source_and_applicability',
+  'institute_need_trigger_domain_implemented',
+  'institute_need_trigger_remains_explicitly_non_national',
+  'periodic_review_trigger_domain_implemented',
+  'periodic_review_trigger_requires_explicit_reason',
+  'all_revision_trigger_origins_share_current_master_scope_and_no_automatic_consequences',
 ]) assert(state[key] === true, `stato prodotto non registra ${key}`);
+assert(docs.version === '1.0.9', 'versione registro documentazione prodotto inattesa');
 assert(state.external_normative_trigger_ux_implemented === false, 'UX normativa futura anticipata');
 assert(state.institute_need_trigger_ux_implemented === false, 'UX esigenza istituto anticipata');
 assert(state.periodic_review_trigger_ux_implemented === false, 'UX riesame periodico anticipata');
-assert(state.revision_trigger_ux_implemented === false, 'implementazione parziale non deve dichiarare completo RevisionTrigger');
+assert(state.revision_trigger_ux_implemented === false, 'dominio completo non deve dichiarare completa la UX RevisionTrigger');
+assert(state.target_ui_fully_implemented === false, 'implementazione dominio non deve dichiarare completa la UI target');
 
 console.log('REVISION_TRIGGER_PASS');
