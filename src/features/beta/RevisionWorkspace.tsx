@@ -64,6 +64,23 @@ export function RevisionWorkspace(props: RevisionWorkspaceProps) {
   const selectedRole = team.selectedMembership?.role;
   const isCoordinator = selectedRole === 'dipartimento' || selectedRole === 'referente';
   const selectedRoleLabel = roleLabel(selectedRole);
+  const matchingOperationalAcademicYears = useMemo(
+    () => Array.from(new Set(
+      team.operationalMemberships
+        .filter((membership) => (
+          membership.schoolOrder === props.order
+          && membership.disciplines.includes(props.discipline)
+        ))
+        .map((membership) => membership.academicYear),
+    )),
+    [team.operationalMemberships, props.order, props.discipline],
+  );
+  const authenticatedOperationalAcademicYear = matchingOperationalAcademicYears.length === 1
+    ? matchingOperationalAcademicYears[0]
+    : null;
+  const sharedReviewAcademicYear = team.configured && team.session
+    ? authenticatedOperationalAcademicYear ?? ''
+    : schoolYear;
   const totalReviewCount = props.currentDisciplineProps.length;
   const preparedReviewCount = props.currentDisciplineProps.filter((proposal) => {
     const decision = decisions[proposal.id];
@@ -76,14 +93,14 @@ export function RevisionWorkspace(props: RevisionWorkspaceProps) {
     () => JSON.stringify([
       props.discipline,
       props.order,
-      schoolYear,
+      sharedReviewAcademicYear,
       props.currentDisciplineProps.map((proposal) => [
         proposal.id,
         decisions[proposal.id] ?? null,
         customTexts[proposal.id]?.trim().replace(/\s+/g, ' ') ?? '',
       ]),
     ]),
-    [props.discipline, props.order, props.currentDisciplineProps, schoolYear, decisions, customTexts],
+    [props.discipline, props.order, props.currentDisciplineProps, sharedReviewAcademicYear, decisions, customTexts],
   );
 
   const handlePersistenceStateChange = useCallback((next: TeamContributionPersistenceState) => {
@@ -336,7 +353,7 @@ export function RevisionWorkspace(props: RevisionWorkspaceProps) {
             customTexts={customTexts}
             discipline={props.discipline}
             order={props.order}
-            academicYear={schoolYear}
+            academicYear={sharedReviewAcademicYear}
             onPersistenceStateChange={handlePersistenceStateChange}
           />
 
@@ -379,7 +396,7 @@ export function RevisionWorkspace(props: RevisionWorkspaceProps) {
                     proposals={props.currentDisciplineProps}
                     discipline={props.discipline}
                     order={props.order}
-                    academicYear={schoolYear}
+                    academicYear={sharedReviewAcademicYear}
                     mode="status"
                   />
                 </div>
@@ -413,7 +430,7 @@ export function RevisionWorkspace(props: RevisionWorkspaceProps) {
             proposals={props.currentDisciplineProps}
             discipline={props.discipline}
             order={props.order}
-            academicYear={schoolYear}
+            academicYear={sharedReviewAcademicYear}
             mode="compare"
             onSessionStateChange={handleCoordinationStateChange}
             onRequestRecordOutcome={openOutcomeStage}
@@ -449,7 +466,7 @@ export function RevisionWorkspace(props: RevisionWorkspaceProps) {
             proposals={props.currentDisciplineProps}
             discipline={props.discipline}
             order={props.order}
-            academicYear={schoolYear}
+            academicYear={sharedReviewAcademicYear}
             mode="record"
             outcomeProposalRef={outcomeProposalRef}
             onSessionStateChange={handleCoordinationStateChange}
