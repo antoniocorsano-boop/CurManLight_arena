@@ -87,7 +87,7 @@ export function buildCurriculumReviewCase({
     reviewCase.originTriggerSnapshot.id === trigger.id
     && reviewCase.currentMaster.id === trigger.currentMaster.id
     && reviewCase.currentMaster.version === trigger.currentMaster.version
-    && reviewCase.caseState === 'OPEN_AT_APPLICABLE_CURRICULUM'
+    && reviewCase.caseState !== 'PROFESSIONAL_REVIEW_COMPLETE'
   ));
   if (alreadyOpen) throw new Error('REVIEW_CASE_ALREADY_OPEN_FOR_TRIGGER');
 
@@ -130,6 +130,7 @@ export function buildCurriculumReviewCase({
     readinessAtOpening: { ...readiness, state: 'READY_TO_OPEN' },
     caseState: 'OPEN_AT_APPLICABLE_CURRICULUM',
     cycleReentryPhase: 'H1_APPLICABLE_CURRICULUM',
+    currentHumanPhase: 'H1_APPLICABLE_CURRICULUM',
     professionalValidationState: 'NOT_STARTED',
     explicitHumanOpening: true,
     automaticProfessionalContributionReuse: false,
