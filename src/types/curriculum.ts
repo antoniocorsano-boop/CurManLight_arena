@@ -94,17 +94,25 @@ export interface ImplementationObservation {
 }
 
 export type RevisionTriggerType = 'EXTERNAL_NORMATIVE' | 'INSTITUTE_NEED' | 'PRACTICE_SIGNAL' | 'PERIODIC_REVIEW';
-export type RevisionTriggerQualificationBasis = 'AGGREGATED_PRACTICE_SIGNAL' | 'EXPLICIT_PROFESSIONAL_REASON';
+export type RevisionTriggerQualificationBasis =
+  | 'AGGREGATED_PRACTICE_SIGNAL'
+  | 'EXPLICIT_PROFESSIONAL_REASON'
+  | 'QUALIFIED_EXTERNAL_NORMATIVE_SOURCE'
+  | 'EXPLICIT_INSTITUTE_NEED'
+  | 'PERIODIC_REVIEW_WITH_EXPLICIT_REASON';
 
-export interface RevisionTrigger {
+export type ExternalNormativeSourceType =
+  | 'LAW'
+  | 'DECREE'
+  | 'NATIONAL_INDICATIONS'
+  | 'GUIDELINE'
+  | 'NOTE'
+  | 'CIRCULAR'
+  | 'OTHER';
+
+interface RevisionTriggerCommon {
   id: string;
   kind: 'REVISION_TRIGGER';
-  triggerType: RevisionTriggerType;
-  originOrSource: {
-    kind: 'PRACTICE_OBSERVATIONS';
-    observationIds: string[];
-    sourceArtifactIds: string[];
-  };
   recordedAt: string;
   applicability: {
     order: SchoolOrder;
@@ -116,7 +124,6 @@ export interface RevisionTrigger {
     signal?: ImplementationSignal;
   };
   qualificationState: 'QUALIFIED_FOR_TARGETED_REVIEW';
-  qualificationBasis: RevisionTriggerQualificationBasis;
   professionalReason?: string;
   currentMaster: {
     id: 'CAN-CURR-MASTER-00';
@@ -128,6 +135,56 @@ export interface RevisionTrigger {
   automaticReviewCaseOpening: false;
   parallelCurriculumBaselineCreation: false;
 }
+
+export interface PracticeRevisionTrigger extends RevisionTriggerCommon {
+  triggerType: 'PRACTICE_SIGNAL';
+  originOrSource: {
+    kind: 'PRACTICE_OBSERVATIONS';
+    observationIds: string[];
+    sourceArtifactIds: string[];
+  };
+  qualificationBasis: 'AGGREGATED_PRACTICE_SIGNAL' | 'EXPLICIT_PROFESSIONAL_REASON';
+}
+
+export interface ExternalNormativeRevisionTrigger extends RevisionTriggerCommon {
+  triggerType: 'EXTERNAL_NORMATIVE';
+  originOrSource: {
+    kind: 'EXTERNAL_NORMATIVE_SOURCE';
+    sourceReference: string;
+    sourceType: ExternalNormativeSourceType;
+    sourceQualification: 'QUALIFIED';
+    applicabilityAssessment: string;
+  };
+  qualificationBasis: 'QUALIFIED_EXTERNAL_NORMATIVE_SOURCE';
+}
+
+export interface InstituteNeedRevisionTrigger extends RevisionTriggerCommon {
+  triggerType: 'INSTITUTE_NEED';
+  originOrSource: {
+    kind: 'INSTITUTE_NEED';
+    needReference: string;
+    needStatement: string;
+    nationalSource: false;
+  };
+  qualificationBasis: 'EXPLICIT_INSTITUTE_NEED';
+  professionalReason: string;
+}
+
+export interface PeriodicReviewRevisionTrigger extends RevisionTriggerCommon {
+  triggerType: 'PERIODIC_REVIEW';
+  originOrSource: {
+    kind: 'PERIODIC_REVIEW';
+    reviewCycle: 'ANNUAL' | 'MULTIYEAR' | 'OTHER';
+  };
+  qualificationBasis: 'PERIODIC_REVIEW_WITH_EXPLICIT_REASON';
+  professionalReason: string;
+}
+
+export type RevisionTrigger =
+  | PracticeRevisionTrigger
+  | ExternalNormativeRevisionTrigger
+  | InstituteNeedRevisionTrigger
+  | PeriodicReviewRevisionTrigger;
 
 export interface UdaModel {
   id: string;
