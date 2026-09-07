@@ -8,6 +8,7 @@ import {
   teamReviewVersionStatusLabel,
 } from '../domain/revision/teamReviewProvenance';
 import sharedCaseMigration from '../../supabase/migrations/20260907064000_shared_curriculum_review_case_discovery.sql?raw';
+import caseReadMigration from '../../supabase/migrations/20260907073000_case_scoped_team_review_read_authority.sql?raw';
 
 const fingerprint = 'a'.repeat(64);
 
@@ -101,5 +102,19 @@ describe('Arena team review provenance', () => {
       'SHARED_REVIEW_CASE_ID_REUSE_MISMATCH',
       'revoke all on public.shared_curriculum_review_cases from public, anon, authenticated',
     ]) expect(sharedCaseMigration).toContain(token);
+  });
+
+  it('reads multi-actor case contributions through a server-authoritative exact-case RPC', () => {
+    for (const token of [
+      'list_case_scoped_team_review_contributions_v1',
+      'security definer',
+      'SHARED_REVIEW_CASE_SCOPE_REQUIRED',
+      'SHARED_REVIEW_CASE_ASSIGNMENT_REQUIRED',
+      "assignment.assignment_state = 'ASSIGNED'",
+      "membership.status = 'active'",
+      "operational.membership_state in ('OPERATIVO_PROVVISORIO','FORMALIZZATO')",
+      'contribution.review_case_id = p_review_case_id',
+      'grant execute on function public.list_case_scoped_team_review_contributions_v1',
+    ]) expect(caseReadMigration).toContain(token);
   });
 });
