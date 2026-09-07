@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useCurriculumStore } from '../../store/useCurriculumStore';
 import { INSTITUTE_CURRICULUM_CURRENT_SOURCE } from '../../domain/curriculum/institute/currentSource';
 import { ProgettazioneTab as ProgettazioneTabBase, type ProgettazioneTabProps } from './components/ProgettazioneTab';
@@ -36,13 +37,24 @@ function classLabel(order: string, targetClass: string, targetSection: string) {
 
 export function PlanningWorkspace(props: ProgettazioneTabProps) {
   const { activeProgTab, setActiveProgTab, discipline, order } = useCurriculumStore();
+  const [entryVisible, setEntryVisible] = useState(true);
   const disciplineLabel = DISCIPLINE_LABELS[discipline] ?? discipline;
   const orderLabel = ORDER_LABELS[order] ?? order;
   const authorityLabel = INSTITUTE_CURRICULUM_CURRENT_SOURCE.curriculumInForce
     ? `Curricolo vigente · master ${INSTITUTE_CURRICULUM_CURRENT_SOURCE.sourceVersion}`
     : `Riferimento di lavoro · master ${INSTITUTE_CURRICULUM_CURRENT_SOURCE.sourceVersion} non vigente`;
 
-  if (activeProgTab === 'home') {
+  const startOrResumePlanning = () => {
+    if (activeProgTab === 'home') setActiveProgTab('annuale');
+    setEntryVisible(false);
+  };
+
+  const openSupportingTool = (tab: 'uda' | 'certificazione') => {
+    setActiveProgTab(tab);
+    setEntryVisible(false);
+  };
+
+  if (entryVisible) {
     return (
       <section
         className="space-y-5 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6"
@@ -65,11 +77,11 @@ export function PlanningWorkspace(props: ProgettazioneTabProps) {
 
         <button
           type="button"
-          onClick={() => setActiveProgTab('annuale')}
+          onClick={startOrResumePlanning}
           className="inline-flex min-h-12 w-full items-center justify-center rounded-xl bg-indigo-600 px-5 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:w-auto"
           data-human-next-action="start-current-planning"
         >
-          Inizia la progettazione
+          {activeProgTab === 'home' ? 'Inizia la progettazione' : 'Continua la progettazione'}
         </button>
 
         <details className="rounded-xl border border-slate-200 bg-slate-50 p-4" data-hcm-level="2">
@@ -77,14 +89,14 @@ export function PlanningWorkspace(props: ProgettazioneTabProps) {
           <div className="mt-3 grid gap-2 sm:grid-cols-2">
             <button
               type="button"
-              onClick={() => setActiveProgTab('uda')}
+              onClick={() => openSupportingTool('uda')}
               className="min-h-11 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-left text-sm font-bold text-slate-700 hover:border-indigo-300"
             >
               Consulta le UDA già progettate
             </button>
             <button
               type="button"
-              onClick={() => setActiveProgTab('certificazione')}
+              onClick={() => openSupportingTool('certificazione')}
               className="min-h-11 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-left text-sm font-bold text-slate-700 hover:border-indigo-300"
             >
               Consulta la matrice delle competenze
@@ -115,7 +127,7 @@ export function PlanningWorkspace(props: ProgettazioneTabProps) {
           </div>
           <button
             type="button"
-            onClick={() => setActiveProgTab('home')}
+            onClick={() => setEntryVisible(true)}
             className="min-h-11 shrink-0 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-bold text-slate-700 hover:border-indigo-300"
           >
             Cambia attività
