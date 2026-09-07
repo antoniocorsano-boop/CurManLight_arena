@@ -149,16 +149,25 @@ const sourceRegister = readText('src/features/documents/components/InstituteCurr
 for (const token of [
   'data-source-review-action',
   'Valuta l’impatto sul curricolo',
-  'onRequestNormativeReview(source.code)',
+  'requestNormativeReview(source.code)',
   'non crea automaticamente un caso e non modifica il master',
 ]) assert(sourceRegister.includes(token), `ingresso fonte normativa non presidiato: ${token}`);
 
+const normativeIntent = readText('src/features/documents/lib/normativeReviewIntent.ts');
+for (const token of [
+  "NORMATIVE_REVIEW_REQUEST_EVENT = 'arena:normative-review-request'",
+  'window.dispatchEvent(new CustomEvent',
+  'detail: { sourceCode: normalizedSourceCode }',
+  'readNormativeReviewRequest',
+]) assert(normativeIntent.includes(token), `intento Fascicolo → Riesame non presidiato: ${token}`);
+
 const appViews = readText('src/features/session/components/AppViewsLayer.tsx');
 for (const token of [
+  'window.addEventListener(NORMATIVE_REVIEW_REQUEST_EVENT, handleNormativeReviewRequest)',
+  'readNormativeReviewRequest(event)',
   'setNormativeReviewSourceCode(sourceCode)',
-  "safeHandleTabSwitch('revisione')",
+  "props.handleTabSwitch('revisione')",
   'initialNormativeSourceCode={normativeReviewSourceCode}',
-  'onRequestNormativeReview={openNormativeReview}',
 ]) assert(appViews.includes(token), `instradamento Fascicolo → Riesame non presidiato: ${token}`);
 for (const forbiddenRoute of ["'revision-trigger'", "'normative-review'", "'periodic-review'"]) {
   assert(!appViews.includes(forbiddenRoute), `nuova superficie primaria non autorizzata: ${forbiddenRoute}`);
