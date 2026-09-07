@@ -1,7 +1,3 @@
-[data-case-ux-consolidated-shell] [data-case-scoped-curriculum-work-session] > section:first-child {
-  display: none;
-}
-
 [data-case-ux-workframe] {
   overscroll-behavior: contain;
   scrollbar-gutter: stable;
