@@ -1,6 +1,6 @@
 {
   "registry_id": "CCO-SURFACES",
-  "version": "1.5.1",
+  "version": "1.6.0",
   "contract": ".human/operational-communication.contract.json",
   "status_vocabulary": ["conformant", "migration", "guided-setup", "excluded"],
   "surfaces": [
@@ -132,27 +132,34 @@
       "reason": "È una configurazione iniziale intenzionalmente guidata: una quota maggiore di testo formativo è ammessa, purché non confonda profilo personale, incarico verificato e autorità."
     },
     {
+      "id": "case-aware-revision-surface",
+      "path": "src/features/beta/CaseAwareRevisionSurface.tsx",
+      "status": "migration",
+      "migration_goal": "Rendere CASE_SCOPED e GENERAL due contesti percettivamente esclusivi: quando non esiste una sessione attiva, l'inbox dei casi deve restare subordinato al compito corrente e non creare una seconda gerarchia verticale concorrente."
+    },
+    {
       "id": "case-scoped-experience-shell",
       "path": "src/features/beta/CaseScopedExperienceShell.tsx",
-      "status": "conformant",
-      "operational_context": "Riesame mirato — sessione professionale case-scoped",
-      "primary_task": "Mantenere stabile il compito corrente e separare orientamento operativo, spiegazione e tracciabilità tecnica",
-      "communication_levels": {
-        "level_1": "Fase corrente, ruolo verificato, oggetto e uscita dal caso",
-        "level_2": "Motivo e confini professionali del riesame",
-        "level_3": "Identificativo del caso, master, account e stato interno"
-      },
-      "required_tokens": [
-        "data-case-ux-consolidated-shell",
-        "data-ux-layering=\"L1-L2-L3\"",
-        "data-hcm-level=\"1\"",
-        "data-hcm-level=\"2\"",
-        "data-hcm-level=\"3\"",
-        "data-case-ux-workframe",
-        "data-viewport-anchor=\"stable-current-task\"",
-        "Passo {stageIndex + 1} di {STAGES.length}",
-        "Verifica e tracciabilità"
-      ]
+      "status": "migration",
+      "migration_goal": "Completare CCO 1.5: mantenere un unico indicatore di processo Esamina → Condividi → Confronta → Esito con presente dominante, passato compatto e futuro non interattivo; preservare l'ancora del viewport; mostrare la conclusione nello stesso workframe prima del ritorno esplicito alla Revisione generale."
+    },
+    {
+      "id": "case-scoped-work-session-content",
+      "path": "src/features/beta/CaseScopedCurriculumWorkSession.tsx",
+      "status": "migration",
+      "migration_goal": "Rimuovere la seconda testata e la seconda rail di avanzamento dal contenuto interno, delegando orientamento, ruolo e tracciabilità al CaseScopedExperienceShell; mantenere nel workframe soltanto oggetto corrente, stato e azione pertinente."
+    },
+    {
+      "id": "case-scoped-team-contribution-publisher",
+      "path": "src/features/beta/CaseScopedTeamContributionPublisher.tsx",
+      "status": "migration",
+      "migration_goal": "Esprimere la condivisione in linguaggio professionale L1 e spostare review_case_id, fingerprint, ricevute e dettagli di persistenza nel livello tecnico L3, mantenendo visibile solo il confine attuale dell'effetto condiviso."
+    },
+    {
+      "id": "case-scoped-team-coordination-workspace",
+      "path": "src/features/beta/CaseScopedTeamCoordinationWorkspace.tsx",
+      "status": "migration",
+      "migration_goal": "Mantenere Confronta ed Esito come compiti distinti nello stesso workframe, mostrare soltanto differenze e stato professionale necessari e spostare diagnostica server e identificativi sotto divulgazione tecnica."
     },
     {
       "id": "shared-review-case-inbox",
