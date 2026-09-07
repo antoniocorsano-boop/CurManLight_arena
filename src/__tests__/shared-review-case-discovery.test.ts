@@ -5,7 +5,7 @@ import {
   sharedRowToCurriculumReviewCase,
 } from '../domain/curriculum/sharedReviewCase';
 import inboxSource from '../features/beta/SharedReviewCaseInbox.tsx?raw';
-import wrapperSource from '../features/beta/RevisionWorkspaceCaseAware.tsx?raw';
+import wrapperSource from '../features/beta/CaseAwareRevisionSurface.tsx?raw';
 import repositorySource from '../infrastructure/supabase/sharedCurriculumReviewCaseRepository.ts?raw';
 import migrationSource from '../../supabase/migrations/20260907064000_shared_curriculum_review_case_discovery.sql?raw';
 
