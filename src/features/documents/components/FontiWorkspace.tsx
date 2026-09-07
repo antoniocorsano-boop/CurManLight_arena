@@ -4,7 +4,14 @@ import { InstituteCurrentSourcePanel } from './InstituteCurrentSourcePanel';
 import { InstituteCurriculumSourceRegisterPanel } from './InstituteCurriculumSourceRegisterPanel';
 import { LocalCurriculumMigrationPreflightTask } from './LocalCurriculumMigrationPreflightTask';
 
-export function FontiWorkspace(props: FontiTabProps) {
+export type FontiWorkspaceProps = FontiTabProps & {
+  onRequestNormativeReview?: (sourceCode: string) => void;
+};
+
+export function FontiWorkspace({
+  onRequestNormativeReview,
+  ...props
+}: FontiWorkspaceProps) {
   return (
     <div
       className="space-y-4"
@@ -26,7 +33,7 @@ export function FontiWorkspace(props: FontiTabProps) {
       </header>
 
       <InstituteCurrentSourcePanel />
-      <InstituteCurriculumSourceRegisterPanel />
+      <InstituteCurriculumSourceRegisterPanel onRequestNormativeReview={onRequestNormativeReview} />
       <SourceRegistry {...props} />
 
       <details
