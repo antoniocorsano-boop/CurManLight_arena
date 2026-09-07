@@ -84,8 +84,12 @@ for (const token of [
   "reviewCase.workSession?.sessionState === 'ACTIVE'",
   '<CaseScopedCurriculumWorkSession',
   'data-revision-surface-mode="GENERAL"',
+  '<SharedReviewCaseInbox',
   '<RevisionWorkspace',
 ]) assert(surface.includes(token), `superficie dominante non presidiata: ${token}`);
+
+const betaIndex = readText('src/features/beta/index.ts');
+assert(betaIndex.includes("export { CaseAwareRevisionSurface as RevisionWorkspace } from './CaseAwareRevisionSurface';"), 'Riesame reale non instradato alla superficie case-aware');
 
 const sessionUi = readText('src/features/beta/CaseScopedCurriculumWorkSession.tsx');
 for (const token of [
@@ -101,7 +105,7 @@ for (const token of [
 
 const docs = readJson('docs/04_product_experience/PRODUCT_DOCS.registry.json');
 const state = docs.implementation_state ?? {};
-assert(docs.version === '1.0.12', 'versione registro prodotto inattesa per case-scoped session');
+assert(docs.version === '1.0.13', 'versione registro prodotto inattesa per case-scoped session');
 for (const key of [
   'targeted_review_case_work_session_case_scoping_implemented',
   'case_scoped_curriculum_work_session_domain_implemented',
@@ -113,8 +117,8 @@ for (const key of [
   'case_scoped_professional_contribution_fingerprint_includes_review_case',
   'case_scoped_team_outcomes_require_same_review_case_coverage',
   'case_scoped_server_receipts_preserve_general_review_history',
+  'shared_review_case_discovery_implemented',
 ]) assert(state[key] === true, `stato prodotto non registra ${key}`);
-assert(state.shared_review_case_discovery_implemented === false, 'il registro non deve simulare discovery condivisa dei casi');
 assert(state.human_end_to_end_pilot_complete === false, 'il pilota umano non deve risultare concluso');
 
 if (failures.length) {
