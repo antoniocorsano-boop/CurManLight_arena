@@ -1,6 +1,6 @@
 {
   "registry_id": "ARENA-PRODUCT-DOCS",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "date": "2026-09-07",
   "product_vision": {
     "id": "ARENA-PRODUCT-VISION",
@@ -87,6 +87,13 @@
     "practice_revision_trigger_never_opens_review_case_automatically": true,
     "practice_revision_trigger_never_changes_curriculum_automatically": true,
     "practice_revision_trigger_never_creates_parallel_baseline": true,
+    "external_normative_trigger_domain_implemented": true,
+    "external_normative_trigger_requires_qualified_source_and_applicability": true,
+    "institute_need_trigger_domain_implemented": true,
+    "institute_need_trigger_remains_explicitly_non_national": true,
+    "periodic_review_trigger_domain_implemented": true,
+    "periodic_review_trigger_requires_explicit_reason": true,
+    "all_revision_trigger_origins_share_current_master_scope_and_no_automatic_consequences": true,
     "external_normative_trigger_ux_implemented": false,
     "institute_need_trigger_ux_implemented": false,
     "periodic_review_trigger_ux_implemented": false,
