@@ -40,16 +40,18 @@ for (const token of [
   'buildCaseScopedCurriculumWorkSession',
 ]) assert(inbox.includes(token), `UI shared case non presidiata: ${token}`);
 
-const wrapper = readText('src/features/beta/RevisionWorkspaceCaseAware.tsx');
+const wrapper = readText('src/features/beta/CaseAwareRevisionSurface.tsx');
 for (const token of [
   "reviewCase.workSession?.sessionState === 'ACTIVE'",
   '<CaseScopedCurriculumWorkSession',
   '<SharedReviewCaseInbox',
-  '<GeneralRevisionWorkspace',
+  '<RevisionWorkspace',
+  'data-revision-surface-mode="CASE_SCOPED"',
+  'data-revision-surface-mode="GENERAL"',
 ]) assert(wrapper.includes(token), `convergenza Riesame non presidiata: ${token}`);
 
 const betaIndex = readText('src/features/beta/index.ts');
-assert(betaIndex.includes("export { RevisionWorkspace } from './RevisionWorkspaceCaseAware';"), 'AppViews non instradato al wrapper case-aware');
+assert(betaIndex.includes("export { CaseAwareRevisionSurface as RevisionWorkspace } from './CaseAwareRevisionSurface';"), 'AppViews non instradato alla superficie case-aware');
 
 const migration = readText('supabase/migrations/20260907064000_shared_curriculum_review_case_discovery.sql');
 for (const token of [
@@ -81,6 +83,7 @@ for (const key of [
   'shared_review_case_hydration_never_starts_h2_automatically',
   'shared_review_case_snapshot_conflict_fails_closed',
   'shared_review_case_discovery_reuses_revision_surface',
+  'shared_review_case_server_snapshot_excludes_personal_work_session',
   'case_scoped_session_single_dominant_progression_implemented',
 ]) assert(state[key] === true, `stato prodotto non registra ${key}`);
 assert(state.target_ui_fully_implemented === false, 'la discovery non deve dichiarare completa tutta la UI target');
