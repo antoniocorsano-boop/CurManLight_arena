@@ -15,8 +15,10 @@ import { fingerprintCaseScopedTeamReviewProposal } from '../domain/revision/case
 import caseSurfaceSource from '../features/beta/CaseAwareRevisionSurface.tsx?raw';
 import caseSessionSource from '../features/beta/CaseScopedCurriculumWorkSession.tsx?raw';
 import casePublisherSource from '../features/beta/CaseScopedTeamContributionPublisher.tsx?raw';
+import caseCoordinationSource from '../features/beta/CaseScopedTeamCoordinationWorkspace.tsx?raw';
 import caseRepositorySource from '../infrastructure/supabase/caseScopedTeamReviewRepository.ts?raw';
 import migrationSource from '../../supabase/migrations/20260907043000_team_review_case_scope.sql?raw';
+import comparisonReadMigration from '../../supabase/migrations/20260907073000_case_scoped_team_review_read_authority.sql?raw';
 import type { Proposal } from '../types/curriculum';
 
 const unit = resolveCurriculumUnitReference({
@@ -150,9 +152,17 @@ describe('CurriculumWorkSession case-scoped', () => {
     expect(caseSessionSource).toContain('Identità del team in verifica. Non condividere finché account e ruolo non sono visibili.');
     expect(caseSessionSource).toContain('Le decisioni della sessione generale non vengono importate.');
     expect(casePublisherSource).toContain('data-review-case-id={reviewCaseId}');
-    expect(caseRepositorySource).toContain(".eq('review_case_id', scope.reviewCaseId)");
+    expect(caseRepositorySource).toContain("'list_case_scoped_team_review_contributions_v1'");
+    expect(caseRepositorySource).not.toContain(".from('team_review_contributions')");
     expect(caseRepositorySource).toContain("'upsert_team_review_contribution_v3'");
     expect(caseRepositorySource).toContain("'record_team_review_outcome_v3'");
+    expect(caseCoordinationSource).toContain("data-team-review-coverage={item.coverageComplete ? 'complete' : 'incomplete'}");
+    expect(caseCoordinationSource).toContain("item.coverageComplete ? 'Porta all’esito' : 'Rinvia il punto'");
+    expect(caseCoordinationSource).toContain("!selectedItem.coverageComplete && teamOutcome !== 'defer'");
+    expect(comparisonReadMigration).toContain('security definer');
+    expect(comparisonReadMigration).toContain('SHARED_REVIEW_CASE_ASSIGNMENT_REQUIRED');
+    expect(comparisonReadMigration).toContain('shared_curriculum_review_case_assignments');
+    expect(comparisonReadMigration).toContain('grant execute on function public.list_case_scoped_team_review_contributions_v1');
     expect(migrationSource).toContain('team_review_contributions_case_identity_uidx');
     expect(migrationSource).toContain('and contribution.review_case_id = p_review_case_id');
     expect(migrationSource).toContain('A case-scoped contribution never satisfies another case.');
