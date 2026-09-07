@@ -242,7 +242,7 @@ export function SharedReviewCaseInbox({ order, targetClass, discipline, academic
       <details className="mt-2 rounded-xl border border-slate-200 bg-slate-50" data-hcm-level="3">
         <summary className="cursor-pointer px-3 py-2.5 text-xs font-bold text-slate-600">Verifica e tracciabilità</summary>
         <div className="space-y-2 border-t border-slate-200 p-3 text-[11px] leading-5 text-slate-600">
-          {operationalMembership && <p>Ambito operativo verificato: {operationalMembership.academicYear} · {group.code} · {discipline} · {operationalMembership.membershipState === 'FORMALIZZATO' ? 'formalizzato' : 'operativo provvisorio'}.</p>}
+          {operationalMembership && <p data-operational-review-scope>Ambito operativo verificato: {operationalMembership.academicYear} · {group.code} · {discipline} · {operationalMembership.membershipState === 'FORMALIZZATO' ? 'formalizzato' : 'operativo provvisorio'}.</p>}
           {assignedCases.map((reviewCase) => {
             const shared = getSharedReviewCaseContext(reviewCase);
             return <p key={reviewCase.id} className="break-all">Caso {reviewCase.id} · master {reviewCase.currentMaster.version} · assegnati {shared?.assignmentCount ?? 0}</p>;
