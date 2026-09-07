@@ -97,7 +97,7 @@
     "product_head": "2317b57fef35695f0c8373208d5b5f4898671478",
     "status": "DRAFT_OPERATIONAL_BASELINE",
     "cco_version": "1.5.0",
-    "cco_surfaces_version": "1.6.0"
+    "cco_surfaces_version": "1.6.1"
   },
   "source_logic": {
     "current_master_contract": "src/domain/curriculum/institute/currentSource.ts",
