@@ -93,6 +93,42 @@ export interface ImplementationObservation {
   createdAt: string;
 }
 
+export type RevisionTriggerType = 'EXTERNAL_NORMATIVE' | 'INSTITUTE_NEED' | 'PRACTICE_SIGNAL' | 'PERIODIC_REVIEW';
+export type RevisionTriggerQualificationBasis = 'AGGREGATED_PRACTICE_SIGNAL' | 'EXPLICIT_PROFESSIONAL_REASON';
+
+export interface RevisionTrigger {
+  id: string;
+  kind: 'REVISION_TRIGGER';
+  triggerType: RevisionTriggerType;
+  originOrSource: {
+    kind: 'PRACTICE_OBSERVATIONS';
+    observationIds: string[];
+    sourceArtifactIds: string[];
+  };
+  recordedAt: string;
+  applicability: {
+    order: SchoolOrder;
+    classOrAgeBand: string;
+    disciplineOrField: string;
+  };
+  potentialCurriculumScope: {
+    curriculumUnitKey: string;
+    signal?: ImplementationSignal;
+  };
+  qualificationState: 'QUALIFIED_FOR_TARGETED_REVIEW';
+  qualificationBasis: RevisionTriggerQualificationBasis;
+  professionalReason?: string;
+  currentMaster: {
+    id: 'CAN-CURR-MASTER-00';
+    driveFileId: string;
+    version: string;
+  };
+  cycleReentryPhase: 'H1_APPLICABLE_CURRICULUM';
+  automaticCurriculumChange: false;
+  automaticReviewCaseOpening: false;
+  parallelCurriculumBaselineCreation: false;
+}
+
 export interface UdaModel {
   id: string;
   title: string;
@@ -138,6 +174,7 @@ export interface UserState {
   decisions: Record<string, DecisionStatus>;
   customTexts: Record<string, string>;
   savedUda: UdaModel[];
+  revisionTriggers: RevisionTrigger[];
   activeRevisionFilter: 'all' | 'pending' | 'approved' | 'rejected';
   selectedTraguardi: number[];
   selectedObiettivi: number[];
