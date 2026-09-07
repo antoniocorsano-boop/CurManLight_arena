@@ -182,8 +182,9 @@ Questo documento descrive i percorsi che Arena deve rendere semplici e verificab
 1. Arena qualifica il segnale come `PRACTICE_SIGNAL`.
 2. Verifica ricorrenza, ambito e unità interessate.
 3. Non usa dati personali degli alunni come requisito del riesame.
-4. Se il segnale è qualificato, apre un `RevisionTrigger` collegato al master corrente.
-5. Il ciclo rientra dal `Quadro applicabile`.
+4. Se il segnale è qualificato, registra un `RevisionTrigger` collegato al master corrente.
+5. Il trigger non apre ancora automaticamente un `CurriculumReviewCase`.
+6. Il ciclo rientra dal `Quadro applicabile` quando un caso mirato viene aperto esplicitamente.
 
 **Successo:** la pratica può attivare il riesame senza trasformare impressioni isolate in modifiche automatiche.
 
@@ -257,11 +258,26 @@ Nel primo incremento H6 della candidata Beta:
 - prima della registrazione il docente deve confermare che l'osservazione non contiene nomi, voti, diagnosi o altri dati personali degli alunni;
 - l'osservazione viene salvata con la UDA e resta `RECORDED_FOR_AGGREGATION`;
 - l'aggregazione dei segnali è disponibile come conteggio descrittivo e non produce un punteggio pedagogico;
-- una singola osservazione non apre automaticamente un riesame e non modifica il curricolo;
-- la UX di qualificazione del `RevisionTrigger` resta un incremento successivo e non viene simulata da questa funzione.
+- una singola osservazione non apre automaticamente un riesame e non modifica il curricolo.
+
+---
+
+## 17. Proiezione corrente della qualificazione PRACTICE_SIGNAL
+
+Nel primo incremento `REVISION_TRIGGER_QUALIFICATION` della candidata Beta:
+- il pannello di qualificazione compare soltanto quando esiste almeno una `ImplementationObservation` collegata alla stessa `CurriculumUnit`;
+- Arena qualifica automaticamente la **condizione di ricorrenza**, ma non apre alcun caso: sono necessari almeno due segnali problematici dello stesso tipo sulla stessa unità curricolare;
+- i segnali positivi `ADEQUATE` ed `EFFECTIVE_VERTICAL_LINK` non vengono trasformati automaticamente in motivi di riesame problematico;
+- anche con una sola osservazione il docente può qualificare il motivo registrando una **motivazione professionale esplicita**;
+- la motivazione è limitata a 800 caratteri e non deve contenere dati degli alunni;
+- il `RevisionTrigger` persistito conserva osservazioni di origine, artefatti didattici, ambito applicabile, unità curricolare, master/versione e base di qualificazione;
+- il trigger rientra logicamente da `H1_APPLICABLE_CURRICULUM`, ma **non apre automaticamente** un `CurriculumReviewCase`;
+- `automaticCurriculumChange = false`, `automaticReviewCaseOpening = false` e `parallelCurriculumBaselineCreation = false` sono invarianti del dominio;
+- il linguaggio docente resta «Motivo di riesame qualificato», non il nome tecnico dell'oggetto;
+- le UX per `EXTERNAL_NORMATIVE`, `INSTITUTE_NEED` e `PERIODIC_REVIEW` restano incrementi successivi e non sono simulate da questa funzione.
 
 ---
 
 ## Criterio complessivo di accettazione
 
-I flow sono conformi quando il docente può svolgere il proprio compito senza conoscere pipeline, gate, membership IDs o struttura del repository; le autorità restano separate; la condivisione è verificabile e non simulabile localmente; le fonti sono verificabili; il curricolo alimenta la progettazione reale mediante binding versionati; un master non vigente resta riconoscibile come riferimento di lavoro; la pratica produce osservazioni professionali collegate e prive di dati personali degli alunni; nuove norme, esigenze d'Istituto e osservazioni dalla pratica possono riaprire il processo in modo mirato e tracciato.
+I flow sono conformi quando il docente può svolgere il proprio compito senza conoscere pipeline, gate, membership IDs o struttura del repository; le autorità restano separate; la condivisione è verificabile e non simulabile localmente; le fonti sono verificabili; il curricolo alimenta la progettazione reale mediante binding versionati; un master non vigente resta riconoscibile come riferimento di lavoro; la pratica produce osservazioni professionali collegate e prive di dati personali degli alunni; un motivo di riesame dalla pratica richiede ricorrenza o motivazione esplicita e non apre automaticamente un caso; nuove norme, esigenze d'Istituto e osservazioni dalla pratica possono riaprire il processo in modo mirato e tracciato.
