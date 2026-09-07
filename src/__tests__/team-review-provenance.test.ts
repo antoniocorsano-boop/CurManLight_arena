@@ -7,6 +7,7 @@ import {
   teamReviewContextLabel,
   teamReviewVersionStatusLabel,
 } from '../domain/revision/teamReviewProvenance';
+import sharedCaseMigration from '../../supabase/migrations/20260907064000_shared_curriculum_review_case_discovery.sql?raw';
 
 const fingerprint = 'a'.repeat(64);
 
@@ -85,5 +86,20 @@ describe('Arena team review provenance', () => {
   it('keeps the technical fingerprint out of the human-readable version status', () => {
     expect(teamReviewVersionStatusLabel(0)).toBe('Versione corrente · contributi validi per questa versione');
     expect(teamReviewVersionStatusLabel(2)).toBe('Versione corrente · alcuni contributi devono essere riallineati');
+  });
+
+  it('derives shared review case assignment from verified workspace and operational discipline scope', () => {
+    for (const token of [
+      'shared_curriculum_review_case_assignments',
+      "v_workspace_role not in ('dipartimento','referente')",
+      'SHARED_REVIEW_CASE_ASSIGN_REQUIRED',
+      'OPERATIONAL_DISCIPLINE_MEMBERSHIP_REQUIRED',
+      "membership.role in ('docente','dipartimento','referente')",
+      "operational.membership_state in ('OPERATIVO_PROVVISORIO','FORMALIZZATO')",
+      'p_discipline = any(operational.disciplines)',
+      'assignment.assigned_user_id = v_user',
+      'SHARED_REVIEW_CASE_ID_REUSE_MISMATCH',
+      'revoke all on public.shared_curriculum_review_cases from public, anon, authenticated',
+    ]) expect(sharedCaseMigration).toContain(token);
   });
 });
