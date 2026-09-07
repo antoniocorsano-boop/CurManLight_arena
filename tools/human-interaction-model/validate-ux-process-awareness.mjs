@@ -9,12 +9,16 @@ const assert = (condition, message) => { if (!condition) failures.push(message);
 
 const cco = readJson('.human/operational-communication.contract.json');
 const surfaces = readJson('.human/operational-communication.surfaces.json');
+const visualAcceptance = readJson('docs/04_product_experience/evidence/HUMAN_VISUAL_RETEST_R1_1_2026-09-07.json');
 const ccoDocs = readText('docs/04_product_experience/11_OPERATIONAL_COMMUNICATION_CONTRACT.md');
 const ia = readText('docs/04_product_experience/01_INFORMATION_ARCHITECTURE.md');
 const flows = readText('docs/04_product_experience/09_USER_FLOWS.md');
 
 assert(cco.version === '1.5.0', 'CCO deve essere 1.5.0');
-assert(surfaces.version === '1.6.0', 'CCO-SURFACES deve essere 1.6.0');
+assert(surfaces.version === '1.6.1', 'CCO-SURFACES deve essere 1.6.1 dopo il retest visivo R1.1');
+assert(visualAcceptance.human_verdict === 'PASS', 'il retest visivo umano R1.1 deve risultare PASS');
+assert(visualAcceptance.governance_effect?.new_status === 'conformant', 'il retest R1.1 deve autorizzare conformant');
+assert(Object.values(visualAcceptance.acceptance_checks ?? {}).every((value) => value === true), 'tutti i controlli del retest visivo R1.1 devono essere true');
 
 for (const principle of [
   'process_awareness_is_part_of_operational_usability',
@@ -69,18 +73,23 @@ for (const key of [
   'return_to_general_context_after_completion_must_be_explicit',
 ]) assert(cco.acceptance?.[key] === true, `acceptance.${key} deve essere true`);
 
-const byId = new Map((surfaces.surfaces ?? []).map((surface) => [surface.id, surface]));
-for (const id of [
+const promotedCaseScopedSurfaceIds = [
   'case-aware-revision-surface',
   'case-scoped-experience-shell',
   'case-scoped-work-session-content',
   'case-scoped-team-contribution-publisher',
   'case-scoped-team-coordination-workspace',
-]) {
+];
+const promotedFromEvidence = new Set(visualAcceptance.governance_effect?.cco_surfaces_registry_promoted ?? []);
+const byId = new Map((surfaces.surfaces ?? []).map((surface) => [surface.id, surface]));
+for (const id of promotedCaseScopedSurfaceIds) {
   const surface = byId.get(id);
   assert(surface, `superficie case-scoped non registrata: ${id}`);
-  assert(surface?.status === 'migration', `superficie ${id} deve restare migration fino all'accettazione visiva`);
-  assert(Boolean(surface?.migration_goal?.trim()), `superficie ${id} priva di migration_goal`);
+  assert(promotedFromEvidence.has(id), `superficie ${id} non coperta dalla prova visiva R1.1`);
+  assert(surface?.status === 'conformant', `superficie ${id} deve essere conformant dopo l'accettazione visiva R1.1`);
+  assert(Boolean(surface?.operational_context?.trim()), `superficie ${id} priva di operational_context`);
+  assert(Boolean(surface?.primary_task?.trim()), `superficie ${id} priva di primary_task`);
+  assert(Array.isArray(surface?.required_tokens) && surface.required_tokens.length > 0, `superficie ${id} priva di required_tokens`);
 }
 assert(byId.get('shared-review-case-inbox')?.status === 'conformant', 'SharedReviewCaseInbox deve restare conformant');
 assert(byId.get('mobile-primary-navigation')?.status === 'conformant', 'mobile-primary-navigation deve restare conformant');
