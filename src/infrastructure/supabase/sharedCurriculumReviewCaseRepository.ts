@@ -6,6 +6,7 @@ import {
   type SharedCurriculumReviewCase,
   type SharedReviewCaseRow,
 } from '../../domain/curriculum/sharedReviewCase';
+import { formatInstitutionalAcademicYear, parseSchoolYear } from '../../lib/academicYear';
 import type { CurriculumReviewCase } from '../../types/curriculum';
 
 export interface SharedReviewCaseScope {
@@ -31,8 +32,21 @@ const assertContext = (context: WorkspaceActorContext, workspaceId: string): voi
   }
 };
 
+export const normalizeSharedReviewAcademicYear = (value: string): string => {
+  const trimmed = value.trim();
+  const institutional = trimmed.match(/^(\d{4})\/(\d{4})$/);
+  if (institutional) {
+    const start = Number.parseInt(institutional[1], 10);
+    const end = Number.parseInt(institutional[2], 10);
+    if (end === start + 1) return `${start}/${end}`;
+  }
+  const parsed = parseSchoolYear(trimmed);
+  if (parsed) return formatInstitutionalAcademicYear(parsed);
+  throw new Error('Anno scolastico non valido.');
+};
+
 const assertScope = (scope: SharedReviewCaseScope): void => {
-  if (!/^\d{4}\/\d{4}$/.test(scope.academicYear)) throw new Error('Anno scolastico non valido.');
+  normalizeSharedReviewAcademicYear(scope.academicYear);
   if (!scope.discipline.trim()) throw new Error('Disciplina non valida.');
 };
 
@@ -66,6 +80,7 @@ export class SupabaseSharedCurriculumReviewCaseRepository {
   ): Promise<PublishSharedReviewCaseReceipt> {
     assertContext(context, input.workspaceId);
     assertScope(input);
+    const academicYear = normalizeSharedReviewAcademicYear(input.academicYear);
     const reviewCase = input.reviewCase;
     if (reviewCase.kind !== 'CURRICULUM_REVIEW_CASE' || !reviewCase.targetScopeFrozen) {
       throw new Error('Solo un CurriculumReviewCase aperto e con perimetro congelato può essere assegnato.');
@@ -76,7 +91,7 @@ export class SupabaseSharedCurriculumReviewCaseRepository {
 
     const { data, error } = await this.client.rpc('publish_curriculum_review_case_v1', {
       p_workspace_id: input.workspaceId,
-      p_academic_year: input.academicYear,
+      p_academic_year: academicYear,
       p_group_code: input.groupCode,
       p_discipline: input.discipline,
       p_case_id: reviewCase.id,
@@ -116,9 +131,10 @@ export class SupabaseSharedCurriculumReviewCaseRepository {
   ): Promise<SharedCurriculumReviewCase[]> {
     assertContext(context, scope.workspaceId);
     assertScope(scope);
+    const academicYear = normalizeSharedReviewAcademicYear(scope.academicYear);
     const { data, error } = await this.client.rpc('list_my_assigned_curriculum_review_cases_v1', {
       p_workspace_id: scope.workspaceId,
-      p_academic_year: scope.academicYear,
+      p_academic_year: academicYear,
       p_group_code: scope.groupCode,
       p_discipline: scope.discipline,
     });
