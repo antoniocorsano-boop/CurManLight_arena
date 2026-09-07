@@ -4,9 +4,13 @@ import {
   evaluateCurriculumReviewCaseReadiness,
   reviewCaseMatchesCurrentUnit,
 } from '../../../domain/curriculum/reviewCase';
+import {
+  buildCaseScopedCurriculumWorkSession,
+  resumeCaseWorkSession,
+} from '../../../domain/curriculum/caseWorkSession';
 import { resolveCurriculumUnitReference } from '../../../domain/curriculum/didacticBinding';
 import { useCurriculumStore } from '../../../store/useCurriculumStore';
-import type { Proposal, RevisionTrigger, SchoolOrder } from '../../../types/curriculum';
+import type { CurriculumReviewCase, Proposal, RevisionTrigger, SchoolOrder } from '../../../types/curriculum';
 
 type CurriculumReviewCasePanelProps = {
   order: SchoolOrder;
@@ -66,6 +70,33 @@ export function CurriculumReviewCasePanel({
 
   if (relevantTriggers.length === 0 && relevantCases.length === 0) return null;
 
+  const replaceCase = (reviewCaseId: string, updater: (reviewCase: CurriculumReviewCase) => CurriculumReviewCase) => {
+    useCurriculumStore.setState((state) => ({
+      curriculumReviewCases: (state.curriculumReviewCases ?? []).map((reviewCase) => reviewCase.id === reviewCaseId ? updater(reviewCase) : reviewCase),
+    }));
+  };
+
+  const startOrResumeCase = (reviewCase: CurriculumReviewCase) => {
+    try {
+      if (reviewCase.workSession?.sessionState === 'COMPLETE') return;
+      const workSession = reviewCase.workSession
+        ? resumeCaseWorkSession(reviewCase.workSession, actorId)
+        : buildCaseScopedCurriculumWorkSession({ reviewCase, availableProposals: proposals, actorId });
+      replaceCase(reviewCase.id, (stored) => ({
+        ...stored,
+        workSession,
+        caseState: 'PROFESSIONAL_VALIDATION_IN_PROGRESS',
+        currentHumanPhase: 'H2_PROFESSIONAL_VALIDATION',
+        professionalValidationState: 'IN_PROGRESS',
+      }));
+    } catch (error) {
+      setFeedbackByTrigger((current) => ({
+        ...current,
+        [reviewCase.originTriggerSnapshot.id]: error instanceof Error ? error.message : 'Sessione del caso non avviabile.',
+      }));
+    }
+  };
+
   const toggleProposal = (triggerId: string, proposalRef: string) => {
     setFeedbackByTrigger((current) => ({ ...current, [triggerId]: '' }));
     setSelectedByTrigger((current) => {
@@ -98,7 +129,7 @@ export function CurriculumReviewCasePanel({
       }));
       setFeedbackByTrigger((current) => ({
         ...current,
-        [trigger.id]: 'Caso mirato aperto. Rientra dal quadro applicabile; la validazione professionale del nuovo caso non è stata ancora avviata.',
+        [trigger.id]: 'Caso mirato aperto. Ora puoi avviare esplicitamente una nuova sessione professionale sulle sole schede selezionate.',
       }));
     } catch (error) {
       const code = error instanceof Error ? error.message : String(error);
@@ -122,12 +153,12 @@ export function CurriculumReviewCasePanel({
     >
       <h2 id="targeted-review-case-title" className="text-sm font-extrabold text-slate-900">Apri solo il riesame necessario</h2>
       <p className="mt-1 text-xs leading-5 text-slate-600">
-        Un motivo qualificato non riapre automaticamente il curricolo. Seleziona esplicitamente le schede realmente interessate e registra perché devono essere riesaminate.
+        Un motivo qualificato non riapre automaticamente il curricolo. Seleziona le schede realmente interessate; la nuova sessione partirà vuota e resterà legata al caso.
       </p>
 
       <div className="mt-4 space-y-3">
         {relevantTriggers.map((trigger) => {
-          const existingCase = relevantCases.find((reviewCase) => reviewCase.originTriggerSnapshot.id === trigger.id);
+          const existingCase = relevantCases.find((reviewCase) => reviewCase.originTriggerSnapshot.id === trigger.id && reviewCase.caseState !== 'PROFESSIONAL_REVIEW_COMPLETE');
           const selectedProposalRefs = selectedByTrigger[trigger.id] ?? [];
           const scopeReason = reasonByTrigger[trigger.id] ?? '';
           const readiness = evaluateCurriculumReviewCaseReadiness({
@@ -153,7 +184,7 @@ export function CurriculumReviewCasePanel({
                 <div className="mt-3 rounded-xl border border-emerald-200 bg-emerald-50 p-3" data-open-curriculum-review-case={existingCase.id}>
                   <strong className="block text-sm text-emerald-950">Caso mirato aperto</strong>
                   <p className="mt-1 text-xs leading-5 text-emerald-900">
-                    {existingCase.targetedProposalRefs.length} schede · rientro da Quadro applicabile · validazione professionale non ancora avviata.
+                    {existingCase.targetedProposalRefs.length} schede · rientro da Quadro applicabile · {existingCase.professionalValidationState === 'NOT_STARTED' ? 'validazione non avviata' : 'sessione professionale avviata'}.
                   </p>
                   <p className="mt-2 text-xs leading-5 text-slate-700"><strong>Perimetro:</strong> {existingCase.scopeReason}</p>
                   <ul className="mt-2 space-y-1 text-xs text-slate-600">
@@ -162,8 +193,18 @@ export function CurriculumReviewCasePanel({
                     ))}
                   </ul>
                   <p className="mt-2 text-[11px] leading-5 text-emerald-900">
-                    Nessuna scelta precedente viene riutilizzata automaticamente e nessun esito, decisione istituzionale o aggiornamento del master viene prodotto dall’apertura del caso.
+                    Nessuna scelta o condivisione precedente viene importata. La sessione usa un’identità condivisa che include il caso.
                   </p>
+                  {existingCase.workSession?.sessionState !== 'COMPLETE' && (
+                    <button
+                      type="button"
+                      onClick={() => startOrResumeCase(existingCase)}
+                      data-human-next-action="start-case-scoped-work-session"
+                      className="mt-3 min-h-11 rounded-xl bg-indigo-700 px-4 py-2.5 text-sm font-bold text-white"
+                    >
+                      {existingCase.workSession ? 'Riprendi il riesame mirato' : 'Avvia il riesame mirato'}
+                    </button>
+                  )}
                 </div>
               ) : (
                 <div className="mt-3 space-y-3">
@@ -172,12 +213,7 @@ export function CurriculumReviewCasePanel({
                     <div className="mt-2 grid gap-2">
                       {proposals.map((proposal) => (
                         <label key={proposal.id} className="flex cursor-pointer items-start gap-3 rounded-lg border border-slate-200 bg-white p-3 text-xs leading-5 text-slate-700">
-                          <input
-                            type="checkbox"
-                            checked={selectedProposalRefs.includes(proposal.id)}
-                            onChange={() => toggleProposal(trigger.id, proposal.id)}
-                            className="mt-0.5 h-4 w-4 shrink-0"
-                          />
+                          <input type="checkbox" checked={selectedProposalRefs.includes(proposal.id)} onChange={() => toggleProposal(trigger.id, proposal.id)} className="mt-0.5 h-4 w-4 shrink-0" />
                           <span><strong className="block text-slate-900">{proposal.focus}</strong>{proposal.scopeLabel && <span className="text-slate-500">{proposal.scopeLabel}</span>}</span>
                         </label>
                       ))}
@@ -186,18 +222,7 @@ export function CurriculumReviewCasePanel({
 
                   <div>
                     <label htmlFor={`case-scope-${trigger.id}`} className="text-xs font-bold text-slate-800">Perché proprio queste schede?</label>
-                    <textarea
-                      id={`case-scope-${trigger.id}`}
-                      value={scopeReason}
-                      onChange={(event) => {
-                        setReasonByTrigger((current) => ({ ...current, [trigger.id]: event.target.value }));
-                        setFeedbackByTrigger((current) => ({ ...current, [trigger.id]: '' }));
-                      }}
-                      rows={3}
-                      maxLength={1200}
-                      className="mt-2 w-full rounded-xl border border-slate-300 bg-white p-3 text-sm leading-6 text-slate-800"
-                      placeholder="Delimita il perimetro del caso; non ripetere soltanto il motivo generale del trigger…"
-                    />
+                    <textarea id={`case-scope-${trigger.id}`} value={scopeReason} onChange={(event) => { setReasonByTrigger((current) => ({ ...current, [trigger.id]: event.target.value })); setFeedbackByTrigger((current) => ({ ...current, [trigger.id]: '' })); }} rows={3} maxLength={1200} className="mt-2 w-full rounded-xl border border-slate-300 bg-white p-3 text-sm leading-6 text-slate-800" placeholder="Delimita il perimetro del caso; non ripetere soltanto il motivo generale del trigger…" />
                   </div>
 
                   <div className="rounded-xl border border-slate-200 bg-white p-3" data-review-case-readiness={readiness.state}>
@@ -211,28 +236,18 @@ export function CurriculumReviewCasePanel({
                     </ul>
                   </div>
 
-                  <button
-                    type="button"
-                    onClick={() => openCase(trigger)}
-                    disabled={readiness.state !== 'READY_TO_OPEN'}
-                    data-human-next-action="open-targeted-review-case"
-                    className="min-h-11 w-full rounded-xl bg-indigo-700 px-4 py-2.5 text-sm font-bold text-white disabled:cursor-not-allowed disabled:opacity-40 sm:w-auto"
-                  >
-                    Apri il caso mirato
-                  </button>
-
-                  {feedbackByTrigger[trigger.id] && (
-                    <p role="status" className="rounded-lg bg-white p-3 text-xs leading-5 text-slate-700">{feedbackByTrigger[trigger.id]}</p>
-                  )}
+                  <button type="button" onClick={() => openCase(trigger)} disabled={readiness.state !== 'READY_TO_OPEN'} data-human-next-action="open-targeted-review-case" className="min-h-11 w-full rounded-xl bg-indigo-700 px-4 py-2.5 text-sm font-bold text-white disabled:cursor-not-allowed disabled:opacity-40 sm:w-auto">Apri il caso mirato</button>
                 </div>
               )}
+
+              {feedbackByTrigger[trigger.id] && <p role="status" className="mt-3 rounded-lg bg-white p-3 text-xs leading-5 text-slate-700">{feedbackByTrigger[trigger.id]}</p>}
             </article>
           );
         })}
       </div>
 
       <p className="mt-4 border-t border-slate-100 pt-3 text-[11px] leading-5 text-slate-500">
-        RevisionTrigger ≠ CurriculumReviewCase ≠ ProfessionalContribution. L’apertura del caso congela soltanto il perimetro da riesaminare e non riutilizza automaticamente contributi o decisioni precedenti.
+        RevisionTrigger ≠ CurriculumReviewCase ≠ CurriculumWorkSession ≠ ProfessionalContribution. Ogni nuova sessione parte senza carry-forward e con perimetro congelato dal caso.
       </p>
     </section>
   );
