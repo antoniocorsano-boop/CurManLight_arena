@@ -1,6 +1,6 @@
 {
   "registry_id": "ARENA-PRODUCT-DOCS",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "date": "2026-09-07",
   "product_vision": {
     "id": "ARENA-PRODUCT-VISION",
@@ -79,6 +79,17 @@
     "implementation_observation_requires_personal_data_absence_confirmation": true,
     "implementation_observation_never_changes_curriculum_automatically": true,
     "practice_signal_aggregation_available": true,
+    "practice_revision_trigger_qualification_implemented": true,
+    "practice_revision_trigger_persisted_in_arena_state": true,
+    "practice_revision_trigger_requires_aggregation_or_explicit_reason": true,
+    "practice_revision_trigger_references_current_master_and_unit": true,
+    "practice_revision_trigger_reenters_at_applicable_curriculum": true,
+    "practice_revision_trigger_never_opens_review_case_automatically": true,
+    "practice_revision_trigger_never_changes_curriculum_automatically": true,
+    "practice_revision_trigger_never_creates_parallel_baseline": true,
+    "external_normative_trigger_ux_implemented": false,
+    "institute_need_trigger_ux_implemented": false,
+    "periodic_review_trigger_ux_implemented": false,
     "revision_trigger_ux_implemented": false,
     "target_ui_fully_implemented": false,
     "human_end_to_end_pilot_complete": false
