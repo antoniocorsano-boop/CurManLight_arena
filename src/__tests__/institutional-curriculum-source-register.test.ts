@@ -10,6 +10,7 @@ import currentPanelSource from '../features/documents/components/InstituteCurren
 import panelSource from '../features/documents/components/InstituteCurriculumSourceRegisterPanel.tsx?raw';
 import localRegistrySource from '../features/documents/components/FontiTab.tsx?raw';
 import workspaceSource from '../features/documents/components/FontiWorkspace.tsx?raw';
+import normativeIntentSource from '../features/documents/lib/normativeReviewIntent.ts?raw';
 import appViewsSource from '../features/session/components/AppViewsLayer.tsx?raw';
 import qualificationPanelSource from '../features/curriculum/components/RevisionTriggerQualificationPanel.tsx?raw';
 
@@ -73,7 +74,7 @@ describe('institutional curriculum source register', () => {
 
   it('places master, institutional sources and local archive in the intended hierarchy', () => {
     const currentMasterIndex = workspaceSource.indexOf('<InstituteCurrentSourcePanel />');
-    const sourceRegisterIndex = workspaceSource.indexOf('<InstituteCurriculumSourceRegisterPanel onRequestNormativeReview={onRequestNormativeReview} />');
+    const sourceRegisterIndex = workspaceSource.indexOf('<InstituteCurriculumSourceRegisterPanel />');
     const localRegistryIndex = workspaceSource.indexOf('<SourceRegistry {...props} />');
     expect(currentMasterIndex).toBeGreaterThan(-1);
     expect(sourceRegisterIndex).toBeGreaterThan(currentMasterIndex);
@@ -111,11 +112,13 @@ describe('institutional curriculum source register', () => {
   it('routes only the qualified institutional repertory to the existing revision surface', () => {
     expect(panelSource).toContain('data-source-review-action');
     expect(panelSource).toContain('Valuta l’impatto sul curricolo');
-    expect(panelSource).toContain('onRequestNormativeReview(source.code)');
+    expect(panelSource).toContain('requestNormativeReview(source.code)');
     expect(panelSource).toContain('non crea automaticamente un caso e non modifica il master');
-    expect(workspaceSource).toContain('onRequestNormativeReview={onRequestNormativeReview}');
+    expect(normativeIntentSource).toContain("NORMATIVE_REVIEW_REQUEST_EVENT = 'arena:normative-review-request'");
+    expect(normativeIntentSource).toContain('window.dispatchEvent(new CustomEvent');
+    expect(appViewsSource).toContain('window.addEventListener(NORMATIVE_REVIEW_REQUEST_EVENT, handleNormativeReviewRequest)');
     expect(appViewsSource).toContain('setNormativeReviewSourceCode(sourceCode)');
-    expect(appViewsSource).toContain("safeHandleTabSwitch('revisione')");
+    expect(appViewsSource).toContain("props.handleTabSwitch('revisione')");
     expect(appViewsSource).toContain('initialNormativeSourceCode={normativeReviewSourceCode}');
     expect(qualificationPanelSource).toContain('INSTITUTE_CURRICULUM_AUTHORITATIVE_SOURCES');
     expect(qualificationPanelSource).toContain("sourceQualification: 'QUALIFIED'");
