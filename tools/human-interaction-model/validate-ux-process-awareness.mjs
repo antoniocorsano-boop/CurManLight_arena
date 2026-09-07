@@ -1,0 +1,125 @@
+import fs from 'node:fs';
+import path from 'node:path';
+
+const root = process.cwd();
+const readText = (p) => fs.readFileSync(path.join(root, p), 'utf8');
+const readJson = (p) => JSON.parse(readText(p));
+const failures = [];
+const assert = (condition, message) => { if (!condition) failures.push(message); };
+
+const cco = readJson('.human/operational-communication.contract.json');
+const surfaces = readJson('.human/operational-communication.surfaces.json');
+const ccoDocs = readText('docs/04_product_experience/11_OPERATIONAL_COMMUNICATION_CONTRACT.md');
+const ia = readText('docs/04_product_experience/01_INFORMATION_ARCHITECTURE.md');
+const flows = readText('docs/04_product_experience/09_USER_FLOWS.md');
+
+assert(cco.version === '1.5.0', 'CCO deve essere 1.5.0');
+assert(surfaces.version === '1.6.0', 'CCO-SURFACES deve essere 1.6.0');
+
+for (const principle of [
+  'process_awareness_is_part_of_operational_usability',
+  'future_process_orientation_may_remain_visible_without_future_controls',
+  'process_context_must_survive_stage_transition',
+  'viewport_continuity_must_preserve_process_orientation',
+  'completion_must_be_acknowledged_before_context_exit',
+  'layer_boundaries_must_be_structural',
+]) assert(cco.principles?.[principle] === true, `principio UX mancante: ${principle}`);
+
+const awareness = cco.process_awareness ?? {};
+assert(awareness.required === true, 'process_awareness deve essere required');
+assert(JSON.stringify(awareness.canonical_progression) === JSON.stringify(['ESAMINA','CONDIVIDI','CONFRONTA','REGISTRA_L_ESITO']), 'progressione comunicativa non canonica');
+for (const key of [
+  'future_steps_may_be_visible_as_noninteractive_orientation',
+  'future_controls_must_remain_hidden_until_relevant',
+  'past_steps_must_compact_not_disappear_without_context',
+  'single_progress_indicator',
+  'technical_objects_must_not_be_required_to_understand_process',
+  'authority_boundary_must_be_expressed_in_professional_language',
+  'completion_must_be_acknowledged_in_same_workframe_before_exit',
+  'return_to_general_context_after_completion_must_be_explicit',
+  'lifecycle_future_stage_hidden_rule_applies_to_controls_and_task_content_not_noninteractive_orientation_labels',
+]) assert(awareness[key] === true, `process_awareness.${key} deve essere true`);
+
+const progression = cco.layers?.workflow_progression ?? {};
+for (const key of [
+  'future_step_labels_may_remain_visible_for_orientation',
+  'future_step_labels_must_not_be_interactive',
+  'viewport_anchor_must_remain_stable_across_stage_changes',
+  'stage_change_must_not_land_midpage',
+  'completion_must_render_in_same_workframe_before_exit',
+  'return_to_general_context_after_completion_requires_explicit_action',
+]) assert(progression[key] === true, `workflow_progression.${key} deve essere true`);
+
+const viewport = cco.viewport_stability ?? {};
+assert(viewport.reference_mobile_viewport === '390x844', 'viewport mobile di riferimento inatteso');
+for (const key of [
+  'page_scroll_must_not_encode_stage_progression',
+  'page_viewport_anchor_must_not_jump_on_stage_transition',
+  'internal_workframe_may_reset_to_start_only_after_real_stage_transition',
+  'primary_action_must_not_be_obscured_by_mobile_navigation',
+  'terminal_state_must_be_visible_before_context_replacement',
+]) assert(viewport[key] === true, `viewport_stability.${key} deve essere true`);
+
+for (const key of [
+  'process_position_must_be_visible_at_level_1',
+  'future_orientation_labels_must_not_be_future_controls',
+  'technical_traceability_must_be_absent_from_default_level_1',
+  'stage_transition_must_preserve_viewport_orientation',
+  'completion_must_be_acknowledged_before_return_to_general_context',
+  'return_to_general_context_after_completion_must_be_explicit',
+]) assert(cco.acceptance?.[key] === true, `acceptance.${key} deve essere true`);
+
+const byId = new Map((surfaces.surfaces ?? []).map((surface) => [surface.id, surface]));
+for (const id of [
+  'case-aware-revision-surface',
+  'case-scoped-experience-shell',
+  'case-scoped-work-session-content',
+  'case-scoped-team-contribution-publisher',
+  'case-scoped-team-coordination-workspace',
+]) {
+  const surface = byId.get(id);
+  assert(surface, `superficie case-scoped non registrata: ${id}`);
+  assert(surface?.status === 'migration', `superficie ${id} deve restare migration fino all'accettazione visiva`);
+  assert(Boolean(surface?.migration_goal?.trim()), `superficie ${id} priva di migration_goal`);
+}
+assert(byId.get('shared-review-case-inbox')?.status === 'conformant', 'SharedReviewCaseInbox deve restare conformant');
+assert(byId.get('mobile-primary-navigation')?.status === 'conformant', 'mobile-primary-navigation deve restare conformant');
+
+const shell = readText('src/features/beta/CaseScopedExperienceShell.tsx');
+for (const token of [
+  'data-case-ux-consolidated-shell',
+  'data-ux-layering="L1-L2-L3"',
+  'data-case-ux-workframe',
+  'data-viewport-anchor="stable-current-task"',
+  'Passo {stageIndex + 1} di {STAGES.length}',
+  'Verifica e tracciabilità',
+]) assert(shell.includes(token), `shell UX priva del marker di consolidamento: ${token}`);
+
+for (const token of [
+  'CCO-R7 — consapevolezza del processo e continuità percettiva',
+  'Una etichetta di orientamento non è un controllo di fase',
+  'Arena nasconde la complessità tecnica, non il senso del processo.',
+  '390×844',
+]) assert(ccoDocs.includes(token), `documento CCO privo della scelta: ${token}`);
+
+for (const token of [
+  'Consapevolezza del processo e continuità percettiva',
+  'etichette non interattive',
+  'stesso workframe',
+  '390×844',
+]) assert(ia.includes(token), `IA priva della scelta: ${token}`);
+
+for (const token of [
+  'Regola trasversale di consapevolezza del processo e continuità del workframe',
+  'Esamina → Condividi → Confronta → Registra l’esito',
+  'il futuro può comparire soltanto come etichetta non interattiva di orientamento',
+  'ritorno al contesto generale **Riesame** dopo la conclusione richiede un gesto esplicito',
+  'Il pilot umano multi-attore è concluso',
+]) assert(flows.includes(token), `User flows privi della scelta: ${token}`);
+
+if (failures.length) {
+  for (const failure of failures) console.error(`UX_PROCESS_AWARENESS_FAIL: ${failure}`);
+  process.exit(1);
+}
+
+console.log('UX_PROCESS_AWARENESS_PASS');
