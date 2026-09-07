@@ -177,6 +177,13 @@ export function CaseScopedTeamCoordinationWorkspace({
   const selectedItem = outcomeProposalRef ? summary.items.find((item) => item.proposalRef === outcomeProposalRef) ?? null : null;
 
   useEffect(() => {
+    if (mode === 'record' && selectedItem && !selectedItem.coverageComplete && teamOutcome !== 'defer') {
+      setTeamOutcome('defer');
+      setSharedText('');
+    }
+  }, [mode, selectedItem?.proposalRef, selectedItem?.coverageComplete, teamOutcome]);
+
+  useEffect(() => {
     onSessionStateChange?.({
       total: summary.total,
       resolvedCount: resolved.length,
@@ -188,6 +195,10 @@ export function CaseScopedTeamCoordinationWorkspace({
 
   const recordOutcome = async () => {
     if (!caseRepository || !team.selectedMembership || !team.session || !scope || !selectedItem || !canRecordTeamOutcome) return;
+    if (!selectedItem.coverageComplete && teamOutcome !== 'defer') {
+      setMessage('La copertura del caso è incompleta: puoi soltanto rinviare il punto oppure attendere i contributi mancanti.');
+      return;
+    }
     if (!rationale.trim()) {
       setMessage('Aggiungi la motivazione sintetica dell’esito concordato dal gruppo.');
       return;
@@ -237,6 +248,9 @@ export function CaseScopedTeamCoordinationWorkspace({
   }
 
   if (mode === 'record') {
+    const outcomeOptions = selectedItem && !selectedItem.coverageComplete
+      ? ([['defer', TEAM_OUTCOME_LABELS.defer]] as const)
+      : (Object.entries(TEAM_OUTCOME_LABELS) as [TeamReviewOutcome, string][]);
     return (
       <section className="space-y-3 rounded-2xl border border-indigo-200 bg-white p-4" data-case-team-outcome-recording>
         {!selectedItem ? (
@@ -246,17 +260,18 @@ export function CaseScopedTeamCoordinationWorkspace({
             <div>
               <span className="text-[10px] font-black uppercase text-indigo-700">Caso mirato</span>
               <strong className="mt-1 block text-sm text-slate-900">{selectedItem.focus}</strong>
+              {!selectedItem.coverageComplete && <p className="mt-1 text-xs text-amber-800">Copertura incompleta: da questa fase è consentito soltanto rinviare il punto.</p>}
             </div>
             <label className="block text-xs font-bold text-slate-700">Esito
               <select value={teamOutcome} onChange={(event) => setTeamOutcome(event.target.value as TeamReviewOutcome)} className="mt-1 min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3">
-                {Object.entries(TEAM_OUTCOME_LABELS).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+                {outcomeOptions.map(([value, label]) => <option key={value} value={value}>{label}</option>)}
               </select>
             </label>
             {teamOutcome === 'shared-text' && (
               <textarea value={sharedText} onChange={(event) => setSharedText(event.target.value)} rows={3} className="w-full rounded-xl border border-slate-300 p-3 text-sm" placeholder="Testo condiviso concordato…" />
             )}
             <textarea value={rationale} onChange={(event) => setRationale(event.target.value)} rows={3} className="w-full rounded-xl border border-slate-300 p-3 text-sm" placeholder="Motivazione dell’esito professionale…" />
-            <button type="button" disabled={busy || !canRecordTeamOutcome} onClick={() => void recordOutcome()} className="min-h-11 w-full rounded-xl bg-indigo-700 px-4 py-3 text-sm font-bold text-white disabled:opacity-40">{busy ? 'Registrazione…' : 'Registra l’esito del caso'}</button>
+            <button type="button" disabled={busy || !canRecordTeamOutcome || (!selectedItem.coverageComplete && teamOutcome !== 'defer')} onClick={() => void recordOutcome()} className="min-h-11 w-full rounded-xl bg-indigo-700 px-4 py-3 text-sm font-bold text-white disabled:opacity-40">{busy ? 'Registrazione…' : 'Registra l’esito del caso'}</button>
           </>
         )}
         {message && <p role="status" className="rounded-lg bg-slate-50 p-3 text-xs text-slate-700">{message}</p>}
@@ -273,7 +288,7 @@ export function CaseScopedTeamCoordinationWorkspace({
       {summary.items.map((item) => {
         const outcome = latest[item.proposalRef];
         return (
-          <article key={item.proposalRef} className="rounded-xl border border-slate-200 bg-white p-3">
+          <article key={item.proposalRef} className="rounded-xl border border-slate-200 bg-white p-3" data-team-review-coverage={item.coverageComplete ? 'complete' : 'incomplete'}>
             <div className="flex items-start justify-between gap-3">
               <div>
                 <strong className="text-sm text-slate-900">{item.focus}</strong>
@@ -282,7 +297,14 @@ export function CaseScopedTeamCoordinationWorkspace({
               {outcome && <span className="rounded-full bg-emerald-50 px-2 py-1 text-[10px] font-bold text-emerald-800">Esito registrato</span>}
             </div>
             {!outcome && canRecordTeamOutcome && (
-              <button type="button" onClick={() => onRequestRecordOutcome?.(item.proposalRef)} className="mt-3 min-h-10 rounded-xl border border-indigo-300 bg-indigo-50 px-3 py-2 text-xs font-bold text-indigo-900">Porta all’esito</button>
+              <button
+                type="button"
+                onClick={() => onRequestRecordOutcome?.(item.proposalRef)}
+                data-human-next-action={item.coverageComplete ? 'record-case-outcome' : 'defer-case-outcome'}
+                className="mt-3 min-h-10 rounded-xl border border-indigo-300 bg-indigo-50 px-3 py-2 text-xs font-bold text-indigo-900"
+              >
+                {item.coverageComplete ? 'Porta all’esito' : 'Rinvia il punto'}
+              </button>
             )}
           </article>
         );
