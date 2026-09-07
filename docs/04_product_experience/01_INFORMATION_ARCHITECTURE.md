@@ -291,3 +291,24 @@ L'architettura è conforme quando:
 - il riesame può essere innescato da norme future, esigenze d'Istituto, pratica o periodicità;
 - nessun trigger o segnale modifica automaticamente il master;
 - la catena di autorità resta distinguibile in ogni passaggio.
+
+---
+
+## 13. Proiezione corrente — CurriculumReviewCase → CurriculumWorkSession case-scoped
+
+Nella candidata Beta, un `CurriculumReviewCase` aperto esplicitamente può avviare una nuova `CurriculumWorkSession` senza creare una nuova superficie primaria.
+
+Regole di attuazione:
+- la sessione nasce soltanto da un caso già aperto e conserva `reviewCaseId`, `CurriculumUnit` e identità/versione del master;
+- il perimetro della sessione coincide esclusivamente con le schede congelate in `targetedProposalRefs`; una scheda mancante o esterna al caso blocca il lavoro;
+- la sessione parte con `decisions = {}` e `customTexts = {}`: orientamenti, modifiche e condivisioni di riesami precedenti non sono riportati automaticamente;
+- quando la sessione è `ACTIVE`, essa è l'unica progressione dominante nella superficie **Riesame**; la sessione generale non viene mostrata in parallelo;
+- `EXAMINE → SHARE → COMPARE → RECORD_TEAM_OUTCOME` resta la stessa progressione professionale del lifecycle;
+- `SHARE` richiede un `ProfessionalContribution` persistito che corrisponda al caso, alla scheda, al fingerprint, all'attore e all'orientamento correnti;
+- il fingerprint condiviso comprende esplicitamente `reviewCaseId`, perciò la stessa scheda e lo stesso testo in due casi diversi non hanno la stessa identità di condivisione;
+- il backend registra `review_case_id` su contributi ed esiti del team; la copertura necessaria a un esito è calcolata soltanto sui contributi dello stesso caso;
+- i contributi generali o antecedenti all'introduzione dei casi restano storia separata e non vengono sovrascritti;
+- pausa e ripresa conservano la sessione del caso; un attore già associato non può essere sostituito implicitamente da un altro attore autenticato;
+- la conclusione della sessione professionale registra soltanto il completamento professionale del caso: non apre automaticamente il riesame verticale, non genera una decisione istituzionale e non modifica o promuove il master.
+
+**Confine di implementazione corrente:** il `CurriculumReviewCase` e la sua sessione sono persistiti nello stato Arena del client; contributi ed esiti sono condivisi e case-scoped sul server, ma la **discovery/assegnazione condivisa del caso stesso tra client diversi non è ancora implementata**. Questo limite deve restare visibile nella documentazione di prodotto e impedisce di dichiarare concluso il pilota umano end-to-end.
