@@ -23,7 +23,7 @@ try {
 
 if (registry) {
   assert(registry.registry_id === 'ARENA-PRODUCT-DOCS', 'registry_id prodotto corretto');
-  assert(registry.version === '1.0.6', 'versione registro prodotto 1.0.6');
+  assert(registry.version === '1.0.7', 'versione registro prodotto 1.0.7');
   assert(registry.product_vision?.id === 'ARENA-PRODUCT-VISION', 'vision id canonico');
   assert(registry.product_vision?.version === '1.0.0', 'vision version canonica');
   assert(registry.product_vision?.drive_file_id === '1s17jJCslSIJIXQfiTEzyRcD5q-Baopj6-l14aaFEWik', 'Drive ID vision canonica');
@@ -36,6 +36,7 @@ if (registry) {
   assert(lifecycle.canonical_curriculum?.version === '1.3', 'lifecycle punta al master 1.3');
   assert(lifecycle.derived_objects?.includes('RevisionTrigger'), 'RevisionTrigger presente nel lifecycle');
   assert(lifecycle.derived_objects?.includes('DidacticBinding'), 'DidacticBinding presente nel lifecycle');
+  assert(lifecycle.derived_objects?.includes('ImplementationObservation'), 'ImplementationObservation presente nel lifecycle');
   assert(lifecycle.revision_triggers?.automatic_curriculum_change_forbidden === true, 'RevisionTrigger non modifica automaticamente il curricolo');
   assert(lifecycle.revision_triggers?.parallel_curriculum_baseline_creation_forbidden === true, 'RevisionTrigger non crea baseline parallele');
   assert(lifecycle.work_session?.share_completion_requires_persisted_current_professional_contribution === true, 'lifecycle vincola SHARE alla persistenza corrente');
@@ -43,6 +44,8 @@ if (registry) {
   assert(JSON.stringify(lifecycle.work_session?.progression) === JSON.stringify(['EXAMINE','SHARE','COMPARE','RECORD_TEAM_OUTCOME']), 'lifecycle conserva i quattro stadi della CurriculumWorkSession');
   assert(lifecycle.didactic_binding?.current_master_not_in_force_requires_draft_planning_reference === true, 'lifecycle qualifica il master non vigente nella progettazione');
   assert(lifecycle.didactic_binding?.copied_curriculum_text_never_inherits_canonical_authority === true, 'lifecycle mantiene non autoritativa la copia didattica');
+  assert(lifecycle.practice_review?.student_personal_data_required === false, 'riesame dalla pratica non richiede dati personali degli alunni');
+  assert(lifecycle.practice_review?.automatic_curriculum_change_forbidden === true, 'riesame dalla pratica non modifica automaticamente il curricolo');
 
   const canonical = registry.canonical_documents ?? [];
   const requiredRoles = ['PRODUCT_VISION', 'INFORMATION_ARCHITECTURE', 'NAVIGATION_MODEL', 'CRITICAL_USER_FLOWS', 'OPERATIONAL_COMMUNICATION'];
@@ -74,7 +77,7 @@ if (registry) {
   ]) assert(vision.includes(token), `vision contiene: ${token}`);
 
   const ia = readText('docs/04_product_experience/01_INFORMATION_ARCHITECTURE.md');
-  for (const token of ['CURRICULUM_LIFECYCLE@1.2.0', 'CurriculumUnit', 'CurriculumWorkSession', 'RevisionTrigger', 'DidacticBinding', 'Fascicolo', 'TeamProfessionalOutcome', "una dichiarazione locale dell'utente non può simulare una condivisione avvenuta", 'DRAFT_PLANNING_REFERENCE', 'snapshot di lavoro']) {
+  for (const token of ['CURRICULUM_LIFECYCLE@1.2.0', 'CurriculumUnit', 'CurriculumWorkSession', 'RevisionTrigger', 'DidacticBinding', 'ImplementationObservation', 'Fascicolo', 'TeamProfessionalOutcome', "una dichiarazione locale dell'utente non può simulare una condivisione avvenuta", 'DRAFT_PLANNING_REFERENCE', 'snapshot di lavoro']) {
     assert(ia.includes(token), `IA contiene: ${token}`);
   }
 
@@ -149,6 +152,13 @@ if (registry) {
   assert(state.uda_binding_persisted === true, 'UDA persiste il binding');
   assert(state.didactic_binding_authority_boundary_visible === true, 'stato di autorità del binding visibile');
   assert(state.working_master_binding_is_draft_reference_not_adoption === true, 'master di lavoro non diventa adozione nella progettazione');
+  assert(state.implementation_observation_domain_model_implemented === true, 'dominio ImplementationObservation implementato');
+  assert(state.implementation_observation_persisted_with_uda === true, 'ImplementationObservation persiste con la UDA');
+  assert(state.implementation_observation_requires_curriculum_binding === true, 'ImplementationObservation richiede DidacticBinding');
+  assert(state.implementation_observation_requires_personal_data_absence_confirmation === true, 'osservazione richiede dichiarazione assenza dati personali');
+  assert(state.implementation_observation_never_changes_curriculum_automatically === true, 'osservazione non modifica automaticamente il curricolo');
+  assert(state.practice_signal_aggregation_available === true, 'aggregazione segnali disponibile senza scoring');
+  assert(state.revision_trigger_ux_implemented === false, 'UX RevisionTrigger non anticipata');
   assert(state.target_ui_fully_implemented === false, 'la documentazione non simula UI target già implementata');
   assert(state.human_end_to_end_pilot_complete === false, 'la documentazione non simula pilota umano concluso');
 }
