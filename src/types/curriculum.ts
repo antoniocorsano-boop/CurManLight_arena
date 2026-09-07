@@ -207,6 +207,38 @@ export interface CurriculumReviewCaseReadiness {
   blockers: CurriculumReviewCaseReadinessBlocker[];
 }
 
+export type CurriculumWorkSessionStage = 'EXAMINE' | 'SHARE' | 'COMPARE' | 'RECORD_TEAM_OUTCOME';
+
+export interface CaseScopedCurriculumWorkSession {
+  id: string;
+  kind: 'CURRICULUM_WORK_SESSION';
+  reviewCaseId: string;
+  sessionState: 'ACTIVE' | 'PAUSED' | 'COMPLETE';
+  stage: CurriculumWorkSessionStage;
+  startedAt: string;
+  updatedAt: string;
+  actor: {
+    actorId?: string;
+    identityState: 'AUTHENTICATED_SESSION' | 'LOCAL_SESSION_UNVERIFIED';
+  };
+  currentMaster: {
+    id: 'CAN-CURR-MASTER-00';
+    driveFileId: string;
+    version: string;
+  };
+  curriculumUnitKey: string;
+  targetedProposalRefs: string[];
+  targetScopeFrozen: true;
+  decisions: Record<string, DecisionStatus>;
+  customTexts: Record<string, string>;
+  previousDecisionCarryForward: false;
+  previousProfessionalContributionReuse: false;
+  sharedContributionMustMatchReviewCase: true;
+  automaticTeamOutcome: false;
+  automaticInstitutionalDecision: false;
+  automaticCurriculumChange: false;
+}
+
 export interface CurriculumReviewCase {
   id: string;
   kind: 'CURRICULUM_REVIEW_CASE';
@@ -233,9 +265,11 @@ export interface CurriculumReviewCase {
   scopeReason: string;
   targetScopeFrozen: true;
   readinessAtOpening: CurriculumReviewCaseReadiness & { state: 'READY_TO_OPEN' };
-  caseState: 'OPEN_AT_APPLICABLE_CURRICULUM';
+  caseState: 'OPEN_AT_APPLICABLE_CURRICULUM' | 'PROFESSIONAL_VALIDATION_IN_PROGRESS' | 'PROFESSIONAL_REVIEW_COMPLETE';
   cycleReentryPhase: 'H1_APPLICABLE_CURRICULUM';
-  professionalValidationState: 'NOT_STARTED';
+  currentHumanPhase: 'H1_APPLICABLE_CURRICULUM' | 'H2_PROFESSIONAL_VALIDATION';
+  professionalValidationState: 'NOT_STARTED' | 'IN_PROGRESS' | 'TEAM_OUTCOMES_RECORDED';
+  workSession?: CaseScopedCurriculumWorkSession;
   explicitHumanOpening: true;
   automaticProfessionalContributionReuse: false;
   decisionCarryForwardFromPreviousReview: false;
