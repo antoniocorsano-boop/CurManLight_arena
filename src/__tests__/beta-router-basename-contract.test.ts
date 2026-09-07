@@ -18,13 +18,13 @@ describe('BETA-G4 router basename contract', () => {
     expect(resolveRouterBasename('development', '/')).toBe('/');
   });
 
-  it('keeps the betaIdentity query entry inside BrowserRouter', () => {
-    const routerIndex = mainSource.indexOf('<BrowserRouter basename={routerBasename}>');
-    const queryEntryIndex = mainSource.indexOf('{betaIdentityQueryEntry ? (');
-    const identityPageIndex = mainSource.indexOf('<BetaIdentityPage />', queryEntryIndex);
-
-    expect(routerIndex).toBeGreaterThanOrEqual(0);
-    expect(queryEntryIndex).toBeGreaterThan(routerIndex);
-    expect(identityPageIndex).toBeGreaterThan(queryEntryIndex);
+  it('keeps the betaIdentity query entry inside BrowserRouter and reactive to navigation', () => {
+    expect(mainSource).toContain("import { BrowserRouter, Route, Routes, useLocation } from 'react-router-dom'");
+    expect(mainSource).toContain('function RouterContent()');
+    expect(mainSource).toContain('const location = useLocation();');
+    expect(mainSource).toContain("new URLSearchParams(location.search).get('betaIdentity') === '1'");
+    expect(mainSource).toContain('<BrowserRouter basename={routerBasename}>');
+    expect(mainSource).toContain('<RouterContent />');
+    expect(mainSource).not.toContain('new URLSearchParams(window.location.search)');
   });
 });
