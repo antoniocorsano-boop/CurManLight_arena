@@ -213,6 +213,7 @@ Per tutti i flow conseguenti:
 - una versione/fingerprint diversa deve impedire il riuso implicito di una decisione precedente;
 - un `DidacticBinding` deve essere recuperato dall'artefatto salvato e non inferito dai testi della bozza;
 - un binding verso un master non vigente resta `DRAFT_PLANNING_REFERENCE` anche dopo refresh/re-entry;
+- una `ImplementationObservation` resta collegata al `DidacticBinding` e alla stessa identità/versione curricolare da cui nasce;
 - errori tecnici non devono cambiare lo stato umano o istituzionale;
 - un `RevisionTrigger` deve sempre restare legato all'identità/versione del master da cui è nato.
 
@@ -246,6 +247,21 @@ Nel primo incremento H5 della candidata Beta:
 
 ---
 
+## 16. Proiezione corrente di ImplementationObservation
+
+Nel primo incremento H6 della candidata Beta:
+- il dettaglio UDA collegato al curricolo espone **Riesame dalla pratica**;
+- il docente registra uno dei segnali professionali previsti dal lifecycle, senza punteggi o graduatorie;
+- ogni osservazione conserva il riferimento al `DidacticBinding`, alla `CurriculumUnit`, all'identità/versione del master e alla UDA da cui nasce;
+- la nota professionale è facoltativa, salvo il segnale `OTHER`, ed è limitata a 600 caratteri;
+- prima della registrazione il docente deve confermare che l'osservazione non contiene nomi, voti, diagnosi o altri dati personali degli alunni;
+- l'osservazione viene salvata con la UDA e resta `RECORDED_FOR_AGGREGATION`;
+- l'aggregazione dei segnali è disponibile come conteggio descrittivo e non produce un punteggio pedagogico;
+- una singola osservazione non apre automaticamente un riesame e non modifica il curricolo;
+- la UX di qualificazione del `RevisionTrigger` resta un incremento successivo e non viene simulata da questa funzione.
+
+---
+
 ## Criterio complessivo di accettazione
 
-I flow sono conformi quando il docente può svolgere il proprio compito senza conoscere pipeline, gate, membership IDs o struttura del repository; le autorità restano separate; la condivisione è verificabile e non simulabile localmente; le fonti sono verificabili; il curricolo alimenta la progettazione reale mediante binding versionati; un master non vigente resta riconoscibile come riferimento di lavoro; nuove norme, esigenze d'Istituto e osservazioni dalla pratica possono riaprire il processo in modo mirato e tracciato.
+I flow sono conformi quando il docente può svolgere il proprio compito senza conoscere pipeline, gate, membership IDs o struttura del repository; le autorità restano separate; la condivisione è verificabile e non simulabile localmente; le fonti sono verificabili; il curricolo alimenta la progettazione reale mediante binding versionati; un master non vigente resta riconoscibile come riferimento di lavoro; la pratica produce osservazioni professionali collegate e prive di dati personali degli alunni; nuove norme, esigenze d'Istituto e osservazioni dalla pratica possono riaprire il processo in modo mirato e tracciato.
