@@ -186,6 +186,66 @@ export type RevisionTrigger =
   | InstituteNeedRevisionTrigger
   | PeriodicReviewRevisionTrigger;
 
+export type CurriculumReviewCaseReadinessBlocker =
+  | 'TRIGGER_NOT_QUALIFIED'
+  | 'CURRENT_MASTER_MISMATCH'
+  | 'CURRICULUM_UNIT_SCOPE_MISMATCH'
+  | 'NO_TARGETED_PROPOSALS'
+  | 'UNKNOWN_TARGETED_PROPOSAL'
+  | 'CASE_SCOPE_REASON_REQUIRED';
+
+export interface CurriculumReviewCaseReadiness {
+  state: 'READY_TO_OPEN' | 'BLOCKED';
+  checks: {
+    qualifiedTrigger: boolean;
+    currentMasterMatch: boolean;
+    curriculumUnitScopeMatch: boolean;
+    targetedProposalSelection: boolean;
+    targetedProposalsKnown: boolean;
+    explicitScopeReason: boolean;
+  };
+  blockers: CurriculumReviewCaseReadinessBlocker[];
+}
+
+export interface CurriculumReviewCase {
+  id: string;
+  kind: 'CURRICULUM_REVIEW_CASE';
+  originTriggerSnapshot: {
+    id: string;
+    triggerType: RevisionTriggerType;
+    qualificationBasis: RevisionTriggerQualificationBasis;
+    recordedAt: string;
+  };
+  openedAt: string;
+  openedBy: {
+    actorId?: string;
+    roleContext?: string;
+    identityState: 'AUTHENTICATED_SESSION' | 'LOCAL_SESSION_UNVERIFIED';
+    institutionalAuthorityInferred: false;
+  };
+  curriculumUnit: CurriculumUnitReference;
+  currentMaster: {
+    id: 'CAN-CURR-MASTER-00';
+    driveFileId: string;
+    version: string;
+  };
+  targetedProposalRefs: string[];
+  scopeReason: string;
+  targetScopeFrozen: true;
+  readinessAtOpening: CurriculumReviewCaseReadiness & { state: 'READY_TO_OPEN' };
+  caseState: 'OPEN_AT_APPLICABLE_CURRICULUM';
+  cycleReentryPhase: 'H1_APPLICABLE_CURRICULUM';
+  professionalValidationState: 'NOT_STARTED';
+  explicitHumanOpening: true;
+  automaticProfessionalContributionReuse: false;
+  decisionCarryForwardFromPreviousReview: false;
+  automaticCurriculumChange: false;
+  automaticTeamOutcome: false;
+  automaticInstitutionalDecision: false;
+  automaticMasterPromotion: false;
+  parallelCurriculumBaselineCreation: false;
+}
+
 export interface UdaModel {
   id: string;
   title: string;
@@ -232,6 +292,7 @@ export interface UserState {
   customTexts: Record<string, string>;
   savedUda: UdaModel[];
   revisionTriggers: RevisionTrigger[];
+  curriculumReviewCases: CurriculumReviewCase[];
   activeRevisionFilter: 'all' | 'pending' | 'approved' | 'rejected';
   selectedTraguardi: number[];
   selectedObiettivi: number[];
