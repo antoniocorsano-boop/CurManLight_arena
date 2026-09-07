@@ -33,6 +33,36 @@ export interface DisciplineData {
   secondaria: CurricularLevel;
 }
 
+export type DidacticBindingTarget = 'annual-planning' | 'uda' | 'learning-activity';
+export type DidacticBindingAuthorityState = 'WORKING_BASELINE_NOT_IN_FORCE' | 'IN_FORCE_CURRICULUM';
+export type DidacticBindingUseScope = 'DRAFT_PLANNING_REFERENCE' | 'IN_FORCE_CURRICULUM_REFERENCE';
+export type CurriculumUnitResolutionState = 'CONTEXT_BOUND' | 'CURRICULUM_UNIT_VERIFIED';
+
+export interface CurriculumUnitReference {
+  masterId: 'CAN-CURR-MASTER-00';
+  masterDriveFileId: string;
+  masterVersion: string;
+  unitKey: string;
+  identityKind: 'ARENA_MASTER_CONTEXT_KEY';
+  order: SchoolOrder;
+  classOrAgeBand: string;
+  disciplineOrField: string;
+  resolutionState: CurriculumUnitResolutionState;
+}
+
+export interface DidacticBinding {
+  id: string;
+  kind: 'DIDACTIC_BINDING';
+  targetType: DidacticBindingTarget;
+  curriculumUnit: CurriculumUnitReference;
+  authorityState: DidacticBindingAuthorityState;
+  useScope: DidacticBindingUseScope;
+  humanProfessionalValidation: 'OPEN' | 'COMPLETE';
+  curriculumInForce: boolean;
+  copiedCurriculumTextIsAuthoritative: false;
+  createdAt: string;
+}
+
 export interface UdaModel {
   id: string;
   title: string;
@@ -46,6 +76,7 @@ export interface UdaModel {
   evidenze: string[];
   realTask: string;
   notes: string;
+  curriculumBindings?: DidacticBinding[];
   createdAt: string;
   updatedAt?: string;
 }
