@@ -220,7 +220,8 @@ Per tutti i flow conseguenti:
 - un `CurriculumReviewCase` deve conservare trigger d'origine, master/versione, `CurriculumUnit`, perimetro di schede e readiness all'apertura;
 - l'apertura di un nuovo caso non può riutilizzare implicitamente contributi personali o decisioni registrati in un riesame precedente;
 - una `CurriculumWorkSession` case-scoped deve ripristinare `reviewCaseId`, perimetro congelato, decisioni della sessione e fase corrente senza importare orientamenti dalla sessione generale;
-- una condivisione di caso non può essere considerata corrente se `review_case_id`, fingerprint, attore o orientamento non corrispondono più.
+- una condivisione di caso non può essere considerata corrente se `review_case_id`, fingerprint, attore o orientamento non corrispondono più;
+- la discovery di un caso assegnato deve ricostruire lo snapshot H1 senza importare la `CurriculumWorkSession` di un altro partecipante.
 
 ---
 
@@ -335,12 +336,30 @@ Nel primo incremento `CASE_SCOPED_CURRICULUM_WORK_SESSION` della candidata Beta:
 - la chiusura della sessione produce soltanto il completamento professionale del `CurriculumReviewCase`; non apre automaticamente H3, non genera `InstitutionalDecision`, non modifica il master e non crea baseline parallele;
 - i record condivisi storici senza `review_case_id` restano validi come storia generale ma **non soddisfano** una sessione case-scoped.
 
-**Limite corrente dichiarato:** Arena non dispone ancora di una discovery/assegnazione server del `CurriculumReviewCase` tra client diversi. Il caso e la sessione sono persistiti nel client Arena; contributi ed esiti del team sono invece condivisi e isolati sul server tramite `review_case_id`. Per questo `shared_review_case_discovery_implemented = false` e il pilota umano end-to-end resta aperto.
-
 **Confine:** `CurriculumReviewCase != CurriculumWorkSession != ProfessionalContribution != TeamProfessionalOutcome != InstitutionalDecision`.
+
+---
+
+## 21. Proiezione corrente della discovery e assegnazione condivisa dei CurriculumReviewCase
+
+Nel primo incremento `SHARED_REVIEW_CASE_DISCOVERY` della candidata Beta:
+- un caso aperto localmente non è automaticamente un incarico per il gruppo;
+- l'azione **Condividi e assegna al gruppo** è separata dall'apertura del caso ed è consentita solo a una membership verificata `dipartimento` o `referente` che possiede competenza operativa per lo stesso anno, gruppo e disciplina;
+- il server persiste soltanto lo snapshot immutabile dell'apertura: identità del caso, trigger, master/versione, `CurriculumUnit`, schede congelate, motivazione, attore di apertura e ricevuta di pubblicazione;
+- la `CurriculumWorkSession` personale, le decisioni e i testi personalizzati non fanno parte dello snapshot distribuito e non vengono trasferiti tra docenti;
+- gli assegnatari sono derivati dal server dalle membership workspace attive e dalle appartenenze operative `OPERATIVO_PROVVISORIO` o `FORMALIZZATO` che comprendono la disciplina; non esiste selezione locale di membership ID e non è possibile autoattribuirsi un ruolo di coordinamento;
+- ogni docente scopre soltanto i casi per cui esiste una ricevuta di assegnazione collegata alla propria identità autenticata e allo stesso workspace, anno scolastico, gruppo e disciplina;
+- la hydration di un caso assegnato ricostruisce `OPEN_AT_APPLICABLE_CURRICULUM`, `H1_APPLICABLE_CURRICULUM`, `professionalValidationState = NOT_STARTED` e nessuna sessione personale;
+- l'ingresso in H2 richiede l'azione esplicita **Avvia il riesame assegnato**: `assignment != H2 start`;
+- se lo stesso `case_id` arriva con uno snapshot o un perimetro diverso, Arena fallisce chiuso con conflitto; se coincide lo **stesso caso e stesso perimetro congelato**, l'assegnazione server può essere riconciliata preservando l'eventuale sessione personale già presente sul client;
+- quando la sessione personale del caso diventa `ACTIVE`, la superficie case-aware mostra soltanto quella progressione; la sessione generale non compete in parallelo;
+- l'assegnazione non crea `ProfessionalContribution`, non registra `TeamProfessionalOutcome`, non apre H3, non genera `InstitutionalDecision`, non modifica/promuove il master e non crea baseline parallele;
+- non viene introdotta **nessuna nuova route o superficie primaria**: discovery, assegnazione e avvio restano dentro **Riesame**.
+
+**Confine:** `case assignment != CurriculumWorkSession != ProfessionalContribution != TeamProfessionalOutcome != InstitutionalDecision`.
 
 ---
 
 ## Criterio complessivo di accettazione
 
-I flow sono conformi quando il docente può svolgere il proprio compito senza conoscere pipeline, gate, membership IDs o struttura del repository; le autorità restano separate; la condivisione è verificabile e non simulabile localmente; le fonti sono verificabili; il curricolo alimenta la progettazione reale mediante binding versionati; un master non vigente resta riconoscibile come riferimento di lavoro; la pratica produce osservazioni professionali collegate e prive di dati personali degli alunni; ogni motivo di riesame richiede la qualificazione prevista dalla propria origine e non apre automaticamente un caso; l'apertura di un caso richiede una scelta umana esplicita e un perimetro verificabile; la nuova sessione case-scoped parte senza decisioni pregresse, usa soltanto le schede congelate e richiede ricevute condivise legate allo stesso caso; nuove norme, esigenze d'Istituto, riesami periodici e osservazioni dalla pratica possono riaprire il processo in modo mirato e tracciato senza creare baseline parallele.
+I flow sono conformi quando il docente può svolgere il proprio compito senza conoscere pipeline, gate, membership IDs o struttura del repository; le autorità restano separate; la condivisione è verificabile e non simulabile localmente; le fonti sono verificabili; il curricolo alimenta la progettazione reale mediante binding versionati; un master non vigente resta riconoscibile come riferimento di lavoro; la pratica produce osservazioni professionali collegate e prive di dati personali degli alunni; ogni motivo di riesame richiede la qualificazione prevista dalla propria origine e non apre automaticamente un caso; l'apertura di un caso richiede una scelta umana esplicita e un perimetro verificabile; la distribuzione del caso avviene soltanto per assegnazione server derivata da membership e competenza verificate; il destinatario riceve lo snapshot H1 senza la sessione personale di altri attori; la nuova sessione case-scoped parte senza decisioni pregresse, usa soltanto le schede congelate e richiede ricevute condivise legate allo stesso caso; nuove norme, esigenze d'Istituto, riesami periodici e osservazioni dalla pratica possono riaprire il processo in modo mirato e tracciato senza creare baseline parallele. Il pilota umano end-to-end resta aperto finché il ciclo multi-attore non viene realmente eseguito e osservato.
