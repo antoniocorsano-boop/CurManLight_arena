@@ -21,8 +21,9 @@ const types = readText('src/types/curriculum.ts');
 for (const token of [
   "kind: 'CURRICULUM_REVIEW_CASE'",
   "state: 'READY_TO_OPEN' | 'BLOCKED'",
-  "caseState: 'OPEN_AT_APPLICABLE_CURRICULUM'",
-  "professionalValidationState: 'NOT_STARTED'",
+  "caseState: 'OPEN_AT_APPLICABLE_CURRICULUM' | 'PROFESSIONAL_VALIDATION_IN_PROGRESS' | 'PROFESSIONAL_REVIEW_COMPLETE'",
+  "professionalValidationState: 'NOT_STARTED' | 'IN_PROGRESS' | 'TEAM_OUTCOMES_RECORDED'",
+  "currentHumanPhase: 'H1_APPLICABLE_CURRICULUM' | 'H2_PROFESSIONAL_VALIDATION'",
   'explicitHumanOpening: true',
   'automaticProfessionalContributionReuse: false',
   'decisionCarryForwardFromPreviousReview: false',
@@ -49,6 +50,7 @@ for (const token of [
   'targetScopeFrozen: true',
   "caseState: 'OPEN_AT_APPLICABLE_CURRICULUM'",
   "cycleReentryPhase: 'H1_APPLICABLE_CURRICULUM'",
+  "currentHumanPhase: 'H1_APPLICABLE_CURRICULUM'",
   "professionalValidationState: 'NOT_STARTED'",
   'explicitHumanOpening: true',
   'automaticProfessionalContributionReuse: false',
@@ -74,20 +76,22 @@ for (const token of [
   'data-review-case-readiness',
   'data-human-next-action="open-targeted-review-case"',
   'Apri il caso mirato',
-  'validazione professionale non ancora avviata',
-  'non riutilizza automaticamente contributi o decisioni precedenti',
+  'validazione non avviata',
+  'Nessuna scelta o condivisione precedente viene importata.',
   'buildCurriculumReviewCase',
   'curriculumReviewCases: [...(state.curriculumReviewCases ?? []), reviewCase]',
+  'data-human-next-action="start-case-scoped-work-session"',
+  'Avvia il riesame mirato',
 ]) assert(panel.includes(token), `superficie CurriculumReviewCase non presidiata: ${token}`);
 assert(!panel.includes('setDecision('), 'l’apertura del caso non deve scrivere decisioni personali legacy');
-assert(!panel.includes('TeamContributionPublisher'), 'l’apertura del caso non deve avviare la condivisione professionale');
+assert(!panel.includes('TeamContributionPublisher'), 'il pannello di apertura del caso non deve riusare il publisher generale');
 
 const workspace = readText('src/features/beta/RevisionWorkspace.tsx');
 assert(workspace.includes('<CurriculumReviewCasePanel'), 'CurriculumReviewCase non integrato nel Riesame esistente');
-assert(workspace.includes('data-curriculum-work-session'), 'integrazione del caso ha sostituito la CurriculumWorkSession');
+assert(workspace.includes('data-curriculum-work-session'), 'integrazione del caso ha sostituito la CurriculumWorkSession generale');
 
 const docs = readJson('docs/04_product_experience/PRODUCT_DOCS.registry.json');
-assert(docs.version === '1.0.11', 'versione registro documentazione prodotto inattesa');
+assert(docs.version === '1.0.12', 'versione registro documentazione prodotto inattesa');
 const state = docs.implementation_state ?? {};
 for (const key of [
   'curriculum_review_case_domain_model_implemented',
@@ -108,8 +112,9 @@ for (const key of [
   'curriculum_review_case_never_creates_parallel_baseline',
   'curriculum_review_case_ux_implemented',
   'curriculum_review_case_reuses_revision_surface',
+  'targeted_review_case_work_session_case_scoping_implemented',
 ]) assert(state[key] === true, `stato prodotto non registra ${key}`);
-assert(state.targeted_review_case_work_session_case_scoping_implemented === false, 'la sessione case-scoped futura non deve risultare implementata');
+assert(state.shared_review_case_discovery_implemented === false, 'la discovery server del caso non deve essere anticipata');
 assert(state.target_ui_fully_implemented === false, 'il caso mirato non completa la UI target');
 assert(state.human_end_to_end_pilot_complete === false, 'il caso mirato non conclude il pilota umano');
 
@@ -121,6 +126,7 @@ for (const token of [
   'professionalValidationState = NOT_STARTED',
   'contributi personali e decisioni di riesami precedenti non vengono riportati automaticamente',
   'RevisionTrigger qualificato != CurriculumReviewCase aperto != nuova CurriculumWorkSession case-scoped',
+  'Proiezione corrente della CurriculumWorkSession case-scoped',
 ]) assert(flows.includes(token), `flow casi mirati non presidiato: ${token}`);
 
 console.log('CURRICULUM_REVIEW_CASE_PASS');
