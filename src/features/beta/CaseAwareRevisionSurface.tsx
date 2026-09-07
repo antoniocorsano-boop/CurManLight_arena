@@ -1,6 +1,8 @@
 import { useMemo } from 'react';
 import { resolveCurriculumUnitReference } from '../../domain/curriculum/didacticBinding';
 import { reviewCaseMatchesCurrentUnit } from '../../domain/curriculum/reviewCase';
+import { getSharedReviewCaseContext } from '../../domain/curriculum/sharedReviewCase';
+import { schoolYearToInstitutionalLabel } from '../../lib/academicYear';
 import { useCurriculumStore } from '../../store/useCurriculumStore';
 import type { AppViewsLayerProps } from '../session/types/appViewContracts';
 import { CaseScopedCurriculumWorkSession } from './CaseScopedCurriculumWorkSession';
@@ -29,6 +31,8 @@ export function CaseAwareRevisionSurface(props: Props) {
   )) ?? null, [curriculumReviewCases, currentUnit]);
 
   if (activeCase) {
+    const sharedAcademicYear = getSharedReviewCaseContext(activeCase)?.academicYear
+      ?? schoolYearToInstitutionalLabel(schoolYear);
     return (
       <div
         data-revision-surface-mode="CASE_SCOPED"
@@ -39,7 +43,7 @@ export function CaseAwareRevisionSurface(props: Props) {
           availableProposals={props.currentDisciplineProps}
           discipline={props.discipline}
           order={props.order}
-          academicYear={schoolYear}
+          academicYear={sharedAcademicYear}
         />
       </div>
     );
