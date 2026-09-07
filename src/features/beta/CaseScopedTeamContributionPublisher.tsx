@@ -159,7 +159,7 @@ export function CaseScopedTeamContributionPublisher({
         });
       }
       setRefreshVersion((value) => value + 1);
-      setMessage('Contributo del caso registrato. Arena verifica caso, scheda, fingerprint e orientamento correnti.');
+      setMessage('Il tuo contributo è stato condiviso con il gruppo.');
     } catch (error) {
       setMessage(error instanceof Error ? error.message : 'Contributo del caso non registrato.');
     } finally {
@@ -177,21 +177,38 @@ export function CaseScopedTeamContributionPublisher({
   );
 
   return (
-    <section className="space-y-3 rounded-2xl border border-indigo-200 bg-indigo-50/30 p-4" data-case-team-contribution-publisher data-review-case-id={reviewCaseId} data-contribution-persistence-complete={complete ? 'true' : 'false'}>
-      <div>
-        <strong className="block text-base text-slate-900">Condividi il contributo di questo caso</strong>
-        <p className="mt-1 text-xs leading-relaxed text-slate-600">Il server registra il riferimento al caso: contributi di riesami precedenti non possono soddisfare questa condivisione.</p>
+    <section
+      className="space-y-3 rounded-2xl border border-indigo-200 bg-indigo-50/30 p-4"
+      data-case-team-contribution-publisher
+      data-review-case-id={reviewCaseId}
+      data-contribution-persistence-complete={complete ? 'true' : 'false'}
+      data-ux-layering="L1-L3"
+    >
+      <div data-hcm-level="1">
+        <strong className="block text-base text-slate-900">Condividi il tuo contributo</strong>
+        <p className="mt-1 text-xs leading-5 text-slate-600">Rendi disponibile al gruppo il tuo orientamento sulle schede del caso. Questo passaggio non registra l’esito del gruppo.</p>
+
+        <div className={`mt-3 rounded-xl border p-3 text-xs ${complete ? 'border-emerald-200 bg-emerald-50 text-emerald-900' : 'border-slate-200 bg-white text-slate-700'}`} data-case-contribution-professional-status>
+          <strong>{complete ? 'Contributo condiviso' : 'Contributo pronto per la condivisione'}</strong>
+          <span className="mt-1 block">{persistedCount} di {proposals.length} schede risultano condivise nella versione corrente.</span>
+        </div>
+
+        {!operationalMembership && <p className="mt-3 text-xs font-semibold text-amber-800">La condivisione richiede una competenza operativa verificata per questa disciplina.</p>}
+        <button type="button" disabled={busy || !canContribute || preparedCount !== proposals.length} onClick={() => void publish()} className="mt-3 min-h-11 w-full rounded-xl bg-indigo-700 px-4 py-3 text-sm font-bold text-white disabled:cursor-not-allowed disabled:opacity-40">
+          {busy ? 'Registrazione in corso…' : complete ? 'Aggiorna il contributo condiviso' : 'Condividi il contributo'}
+        </button>
+        {message && <p role="status" className="mt-3 rounded-lg bg-white p-3 text-xs leading-5 text-slate-700">{message}</p>}
+        <p className="mt-3 text-[11px] leading-5 text-slate-500">Il tuo contributo professionale non equivale all’esito del gruppo né a una decisione istituzionale.</p>
       </div>
-      <div className="rounded-xl bg-white p-3 text-xs text-slate-700">
-        <strong>{group.code} · {group.label}</strong>
-        <span className="mt-1 block">Schede del caso: {proposals.length} · verificate come correnti: {persistedCount}</span>
-      </div>
-      {!operationalMembership && <p className="text-xs font-semibold text-amber-800">Registra la competenza operativa per questa disciplina prima della condivisione.</p>}
-      <button type="button" disabled={busy || !canContribute || preparedCount !== proposals.length} onClick={() => void publish()} className="min-h-11 w-full rounded-xl bg-indigo-700 px-4 py-3 text-sm font-bold text-white disabled:cursor-not-allowed disabled:opacity-40">
-        {busy ? 'Registrazione in corso…' : complete ? 'Aggiorna il contributo del caso' : 'Condividi il contributo del caso'}
-      </button>
-      {message && <p role="status" className="rounded-lg bg-white p-3 text-xs leading-5 text-slate-700">{message}</p>}
-      <p className="text-[11px] leading-5 text-slate-500">ProfessionalContribution del caso ≠ esito del gruppo ≠ decisione istituzionale.</p>
+
+      <details className="rounded-xl border border-slate-200 bg-white" data-hcm-level="3" data-case-contribution-technical-layer>
+        <summary className="cursor-pointer px-3 py-2.5 text-xs font-bold text-slate-600">Verifica e tracciabilità della condivisione</summary>
+        <div className="space-y-2 border-t border-slate-100 p-3 text-[11px] leading-5 text-slate-600">
+          <p><strong className="text-slate-700">Ambito:</strong> {academicYear} · {group.code} · {discipline}</p>
+          <p className="break-all"><strong className="text-slate-700">Caso:</strong> {reviewCaseId}</p>
+          <p><strong className="text-slate-700">Persistenza corrente:</strong> {persistedCount}/{proposals.length}. La verifica tecnica richiede corrispondenza fra caso, scheda, fingerprint, attore, orientamento ed eventuale testo personalizzato.</p>
+        </div>
+      </details>
     </section>
   );
 }
