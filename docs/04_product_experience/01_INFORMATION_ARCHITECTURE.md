@@ -132,15 +132,17 @@ Le superfici oggi separate per contributo, condivisione, team e coordinamento co
 
 Regole:
 - un solo stadio dominante;
-- gli stadi futuri sono nascosti finché non diventano pertinenti;
-- uno stadio completato si compatta;
+- i contenuti e i controlli degli stadi futuri sono nascosti finché non diventano pertinenti; le sole etichette del percorso possono restare visibili come orientamento non interattivo;
+- uno stadio completato si compatta senza far perdere il contesto del percorso;
 - lo scroll non è una transizione di fase;
 - il docente privo di ulteriori responsabilità termina a `SHARE`;
 - `SHARE` è completato solo quando esiste un `ProfessionalContribution` persistito per l'utente corrente e corrispondente a `proposalFingerprint`, orientamento personale ed eventuale testo personalizzato correnti;
 - una modifica successiva dell'orientamento personale invalida la precedente condivisione fino a una nuova registrazione coerente;
 - una dichiarazione locale dell'utente non può simulare una condivisione avvenuta;
 - `COMPARE` compare solo dopo la condivisione personale persistita corrente e quando gli ulteriori prerequisiti del gruppo e del ruolo sono soddisfatti;
-- `RECORD_TEAM_OUTCOME` compare solo quando prerequisiti e autorità sono soddisfatti.
+- `RECORD_TEAM_OUTCOME` compare solo quando prerequisiti e autorità sono soddisfatti;
+- ogni cambio di fase deve preservare l'ancora percettiva del workframe e non deve far atterrare l'utente a metà pagina;
+- il completamento della sessione deve essere mostrato nello stesso workframe prima di un ritorno esplicito alla superficie generale.
 
 ---
 
@@ -290,7 +292,10 @@ L'architettura è conforme quando:
 - il master non vigente non viene presentato come riferimento adottato per la progettazione;
 - il riesame può essere innescato da norme future, esigenze d'Istituto, pratica o periodicità;
 - nessun trigger o segnale modifica automaticamente il master;
-- la catena di autorità resta distinguibile in ogni passaggio.
+- la catena di autorità resta distinguibile in ogni passaggio;
+- l'utente riconosce sempre la propria posizione nel processo senza dipendere da identificativi tecnici;
+- un cambio di fase non produce salti percettivi della pagina;
+- la conclusione di una sessione è visibile prima del ritorno esplicito al contesto generale.
 
 ---
 
@@ -326,3 +331,28 @@ Il `CurriculumReviewCase` è ora distribuibile tra client diversi senza condivid
 - l'assegnazione non genera `ProfessionalContribution`, `TeamProfessionalOutcome`, `InstitutionalDecision`, modifica o promozione del master e non crea baseline parallele.
 
 **Confine:** `shared case assignment != CurriculumWorkSession != ProfessionalContribution != TeamProfessionalOutcome != InstitutionalDecision`.
+
+---
+
+## 14. Consapevolezza del processo e continuità percettiva
+
+La `CurriculumWorkSession` deve essere semplice da usare senza diventare opaca. La consapevolezza del processo appartiene allo **strato di lavoro umano**, mentre la meccanica interna appartiene allo strato di supporto.
+
+La proiezione ordinaria deve quindi mantenere una sola sequenza professionale riconoscibile:
+
+**Esamina → Condividi → Confronta → Registra l'esito**.
+
+Regole architetturali:
+- il passaggio corrente domina il workframe;
+- i passaggi già completati diventano sintesi compatte;
+- i passaggi futuri possono essere rappresentati da etichette non interattive, ma i loro contenuti e controlli restano assenti finché non diventano pertinenti;
+- la stessa sequenza non può essere duplicata in testata, contenuto e pannelli subordinati;
+- L1 contiene soltanto posizione nel processo, oggetto corrente, stato, ruolo pertinente, azione e conseguenza immediata;
+- L2 contiene motivazione, criteri e spiegazione del passaggio;
+- L3 contiene identificativi, versioni, fingerprint, account, ricevute e diagnostica;
+- `CaseAwareRevisionSurface` deve rendere mutuamente esclusivi il lavoro case-scoped e il contesto generale;
+- il cambio di fase sostituisce il contenuto dello stesso workframe e non usa il movimento della pagina come segnale di avanzamento;
+- l'ancora percettiva resta stabile anche su viewport mobile `390×844` e la CTA primaria non viene coperta dalla navigazione;
+- la conclusione professionale compare nello stesso workframe; solo dopo una conferma esplicita l'utente rientra nella superficie generale **Riesame**.
+
+Questa regola non modifica il lifecycle, l'autorità o la persistenza: specifica come il lifecycle deve essere percepito e compreso.
