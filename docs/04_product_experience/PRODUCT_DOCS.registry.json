@@ -1,6 +1,6 @@
 {
   "registry_id": "ARENA-PRODUCT-DOCS",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "date": "2026-09-07",
   "product_vision": {
     "id": "ARENA-PRODUCT-VISION",
@@ -94,10 +94,15 @@
     "periodic_review_trigger_domain_implemented": true,
     "periodic_review_trigger_requires_explicit_reason": true,
     "all_revision_trigger_origins_share_current_master_scope_and_no_automatic_consequences": true,
-    "external_normative_trigger_ux_implemented": false,
-    "institute_need_trigger_ux_implemented": false,
-    "periodic_review_trigger_ux_implemented": false,
-    "revision_trigger_ux_implemented": false,
+    "external_normative_trigger_ux_implemented": true,
+    "external_normative_trigger_reuses_fascicolo_to_revision_flow": true,
+    "institute_need_trigger_ux_implemented": true,
+    "institute_need_trigger_reuses_revision_surface": true,
+    "periodic_review_trigger_ux_implemented": true,
+    "periodic_review_trigger_reuses_revision_surface": true,
+    "revision_trigger_single_existing_surface_integration_implemented": true,
+    "revision_trigger_ux_implemented": true,
+    "revision_trigger_new_primary_surface_created": false,
     "target_ui_fully_implemented": false,
     "human_end_to_end_pilot_complete": false
   }
