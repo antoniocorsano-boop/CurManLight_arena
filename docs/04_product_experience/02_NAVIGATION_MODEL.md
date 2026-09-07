@@ -1,9 +1,9 @@
 # 02 — NAVIGATION MODEL
 
 **Product vision:** `ARENA-PRODUCT-VISION@1.0.0`  
-**Lifecycle:** `CURRICULUM_LIFECYCLE@1.1.1`  
+**Lifecycle:** `CURRICULUM_LIFECYCLE@1.2.0`  
 **Stato:** `CANONICAL_TARGET_NAVIGATION`  
-**Data:** 2026-09-06
+**Data:** 2026-09-07
 
 ---
 
@@ -90,9 +90,15 @@ Il punto di ingresso mostra il curricolo pertinente e consente di creare `Didact
 
 La navigazione interna deve privilegiare:
 - cosa del curricolo è già collegato;
+- a quale versione del master è collegata la bozza;
+- se il riferimento è vigente o soltanto una baseline di lavoro;
 - cosa manca ancora nella progettazione;
 - quali collegamenti sono trasversali;
 - quali ore/evidenze di Educazione civica sono realmente sostenute da attività.
+
+Quando il master corrente non è vigente, il livello 1 usa **“Riferimento di lavoro”** e non “curricolo adottato”. La chiave tecnica del binding resta sotto `Tracciabilità del collegamento`.
+
+Una programmazione annuale salvata e una nuova UDA devono mantenere il binding insieme all'artefatto; il passaggio ad altre viste non deve ricostruirlo da testi copiati o dalla KB legacy.
 
 Non deve trasformare la “copertura” in un punteggio di prestazione del docente.
 
@@ -187,6 +193,8 @@ La navigazione indietro non deve trasformare una bozza in decisione né perdere 
 
 Su refresh/re-entry la fase deve essere ricostruita dallo stato verificabile: una vecchia condivisione non più coerente con l'orientamento corrente non può riaprire direttamente il confronto.
 
+Per la progettazione, il `DidacticBinding` deve essere recuperato dall'artefatto salvato e non inferito nuovamente dal testo della UDA.
+
 ---
 
 ## 12. Migrazione dalle voci precedenti
@@ -218,6 +226,7 @@ Le vecchie chiavi di routing/tab possono restare temporaneamente per compatibili
 - stato e prossima azione riconoscibili senza testo formativo persistente;
 - l'interfaccia deve rimanere utilizzabile anche rimuovendo la copy didattica non essenziale;
 - `CONFRONTA` non può essere raggiunto senza una condivisione persistita e corrente;
+- la progettazione non può presentare un binding a un master non vigente come curricolo adottato;
 - tutte le azioni conseguenti devono rispettare i confini di autorità.
 
 ---
@@ -235,3 +244,18 @@ La candidata Beta implementa il primo incremento di convergenza della navigazion
 - la chiave tecnica interna `fonti` può restare temporaneamente per compatibilità e non definisce la nomenclatura di prodotto.
 
 Questo incremento non modifica le fonti, il master curricolare, la loro autorità o i relativi registri. Cambia esclusivamente la proiezione navigazionale del servizio di tracciabilità.
+
+---
+
+## 15. Stato di attuazione — DIDACTIC_BINDING
+
+La candidata Beta implementa il primo incremento della fase H5:
+
+- il salvataggio della programmazione annuale persiste un `DidacticBinding` riferito al master corrente;
+- ogni nuova UDA conserva il binding nel proprio modello dati;
+- il dettaglio UDA mostra master/versione e contesto senza esporre la chiave tecnica al livello 1;
+- la tracciabilità tecnica è disponibile in divulgazione progressiva;
+- poiché `CAN-CURR-MASTER-00@1.3` non è vigente, il binding è presentato come `DRAFT_PLANNING_REFERENCE` / “Riferimento di lavoro”;
+- i testi selezionati nella bozza non diventano una nuova fonte curricolare canonica.
+
+Questo incremento non costituisce validazione professionale, adozione o vigenza del master.
