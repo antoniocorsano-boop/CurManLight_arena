@@ -26,6 +26,18 @@ type Props = {
 const emptyShare = (count: number): CaseScopedContributionPersistenceState => ({ requiredCount: count, persistedCurrentCount: 0, complete: false });
 const emptyTeam = (): CaseScopedTeamCoordinationState => ({ total: 0, resolvedCount: 0, remainingOutcomeCount: 0, allCurrentOutcomesRecorded: false, canRecordTeamOutcome: false });
 
+const activeRoleLabel = (role: string | null): string => {
+  switch (role) {
+    case 'docente': return 'Docente';
+    case 'dipartimento': return 'Dipartimento';
+    case 'referente': return 'Referente';
+    case 'collegio': return 'Collegio';
+    case 'dirigente': return 'Dirigente';
+    case 'amministratore': return 'Amministratore';
+    default: return 'Identità in verifica';
+  }
+};
+
 const updateStoredCase = (reviewCaseId: string, updater: (reviewCase: CurriculumReviewCase) => CurriculumReviewCase) => {
   useCurriculumStore.setState((state) => ({
     curriculumReviewCases: (state.curriculumReviewCases ?? []).map((reviewCase) => reviewCase.id === reviewCaseId ? updater(reviewCase) : reviewCase),
@@ -62,7 +74,10 @@ export function CaseScopedCurriculumWorkSession({ reviewCase, availableProposals
   const current = proposals[safeIndex];
   const currentDecision = current ? session.decisions[current.id] : undefined;
   const currentCustomText = current ? session.customTexts[current.id] ?? '' : '';
-  const isCoordinator = team.selectedMembership?.role === 'dipartimento' || team.selectedMembership?.role === 'referente';
+  const activeRole = team.selectedMembership?.role ?? null;
+  const activeAccount = team.session?.user.email ?? team.session?.user.id ?? null;
+  const activeIdentityVerified = Boolean(team.session && team.selectedMembership);
+  const isCoordinator = activeRole === 'dipartimento' || activeRole === 'referente';
 
   const replaceSession = (nextSession: NonNullable<CurriculumReviewCase['workSession']>, casePatch?: Partial<CurriculumReviewCase>) => {
     updateStoredCase(reviewCase.id, (stored) => ({ ...stored, ...casePatch, workSession: nextSession }));
@@ -132,6 +147,19 @@ export function CaseScopedCurriculumWorkSession({ reviewCase, availableProposals
             <span className="text-[10px] font-black uppercase tracking-wide text-indigo-700">Riesame mirato · caso attivo</span>
             <h1 className="mt-1 text-base font-extrabold text-indigo-950">Lavora solo sulle {proposals.length} schede del caso</h1>
             <p className="mt-1 text-xs leading-5 text-indigo-800">{reviewCase.scopeReason}</p>
+            <div
+              className={`mt-3 rounded-xl border px-3 py-2 ${activeIdentityVerified ? 'border-indigo-200 bg-white/90 text-indigo-950' : 'border-amber-200 bg-amber-50 text-amber-950'}`}
+              data-case-active-identity
+              data-case-active-role={activeRole ?? 'unverified'}
+              data-case-active-user-id={team.session?.user.id ?? 'unverified'}
+            >
+              <p className="text-xs font-bold">Stai lavorando come: <span className="font-extrabold">{activeRoleLabel(activeRole)}</span></p>
+              <p className="mt-0.5 break-all text-[11px] leading-4 opacity-80">
+                {activeIdentityVerified && activeAccount
+                  ? activeAccount
+                  : 'Identità del team in verifica. Non condividere finché account e ruolo non sono visibili.'}
+              </p>
+            </div>
           </div>
           <button type="button" onClick={pause} className="min-h-10 rounded-xl border border-indigo-300 bg-white px-3 py-2 text-xs font-bold text-indigo-900">Esci dal caso</button>
         </div>
