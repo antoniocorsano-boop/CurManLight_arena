@@ -23,7 +23,7 @@ try {
 
 if (registry) {
   assert(registry.registry_id === 'ARENA-PRODUCT-DOCS', 'registry_id prodotto corretto');
-  assert(registry.version === '1.0.7', 'versione registro prodotto 1.0.7');
+  assert(registry.version === '1.0.8', 'versione registro prodotto 1.0.8');
   assert(registry.product_vision?.id === 'ARENA-PRODUCT-VISION', 'vision id canonico');
   assert(registry.product_vision?.version === '1.0.0', 'vision version canonica');
   assert(registry.product_vision?.drive_file_id === '1s17jJCslSIJIXQfiTEzyRcD5q-Baopj6-l14aaFEWik', 'Drive ID vision canonica');
@@ -37,6 +37,7 @@ if (registry) {
   assert(lifecycle.derived_objects?.includes('RevisionTrigger'), 'RevisionTrigger presente nel lifecycle');
   assert(lifecycle.derived_objects?.includes('DidacticBinding'), 'DidacticBinding presente nel lifecycle');
   assert(lifecycle.derived_objects?.includes('ImplementationObservation'), 'ImplementationObservation presente nel lifecycle');
+  assert(lifecycle.revision_triggers?.practice_signal_requires_aggregation_or_explicit_professional_reason === true, 'PRACTICE_SIGNAL richiede aggregazione o motivazione esplicita');
   assert(lifecycle.revision_triggers?.automatic_curriculum_change_forbidden === true, 'RevisionTrigger non modifica automaticamente il curricolo');
   assert(lifecycle.revision_triggers?.parallel_curriculum_baseline_creation_forbidden === true, 'RevisionTrigger non crea baseline parallele');
   assert(lifecycle.work_session?.share_completion_requires_persisted_current_professional_contribution === true, 'lifecycle vincola SHARE alla persistenza corrente');
@@ -87,9 +88,25 @@ if (registry) {
   }
 
   const flows = readText('docs/04_product_experience/09_USER_FLOWS.md');
-  for (const token of ['CURRICULUM_LIFECYCLE@1.2.0', 'Nuova norma, linea guida, nota o circolare', "Esigenza dell'Istituto", 'RevisionTrigger', 'DidacticBinding', 'ImplementationObservation', 'la precedente condivisione non abilita più il passaggio successivo', 'Proiezione corrente del Fascicolo', '/fascicolo', '/fonti', 'DRAFT_PLANNING_REFERENCE', 'DidacticBinding != AdoptionReceipt']) {
-    assert(flows.includes(token), `user flow contiene: ${token}`);
-  }
+  for (const token of [
+    'CURRICULUM_LIFECYCLE@1.2.0',
+    'Nuova norma, linea guida, nota o circolare',
+    "Esigenza dell'Istituto",
+    'RevisionTrigger',
+    'DidacticBinding',
+    'ImplementationObservation',
+    'la precedente condivisione non abilita più il passaggio successivo',
+    'Proiezione corrente del Fascicolo',
+    '/fascicolo',
+    '/fonti',
+    'DRAFT_PLANNING_REFERENCE',
+    'DidacticBinding != AdoptionReceipt',
+    'Proiezione corrente della qualificazione PRACTICE_SIGNAL',
+    'almeno due segnali problematici dello stesso tipo',
+    'motivazione professionale esplicita',
+    'automaticReviewCaseOpening = false',
+    'parallelCurriculumBaselineCreation = false'
+  ]) assert(flows.includes(token), `user flow contiene: ${token}`);
 
   const ccoDocs = readText('docs/04_product_experience/11_OPERATIONAL_COMMUNICATION_CONTRACT.md');
   for (const token of ['Versione:** 1.4.1', 'CURRICULUM_LIFECYCLE@1.2.0', 'Registro superfici:** 1.5.1', 'CCO-R5 — condivisione persistita prima del confronto', 'CCO-R6 — confronto ed esito come stadi distinti della stessa sessione']) {
@@ -158,7 +175,18 @@ if (registry) {
   assert(state.implementation_observation_requires_personal_data_absence_confirmation === true, 'osservazione richiede dichiarazione assenza dati personali');
   assert(state.implementation_observation_never_changes_curriculum_automatically === true, 'osservazione non modifica automaticamente il curricolo');
   assert(state.practice_signal_aggregation_available === true, 'aggregazione segnali disponibile senza scoring');
-  assert(state.revision_trigger_ux_implemented === false, 'UX RevisionTrigger non anticipata');
+  assert(state.practice_revision_trigger_qualification_implemented === true, 'qualificazione PRACTICE_SIGNAL implementata');
+  assert(state.practice_revision_trigger_persisted_in_arena_state === true, 'PRACTICE_SIGNAL persistito nello stato Arena');
+  assert(state.practice_revision_trigger_requires_aggregation_or_explicit_reason === true, 'PRACTICE_SIGNAL richiede ricorrenza o motivazione');
+  assert(state.practice_revision_trigger_references_current_master_and_unit === true, 'PRACTICE_SIGNAL riferisce master e unità');
+  assert(state.practice_revision_trigger_reenters_at_applicable_curriculum === true, 'PRACTICE_SIGNAL rientra da H1');
+  assert(state.practice_revision_trigger_never_opens_review_case_automatically === true, 'PRACTICE_SIGNAL non apre automaticamente casi');
+  assert(state.practice_revision_trigger_never_changes_curriculum_automatically === true, 'PRACTICE_SIGNAL non modifica automaticamente il curricolo');
+  assert(state.practice_revision_trigger_never_creates_parallel_baseline === true, 'PRACTICE_SIGNAL non crea baseline parallele');
+  assert(state.external_normative_trigger_ux_implemented === false, 'UX trigger normativo non anticipata');
+  assert(state.institute_need_trigger_ux_implemented === false, 'UX esigenza istituto non anticipata');
+  assert(state.periodic_review_trigger_ux_implemented === false, 'UX riesame periodico non anticipata');
+  assert(state.revision_trigger_ux_implemented === false, 'UX RevisionTrigger complessiva resta incompleta');
   assert(state.target_ui_fully_implemented === false, 'la documentazione non simula UI target già implementata');
   assert(state.human_end_to_end_pilot_complete === false, 'la documentazione non simula pilota umano concluso');
 }
