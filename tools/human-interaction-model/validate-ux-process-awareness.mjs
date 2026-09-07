@@ -91,9 +91,52 @@ for (const token of [
   'data-ux-layering="L1-L2-L3"',
   'data-case-ux-workframe',
   'data-viewport-anchor="stable-current-task"',
-  'Passo {stageIndex + 1} di {STAGES.length}',
+  'data-case-ux-process-rail',
+  'data-case-ux-process-step={step.id}',
+  'Passo ${stageIndex + 1} di ${STAGES.length}',
+  'data-case-professional-completion-acknowledgement',
+  'data-human-next-action="return-to-general-review-after-completion"',
+  'Riesame professionale concluso',
+  'Torna a Riesame',
   'Verifica e tracciabilità',
 ]) assert(shell.includes(token), `shell UX priva del marker di consolidamento: ${token}`);
+
+const caseAware = readText('src/features/beta/CaseAwareRevisionSurface.tsx');
+for (const token of [
+  "reviewCase.workSession?.sessionState === 'COMPLETE'",
+  "reviewCase.caseState === 'PROFESSIONAL_REVIEW_COMPLETE'",
+  'completionAcknowledgementKey',
+  'window.sessionStorage.setItem',
+  'data-case-completion-awaiting-acknowledgement',
+  'data-general-review-primary-work',
+  'data-general-review-assignment-support',
+]) assert(caseAware.includes(token), `CaseAwareRevisionSurface priva del presidio UX: ${token}`);
+assert(caseAware.indexOf('<RevisionWorkspace') < caseAware.indexOf('<SharedReviewCaseInbox'), 'il lavoro generale deve precedere il supporto di assegnazione');
+
+const sessionUi = readText('src/features/beta/CaseScopedCurriculumWorkSession.tsx');
+for (const token of [
+  'data-case-content-hierarchy="CURRENT_TASK_ONLY"',
+  'data-case-review-examine',
+  'Concludi il riesame professionale',
+]) assert(sessionUi.includes(token), `sessione interna priva della gerarchia corrente: ${token}`);
+for (const forbidden of ['Avanzamento del riesame mirato', 'data-case-active-identity']) {
+  assert(!sessionUi.includes(forbidden), `seconda gerarchia non ammessa nella sessione interna: ${forbidden}`);
+}
+
+const contributionUi = readText('src/features/beta/CaseScopedTeamContributionPublisher.tsx');
+for (const token of [
+  'data-ux-layering="L1-L3"',
+  'data-case-contribution-professional-status',
+  'data-case-contribution-technical-layer',
+  'Verifica e tracciabilità della condivisione',
+]) assert(contributionUi.includes(token), `condivisione priva di separazione L1/L3: ${token}`);
+
+const css = readText('src/features/beta/CaseScopedExperienceShell.css');
+for (const forbidden of [
+  '[data-case-scoped-curriculum-work-session] > section:first-child',
+  '[data-case-team-contribution-publisher] > div:first-child > p',
+  '[data-case-team-comparison] > div:first-child',
+]) assert(!css.includes(forbidden), `gerarchia affidata a occultamento CSS: ${forbidden}`);
 
 for (const token of [
   'CCO-R7 — consapevolezza del processo e continuità percettiva',
