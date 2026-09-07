@@ -23,23 +23,26 @@ try {
 
 if (registry) {
   assert(registry.registry_id === 'ARENA-PRODUCT-DOCS', 'registry_id prodotto corretto');
-  assert(registry.version === '1.0.5', 'versione registro prodotto 1.0.5');
+  assert(registry.version === '1.0.6', 'versione registro prodotto 1.0.6');
   assert(registry.product_vision?.id === 'ARENA-PRODUCT-VISION', 'vision id canonico');
   assert(registry.product_vision?.version === '1.0.0', 'vision version canonica');
   assert(registry.product_vision?.drive_file_id === '1s17jJCslSIJIXQfiTEzyRcD5q-Baopj6-l14aaFEWik', 'Drive ID vision canonica');
   assert(registry.lifecycle_contract?.id === 'CURRICULUM_LIFECYCLE', 'lifecycle id canonico');
-  assert(registry.lifecycle_contract?.version === '1.1.1', 'lifecycle version canonica');
+  assert(registry.lifecycle_contract?.version === '1.2.0', 'lifecycle version canonica');
 
   const lifecycle = readJson(registry.lifecycle_contract.path);
   assert(lifecycle.version === registry.lifecycle_contract.version, 'lifecycle version allineata al registro');
   assert(him.curriculum_lifecycle?.version === lifecycle.version, 'HIM allineato alla versione lifecycle');
   assert(lifecycle.canonical_curriculum?.version === '1.3', 'lifecycle punta al master 1.3');
   assert(lifecycle.derived_objects?.includes('RevisionTrigger'), 'RevisionTrigger presente nel lifecycle');
+  assert(lifecycle.derived_objects?.includes('DidacticBinding'), 'DidacticBinding presente nel lifecycle');
   assert(lifecycle.revision_triggers?.automatic_curriculum_change_forbidden === true, 'RevisionTrigger non modifica automaticamente il curricolo');
   assert(lifecycle.revision_triggers?.parallel_curriculum_baseline_creation_forbidden === true, 'RevisionTrigger non crea baseline parallele');
   assert(lifecycle.work_session?.share_completion_requires_persisted_current_professional_contribution === true, 'lifecycle vincola SHARE alla persistenza corrente');
   assert(lifecycle.work_session?.compare_stage_fail_closed_without_current_persisted_share === true, 'lifecycle chiude COMPARE in assenza di share corrente');
   assert(JSON.stringify(lifecycle.work_session?.progression) === JSON.stringify(['EXAMINE','SHARE','COMPARE','RECORD_TEAM_OUTCOME']), 'lifecycle conserva i quattro stadi della CurriculumWorkSession');
+  assert(lifecycle.didactic_binding?.current_master_not_in_force_requires_draft_planning_reference === true, 'lifecycle qualifica il master non vigente nella progettazione');
+  assert(lifecycle.didactic_binding?.copied_curriculum_text_never_inherits_canonical_authority === true, 'lifecycle mantiene non autoritativa la copia didattica');
 
   const canonical = registry.canonical_documents ?? [];
   const requiredRoles = ['PRODUCT_VISION', 'INFORMATION_ARCHITECTURE', 'NAVIGATION_MODEL', 'CRITICAL_USER_FLOWS', 'OPERATIONAL_COMMUNICATION'];
@@ -64,27 +67,29 @@ if (registry) {
     'IL MIO LAVORO · CURRICOLO · PROGETTAZIONE · RIESAME',
     'nuova norma o circolare può riaprire il ciclo',
     '1s17jJCslSIJIXQfiTEzyRcD5q-Baopj6-l14aaFEWik',
-    'curriculum-lifecycle.contract.json@1.1.1',
-    'ProfessionalContribution` persistito corrisponde alla scheda/versione corrente'
+    'curriculum-lifecycle.contract.json@1.2.0',
+    'ProfessionalContribution` persistito corrisponde alla scheda/versione corrente',
+    'riferimento di lavoro per una bozza di progettazione',
+    'non acquisiscono autorità canonica'
   ]) assert(vision.includes(token), `vision contiene: ${token}`);
 
   const ia = readText('docs/04_product_experience/01_INFORMATION_ARCHITECTURE.md');
-  for (const token of ['CURRICULUM_LIFECYCLE@1.1.1', 'CurriculumUnit', 'CurriculumWorkSession', 'RevisionTrigger', 'DidacticBinding', 'Fascicolo', 'TeamProfessionalOutcome', 'una dichiarazione locale dell\'utente non può simulare una condivisione avvenuta']) {
+  for (const token of ['CURRICULUM_LIFECYCLE@1.2.0', 'CurriculumUnit', 'CurriculumWorkSession', 'RevisionTrigger', 'DidacticBinding', 'Fascicolo', 'TeamProfessionalOutcome', "una dichiarazione locale dell'utente non può simulare una condivisione avvenuta", 'DRAFT_PLANNING_REFERENCE', 'snapshot di lavoro']) {
     assert(ia.includes(token), `IA contiene: ${token}`);
   }
 
   const nav = readText('docs/04_product_experience/02_NAVIGATION_MODEL.md');
-  for (const token of ['CURRICULUM_LIFECYCLE@1.1.1', 'IL MIO LAVORO · CURRICOLO · PROGETTAZIONE · RIESAME', 'FASCICOLO', 'ESAMINA → CONDIVIDI → CONFRONTA → REGISTRA L\'ESITO', 'Azioni istituzionali proiettate', 'nessun pulsante di conferma locale può simulare l\'avvenuta condivisione', 'FASCICOLO_NAVIGATION_CONVERGENCE', '/fascicolo', '/fonti']) {
+  for (const token of ['CURRICULUM_LIFECYCLE@1.2.0', 'IL MIO LAVORO · CURRICOLO · PROGETTAZIONE · RIESAME', 'FASCICOLO', "ESAMINA → CONDIVIDI → CONFRONTA → REGISTRA L'ESITO", 'Azioni istituzionali proiettate', "nessun pulsante di conferma locale può simulare l'avvenuta condivisione", 'FASCICOLO_NAVIGATION_CONVERGENCE', '/fascicolo', '/fonti', 'Riferimento di lavoro', 'DIDACTIC_BINDING']) {
     assert(nav.includes(token), `navigazione contiene: ${token}`);
   }
 
   const flows = readText('docs/04_product_experience/09_USER_FLOWS.md');
-  for (const token of ['CURRICULUM_LIFECYCLE@1.1.1', 'Nuova norma, linea guida, nota o circolare', "Esigenza dell'Istituto", 'RevisionTrigger', 'DidacticBinding', 'ImplementationObservation', 'la precedente condivisione non abilita più il passaggio successivo', 'Proiezione corrente del Fascicolo', '/fascicolo', '/fonti']) {
+  for (const token of ['CURRICULUM_LIFECYCLE@1.2.0', 'Nuova norma, linea guida, nota o circolare', "Esigenza dell'Istituto", 'RevisionTrigger', 'DidacticBinding', 'ImplementationObservation', 'la precedente condivisione non abilita più il passaggio successivo', 'Proiezione corrente del Fascicolo', '/fascicolo', '/fonti', 'DRAFT_PLANNING_REFERENCE', 'DidacticBinding != AdoptionReceipt']) {
     assert(flows.includes(token), `user flow contiene: ${token}`);
   }
 
   const ccoDocs = readText('docs/04_product_experience/11_OPERATIONAL_COMMUNICATION_CONTRACT.md');
-  for (const token of ['Versione:** 1.4.1', 'CURRICULUM_LIFECYCLE@1.1.1', 'Registro superfici:** 1.5.1', 'CCO-R5 — condivisione persistita prima del confronto', "CCO-R6 — confronto ed esito come stadi distinti della stessa sessione"]) {
+  for (const token of ['Versione:** 1.4.1', 'CURRICULUM_LIFECYCLE@1.2.0', 'Registro superfici:** 1.5.1', 'CCO-R5 — condivisione persistita prima del confronto', 'CCO-R6 — confronto ed esito come stadi distinti della stessa sessione']) {
     assert(ccoDocs.includes(token), `CCO docs contiene: ${token}`);
   }
 
@@ -138,6 +143,12 @@ if (registry) {
   assert(state.fascicolo_public_route_is_canonical === true, 'route pubblica Fascicolo canonica');
   assert(state.legacy_fonti_and_settings_routes_remain_compatibility_aliases === true, 'route legacy Fonti/Settings conservate come alias');
   assert(state.home_journey_does_not_model_sources_or_institutional_decision_as_universal_stages === true, 'Home non tratta fonti o decisione istituzionale come stadi universali');
+  assert(state.didactic_binding_domain_model_implemented === true, 'dominio DidacticBinding implementato');
+  assert(state.didactic_binding_context_key_used_until_native_unit_id_resolution === true, 'binding usa chiave contestuale governata');
+  assert(state.annual_planning_binding_persisted === true, 'programmazione annuale persiste il binding');
+  assert(state.uda_binding_persisted === true, 'UDA persiste il binding');
+  assert(state.didactic_binding_authority_boundary_visible === true, 'stato di autorità del binding visibile');
+  assert(state.working_master_binding_is_draft_reference_not_adoption === true, 'master di lavoro non diventa adozione nella progettazione');
   assert(state.target_ui_fully_implemented === false, 'la documentazione non simula UI target già implementata');
   assert(state.human_end_to_end_pilot_complete === false, 'la documentazione non simula pilota umano concluso');
 }
