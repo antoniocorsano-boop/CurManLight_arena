@@ -6,7 +6,7 @@ import {
   readNormativeReviewRequest,
 } from '../../documents/lib/normativeReviewIntent';
 import { PlanningHandoffPreview } from '../../beta/PlanningHandoffPreview';
-import { RevisionWorkspace } from '../../beta';
+import { CaseAwareRevisionSurface } from '../../beta/CaseAwareRevisionSurface';
 import { ProcessoTab } from '../../processo';
 import { ProgettazioneTab } from '../../progettazione';
 import { DashboardView } from './DashboardView';
@@ -111,7 +111,7 @@ export function AppViewsLayer(props: AppViewsLayerProps) {
 
       {props.activeTab === 'revisione' && (
         <div className="space-y-3" data-teacher-surface="revision">
-          <RevisionWorkspace
+          <CaseAwareRevisionSurface
             {...props}
             initialNormativeSourceCode={normativeReviewSourceCode}
             onInitialNormativeSourceConsumed={() => setNormativeReviewSourceCode(null)}
