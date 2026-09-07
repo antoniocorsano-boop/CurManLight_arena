@@ -239,10 +239,9 @@ export function CaseScopedTeamCoordinationWorkspace({
 
   if (mode === 'status') {
     return (
-      <section className="rounded-xl border border-slate-200 bg-white p-3 text-xs text-slate-700" data-case-team-status data-review-case-id={reviewCaseId}>
-        <strong>Stato del caso nel team</strong>
-        <span className="mt-1 block">Esiti registrati: {resolved.length} di {summary.total}.</span>
-        <span className="mt-1 block">I contributi di altri casi non sono conteggiati.</span>
+      <section className="rounded-xl border border-slate-200 bg-white p-3 text-xs text-slate-700" data-case-team-status data-case-team-coordination-mode="status" data-review-case-id={reviewCaseId} data-hcm-level="1">
+        <strong>Stato del lavoro del gruppo</strong>
+        <span className="mt-1 block">Esiti professionali registrati: {resolved.length} di {summary.total}.</span>
       </section>
     );
   }
@@ -252,64 +251,85 @@ export function CaseScopedTeamCoordinationWorkspace({
       ? ([['defer', TEAM_OUTCOME_LABELS.defer]] as const)
       : (Object.entries(TEAM_OUTCOME_LABELS) as [TeamReviewOutcome, string][]);
     return (
-      <section className="space-y-3 rounded-2xl border border-indigo-200 bg-white p-4" data-case-team-outcome-recording>
-        {!selectedItem ? (
-          <p className="text-xs text-slate-600">Seleziona dal confronto la scheda per cui il gruppo ha maturato un esito.</p>
-        ) : (
-          <>
-            <div>
-              <span className="text-[10px] font-black uppercase text-indigo-700">Caso mirato</span>
-              <strong className="mt-1 block text-sm text-slate-900">{selectedItem.focus}</strong>
-              {!selectedItem.coverageComplete && <p className="mt-1 text-xs text-amber-800">Copertura incompleta: da questa fase è consentito soltanto rinviare il punto.</p>}
-            </div>
-            <label className="block text-xs font-bold text-slate-700">Esito
-              <select value={teamOutcome} onChange={(event) => setTeamOutcome(event.target.value as TeamReviewOutcome)} className="mt-1 min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3">
-                {outcomeOptions.map(([value, label]) => <option key={value} value={value}>{label}</option>)}
-              </select>
-            </label>
-            {teamOutcome === 'shared-text' && (
-              <textarea value={sharedText} onChange={(event) => setSharedText(event.target.value)} rows={3} className="w-full rounded-xl border border-slate-300 p-3 text-sm" placeholder="Testo condiviso concordato…" />
-            )}
-            <textarea value={rationale} onChange={(event) => setRationale(event.target.value)} rows={3} className="w-full rounded-xl border border-slate-300 p-3 text-sm" placeholder="Motivazione dell’esito professionale…" />
-            <button type="button" disabled={busy || !canRecordTeamOutcome || (!selectedItem.coverageComplete && teamOutcome !== 'defer')} onClick={() => void recordOutcome()} className="min-h-11 w-full rounded-xl bg-indigo-700 px-4 py-3 text-sm font-bold text-white disabled:opacity-40">{busy ? 'Registrazione…' : 'Registra l’esito del caso'}</button>
-          </>
-        )}
-        {message && <p role="status" className="rounded-lg bg-slate-50 p-3 text-xs text-slate-700">{message}</p>}
+      <section className="space-y-3 rounded-2xl border border-indigo-200 bg-white p-4" data-case-team-outcome-recording data-case-team-coordination-mode="record" data-ux-layering="L1-L3">
+        <div data-hcm-level="1">
+          {!selectedItem ? (
+            <p className="text-xs text-slate-600">Seleziona dal confronto la scheda per cui il gruppo ha maturato un esito.</p>
+          ) : (
+            <>
+              <div>
+                <span className="text-[10px] font-black uppercase text-indigo-700">Esito professionale</span>
+                <strong className="mt-1 block text-sm text-slate-900">{selectedItem.focus}</strong>
+                {!selectedItem.coverageComplete && <p className="mt-1 text-xs text-amber-800">Copertura incompleta: in questo stato il punto può soltanto essere rinviato.</p>}
+              </div>
+              <label className="mt-3 block text-xs font-bold text-slate-700">Esito
+                <select value={teamOutcome} onChange={(event) => setTeamOutcome(event.target.value as TeamReviewOutcome)} className="mt-1 min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3">
+                  {outcomeOptions.map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+                </select>
+              </label>
+              {teamOutcome === 'shared-text' && (
+                <textarea value={sharedText} onChange={(event) => setSharedText(event.target.value)} rows={3} className="mt-3 w-full rounded-xl border border-slate-300 p-3 text-sm" placeholder="Testo condiviso concordato…" />
+              )}
+              <textarea value={rationale} onChange={(event) => setRationale(event.target.value)} rows={3} className="mt-3 w-full rounded-xl border border-slate-300 p-3 text-sm" placeholder="Motivazione dell’esito professionale…" />
+              <button type="button" disabled={busy || !canRecordTeamOutcome || (!selectedItem.coverageComplete && teamOutcome !== 'defer')} onClick={() => void recordOutcome()} className="mt-3 min-h-11 w-full rounded-xl bg-indigo-700 px-4 py-3 text-sm font-bold text-white disabled:opacity-40">{busy ? 'Registrazione…' : 'Registra l’esito del caso'}</button>
+            </>
+          )}
+          {message && <p role="status" className="mt-3 rounded-lg bg-slate-50 p-3 text-xs text-slate-700">{message}</p>}
+        </div>
+        <details className="rounded-xl border border-slate-200 bg-slate-50" data-hcm-level="3" data-case-coordination-technical-layer>
+          <summary className="cursor-pointer px-3 py-2.5 text-xs font-bold text-slate-600">Verifica e tracciabilità dell’esito</summary>
+          <div className="space-y-2 border-t border-slate-200 p-3 text-[11px] leading-5 text-slate-600">
+            <p className="break-all"><strong className="text-slate-700">Caso:</strong> {reviewCaseId}</p>
+            <p><strong className="text-slate-700">Ambito:</strong> {academicYear} · {group.code} · {discipline}</p>
+            {selectedItem && <p className="break-all"><strong className="text-slate-700">Fingerprint corrente:</strong> {selectedItem.proposalFingerprint}</p>}
+            <p>L’esito è registrabile soltanto dall’autorità professionale prevista e resta distinto da una decisione istituzionale.</p>
+          </div>
+        </details>
       </section>
     );
   }
 
   return (
-    <section className="space-y-3" data-case-team-comparison data-review-case-id={reviewCaseId}>
-      <div className="rounded-2xl border border-indigo-200 bg-indigo-50/40 p-4">
-        <strong className="text-sm text-indigo-950">Confronto circoscritto al caso</strong>
-        <p className="mt-1 text-xs leading-5 text-indigo-800">Sono visibili soltanto contributi con lo stesso `review_case_id` e lo stesso fingerprint della scheda.</p>
+    <section className="space-y-3" data-case-team-comparison data-case-team-coordination-mode="compare" data-review-case-id={reviewCaseId} data-ux-layering="L1-L3">
+      <div className="rounded-2xl border border-indigo-200 bg-indigo-50/40 p-4" data-hcm-level="1">
+        <strong className="text-sm text-indigo-950">Confronta i punti del caso</strong>
+        <p className="mt-1 text-xs leading-5 text-indigo-800">Arena porta in primo piano convergenze, differenze e punti che richiedono un esito professionale.</p>
       </div>
-      {summary.items.map((item) => {
-        const outcome = latest[item.proposalRef];
-        return (
-          <article key={item.proposalRef} className="rounded-xl border border-slate-200 bg-white p-3" data-team-review-coverage={item.coverageComplete ? 'complete' : 'incomplete'}>
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <strong className="text-sm text-slate-900">{item.focus}</strong>
-                <p className="mt-1 text-xs text-slate-600">{BUCKET_LABELS[item.bucket]} · contributi correnti {item.contributionCount}{item.expectedContributorCount !== null ? `/${item.expectedContributorCount}` : ''}</p>
+      <div className="space-y-3" data-hcm-level="1">
+        {summary.items.map((item) => {
+          const outcome = latest[item.proposalRef];
+          return (
+            <article key={item.proposalRef} className="rounded-xl border border-slate-200 bg-white p-3" data-team-review-coverage={item.coverageComplete ? 'complete' : 'incomplete'}>
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <strong className="text-sm text-slate-900">{item.focus}</strong>
+                  <p className="mt-1 text-xs text-slate-600">{BUCKET_LABELS[item.bucket]} · contributi correnti {item.contributionCount}{item.expectedContributorCount !== null ? `/${item.expectedContributorCount}` : ''}</p>
+                </div>
+                {outcome && <span className="rounded-full bg-emerald-50 px-2 py-1 text-[10px] font-bold text-emerald-800">Esito registrato</span>}
               </div>
-              {outcome && <span className="rounded-full bg-emerald-50 px-2 py-1 text-[10px] font-bold text-emerald-800">Esito registrato</span>}
-            </div>
-            {!outcome && canRecordTeamOutcome && (
-              <button
-                type="button"
-                onClick={() => onRequestRecordOutcome?.(item.proposalRef)}
-                data-human-next-action={item.coverageComplete ? 'record-case-outcome' : 'defer-case-outcome'}
-                className="mt-3 min-h-10 rounded-xl border border-indigo-300 bg-indigo-50 px-3 py-2 text-xs font-bold text-indigo-900"
-              >
-                {item.coverageComplete ? 'Porta all’esito' : 'Rinvia il punto'}
-              </button>
-            )}
-          </article>
-        );
-      })}
-      {message && <p role="status" className="rounded-lg bg-amber-50 p-3 text-xs text-amber-900">{message}</p>}
+              {!outcome && canRecordTeamOutcome && (
+                <button
+                  type="button"
+                  onClick={() => onRequestRecordOutcome?.(item.proposalRef)}
+                  data-human-next-action={item.coverageComplete ? 'record-case-outcome' : 'defer-case-outcome'}
+                  className="mt-3 min-h-10 rounded-xl border border-indigo-300 bg-indigo-50 px-3 py-2 text-xs font-bold text-indigo-900"
+                >
+                  {item.coverageComplete ? 'Porta all’esito' : 'Rinvia il punto'}
+                </button>
+              )}
+            </article>
+          );
+        })}
+        {message && <p role="status" className="rounded-lg bg-amber-50 p-3 text-xs text-amber-900">{message}</p>}
+      </div>
+      <details className="rounded-xl border border-slate-200 bg-slate-50" data-hcm-level="3" data-case-coordination-technical-layer>
+        <summary className="cursor-pointer px-3 py-2.5 text-xs font-bold text-slate-600">Verifica e tracciabilità del confronto</summary>
+        <div className="space-y-2 border-t border-slate-200 p-3 text-[11px] leading-5 text-slate-600">
+          <p className="break-all"><strong className="text-slate-700">Caso:</strong> {reviewCaseId}</p>
+          <p><strong className="text-slate-700">Ambito:</strong> {academicYear} · {group.code} · {discipline}</p>
+          <p>Il confronto tecnico include soltanto contributi con lo stesso review_case_id e lo stesso fingerprint corrente della scheda; contributi generali o di altri casi non soddisfano la copertura.</p>
+        </div>
+      </details>
     </section>
   );
 }
