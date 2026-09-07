@@ -13,6 +13,7 @@ import {
 } from '../domain/curriculum/caseWorkSession';
 import { fingerprintCaseScopedTeamReviewProposal } from '../domain/revision/caseScopedTeamReview';
 import caseSurfaceSource from '../features/beta/CaseAwareRevisionSurface.tsx?raw';
+import caseShellSource from '../features/beta/CaseScopedExperienceShell.tsx?raw';
 import caseSessionSource from '../features/beta/CaseScopedCurriculumWorkSession.tsx?raw';
 import casePublisherSource from '../features/beta/CaseScopedTeamContributionPublisher.tsx?raw';
 import caseCoordinationSource from '../features/beta/CaseScopedTeamCoordinationWorkspace.tsx?raw';
@@ -140,17 +141,18 @@ describe('CurriculumWorkSession case-scoped', () => {
     expect(first).not.toBe(other);
   });
 
-  it('keeps the case session dominant, makes the active actor visible, and keeps persistence exact-case', () => {
+  it('keeps the case session dominant, exposes the active identity in the shell, and keeps persistence exact-case', () => {
     expect(caseSurfaceSource).toContain('data-revision-surface-mode="CASE_SCOPED"');
     expect(caseSurfaceSource).toContain("reviewCase.workSession?.sessionState === 'ACTIVE'");
     expect(caseSessionSource).toContain('data-case-scoped-curriculum-work-session');
-    expect(caseSessionSource).toContain('data-case-active-identity');
-    expect(caseSessionSource).toContain('data-case-active-role={activeRole ?? \'unverified\'}');
-    expect(caseSessionSource).toContain('Stai lavorando come:');
-    expect(caseSessionSource).toContain('team.session?.user.email');
-    expect(caseSessionSource).toContain('team.selectedMembership?.role');
-    expect(caseSessionSource).toContain('Identità del team in verifica. Non condividere finché account e ruolo non sono visibili.');
-    expect(caseSessionSource).toContain('Le decisioni della sessione generale non vengono importate.');
+    expect(caseSessionSource).toContain('data-case-content-hierarchy="CURRENT_TASK_ONLY"');
+    expect(caseSessionSource).not.toContain('data-case-active-identity');
+    expect(caseShellSource).toContain('data-case-ux-stable-header');
+    expect(caseShellSource).toContain('roleLabel(activeRole)');
+    expect(caseShellSource).toContain('team.selectedMembership?.role');
+    expect(caseShellSource).toContain('team.session?.user.email');
+    expect(caseShellSource).toContain('Account autenticato');
+    expect(caseShellSource).toContain('data-case-ux-technical-layer');
     expect(casePublisherSource).toContain('data-review-case-id={reviewCaseId}');
     expect(caseRepositorySource).toContain("'list_case_scoped_team_review_contributions_v1'");
     expect(caseRepositorySource).not.toContain(".from('team_review_contributions')");
