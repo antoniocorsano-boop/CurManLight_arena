@@ -25,7 +25,7 @@ describe('R2-A — convergenza delle superfici primarie', () => {
     expect(planningWorkspaceSource).toContain('data-teacher-surface="planning-context-first"');
     expect(planningWorkspaceSource).toContain('Prepara il lavoro della classe');
     expect(planningWorkspaceSource).toContain('Riferimento di lavoro');
-    expect(planningWorkspaceSource).toContain('master ${INSTITUTE_CURRICULUM_CURRENT_SOURCE.version} non vigente');
+    expect(planningWorkspaceSource).toContain('master ${INSTITUTE_CURRICULUM_CURRENT_SOURCE.sourceVersion} non vigente');
     expect(planningWorkspaceSource).toContain('data-human-next-action="start-current-planning"');
     expect(planningWorkspaceSource).toContain('Altri strumenti di progettazione');
     expect(planningWorkspaceSource).toContain('Verifica e tracciabilità');
