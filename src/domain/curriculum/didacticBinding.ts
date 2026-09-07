@@ -1,4 +1,5 @@
 import type {
+  CurriculumUnitReference,
   DidacticBinding,
   DidacticBindingTarget,
   SchoolOrder,
@@ -11,6 +12,12 @@ export interface BuildDidacticBindingInput {
   targetClass: string;
   disciplineOrField: string;
   createdAt?: string;
+}
+
+export interface ResolveCurriculumUnitReferenceInput {
+  order: SchoolOrder;
+  targetClass: string;
+  disciplineOrField: string;
 }
 
 const normalizeKeyPart = (value: string): string => value
@@ -27,13 +34,11 @@ export function resolveCurriculumClassOrAgeBand(order: SchoolOrder, targetClass:
   return `classe-${normalizedClass}`;
 }
 
-export function buildDidacticBinding({
-  targetType,
+export function resolveCurriculumUnitReference({
   order,
   targetClass,
   disciplineOrField,
-  createdAt = new Date().toISOString(),
-}: BuildDidacticBindingInput): DidacticBinding {
+}: ResolveCurriculumUnitReferenceInput): CurriculumUnitReference {
   const master = INSTITUTE_CURRICULUM_CURRENT_SOURCE;
   const classOrAgeBand = resolveCurriculumClassOrAgeBand(order, targetClass);
   const disciplineKey = normalizeKeyPart(disciplineOrField);
@@ -45,23 +50,35 @@ export function buildDidacticBinding({
     disciplineKey,
   ].join(':');
 
+  return {
+    masterId: 'CAN-CURR-MASTER-00',
+    masterDriveFileId: master.driveFileId,
+    masterVersion: master.sourceVersion,
+    unitKey,
+    identityKind: 'ARENA_MASTER_CONTEXT_KEY',
+    order,
+    classOrAgeBand,
+    disciplineOrField,
+    resolutionState: 'CONTEXT_BOUND',
+  };
+}
+
+export function buildDidacticBinding({
+  targetType,
+  order,
+  targetClass,
+  disciplineOrField,
+  createdAt = new Date().toISOString(),
+}: BuildDidacticBindingInput): DidacticBinding {
+  const master = INSTITUTE_CURRICULUM_CURRENT_SOURCE;
+  const curriculumUnit = resolveCurriculumUnitReference({ order, targetClass, disciplineOrField });
   const curriculumInForce = Boolean(master.curriculumInForce);
 
   return {
-    id: `DB:${targetType}:${unitKey}`,
+    id: `DB:${targetType}:${curriculumUnit.unitKey}`,
     kind: 'DIDACTIC_BINDING',
     targetType,
-    curriculumUnit: {
-      masterId: 'CAN-CURR-MASTER-00',
-      masterDriveFileId: master.driveFileId,
-      masterVersion: master.sourceVersion,
-      unitKey,
-      identityKind: 'ARENA_MASTER_CONTEXT_KEY',
-      order,
-      classOrAgeBand,
-      disciplineOrField,
-      resolutionState: 'CONTEXT_BOUND',
-    },
+    curriculumUnit,
     authorityState: curriculumInForce ? 'IN_FORCE_CURRICULUM' : 'WORKING_BASELINE_NOT_IN_FORCE',
     useScope: curriculumInForce ? 'IN_FORCE_CURRICULUM_REFERENCE' : 'DRAFT_PLANNING_REFERENCE',
     humanProfessionalValidation: master.humanProfessionalValidation === 'OPEN' ? 'OPEN' : 'COMPLETE',
