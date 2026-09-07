@@ -273,11 +273,26 @@ Nel primo incremento `REVISION_TRIGGER_QUALIFICATION` della candidata Beta:
 - il `RevisionTrigger` persistito conserva osservazioni di origine, artefatti didattici, ambito applicabile, unità curricolare, master/versione e base di qualificazione;
 - il trigger rientra logicamente da `H1_APPLICABLE_CURRICULUM`, ma **non apre automaticamente** un `CurriculumReviewCase`;
 - `automaticCurriculumChange = false`, `automaticReviewCaseOpening = false` e `parallelCurriculumBaselineCreation = false` sono invarianti del dominio;
-- il linguaggio docente resta «Motivo di riesame qualificato», non il nome tecnico dell'oggetto;
-- le UX per `EXTERNAL_NORMATIVE`, `INSTITUTE_NEED` e `PERIODIC_REVIEW` restano incrementi successivi e non sono simulate da questa funzione.
+- il linguaggio docente resta «Motivo di riesame qualificato», non il nome tecnico dell'oggetto.
+
+---
+
+## 18. Proiezione corrente delle altre cause RevisionTrigger
+
+Nel secondo incremento `REVISION_TRIGGER_QUALIFICATION` della candidata Beta, le tre cause ulteriori riusano le superfici già esistenti:
+- `EXTERNAL_NORMATIVE` parte dal **Fascicolo** esclusivamente da una fonte già qualificata nel repertorio istituzionale; l'azione **Valuta l’impatto sul curricolo** apre la superficie **Riesame** con la fonte preimpostata;
+- una fonte personale o soltanto verificata localmente non può essere promossa implicitamente a fonte normativa;
+- nel Riesame l'utente deve registrare una valutazione esplicita dell'impatto della fonte sull'ordine, classe/fascia e disciplina/campo correnti;
+- `INSTITUTE_NEED` nasce nella stessa superficie **Riesame**, richiede sede/atto interno e motivazione esplicita, ed è registrata obbligatoriamente come origine **non nazionale**;
+- `PERIODIC_REVIEW` nasce nella stessa superficie **Riesame**, richiede ciclo di verifica e una ragione concreta: il semplice decorso del tempo non riapre unità stabili;
+- tutte e tre le cause usano la stessa `CurriculumUnit` del contesto corrente, la stessa identità/versione del master e lo stesso rientro logico da `H1_APPLICABLE_CURRICULUM`;
+- la qualificazione persiste il `RevisionTrigger`, ma non apre automaticamente un `CurriculumReviewCase`, non modifica il master e non crea una baseline parallela;
+- non viene introdotta alcuna nuova route o superficie primaria: Fascicolo resta servizio di supporto e Riesame resta l'unica superficie professionale di qualificazione delle cause non didattiche.
+
+**Confine:** `fonte/esigenza/scadenza != RevisionTrigger qualificato != CurriculumReviewCase != CurriculumChange != InstitutionalDecision`.
 
 ---
 
 ## Criterio complessivo di accettazione
 
-I flow sono conformi quando il docente può svolgere il proprio compito senza conoscere pipeline, gate, membership IDs o struttura del repository; le autorità restano separate; la condivisione è verificabile e non simulabile localmente; le fonti sono verificabili; il curricolo alimenta la progettazione reale mediante binding versionati; un master non vigente resta riconoscibile come riferimento di lavoro; la pratica produce osservazioni professionali collegate e prive di dati personali degli alunni; un motivo di riesame dalla pratica richiede ricorrenza o motivazione esplicita e non apre automaticamente un caso; nuove norme, esigenze d'Istituto e osservazioni dalla pratica possono riaprire il processo in modo mirato e tracciato.
+I flow sono conformi quando il docente può svolgere il proprio compito senza conoscere pipeline, gate, membership IDs o struttura del repository; le autorità restano separate; la condivisione è verificabile e non simulabile localmente; le fonti sono verificabili; il curricolo alimenta la progettazione reale mediante binding versionati; un master non vigente resta riconoscibile come riferimento di lavoro; la pratica produce osservazioni professionali collegate e prive di dati personali degli alunni; ogni motivo di riesame richiede la qualificazione prevista dalla propria origine e non apre automaticamente un caso; nuove norme, esigenze d'Istituto, riesami periodici e osservazioni dalla pratica possono riaprire il processo in modo mirato e tracciato senza creare baseline parallele.
