@@ -1,7 +1,7 @@
 {
   "registry_id": "ARENA-PRODUCT-DOCS",
-  "version": "1.0.5",
-  "date": "2026-09-06",
+  "version": "1.0.6",
+  "date": "2026-09-07",
   "product_vision": {
     "id": "ARENA-PRODUCT-VISION",
     "version": "1.0.0",
@@ -12,7 +12,7 @@
   },
   "lifecycle_contract": {
     "id": "CURRICULUM_LIFECYCLE",
-    "version": "1.1.1",
+    "version": "1.2.0",
     "path": ".human/curriculum-lifecycle.contract.json"
   },
   "canonical_documents": [
@@ -67,6 +67,12 @@
     "fascicolo_public_route_is_canonical": true,
     "legacy_fonti_and_settings_routes_remain_compatibility_aliases": true,
     "home_journey_does_not_model_sources_or_institutional_decision_as_universal_stages": true,
+    "didactic_binding_domain_model_implemented": true,
+    "didactic_binding_context_key_used_until_native_unit_id_resolution": true,
+    "annual_planning_binding_persisted": true,
+    "uda_binding_persisted": true,
+    "didactic_binding_authority_boundary_visible": true,
+    "working_master_binding_is_draft_reference_not_adoption": true,
     "target_ui_fully_implemented": false,
     "human_end_to_end_pilot_complete": false
   }
