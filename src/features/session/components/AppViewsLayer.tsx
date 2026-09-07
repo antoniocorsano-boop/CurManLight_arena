@@ -1,6 +1,10 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { CurriculumTab } from '../../curriculum';
 import { EsportazioniTab, FontiTab, SecondBrainTab } from '../../documents';
+import {
+  NORMATIVE_REVIEW_REQUEST_EVENT,
+  readNormativeReviewRequest,
+} from '../../documents/lib/normativeReviewIntent';
 import { PlanningHandoffPreview } from '../../beta/PlanningHandoffPreview';
 import { RevisionWorkspace } from '../../beta';
 import { ProcessoTab } from '../../processo';
@@ -29,10 +33,17 @@ export function AppViewsLayer(props: AppViewsLayerProps) {
     if (isActiveProgTab(tab)) props.setActiveProgTab(tab);
   };
 
-  const openNormativeReview = (sourceCode: string) => {
-    setNormativeReviewSourceCode(sourceCode);
-    safeHandleTabSwitch('revisione');
-  };
+  useEffect(() => {
+    const handleNormativeReviewRequest = (event: Event) => {
+      const sourceCode = readNormativeReviewRequest(event);
+      if (!sourceCode) return;
+      setNormativeReviewSourceCode(sourceCode);
+      props.handleTabSwitch('revisione');
+    };
+
+    window.addEventListener(NORMATIVE_REVIEW_REQUEST_EVENT, handleNormativeReviewRequest);
+    return () => window.removeEventListener(NORMATIVE_REVIEW_REQUEST_EVENT, handleNormativeReviewRequest);
+  }, [props.handleTabSwitch]);
 
   return (
     <>
@@ -130,12 +141,7 @@ export function AppViewsLayer(props: AppViewsLayerProps) {
         </div>
       )}
 
-      {props.activeTab === 'fonti' && (
-        <FontiTab
-          {...props}
-          onRequestNormativeReview={openNormativeReview}
-        />
-      )}
+      {props.activeTab === 'fonti' && <FontiTab {...props} />}
 
       {props.activeTab !== 'fonti' && (
         <InfoViews
