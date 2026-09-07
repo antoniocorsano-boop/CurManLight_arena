@@ -23,7 +23,7 @@ try {
 
 if (registry) {
   assert(registry.registry_id === 'ARENA-PRODUCT-DOCS', 'registry_id prodotto corretto');
-  assert(registry.version === '1.0.10', 'versione registro prodotto 1.0.10');
+  assert(registry.version === '1.0.11', 'versione registro prodotto 1.0.11');
   assert(registry.product_vision?.id === 'ARENA-PRODUCT-VISION', 'vision id canonico');
   assert(registry.product_vision?.version === '1.0.0', 'vision version canonica');
   assert(registry.product_vision?.drive_file_id === '1s17jJCslSIJIXQfiTEzyRcD5q-Baopj6-l14aaFEWik', 'Drive ID vision canonica');
@@ -35,6 +35,7 @@ if (registry) {
   assert(him.curriculum_lifecycle?.version === lifecycle.version, 'HIM allineato alla versione lifecycle');
   assert(lifecycle.canonical_curriculum?.version === '1.3', 'lifecycle punta al master 1.3');
   assert(lifecycle.derived_objects?.includes('RevisionTrigger'), 'RevisionTrigger presente nel lifecycle');
+  assert(lifecycle.derived_objects?.includes('CurriculumReviewCase'), 'CurriculumReviewCase presente nel lifecycle');
   assert(lifecycle.derived_objects?.includes('DidacticBinding'), 'DidacticBinding presente nel lifecycle');
   assert(lifecycle.derived_objects?.includes('ImplementationObservation'), 'ImplementationObservation presente nel lifecycle');
   assert(lifecycle.revision_triggers?.practice_signal_requires_aggregation_or_explicit_professional_reason === true, 'PRACTICE_SIGNAL richiede aggregazione o motivazione esplicita');
@@ -42,6 +43,7 @@ if (registry) {
   assert(lifecycle.revision_triggers?.external_normative_requires_applicability_assessment === true, 'EXTERNAL_NORMATIVE richiede applicabilità');
   assert(lifecycle.revision_triggers?.institute_need_must_remain_explicitly_non_national === true, 'INSTITUTE_NEED resta non nazionale');
   assert(lifecycle.revision_triggers?.periodic_review_must_not_reopen_stable_units_without_reason === true, 'PERIODIC_REVIEW richiede una ragione');
+  assert(lifecycle.revision_triggers?.may_open_targeted_review_cases === true, 'RevisionTrigger può alimentare casi mirati');
   assert(lifecycle.revision_triggers?.automatic_curriculum_change_forbidden === true, 'RevisionTrigger non modifica automaticamente il curricolo');
   assert(lifecycle.revision_triggers?.parallel_curriculum_baseline_creation_forbidden === true, 'RevisionTrigger non crea baseline parallele');
   assert(lifecycle.work_session?.share_completion_requires_persisted_current_professional_contribution === true, 'lifecycle vincola SHARE alla persistenza corrente');
@@ -69,6 +71,7 @@ if (registry) {
     'ARENA-PRODUCT-VISION',
     'RevisionTrigger',
     'CurriculumUnit',
+    'CurriculumReviewCase',
     'TeamProfessionalOutcome',
     'DidacticBinding',
     'ImplementationObservation',
@@ -82,7 +85,7 @@ if (registry) {
   ]) assert(vision.includes(token), `vision contiene: ${token}`);
 
   const ia = readText('docs/04_product_experience/01_INFORMATION_ARCHITECTURE.md');
-  for (const token of ['CURRICULUM_LIFECYCLE@1.2.0', 'CurriculumUnit', 'CurriculumWorkSession', 'RevisionTrigger', 'DidacticBinding', 'ImplementationObservation', 'Fascicolo', 'TeamProfessionalOutcome', "una dichiarazione locale dell'utente non può simulare una condivisione avvenuta", 'DRAFT_PLANNING_REFERENCE', 'snapshot di lavoro']) {
+  for (const token of ['CURRICULUM_LIFECYCLE@1.2.0', 'CurriculumUnit', 'CurriculumReviewCase', 'CurriculumWorkSession', 'RevisionTrigger', 'DidacticBinding', 'ImplementationObservation', 'Fascicolo', 'TeamProfessionalOutcome', "una dichiarazione locale dell'utente non può simulare una condivisione avvenuta", 'DRAFT_PLANNING_REFERENCE', 'snapshot di lavoro']) {
     assert(ia.includes(token), `IA contiene: ${token}`);
   }
 
@@ -98,6 +101,7 @@ if (registry) {
     "Esigenza dell'Istituto",
     'Riesame periodico',
     'RevisionTrigger',
+    'CurriculumReviewCase',
     'DidacticBinding',
     'ImplementationObservation',
     'la precedente condivisione non abilita più il passaggio successivo',
@@ -115,7 +119,12 @@ if (registry) {
     'Valuta l’impatto sul curricolo',
     'una fonte personale o soltanto verificata localmente non può essere promossa implicitamente a fonte normativa',
     'il semplice decorso del tempo non riapre unità stabili',
-    'non viene introdotta alcuna nuova route o superficie primaria'
+    'non viene introdotta alcuna nuova route o superficie primaria',
+    "Proiezione corrente dell'apertura mirata di CurriculumReviewCase",
+    'readiness fail-closed',
+    'professionalValidationState = NOT_STARTED',
+    'contributi personali e decisioni di riesami precedenti non vengono riportati automaticamente',
+    'RevisionTrigger qualificato != CurriculumReviewCase aperto != nuova CurriculumWorkSession case-scoped'
   ]) assert(flows.includes(token), `user flow contiene: ${token}`);
 
   const ccoDocs = readText('docs/04_product_experience/11_OPERATIONAL_COMMUNICATION_CONTRACT.md');
@@ -153,62 +162,87 @@ if (registry) {
   ]) assert(rules[key] === true, `regola manutenzione documentale attiva: ${key}`);
 
   const state = registry.implementation_state ?? {};
-  assert(state.vision_defined === true, 'visione definita');
-  assert(state.lifecycle_contract_validated === true, 'lifecycle validato');
-  assert(state.revision_trigger_governance_defined === true, 'governo RevisionTrigger definito');
-  assert(state.curriculum_work_session_convergence_started === true, 'convergenza CurriculumWorkSession registrata');
-  assert(state.curriculum_work_session_single_progression_implemented === true, 'progressione unica CurriculumWorkSession registrata');
-  assert(state.legacy_revision_tabs_removed_from_primary_flow === true, 'tab legacy rimossi dal flusso primario');
-  assert(state.coordinator_personal_contribution_precedes_team_comparison === true, 'contributo personale del coordinatore precede il confronto');
-  assert(state.persisted_current_professional_contribution_gates_comparison === true, 'share persistito corrente governa il confronto');
-  assert(state.local_personal_change_invalidates_previous_share_completion === true, 'modifica personale invalida share precedente');
-  assert(state.team_contribution_publisher_integrated_with_work_session_state === true, 'publisher integrato nello stato della sessione');
-  assert(state.team_comparison_integrated_with_work_session_state === true, 'confronto del team integrato nello stato della sessione');
-  assert(state.team_outcome_recording_is_distinct_work_session_stage === true, 'registrazione esito è quarto stadio reale');
-  assert(state.team_coordination_workspace_no_longer_primary_competing_surface === true, 'coordinamento non è più superficie primaria concorrente');
-  assert(state.teacher_after_share_sees_status_not_coordination_actions === true, 'docente dopo SHARE vede stato e non azioni di coordinamento');
-  assert(state.fascicolo_secondary_navigation_implemented === true, 'Fascicolo implementato come navigazione secondaria');
-  assert(state.fonti_removed_from_primary_navigation === true, 'Fonti rimosso dalla navigazione primaria');
-  assert(state.mobile_primary_navigation_excludes_fascicolo === true, 'bottom navigation mobile esclude Fascicolo');
-  assert(state.fascicolo_public_route_is_canonical === true, 'route pubblica Fascicolo canonica');
-  assert(state.legacy_fonti_and_settings_routes_remain_compatibility_aliases === true, 'route legacy Fonti/Settings conservate come alias');
-  assert(state.home_journey_does_not_model_sources_or_institutional_decision_as_universal_stages === true, 'Home non tratta fonti o decisione istituzionale come stadi universali');
-  assert(state.didactic_binding_domain_model_implemented === true, 'dominio DidacticBinding implementato');
-  assert(state.didactic_binding_context_key_used_until_native_unit_id_resolution === true, 'binding usa chiave contestuale governata');
-  assert(state.annual_planning_binding_persisted === true, 'programmazione annuale persiste il binding');
-  assert(state.uda_binding_persisted === true, 'UDA persiste il binding');
-  assert(state.didactic_binding_authority_boundary_visible === true, 'stato di autorità del binding visibile');
-  assert(state.working_master_binding_is_draft_reference_not_adoption === true, 'master di lavoro non diventa adozione nella progettazione');
-  assert(state.implementation_observation_domain_model_implemented === true, 'dominio ImplementationObservation implementato');
-  assert(state.implementation_observation_persisted_with_uda === true, 'ImplementationObservation persiste con la UDA');
-  assert(state.implementation_observation_requires_curriculum_binding === true, 'ImplementationObservation richiede DidacticBinding');
-  assert(state.implementation_observation_requires_personal_data_absence_confirmation === true, 'osservazione richiede dichiarazione assenza dati personali');
-  assert(state.implementation_observation_never_changes_curriculum_automatically === true, 'osservazione non modifica automaticamente il curricolo');
-  assert(state.practice_signal_aggregation_available === true, 'aggregazione segnali disponibile senza scoring');
-  assert(state.practice_revision_trigger_qualification_implemented === true, 'qualificazione PRACTICE_SIGNAL implementata');
-  assert(state.practice_revision_trigger_persisted_in_arena_state === true, 'PRACTICE_SIGNAL persistito nello stato Arena');
-  assert(state.practice_revision_trigger_requires_aggregation_or_explicit_reason === true, 'PRACTICE_SIGNAL richiede ricorrenza o motivazione');
-  assert(state.practice_revision_trigger_references_current_master_and_unit === true, 'PRACTICE_SIGNAL riferisce master e unità');
-  assert(state.practice_revision_trigger_reenters_at_applicable_curriculum === true, 'PRACTICE_SIGNAL rientra da H1');
-  assert(state.practice_revision_trigger_never_opens_review_case_automatically === true, 'PRACTICE_SIGNAL non apre automaticamente casi');
-  assert(state.practice_revision_trigger_never_changes_curriculum_automatically === true, 'PRACTICE_SIGNAL non modifica automaticamente il curricolo');
-  assert(state.practice_revision_trigger_never_creates_parallel_baseline === true, 'PRACTICE_SIGNAL non crea baseline parallele');
-  assert(state.external_normative_trigger_domain_implemented === true, 'dominio EXTERNAL_NORMATIVE implementato');
-  assert(state.external_normative_trigger_requires_qualified_source_and_applicability === true, 'EXTERNAL_NORMATIVE richiede fonte e applicabilità');
-  assert(state.external_normative_trigger_ux_implemented === true, 'UX EXTERNAL_NORMATIVE implementata');
-  assert(state.external_normative_trigger_reuses_fascicolo_to_revision_flow === true, 'EXTERNAL_NORMATIVE riusa Fascicolo → Riesame');
-  assert(state.institute_need_trigger_domain_implemented === true, 'dominio INSTITUTE_NEED implementato');
-  assert(state.institute_need_trigger_remains_explicitly_non_national === true, 'INSTITUTE_NEED resta non nazionale');
-  assert(state.institute_need_trigger_ux_implemented === true, 'UX INSTITUTE_NEED implementata');
-  assert(state.institute_need_trigger_reuses_revision_surface === true, 'INSTITUTE_NEED riusa Riesame');
-  assert(state.periodic_review_trigger_domain_implemented === true, 'dominio PERIODIC_REVIEW implementato');
-  assert(state.periodic_review_trigger_requires_explicit_reason === true, 'PERIODIC_REVIEW richiede ragione esplicita');
-  assert(state.periodic_review_trigger_ux_implemented === true, 'UX PERIODIC_REVIEW implementata');
-  assert(state.periodic_review_trigger_reuses_revision_surface === true, 'PERIODIC_REVIEW riusa Riesame');
-  assert(state.all_revision_trigger_origins_share_current_master_scope_and_no_automatic_consequences === true, 'le quattro cause condividono gli invarianti di autorità');
-  assert(state.revision_trigger_single_existing_surface_integration_implemented === true, 'qualificazione integrata nelle superfici esistenti');
-  assert(state.revision_trigger_ux_implemented === true, 'UX delle quattro cause RevisionTrigger implementata');
-  assert(state.revision_trigger_new_primary_surface_created === false, 'nessuna nuova superficie primaria creata');
+  const requiredTrueStates = [
+    'vision_defined',
+    'lifecycle_contract_validated',
+    'revision_trigger_governance_defined',
+    'target_information_architecture_defined',
+    'target_navigation_defined',
+    'critical_flows_defined',
+    'curriculum_work_session_convergence_started',
+    'curriculum_work_session_single_progression_implemented',
+    'legacy_revision_tabs_removed_from_primary_flow',
+    'coordinator_personal_contribution_precedes_team_comparison',
+    'persisted_current_professional_contribution_gates_comparison',
+    'local_personal_change_invalidates_previous_share_completion',
+    'team_contribution_publisher_integrated_with_work_session_state',
+    'team_comparison_integrated_with_work_session_state',
+    'team_outcome_recording_is_distinct_work_session_stage',
+    'team_coordination_workspace_no_longer_primary_competing_surface',
+    'teacher_after_share_sees_status_not_coordination_actions',
+    'fascicolo_secondary_navigation_implemented',
+    'fonti_removed_from_primary_navigation',
+    'mobile_primary_navigation_excludes_fascicolo',
+    'fascicolo_public_route_is_canonical',
+    'legacy_fonti_and_settings_routes_remain_compatibility_aliases',
+    'home_journey_does_not_model_sources_or_institutional_decision_as_universal_stages',
+    'didactic_binding_domain_model_implemented',
+    'didactic_binding_context_key_used_until_native_unit_id_resolution',
+    'annual_planning_binding_persisted',
+    'uda_binding_persisted',
+    'didactic_binding_authority_boundary_visible',
+    'working_master_binding_is_draft_reference_not_adoption',
+    'implementation_observation_domain_model_implemented',
+    'implementation_observation_persisted_with_uda',
+    'implementation_observation_requires_curriculum_binding',
+    'implementation_observation_requires_personal_data_absence_confirmation',
+    'implementation_observation_never_changes_curriculum_automatically',
+    'practice_signal_aggregation_available',
+    'practice_revision_trigger_qualification_implemented',
+    'practice_revision_trigger_persisted_in_arena_state',
+    'practice_revision_trigger_requires_aggregation_or_explicit_reason',
+    'practice_revision_trigger_references_current_master_and_unit',
+    'practice_revision_trigger_reenters_at_applicable_curriculum',
+    'practice_revision_trigger_never_opens_review_case_automatically',
+    'practice_revision_trigger_never_changes_curriculum_automatically',
+    'practice_revision_trigger_never_creates_parallel_baseline',
+    'external_normative_trigger_domain_implemented',
+    'external_normative_trigger_requires_qualified_source_and_applicability',
+    'external_normative_trigger_ux_implemented',
+    'external_normative_trigger_reuses_fascicolo_to_revision_flow',
+    'institute_need_trigger_domain_implemented',
+    'institute_need_trigger_remains_explicitly_non_national',
+    'institute_need_trigger_ux_implemented',
+    'institute_need_trigger_reuses_revision_surface',
+    'periodic_review_trigger_domain_implemented',
+    'periodic_review_trigger_requires_explicit_reason',
+    'periodic_review_trigger_ux_implemented',
+    'periodic_review_trigger_reuses_revision_surface',
+    'all_revision_trigger_origins_share_current_master_scope_and_no_automatic_consequences',
+    'revision_trigger_single_existing_surface_integration_implemented',
+    'revision_trigger_ux_implemented',
+    'curriculum_review_case_domain_model_implemented',
+    'curriculum_review_case_persisted_in_arena_state',
+    'curriculum_review_case_requires_qualified_trigger',
+    'curriculum_review_case_requires_current_master_and_unit_match',
+    'curriculum_review_case_requires_explicit_target_selection',
+    'curriculum_review_case_requires_explicit_scope_reason',
+    'curriculum_review_case_target_scope_frozen',
+    'curriculum_review_case_reenters_at_applicable_curriculum',
+    'curriculum_review_case_professional_validation_not_auto_started',
+    'curriculum_review_case_previous_contributions_not_reused',
+    'curriculum_review_case_previous_decisions_not_carried_forward',
+    'curriculum_review_case_never_changes_curriculum_automatically',
+    'curriculum_review_case_never_creates_team_outcome_automatically',
+    'curriculum_review_case_never_creates_institutional_decision_automatically',
+    'curriculum_review_case_never_promotes_master_automatically',
+    'curriculum_review_case_never_creates_parallel_baseline',
+    'curriculum_review_case_ux_implemented',
+    'curriculum_review_case_reuses_revision_surface'
+  ];
+  for (const key of requiredTrueStates) assert(state[key] === true, `stato prodotto attivo: ${key}`);
+  assert(state.revision_trigger_new_primary_surface_created === false, 'nessuna nuova superficie primaria per RevisionTrigger');
+  assert(state.targeted_review_case_work_session_case_scoping_implemented === false, 'la nuova sessione case-scoped non deve essere anticipata');
   assert(state.target_ui_fully_implemented === false, 'la documentazione non simula UI target già implementata');
   assert(state.human_end_to_end_pilot_complete === false, 'la documentazione non simula pilota umano concluso');
 }
