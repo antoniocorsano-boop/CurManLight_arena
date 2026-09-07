@@ -5,6 +5,7 @@ import {
   INSTITUTE_CURRICULUM_SOURCE_CHAIN,
   INSTITUTE_CURRICULUM_SOURCE_REPERTORY,
 } from '../../../domain/curriculum/institute/sourceRegister';
+import { requestNormativeReview } from '../lib/normativeReviewIntent';
 
 const describeChainRole = (role: string): string => {
   switch (role) {
@@ -16,13 +17,7 @@ const describeChainRole = (role: string): string => {
   }
 };
 
-type InstituteCurriculumSourceRegisterPanelProps = {
-  onRequestNormativeReview?: (sourceCode: string) => void;
-};
-
-export function InstituteCurriculumSourceRegisterPanel({
-  onRequestNormativeReview,
-}: InstituteCurriculumSourceRegisterPanelProps) {
+export function InstituteCurriculumSourceRegisterPanel() {
   const institutionalMirrorCount = INSTITUTE_CURRICULUM_AUTHORITATIVE_SOURCES.filter(
     (source) => source.locatorKind === 'INSTITUTIONAL_MIRROR',
   ).length;
@@ -95,17 +90,15 @@ export function InstituteCurriculumSourceRegisterPanel({
                       {official ? <ExternalLink className="h-4 w-4" aria-hidden="true" /> : <Link2 className="h-4 w-4" aria-hidden="true" />}
                       {official ? 'Apri la fonte ufficiale' : 'Apri la copia istituzionale di trasmissione'}
                     </a>
-                    {onRequestNormativeReview && (
-                      <button
-                        type="button"
-                        onClick={() => onRequestNormativeReview(source.code)}
-                        data-source-review-action={source.code}
-                        className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-indigo-700 px-3 py-2 text-sm font-bold text-white"
-                      >
-                        Valuta l’impatto sul curricolo
-                        <ArrowRight className="h-4 w-4" aria-hidden="true" />
-                      </button>
-                    )}
+                    <button
+                      type="button"
+                      onClick={() => requestNormativeReview(source.code)}
+                      data-source-review-action={source.code}
+                      className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-indigo-700 px-3 py-2 text-sm font-bold text-white"
+                    >
+                      Valuta l’impatto sul curricolo
+                      <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                    </button>
                   </div>
 
                   <p className="mt-2 text-xs leading-5 text-slate-500">
