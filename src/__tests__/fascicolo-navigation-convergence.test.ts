@@ -5,6 +5,7 @@ import mobileSource from '../features/navigation/components/MobileBottomNav.tsx?
 import homeSource from '../features/session/components/DashboardView.tsx?raw';
 import fascicoloSource from '../features/documents/components/FontiWorkspace.tsx?raw';
 import viewsSource from '../features/session/components/AppViewsLayer.tsx?raw';
+import curriculumWorkspaceSource from '../features/curriculum/CurriculumWorkspace.tsx?raw';
 
 const sliceBetween = (source: string, start: string, end: string): string => {
   const from = source.indexOf(start);
@@ -59,6 +60,8 @@ describe('FASCICOLO_NAVIGATION_CONVERGENCE', () => {
     expect(journeyBlock).not.toContain("title: 'Decisione'");
     expect(homeSource).toContain('data-secondary-service="fascicolo"');
     expect(homeSource).toContain('Apri il Fascicolo');
-    expect(viewsSource).toContain('verifica nel Fascicolo fonti, applicabilità e stato');
+    expect(viewsSource).not.toContain('verifica nel Fascicolo fonti, applicabilità e stato');
+    expect(curriculumWorkspaceSource).toContain('Verifica le fonti');
+    expect(curriculumWorkspaceSource).toContain('data-canonical-source-review');
   });
 });
