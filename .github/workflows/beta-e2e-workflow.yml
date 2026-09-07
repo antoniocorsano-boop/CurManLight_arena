@@ -10,6 +10,7 @@ on:
       - 'src/features/session/hooks/useAppWorkflowState.ts'
       - 'src/features/session/hooks/useOnboardingProfile.ts'
       - 'src/features/curriculum/components/RevisioneTab.tsx'
+      - 'src/features/curriculum/components/CurriculumReviewCasePanel.tsx'
       - 'src/features/documents/components/SecondBrainTab.tsx'
       - 'src/features/documents/components/KnowledgeModals.tsx'
       - 'src/features/documents/components/AddKnowledgeSourceModal.tsx'
@@ -20,6 +21,7 @@ on:
       - 'src/features/documents/lib/**'
       - 'src/features/beta/**'
       - 'src/domain/curriculum/institute/**'
+      - 'src/domain/curriculum/reviewCase.ts'
       - 'src/domain/institution/operationalGroups.ts'
       - 'src/domain/revision/repository.ts'
       - 'src/domain/revision/sharedDecisionPort.ts'
@@ -27,6 +29,8 @@ on:
       - 'src/domain/revision/versionFingerprint.ts'
       - 'src/domain/revision/index.ts'
       - 'src/domain/transfer/**'
+      - 'src/types/curriculum.ts'
+      - 'src/store/useCurriculumStore.ts'
       - 'src/infrastructure/supabase/sharedRevisionDecisionRepository.ts'
       - 'src/infrastructure/supabase/sharedTeamReviewRepository.ts'
       - 'src/infrastructure/supabase/operationalProfile.ts'
@@ -41,6 +45,7 @@ on:
       - 'src/__tests__/beta-revision-version-fingerprint.test.ts'
       - 'src/__tests__/beta-router-basename-contract.test.ts'
       - 'src/__tests__/institutional-curriculum-source-register.test.ts'
+      - 'src/__tests__/curriculum-review-case.test.ts'
       - 'src/__tests__/operational-groups.test.ts'
       - 'src/__tests__/operational-onboarding.test.ts'
       - 'src/__tests__/team-organizational-binding.test.ts'
@@ -70,6 +75,7 @@ on:
       - 'src/features/session/hooks/useAppWorkflowState.ts'
       - 'src/features/session/hooks/useOnboardingProfile.ts'
       - 'src/features/curriculum/components/RevisioneTab.tsx'
+      - 'src/features/curriculum/components/CurriculumReviewCasePanel.tsx'
       - 'src/features/documents/components/SecondBrainTab.tsx'
       - 'src/features/documents/components/KnowledgeModals.tsx'
       - 'src/features/documents/components/AddKnowledgeSourceModal.tsx'
@@ -80,6 +86,7 @@ on:
       - 'src/features/documents/lib/**'
       - 'src/features/beta/**'
       - 'src/domain/curriculum/institute/**'
+      - 'src/domain/curriculum/reviewCase.ts'
       - 'src/domain/institution/operationalGroups.ts'
       - 'src/domain/revision/repository.ts'
       - 'src/domain/revision/sharedDecisionPort.ts'
@@ -87,6 +94,8 @@ on:
       - 'src/domain/revision/versionFingerprint.ts'
       - 'src/domain/revision/index.ts'
       - 'src/domain/transfer/**'
+      - 'src/types/curriculum.ts'
+      - 'src/store/useCurriculumStore.ts'
       - 'src/infrastructure/supabase/sharedRevisionDecisionRepository.ts'
       - 'src/infrastructure/supabase/sharedTeamReviewRepository.ts'
       - 'src/infrastructure/supabase/operationalProfile.ts'
@@ -101,6 +110,7 @@ on:
       - 'src/__tests__/beta-revision-version-fingerprint.test.ts'
       - 'src/__tests__/beta-router-basename-contract.test.ts'
       - 'src/__tests__/institutional-curriculum-source-register.test.ts'
+      - 'src/__tests__/curriculum-review-case.test.ts'
       - 'src/__tests__/operational-groups.test.ts'
       - 'src/__tests__/operational-onboarding.test.ts'
       - 'src/__tests__/team-organizational-binding.test.ts'
@@ -155,6 +165,7 @@ jobs:
           src/__tests__/teacher-three-level-communication.test.ts
           src/__tests__/institutional-curriculum-source-register.test.ts
           src/__tests__/fascicolo-navigation-convergence.test.ts
+          src/__tests__/curriculum-review-case.test.ts
 
       - name: BETA-G4 server authority invariants
         run: |
