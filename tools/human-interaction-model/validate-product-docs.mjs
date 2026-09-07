@@ -23,7 +23,7 @@ try {
 
 if (registry) {
   assert(registry.registry_id === 'ARENA-PRODUCT-DOCS', 'registry_id prodotto corretto');
-  assert(registry.version === '1.0.12', 'versione registro prodotto 1.0.12');
+  assert(registry.version === '1.0.13', 'versione registro prodotto 1.0.13');
   assert(registry.product_vision?.id === 'ARENA-PRODUCT-VISION', 'vision id canonico');
   assert(registry.product_vision?.version === '1.0.0', 'vision version canonica');
   assert(registry.product_vision?.drive_file_id === '1s17jJCslSIJIXQfiTEzyRcD5q-Baopj6-l14aaFEWik', 'Drive ID vision canonica');
@@ -101,7 +101,9 @@ if (registry) {
     'Proiezione corrente — CurriculumReviewCase → CurriculumWorkSession case-scoped',
     'la sessione parte con `decisions = {}` e `customTexts = {}`',
     'il fingerprint condiviso comprende esplicitamente `reviewCaseId`',
-    'discovery/assegnazione condivisa del caso stesso tra client diversi non è ancora implementata'
+    'Discovery e assegnazione condivisa',
+    'snapshot immutabile dell\'apertura',
+    'Avvia il riesame assegnato'
   ]) assert(ia.includes(token), `IA contiene: ${token}`);
 
   const nav = readText('docs/04_product_experience/02_NAVIGATION_MODEL.md');
@@ -143,7 +145,11 @@ if (registry) {
     'Proiezione corrente della CurriculumWorkSession case-scoped',
     '**nessun carry-forward**',
     '`review_case_id`, scheda, fingerprint, attore, orientamento',
-    'shared_review_case_discovery_implemented = false',
+    'Proiezione corrente della discovery e assegnazione condivisa dei CurriculumReviewCase',
+    'Condividi e assegna al gruppo',
+    'assignment != H2 start',
+    'stesso caso e stesso perimetro congelato',
+    'nessuna nuova route o superficie primaria',
     'CurriculumReviewCase != CurriculumWorkSession != ProfessionalContribution != TeamProfessionalOutcome != InstitutionalDecision'
   ]) assert(flows.includes(token), `user flow contiene: ${token}`);
 
@@ -270,11 +276,18 @@ if (registry) {
     'case_scoped_professional_contribution_fingerprint_includes_review_case',
     'case_scoped_team_outcomes_require_same_review_case_coverage',
     'case_scoped_server_receipts_preserve_general_review_history',
-    'case_scoped_session_never_advances_institutional_state_automatically'
+    'case_scoped_session_never_advances_institutional_state_automatically',
+    'shared_review_case_discovery_implemented',
+    'shared_review_case_assignment_server_derived',
+    'shared_review_case_assignment_requires_verified_coordinator_authority',
+    'shared_review_case_assignment_requires_operational_discipline_competence',
+    'shared_review_case_hydration_never_starts_h2_automatically',
+    'shared_review_case_snapshot_conflict_fails_closed',
+    'shared_review_case_discovery_reuses_revision_surface',
+    'shared_review_case_server_snapshot_excludes_personal_work_session'
   ];
   for (const key of requiredTrueStates) assert(state[key] === true, `stato prodotto attivo: ${key}`);
   assert(state.revision_trigger_new_primary_surface_created === false, 'nessuna nuova superficie primaria per RevisionTrigger');
-  assert(state.shared_review_case_discovery_implemented === false, 'la discovery condivisa dei casi non deve essere anticipata');
   assert(state.target_ui_fully_implemented === false, 'la documentazione non simula UI target già implementata');
   assert(state.human_end_to_end_pilot_complete === false, 'la documentazione non simula pilota umano concluso');
 }
