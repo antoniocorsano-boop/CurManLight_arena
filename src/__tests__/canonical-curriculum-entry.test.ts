@@ -18,7 +18,8 @@ describe('canonical curriculum entry', () => {
     expect(workspaceSource).toContain('Archivio locale precedente');
     expect(workspaceSource).toContain('non il master curricolare corrente');
     expect(workspaceSource).toContain('Torna al curricolo corrente');
-    expect(workspaceSource).toContain('{showingLegacyWorkspace && (');
+    expect(workspaceSource).toContain('{legacyOpen && (');
+    expect(workspaceSource).toContain('onClick={() => setLegacyOpen(true)}');
   });
 
   it('binds the canonical entry to the same master registered by the domain', () => {
