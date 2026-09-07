@@ -1,5 +1,12 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { Session, SupabaseClient } from '@supabase/supabase-js';
+import {
+  getOperationalGroupByCode,
+  type OperationalGroupCode,
+  type OperationalGroupMemberRole,
+  type OperationalGroupStatus,
+  type OperationalSchoolOrder,
+} from '../../domain/institution/operationalGroups';
 import type {
   WorkspaceMemberRole,
   WorkspaceMembership,
@@ -19,8 +26,28 @@ interface WorkspaceRow {
   status: string;
 }
 
+interface OperationalMembershipRow {
+  user_id: string;
+  academic_year: string;
+  school_order: string;
+  group_code: string;
+  member_role: string;
+  membership_state: string;
+  disciplines: string[];
+}
+
 export interface TeamWorkspaceMembershipView extends WorkspaceMembership {
   workspaceName: string;
+}
+
+export interface TeamOperationalMembershipView {
+  userId: string;
+  academicYear: string;
+  schoolOrder: OperationalSchoolOrder;
+  groupCode: OperationalGroupCode;
+  memberRole: OperationalGroupMemberRole;
+  membershipState: OperationalGroupStatus;
+  disciplines: string[];
 }
 
 const VALID_ROLES: readonly WorkspaceMemberRole[] = [
@@ -46,10 +73,49 @@ const toMembership = (row: MembershipRow, workspaceName: string): TeamWorkspaceM
   };
 };
 
+const validAcademicYear = (value: string): boolean => {
+  const match = value.match(/^(\d{4})\/(\d{4})$/);
+  if (!match) return false;
+  return Number.parseInt(match[2], 10) === Number.parseInt(match[1], 10) + 1;
+};
+
+const toOperationalMembership = (row: OperationalMembershipRow): TeamOperationalMembershipView | null => {
+  const group = getOperationalGroupByCode(row.group_code);
+  const schoolOrder = row.school_order === 'primaria' || row.school_order === 'secondaria'
+    ? row.school_order
+    : null;
+  const memberRole = row.member_role === 'docente' || row.member_role === 'coordinatore'
+    ? row.member_role
+    : null;
+  const membershipState = row.membership_state === 'OPERATIVO_PROVVISORIO' || row.membership_state === 'FORMALIZZATO'
+    ? row.membership_state
+    : null;
+  if (
+    !group
+    || !schoolOrder
+    || !memberRole
+    || !membershipState
+    || group.order !== schoolOrder
+    || !validAcademicYear(row.academic_year)
+    || !Array.isArray(row.disciplines)
+    || row.disciplines.some((discipline) => !group.disciplines.includes(discipline))
+  ) return null;
+  return {
+    userId: row.user_id,
+    academicYear: row.academic_year,
+    schoolOrder,
+    groupCode: group.code,
+    memberRole,
+    membershipState,
+    disciplines: [...row.disciplines],
+  };
+};
+
 export interface TeamWorkspaceContextState {
   client: SupabaseClient | null;
   session: Session | null;
   activeMemberships: TeamWorkspaceMembershipView[];
+  operationalMemberships: TeamOperationalMembershipView[];
   selectedMembership: TeamWorkspaceMembershipView | null;
   workspaceId: string;
   setWorkspaceId: (workspaceId: string) => void;
@@ -63,6 +129,7 @@ export function useTeamWorkspaceContext(): TeamWorkspaceContextState {
   const client = optional.client;
   const [session, setSession] = useState<Session | null>(null);
   const [memberships, setMemberships] = useState<TeamWorkspaceMembershipView[]>([]);
+  const [operationalMemberships, setOperationalMemberships] = useState<TeamOperationalMembershipView[]>([]);
   const [workspaceId, setWorkspaceId] = useState('');
   const [loading, setLoading] = useState(Boolean(client));
   const [message, setMessage] = useState<string | null>(null);
@@ -82,24 +149,40 @@ export function useTeamWorkspaceContext(): TeamWorkspaceContextState {
 
       if (!nextSession) {
         setMemberships([]);
+        setOperationalMemberships([]);
         setWorkspaceId('');
         setLoading(false);
         return;
       }
 
       setLoading(true);
-      const { data: membershipData, error: membershipError } = await client
-        .from('workspace_memberships')
-        .select('workspace_id,user_id,role,status')
-        .eq('user_id', nextSession.user.id);
+      const [{ data: membershipData, error: membershipError }, { data: operationalData, error: operationalError }] = await Promise.all([
+        client
+          .from('workspace_memberships')
+          .select('workspace_id,user_id,role,status')
+          .eq('user_id', nextSession.user.id),
+        client
+          .from('team_operational_memberships')
+          .select('user_id,academic_year,school_order,group_code,member_role,membership_state,disciplines')
+          .eq('user_id', nextSession.user.id),
+      ]);
 
       if (!active) return;
       if (membershipError) {
         setMemberships([]);
+        setOperationalMemberships([]);
         setWorkspaceId('');
         setLoading(false);
         setMessage(`Non riesco a verificare i team associati a questo account: ${membershipError.message}`);
         return;
+      }
+
+      const operationalRows = operationalError ? [] : (operationalData ?? []) as OperationalMembershipRow[];
+      setOperationalMemberships(operationalRows
+        .map(toOperationalMembership)
+        .filter((membership): membership is TeamOperationalMembershipView => Boolean(membership)));
+      if (operationalError) {
+        setMessage(`Team verificato, ma la membership operativa non è leggibile: ${operationalError.message}`);
       }
 
       const membershipRows = (membershipData ?? []) as MembershipRow[];
@@ -158,6 +241,7 @@ export function useTeamWorkspaceContext(): TeamWorkspaceContextState {
     client,
     session,
     activeMemberships,
+    operationalMemberships,
     selectedMembership,
     workspaceId,
     setWorkspaceId,
