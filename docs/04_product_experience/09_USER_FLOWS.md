@@ -360,6 +360,39 @@ Nel primo incremento `SHARED_REVIEW_CASE_DISCOVERY` della candidata Beta:
 
 ---
 
+## 22. Regola trasversale di consapevolezza del processo e continuità del workframe
+
+Questa regola si applica a tutte le fasi case-scoped della validazione professionale.
+
+L'utente deve poter comprendere, senza leggere il livello tecnico:
+1. da quale passaggio proviene;
+2. in quale passaggio si trova;
+3. che cosa ha completato;
+4. quale azione deve compiere ora;
+5. quale effetto immediato produrrà l'azione;
+6. quale passaggio o attore diventerà pertinente dopo.
+
+La sequenza professionale resta una sola:
+
+**Esamina → Condividi → Confronta → Registra l'esito**.
+
+Regole di proiezione:
+- il presente è il solo compito dominante;
+- il passato si compatta ma resta riconoscibile;
+- il futuro può comparire soltanto come etichetta non interattiva di orientamento;
+- contenuti, moduli e comandi dei passaggi futuri restano nascosti fino al momento pertinente;
+- non esiste una seconda rail o una seconda gerarchia di avanzamento dentro i renderer subordinati;
+- il cambio di fase aggiorna lo stesso workframe e non usa lo scroll della pagina come avanzamento;
+- il viewport non deve saltare o atterrare a metà pagina; un reset dell'offset interno è ammesso solo come conseguenza di una vera transizione di fase;
+- la CTA primaria deve restare raggiungibile anche a `390×844` senza essere coperta dalla navigazione mobile;
+- la conclusione professionale deve essere mostrata nello stesso workframe;
+- il ritorno al contesto generale **Riesame** dopo la conclusione richiede un gesto esplicito;
+- L1 usa soltanto linguaggio professionale; L2 spiega il processo; L3 conserva identificativi, versioni, fingerprint, ricevute e diagnostica.
+
+**Successo:** Arena nasconde la complessità tecnica senza nascondere il senso del processo.
+
+---
+
 ## Criterio complessivo di accettazione
 
-I flow sono conformi quando il docente può svolgere il proprio compito senza conoscere pipeline, gate, membership IDs o struttura del repository; le autorità restano separate; la condivisione è verificabile e non simulabile localmente; le fonti sono verificabili; il curricolo alimenta la progettazione reale mediante binding versionati; un master non vigente resta riconoscibile come riferimento di lavoro; la pratica produce osservazioni professionali collegate e prive di dati personali degli alunni; ogni motivo di riesame richiede la qualificazione prevista dalla propria origine e non apre automaticamente un caso; l'apertura di un caso richiede una scelta umana esplicita e un perimetro verificabile; la distribuzione del caso avviene soltanto per assegnazione server derivata da membership e competenza verificate; il destinatario riceve lo snapshot H1 senza la sessione personale di altri attori; la nuova sessione case-scoped parte senza decisioni pregresse, usa soltanto le schede congelate e richiede ricevute condivise legate allo stesso caso; nuove norme, esigenze d'Istituto, riesami periodici e osservazioni dalla pratica possono riaprire il processo in modo mirato e tracciato senza creare baseline parallele. Il pilota umano end-to-end resta aperto finché il ciclo multi-attore non viene realmente eseguito e osservato.
+I flow sono conformi quando il docente può svolgere il proprio compito senza conoscere pipeline, gate, membership IDs o struttura del repository; le autorità restano separate; la condivisione è verificabile e non simulabile localmente; le fonti sono verificabili; il curricolo alimenta la progettazione reale mediante binding versionati; un master non vigente resta riconoscibile come riferimento di lavoro; la pratica produce osservazioni professionali collegate e prive di dati personali degli alunni; ogni motivo di riesame richiede la qualificazione prevista dalla propria origine e non apre automaticamente un caso; l'apertura di un caso richiede una scelta umana esplicita e un perimetro verificabile; la distribuzione del caso avviene soltanto per assegnazione server derivata da membership e competenza verificate; il destinatario riceve lo snapshot H1 senza la sessione personale di altri attori; la nuova sessione case-scoped parte senza decisioni pregresse, usa soltanto le schede congelate e richiede ricevute condivise legate allo stesso caso; la posizione nel processo resta comprensibile senza esporre il dominio tecnico; il cambio di fase mantiene stabile il workframe; nuove norme, esigenze d'Istituto, riesami periodici e osservazioni dalla pratica possono riaprire il processo in modo mirato e tracciato senza creare baseline parallele. Il pilot umano multi-attore è concluso; resta aperta l'accettazione visiva umana di `UX_CONSOLIDATION_R1` sulle superfici case-scoped migrate.
