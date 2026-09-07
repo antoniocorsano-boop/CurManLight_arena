@@ -7,10 +7,9 @@ import { FinalPublicationSourceReviewWorkbench } from './components/FinalPublica
 const CANONICAL_MASTER_URL = `https://docs.google.com/document/d/${INSTITUTE_CURRICULUM_CURRENT_SOURCE.driveFileId}/edit`;
 
 export function CurriculumWorkspace(props: CurriculumTabProps) {
-  const { activeCurricoloView, setActiveCurricoloView } = useCurriculumStore();
+  const { setActiveCurricoloView } = useCurriculumStore();
   const [reviewOpen, setReviewOpen] = useState(false);
   const [legacyOpen, setLegacyOpen] = useState(false);
-  const showingLegacyWorkspace = legacyOpen || activeCurricoloView !== 'home';
 
   const returnToMaster = () => {
     setActiveCurricoloView('home');
@@ -19,7 +18,7 @@ export function CurriculumWorkspace(props: CurriculumTabProps) {
 
   return (
     <div className="space-y-4" data-teacher-surface="curriculum-workspace">
-      {!showingLegacyWorkspace && (
+      {!legacyOpen && (
         <section
           className="space-y-5 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6"
           data-canonical-curriculum-entry
@@ -85,7 +84,7 @@ export function CurriculumWorkspace(props: CurriculumTabProps) {
         </section>
       )}
 
-      {!showingLegacyWorkspace && (
+      {!legacyOpen && (
         <details
           className="rounded-2xl border border-slate-200 bg-slate-50 p-4 sm:p-5"
           data-hcm-level="3"
@@ -107,7 +106,7 @@ export function CurriculumWorkspace(props: CurriculumTabProps) {
         </details>
       )}
 
-      {showingLegacyWorkspace && (
+      {legacyOpen && (
         <section className="space-y-4" data-legacy-curriculum-workspace>
           <div className="rounded-2xl border border-amber-200 bg-amber-50/70 p-4 sm:p-5">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
