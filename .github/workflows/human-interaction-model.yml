@@ -17,6 +17,7 @@ on:
       - 'src/domain/curriculum/revisionTrigger.ts'
       - 'src/domain/curriculum/reviewCase.ts'
       - 'src/domain/curriculum/caseWorkSession.ts'
+      - 'src/domain/curriculum/sharedReviewCase.ts'
       - 'src/types/curriculum.ts'
       - 'src/store/useCurriculumStore.ts'
       - 'src/features/documents/components/EsportazioniTab.tsx'
@@ -30,12 +31,15 @@ on:
       - 'src/__tests__/revision-trigger.test.ts'
       - 'src/__tests__/curriculum-review-case.test.ts'
       - 'src/__tests__/case-scoped-curriculum-work-session.test.ts'
+      - 'src/__tests__/shared-review-case-discovery.test.ts'
       - 'scripts/audit-kx-mobile.cjs'
       - 'src/features/beta/**'
       - 'src/domain/revision/**'
       - 'src/domain/transfer/**'
       - 'src/infrastructure/supabase/caseScopedTeamReviewRepository.ts'
+      - 'src/infrastructure/supabase/sharedCurriculumReviewCaseRepository.ts'
       - 'supabase/migrations/20260907043000_team_review_case_scope.sql'
+      - 'supabase/migrations/20260907064000_shared_curriculum_review_case_discovery.sql'
       - 'scripts/audit-s3-critical-journeys.cjs'
       - 'scripts/verify-beta-g4-browser.cjs'
       - 'docs/04_product_experience/00_VISION.md'
@@ -73,5 +77,7 @@ jobs:
         run: node tools/human-interaction-model/validate-review-case.mjs
       - name: Validate case-scoped curriculum work session
         run: node tools/human-interaction-model/validate-case-work-session.mjs
+      - name: Validate shared curriculum review case discovery
+        run: node tools/human-interaction-model/validate-shared-review-case.mjs
       - name: Validate canonical product documentation
         run: node tools/human-interaction-model/validate-product-docs.mjs
