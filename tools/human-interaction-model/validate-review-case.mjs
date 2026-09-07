@@ -121,7 +121,7 @@ for (const key of [
   'shared_review_case_hydration_never_starts_h2_automatically',
 ]) assert(state[key] === true, `stato prodotto non registra ${key}`);
 assert(state.target_ui_fully_implemented === false, 'il caso mirato non completa la UI target');
-assert(state.human_end_to_end_pilot_complete === false, 'il caso mirato non conclude il pilota umano');
+assert(state.human_end_to_end_pilot_complete === true, 'il pilot umano multi-attore deve risultare concluso dopo la prova reale');
 
 const flows = readText('docs/04_product_experience/09_USER_FLOWS.md');
 for (const token of [
