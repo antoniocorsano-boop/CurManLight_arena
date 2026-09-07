@@ -90,8 +90,12 @@ const workspace = readText('src/features/beta/RevisionWorkspace.tsx');
 assert(workspace.includes('<CurriculumReviewCasePanel'), 'CurriculumReviewCase non integrato nel Riesame esistente');
 assert(workspace.includes('data-curriculum-work-session'), 'integrazione del caso ha sostituito la CurriculumWorkSession generale');
 
+const caseAware = readText('src/features/beta/CaseAwareRevisionSurface.tsx');
+assert(caseAware.includes('<SharedReviewCaseInbox'), 'discovery dei casi non integrata nella superficie Riesame');
+assert(caseAware.includes('<CaseScopedCurriculumWorkSession'), 'sessione case-scoped non proiettata come percorso dominante');
+
 const docs = readJson('docs/04_product_experience/PRODUCT_DOCS.registry.json');
-assert(docs.version === '1.0.12', 'versione registro documentazione prodotto inattesa');
+assert(docs.version === '1.0.13', 'versione registro documentazione prodotto inattesa');
 const state = docs.implementation_state ?? {};
 for (const key of [
   'curriculum_review_case_domain_model_implemented',
@@ -113,8 +117,9 @@ for (const key of [
   'curriculum_review_case_ux_implemented',
   'curriculum_review_case_reuses_revision_surface',
   'targeted_review_case_work_session_case_scoping_implemented',
+  'shared_review_case_discovery_implemented',
+  'shared_review_case_hydration_never_starts_h2_automatically',
 ]) assert(state[key] === true, `stato prodotto non registra ${key}`);
-assert(state.shared_review_case_discovery_implemented === false, 'la discovery server del caso non deve essere anticipata');
 assert(state.target_ui_fully_implemented === false, 'il caso mirato non completa la UI target');
 assert(state.human_end_to_end_pilot_complete === false, 'il caso mirato non conclude il pilota umano');
 
@@ -127,6 +132,7 @@ for (const token of [
   'contributi personali e decisioni di riesami precedenti non vengono riportati automaticamente',
   'RevisionTrigger qualificato != CurriculumReviewCase aperto != nuova CurriculumWorkSession case-scoped',
   'Proiezione corrente della CurriculumWorkSession case-scoped',
+  'Proiezione corrente della discovery e assegnazione condivisa dei CurriculumReviewCase',
 ]) assert(flows.includes(token), `flow casi mirati non presidiato: ${token}`);
 
 console.log('CURRICULUM_REVIEW_CASE_PASS');
