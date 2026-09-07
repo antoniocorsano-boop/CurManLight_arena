@@ -1,6 +1,6 @@
 {
   "registry_id": "CCO-SURFACES",
-  "version": "1.6.0",
+  "version": "1.6.1",
   "contract": ".human/operational-communication.contract.json",
   "status_vocabulary": ["conformant", "migration", "guided-setup", "excluded"],
   "surfaces": [
@@ -134,32 +134,79 @@
     {
       "id": "case-aware-revision-surface",
       "path": "src/features/beta/CaseAwareRevisionSurface.tsx",
-      "status": "migration",
-      "migration_goal": "Rendere CASE_SCOPED e GENERAL due contesti percettivamente esclusivi: quando non esiste una sessione attiva, l'inbox dei casi deve restare subordinato al compito corrente e non creare una seconda gerarchia verticale concorrente."
+      "status": "conformant",
+      "operational_context": "Riesame — selezione esclusiva fra lavoro generale e caso mirato",
+      "primary_task": "Mantenere GENERAL e CASE_SCOPED percettivamente esclusivi, riportare il rientro all'inizio del Riesame e subordinare i casi assegnati al lavoro corrente",
+      "required_tokens": [
+        "data-revision-surface-mode=\"CASE_SCOPED\"",
+        "data-revision-surface-mode=\"GENERAL\"",
+        "data-ux-consolidation=\"UX_CONSOLIDATION_R1_1\"",
+        "data-general-review-primary-work",
+        "data-general-review-assignment-support",
+        "window.scrollTo({ top: 0, left: 0, behavior: 'auto' })"
+      ]
     },
     {
       "id": "case-scoped-experience-shell",
       "path": "src/features/beta/CaseScopedExperienceShell.tsx",
-      "status": "migration",
-      "migration_goal": "Completare CCO 1.5: mantenere un unico indicatore di processo Esamina → Condividi → Confronta → Esito con presente dominante, passato compatto e futuro non interattivo; preservare l'ancora del viewport; mostrare la conclusione nello stesso workframe prima del ritorno esplicito alla Revisione generale."
+      "status": "conformant",
+      "operational_context": "Riesame mirato — orientamento e continuità del processo",
+      "primary_task": "Mostrare una sola rail Esamina → Condividi → Confronta → Registra l’esito, mantenere stabile il workframe e mostrare la conclusione prima del ritorno esplicito al Riesame generale",
+      "required_tokens": [
+        "data-case-ux-consolidated-shell",
+        "data-case-ux-process-rail",
+        "data-case-ux-workframe",
+        "data-viewport-anchor=\"stable-current-task\"",
+        "data-case-professional-completion-acknowledgement",
+        "data-human-next-action=\"return-to-general-review-after-completion\"",
+        "Torna a Riesame"
+      ]
     },
     {
       "id": "case-scoped-work-session-content",
       "path": "src/features/beta/CaseScopedCurriculumWorkSession.tsx",
-      "status": "migration",
-      "migration_goal": "Rimuovere la seconda testata e la seconda rail di avanzamento dal contenuto interno, delegando orientamento, ruolo e tracciabilità al CaseScopedExperienceShell; mantenere nel workframe soltanto oggetto corrente, stato e azione pertinente."
+      "status": "conformant",
+      "operational_context": "Riesame mirato — compito corrente",
+      "primary_task": "Renderizzare nel workframe esclusivamente il compito corrente del caso, senza una seconda testata o rail concorrente, e avanzare soltanto attraverso transizioni reali di stato",
+      "required_tokens": [
+        "data-case-scoped-curriculum-work-session",
+        "data-case-content-hierarchy=\"CURRENT_TASK_ONLY\"",
+        "data-case-review-examine",
+        "data-case-review-share",
+        "data-case-review-compare",
+        "data-case-review-team-outcome",
+        "data-human-next-action=\"complete-case-professional-review\""
+      ]
     },
     {
       "id": "case-scoped-team-contribution-publisher",
       "path": "src/features/beta/CaseScopedTeamContributionPublisher.tsx",
-      "status": "migration",
-      "migration_goal": "Esprimere la condivisione in linguaggio professionale L1 e spostare review_case_id, fingerprint, ricevute e dettagli di persistenza nel livello tecnico L3, mantenendo visibile solo il confine attuale dell'effetto condiviso."
+      "status": "conformant",
+      "operational_context": "Riesame mirato — condivisione del contributo",
+      "primary_task": "Condividere il contributo personale corrente in linguaggio professionale, mantenendo persistenza e identificativi tecnici nel livello di tracciabilità",
+      "required_tokens": [
+        "data-case-team-contribution-publisher",
+        "data-ux-layering=\"L1-L3\"",
+        "Condividi il tuo contributo",
+        "data-case-contribution-professional-status",
+        "data-case-contribution-technical-layer",
+        "Verifica e tracciabilità della condivisione"
+      ]
     },
     {
       "id": "case-scoped-team-coordination-workspace",
       "path": "src/features/beta/CaseScopedTeamCoordinationWorkspace.tsx",
-      "status": "migration",
-      "migration_goal": "Mantenere Confronta ed Esito come compiti distinti nello stesso workframe, mostrare soltanto differenze e stato professionale necessari e spostare diagnostica server e identificativi sotto divulgazione tecnica."
+      "status": "conformant",
+      "operational_context": "Riesame mirato — confronto ed esito del gruppo",
+      "primary_task": "Tenere Confronta e Registra l’esito come compiti distinti nello stesso workframe, mostrando in L1 solo lo stato professionale necessario e spostando diagnostica e identificativi in L3",
+      "required_tokens": [
+        "export type CaseScopedTeamCoordinationMode = 'status' | 'compare' | 'record';",
+        "data-case-team-coordination-mode=\"status\"",
+        "data-case-team-coordination-mode=\"compare\"",
+        "data-case-team-coordination-mode=\"record\"",
+        "data-case-coordination-technical-layer",
+        "Registra l’esito del caso"
+      ]
     },
     {
       "id": "shared-review-case-inbox",
