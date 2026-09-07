@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { resolveCurriculumUnitReference } from '../../domain/curriculum/didacticBinding';
 import { reviewCaseMatchesCurrentUnit } from '../../domain/curriculum/reviewCase';
 import { getSharedReviewCaseContext } from '../../domain/curriculum/sharedReviewCase';
@@ -39,6 +39,7 @@ export function CaseAwareRevisionSurface(props: Props) {
   const curriculumReviewCases = useCurriculumStore((state) => state.curriculumReviewCases ?? []);
   const schoolYear = useCurriculumStore((state) => state.schoolYear);
   const [completionAcknowledgementRevision, setCompletionAcknowledgementRevision] = useState(0);
+  const returnToGeneralRequested = useRef(false);
   const currentUnit = useMemo(() => resolveCurriculumUnitReference({
     order: props.order,
     targetClass: props.targetClass,
@@ -62,6 +63,17 @@ export function CaseAwareRevisionSurface(props: Props) {
 
   const focusedCase = activeCase ?? completedCaseAwaitingAcknowledgement;
 
+  useEffect(() => {
+    if (focusedCase || !returnToGeneralRequested.current || typeof window === 'undefined') return;
+    returnToGeneralRequested.current = false;
+    const frame = window.requestAnimationFrame(() => {
+      window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [focusedCase, completionAcknowledgementRevision]);
+
   if (focusedCase) {
     const sharedAcademicYear = getSharedReviewCaseContext(focusedCase)?.academicYear
       ?? schoolYearToInstitutionalLabel(schoolYear);
@@ -69,12 +81,13 @@ export function CaseAwareRevisionSurface(props: Props) {
       <div
         data-revision-surface-mode="CASE_SCOPED"
         data-active-curriculum-review-case={focusedCase.id}
-        data-ux-consolidation="UX_CONSOLIDATION_R1"
+        data-ux-consolidation="UX_CONSOLIDATION_R1_1"
         data-case-completion-awaiting-acknowledgement={focusedCase.workSession?.sessionState === 'COMPLETE' ? 'true' : 'false'}
       >
         <CaseScopedExperienceShell
           reviewCase={focusedCase}
           onReturnToGeneralReview={() => {
+            returnToGeneralRequested.current = true;
             recordCompletionAcknowledgement(focusedCase.id);
             setCompletionAcknowledgementRevision((value) => value + 1);
           }}
@@ -92,7 +105,7 @@ export function CaseAwareRevisionSurface(props: Props) {
   }
 
   return (
-    <div className="space-y-3" data-revision-surface-mode="GENERAL" data-ux-consolidation="UX_CONSOLIDATION_R1">
+    <div className="space-y-3" data-revision-surface-mode="GENERAL" data-ux-consolidation="UX_CONSOLIDATION_R1_1" data-general-return-anchor>
       <main data-general-review-primary-work>
         <RevisionWorkspace
           {...props}
