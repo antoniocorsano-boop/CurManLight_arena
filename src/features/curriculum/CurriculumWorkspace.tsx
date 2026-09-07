@@ -1,19 +1,32 @@
 import { useState } from 'react';
 import { useCurriculumStore } from '../../store/useCurriculumStore';
 import { INSTITUTE_CURRICULUM_CURRENT_SOURCE } from '../../domain/curriculum/institute/currentSource';
+import type { AppViewsLayerProps } from '../session/types/appViewContracts';
 import { CurriculumTab as CurriculumTabBase, type CurriculumTabProps } from './components/CurriculumTab';
 import { FinalPublicationSourceReviewWorkbench } from './components/FinalPublicationSourceReviewWorkbench';
 
 const CANONICAL_MASTER_URL = `https://docs.google.com/document/d/${INSTITUTE_CURRICULUM_CURRENT_SOURCE.driveFileId}/edit`;
 
-export function CurriculumWorkspace(props: CurriculumTabProps) {
-  const { setActiveCurricoloView } = useCurriculumStore();
+type CurriculumWorkspaceProps = CurriculumTabProps & Pick<
+  AppViewsLayerProps,
+  'targetClass' | 'setTargetClass' | 'handleTabSwitch'
+>;
+
+export function CurriculumWorkspace(props: CurriculumWorkspaceProps) {
+  const { setActiveCurricoloView, setOrder, setDiscipline } = useCurriculumStore();
   const [reviewOpen, setReviewOpen] = useState(false);
   const [legacyOpen, setLegacyOpen] = useState(false);
 
   const returnToMaster = () => {
     setActiveCurricoloView('home');
     setLegacyOpen(false);
+  };
+
+  const openTechnologyReview = (targetClass: '1' | '2' | '3') => {
+    setOrder('secondaria');
+    setDiscipline('tecnologia');
+    props.setTargetClass(targetClass);
+    props.handleTabSwitch('revisione');
   };
 
   return (
@@ -37,19 +50,47 @@ export function CurriculumWorkspace(props: CurriculumTabProps) {
             </p>
           </div>
 
-          <div className="grid gap-3 sm:grid-cols-3" aria-label="Copertura del curricolo">
+          <div className="grid gap-3 sm:grid-cols-3" aria-label="Copertura e accesso al curricolo">
             <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
               <p className="text-xs font-bold uppercase tracking-wide text-slate-500">Scuola dell’infanzia</p>
               <p className="mt-1 text-sm font-extrabold text-slate-900">3 · 4 · 5 anni</p>
+              <p className="mt-2 text-[11px] leading-5 text-slate-500">Annualità presenti nel master canonico.</p>
             </div>
             <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
               <p className="text-xs font-bold uppercase tracking-wide text-slate-500">Scuola primaria</p>
               <p className="mt-1 text-sm font-extrabold text-slate-900">Classi I · II · III · IV · V</p>
+              <p className="mt-2 text-[11px] leading-5 text-slate-500">Annualità presenti nel master canonico.</p>
             </div>
-            <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
-              <p className="text-xs font-bold uppercase tracking-wide text-slate-500">Secondaria di primo grado</p>
+            <section
+              className="rounded-xl border border-indigo-200 bg-indigo-50/40 p-3"
+              data-secondary-curriculum-navigation
+            >
+              <p className="text-xs font-bold uppercase tracking-wide text-indigo-700">Secondaria di primo grado</p>
               <p className="mt-1 text-sm font-extrabold text-slate-900">Classi I · II · III</p>
-            </div>
+              <p className="mt-2 text-[11px] leading-5 text-slate-600">
+                Pilota Tecnologia: scegli l’annualità da portare nel Riesame H2.
+              </p>
+              <div className="mt-3 grid grid-cols-3 gap-2" aria-label="Apri il riesame di Tecnologia per classe">
+                {(['1', '2', '3'] as const).map((targetClass) => {
+                  const selected = props.targetClass === targetClass;
+                  return (
+                    <button
+                      key={targetClass}
+                      type="button"
+                      onClick={() => openTechnologyReview(targetClass)}
+                      aria-label={`Apri il riesame di Tecnologia per la classe ${targetClass === '1' ? 'prima' : targetClass === '2' ? 'seconda' : 'terza'}`}
+                      data-open-technology-review-class={targetClass}
+                      className={`min-h-11 rounded-xl border px-2 py-2 text-xs font-bold transition ${selected
+                        ? 'border-indigo-600 bg-indigo-600 text-white'
+                        : 'border-indigo-200 bg-white text-indigo-800 hover:border-indigo-400'}`}
+                    >
+                      {targetClass === '1' ? 'Classe I' : targetClass === '2' ? 'Classe II' : 'Classe III'}
+                    </button>
+                  );
+                })}
+              </div>
+              <p className="mt-2 text-[10px] leading-4 text-slate-500">La classe III resta bloccata nel Riesame finché la relativa superficie H2 non è materializzata: Arena non riusa schede di altre classi.</p>
+            </section>
           </div>
 
           <div className="rounded-xl border border-amber-200 bg-amber-50/60 px-4 py-3 text-sm leading-6 text-amber-950">
