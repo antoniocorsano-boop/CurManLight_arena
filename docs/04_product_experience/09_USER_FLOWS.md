@@ -1,9 +1,9 @@
 # 09 — USER FLOWS CRITICI
 
 **Product vision:** `ARENA-PRODUCT-VISION@1.0.0`  
-**Lifecycle:** `CURRICULUM_LIFECYCLE@1.1.1`  
+**Lifecycle:** `CURRICULUM_LIFECYCLE@1.2.0`  
 **Stato:** `CANONICAL_TARGET_FLOWS`  
-**Data:** 2026-09-06
+**Data:** 2026-09-07
 
 ---
 
@@ -93,16 +93,21 @@ Questo documento descrive i percorsi che Arena deve rendere semplici e verificab
 
 ## 6. Collegare il curricolo alla progettazione
 
-**Trigger:** un docente apre Programmazione, UDA o un'attività didattica.
+**Trigger:** un docente salva una programmazione, genera una UDA o collega un'attività didattica.
 
 **Passi:**
-1. Arena propone le `CurriculumUnit` applicabili alla classe/periodo/discipline.
-2. Il docente seleziona quelle realmente utilizzate.
-3. Arena crea `DidacticBinding` con identità e versione.
-4. La progettazione mostra cosa è collegato e cosa resta scoperto senza generare ranking.
-5. Per Educazione civica vengono collegati risultato civico, nucleo, attività, ore, responsabilità ed evidenza.
+1. Arena identifica il master corrente e il contesto curricolare applicabile: ordine, classe/fascia e disciplina/campo.
+2. Costruisce una chiave stabile di riferimento comprendente identità e versione del master.
+3. Crea `DidacticBinding` per il target (`annual-planning`, `uda`, in seguito `learning-activity`).
+4. Il binding viene salvato insieme all'artefatto didattico e non ricostruito dai testi copiati.
+5. Se il master non è vigente, Arena assegna `DRAFT_PLANNING_REFERENCE` e mostra **Riferimento di lavoro**.
+6. Il dettaglio UDA mostra master/versione e contesto al livello ordinario; chiave e stato tecnico restano sotto `Tracciabilità del collegamento`.
+7. Traguardi, obiettivi ed evidenze copiati nella bozza restano snapshot operativi e non diventano una seconda fonte di verità.
+8. Per Educazione civica, gli incrementi successivi collegano risultato civico, nucleo, attività, ore, responsabilità ed evidenza.
 
-**Successo:** la progettazione deriva dal curricolo senza duplicarlo come nuova fonte di verità.
+**Successo:** la progettazione è ricostruibile rispetto al curricolo senza duplicarlo, e un master non vigente non viene presentato come adottato.
+
+**Confine:** `DidacticBinding != AdoptionReceipt` e `DRAFT_PLANNING_REFERENCE != IN_FORCE_CURRICULUM_REFERENCE`.
 
 ---
 
@@ -206,6 +211,8 @@ Per tutti i flow conseguenti:
 - refresh/re-entry devono ricostruire oggetto, stato e fase compatibili;
 - la fase `CONFRONTA` non può essere ripristinata se la condivisione persistita non corrisponde più all'orientamento personale corrente;
 - una versione/fingerprint diversa deve impedire il riuso implicito di una decisione precedente;
+- un `DidacticBinding` deve essere recuperato dall'artefatto salvato e non inferito dai testi della bozza;
+- un binding verso un master non vigente resta `DRAFT_PLANNING_REFERENCE` anche dopo refresh/re-entry;
 - errori tecnici non devono cambiare lo stato umano o istituzionale;
 - un `RevisionTrigger` deve sempre restare legato all'identità/versione del master da cui è nato.
 
@@ -227,6 +234,18 @@ Questa proiezione non modifica l'autorità delle fonti, il master curricolare o 
 
 ---
 
+## 15. Proiezione corrente del DidacticBinding
+
+Nel primo incremento H5 della candidata Beta:
+- `saveProgDraft` persiste il binding della programmazione annuale;
+- `handleGenerateUda` salva il binding dentro la nuova UDA;
+- la chiave di riferimento include master/versione, ordine, classe/fascia e disciplina/campo;
+- il dettaglio UDA mostra lo stato del collegamento con divulgazione progressiva;
+- `CAN-CURR-MASTER-00@1.3` non vigente produce `WORKING_BASELINE_NOT_IN_FORCE` e `DRAFT_PLANNING_REFERENCE`;
+- la bozza conserva traguardi, obiettivi ed evidenze per il lavoro didattico, ma questi testi non sostituiscono il master canonico.
+
+---
+
 ## Criterio complessivo di accettazione
 
-I flow sono conformi quando il docente può svolgere il proprio compito senza conoscere pipeline, gate, membership IDs o struttura del repository; le autorità restano separate; la condivisione è verificabile e non simulabile localmente; le fonti sono verificabili; il curricolo alimenta la progettazione reale; nuove norme, esigenze d'Istituto e osservazioni dalla pratica possono riaprire il processo in modo mirato e tracciato.
+I flow sono conformi quando il docente può svolgere il proprio compito senza conoscere pipeline, gate, membership IDs o struttura del repository; le autorità restano separate; la condivisione è verificabile e non simulabile localmente; le fonti sono verificabili; il curricolo alimenta la progettazione reale mediante binding versionati; un master non vigente resta riconoscibile come riferimento di lavoro; nuove norme, esigenze d'Istituto e osservazioni dalla pratica possono riaprire il processo in modo mirato e tracciato.
