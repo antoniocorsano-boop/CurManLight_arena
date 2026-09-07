@@ -187,7 +187,7 @@ for (const key of [
   'practice_revision_trigger_never_creates_parallel_baseline',
   'external_normative_trigger_domain_implemented',
   'external_normative_trigger_requires_qualified_source_and_applicability',
-  'institute_need_trigger_domain_model_implemented',
+  'institute_need_trigger_domain_implemented',
   'institute_need_trigger_remains_explicitly_non_national',
   'periodic_review_trigger_domain_implemented',
   'periodic_review_trigger_requires_explicit_reason',
