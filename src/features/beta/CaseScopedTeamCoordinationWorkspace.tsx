@@ -103,7 +103,7 @@ export function CaseScopedTeamCoordinationWorkspace({
   const [expectedContributorCount, setExpectedContributorCount] = useState<number | null>(null);
   const [operationalMembership, setOperationalMembership] = useState<OperationalGroupMembership | null>(null);
   const [refreshVersion, setRefreshVersion] = useState(0);
-  const [teamOutcome, setTeamOutcome] = useState<TeamReviewOutcome>('accept-proposal');
+  const [teamOutcome, setTeamOutcome] = useState<TeamReviewOutcome | ''>('');
   const [sharedText, setSharedText] = useState('');
   const [rationale, setRationale] = useState('');
   const [busy, setBusy] = useState(false);
@@ -177,11 +177,12 @@ export function CaseScopedTeamCoordinationWorkspace({
   const selectedItem = outcomeProposalRef ? summary.items.find((item) => item.proposalRef === outcomeProposalRef) ?? null : null;
 
   useEffect(() => {
-    if (mode === 'record' && selectedItem && !selectedItem.coverageComplete && teamOutcome !== 'defer') {
-      setTeamOutcome('defer');
-      setSharedText('');
-    }
-  }, [mode, selectedItem?.proposalRef, selectedItem?.coverageComplete, teamOutcome]);
+    if (mode !== 'record') return;
+    setTeamOutcome('');
+    setSharedText('');
+    setRationale('');
+    setMessage(null);
+  }, [mode, outcomeProposalRef]);
 
   useEffect(() => {
     onSessionStateChange?.({
@@ -195,6 +196,10 @@ export function CaseScopedTeamCoordinationWorkspace({
 
   const recordOutcome = async () => {
     if (!caseRepository || !team.selectedMembership || !team.session || !scope || !selectedItem || !canRecordTeamOutcome) return;
+    if (!teamOutcome) {
+      setMessage('Seleziona l’esito professionale realmente concordato dal gruppo.');
+      return;
+    }
     if (!selectedItem.coverageComplete && teamOutcome !== 'defer') {
       setMessage('La copertura del caso è incompleta: puoi soltanto rinviare il punto oppure attendere i contributi mancanti.');
       return;
@@ -221,7 +226,7 @@ export function CaseScopedTeamCoordinationWorkspace({
         rationale,
         clientRequestId: createRequestId(),
       });
-      setTeamOutcome('accept-proposal');
+      setTeamOutcome('');
       setSharedText('');
       setRationale('');
       setRefreshVersion((value) => value + 1);
@@ -263,7 +268,8 @@ export function CaseScopedTeamCoordinationWorkspace({
                 {!selectedItem.coverageComplete && <p className="mt-1 text-xs text-amber-800">Copertura incompleta: in questo stato il punto può soltanto essere rinviato.</p>}
               </div>
               <label className="mt-3 block text-xs font-bold text-slate-700">Esito
-                <select value={teamOutcome} onChange={(event) => setTeamOutcome(event.target.value as TeamReviewOutcome)} className="mt-1 min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3">
+                <select value={teamOutcome} onChange={(event) => setTeamOutcome(event.target.value as TeamReviewOutcome | '')} className="mt-1 min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3">
+                  <option value="" disabled>Seleziona l’esito concordato</option>
                   {outcomeOptions.map(([value, label]) => <option key={value} value={value}>{label}</option>)}
                 </select>
               </label>
@@ -271,7 +277,7 @@ export function CaseScopedTeamCoordinationWorkspace({
                 <textarea value={sharedText} onChange={(event) => setSharedText(event.target.value)} rows={3} className="mt-3 w-full rounded-xl border border-slate-300 p-3 text-sm" placeholder="Testo condiviso concordato…" />
               )}
               <textarea value={rationale} onChange={(event) => setRationale(event.target.value)} rows={3} className="mt-3 w-full rounded-xl border border-slate-300 p-3 text-sm" placeholder="Motivazione dell’esito professionale…" />
-              <button type="button" disabled={busy || !canRecordTeamOutcome || (!selectedItem.coverageComplete && teamOutcome !== 'defer')} onClick={() => void recordOutcome()} className="mt-3 min-h-11 w-full rounded-xl bg-indigo-700 px-4 py-3 text-sm font-bold text-white disabled:opacity-40">{busy ? 'Registrazione…' : 'Registra l’esito del caso'}</button>
+              <button type="button" disabled={busy || !canRecordTeamOutcome || !teamOutcome || (!selectedItem.coverageComplete && teamOutcome !== 'defer')} onClick={() => void recordOutcome()} className="mt-3 min-h-11 w-full rounded-xl bg-indigo-700 px-4 py-3 text-sm font-bold text-white disabled:opacity-40">{busy ? 'Registrazione…' : 'Registra l’esito del caso'}</button>
             </>
           )}
           {message && <p role="status" className="mt-3 rounded-lg bg-slate-50 p-3 text-xs text-slate-700">{message}</p>}
