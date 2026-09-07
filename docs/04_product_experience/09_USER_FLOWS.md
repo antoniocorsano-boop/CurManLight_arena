@@ -216,7 +216,9 @@ Per tutti i flow conseguenti:
 - un binding verso un master non vigente resta `DRAFT_PLANNING_REFERENCE` anche dopo refresh/re-entry;
 - una `ImplementationObservation` resta collegata al `DidacticBinding` e alla stessa identità/versione curricolare da cui nasce;
 - errori tecnici non devono cambiare lo stato umano o istituzionale;
-- un `RevisionTrigger` deve sempre restare legato all'identità/versione del master da cui è nato.
+- un `RevisionTrigger` deve sempre restare legato all'identità/versione del master da cui è nato;
+- un `CurriculumReviewCase` deve conservare trigger d'origine, master/versione, `CurriculumUnit`, perimetro di schede e readiness all'apertura;
+- l'apertura di un nuovo caso non può riutilizzare implicitamente contributi personali o decisioni registrati in un riesame precedente.
 
 ---
 
@@ -293,6 +295,26 @@ Nel secondo incremento `REVISION_TRIGGER_QUALIFICATION` della candidata Beta, le
 
 ---
 
+## 19. Proiezione corrente dell'apertura mirata di CurriculumReviewCase
+
+Nel primo incremento `TARGETED_REVIEW_CASE_OPENING` della candidata Beta:
+- la superficie **Riesame** mostra l'apertura del caso soltanto quando esiste un `RevisionTrigger` qualificato sulla `CurriculumUnit` corrente;
+- l'utente deve selezionare esplicitamente almeno una scheda tra quelle realmente disponibili nell'ambito corrente;
+- l'utente deve registrare una motivazione specifica del perimetro, distinta dalla sola causa generale del trigger;
+- Arena calcola una readiness fail-closed verificando: trigger qualificato, stesso master/versione, stessa `CurriculumUnit`, almeno una scheda valida e perimetro motivato;
+- riferimenti a schede non presenti nel contesto corrente bloccano l'apertura;
+- un caso già aperto per lo stesso trigger e la stessa versione del master non viene duplicato;
+- all'apertura il perimetro delle schede viene congelato nel `CurriculumReviewCase`, insieme a trigger d'origine, identità/versione del master, `CurriculumUnit`, attore/sessione disponibile e snapshot della readiness;
+- il caso nasce nello stato `OPEN_AT_APPLICABLE_CURRICULUM` e rientra da `H1_APPLICABLE_CURRICULUM`;
+- `professionalValidationState = NOT_STARTED`: l'apertura del caso **non avvia** automaticamente la nuova sessione professionale;
+- contributi personali e decisioni di riesami precedenti non vengono riportati automaticamente nel nuovo caso;
+- l'apertura non genera `ProfessionalContribution`, `TeamProfessionalOutcome`, `InstitutionalDecision`, modifica curricolare, promozione del master o baseline parallela;
+- nessuna nuova route o superficie primaria viene introdotta: il caso è qualificato e aperto dentro **Riesame**.
+
+**Confine:** `RevisionTrigger qualificato != CurriculumReviewCase aperto != nuova CurriculumWorkSession case-scoped`.
+
+---
+
 ## Criterio complessivo di accettazione
 
-I flow sono conformi quando il docente può svolgere il proprio compito senza conoscere pipeline, gate, membership IDs o struttura del repository; le autorità restano separate; la condivisione è verificabile e non simulabile localmente; le fonti sono verificabili; il curricolo alimenta la progettazione reale mediante binding versionati; un master non vigente resta riconoscibile come riferimento di lavoro; la pratica produce osservazioni professionali collegate e prive di dati personali degli alunni; ogni motivo di riesame richiede la qualificazione prevista dalla propria origine e non apre automaticamente un caso; nuove norme, esigenze d'Istituto, riesami periodici e osservazioni dalla pratica possono riaprire il processo in modo mirato e tracciato senza creare baseline parallele.
+I flow sono conformi quando il docente può svolgere il proprio compito senza conoscere pipeline, gate, membership IDs o struttura del repository; le autorità restano separate; la condivisione è verificabile e non simulabile localmente; le fonti sono verificabili; il curricolo alimenta la progettazione reale mediante binding versionati; un master non vigente resta riconoscibile come riferimento di lavoro; la pratica produce osservazioni professionali collegate e prive di dati personali degli alunni; ogni motivo di riesame richiede la qualificazione prevista dalla propria origine e non apre automaticamente un caso; l'apertura di un caso richiede una scelta umana esplicita, un perimetro verificabile e non riutilizza automaticamente decisioni pregresse; nuove norme, esigenze d'Istituto, riesami periodici e osservazioni dalla pratica possono riaprire il processo in modo mirato e tracciato senza creare baseline parallele.
