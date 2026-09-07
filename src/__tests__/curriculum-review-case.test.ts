@@ -66,7 +66,9 @@ describe('CurriculumReviewCase — apertura mirata e fail-closed', () => {
     expect(reviewCase.readinessAtOpening.state).toBe('READY_TO_OPEN');
     expect(reviewCase.caseState).toBe('OPEN_AT_APPLICABLE_CURRICULUM');
     expect(reviewCase.cycleReentryPhase).toBe('H1_APPLICABLE_CURRICULUM');
+    expect(reviewCase.currentHumanPhase).toBe('H1_APPLICABLE_CURRICULUM');
     expect(reviewCase.professionalValidationState).toBe('NOT_STARTED');
+    expect(reviewCase.workSession).toBeUndefined();
     expect(reviewCase.explicitHumanOpening).toBe(true);
     expect(reviewCase.openedBy.identityState).toBe('AUTHENTICATED_SESSION');
     expect(reviewCase.openedBy.institutionalAuthorityInferred).toBe(false);
@@ -110,14 +112,15 @@ describe('CurriculumReviewCase — apertura mirata e fail-closed', () => {
     })).toThrowError('REVIEW_CASE_ALREADY_OPEN_FOR_TRIGGER');
   });
 
-  it('keeps case opening inside Riesame and explicitly separate from the current professional session', () => {
+  it('keeps case opening inside Riesame and separates opening from the new professional session', () => {
     expect(workspaceSource).toContain('<CurriculumReviewCasePanel');
     expect(workspaceSource).toContain('data-curriculum-work-session');
     expect(panelSource).toContain('Apri solo il riesame necessario');
     expect(panelSource).toContain('data-review-case-readiness');
     expect(panelSource).toContain('data-human-next-action="open-targeted-review-case"');
-    expect(panelSource).toContain('validazione professionale non ancora avviata');
-    expect(panelSource).toContain('non riutilizza automaticamente contributi o decisioni precedenti');
+    expect(panelSource).toContain('data-human-next-action="start-case-scoped-work-session"');
+    expect(panelSource).toContain('Avvia il riesame mirato');
+    expect(panelSource).toContain('Nessuna scelta o condivisione precedente viene importata.');
     expect(panelSource).not.toContain("setDecision(");
     expect(panelSource).not.toContain('TeamContributionPublisher');
   });
