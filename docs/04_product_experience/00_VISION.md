@@ -2,7 +2,7 @@
 
 **Vision ID:** `ARENA-PRODUCT-VISION`  
 **Versione:** `1.0.0`  
-**Data:** 2026-09-06  
+**Data:** 2026-09-07  
 **Stato:** `CANONICAL_PRODUCT_DIRECTION`  
 **Controparte Drive:** `ARENA-PRODUCT-00_Visione_di_prodotto_e_governo_documentazione_2026-2027` — `1s17jJCslSIJIXQfiTEzyRcD5q-Baopj6-l14aaFEWik`
 
@@ -48,7 +48,7 @@ Il processo umano visibile è:
 
 Le fonti, i fingerprint, le versioni, le membership, gli audit, le ricevute e gli export sono servizi di supporto. Non sono il processo principale percepito dal docente.
 
-Il contratto macchina che protegge questo ciclo è `.human/curriculum-lifecycle.contract.json@1.1.1`.
+Il contratto macchina che protegge questo ciclo è `.human/curriculum-lifecycle.contract.json@1.2.0`.
 
 ---
 
@@ -108,9 +108,11 @@ L'autorità non deriva da un ruolo scelto in un profilo, ma da identità autenti
 
 ## 7. Curricolo → progettazione
 
-Il curricolo adottato alimenta la progettazione mediante `DidacticBinding`.
+Programmazione annuale, UDA e attività si collegano al curricolo mediante `DidacticBinding` e non copiano il master creando nuove fonti di verità. Ogni binding conserva almeno identità/versione del master e il contesto curricolare cui la progettazione si riferisce.
 
-Programmazione annuale, UDA e attività non copiano il curricolo creando nuove fonti di verità: referenziano l'identità e la versione delle `CurriculumUnit` utilizzate.
+Quando il master collegato non è ancora vigente, Arena può usarlo soltanto come **riferimento di lavoro per una bozza di progettazione**. Il binding deve rendere visibile questo limite e non può presentare la bozza come derivata da un curricolo adottato. Solo una versione realmente adottata può acquisire lo stato di riferimento curricolare vigente.
+
+I testi di traguardi, obiettivi o evidenze copiati dentro una bozza didattica restano snapshot di lavoro: non acquisiscono autorità canonica per effetto della copia. La fonte di verità resta la `CurriculumUnit` versionata nel master.
 
 Per Educazione civica la tracciabilità deve poter collegare:
 
@@ -207,9 +209,10 @@ Il registro macchina `docs/04_product_experience/PRODUCT_DOCS.registry.json` man
 - copertura documentale: completa;
 - validazione professionale: aperta;
 - curricolo vigente: no;
-- contratto ciclo professionale: `.human/curriculum-lifecycle.contract.json@1.1.1`;
-- governance `RevisionTrigger`: definita nel contratto lifecycle 1.1.1;
+- contratto ciclo professionale: `.human/curriculum-lifecycle.contract.json@1.2.0`;
+- governance `RevisionTrigger`: definita;
 - `CurriculumWorkSession`: progressione unica implementata; il confronto richiede una condivisione persistita corrispondente al lavoro personale corrente;
+- `DidacticBinding`: primo incremento implementato per programmazione annuale e nuove UDA, con persistenza del riferimento al master 1.3 e stato di autorità visibile; il master non vigente produce esclusivamente `DRAFT_PLANNING_REFERENCE`;
 - UI complessiva: ancora in convergenza verso la navigazione e i servizi target.
 
 ---
