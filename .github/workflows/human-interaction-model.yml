@@ -16,6 +16,7 @@ on:
       - 'src/domain/curriculum/implementationObservation.ts'
       - 'src/domain/curriculum/revisionTrigger.ts'
       - 'src/domain/curriculum/reviewCase.ts'
+      - 'src/domain/curriculum/caseWorkSession.ts'
       - 'src/types/curriculum.ts'
       - 'src/store/useCurriculumStore.ts'
       - 'src/features/documents/components/EsportazioniTab.tsx'
@@ -28,10 +29,13 @@ on:
       - 'src/__tests__/implementation-observation.test.ts'
       - 'src/__tests__/revision-trigger.test.ts'
       - 'src/__tests__/curriculum-review-case.test.ts'
+      - 'src/__tests__/case-scoped-curriculum-work-session.test.ts'
       - 'scripts/audit-kx-mobile.cjs'
       - 'src/features/beta/**'
       - 'src/domain/revision/**'
       - 'src/domain/transfer/**'
+      - 'src/infrastructure/supabase/caseScopedTeamReviewRepository.ts'
+      - 'supabase/migrations/20260907043000_team_review_case_scope.sql'
       - 'scripts/audit-s3-critical-journeys.cjs'
       - 'scripts/verify-beta-g4-browser.cjs'
       - 'docs/04_product_experience/00_VISION.md'
@@ -67,5 +71,7 @@ jobs:
         run: node tools/human-interaction-model/validate-revision-trigger.mjs
       - name: Validate targeted curriculum review case opening
         run: node tools/human-interaction-model/validate-review-case.mjs
+      - name: Validate case-scoped curriculum work session
+        run: node tools/human-interaction-model/validate-case-work-session.mjs
       - name: Validate canonical product documentation
         run: node tools/human-interaction-model/validate-product-docs.mjs
