@@ -111,7 +111,7 @@ for (const token of [
 
 for (const token of [
   'Regola trasversale di consapevolezza del processo e continuità del workframe',
-  'Esamina → Condividi → Confronta → Registra l’esito',
+  "Esamina → Condividi → Confronta → Registra l'esito",
   'il futuro può comparire soltanto come etichetta non interattiva di orientamento',
   'ritorno al contesto generale **Riesame** dopo la conclusione richiede un gesto esplicito',
   'Il pilot umano multi-attore è concluso',
