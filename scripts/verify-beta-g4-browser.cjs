@@ -2,6 +2,7 @@ const { chromium } = require('playwright');
 
 const baseUrl = process.env.BETA_BASE_URL || 'http://127.0.0.1:4173/CurManLight_arena';
 const normalizedBaseUrl = baseUrl.replace(/\/$/, '');
+const identityQueryUrl = `${normalizedBaseUrl}/?betaIdentity=1`;
 const revisionUrl = `${normalizedBaseUrl}/revisione`;
 const documentsUrl = `${normalizedBaseUrl}/documents`;
 
@@ -58,6 +59,15 @@ async function readPlanningHandoffState(page) {
 
   try {
     console.log('=== BETA-G4 BROWSER — REVISION WITHOUT SIMULATED APPROVAL ===');
+
+    await page.goto(identityQueryUrl, { waitUntil: 'domcontentloaded', timeout: 30000 });
+    const returnToRevision = await expectVisibleText(page, 'Torna alla revisione');
+    await returnToRevision.click();
+    await page.waitForURL((url) => url.pathname.endsWith('/revisione') && !url.searchParams.has('betaIdentity'), { timeout: 8000 });
+    await closeLocalProfileIfPresent(page);
+    await expectVisibleText(page, 'Revisione del curricolo');
+    check('0. betaIdentity query entry exits through live Router navigation', page.url().includes('/revisione') && !page.url().includes('betaIdentity=1'));
+
     const initialResponse = await gotoWorkspace(page, revisionUrl, 'Revisione del curricolo');
     check('1. /revisione renders the teacher review workspace', Boolean(initialResponse) && page.url().includes('/revisione'));
 
