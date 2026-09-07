@@ -58,7 +58,7 @@ for (const token of [
   'upsert_team_review_contribution_v3',
   'record_team_review_outcome_v3',
   'and contribution.review_case_id = p_review_case_id',
-  'coalesce(v_existing.review_case_id, \'\') <> p_review_case_id',
+  "coalesce(v_existing.review_case_id, '') <> p_review_case_id",
   'A case-scoped contribution never satisfies another case.',
 ]) assert(migration.includes(token), `migrazione case-scoped non presidiata: ${token}`);
 
@@ -119,7 +119,7 @@ for (const key of [
   'case_scoped_server_receipts_preserve_general_review_history',
   'shared_review_case_discovery_implemented',
 ]) assert(state[key] === true, `stato prodotto non registra ${key}`);
-assert(state.human_end_to_end_pilot_complete === false, 'il pilota umano non deve risultare concluso');
+assert(state.human_end_to_end_pilot_complete === true, 'il pilot umano multi-attore deve risultare concluso dopo la prova reale');
 
 if (failures.length) {
   for (const failure of failures) console.error(`CASE_WORK_SESSION_FAIL: ${failure}`);
