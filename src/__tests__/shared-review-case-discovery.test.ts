@@ -71,7 +71,7 @@ describe('Shared CurriculumReviewCase discovery', () => {
     expect(inboxSource).toContain('team.operationalMemberships.filter');
     expect(inboxSource).toContain('operationalMembership.academicYear');
     expect(inboxSource).toContain('data-operational-review-scope');
-    expect(wrapperSource).toContain('getSharedReviewCaseContext(activeCase)?.academicYear');
+    expect(wrapperSource).toContain('getSharedReviewCaseContext(focusedCase)?.academicYear');
   });
 
   it('keeps assignment in Riesame and starts the case only by explicit action', () => {
