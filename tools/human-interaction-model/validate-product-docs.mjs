@@ -23,7 +23,7 @@ try {
 
 if (registry) {
   assert(registry.registry_id === 'ARENA-PRODUCT-DOCS', 'registry_id prodotto corretto');
-  assert(registry.version === '1.0.11', 'versione registro prodotto 1.0.11');
+  assert(registry.version === '1.0.12', 'versione registro prodotto 1.0.12');
   assert(registry.product_vision?.id === 'ARENA-PRODUCT-VISION', 'vision id canonico');
   assert(registry.product_vision?.version === '1.0.0', 'vision version canonica');
   assert(registry.product_vision?.drive_file_id === '1s17jJCslSIJIXQfiTEzyRcD5q-Baopj6-l14aaFEWik', 'Drive ID vision canonica');
@@ -85,9 +85,24 @@ if (registry) {
   ]) assert(vision.includes(token), `vision contiene: ${token}`);
 
   const ia = readText('docs/04_product_experience/01_INFORMATION_ARCHITECTURE.md');
-  for (const token of ['CURRICULUM_LIFECYCLE@1.2.0', 'CurriculumUnit', 'CurriculumReviewCase', 'CurriculumWorkSession', 'RevisionTrigger', 'DidacticBinding', 'ImplementationObservation', 'Fascicolo', 'TeamProfessionalOutcome', "una dichiarazione locale dell'utente non può simulare una condivisione avvenuta", 'DRAFT_PLANNING_REFERENCE', 'snapshot di lavoro']) {
-    assert(ia.includes(token), `IA contiene: ${token}`);
-  }
+  for (const token of [
+    'CURRICULUM_LIFECYCLE@1.2.0',
+    'CurriculumUnit',
+    'CurriculumReviewCase',
+    'CurriculumWorkSession',
+    'RevisionTrigger',
+    'DidacticBinding',
+    'ImplementationObservation',
+    'Fascicolo',
+    'TeamProfessionalOutcome',
+    "una dichiarazione locale dell'utente non può simulare una condivisione avvenuta",
+    'DRAFT_PLANNING_REFERENCE',
+    'snapshot di lavoro',
+    'Proiezione corrente — CurriculumReviewCase → CurriculumWorkSession case-scoped',
+    'la sessione parte con `decisions = {}` e `customTexts = {}`',
+    'il fingerprint condiviso comprende esplicitamente `reviewCaseId`',
+    'discovery/assegnazione condivisa del caso stesso tra client diversi non è ancora implementata'
+  ]) assert(ia.includes(token), `IA contiene: ${token}`);
 
   const nav = readText('docs/04_product_experience/02_NAVIGATION_MODEL.md');
   for (const token of ['CURRICULUM_LIFECYCLE@1.2.0', 'IL MIO LAVORO · CURRICOLO · PROGETTAZIONE · RIESAME', 'FASCICOLO', "ESAMINA → CONDIVIDI → CONFRONTA → REGISTRA L'ESITO", 'Azioni istituzionali proiettate', "nessun pulsante di conferma locale può simulare l'avvenuta condivisione", 'FASCICOLO_NAVIGATION_CONVERGENCE', '/fascicolo', '/fonti', 'Riferimento di lavoro', 'DIDACTIC_BINDING']) {
@@ -124,7 +139,12 @@ if (registry) {
     'readiness fail-closed',
     'professionalValidationState = NOT_STARTED',
     'contributi personali e decisioni di riesami precedenti non vengono riportati automaticamente',
-    'RevisionTrigger qualificato != CurriculumReviewCase aperto != nuova CurriculumWorkSession case-scoped'
+    'RevisionTrigger qualificato != CurriculumReviewCase aperto != nuova CurriculumWorkSession case-scoped',
+    'Proiezione corrente della CurriculumWorkSession case-scoped',
+    '**nessun carry-forward**',
+    '`review_case_id`, scheda, fingerprint, attore, orientamento',
+    'shared_review_case_discovery_implemented = false',
+    'CurriculumReviewCase != CurriculumWorkSession != ProfessionalContribution != TeamProfessionalOutcome != InstitutionalDecision'
   ]) assert(flows.includes(token), `user flow contiene: ${token}`);
 
   const ccoDocs = readText('docs/04_product_experience/11_OPERATIONAL_COMMUNICATION_CONTRACT.md');
@@ -238,11 +258,23 @@ if (registry) {
     'curriculum_review_case_never_promotes_master_automatically',
     'curriculum_review_case_never_creates_parallel_baseline',
     'curriculum_review_case_ux_implemented',
-    'curriculum_review_case_reuses_revision_surface'
+    'curriculum_review_case_reuses_revision_surface',
+    'targeted_review_case_work_session_case_scoping_implemented',
+    'case_scoped_curriculum_work_session_domain_implemented',
+    'case_scoped_curriculum_work_session_reuses_revision_surface',
+    'case_scoped_session_uses_only_frozen_case_proposals',
+    'case_scoped_session_starts_without_decision_carry_forward',
+    'case_scoped_session_persists_local_progress_with_review_case',
+    'case_scoped_session_single_dominant_progression_implemented',
+    'case_scoped_professional_contributions_require_review_case_identity',
+    'case_scoped_professional_contribution_fingerprint_includes_review_case',
+    'case_scoped_team_outcomes_require_same_review_case_coverage',
+    'case_scoped_server_receipts_preserve_general_review_history',
+    'case_scoped_session_never_advances_institutional_state_automatically'
   ];
   for (const key of requiredTrueStates) assert(state[key] === true, `stato prodotto attivo: ${key}`);
   assert(state.revision_trigger_new_primary_surface_created === false, 'nessuna nuova superficie primaria per RevisionTrigger');
-  assert(state.targeted_review_case_work_session_case_scoping_implemented === false, 'la nuova sessione case-scoped non deve essere anticipata');
+  assert(state.shared_review_case_discovery_implemented === false, 'la discovery condivisa dei casi non deve essere anticipata');
   assert(state.target_ui_fully_implemented === false, 'la documentazione non simula UI target già implementata');
   assert(state.human_end_to_end_pilot_complete === false, 'la documentazione non simula pilota umano concluso');
 }
