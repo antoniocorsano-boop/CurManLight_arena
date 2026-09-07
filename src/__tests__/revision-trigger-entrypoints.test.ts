@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { buildDidacticBinding, resolveCurriculumUnitReference } from '../domain/curriculum/didacticBinding';
 import qualificationPanelRaw from '../features/curriculum/components/RevisionTriggerQualificationPanel.tsx?raw';
 import sourceRegisterPanelRaw from '../features/documents/components/InstituteCurriculumSourceRegisterPanel.tsx?raw';
-import fontiWorkspaceRaw from '../features/documents/components/FontiWorkspace.tsx?raw';
+import normativeIntentRaw from '../features/documents/lib/normativeReviewIntent.ts?raw';
 import appViewsRaw from '../features/session/components/AppViewsLayer.tsx?raw';
 import revisionWorkspaceRaw from '../features/beta/RevisionWorkspace.tsx?raw';
 
@@ -39,10 +39,13 @@ describe('RevisionTrigger — ingressi sulle superfici esistenti', () => {
   it('routes qualified institutional sources from Fascicolo to the existing Revisione tab', () => {
     expect(sourceRegisterPanelRaw).toContain('data-source-review-action');
     expect(sourceRegisterPanelRaw).toContain('Valuta l’impatto sul curricolo');
+    expect(sourceRegisterPanelRaw).toContain('requestNormativeReview(source.code)');
     expect(sourceRegisterPanelRaw).toContain('non crea automaticamente un caso e non modifica il master');
-    expect(fontiWorkspaceRaw).toContain('onRequestNormativeReview={onRequestNormativeReview}');
+    expect(normativeIntentRaw).toContain("NORMATIVE_REVIEW_REQUEST_EVENT = 'arena:normative-review-request'");
+    expect(normativeIntentRaw).toContain('window.dispatchEvent(new CustomEvent');
+    expect(appViewsRaw).toContain('window.addEventListener(NORMATIVE_REVIEW_REQUEST_EVENT, handleNormativeReviewRequest)');
     expect(appViewsRaw).toContain('setNormativeReviewSourceCode(sourceCode)');
-    expect(appViewsRaw).toContain("safeHandleTabSwitch('revisione')");
+    expect(appViewsRaw).toContain("props.handleTabSwitch('revisione')");
     expect(appViewsRaw).toContain('initialNormativeSourceCode={normativeReviewSourceCode}');
   });
 
