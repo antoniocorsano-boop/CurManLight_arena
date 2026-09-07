@@ -9,9 +9,6 @@ import type {
 const normalizeText = (value: string | undefined, maxLength = 2400): string =>
   value?.trim().replace(/\s+/g, ' ').slice(0, maxLength) ?? '';
 
-const caseProposalSet = (reviewCase: CurriculumReviewCase): Set<string> =>
-  new Set(reviewCase.targetedProposalRefs);
-
 export function getCaseScopedProposals(
   reviewCase: CurriculumReviewCase,
   availableProposals: Proposal[],
@@ -100,7 +97,7 @@ export function recordCaseDecision(input: {
   updatedAt?: string;
 }): CaseScopedCurriculumWorkSession {
   const { session, proposalRef, decision, updatedAt = new Date().toISOString() } = input;
-  if (!caseProposalSet({ targetedProposalRefs: session.targetedProposalRefs } as CurriculumReviewCase).has(proposalRef)) {
+  if (!session.targetedProposalRefs.includes(proposalRef)) {
     throw new Error('CASE_WORK_SESSION_PROPOSAL_OUT_OF_SCOPE');
   }
   if (session.sessionState === 'COMPLETE') throw new Error('CASE_WORK_SESSION_COMPLETE');
