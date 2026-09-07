@@ -138,10 +138,16 @@ describe('CurriculumWorkSession case-scoped', () => {
     expect(first).not.toBe(other);
   });
 
-  it('keeps the case session dominant and the shared persistence exact-case', () => {
+  it('keeps the case session dominant, makes the active actor visible, and keeps persistence exact-case', () => {
     expect(caseSurfaceSource).toContain('data-revision-surface-mode="CASE_SCOPED"');
     expect(caseSurfaceSource).toContain("reviewCase.workSession?.sessionState === 'ACTIVE'");
     expect(caseSessionSource).toContain('data-case-scoped-curriculum-work-session');
+    expect(caseSessionSource).toContain('data-case-active-identity');
+    expect(caseSessionSource).toContain('data-case-active-role={activeRole ?? \'unverified\'}');
+    expect(caseSessionSource).toContain('Stai lavorando come:');
+    expect(caseSessionSource).toContain('team.session?.user.email');
+    expect(caseSessionSource).toContain('team.selectedMembership?.role');
+    expect(caseSessionSource).toContain('Identità del team in verifica. Non condividere finché account e ruolo non sono visibili.');
     expect(caseSessionSource).toContain('Le decisioni della sessione generale non vengono importate.');
     expect(casePublisherSource).toContain('data-review-case-id={reviewCaseId}');
     expect(caseRepositorySource).toContain(".eq('review_case_id', scope.reviewCaseId)");
