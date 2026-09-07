@@ -1,6 +1,6 @@
 {
   "registry_id": "ARENA-PRODUCT-DOCS",
-  "version": "1.0.10",
+  "version": "1.0.11",
   "date": "2026-09-07",
   "product_vision": {
     "id": "ARENA-PRODUCT-VISION",
@@ -103,6 +103,25 @@
     "revision_trigger_single_existing_surface_integration_implemented": true,
     "revision_trigger_ux_implemented": true,
     "revision_trigger_new_primary_surface_created": false,
+    "curriculum_review_case_domain_model_implemented": true,
+    "curriculum_review_case_persisted_in_arena_state": true,
+    "curriculum_review_case_requires_qualified_trigger": true,
+    "curriculum_review_case_requires_current_master_and_unit_match": true,
+    "curriculum_review_case_requires_explicit_target_selection": true,
+    "curriculum_review_case_requires_explicit_scope_reason": true,
+    "curriculum_review_case_target_scope_frozen": true,
+    "curriculum_review_case_reenters_at_applicable_curriculum": true,
+    "curriculum_review_case_professional_validation_not_auto_started": true,
+    "curriculum_review_case_previous_contributions_not_reused": true,
+    "curriculum_review_case_previous_decisions_not_carried_forward": true,
+    "curriculum_review_case_never_changes_curriculum_automatically": true,
+    "curriculum_review_case_never_creates_team_outcome_automatically": true,
+    "curriculum_review_case_never_creates_institutional_decision_automatically": true,
+    "curriculum_review_case_never_promotes_master_automatically": true,
+    "curriculum_review_case_never_creates_parallel_baseline": true,
+    "curriculum_review_case_ux_implemented": true,
+    "curriculum_review_case_reuses_revision_surface": true,
+    "targeted_review_case_work_session_case_scoping_implemented": false,
     "target_ui_fully_implemented": false,
     "human_end_to_end_pilot_complete": false
   }
