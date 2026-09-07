@@ -45,7 +45,7 @@ export function buildDidacticBinding({
     disciplineKey,
   ].join(':');
 
-  const curriculumInForce = master.curriculumInForce === true;
+  const curriculumInForce = Boolean(master.curriculumInForce);
 
   return {
     id: `DB:${targetType}:${unitKey}`,
