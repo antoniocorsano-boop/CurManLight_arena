@@ -84,11 +84,17 @@ jobs:
           grep -Fq 'to_jsonb(new)' "$fix"
 
   live-beta-smoke:
-    if: ${{ github.event_name == 'workflow_dispatch' && secrets.CML_ARENA_BETA_DB_URL != '' }}
+    if: ${{ github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
+    env:
+      CML_ARENA_BETA_DB_URL: ${{ secrets.CML_ARENA_BETA_DB_URL }}
     steps:
       - uses: actions/checkout@v7
-      - name: Run real multi-actor smoke against Beta database
-        env:
-          CML_ARENA_BETA_DB_URL: ${{ secrets.CML_ARENA_BETA_DB_URL }}
-        run: psql "$CML_ARENA_BETA_DB_URL" -v ON_ERROR_STOP=1 -f scripts/smoke-multi-actor-shared-review.sql
+      - name: Run real multi-actor smoke against Beta database when configured
+        run: |
+          set -euo pipefail
+          if [ -z "${CML_ARENA_BETA_DB_URL:-}" ]; then
+            echo '::notice::CML_ARENA_BETA_DB_URL is not configured; live smoke skipped. Contract smoke still ran on pull_request.'
+            exit 0
+          fi
+          psql "$CML_ARENA_BETA_DB_URL" -v ON_ERROR_STOP=1 -f scripts/smoke-multi-actor-shared-review.sql
