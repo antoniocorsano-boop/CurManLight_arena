@@ -1,8 +1,8 @@
 {
   "contract_id": "CCO",
   "name": "Contratto di comunicazione operativa di Arena",
-  "version": "1.4.1",
-  "purpose": "Separare orientamento operativo, spiegazione del processo e verifica tecnica affinché il docente possa agire con linguaggio istituzionale senza essere esposto al funzionamento interno del sistema.",
+  "version": "1.5.0",
+  "purpose": "Separare orientamento operativo, spiegazione del processo e verifica tecnica affinché il docente possa agire con linguaggio istituzionale senza essere esposto al funzionamento interno del sistema, mantenendo sempre consapevolezza della posizione nel processo professionale.",
   "principles": {
     "structure_before_explanation": true,
     "state_before_explanation": true,
@@ -28,13 +28,19 @@
     "technical_traceability_must_not_occupy_level_1": true,
     "coordinator_personal_contribution_precedes_coordination": true,
     "shared_stage_requires_persisted_current_contribution": true,
-    "stale_persisted_share_must_reopen_share": true
+    "stale_persisted_share_must_reopen_share": true,
+    "process_awareness_is_part_of_operational_usability": true,
+    "future_process_orientation_may_remain_visible_without_future_controls": true,
+    "process_context_must_survive_stage_transition": true,
+    "viewport_continuity_must_preserve_process_orientation": true,
+    "completion_must_be_acknowledged_before_context_exit": true,
+    "layer_boundaries_must_be_structural": true
   },
   "teacher_progressive_levels": {
     "level_1": {
       "name": "Orientamento e azione",
       "default_visible": true,
-      "must_answer": ["dove_sono", "cosa_devo_fare", "stato_del_mio_lavoro", "effetto_immediato"],
+      "must_answer": ["dove_sono", "dove_sono_nel_percorso", "cosa_devo_fare", "stato_del_mio_lavoro", "effetto_immediato", "chi_agisce_dopo_se_pertinente"],
       "language": "istituzionale, professionale, naturale",
       "system_jargon_forbidden": ["membership", "assurance", "gate", "SHA", "handoff", "export", "blocker", "esito locale", "workflow interno"],
       "technical_ids_forbidden": true
@@ -42,7 +48,7 @@
     "level_2": {
       "name": "Spiegazione del processo",
       "default_collapsed": true,
-      "purpose": "Spiegare motivazione, criteri e passaggi successivi a chi desidera comprendere meglio il lavoro.",
+      "purpose": "Spiegare motivazione, criteri, senso del passaggio corrente e passaggi successivi a chi desidera comprendere meglio il lavoro.",
       "language": "istituzionale e comprensibile al personale docente",
       "must_not_be_required_to_complete_primary_task": true
     },
@@ -57,7 +63,7 @@
   "layers": {
     "operational": {
       "required": true,
-      "must_answer": ["where_am_i", "current_state", "next_action", "immediate_effect"],
+      "must_answer": ["where_am_i", "where_in_process", "current_state", "next_action", "immediate_effect", "who_acts_next_when_relevant"],
       "primary_action_must_be_self_describing": true
     },
     "recognition": {
@@ -85,6 +91,8 @@
       "required_for_multistep_vertical_surfaces": true,
       "current_step_must_dominate": true,
       "future_step_controls_should_be_hidden_until_relevant": true,
+      "future_step_labels_may_remain_visible_for_orientation": true,
+      "future_step_labels_must_not_be_interactive": true,
       "completed_step_should_become_compact_summary_when_next_stage_is_active": true,
       "next_step_should_appear_as_consequence_of_completed_work": true,
       "partial_progress_must_remain_recoverable": true,
@@ -92,8 +100,34 @@
       "scrolling_alone_is_not_a_stage_transition": true,
       "duplicate_progress_rails_are_forbidden": true,
       "secondary_filters_must_use_progressive_disclosure": true,
-      "shared_progress_requires_persisted_current_state": true
+      "shared_progress_requires_persisted_current_state": true,
+      "viewport_anchor_must_remain_stable_across_stage_changes": true,
+      "stage_change_must_not_land_midpage": true,
+      "completion_must_render_in_same_workframe_before_exit": true,
+      "return_to_general_context_after_completion_requires_explicit_action": true
     }
+  },
+  "process_awareness": {
+    "required": true,
+    "canonical_progression": ["ESAMINA", "CONDIVIDI", "CONFRONTA", "REGISTRA_L_ESITO"],
+    "must_answer": ["where_in_process", "what_is_current", "what_is_completed", "what_happens_next", "who_acts_next_when_relevant"],
+    "future_steps_may_be_visible_as_noninteractive_orientation": true,
+    "future_controls_must_remain_hidden_until_relevant": true,
+    "past_steps_must_compact_not_disappear_without_context": true,
+    "single_progress_indicator": true,
+    "technical_objects_must_not_be_required_to_understand_process": true,
+    "authority_boundary_must_be_expressed_in_professional_language": true,
+    "completion_must_be_acknowledged_in_same_workframe_before_exit": true,
+    "return_to_general_context_after_completion_must_be_explicit": true,
+    "lifecycle_future_stage_hidden_rule_applies_to_controls_and_task_content_not_noninteractive_orientation_labels": true
+  },
+  "viewport_stability": {
+    "reference_mobile_viewport": "390x844",
+    "page_scroll_must_not_encode_stage_progression": true,
+    "page_viewport_anchor_must_not_jump_on_stage_transition": true,
+    "internal_workframe_may_reset_to_start_only_after_real_stage_transition": true,
+    "primary_action_must_not_be_obscured_by_mobile_navigation": true,
+    "terminal_state_must_be_visible_before_context_replacement": true
   },
   "action_grammar": [
     {"verb": "Esamina", "meaning": "leggi e valuta una scheda"},
@@ -138,7 +172,13 @@
     "coordinator_must_not_skip_personal_contribution": true,
     "compare_requires_persisted_current_share": true,
     "changed_personal_orientation_invalidates_previous_share": true,
-    "local_confirmation_must_not_simulate_persisted_share": true
+    "local_confirmation_must_not_simulate_persisted_share": true,
+    "process_position_must_be_visible_at_level_1": true,
+    "future_orientation_labels_must_not_be_future_controls": true,
+    "technical_traceability_must_be_absent_from_default_level_1": true,
+    "stage_transition_must_preserve_viewport_orientation": true,
+    "completion_must_be_acknowledged_before_return_to_general_context": true,
+    "return_to_general_context_after_completion_must_be_explicit": true
   },
   "pilot_surfaces": [
     {
