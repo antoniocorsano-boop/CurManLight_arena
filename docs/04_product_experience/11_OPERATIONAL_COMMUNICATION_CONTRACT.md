@@ -301,6 +301,6 @@ Regola di consolidamento:
 
 > **Arena nasconde la complessità tecnica, non il senso del processo.**
 
-CCO-R7 ha superato l'accettazione visiva umana `HUMAN_VISUAL_RETEST_R1_1` del 7 settembre 2026 sulla candidata mobile reale. La prova ha verificato il rientro al principio del Riesame generale, un solo compito dominante, la subordinazione dei casi assegnati, la singola rail di processo e la non interferenza della navigazione primaria con l'azione corrente. La ricevuta è registrata in `docs/04_product_experience/evidence/HUMAN_VISUAL_RETEST_R1_1_2026-09-07.json`.
+CCO-R7 ha superato l'accettazione visiva umana `HUMAN_VISUAL_RETEST_R1_1` del 7 settembre 2026 sulla candidata mobile reale, con riferimento **390×844**. La prova ha verificato il rientro al principio del Riesame generale, un solo compito dominante, la subordinazione dei casi assegnati, la singola rail di processo e la non interferenza della navigazione primaria con l'azione corrente. La ricevuta è registrata in `docs/04_product_experience/evidence/HUMAN_VISUAL_RETEST_R1_1_2026-09-07.json`.
 
 Il Registro delle superfici `CCO-SURFACES@1.6.1` promuove quindi `CaseAwareRevisionSurface`, `CaseScopedExperienceShell`, `CaseScopedCurriculumWorkSession`, `CaseScopedTeamContributionPublisher` e `CaseScopedTeamCoordinationWorkspace` a **conformant**. Questa promozione riguarda esclusivamente la conformità comunicativa e percettiva delle superfici: non modifica `CURRICULUM_LIFECYCLE@1.2.0`, autorità, schema dati, master curricolare, decisioni istituzionali o stato di vigenza del curricolo.
