@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { RevisioneTab } from '../curriculum';
+import { RevisionTriggerQualificationPanel } from '../curriculum/components/RevisionTriggerQualificationPanel';
 import { useCurriculumStore } from '../../store/useCurriculumStore';
 import type { AppViewsLayerProps } from '../session/types/appViewContracts';
 import { TeamContributionPublisher, type TeamContributionPersistenceState } from './TeamContributionPublisher';
@@ -10,6 +11,11 @@ import {
 import { useTeamWorkspaceContext } from './useTeamWorkspaceContext';
 
 type CurriculumWorkSessionStage = 'EXAMINE' | 'SHARE' | 'COMPARE' | 'RECORD_TEAM_OUTCOME';
+
+type RevisionWorkspaceProps = AppViewsLayerProps & {
+  initialNormativeSourceCode?: string | null;
+  onInitialNormativeSourceConsumed?: () => void;
+};
 
 const roleLabel = (role: string | undefined): string | null => {
   if (!role) return null;
@@ -42,7 +48,7 @@ const emptyCoordinationState = (): TeamCoordinationSessionState => ({
   canRecordTeamOutcome: false,
 });
 
-export function RevisionWorkspace(props: AppViewsLayerProps) {
+export function RevisionWorkspace(props: RevisionWorkspaceProps) {
   const { decisions, customTexts, schoolYear } = useCurriculumStore();
   const team = useTeamWorkspaceContext();
   const [stage, setStage] = useState<CurriculumWorkSessionStage>('EXAMINE');
@@ -176,6 +182,14 @@ export function RevisionWorkspace(props: AppViewsLayerProps) {
 
       {stage === 'EXAMINE' && (
         <div className="space-y-3" data-revision-stage="review" aria-label="Esamina il tuo contributo">
+          <RevisionTriggerQualificationPanel
+            order={props.order}
+            targetClass={props.targetClass}
+            discipline={props.discipline}
+            initialNormativeSourceCode={props.initialNormativeSourceCode}
+            onInitialNormativeSourceConsumed={props.onInitialNormativeSourceConsumed}
+          />
+
           <RevisioneTab
             {...props}
             onContinueAfterReview={() => {
