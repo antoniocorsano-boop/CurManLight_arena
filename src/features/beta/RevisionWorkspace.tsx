@@ -12,6 +12,7 @@ import {
 import { useTeamWorkspaceContext } from './useTeamWorkspaceContext';
 
 type CurriculumWorkSessionStage = 'EXAMINE' | 'SHARE' | 'COMPARE' | 'RECORD_TEAM_OUTCOME';
+type ExamineSurface = 'OVERVIEW' | 'PERSONAL_REVIEW' | 'REOPEN_CASE';
 
 type RevisionWorkspaceProps = AppViewsLayerProps & {
   initialNormativeSourceCode?: string | null;
@@ -53,6 +54,9 @@ export function RevisionWorkspace(props: RevisionWorkspaceProps) {
   const { decisions, customTexts, schoolYear } = useCurriculumStore();
   const team = useTeamWorkspaceContext();
   const [stage, setStage] = useState<CurriculumWorkSessionStage>('EXAMINE');
+  const [examineSurface, setExamineSurface] = useState<ExamineSurface>(
+    props.initialNormativeSourceCode ? 'REOPEN_CASE' : 'OVERVIEW',
+  );
   const [sharePersistence, setSharePersistence] = useState<TeamContributionPersistenceState>(() => emptyPersistenceState());
   const [coordinationState, setCoordinationState] = useState<TeamCoordinationSessionState>(() => emptyCoordinationState());
   const [outcomeProposalRef, setOutcomeProposalRef] = useState<string | null>(null);
@@ -97,16 +101,24 @@ export function RevisionWorkspace(props: RevisionWorkspaceProps) {
 
   useEffect(() => {
     setStage('EXAMINE');
+    setExamineSurface(props.initialNormativeSourceCode ? 'REOPEN_CASE' : 'OVERVIEW');
     setOutcomeProposalRef(null);
     setCoordinationState(emptyCoordinationState());
-  }, [props.discipline, props.order]);
+  }, [props.discipline, props.order, props.initialNormativeSourceCode]);
+
+  useEffect(() => {
+    if (props.initialNormativeSourceCode) setExamineSurface('REOPEN_CASE');
+  }, [props.initialNormativeSourceCode]);
 
   useEffect(() => {
     setSharePersistence(emptyPersistenceState(totalReviewCount));
   }, [personalContributionIdentityKey, team.selectedMembership?.workspaceId, team.session?.user.id, totalReviewCount]);
 
   useEffect(() => {
-    if (!reviewComplete && stage !== 'EXAMINE') setStage('EXAMINE');
+    if (!reviewComplete && stage !== 'EXAMINE') {
+      setStage('EXAMINE');
+      setExamineSurface('PERSONAL_REVIEW');
+    }
   }, [reviewComplete, stage]);
 
   useEffect(() => {
@@ -137,6 +149,7 @@ export function RevisionWorkspace(props: RevisionWorkspaceProps) {
       data-revision-workspace
       data-curriculum-work-session
       data-work-session-stage={stage}
+      data-examine-surface={stage === 'EXAMINE' ? examineSurface : undefined}
       data-persisted-share-ready={sharePersistence.complete ? 'true' : 'false'}
       data-team-outcome-complete={coordinationState.allCurrentOutcomesRecorded ? 'true' : 'false'}
     >
@@ -183,46 +196,114 @@ export function RevisionWorkspace(props: RevisionWorkspaceProps) {
 
       {stage === 'EXAMINE' && (
         <div className="space-y-3" data-revision-stage="review" aria-label="Esamina il tuo contributo">
-          <RevisionTriggerQualificationPanel
-            order={props.order}
-            targetClass={props.targetClass}
-            discipline={props.discipline}
-            initialNormativeSourceCode={props.initialNormativeSourceCode}
-            onInitialNormativeSourceConsumed={props.onInitialNormativeSourceConsumed}
-          />
+          {examineSurface === 'OVERVIEW' && (
+            <section className="rounded-2xl border border-indigo-200 bg-white p-4 shadow-sm" data-general-review-overview>
+              <span className="text-[10px] font-black uppercase tracking-wide text-indigo-600">Cosa richiede attenzione adesso</span>
+              <div className="mt-2 flex items-end justify-between gap-4">
+                <div>
+                  <strong className="block text-lg text-slate-950">Il mio contributo professionale</strong>
+                  <p className="mt-1 text-sm leading-6 text-slate-600">
+                    {preparedReviewCount} di {totalReviewCount} schede esaminate. Completa il tuo orientamento prima di condividerlo con il gruppo.
+                  </p>
+                </div>
+                <span className="shrink-0 rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-700">
+                  {preparedReviewCount}/{totalReviewCount}
+                </span>
+              </div>
+              <button
+                type="button"
+                data-human-next-action="open-personal-review"
+                onClick={() => setExamineSurface('PERSONAL_REVIEW')}
+                className="mt-4 min-h-11 w-full rounded-xl bg-indigo-700 px-4 py-3 text-sm font-bold text-white"
+              >
+                {preparedReviewCount > 0 ? 'Continua il mio contributo' : 'Inizia il mio contributo'}
+              </button>
+              <button
+                type="button"
+                data-human-secondary-action="open-targeted-review-tools"
+                onClick={() => setExamineSurface('REOPEN_CASE')}
+                className="mt-2 min-h-11 w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm font-bold text-slate-700"
+              >
+                Apri solo il riesame necessario
+              </button>
+              <p className="mt-3 text-xs leading-5 text-slate-500">
+                Il contributo personale, l’eventuale caso mirato e l’esito del gruppo restano passaggi distinti.
+              </p>
+            </section>
+          )}
 
-          <CurriculumReviewCasePanel
-            order={props.order}
-            targetClass={props.targetClass}
-            discipline={props.discipline}
-            proposals={props.currentDisciplineProps}
-            actorId={team.session?.user.id}
-            roleContext={selectedRole}
-          />
-
-          <RevisioneTab
-            {...props}
-            onContinueAfterReview={() => {
-              if (reviewComplete) setStage('SHARE');
-            }}
-          />
-
-          <details
-            data-hva-revision-guide
-            data-revision-learning
-            className="rounded-2xl border border-indigo-200 bg-indigo-50/70 text-sm leading-6 text-slate-700"
-          >
-            <summary className="cursor-pointer px-4 py-3 font-bold text-slate-900">Come funziona questa revisione</summary>
-            <div className="border-t border-indigo-100 p-4">
-              <p>Qui prepari soltanto il tuo contributo personale; non esprimi l’esito del gruppo.</p>
-              <ol className="mt-2 grid gap-1 pl-5 text-sm list-decimal">
-                <li>Esamina una scheda alla volta.</li>
-                <li>Registra il tuo orientamento professionale.</li>
-                <li>Quando tutte le schede sono complete, passa alla condivisione.</li>
-              </ol>
-              <p className="mt-2 font-semibold text-indigo-950">Anche il coordinatore completa prima il proprio contributo personale.</p>
+          {examineSurface === 'PERSONAL_REVIEW' && (
+            <div className="space-y-3" data-general-personal-review>
+              <section className="rounded-2xl border border-slate-200 bg-slate-50 p-3">
+                <button
+                  type="button"
+                  onClick={() => setExamineSurface('OVERVIEW')}
+                  className="min-h-10 rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs font-bold text-slate-700"
+                >
+                  Torna alla panoramica
+                </button>
+              </section>
+              <RevisioneTab
+                {...props}
+                onContinueAfterReview={() => {
+                  if (reviewComplete) setStage('SHARE');
+                }}
+              />
+              <details
+                data-hva-revision-guide
+                data-revision-learning
+                className="rounded-2xl border border-indigo-200 bg-indigo-50/70 text-sm leading-6 text-slate-700"
+              >
+                <summary className="cursor-pointer px-4 py-3 font-bold text-slate-900">Come funziona questa revisione</summary>
+                <div className="border-t border-indigo-100 p-4">
+                  <p>Qui prepari soltanto il tuo contributo personale; non esprimi l’esito del gruppo.</p>
+                  <ol className="mt-2 grid gap-1 pl-5 text-sm list-decimal">
+                    <li>Esamina una scheda alla volta.</li>
+                    <li>Registra il tuo orientamento professionale.</li>
+                    <li>Quando tutte le schede sono complete, passa alla condivisione.</li>
+                  </ol>
+                  <p className="mt-2 font-semibold text-indigo-950">Anche il coordinatore completa prima il proprio contributo personale.</p>
+                </div>
+              </details>
             </div>
-          </details>
+          )}
+
+          {examineSurface === 'REOPEN_CASE' && (
+            <section className="space-y-3 rounded-2xl border border-slate-200 bg-white p-3" data-targeted-review-tools>
+              <div className="flex items-start justify-between gap-3 px-1">
+                <div>
+                  <strong className="block text-base text-slate-950">Apri solo il riesame necessario</strong>
+                  <p className="mt-1 text-xs leading-5 text-slate-600">
+                    Qualifica prima il motivo, poi delimita soltanto le schede realmente interessate.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setExamineSurface('OVERVIEW')}
+                  className="shrink-0 min-h-10 rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs font-bold text-slate-700"
+                >
+                  Chiudi
+                </button>
+              </div>
+
+              <RevisionTriggerQualificationPanel
+                order={props.order}
+                targetClass={props.targetClass}
+                discipline={props.discipline}
+                initialNormativeSourceCode={props.initialNormativeSourceCode}
+                onInitialNormativeSourceConsumed={props.onInitialNormativeSourceConsumed}
+              />
+
+              <CurriculumReviewCasePanel
+                order={props.order}
+                targetClass={props.targetClass}
+                discipline={props.discipline}
+                proposals={props.currentDisciplineProps}
+                actorId={team.session?.user.id}
+                roleContext={selectedRole}
+              />
+            </section>
+          )}
         </div>
       )}
 
@@ -238,7 +319,10 @@ export function RevisionWorkspace(props: RevisionWorkspaceProps) {
               </div>
               <button
                 type="button"
-                onClick={() => setStage('EXAMINE')}
+                onClick={() => {
+                  setExamineSurface('PERSONAL_REVIEW');
+                  setStage('EXAMINE');
+                }}
                 className="min-h-10 rounded-xl border border-emerald-300 bg-white px-3 py-2 text-xs font-bold text-emerald-900"
               >
                 Rivedi il mio contributo
