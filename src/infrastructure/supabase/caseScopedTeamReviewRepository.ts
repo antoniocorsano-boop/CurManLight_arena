@@ -139,14 +139,13 @@ export class SupabaseCaseScopedTeamReviewRepository {
   ): Promise<CaseScopedTeamReviewContribution[]> {
     assertContext(context, workspaceId);
     assertScope(scope);
-    const { data, error } = await this.client
-      .from('team_review_contributions')
-      .select('workspace_id,academic_year,group_code,discipline,review_case_id,proposal_ref,proposal_fingerprint,contributor_user_id,contributor_role,orientation,custom_text,updated_at')
-      .eq('workspace_id', workspaceId)
-      .eq('academic_year', scope.academicYear)
-      .eq('group_code', scope.groupCode)
-      .eq('discipline', scope.discipline)
-      .eq('review_case_id', scope.reviewCaseId);
+    const { data, error } = await this.client.rpc('list_case_scoped_team_review_contributions_v1', {
+      p_workspace_id: workspaceId,
+      p_academic_year: scope.academicYear,
+      p_group_code: scope.groupCode,
+      p_discipline: scope.discipline,
+      p_review_case_id: scope.reviewCaseId,
+    });
     if (error) throw new Error(`Contributi del caso non leggibili: ${error.message}`);
     return ((data ?? []) as ContributionRow[]).map(toContribution);
   }
