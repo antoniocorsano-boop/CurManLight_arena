@@ -55,56 +55,6 @@ export function AppViewsLayer(props: AppViewsLayerProps) {
 
       {props.activeTab === 'curricolo' && (
         <div className="space-y-3" data-teacher-surface="curriculum">
-          <aside
-            data-human-task="curriculum-authority-context"
-            role="note"
-            className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-4 text-sm leading-relaxed text-amber-950"
-          >
-            <strong className="block text-base font-bold text-amber-950">Adesso: controlla se puoi usare questo curricolo</strong>
-            <p className="mt-1">
-              Stai consultando una copia locale. Prima di usarla nella progettazione, verifica nel Fascicolo fonti, applicabilità e stato.
-            </p>
-            <button
-              type="button"
-              data-human-next-action="verify-curriculum-validity"
-              onClick={() => safeHandleTabSwitch('fonti')}
-              className="mt-3 inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-indigo-600 px-4 py-2.5 font-semibold text-white shadow-sm transition hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:w-auto"
-            >
-              Verifica se puoi usarlo
-            </button>
-
-            <div
-              data-human-next-step="after-curriculum-check"
-              className="mt-4 rounded-xl border border-amber-200 bg-white/70 p-3 text-slate-700"
-            >
-              <strong className="block text-sm text-slate-900">Dopo il controllo, scegli cosa devi fare</strong>
-              <p className="mt-1 text-sm leading-6">
-                Se il curricolo va bene, passa alla progettazione. Se invece vuoi proporre una modifica, apri Revisione.
-              </p>
-              <div className="mt-3 grid gap-2 sm:flex sm:flex-wrap">
-                <button
-                  type="button"
-                  data-human-next-action="open-planning-handoff"
-                  onClick={() => safeHandleTabSwitch('esportazioni')}
-                  className="inline-flex min-h-11 items-center justify-center rounded-xl border border-indigo-200 bg-white px-4 py-2.5 font-semibold text-indigo-700 transition hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                >
-                  Passa alla progettazione
-                </button>
-                <button
-                  type="button"
-                  data-human-next-action="open-curriculum-revision"
-                  onClick={() => safeHandleTabSwitch('revisione')}
-                  className="inline-flex min-h-11 items-center justify-center rounded-xl border border-slate-200 bg-white px-4 py-2.5 font-semibold text-slate-700 transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus-visible:ring-slate-400 focus:ring-offset-2"
-                >
-                  Proponi una modifica
-                </button>
-              </div>
-            </div>
-
-            <p className="mt-2 text-xs leading-5 text-amber-900">
-              Se vuoi solo leggerlo, puoi continuare a consultare i contenuti qui sotto.
-            </p>
-          </aside>
           <CurriculumTab {...props} />
         </div>
       )}
