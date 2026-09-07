@@ -25,6 +25,7 @@ assert(triggers.institute_need_must_remain_explicitly_non_national === true, 'IN
 assert(triggers.practice_signal_requires_aggregation_or_explicit_professional_reason === true, 'PRACTICE_SIGNAL non richiede ricorrenza o motivazione esplicita');
 assert(triggers.periodic_review_must_not_reopen_stable_units_without_reason === true, 'PERIODIC_REVIEW può riaprire unità stabili senza motivo');
 assert(triggers.must_reference_current_master_identity_and_version === true, 'RevisionTrigger non vincolato al master corrente');
+assert(triggers.may_open_targeted_review_cases === true, 'RevisionTrigger non può alimentare casi mirati');
 assert(triggers.automatic_curriculum_change_forbidden === true, 'RevisionTrigger può modificare automaticamente il curricolo');
 assert(triggers.parallel_curriculum_baseline_creation_forbidden === true, 'RevisionTrigger può creare una baseline parallela');
 assert(triggers.cycle_reentry_phase === 'H1_APPLICABLE_CURRICULUM', 'rientro del ciclo non fissato a H1');
@@ -200,7 +201,10 @@ for (const key of [
   'revision_trigger_single_existing_surface_integration_implemented',
   'revision_trigger_ux_implemented',
 ]) assert(state[key] === true, `stato prodotto non registra ${key}`);
-assert(docs.version === '1.0.10', 'versione registro documentazione prodotto inattesa');
+assert(docs.version === '1.0.11', 'versione registro documentazione prodotto inattesa');
+assert(state.curriculum_review_case_domain_model_implemented === true, 'il successivo caso mirato non risulta implementato');
+assert(state.curriculum_review_case_professional_validation_not_auto_started === true, 'l’apertura del caso non deve avviare automaticamente H2');
+assert(state.targeted_review_case_work_session_case_scoping_implemented === false, 'la sessione case-scoped futura non deve essere anticipata');
 assert(state.revision_trigger_new_primary_surface_created === false, 'l’incremento non deve creare una nuova superficie primaria');
 assert(state.target_ui_fully_implemented === false, 'implementazione RevisionTrigger non deve dichiarare completa la UI target');
 assert(state.human_end_to_end_pilot_complete === false, 'implementazione RevisionTrigger non deve dichiarare concluso il pilota umano');
