@@ -6,6 +6,10 @@ import {
 } from '../domain/curriculum/sharedReviewCase';
 import inboxSource from '../features/beta/SharedReviewCaseInbox.tsx?raw';
 import wrapperSource from '../features/beta/CaseAwareRevisionSurface.tsx?raw';
+import teamContextSource from '../features/beta/useTeamWorkspaceContext.ts?raw';
+import {
+  normalizeSharedReviewAcademicYear,
+} from '../infrastructure/supabase/sharedCurriculumReviewCaseRepository';
 import repositorySource from '../infrastructure/supabase/sharedCurriculumReviewCaseRepository.ts?raw';
 import migrationSource from '../../supabase/migrations/20260907064000_shared_curriculum_review_case_discovery.sql?raw';
 
@@ -52,6 +56,22 @@ describe('Shared CurriculumReviewCase discovery', () => {
     const first = sharedRowToCurriculumReviewCase(baseRow);
     const conflicting = sharedRowToCurriculumReviewCase({ ...baseRow, targeted_proposal_refs: ['proposal-c'] });
     expect(() => mergeAssignedReviewCases([first], [conflicting])).toThrowError('SHARED_REVIEW_CASE_SNAPSHOT_MISMATCH');
+  });
+
+  it('normalizes the local school-year format at the shared repository boundary', () => {
+    expect(normalizeSharedReviewAcademicYear('2026-2027')).toBe('2026/2027');
+    expect(normalizeSharedReviewAcademicYear('2026/2027')).toBe('2026/2027');
+    expect(() => normalizeSharedReviewAcademicYear('2026/2028')).toThrowError('Anno scolastico non valido.');
+    expect(() => normalizeSharedReviewAcademicYear('')).toThrowError('Anno scolastico non valido.');
+  });
+
+  it('uses the verified operational membership as the authority source for the shared academic year', () => {
+    expect(teamContextSource).toContain(".from('team_operational_memberships')");
+    expect(teamContextSource).toContain('academic_year,school_order,group_code,member_role,membership_state,disciplines');
+    expect(inboxSource).toContain('team.operationalMemberships.filter');
+    expect(inboxSource).toContain('operationalMembership.academicYear');
+    expect(inboxSource).toContain('data-operational-review-scope');
+    expect(wrapperSource).toContain('getSharedReviewCaseContext(activeCase)?.academicYear');
   });
 
   it('keeps assignment in Riesame and starts the case only by explicit action', () => {
