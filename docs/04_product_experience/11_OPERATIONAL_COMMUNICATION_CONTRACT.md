@@ -1,9 +1,9 @@
 # CCO — Contratto di comunicazione operativa di Arena
 
-**Versione:** 1.4.1  
+**Versione:** 1.5.0  
 **Stato:** normativo per le nuove superfici e per le superfici migrate  
 **Integrazione:** Human Interaction Model (HIM) e `CURRICULUM_LIFECYCLE@1.2.0`  
-**Registro superfici:** 1.5.1
+**Registro superfici:** 1.6.0
 
 ## 1. Scopo
 
@@ -172,8 +172,13 @@ Una vista conforme deve superare queste domande:
 13. `CONFRONTA` resta bloccato se il contributo condiviso non è persistito o non corrisponde più all'orientamento personale corrente?
 14. Il modulo per registrare l'esito resta assente durante `CONFRONTA` e compare solo nello stadio `REGISTRA L'ESITO`?
 15. Il docente senza responsabilità di coordinamento vede soltanto lo stato del confronto dopo la propria condivisione?
+16. L'utente riconosce in quale punto dell'intero percorso si trova senza dover conoscere gli oggetti tecnici del dominio?
+17. Le etichette dei passaggi futuri, se visibili per orientamento, sono chiaramente non interattive e non competono con il compito corrente?
+18. Un cambio di fase mantiene stabile l'ancora percettiva e non fa atterrare l'utente a metà pagina?
+19. La conclusione della sessione viene mostrata nello stesso workframe prima di qualsiasi ritorno alla superficie generale?
+20. Il ritorno alla superficie generale dopo la conclusione è un'azione esplicita dell'utente?
 
-I controlli 2, 3, 5, 6, 8, 9, 12, 13, 14 e 15 sono discriminanti.
+I controlli 2, 3, 5, 6, 8, 9, 12, 13, 14, 15, 16, 17, 18, 19 e 20 sono discriminanti.
 
 ## 11. Integrazione con HIM
 
@@ -196,12 +201,19 @@ Il validatore HIM controlla gli invarianti del contratto, le superfici pilota e 
 | Superficie | Stato CCO | Obiettivo |
 |---|---|---|
 | Home docente | **conformant** | Orientamento e accesso al lavoro pertinente. |
-| CurriculumWorkSession | **conformant** | Un'unica progressione Esamina → Condividi → Confronta → Esito, con quattro stati reali. |
+| CurriculumWorkSession generale | **conformant** | Un'unica progressione Esamina → Condividi → Confronta → Esito, con quattro stati reali. |
 | Revisione della singola scheda | **conformant** | Riconoscimento immediato: una scheda, un confronto, tre azioni. |
-| Pubblicazione del contributo personale | **conformant** | Condivisione persistita, verificata sulla versione e sull'orientamento correnti. |
+| Pubblicazione del contributo personale generale | **conformant** | Condivisione persistita, verificata sulla versione e sull'orientamento correnti. |
 | Lavoro del team legacy | **migration** | Restare solo compatibilità temporanea, non superficie primaria concorrente. |
-| Coordinamento del team interno | **conformant** | Renderer subordinato della sessione per stato, confronto e registrazione esito; non percorso autonomo. |
+| Coordinamento del team interno generale | **conformant** | Renderer subordinato della sessione per stato, confronto e registrazione esito; non percorso autonomo. |
 | Profilo di lavoro personale | **guided-setup** | Configurazione iniziale senza confondere preferenze, incarichi e autorità. |
+| CaseAwareRevisionSurface | **migration** | Un solo contesto dominante anche in modalità generale; inbox subordinato e nessuna seconda gerarchia verticale. |
+| CaseScopedExperienceShell | **migration** | Completare rail di orientamento non interattiva, stabilità del viewport e conclusione nello stesso workframe. |
+| CaseScopedCurriculumWorkSession | **migration** | Eliminare testata/rail duplicate e lasciare al workframe solo il compito corrente. |
+| CaseScopedTeamContributionPublisher | **migration** | Portare persistenza e identificativi in L3, mantenendo in L1 solo effetto condiviso e azione. |
+| CaseScopedTeamCoordinationWorkspace | **migration** | Rendere Confronta ed Esito compiti distinti e tecnicamente subordinati nello stesso workframe. |
+| SharedReviewCaseInbox | **conformant** | Separazione L1/L2/L3 per casi assegnati e assegnabili. |
+| Navigazione primaria mobile | **conformant** | Il mio lavoro · Curricolo · Progettazione · Riesame; supporto documentale subordinato. |
 
 ## 13. CCO-R1 — comunicazione operativa
 
@@ -250,3 +262,43 @@ Il componente tecnico di coordinamento resta riutilizzato come renderer interno 
 Regola finale del terzo incremento:
 
 **CONFRONTO DEL GRUPPO ≠ REGISTRAZIONE DELL'ESITO ≠ DECISIONE ISTITUZIONALE ≠ CURRICOLO VIGENTE.**
+
+## 19. CCO-R7 — consapevolezza del processo e continuità percettiva
+
+CCO-R7 chiarisce la relazione fra semplicità operativa e consapevolezza del processo.
+
+La semplificazione della superficie **non deve nascondere il senso del percorso professionale**. L'utente deve poter riconoscere, senza conoscere `CurriculumReviewCase`, `ProfessionalContribution`, fingerprint, membership o ricevute server:
+
+- da quale passaggio proviene;
+- qual è il passaggio corrente;
+- che cosa ha già completato;
+- che cosa accadrà subito dopo;
+- chi dovrà agire successivamente, quando pertinente al proprio ruolo.
+
+Per la `CurriculumWorkSession` resta un solo percorso:
+
+**Esamina → Condividi → Confronta → Registra l'esito**.
+
+Il presente domina. Il passato si compatta. Il futuro può restare visibile **solo come orientamento non interattivo**. Una etichetta di orientamento non è un controllo di fase: il vincolo del lifecycle `future_stage_hidden_until_relevant` continua a valere per contenuto operativo, moduli e comandi futuri, non per una rappresentazione sintetica e non azionabile del percorso.
+
+La superficie deve inoltre conservare una continuità percettiva stabile:
+
+- nessun cambio di fase usa lo scroll della pagina come avanzamento;
+- il passaggio di stato non deve far atterrare l'utente a metà pagina;
+- il compito corrente resta nello stesso workframe percettivo;
+- un eventuale reset dell'offset interno del workframe è ammesso soltanto dopo una vera transizione di fase;
+- la CTA primaria non deve essere coperta dalla navigazione mobile;
+- la conclusione della sessione deve essere riconosciuta nello stesso workframe prima che il contesto venga sostituito;
+- il ritorno a **Riesame** generale dopo la conclusione è un gesto esplicito, non una sparizione automatica della sessione.
+
+La separazione comunicativa è vincolante:
+
+- **L1 — utente:** contesto, posizione nel percorso, oggetto, stato, azione corrente, effetto immediato e ruolo professionale pertinente;
+- **L2 — comunicativo:** perché del riesame, significato del passaggio e cosa succede dopo;
+- **L3 — tecnico:** identificativi, master/versione, fingerprint, account, ricevute, stato interno e diagnostica.
+
+Regola di consolidamento:
+
+> **Arena nasconde la complessità tecnica, non il senso del processo.**
+
+Il completamento di CCO-R7 richiede accettazione visiva reale, con riferimento mobile `390×844`, sulle superfici case-scoped registrate come `migration` in CCO-SURFACES 1.6.0.
