@@ -1,6 +1,6 @@
 {
   "registry_id": "ARENA-PRODUCT-DOCS",
-  "version": "1.0.12",
+  "version": "1.0.13",
   "date": "2026-09-07",
   "product_vision": {
     "id": "ARENA-PRODUCT-VISION",
@@ -133,7 +133,14 @@
     "case_scoped_team_outcomes_require_same_review_case_coverage": true,
     "case_scoped_server_receipts_preserve_general_review_history": true,
     "case_scoped_session_never_advances_institutional_state_automatically": true,
-    "shared_review_case_discovery_implemented": false,
+    "shared_review_case_discovery_implemented": true,
+    "shared_review_case_assignment_server_derived": true,
+    "shared_review_case_assignment_requires_verified_coordinator_authority": true,
+    "shared_review_case_assignment_requires_operational_discipline_competence": true,
+    "shared_review_case_hydration_never_starts_h2_automatically": true,
+    "shared_review_case_snapshot_conflict_fails_closed": true,
+    "shared_review_case_discovery_reuses_revision_surface": true,
+    "shared_review_case_server_snapshot_excludes_personal_work_session": true,
     "target_ui_fully_implemented": false,
     "human_end_to_end_pilot_complete": false
   }
