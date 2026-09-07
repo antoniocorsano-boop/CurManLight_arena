@@ -1,6 +1,6 @@
 {
   "registry_id": "ARENA-PRODUCT-DOCS",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "date": "2026-09-07",
   "product_vision": {
     "id": "ARENA-PRODUCT-VISION",
@@ -73,6 +73,13 @@
     "uda_binding_persisted": true,
     "didactic_binding_authority_boundary_visible": true,
     "working_master_binding_is_draft_reference_not_adoption": true,
+    "implementation_observation_domain_model_implemented": true,
+    "implementation_observation_persisted_with_uda": true,
+    "implementation_observation_requires_curriculum_binding": true,
+    "implementation_observation_requires_personal_data_absence_confirmation": true,
+    "implementation_observation_never_changes_curriculum_automatically": true,
+    "practice_signal_aggregation_available": true,
+    "revision_trigger_ux_implemented": false,
     "target_ui_fully_implemented": false,
     "human_end_to_end_pilot_complete": false
   }
