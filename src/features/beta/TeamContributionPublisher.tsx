@@ -50,12 +50,13 @@ export function TeamContributionPublisher({
     [team.client],
   );
   const group = useMemo(() => getOperationalGroupForDiscipline(order, discipline), [order, discipline]);
-  const scope = useMemo<TeamReviewScope | null>(() => group ? ({
+  const academicYearReady = /^\d{4}\/\d{4}$/.test(academicYear);
+  const scope = useMemo<TeamReviewScope | null>(() => group && academicYearReady ? ({
     academicYear,
     order: group.order,
     groupCode: group.code,
     discipline,
-  }) : null, [academicYear, group, discipline]);
+  }) : null, [academicYear, academicYearReady, group, discipline]);
   const [operationalMembership, setOperationalMembership] = useState<OperationalGroupMembership | null>(null);
   const [fingerprints, setFingerprints] = useState<FingerprintMap>({});
   const [currentUserContributionCount, setCurrentUserContributionCount] = useState(0);
@@ -168,7 +169,8 @@ export function TeamContributionPublisher({
   const persistedCurrentContributionComplete = proposals.length > 0 && currentUserContributionCount === proposals.length;
   const hasDisciplineCompetence = Boolean(operationalMembership?.disciplines.includes(discipline));
   const canContribute = Boolean(
-    team.selectedMembership
+    academicYearReady
+    && team.selectedMembership
     && ['docente', 'dipartimento', 'referente'].includes(team.selectedMembership.role)
     && hasDisciplineCompetence,
   );
@@ -219,7 +221,7 @@ export function TeamContributionPublisher({
     }
   };
 
-  if (!scope || !group) {
+  if (!group) {
     return (
       <section className="rounded-2xl border border-amber-200 bg-amber-50 p-4" aria-label="Condivisione del contributo">
         <strong className="block text-sm text-amber-950">Condivisione disciplinare non configurata</strong>
@@ -264,6 +266,21 @@ export function TeamContributionPublisher({
     );
   }
 
+  if (!academicYearReady) {
+    return (
+      <section
+        className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-xs text-amber-950"
+        aria-label="Anno scolastico operativo non verificato"
+        data-team-academic-year-missing
+      >
+        <strong className="block text-sm">Anno scolastico operativo non verificato</strong>
+        <p className="mt-1 leading-relaxed">
+          Arena non può condividere il contributo finché il contesto autenticato non individua un unico anno scolastico per questo gruppo e disciplina. Il profilo disciplinare non viene modificato.
+        </p>
+      </section>
+    );
+  }
+
   return (
     <section
       className="space-y-3 rounded-2xl border border-indigo-200 bg-indigo-50/30 p-4"
@@ -302,7 +319,7 @@ export function TeamContributionPublisher({
             </span>
           )}
           {incompleteCustomCount > 0 && <span className="mt-1 block font-semibold text-amber-800">{incompleteCustomCount === 1 ? '1 modifica deve essere completata.' : `${incompleteCustomCount} modifiche devono essere completate.`}</span>}
-          {!operationalMembership && <span className="mt-1 block font-semibold text-amber-800">Salva il profilo personale con questa disciplina per registrare la competenza operativa.</span>}
+          {academicYearReady && !operationalMembership && <span className="mt-1 block font-semibold text-amber-800">Salva il profilo personale con questa disciplina per registrare la competenza operativa.</span>}
           {operationalMembership && !hasDisciplineCompetence && <span className="mt-1 block font-semibold text-amber-800">Questa disciplina non risulta tra le competenze operative dichiarate.</span>}
         </div>
       )}
