@@ -17,7 +17,7 @@ assert(contractPath === '.human/curriculum-lifecycle.contract.json', 'riferiment
 const contract = readJson(contractPath);
 
 assert(contract.contract_id === 'CURRICULUM_LIFECYCLE', 'contract_id inatteso');
-assert(contract.version === '1.1.1', 'versione contratto lifecycle inattesa');
+assert(contract.version === '1.2.0', 'versione contratto lifecycle inattesa');
 assert(him.curriculum_lifecycle?.version === contract.version, 'HIM e lifecycle non hanno la stessa versione');
 assert(contract.institutional_source?.drive_file_id === '1M8LriHG1zASUq7jE2xiyJfvX4gVnnmZNmYBrrfYS7fE', 'ARENA-UX-01 non collegato');
 assert(contract.institutional_source?.product_vision_drive_file_id === '1s17jJCslSIJIXQfiTEzyRcD5q-Baopj6-l14aaFEWik', 'visione Drive non collegata al lifecycle');
@@ -112,11 +112,47 @@ assert(publisherSource.includes('normalizeText(contribution.customText) === norm
 assert(publisherSource.includes('complete: proposals.length > 0 && count === proposals.length'), 'completezza di persistenza non richiede tutte le schede');
 
 const binding = contract.didactic_binding ?? {};
-assert(binding.must_reference_curriculum_unit_identity_and_version === true, 'binding didattico non vincolato a identità/versione');
-assert(binding.must_not_copy_curriculum_as_new_source_of_truth === true, 'la progettazione può duplicare la verità curricolare');
-assert(binding.planning_coverage_is_not_teacher_performance_score === true, 'copertura pianificazione interpretabile come scoring docente');
-assert(binding.educazione_civica_hours_require_real_activity_binding === true, 'ore Educazione civica non vincolate ad attività reali');
-assert(binding.ai_literacy_counts_as_civic_only_with_explicit_civic_result === true, 'AI literacy confusa con ore civiche');
+for (const key of [
+  'must_reference_curriculum_unit_identity_and_version',
+  'must_not_copy_curriculum_as_new_source_of_truth',
+  'binding_identity_includes_master_version_order_class_and_discipline',
+  'binding_must_persist_with_planning_artifact',
+  'annual_planning_save_must_persist_binding',
+  'uda_creation_must_persist_binding',
+  'binding_authority_state_must_be_visible_in_uda_detail',
+  'current_master_not_in_force_requires_draft_planning_reference',
+  'working_baseline_binding_must_not_claim_adoption_or_vigency',
+  'copied_curriculum_text_never_inherits_canonical_authority',
+  'context_bound_unit_reference_allowed_until_master_native_unit_id_is_machine_resolved',
+  'planning_coverage_is_not_teacher_performance_score',
+  'educazione_civica_hours_require_real_activity_binding',
+  'ai_literacy_counts_as_civic_only_with_explicit_civic_result',
+]) assert(binding[key] === true, `invariante DidacticBinding mancante: ${key}`);
+assert(JSON.stringify(binding.targets) === JSON.stringify(['annual-planning', 'uda', 'learning-activity']), 'target DidacticBinding inattesi');
+
+const didacticBindingSource = readText('src/domain/curriculum/didacticBinding.ts');
+for (const token of [
+  'INSTITUTE_CURRICULUM_CURRENT_SOURCE',
+  'ARENA_MASTER_CONTEXT_KEY',
+  'master.sourceVersion',
+  'WORKING_BASELINE_NOT_IN_FORCE',
+  'DRAFT_PLANNING_REFERENCE',
+  'copiedCurriculumTextIsAuthoritative: false',
+  "resolutionState: 'CONTEXT_BOUND'",
+]) assert(didacticBindingSource.includes(token), `implementazione DidacticBinding contiene: ${token}`);
+
+const programmingSource = readText('src/features/progettazione/hooks/useUdaProgrammingHandlers.ts');
+assert(programmingSource.includes("createCurrentBinding('annual-planning')"), 'programmazione annuale non crea il binding corrente');
+assert(programmingSource.includes("safeLocalStorageSetItem('curman_didacticBinding'"), 'programmazione annuale non persiste il binding');
+assert(programmingSource.includes("createCurrentBinding('uda')"), 'generazione UDA non crea il binding corrente');
+assert(programmingSource.includes('curriculumBindings: [didacticBinding]'), 'UDA non conserva il DidacticBinding');
+assert(programmingSource.includes('I testi selezionati nella progettazione sono una copia di lavoro e non sostituiscono la fonte curricolare canonica.'), 'preview annuale non distingue copia di lavoro e fonte canonica');
+
+const udaDetailSource = readText('src/features/progettazione/components/UdaModals.tsx');
+assert(udaDetailSource.includes('data-didactic-binding="canonical-master-reference"'), 'dettaglio UDA non espone il binding curricolare');
+assert(udaDetailSource.includes('Riferimento di lavoro'), 'dettaglio UDA non rende visibile il master non vigente');
+assert(udaDetailSource.includes('non anticipa approvazione o adozione'), 'dettaglio UDA non conserva il confine di autorità');
+assert(udaDetailSource.includes('data-didactic-binding-traceability'), 'tracciabilità del binding non disponibile su richiesta');
 
 const practice = contract.practice_review ?? {};
 assert(practice.student_personal_data_required === false, 'riesame curricolare richiede impropriamente dati personali degli alunni');
@@ -124,6 +160,7 @@ assert(practice.automatic_curriculum_change_forbidden === true, 'osservazioni da
 assert(practice.aggregation_may_create_targeted_review_case === true, 'riesame dalla pratica non alimenta revisioni mirate');
 assert(practice.aggregation_may_create_practice_revision_trigger === true, 'pratica non può generare RevisionTrigger');
 
+assert(contract.acceptance?.working_master_may_support_draft_planning_without_becoming_adopted_curriculum === true, 'master di lavoro non governato nella progettazione bozza');
 assert(contract.acceptance?.future_normative_change_can_reopen_targeted_review === true, 'nuova norma non può riaprire riesame mirato');
 assert(contract.acceptance?.institute_need_can_reopen_targeted_review_without_becoming_national_source === true, 'esigenza Istituto non modellata correttamente');
 assert(contract.acceptance?.revision_trigger_never_changes_curriculum_automatically === true, 'RevisionTrigger può modificare automaticamente il curricolo');
