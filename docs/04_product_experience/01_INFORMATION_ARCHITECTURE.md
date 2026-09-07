@@ -1,9 +1,9 @@
 # 01 — INFORMATION ARCHITECTURE
 
 **Product vision:** `ARENA-PRODUCT-VISION@1.0.0`  
-**Lifecycle:** `CURRICULUM_LIFECYCLE@1.1.1`  
+**Lifecycle:** `CURRICULUM_LIFECYCLE@1.2.0`  
 **Stato:** `CANONICAL_TARGET_ARCHITECTURE`  
-**Data:** 2026-09-06
+**Data:** 2026-09-07
 
 ---
 
@@ -177,16 +177,32 @@ Regole:
 
 ## 7. Progettazione didattica
 
-`DidacticBinding` collega una progettazione a una o più `CurriculumUnit` specifiche e versionate.
+`DidacticBinding` collega una progettazione a una `CurriculumUnit` o, finché l'identificativo nativo dell'unità non è disponibile in forma macchina, a una chiave di contesto stabile del master composta da versione, ordine, classe/fascia e disciplina/campo.
 
 Target ammessi:
 - programmazione annuale;
 - UDA;
 - attività di apprendimento.
 
+Campi minimi del binding:
+- master ID e Drive ID;
+- versione del master;
+- chiave dell'unità o del contesto curricolare;
+- ordine e classe/fascia;
+- disciplina/campo;
+- tipo di oggetto didattico collegato;
+- stato di autorità del master;
+- stato d'uso del binding.
+
 Regole:
 - nessuna copia del curricolo come nuova fonte di verità;
 - il binding conserva identità/versione;
+- la programmazione annuale salva il binding insieme alla bozza;
+- una nuova UDA conserva il binding nel proprio modello dati;
+- quando `curriculumInForce = false`, il binding è `DRAFT_PLANNING_REFERENCE` e deve essere presentato come riferimento di lavoro non vigente;
+- una bozza didattica non può trasformare un master in validazione o adozione;
+- traguardi, obiettivi ed evidenze copiati nella bozza sono snapshot di lavoro e non acquisiscono autorità canonica;
+- il dettaglio UDA rende visibile lo stato di autorità e mantiene i dati tecnici sotto divulgazione progressiva;
 - la copertura della progettazione non è un punteggio del docente;
 - Educazione civica richiede binding reale fra risultato, attività, ore, responsabilità ed evidenza.
 
@@ -270,7 +286,8 @@ L'architettura è conforme quando:
 - il processo istituzionale non è navigazione universale;
 - la sessione curricolare non duplica avanzamenti;
 - il passaggio al confronto non può essere abilitato da una dichiarazione locale o da un contributo persistito non più coerente con il lavoro personale corrente;
-- la progettazione referenzia il curricolo canonico;
+- la progettazione referenzia il curricolo canonico con un binding persistito e versionato;
+- il master non vigente non viene presentato come riferimento adottato per la progettazione;
 - il riesame può essere innescato da norme future, esigenze d'Istituto, pratica o periodicità;
 - nessun trigger o segnale modifica automaticamente il master;
 - la catena di autorità resta distinguibile in ogni passaggio.
