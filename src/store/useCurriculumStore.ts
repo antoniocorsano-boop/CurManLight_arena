@@ -145,6 +145,7 @@ const USER_STATE_KEYS: readonly (keyof UserState)[] = [
   'customTexts',
   'savedUda',
   'revisionTriggers',
+  'curriculumReviewCases',
   'activeRevisionFilter',
   'selectedTraguardi',
   'selectedObiettivi',
@@ -227,6 +228,7 @@ export const useCurriculumStore = create<StoreActions>()(
       customTexts: {},
       savedUda: [],
       revisionTriggers: [],
+      curriculumReviewCases: [],
       activeRevisionFilter: 'all',
       selectedTraguardi: [],
       selectedObiettivi: [],
@@ -300,7 +302,7 @@ export const useCurriculumStore = create<StoreActions>()(
       setActiveCurricoloView: (activeCurricoloView) => set({ activeCurricoloView }),
       setActiveProcessoTab: (activeProcessoTab) => set({ activeProcessoTab }),
       setActiveGeneralSubtab: (activeGeneralSubtab) => set({ activeGeneralSubtab }),
-      resetAll: () => set({ decisions: {}, customTexts: {}, savedUda: [], revisionTriggers: [], selectedTraguardi: [], selectedObiettivi: [], selectedEvidenze: [], documentExportHistory: [] }),
+      resetAll: () => set({ decisions: {}, customTexts: {}, savedUda: [], revisionTriggers: [], curriculumReviewCases: [], selectedTraguardi: [], selectedObiettivi: [], selectedEvidenze: [], documentExportHistory: [] }),
       restoreBackupState: (newState) => {
         if (!isRecord(newState)) {
           return { success: false, error: 'invalid-backup', message: 'La copia di sicurezza non contiene uno stato valido.' };
