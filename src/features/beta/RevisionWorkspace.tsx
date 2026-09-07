@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { RevisioneTab } from '../curriculum';
+import { CurriculumReviewCasePanel } from '../curriculum/components/CurriculumReviewCasePanel';
 import { RevisionTriggerQualificationPanel } from '../curriculum/components/RevisionTriggerQualificationPanel';
 import { useCurriculumStore } from '../../store/useCurriculumStore';
 import type { AppViewsLayerProps } from '../session/types/appViewContracts';
@@ -188,6 +189,15 @@ export function RevisionWorkspace(props: RevisionWorkspaceProps) {
             discipline={props.discipline}
             initialNormativeSourceCode={props.initialNormativeSourceCode}
             onInitialNormativeSourceConsumed={props.onInitialNormativeSourceConsumed}
+          />
+
+          <CurriculumReviewCasePanel
+            order={props.order}
+            targetClass={props.targetClass}
+            discipline={props.discipline}
+            proposals={props.currentDisciplineProps}
+            actorId={team.session?.user.id}
+            roleContext={selectedRole}
           />
 
           <RevisioneTab
