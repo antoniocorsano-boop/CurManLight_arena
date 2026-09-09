@@ -187,10 +187,10 @@ describe('C2P-08 professional observation intake', () => {
   it('rejects a forged observation that claims automatic authority before projection', () => {
     const inbox = new DocenteFeedbackInbox();
     const receipt = inbox.receive(professionalEnvelope());
-    const forged = {
+    const forged = ({
       ...receipt.observation,
       automaticDecisionAllowed: true,
-    } as typeof receipt.observation;
+    } as unknown) as typeof receipt.observation;
 
     expect(() => projectProfessionalObservationReviewInputV1({
       observation: forged,
