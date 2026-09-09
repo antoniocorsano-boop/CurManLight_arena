@@ -23,6 +23,7 @@ export default defineConfig({
       'src/domain/ai/requestPreview.test.ts',
       'src/__tests__/transfer-domain.test.ts',
       'src/__tests__/docente-feedback-intake.test.ts',
+      'src/__tests__/professional-observation-intake-v1.test.ts',
       'src/__tests__/revision-domain.test.ts',
       'src/__tests__/r7a4-shared-submitted-proposal-authority-boundary.test.ts',
       'src/__tests__/r7a4-shared-proposal-scope-binding.test.ts',
