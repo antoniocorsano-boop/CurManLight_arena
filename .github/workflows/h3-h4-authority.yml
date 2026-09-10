@@ -7,10 +7,16 @@ on:
       - 'supabase/migrations/20260910121500_vertical_review_institutional_handoff_performance_hardening.sql'
       - 'supabase/migrations/20260910130000_h3_bound_institutional_decision.sql'
       - 'supabase/migrations/20260910130500_h3_bound_institutional_decision_performance_hardening.sql'
+      - 'supabase/migrations/20260910133000_beta_development_pilot_authority.sql'
       - 'src/domain/revision/institutionalReviewHandoff.ts'
+      - 'src/domain/revision/h3BoundInstitutionalDecision.ts'
       - 'src/infrastructure/supabase/institutionalReviewHandoffRepository.ts'
+      - 'src/infrastructure/supabase/h3BoundInstitutionalDecisionRepository.ts'
+      - 'src/features/beta/H3BoundInstitutionalDecisionPanel.tsx'
+      - 'src/features/beta/VerticalReviewPanel.tsx'
       - 'src/__tests__/vertical-review-institutional-handoff.test.ts'
       - 'src/__tests__/h3-bound-institutional-decision.test.ts'
+      - 'src/__tests__/development-pilot-h4.test.ts'
       - 'vitest.fast.config.ts'
       - '.github/workflows/h3-h4-authority.yml'
   push:
@@ -20,10 +26,16 @@ on:
       - 'supabase/migrations/20260910121500_vertical_review_institutional_handoff_performance_hardening.sql'
       - 'supabase/migrations/20260910130000_h3_bound_institutional_decision.sql'
       - 'supabase/migrations/20260910130500_h3_bound_institutional_decision_performance_hardening.sql'
+      - 'supabase/migrations/20260910133000_beta_development_pilot_authority.sql'
       - 'src/domain/revision/institutionalReviewHandoff.ts'
+      - 'src/domain/revision/h3BoundInstitutionalDecision.ts'
       - 'src/infrastructure/supabase/institutionalReviewHandoffRepository.ts'
+      - 'src/infrastructure/supabase/h3BoundInstitutionalDecisionRepository.ts'
+      - 'src/features/beta/H3BoundInstitutionalDecisionPanel.tsx'
+      - 'src/features/beta/VerticalReviewPanel.tsx'
       - 'src/__tests__/vertical-review-institutional-handoff.test.ts'
       - 'src/__tests__/h3-bound-institutional-decision.test.ts'
+      - 'src/__tests__/development-pilot-h4.test.ts'
       - 'vitest.fast.config.ts'
       - '.github/workflows/h3-h4-authority.yml'
 
@@ -47,12 +59,14 @@ jobs:
           npx vitest run
           src/__tests__/vertical-review-institutional-handoff.test.ts
           src/__tests__/h3-bound-institutional-decision.test.ts
+          src/__tests__/development-pilot-h4.test.ts
 
       - name: H4 server authority invariants
         run: |
           set -euo pipefail
           h4='supabase/migrations/20260910130000_h3_bound_institutional_decision.sql'
           perf='supabase/migrations/20260910130500_h3_bound_institutional_decision_performance_hardening.sql'
+          pilot='supabase/migrations/20260910133000_beta_development_pilot_authority.sql'
 
           grep -Fq 'record_h3_bound_institutional_decision_v1' "$h4"
           grep -Fq "v_role is distinct from 'collegio'" "$h4"
@@ -66,6 +80,13 @@ jobs:
           grep -Fq 'revoke insert, update, delete on table public.institutional_revision_decisions' "$h4"
           grep -Fq "revoke execute on function %s from authenticated" "$h4"
           grep -Fq 'institutional_revision_decisions_vertical_handoff_fk_idx' "$perf"
+
+          grep -Fq 'development_pilot_authority_assignments' "$pilot"
+          grep -Fq "scope = 'BETA_DEVELOPMENT_PILOT'" "$pilot"
+          grep -Fq 'previous_workspace_role' "$pilot"
+          grep -Fq "new.authority_context := 'DEVELOPMENT_PILOT'" "$pilot"
+          grep -Fq 'authority_assignment_id' "$pilot"
+          grep -Fq 'revoke insert, update, delete on table public.development_pilot_authority_assignments' "$pilot"
 
       - name: TypeScript
         run: npx tsc --noEmit
