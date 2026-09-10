@@ -11,28 +11,36 @@ import {
 } from '../domain/curriculum/validation/technologySecondaryClassReview';
 
 describe('canonical curriculum entry', () => {
-  it('makes the unified master the first curriculum surface', () => {
+  it('makes the unified master the first curriculum surface in teacher-readable language', () => {
     expect(workspaceSource).toContain('data-canonical-curriculum-entry');
-    expect(workspaceSource).toContain('Curricolo verticale integrale 3–14');
-    expect(workspaceSource).toContain('Baseline corrente');
-    expect(workspaceSource).toContain('Apri il curricolo integrale');
-    expect(workspaceSource).toContain('Classi I · II · III · IV · V');
-    expect(workspaceSource).toContain('Non è ancora il curricolo vigente dell’Istituto.');
+    expect(workspaceSource).toContain('Curricolo verticale d’Istituto');
+    expect(workspaceSource).toContain('Curricolo verticale 3–14');
+    expect(workspaceSource).toContain('In revisione');
+    expect(workspaceSource).toContain('deve ancora essere validato dall’Istituto.');
+    expect(workspaceSource).toContain('data-curriculum-scope-summary');
+    expect(workspaceSource).toContain('Infanzia · 3–5 anni');
+    expect(workspaceSource).toContain('Primaria · I–V');
+    expect(workspaceSource).toContain('Secondaria · I–III');
+    expect(workspaceSource).toContain('Consulta il curricolo');
+    expect(workspaceSource).not.toContain('Baseline corrente');
+    expect(workspaceSource).not.toContain('master canonico');
   });
 
-  it('exposes real mobile-safe navigation from the secondary master card to the annual H2 context', () => {
+  it('exposes real mobile-safe navigation from the secondary curriculum context to the annual review', () => {
     expect(workspaceSource).toContain('data-secondary-curriculum-navigation');
     expect(workspaceSource).toContain('data-open-technology-review-class');
     expect(workspaceSource).toContain("setOrder('secondaria')");
     expect(workspaceSource).toContain("setDiscipline('tecnologia')");
     expect(workspaceSource).toContain("props.handleTabSwitch('revisione')");
+    expect(workspaceSource).toContain('Scegli una classe se vuoi passare al Riesame.');
     expect(workspaceSource).toContain('Classe II');
   });
 
-  it('keeps the legacy local curriculum behind an explicit non-canonical disclosure', () => {
+  it('keeps the legacy local curriculum behind an explicit historical disclosure', () => {
     expect(workspaceSource).toContain('data-legacy-curriculum-disclosure');
-    expect(workspaceSource).toContain('Archivio locale precedente');
-    expect(workspaceSource).toContain('non il master curricolare corrente');
+    expect(workspaceSource).toContain('Archivio precedente');
+    expect(workspaceSource).toContain('vecchia copia locale per consultazione storica');
+    expect(workspaceSource).toContain('Non è il curricolo corrente dell’Istituto.');
     expect(workspaceSource).toContain('Torna al curricolo corrente');
     expect(workspaceSource).toContain('{legacyOpen && (');
     expect(workspaceSource).toContain('onClick={() => setLegacyOpen(true)}');
