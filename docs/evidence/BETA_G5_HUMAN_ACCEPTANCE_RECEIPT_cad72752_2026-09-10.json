@@ -1,0 +1,112 @@
+{
+  "schema": "CML_ARENA_BETA_G5_HUMAN_ACCEPTANCE_V2",
+  "protocol": "BETA_G5_HUMAN_ACCEPTANCE_PROTOCOL_v2",
+  "sessionId": "BETA-G5-2026-09-10-cad72752",
+  "candidateRef": "cad72752c70a90c448fd05eb16a55c1ad83bb0f1",
+  "status": "PENDING_HUMAN",
+  "releaseSha": "cad72752c70a90c448fd05eb16a55c1ad83bb0f1",
+  "betaUrl": "https://antoniocorsano-boop.github.io/CurManLight_arena/",
+  "releaseIdentityVerified": true,
+  "reviewedAt": null,
+  "reviewerAttestation": {
+    "humanReviewActuallyPerformed": true,
+    "desktopReviewed": false,
+    "mobileReviewed": false,
+    "noFabricatedAuthority": false,
+    "proposalDecisionBoundaryUnderstood": false,
+    "planningHandoffBoundaryUnderstood": false
+  },
+  "tasks": {
+    "HT-BETA-CURRICULUM-CONTEXT": {
+      "desktop": "PENDING",
+      "mobile": "PENDING",
+      "observations": {
+        "validContext": "PENDING",
+        "provenance": "PENDING",
+        "invalidOrIncompleteContext": "PENDING",
+        "recovery": "PENDING"
+      },
+      "notes": "Evidenza mobile reale fornita dall'utente il 2026-09-10 alle 10:47 +02:00. Lo screenshot mostra Curricolo selezionato nella navigazione primaria; Curricolo verticale d’Istituto; Curricolo verticale integrale 3–14; Baseline corrente; copertura Scuola dell’infanzia 3·4·5 anni, Scuola primaria I–V e Secondaria di primo grado I–III. La vecchia superficie locale non è visibile come primaria. L'attestazione esplicita dell'utente sulla comprensione di stato/non-vigenza e provenienza non è ancora stata fornita, quindi nessun PASS viene registrato. Osservazioni UX da sottoporre al revisore umano: terminologia Baseline corrente/master canonico e possibile interferenza visiva della barra inferiore con il contenuto durante lo scorrimento."
+    },
+    "HT-BETA-REVISION-PREPARE": {
+      "desktop": "PENDING",
+      "mobile": "PENDING",
+      "observations": {
+        "proposalInspection": "PENDING",
+        "evidenceDisclosure": "PENDING",
+        "missingRequirementBlocked": "PENDING",
+        "unauthorizedReadOnly": "PENDING",
+        "staleOrReentryRecovery": "PENDING"
+      },
+      "notes": "Evidenza mobile reale fornita dall'utente il 2026-09-10 alle 10:55 +02:00. Il revisore dichiara di capire di essere nella revisione curricolare di Tecnologia e di poter scegliere l'annualità. Segnala però una sensazione di ermetismo tecnico e richiede maggiore leggerezza, guida esecutiva e significati espressivi senza aumento del carico cognitivo. La schermata espone termini come H2/H3, unità curricolare del riesame, validazione professionale, contributo professionale, fase distinta e riesame verticale prima che l'utente abbia completato il compito principale. Il task resta PENDING: non sono ancora state ispezionate proposta, razionale/evidenze, requisiti mancanti, percorso read-only e recupero."
+    },
+    "HT-REVISION-DECISION": {
+      "desktop": "PENDING",
+      "mobile": "PENDING",
+      "observations": {
+        "noAuthorityBlocked": "PENDING",
+        "evidenceAndConsequence": "PENDING",
+        "explicitOutcomeChoice": "PENDING",
+        "explicitHumanConfirmation": "PENDING",
+        "receiptRefreshReentry": "PENDING"
+      },
+      "notObservableReason": "",
+      "notes": ""
+    },
+    "HT-BETA-PLANNING-HANDOFF": {
+      "desktop": "PENDING",
+      "mobile": "PENDING",
+      "observations": {
+        "validPreview": "PENDING",
+        "provisionalWarning": "PENDING",
+        "validationFailure": "PENDING",
+        "consequenceExplanation": "PENDING",
+        "explicitHandoff": "PENDING",
+        "recovery": "PENDING"
+      },
+      "notes": ""
+    }
+  },
+  "crossStates": {
+    "empty": "PENDING",
+    "loading": "PENDING",
+    "success": "PENDING",
+    "blocked": "PENDING",
+    "error": "PENDING",
+    "recovery": "PENDING"
+  },
+  "supplementalKnowledgeExperience": {
+    "searchAndAsk": "PENDING",
+    "relationsFailClosed": "PENDING",
+    "keyTerms": "PENDING",
+    "historicalArchive": "PENDING",
+    "notes": ""
+  },
+  "findings": [
+    {
+      "id": "G5-UX-REVISION-001",
+      "task": "HT-BETA-REVISION-PREPARE",
+      "device": "mobile",
+      "severity": 2,
+      "status": "OPEN",
+      "summary": "La superficie Riesame orienta correttamente su disciplina e annualità, ma usa terminologia di processo troppo tecnica e mostra troppi livelli decisionali prima del bisogno dell'utente.",
+      "humanEvidence": "Il revisore comprende di essere nella revisione curricolare di Tecnologia e di poter scegliere l'annualità, ma riferisce ermetismo tecnico e chiede maggiore leggerezza e guida esecutiva senza carico cognitivo.",
+      "remediationIntent": "Portare in primo piano una sola domanda operativa alla volta; tradurre H2/H3 e il lessico di governo in linguaggio docente; spostare i dettagli di processo dietro divulgazione progressiva; rendere il passaggio verticale successivo e non concorrente al compito corrente."
+    }
+  ],
+  "severity1Open": 0,
+  "severity2Open": 1,
+  "verdict": "PENDING_HUMAN",
+  "allowedVerdicts": [
+    "BETA_HIA_PASS",
+    "PARTIAL_HUMAN_EVIDENCE",
+    "BETA_HIA_BLOCK"
+  ],
+  "nonClaims": [
+    "This receipt does not satisfy BETA-G6 accessibility acceptance.",
+    "Automated browser evidence is not a substitute for this human review.",
+    "A revoked or missing institutional membership must not be fabricated to obtain an authorized decision path.",
+    "BETA_HIA_PASS must not be written before the human observations are complete.",
+    "A completed receipt must identify the exact immutable SHA exposed by the published beta-release.json."
+  ]
+}
