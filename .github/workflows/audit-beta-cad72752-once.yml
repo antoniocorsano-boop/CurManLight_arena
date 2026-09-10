@@ -8,6 +8,7 @@ on:
       - '.github/workflows/audit-beta-cad72752-once.yml'
       - 'scripts/audit-live-beta-curriculum.cjs'
       - '.github/workflows/deploy-beta-cad72752-main-once.yml'
+      - 'docs/audit/BETA_CURRICULUM_CAD72752_AUDIT_SCOPE.md'
 
 permissions:
   contents: read
