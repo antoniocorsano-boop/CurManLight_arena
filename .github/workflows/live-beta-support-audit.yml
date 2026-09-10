@@ -19,10 +19,35 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 12
     steps:
+      - name: Resolve published release identity
+        id: published-release
+        shell: bash
+        env:
+          BETA_URL: https://antoniocorsano-boop.github.io/CurManLight_arena
+        run: |
+          set -euo pipefail
+          curl --fail --silent --show-error --location --retry 6 --retry-delay 5 \
+            "${BETA_URL%/}/beta-release.json" >/tmp/beta-release.json
+
+          DEPLOYED_RELEASE_SHA="$(node -e '
+            const fs = require("fs");
+            const data = JSON.parse(fs.readFileSync("/tmp/beta-release.json", "utf8"));
+            process.stdout.write(String(data.releaseSha || "").trim());
+          ')"
+
+          if [[ ! "$DEPLOYED_RELEASE_SHA" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "Invalid published release SHA: ${DEPLOYED_RELEASE_SHA:-<empty>}"
+            exit 1
+          fi
+
+          echo "sha=$DEPLOYED_RELEASE_SHA" >> "$GITHUB_OUTPUT"
+          echo "PUBLISHED_RELEASE_SHA=$DEPLOYED_RELEASE_SHA" >> "$GITHUB_ENV"
+          echo "LIVE_BETA_RELEASE_IDENTITY_PASS $DEPLOYED_RELEASE_SHA"
+
       - name: Checkout audit code
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || github.sha }}
+          ref: ${{ github.event_name == 'pull_request' && github.sha || steps.published-release.outputs.sha }}
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -39,7 +64,7 @@ jobs:
       - name: Audit published mobile support journey
         env:
           BETA_URL: https://antoniocorsano-boop.github.io/CurManLight_arena
-          EXPECTED_RELEASE_SHA: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || '' }}
+          EXPECTED_RELEASE_SHA: ${{ steps.published-release.outputs.sha }}
         run: node scripts/audit-live-beta-support.cjs
 
       - name: Upload support evidence
