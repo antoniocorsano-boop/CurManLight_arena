@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import migration from '../../supabase/migrations/20260910133000_beta_development_pilot_authority.sql?raw';
+import performanceMigration from '../../supabase/migrations/20260910134500_beta_development_pilot_authority_performance.sql?raw';
 import panel from '../features/beta/H3BoundInstitutionalDecisionPanel.tsx?raw';
 import verticalReview from '../features/beta/VerticalReviewPanel.tsx?raw';
 import repository from '../infrastructure/supabase/h3BoundInstitutionalDecisionRepository.ts?raw';
@@ -22,6 +23,11 @@ describe('H4 development/pilot authority boundary', () => {
     expect(migration).toContain('user_id = (select auth.uid())');
     expect(migration).toContain('revoke insert, update, delete on table public.development_pilot_authority_assignments');
     expect(migration).toContain('grant select on table public.development_pilot_authority_assignments to authenticated');
+  });
+
+  it('covers the auth.users foreign key with a user-leading index', () => {
+    expect(performanceMigration).toContain('development_pilot_authority_assignments_user_idx');
+    expect(performanceMigration).toMatch(/development_pilot_authority_assignments\s*\(user_id\)/);
   });
 
   it('uses only the H3-bound server writer and reads the development authority receipt', () => {
