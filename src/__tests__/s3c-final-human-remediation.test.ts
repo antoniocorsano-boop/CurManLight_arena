@@ -8,20 +8,26 @@ const viewsSource = firstSource(import.meta.glob('../features/session/components
   query: '?raw', import: 'default', eager: true,
 }) as Record<string, string>);
 
+const curriculumWorkspaceSource = firstSource(import.meta.glob('../features/curriculum/CurriculumWorkspace.tsx', {
+  query: '?raw', import: 'default', eager: true,
+}) as Record<string, string>);
+
 const handoffSource = firstSource(import.meta.glob('../features/beta/PlanningHandoffPreview.tsx', {
   query: '?raw', import: 'default', eager: true,
 }) as Record<string, string>);
 
 describe('Arena S3C final human remediation', () => {
-  it('makes the post-curriculum path explicit without collapsing review and planning', () => {
-    expect(viewsSource).toContain('data-human-next-step="after-curriculum-check"');
-    expect(viewsSource).toContain('Dopo il controllo, scegli cosa devi fare');
-    expect(viewsSource).toContain('Se il curricolo va bene, passa alla progettazione.');
-    expect(viewsSource).toContain('Passa alla progettazione');
-    expect(viewsSource).toContain('Proponi una modifica');
-    expect(viewsSource).toContain("safeHandleTabSwitch('esportazioni')");
-    expect(viewsSource).toContain("safeHandleTabSwitch('revisione')");
-    expect(viewsSource).toContain('data-human-next-action="verify-curriculum-validity"');
+  it('keeps curriculum, review and planning as explicit distinct steps', () => {
+    expect(curriculumWorkspaceSource).toContain('data-canonical-curriculum-entry');
+    expect(curriculumWorkspaceSource).toContain('data-open-technology-review-class');
+    expect(curriculumWorkspaceSource).toContain("props.handleTabSwitch('revisione')");
+    expect(curriculumWorkspaceSource).toContain('Pilota Tecnologia: scegli l’annualità da portare nel Riesame H2.');
+    expect(viewsSource).toContain("props.activeTab === 'revisione'");
+    expect(viewsSource).toContain('<CaseAwareRevisionSurface');
+    expect(viewsSource).toContain('data-teacher-surface="revision"');
+    expect(viewsSource).toContain("props.activeTab === 'progetta-annuale'");
+    expect(viewsSource).toContain('<ProgettazioneTab');
+    expect(viewsSource).toContain('data-teacher-surface="planning"');
   });
 
   it('renders the planning handoff from the canonical Documents surface', () => {
