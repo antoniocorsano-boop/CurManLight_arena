@@ -93,27 +93,43 @@ async function noHorizontalOverflow(page) {
 
       const authorityText = (await canonicalEntry.innerText()).toLowerCase();
       check(
-        'canonical curriculum authority state is persistently visible',
-        authorityText.includes('baseline corrente') &&
-          authorityText.includes('validazione professionale') &&
-          authorityText.includes('non è ancora il curricolo vigente')
+        'canonical curriculum authority state is persistently visible in teacher-readable language',
+        authorityText.includes('in revisione') &&
+          authorityText.includes('deve ancora essere validato dall’istituto')
       );
       check(
-        'canonical curriculum is the unified 3–14 master',
-        authorityText.includes('curricolo verticale integrale 3–14')
+        'canonical curriculum is visibly the unified 3–14 curriculum',
+        authorityText.includes('curricolo verticale 3–14') &&
+          authorityText.includes('infanzia') &&
+          authorityText.includes('primaria') &&
+          authorityText.includes('secondaria')
       );
-
-      const sourceAction = canonicalEntry.getByRole('button', { name: /verifica le fonti/i }).first();
-      await sourceAction.waitFor({ state: 'visible', timeout: 5000 });
-      check('provenance inspection action is visible', await sourceAction.isVisible());
+      check(
+        'ordinary curriculum surface does not expose assurance jargon',
+        !authorityText.includes('sha-256') &&
+          !authorityText.includes('master canonico') &&
+          !authorityText.includes('riesame h2') &&
+          !authorityText.includes('868')
+      );
       check('curriculum context has no material horizontal overflow', await noHorizontalOverflow(page));
 
-      await sourceAction.click();
-      const sourceReview = page.locator('[data-canonical-source-review]').first();
-      await sourceReview.waitFor({ state: 'visible', timeout: 5000 });
-      check('source verification opens inside the canonical curriculum surface', await sourceReview.isVisible());
+      const sourceDisclosure = page.locator('[data-source-review-progressive-disclosure]').first();
+      await sourceDisclosure.waitFor({ state: 'visible', timeout: 5000 });
+      check('source verification is available as a secondary closed disclosure', await sourceDisclosure.isVisible());
+      check('advanced source tools are not mounted by default', (await page.locator('[data-source-review-advanced-tools]').count()) === 0);
+
+      await sourceDisclosure.locator('summary').click();
+      const sourceToolsAction = sourceDisclosure.getByRole('button', { name: /apri gli strumenti di verifica/i }).first();
+      await sourceToolsAction.waitFor({ state: 'visible', timeout: 5000 });
+      check('source assurance requires a second intentional action', await sourceToolsAction.isVisible());
+      check('first disclosure still keeps advanced assurance tools unmounted', (await page.locator('[data-source-review-advanced-tools]').count()) === 0);
+
+      await sourceToolsAction.click();
+      const advancedTools = page.locator('[data-source-review-advanced-tools]').first();
+      await advancedTools.waitFor({ state: 'visible', timeout: 5000 });
+      check('advanced source verification mounts only after the second action', await advancedTools.isVisible());
       check('source review preserves the canonical curriculum route', page.url().includes('/curriculum'));
-      check('expanded source review has no material horizontal overflow', await noHorizontalOverflow(page));
+      check('expanded advanced source review has no material horizontal overflow', await noHorizontalOverflow(page));
 
       await page.screenshot({
         path: path.join(artifactDir, `${profile.id}-curriculum-context.png`),
