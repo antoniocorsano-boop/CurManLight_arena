@@ -115,7 +115,7 @@ for (const token of [
   'data-general-review-assignment-support',
   '<SharedReviewCaseInbox',
   '<RevisionWorkspace',
-  'data-ux-consolidation="UX_CONSOLIDATION_R1_1"',
+  'data-ux-consolidation="UX_CONSOLIDATION_R1_2"',
 ]) assert(surface.includes(token), `superficie dominante non presidiata: ${token}`);
 assert(surface.indexOf('<RevisionWorkspace') < surface.indexOf('<SharedReviewCaseInbox'), 'nel contesto generale il lavoro corrente deve precedere il supporto dei casi assegnati');
 
