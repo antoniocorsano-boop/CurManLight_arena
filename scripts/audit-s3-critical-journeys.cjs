@@ -137,13 +137,15 @@ async function noHorizontalOverflow(page) {
         const desktopIndex = canonicalEntry.locator('[data-curriculum-desktop-index]').first();
         await desktopIndex.waitFor({ state: 'visible', timeout: 5000 });
         check('desktop web reader offers a persistent editorial index', await desktopIndex.isVisible());
-        const technologyEntry = desktopIndex.getByRole('button', { name: /9\s+Tecnologia/i }).first();
-        await technologyEntry.click();
+        const indexButtons = desktopIndex.locator('button');
+        check('desktop editorial index exposes all 16 sections', (await indexButtons.count()) === 16);
+        await indexButtons.nth(8).click();
       } else {
         const sectionSelector = canonicalEntry.locator('[data-curriculum-section-selector]').first();
         await sectionSelector.waitFor({ state: 'visible', timeout: 5000 });
         check('mobile web reader offers compact section navigation', await sectionSelector.isVisible());
         check('mobile web reader starts from the first editorial section', (await sectionSelector.inputValue()) === 'identita');
+        check('mobile editorial selector exposes all 16 sections', (await sectionSelector.locator('option').count()) === 16);
         await sectionSelector.selectOption('tecnologia');
       }
 
