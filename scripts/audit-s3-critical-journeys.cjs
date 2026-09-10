@@ -28,10 +28,6 @@ async function gotoRoute(page, route) {
     timeout: 30000,
   });
   const status = response?.status();
-  // GitHub Pages returns the repository 404 document for deep SPA routes;
-  // dist/404.html intentionally mirrors index.html so BrowserRouter can
-  // rehydrate the requested pathname. Treat only missing responses and 5xx
-  // results as transport failures; route correctness is asserted in-page.
   if (!response || (typeof status === 'number' && status >= 500)) {
     throw new Error(`Navigation failed for ${route}: ${status ?? 'no response'}`);
   }
@@ -90,16 +86,28 @@ async function noHorizontalOverflow(page) {
       await canonicalEntry.waitFor({ state: 'visible', timeout: 8000 });
       check('curriculum context route is reachable', page.url().includes('/curriculum'));
       check('canonical curriculum context is visibly identified', await canonicalEntry.isVisible());
+      check(
+        'curriculum is presented as a professional publication',
+        (await canonicalEntry.getAttribute('data-curriculum-presentation')) === 'professional-publication'
+      );
 
       const authorityText = (await canonicalEntry.innerText()).toLowerCase();
       check(
-        'canonical curriculum authority state is persistently visible in teacher-readable language',
-        authorityText.includes('in revisione') &&
-          authorityText.includes('deve ancora essere validato dall’istituto')
+        'curriculum validation state is persistently visible in teacher-readable language',
+        authorityText.includes('da esaminare e validare')
       );
       check(
-        'canonical curriculum is visibly the unified 3–14 curriculum',
-        authorityText.includes('curricolo verticale 3–14') &&
+        'professional identity of the department is visible',
+        authorityText.includes('dipartimento scientifico-matematico-tecnologico') &&
+          authorityText.includes('matematica') &&
+          authorityText.includes('scienze') &&
+          authorityText.includes('tecnologia') &&
+          authorityText.includes('informatica')
+      );
+      check(
+        'canonical curriculum is visibly a 3–14 path',
+        authorityText.includes('curricolo verticale') &&
+          authorityText.includes('percorso 3–14') &&
           authorityText.includes('infanzia') &&
           authorityText.includes('primaria') &&
           authorityText.includes('secondaria')
@@ -111,7 +119,32 @@ async function noHorizontalOverflow(page) {
           !authorityText.includes('riesame h2') &&
           !authorityText.includes('868')
       );
+
+      const webMode = canonicalEntry.locator('[data-curriculum-mode="web"]').first();
+      const documentMode = canonicalEntry.locator('[data-curriculum-mode="document"]').first();
+      await webMode.waitFor({ state: 'visible', timeout: 5000 });
+      await documentMode.waitFor({ state: 'visible', timeout: 5000 });
+      check('web and document presentation modes are both visible', await webMode.isVisible() && await documentMode.isVisible());
+      check('web reader is the default opening mode', (await page.locator('[data-curriculum-web-reader]').count()) === 1);
+      check('document reader is not mounted before the teacher chooses it', (await page.locator('[data-curriculum-document-reader]').count()) === 0);
       check('curriculum context has no material horizontal overflow', await noHorizontalOverflow(page));
+
+      const sectionSelector = canonicalEntry.locator('[data-curriculum-section-selector]').first();
+      await sectionSelector.waitFor({ state: 'visible', timeout: 5000 });
+      check('web reader offers compact section navigation', await sectionSelector.isVisible());
+      check('web reader starts from the first editorial section', (await sectionSelector.inputValue()) === 'identita');
+
+      await documentMode.click();
+      const documentReader = page.locator('[data-curriculum-document-reader]').first();
+      await documentReader.waitFor({ state: 'visible', timeout: 5000 });
+      check('document mode opens only after an explicit teacher action', await documentReader.isVisible());
+      check('department curriculum document is available in document mode', (await documentReader.locator('[data-open-department-curriculum-document]').count()) === 1);
+      check('foundations and traceability document is available as a secondary document', (await documentReader.locator('[data-open-department-foundations-document]').count()) === 1);
+      check('document mode has no material horizontal overflow', await noHorizontalOverflow(page));
+
+      await webMode.click();
+      await page.locator('[data-curriculum-web-reader]').first().waitFor({ state: 'visible', timeout: 5000 });
+      check('teacher can return from document to web reading without leaving Curriculum', page.url().includes('/curriculum'));
 
       const sourceDisclosure = page.locator('[data-source-review-progressive-disclosure]').first();
       await sourceDisclosure.waitFor({ state: 'visible', timeout: 5000 });
