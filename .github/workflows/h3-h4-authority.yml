@@ -1,0 +1,74 @@
+name: H3 H4 Authority Boundary
+
+on:
+  pull_request:
+    paths:
+      - 'supabase/migrations/20260910120000_vertical_review_institutional_handoff.sql'
+      - 'supabase/migrations/20260910121500_vertical_review_institutional_handoff_performance_hardening.sql'
+      - 'supabase/migrations/20260910130000_h3_bound_institutional_decision.sql'
+      - 'supabase/migrations/20260910130500_h3_bound_institutional_decision_performance_hardening.sql'
+      - 'src/domain/revision/institutionalReviewHandoff.ts'
+      - 'src/infrastructure/supabase/institutionalReviewHandoffRepository.ts'
+      - 'src/__tests__/vertical-review-institutional-handoff.test.ts'
+      - 'src/__tests__/h3-bound-institutional-decision.test.ts'
+      - 'vitest.fast.config.ts'
+      - '.github/workflows/h3-h4-authority.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'supabase/migrations/20260910120000_vertical_review_institutional_handoff.sql'
+      - 'supabase/migrations/20260910121500_vertical_review_institutional_handoff_performance_hardening.sql'
+      - 'supabase/migrations/20260910130000_h3_bound_institutional_decision.sql'
+      - 'supabase/migrations/20260910130500_h3_bound_institutional_decision_performance_hardening.sql'
+      - 'src/domain/revision/institutionalReviewHandoff.ts'
+      - 'src/infrastructure/supabase/institutionalReviewHandoffRepository.ts'
+      - 'src/__tests__/vertical-review-institutional-handoff.test.ts'
+      - 'src/__tests__/h3-bound-institutional-decision.test.ts'
+      - 'vitest.fast.config.ts'
+      - '.github/workflows/h3-h4-authority.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  h3-h4-boundary:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+
+      - name: H3 handoff and H4 boundary tests
+        run: >-
+          npx vitest run
+          src/__tests__/vertical-review-institutional-handoff.test.ts
+          src/__tests__/h3-bound-institutional-decision.test.ts
+
+      - name: H4 server authority invariants
+        run: |
+          set -euo pipefail
+          h4='supabase/migrations/20260910130000_h3_bound_institutional_decision.sql'
+          perf='supabase/migrations/20260910130500_h3_bound_institutional_decision_performance_hardening.sql'
+
+          grep -Fq 'record_h3_bound_institutional_decision_v1' "$h4"
+          grep -Fq "v_role is distinct from 'collegio'" "$h4"
+          grep -Fq 'p_expected_context_user_id <> v_user' "$h4"
+          grep -Fq 'H3_HANDOFF_SNAPSHOT_MISMATCH' "$h4"
+          grep -Fq 'H4_STALE_H2_SOURCE' "$h4"
+          grep -Fq 'H4_H2_CONTINUATION_OPEN' "$h4"
+          grep -Fq 'H4_STALE_H3' "$h4"
+          grep -Fq 'CML_ARENA_H3_H4_BINDING_V1' "$h4"
+          grep -Fq "decision_basis = 'VERTICAL_REVIEW_HANDOFF'" "$h4"
+          grep -Fq 'revoke insert, update, delete on table public.institutional_revision_decisions' "$h4"
+          grep -Fq "revoke execute on function %s from authenticated" "$h4"
+          grep -Fq 'institutional_revision_decisions_vertical_handoff_fk_idx' "$perf"
+
+      - name: TypeScript
+        run: npx tsc --noEmit
+
+      - name: Beta build
+        run: npm run build:beta
