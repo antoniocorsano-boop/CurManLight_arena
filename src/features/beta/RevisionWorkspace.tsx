@@ -28,7 +28,7 @@ const roleLabel = (role: string | undefined): string | null => {
 };
 
 const SESSION_STEPS = [
-  { id: 'EXAMINE', label: 'Esamina' },
+  { id: 'EXAMINE', label: 'Valuta' },
   { id: 'SHARE', label: 'Condividi' },
   { id: 'COMPARE', label: 'Confronta' },
   { id: 'RECORD_TEAM_OUTCOME', label: 'Esito del gruppo' },
@@ -172,14 +172,14 @@ export function RevisionWorkspace(props: RevisionWorkspaceProps) {
     >
       <section
         className="sticky top-0 z-40 -mx-3 border-b border-slate-200 bg-white/95 px-3 py-3 backdrop-blur sm:static sm:mx-0 sm:rounded-2xl sm:border sm:p-4"
-        aria-label="Sessione di lavoro sul curricolo"
+        aria-label="Percorso di revisione del curricolo"
       >
         <div className="flex items-start justify-between gap-3">
           <div>
-            <span className="text-[10px] font-black uppercase tracking-wide text-indigo-600">Validazione professionale</span>
-            <strong className="mt-1 block text-base text-slate-900">Il mio lavoro sul curricolo</strong>
+            <span className="text-[10px] font-black uppercase tracking-wide text-indigo-600">Il tuo percorso</span>
+            <strong className="mt-1 block text-base text-slate-900">Rivedi il curricolo con i colleghi</strong>
             <p className="mt-1 text-xs leading-relaxed text-slate-600">
-              Un solo percorso: esamina, condividi, confronta e registra l’esito del gruppo quando ti compete.
+              Adesso pensa soltanto al tuo parere. I passaggi successivi si aprono quando servono.
             </p>
           </div>
           {selectedRoleLabel && (
@@ -187,7 +187,7 @@ export function RevisionWorkspace(props: RevisionWorkspaceProps) {
           )}
         </div>
 
-        <ol className="mt-3 grid grid-cols-4 gap-1.5" aria-label="Avanzamento della sessione">
+        <ol className="mt-3 grid grid-cols-4 gap-1.5" aria-label="Avanzamento della revisione">
           {SESSION_STEPS.map((step, index) => {
             const state = stepState(index);
             return (
@@ -212,15 +212,15 @@ export function RevisionWorkspace(props: RevisionWorkspaceProps) {
       </section>
 
       {stage === 'EXAMINE' && (
-        <div className="space-y-3" data-revision-stage="review" aria-label="Esamina il tuo contributo">
+        <div className="space-y-3" data-revision-stage="review" aria-label="Valuta le schede del curricolo">
           {examineSurface === 'OVERVIEW' && (
             <section className="rounded-2xl border border-indigo-200 bg-white p-4 shadow-sm" data-general-review-overview>
-              <span className="text-[10px] font-black uppercase tracking-wide text-indigo-600">Cosa richiede attenzione adesso</span>
+              <span className="text-[10px] font-black uppercase tracking-wide text-indigo-600">Adesso</span>
               <div className="mt-2 flex items-end justify-between gap-4">
                 <div>
-                  <strong className="block text-lg text-slate-950">Il mio contributo professionale</strong>
+                  <strong className="block text-lg text-slate-950">Esprimi il tuo parere</strong>
                   <p className="mt-1 text-sm leading-6 text-slate-600">
-                    {preparedReviewCount} di {totalReviewCount} schede esaminate. Completa il tuo orientamento prima di condividerlo con il gruppo.
+                    Hai esaminato {preparedReviewCount} di {totalReviewCount} schede. Aprile una alla volta e indica se vanno bene o cosa cambieresti.
                   </p>
                 </div>
                 <span className="shrink-0 rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-700">
@@ -233,18 +233,28 @@ export function RevisionWorkspace(props: RevisionWorkspaceProps) {
                 onClick={() => setExamineSurface('PERSONAL_REVIEW')}
                 className="mt-4 min-h-11 w-full rounded-xl bg-indigo-700 px-4 py-3 text-sm font-bold text-white"
               >
-                {preparedReviewCount > 0 ? 'Continua il mio contributo' : 'Inizia il mio contributo'}
+                {preparedReviewCount > 0 ? 'Continua da qui' : 'Inizia da qui'}
               </button>
-              <button
-                type="button"
-                data-human-secondary-action="open-targeted-review-tools"
-                onClick={() => setExamineSurface('REOPEN_CASE')}
-                className="mt-2 min-h-11 w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm font-bold text-slate-700"
-              >
-                Apri solo il riesame necessario
-              </button>
+              <details className="mt-3 rounded-xl border border-slate-200 bg-slate-50" data-targeted-review-disclosure>
+                <summary className="cursor-pointer px-3 py-3 text-xs font-bold text-slate-700">
+                  Devo rivedere solo alcune schede
+                </summary>
+                <div className="border-t border-slate-200 p-3">
+                  <p className="text-xs leading-5 text-slate-600">
+                    Usa questa strada solo se c’è un motivo preciso e il riesame riguarda una parte limitata del curricolo.
+                  </p>
+                  <button
+                    type="button"
+                    data-human-secondary-action="open-targeted-review-tools"
+                    onClick={() => setExamineSurface('REOPEN_CASE')}
+                    className="mt-3 min-h-10 w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-xs font-bold text-slate-700 sm:w-auto"
+                  >
+                    Scegli le schede da rivedere
+                  </button>
+                </div>
+              </details>
               <p className="mt-3 text-xs leading-5 text-slate-500">
-                Il contributo personale, l’eventuale caso mirato e l’esito del gruppo restano passaggi distinti.
+                Prima dai il tuo parere. Poi lo confronti con il gruppo. Le decisioni dell’Istituto vengono dopo, in un passaggio separato.
               </p>
             </section>
           )}
@@ -257,7 +267,7 @@ export function RevisionWorkspace(props: RevisionWorkspaceProps) {
                   onClick={() => setExamineSurface('OVERVIEW')}
                   className="min-h-10 rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs font-bold text-slate-700"
                 >
-                  Torna alla panoramica
+                  Torna all’inizio del riesame
                 </button>
               </section>
               <RevisioneTab
@@ -271,15 +281,15 @@ export function RevisionWorkspace(props: RevisionWorkspaceProps) {
                 data-revision-learning
                 className="rounded-2xl border border-indigo-200 bg-indigo-50/70 text-sm leading-6 text-slate-700"
               >
-                <summary className="cursor-pointer px-4 py-3 font-bold text-slate-900">Come funziona questa revisione</summary>
+                <summary className="cursor-pointer px-4 py-3 font-bold text-slate-900">Se hai bisogno di aiuto</summary>
                 <div className="border-t border-indigo-100 p-4">
-                  <p>Qui prepari soltanto il tuo contributo personale; non esprimi l’esito del gruppo.</p>
+                  <p>Qui registri il tuo parere; non stai decidendo per il gruppo o per l’Istituto.</p>
                   <ol className="mt-2 grid gap-1 pl-5 text-sm list-decimal">
-                    <li>Esamina una scheda alla volta.</li>
-                    <li>Registra il tuo orientamento professionale.</li>
-                    <li>Quando tutte le schede sono complete, passa alla condivisione.</li>
+                    <li>Leggi una scheda alla volta.</li>
+                    <li>Indica se la confermi o cosa cambieresti.</li>
+                    <li>Quando hai finito tutte le schede, passa alla condivisione.</li>
                   </ol>
-                  <p className="mt-2 font-semibold text-indigo-950">Anche il coordinatore completa prima il proprio contributo personale.</p>
+                  <p className="mt-2 font-semibold text-indigo-950">Anche chi coordina il gruppo comincia dal proprio parere personale.</p>
                 </div>
               </details>
             </div>
@@ -289,9 +299,9 @@ export function RevisionWorkspace(props: RevisionWorkspaceProps) {
             <section className="space-y-3 rounded-2xl border border-slate-200 bg-white p-3" data-targeted-review-tools>
               <div className="flex items-start justify-between gap-3 px-1">
                 <div>
-                  <strong className="block text-base text-slate-950">Apri solo il riesame necessario</strong>
+                  <strong className="block text-base text-slate-950">Rivedi solo le schede interessate</strong>
                   <p className="mt-1 text-xs leading-5 text-slate-600">
-                    Qualifica prima il motivo, poi delimita soltanto le schede realmente interessate.
+                    Indica perché serve il riesame e scegli soltanto le schede coinvolte.
                   </p>
                 </div>
                 <button
@@ -329,9 +339,9 @@ export function RevisionWorkspace(props: RevisionWorkspaceProps) {
           <section className="rounded-2xl border border-emerald-200 bg-emerald-50/70 p-4" aria-label="Revisione personale completata">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <strong className="block text-base text-emerald-950">Il contributo personale è pronto</strong>
+                <strong className="block text-base text-emerald-950">Il tuo parere è pronto</strong>
                 <p className="mt-1 text-xs leading-relaxed text-emerald-800">
-                  {preparedReviewCount} di {totalReviewCount} schede completate. Ora rendi esplicitamente visibile il tuo contributo al gruppo.
+                  Hai completato {preparedReviewCount} di {totalReviewCount} schede. Ora puoi condividerle con il gruppo.
                 </p>
               </div>
               <button
@@ -342,7 +352,7 @@ export function RevisionWorkspace(props: RevisionWorkspaceProps) {
                 }}
                 className="min-h-10 rounded-xl border border-emerald-300 bg-white px-3 py-2 text-xs font-bold text-emerald-900"
               >
-                Rivedi il mio contributo
+                Rivedi il mio parere
               </button>
             </div>
           </section>
@@ -359,18 +369,18 @@ export function RevisionWorkspace(props: RevisionWorkspaceProps) {
 
           {isCoordinator && !sharePersistence.complete && (
             <section className="rounded-2xl border border-amber-200 bg-amber-50 p-4" aria-label="Confronto non ancora disponibile" data-team-comparison-blocked-by-share>
-              <strong className="block text-sm text-amber-950">Il confronto si apre dopo la condivisione verificata</strong>
+              <strong className="block text-sm text-amber-950">Prima completa la condivisione</strong>
               <p className="mt-1 text-xs leading-relaxed text-amber-900">
-                Arena abilita il confronto soltanto quando tutte le {sharePersistence.requiredCount || totalReviewCount} schede del tuo contributo corrente risultano registrate nel gruppo.
+                Il confronto si apre quando tutte le {sharePersistence.requiredCount || totalReviewCount} schede del tuo lavoro risultano condivise con il gruppo.
               </p>
             </section>
           )}
 
           {isCoordinator && sharePersistence.complete && (
             <section className="rounded-2xl border border-indigo-200 bg-white p-4" aria-label="Passaggio al confronto del gruppo" data-team-comparison-ready>
-              <strong className="block text-sm text-slate-900">Condivisione verificata</strong>
+              <strong className="block text-sm text-slate-900">Condivisione completata</strong>
               <p className="mt-1 text-xs leading-relaxed text-slate-600">
-                Il tuo contributo corrente è registrato nel gruppo. Ora puoi aprire il confronto come coordinatore; il ruolo di coordinamento resta distinto dal contributo individuale.
+                Il tuo parere è nel gruppo. Ora puoi aprire il confronto come coordinatore; il tuo ruolo di coordinamento resta separato dal parere personale.
               </p>
               <button
                 type="button"
@@ -385,9 +395,9 @@ export function RevisionWorkspace(props: RevisionWorkspaceProps) {
 
           {!isCoordinator && sharePersistence.complete && (
             <section className="rounded-2xl border border-slate-200 bg-slate-50 p-4" aria-label="Attesa del confronto del gruppo" data-personal-work-complete>
-              <strong className="block text-sm text-slate-900">Il tuo contributo è condiviso</strong>
+              <strong className="block text-sm text-slate-900">Il tuo parere è condiviso</strong>
               <p className="mt-1 text-xs leading-relaxed text-slate-600">
-                Per ora non devi fare altro. Il coordinatore proseguirà con il confronto e la registrazione degli esiti quando il gruppo sarà pronto.
+                Per ora non devi fare altro. Il coordinatore proseguirà con il confronto e registrerà gli esiti quando il gruppo sarà pronto.
               </p>
               <details className="mt-3 rounded-xl border border-slate-200 bg-white">
                 <summary className="cursor-pointer px-3 py-2 text-xs font-bold text-slate-700">Vedi lo stato del confronto</summary>
@@ -411,9 +421,9 @@ export function RevisionWorkspace(props: RevisionWorkspaceProps) {
           <section className="rounded-2xl border border-indigo-200 bg-indigo-50/50 p-4">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <strong className="block text-base text-indigo-950">Confronta i punti aperti</strong>
+                <strong className="block text-base text-indigo-950">Confronta i punti ancora aperti</strong>
                 <p className="mt-1 text-xs leading-relaxed text-indigo-800">
-                  Leggi i contributi e porta all’esito soltanto il punto su cui il gruppo ha maturato una decisione professionale.
+                  Leggi i pareri del gruppo e porta all’esito soltanto ciò su cui avete raggiunto un accordo professionale.
                 </p>
               </div>
               <button
@@ -445,7 +455,7 @@ export function RevisionWorkspace(props: RevisionWorkspaceProps) {
               <div>
                 <strong className="block text-base text-indigo-950">Registra l’esito del gruppo</strong>
                 <p className="mt-1 text-xs leading-relaxed text-indigo-800">
-                  Registra soltanto ciò che il gruppo ha già concordato. L’esito professionale resta distinto dalla successiva decisione istituzionale.
+                  Registra soltanto ciò che il gruppo ha già concordato. Questo esito non è ancora una decisione dell’Istituto.
                 </p>
               </div>
               <button
@@ -476,9 +486,9 @@ export function RevisionWorkspace(props: RevisionWorkspaceProps) {
 
           {coordinationState.allCurrentOutcomesRecorded && (
             <section className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4" data-curriculum-work-session-complete>
-              <strong className="block text-sm text-emerald-950">Sessione professionale del gruppo completata per queste schede</strong>
+              <strong className="block text-sm text-emerald-950">Il lavoro del gruppo su queste schede è completo</strong>
               <p className="mt-1 text-xs leading-relaxed text-emerald-800">
-                Gli esiti correnti sono registrati. Questo non approva il curricolo: il riesame verticale e l’eventuale iter istituzionale sono passaggi successivi e separati.
+                Gli esiti sono registrati. Il curricolo non è ancora approvato: il controllo tra le classi e l’eventuale decisione dell’Istituto vengono dopo, in passaggi separati.
               </p>
             </section>
           )}
