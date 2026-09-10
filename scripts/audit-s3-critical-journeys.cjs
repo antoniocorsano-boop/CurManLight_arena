@@ -90,6 +90,10 @@ async function noHorizontalOverflow(page) {
         'curriculum is presented as a professional publication',
         (await canonicalEntry.getAttribute('data-curriculum-presentation')) === 'professional-publication'
       );
+      check(
+        'web publication declares source-snapshot parity with the department document',
+        (await canonicalEntry.getAttribute('data-curriculum-publication-parity')) === 'source-snapshot'
+      );
 
       const authorityText = (await canonicalEntry.innerText()).toLowerCase();
       check(
@@ -129,10 +133,27 @@ async function noHorizontalOverflow(page) {
       check('document reader is not mounted before the teacher chooses it', (await page.locator('[data-curriculum-document-reader]').count()) === 0);
       check('curriculum context has no material horizontal overflow', await noHorizontalOverflow(page));
 
-      const sectionSelector = canonicalEntry.locator('[data-curriculum-section-selector]').first();
-      await sectionSelector.waitFor({ state: 'visible', timeout: 5000 });
-      check('web reader offers compact section navigation', await sectionSelector.isVisible());
-      check('web reader starts from the first editorial section', (await sectionSelector.inputValue()) === 'identita');
+      if (profile.id === 'desktop') {
+        const desktopIndex = canonicalEntry.locator('[data-curriculum-desktop-index]').first();
+        await desktopIndex.waitFor({ state: 'visible', timeout: 5000 });
+        check('desktop web reader offers a persistent editorial index', await desktopIndex.isVisible());
+        const technologyEntry = desktopIndex.getByRole('button', { name: /9\s+Tecnologia/i }).first();
+        await technologyEntry.click();
+      } else {
+        const sectionSelector = canonicalEntry.locator('[data-curriculum-section-selector]').first();
+        await sectionSelector.waitFor({ state: 'visible', timeout: 5000 });
+        check('mobile web reader offers compact section navigation', await sectionSelector.isVisible());
+        check('mobile web reader starts from the first editorial section', (await sectionSelector.inputValue()) === 'identita');
+        await sectionSelector.selectOption('tecnologia');
+      }
+
+      const technologyPublication = canonicalEntry.locator('[data-curriculum-publication-content][data-source-section="9"]').first();
+      await technologyPublication.waitFor({ state: 'visible', timeout: 5000 });
+      const technologyText = (await technologyPublication.innerText()).toLowerCase();
+      check('structured web publication can open the full Technology section', technologyText.includes('perché si studia tecnologia'));
+      check('Technology web section preserves annual matrices', (await technologyPublication.locator('[data-curriculum-publication-table]').count()) >= 8);
+      check('Technology web section exposes class I and class III progression', technologyText.includes('secondaria — classe i') && technologyText.includes('secondaria — classe iii'));
+      check('full curriculum tables do not create page-level horizontal overflow', await noHorizontalOverflow(page));
 
       await documentMode.click();
       const documentReader = page.locator('[data-curriculum-document-reader]').first();
