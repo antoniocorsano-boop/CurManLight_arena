@@ -14,10 +14,10 @@ const ccoDocs = readText('docs/04_product_experience/11_OPERATIONAL_COMMUNICATIO
 const ia = readText('docs/04_product_experience/01_INFORMATION_ARCHITECTURE.md');
 const flows = readText('docs/04_product_experience/09_USER_FLOWS.md');
 
-assert(cco.version === '1.5.0', 'CCO deve essere 1.5.0');
-assert(surfaces.version === '1.6.1', 'CCO-SURFACES deve essere 1.6.1 dopo il retest visivo R1.1');
-assert(visualAcceptance.human_verdict === 'PASS', 'il retest visivo umano R1.1 deve risultare PASS');
-assert(visualAcceptance.governance_effect?.new_status === 'conformant', 'il retest R1.1 deve autorizzare conformant');
+assert(cco.version === '1.5.1', 'CCO deve essere 1.5.1 dopo la remediation G5 del Riesame');
+assert(surfaces.version === '1.6.2', 'CCO-SURFACES deve essere 1.6.2 dopo la remediation G5 del Riesame');
+assert(visualAcceptance.human_verdict === 'PASS', 'il precedente retest visivo umano R1.1 deve restare PASS per le superfici che ha effettivamente coperto');
+assert(visualAcceptance.governance_effect?.new_status === 'conformant', 'il retest R1.1 deve continuare ad autorizzare le superfici da esso coperte');
 const visualChecks = visualAcceptance.acceptance_checks ?? {};
 for (const key of [
   'return_to_general_context_starts_at_top',
@@ -99,7 +99,7 @@ for (const id of promotedCaseScopedSurfaceIds) {
   const surface = byId.get(id);
   assert(surface, `superficie case-scoped non registrata: ${id}`);
   assert(promotedFromEvidence.has(id), `superficie ${id} non coperta dalla prova visiva R1.1`);
-  assert(surface?.status === 'conformant', `superficie ${id} deve essere conformant dopo l'accettazione visiva R1.1`);
+  assert(surface?.status === 'conformant', `superficie ${id} deve restare conformant dopo l'accettazione visiva R1.1`);
   assert(Boolean(surface?.operational_context?.trim()), `superficie ${id} priva di operational_context`);
   assert(Boolean(surface?.primary_task?.trim()), `superficie ${id} priva di primary_task`);
   assert(Array.isArray(surface?.required_tokens) && surface.required_tokens.length > 0, `superficie ${id} priva di required_tokens`);
@@ -135,7 +135,8 @@ for (const token of [
   'returnToGeneralRequested',
   "window.scrollTo({ top: 0, left: 0, behavior: 'auto' })",
   'data-general-return-anchor',
-  'UX_CONSOLIDATION_R1_1',
+  'UX_CONSOLIDATION_R1_2',
+  'data-vertical-review-entry',
 ]) assert(caseAware.includes(token), `CaseAwareRevisionSurface priva del presidio UX: ${token}`);
 assert(caseAware.indexOf('<RevisionWorkspace') < caseAware.indexOf('<SharedReviewCaseInbox'), 'il lavoro generale deve precedere il supporto di assegnazione');
 
@@ -149,7 +150,9 @@ for (const token of [
   "examineSurface === 'PERSONAL_REVIEW'",
   "examineSurface === 'REOPEN_CASE'",
   'data-targeted-review-tools',
-  'Torna alla panoramica',
+  'data-targeted-review-disclosure',
+  'Torna all’inizio del riesame',
+  'Adesso pensa soltanto al tuo parere. I passaggi successivi si aprono quando servono.',
 ]) assert(generalWorkspace.includes(token), `Riesame generale privo del consolidamento verticale: ${token}`);
 assert(
   generalWorkspace.indexOf("examineSurface === 'REOPEN_CASE'") < generalWorkspace.indexOf('<RevisionTriggerQualificationPanel'),
