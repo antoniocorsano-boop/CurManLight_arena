@@ -13,8 +13,16 @@ export const resolveBetaIdentityRedirectUrl = (): string | null => {
   if (typeof window === 'undefined' || import.meta.env.MODE !== 'beta') return null;
 
   const basename = resolveRouterBasename(import.meta.env.MODE, window.location.pathname);
-  const pathname = basename === '/' ? '/beta-identity' : `${basename}/beta-identity`;
-  return new URL(pathname, window.location.origin).toString();
+  const target = new URL(basename === '/' ? '/beta-identity' : `${basename}/`, window.location.origin);
+
+  // GitHub Pages cannot serve /<repo>/beta-identity as a physical deep route.
+  // Keep the root route for root-hosted previews and use the SPA query entry
+  // when Arena is published below a repository basename.
+  if (basename !== '/') {
+    target.searchParams.set('betaIdentity', '1');
+  }
+
+  return target.toString();
 };
 
 const createRedirectAwareFetch = (supabaseUrl: string): typeof fetch => {
