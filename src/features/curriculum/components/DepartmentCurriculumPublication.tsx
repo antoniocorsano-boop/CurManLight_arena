@@ -40,8 +40,15 @@ function PublicationTable({ rows }: { rows: string[][] }) {
   }
 
   return (
-    <div className="my-6 max-w-full overflow-x-auto rounded-xl border border-slate-200 bg-white" data-curriculum-publication-table>
-      <table className="min-w-[720px] w-full border-collapse text-left text-sm leading-5">
+    <div
+      className="my-6 max-w-full overflow-x-auto rounded-xl border border-slate-200 bg-white"
+      data-curriculum-publication-table
+      data-curriculum-table-scroll
+      role="region"
+      aria-label="Tabella del curricolo; scorri orizzontalmente per leggere tutte le colonne"
+      tabIndex={0}
+    >
+      <table data-curriculum-publication-grid className="min-w-[720px] w-full border-collapse text-left text-sm leading-5">
         <thead className="bg-slate-100 text-slate-800">
           <tr>
             {rows[0]?.map((cell, index) => (
