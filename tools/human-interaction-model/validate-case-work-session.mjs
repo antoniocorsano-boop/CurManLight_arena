@@ -41,6 +41,16 @@ for (const token of [
   'CASE_WORK_SESSION_ACTOR_MISMATCH',
 ]) assert(domain.includes(token), `dominio CurriculumWorkSession case-scoped non presidiato: ${token}`);
 
+const continuationDomain = readText('src/domain/curriculum/deferredCaseContinuation.ts');
+for (const token of [
+  'buildDeferredCaseContinuationWorkSession',
+  'DEFERRED_CONTINUATION_PROPOSAL_OUT_OF_CASE_SCOPE',
+  'targetedProposalRefs: [proposalRef]',
+  "caseState: 'OPEN_AT_APPLICABLE_CURRICULUM'",
+  "professionalValidationState: 'NOT_STARTED'",
+  'DEFERRED_CONTINUATION_CARRY_FORWARD_FORBIDDEN',
+]) assert(continuationDomain.includes(token), `continuazione H2 rinviata non presidiata: ${token}`);
+
 const caseTeamDomain = readText('src/domain/revision/caseScopedTeamReview.ts');
 for (const token of [
   'CaseScopedTeamReviewScope',
@@ -62,12 +72,24 @@ for (const token of [
   'A case-scoped contribution never satisfies another case.',
 ]) assert(migration.includes(token), `migrazione case-scoped non presidiata: ${token}`);
 
+const continuationMigration = readText('supabase/migrations/20260910090000_team_review_deferred_continuation.sql');
+for (const token of [
+  'team_review_deferred_continuations',
+  'team_review_contribution_history',
+  'resume_deferred_team_review_item_v1',
+  'DEFERRED_CONTINUATION_REQUIRES_DEFER',
+  'DEFERRED_CONTINUATION_ALREADY_OPEN',
+  'list_case_scoped_team_review_outcomes_v2',
+  'VERTICAL_REVIEW_H2_CONTINUATION_OPEN',
+]) assert(continuationMigration.includes(token), `migrazione continuazione H2 non presidiata: ${token}`);
+
 const repository = readText('src/infrastructure/supabase/caseScopedTeamReviewRepository.ts');
 for (const token of [
   "'upsert_team_review_contribution_v3'",
   "'record_team_review_outcome_v3'",
-  "p_review_case_id: input.reviewCaseId",
-  ".eq('review_case_id', scope.reviewCaseId)",
+  "'list_case_scoped_team_review_outcomes_v2'",
+  'p_review_case_id: input.reviewCaseId',
+  'p_review_case_id: scope.reviewCaseId',
 ]) assert(repository.includes(token), `repository case-scoped non presidiato: ${token}`);
 
 const panel = readText('src/features/curriculum/components/CurriculumReviewCasePanel.tsx');
@@ -173,6 +195,8 @@ for (const token of [
   'data-hcm-level="3"',
   'Casi assegnati al mio gruppo',
   'Ricevere un caso non avvia automaticamente la validazione.',
+  'Riprendi il punto rinviato',
+  'Partecipa al nuovo confronto',
   'Come funziona l’assegnazione',
   'Verifica e tracciabilità',
 ]) assert(sharedInbox.includes(token), `layering shared case non presidiato: ${token}`);
