@@ -80,15 +80,14 @@ class ErrorBoundary extends React.Component<
 const routerBasename = resolveRouterBasename(import.meta.env.MODE, window.location.pathname);
 
 // Supabase may fall back to the configured Site URL and append the recovery
-// session as a fragment. Route that fragment into the existing Beta identity
-// surface before BrowserRouter starts. On GitHub Pages the SPA query entry is
-// required because a repository deep route is not a physical page.
-const betaIdentityQueryEntryAtBootstrap = new URLSearchParams(window.location.search).get('betaIdentity') === '1';
+// session as a fragment. Route only that fragment before BrowserRouter starts.
+// The ordinary ?betaIdentity=1 entry remains owned by RouterContent/useLocation
+// so navigation stays reactive inside BrowserRouter.
 const recoveryFragmentAtBootstrap = window.location.hash.includes('type=recovery')
  || window.location.hash.includes('access_token=');
 const betaIdentityPhysicalPathAtBootstrap = window.location.pathname.endsWith('/beta-identity');
 
-if (recoveryFragmentAtBootstrap && !betaIdentityQueryEntryAtBootstrap && !betaIdentityPhysicalPathAtBootstrap) {
+if (recoveryFragmentAtBootstrap && !betaIdentityPhysicalPathAtBootstrap) {
  const recoveryTarget = new URL(window.location.href);
  if (routerBasename === '/') {
   recoveryTarget.pathname = '/beta-identity';
