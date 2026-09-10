@@ -61,7 +61,9 @@ describe('FASCICOLO_NAVIGATION_CONVERGENCE', () => {
     expect(homeSource).toContain('data-secondary-service="fascicolo"');
     expect(homeSource).toContain('Apri il Fascicolo');
     expect(viewsSource).not.toContain('verifica nel Fascicolo fonti, applicabilità e stato');
-    expect(curriculumWorkspaceSource).toContain('Verifica le fonti');
+    expect(curriculumWorkspaceSource).toContain('Fonti e verifiche');
     expect(curriculumWorkspaceSource).toContain('data-canonical-source-review');
+    expect(curriculumWorkspaceSource).toContain('data-source-review-progressive-disclosure');
+    expect(curriculumWorkspaceSource).toContain('Apri gli strumenti di verifica');
   });
 });
