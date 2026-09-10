@@ -1,7 +1,7 @@
 {
   "contract_id": "CCO",
   "name": "Contratto di comunicazione operativa di Arena",
-  "version": "1.5.0",
+  "version": "1.5.1",
   "purpose": "Separare orientamento operativo, spiegazione del processo e verifica tecnica affinché il docente possa agire con linguaggio istituzionale senza essere esposto al funzionamento interno del sistema, mantenendo sempre consapevolezza della posizione nel processo professionale.",
   "principles": {
     "structure_before_explanation": true,
@@ -205,10 +205,11 @@
         "data-revision-stage=\"review\"",
         "data-revision-stage=\"sharing\"",
         "setStage('SHARE')",
-        "Rivedi il mio contributo",
-        "Anche il coordinatore completa prima il proprio contributo personale.",
+        "Adesso pensa soltanto al tuo parere. I passaggi successivi si aprono quando servono.",
+        "Rivedi il mio parere",
+        "Anche chi coordina il gruppo comincia dal proprio parere personale.",
         "data-team-comparison-blocked-by-share",
-        "Condivisione verificata",
+        "Condivisione completata",
         "Apri il confronto del gruppo"
       ]
     },
