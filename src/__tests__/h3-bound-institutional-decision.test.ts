@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { resolveCapabilityAccess } from '../domain/institution/capabilities';
 import migration from '../../supabase/migrations/20260910130000_h3_bound_institutional_decision.sql?raw';
+import performanceMigration from '../../supabase/migrations/20260910130500_h3_bound_institutional_decision_performance_hardening.sql?raw';
 
 describe('H4 institutional decision bound to H3 handoff', () => {
   it('keeps REVISION_DECIDE exclusive to an authenticated Collegio actor', () => {
@@ -54,5 +55,11 @@ describe('H4 institutional decision bound to H3 handoff', () => {
     expect(migration).not.toMatch(/update\s+public\.vertical_review_institutional_handoffs/i);
     expect(migration).not.toMatch(/update\s+public\.[a-z0-9_]*curriculum[a-z0-9_]*\s+/i);
     expect(migration).not.toMatch(/insert\s+into\s+public\.[a-z0-9_]*adoption[a-z0-9_]*/i);
+  });
+
+  it('covers every new foreign-key path introduced by the H4 slice', () => {
+    expect(migration).toContain('institutional_revision_decisions_vertical_outcome_idx');
+    expect(migration).toContain('institutional_revision_decisions_decided_by_idx');
+    expect(performanceMigration).toContain('institutional_revision_decisions_vertical_handoff_fk_idx');
   });
 });
