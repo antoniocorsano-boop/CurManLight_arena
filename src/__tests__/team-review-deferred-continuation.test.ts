@@ -3,6 +3,7 @@ import { buildDeferredCaseContinuationWorkSession } from '../domain/curriculum/d
 import type { CaseScopedCurriculumWorkSession, CurriculumReviewCase, Proposal } from '../types/curriculum';
 import migration from '../../supabase/migrations/20260910090000_team_review_deferred_continuation.sql?raw';
 import triggerAclMigration from '../../supabase/migrations/20260910093000_deferred_continuation_trigger_acl_hardening.sql?raw';
+import performanceMigration from '../../supabase/migrations/20260910094500_deferred_continuation_performance_hardening.sql?raw';
 
 const proposals: Proposal[] = [
   { id: 'p-1', focus: 'Osservare, misurare e rappresentare', oldText: 'Testo precedente', newText: 'Proposta uno', notes: '' },
@@ -149,5 +150,15 @@ describe('H2 deferred continuation', () => {
     );
     expect(triggerAclMigration).toContain('from public, anon, authenticated');
     expect(triggerAclMigration).not.toContain('grant execute');
+  });
+
+  it('keeps new foreign-key paths indexed and evaluates auth identity once per RLS statement', () => {
+    expect(performanceMigration).toContain('team_review_deferred_continuations_completed_outcome_idx');
+    expect(performanceMigration).toContain('team_review_deferred_continuations_group_code_idx');
+    expect(performanceMigration).toContain('team_review_deferred_continuations_opened_by_idx');
+    expect(performanceMigration).toContain('team_review_contribution_history_source_outcome_idx');
+    expect(performanceMigration).toContain('team_review_contribution_history_workspace_idx');
+    expect(performanceMigration).toContain('team_review_contribution_history_contributor_idx');
+    expect(performanceMigration.match(/\(select auth\.uid\(\)\)/g)?.length).toBe(2);
   });
 });
