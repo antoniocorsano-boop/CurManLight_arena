@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { buildDeferredCaseContinuationWorkSession } from '../domain/curriculum/deferredCaseContinuation';
 import type { CaseScopedCurriculumWorkSession, CurriculumReviewCase, Proposal } from '../types/curriculum';
 import migration from '../../supabase/migrations/20260910090000_team_review_deferred_continuation.sql?raw';
+import triggerAclMigration from '../../supabase/migrations/20260910093000_deferred_continuation_trigger_acl_hardening.sql?raw';
 
 const proposals: Proposal[] = [
   { id: 'p-1', focus: 'Osservare, misurare e rappresentare', oldText: 'Testo precedente', newText: 'Proposta uno', notes: '' },
@@ -137,5 +138,16 @@ describe('H2 deferred continuation', () => {
     expect(migration).toContain('completed_by_outcome_id = new.id');
     expect(migration).not.toContain('insert into public.institutional_revision_decisions');
     expect(migration).not.toContain('insert into public.adoption_receipts');
+  });
+
+  it('keeps trigger-only continuation guards outside the client RPC surface', () => {
+    expect(triggerAclMigration).toContain(
+      'revoke all on function public.complete_deferred_team_review_continuation_v1()',
+    );
+    expect(triggerAclMigration).toContain(
+      'revoke all on function public.guard_vertical_review_against_open_h2_continuation_v1()',
+    );
+    expect(triggerAclMigration).toContain('from public, anon, authenticated');
+    expect(triggerAclMigration).not.toContain('grant execute');
   });
 });
