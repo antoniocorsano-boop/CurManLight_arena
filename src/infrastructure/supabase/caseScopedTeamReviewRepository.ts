@@ -184,15 +184,13 @@ export class SupabaseCaseScopedTeamReviewRepository {
   ): Promise<CaseScopedTeamReviewOutcomeReceipt[]> {
     assertContext(context, workspaceId);
     assertScope(scope);
-    const { data, error } = await this.client
-      .from('team_review_outcomes')
-      .select('id,workspace_id,academic_year,group_code,discipline,review_case_id,proposal_ref,proposal_fingerprint,outcome,shared_text,rationale,recorded_by_user_id,recorded_by_role,recorded_by_operational_role,authority_state,recorded_at,client_request_id')
-      .eq('workspace_id', workspaceId)
-      .eq('academic_year', scope.academicYear)
-      .eq('group_code', scope.groupCode)
-      .eq('discipline', scope.discipline)
-      .eq('review_case_id', scope.reviewCaseId)
-      .order('recorded_at', { ascending: false });
+    const { data, error } = await this.client.rpc('list_case_scoped_team_review_outcomes_v2', {
+      p_workspace_id: workspaceId,
+      p_academic_year: scope.academicYear,
+      p_group_code: scope.groupCode,
+      p_discipline: scope.discipline,
+      p_review_case_id: scope.reviewCaseId,
+    });
     if (error) throw new Error(`Esiti del caso non leggibili: ${error.message}`);
     return ((data ?? []) as OutcomeRow[]).map(toOutcome);
   }
