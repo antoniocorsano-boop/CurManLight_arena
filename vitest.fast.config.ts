@@ -65,7 +65,8 @@ export default defineConfig({
       'src/__tests__/dm221-technology-human-verification.test.ts',
       'src/__tests__/dm221-technology-source-review-ui.test.tsx',
       'src/__tests__/interop-runtime-context-scope.test.ts',
-      'src/__tests__/team-review-deferred-continuation.test.ts'
+      'src/__tests__/team-review-deferred-continuation.test.ts',
+      'src/__tests__/vertical-review-institutional-handoff.test.ts'
     ],
     exclude: ['**/node_modules/**', '**/.git/**'],
     pool: 'threads',
