@@ -1,0 +1,127 @@
+name: G5 Curriculum Contract Patch Once
+
+on:
+  push:
+    branches:
+      - remediation/g5-curriculum-lightweight
+    paths:
+      - '.github/workflows/g5-curriculum-contract-patch-once.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: remediation/g5-curriculum-lightweight
+          fetch-depth: 0
+
+      - name: Patch regression guard and registries
+        shell: python
+        run: |
+          from pathlib import Path
+          import json
+
+          test_path = Path('src/__tests__/beta-shell-regression.test.ts')
+          text = test_path.read_text(encoding='utf-8')
+          start = text.index("  it('makes the canonical 3–14 curriculum primary and keeps source verification explicit', () => {")
+          end = text.index("  it('makes personal revision recognition-first with nearby context and actions', () => {", start)
+          replacement = '''  it('keeps Curriculum compact, teacher-readable and progressively discloses assurance tools', () => {
+            expect(curriculumWorkspaceSource).toContain('data-canonical-curriculum-entry');
+            expect(curriculumWorkspaceSource).toContain('Curricolo verticale d’Istituto');
+            expect(curriculumWorkspaceSource).toContain('Curricolo verticale 3–14');
+            expect(curriculumWorkspaceSource).toContain('In revisione');
+            expect(curriculumWorkspaceSource).toContain('deve ancora essere validato dall’Istituto.');
+            expect(curriculumWorkspaceSource).toContain('data-curriculum-scope-summary');
+            expect(curriculumWorkspaceSource).toContain('Infanzia · 3–5 anni');
+            expect(curriculumWorkspaceSource).toContain('Primaria · I–V');
+            expect(curriculumWorkspaceSource).toContain('Secondaria · I–III');
+            expect(curriculumWorkspaceSource).toContain('data-secondary-curriculum-navigation');
+            expect(curriculumWorkspaceSource).toContain('Per il tuo lavoro');
+            expect(curriculumWorkspaceSource).toContain('Tecnologia · Secondaria di primo grado');
+            expect(curriculumWorkspaceSource).toContain('Scegli una classe se vuoi passare al Riesame.');
+            expect(curriculumWorkspaceSource).toContain('Consulta il curricolo');
+            expect(curriculumWorkspaceSource).toContain('data-source-review-progressive-disclosure');
+            expect(curriculumWorkspaceSource).toContain('Fonti e verifiche');
+            expect(curriculumWorkspaceSource).toContain('Apri gli strumenti di verifica');
+            expect(curriculumWorkspaceSource).toContain('data-source-review-advanced-tools');
+            expect(curriculumWorkspaceSource).toContain('FinalPublicationSourceReviewWorkbench');
+            expect(curriculumWorkspaceSource).toContain('data-legacy-curriculum-disclosure');
+            expect(curriculumWorkspaceSource).toContain('Archivio precedente');
+            expect(curriculumWorkspaceSource).not.toContain('Baseline corrente');
+            expect(curriculumWorkspaceSource).not.toContain('master canonico');
+            expect(curriculumWorkspaceSource).not.toContain('Riesame H2');
+            expect(curriculumWorkspaceSource).not.toContain('superficie H2');
+            expect(curriculumWorkspaceSource).not.toContain('SHA-256');
+            expect(curriculumWorkspaceSource).not.toContain('868 slot');
+            expect(curriculumWorkspaceSource).not.toContain('Esporta pacchetto');
+            expect(curriculumWorkspaceSource).not.toContain('Importa verifiche');
+
+            expect(finalPublicationSourceReviewWorkbenchSource).toContain('data-source-review-roundtrip');
+            expect(finalPublicationSourceReviewWorkbenchSource).toContain('Esporta pacchetto');
+            expect(finalPublicationSourceReviewWorkbenchSource).toContain('Importa verifiche');
+            expect(finalPublicationSourceReviewWorkbenchSource).toContain('FinalPublicationSourceReviewTask');
+            expect(finalPublicationSourceReviewTaskSource).toContain('Scuola dell’infanzia');
+            expect(finalPublicationSourceReviewTaskSource).toContain('Scuola primaria');
+            expect(finalPublicationSourceReviewTaskSource).toContain('Secondaria di I grado');
+            expect(finalPublicationSourceReviewTaskSource).toContain('Filtra per ordine scolastico');
+            expect(finalPublicationSourceReviewTaskSource).toContain('Filtra per campo o disciplina');
+            expect(finalPublicationSourceReviewTaskSource).toContain('Apri la pubblicazione finale MIM');
+            expect(finalPublicationSourceReviewTaskSource).toContain('DM221_2025_SOURCE.officialCurriculumVolume.url');
+            expect(finalPublicationSourceReviewTaskSource).not.toContain('DM221_2025_SOURCE.officialLocator.pdfUrl');
+            expect(technologySourceReviewTaskSource).toContain('DM221_2025_SOURCE.officialCurriculumVolume.url');
+            expect(technologySourceReviewTaskSource).not.toContain('DM221_2025_SOURCE.officialLocator.pdfUrl');
+          });
+
+'''
+          test_path.write_text(text[:start] + replacement + text[end:], encoding='utf-8')
+
+          surfaces_path = Path('.human/operational-communication.surfaces.json')
+          surfaces = json.loads(surfaces_path.read_text(encoding='utf-8'))
+          surfaces['version'] = '1.6.3'
+          surfaces['surfaces'] = [s for s in surfaces['surfaces'] if s.get('id') != 'curriculum-primary']
+          surfaces['surfaces'].insert(1, {
+            'id': 'curriculum-primary',
+            'path': 'src/features/curriculum/CurriculumWorkspace.tsx',
+            'status': 'conformant',
+            'operational_context': 'Consultazione del curricolo d’Istituto',
+            'primary_task': 'Riconoscere curricolo, stato, copertura e azione utile senza attraversare strumenti tecnici di verifica',
+            'communication_levels': {
+              'level_1': 'Curricolo, stato, copertura, ambito docente e consultazione',
+              'level_2': 'Fonti e archivio come aree secondarie chiuse',
+              'level_3': 'Verifica documentale avanzata solo dopo una scelta intenzionale ulteriore'
+            },
+            'required_tokens': [
+              'data-canonical-curriculum-entry',
+              'Curricolo verticale 3–14',
+              'In revisione',
+              'data-curriculum-scope-summary',
+              'data-secondary-curriculum-navigation',
+              'Consulta il curricolo',
+              'data-source-review-progressive-disclosure',
+              'data-open-source-review-tools',
+              'data-source-review-advanced-tools',
+              'data-legacy-curriculum-disclosure'
+            ]
+          })
+          surfaces_path.write_text(json.dumps(surfaces, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+
+          reg_path = Path('docs/curriculum/REG-CURR-00.registry.json')
+          reg = json.loads(reg_path.read_text(encoding='utf-8'))
+          reg['arena_product_baseline']['cco_surfaces_version'] = '1.6.3'
+          reg_path.write_text(json.dumps(reg, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+
+          Path('.github/workflows/g5-curriculum-contract-patch-once.yml').unlink()
+
+      - name: Commit deterministic patch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'CurManLight Automation'
+          git config user.email 'actions@users.noreply.github.com'
+          git add src/__tests__/beta-shell-regression.test.ts .human/operational-communication.surfaces.json docs/curriculum/REG-CURR-00.registry.json .github/workflows/g5-curriculum-contract-patch-once.yml
+          git commit -m 'test(ux): bind lightweight curriculum information architecture'
+          git push origin HEAD:remediation/g5-curriculum-lightweight
