@@ -7,6 +7,7 @@ import {
 } from '../../domain/revision/h4CanonicalAdoptionHandoff';
 import type { H3BoundInstitutionalDecisionReceipt } from '../../domain/revision/h3BoundInstitutionalDecision';
 import { SupabaseH4CanonicalAdoptionHandoffRepository } from '../../infrastructure/supabase/h4CanonicalAdoptionHandoffRepository';
+import { H4BoundCanonicalAdoptionPanel } from './H4BoundCanonicalAdoptionPanel';
 
 interface Props {
   client: SupabaseClient;
@@ -120,6 +121,10 @@ export function H4CanonicalAdoptionHandoffPanel({ client, context, decision }: P
       )}
 
       {message && <div className="mt-3 rounded-lg border border-indigo-200 bg-indigo-50 p-3 text-indigo-950" aria-live="polite">{message}</div>}
+
+      {!loading && receipt && (
+        <H4BoundCanonicalAdoptionPanel client={client} context={context} handoff={receipt} />
+      )}
     </section>
   );
 }
