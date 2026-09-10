@@ -3,13 +3,13 @@
   "protocol": "BETA_G5_HUMAN_ACCEPTANCE_PROTOCOL_v2",
   "sessionId": "BETA-G5-2026-09-10-37d89ff2",
   "candidateRef": "37d89ff26358ebf4eae84108c27956eae5897277",
-  "status": "PENDING_HUMAN",
+  "status": "HUMAN_REVIEW_BLOCKED",
   "releaseSha": "37d89ff26358ebf4eae84108c27956eae5897277",
   "betaUrl": "https://antoniocorsano-boop.github.io/CurManLight_arena/",
   "releaseIdentityVerified": true,
   "reviewedAt": null,
   "reviewerAttestation": {
-    "humanReviewActuallyPerformed": false,
+    "humanReviewActuallyPerformed": true,
     "desktopReviewed": false,
     "mobileReviewed": false,
     "noFabricatedAuthority": false,
@@ -19,14 +19,14 @@
   "tasks": {
     "HT-BETA-CURRICULUM-CONTEXT": {
       "desktop": "PENDING",
-      "mobile": "PENDING",
+      "mobile": "BLOCK",
       "observations": {
         "validContext": "PENDING",
         "provenance": "PENDING",
         "invalidOrIncompleteContext": "PENDING",
         "recovery": "PENDING"
       },
-      "notes": ""
+      "notes": "Human reviewer reported that the curriculum presentation appears good overall, but the curriculum tables do not scroll horizontally when the phone is held vertically. The table columns therefore cannot all be inspected in the required portrait mobile view. No broader curriculum-context PASS is inferred from this observation."
     },
     "HT-BETA-REVISION-PREPARE": {
       "desktop": "PENDING",
@@ -71,7 +71,7 @@
     "empty": "PENDING",
     "loading": "PENDING",
     "success": "PENDING",
-    "blocked": "PENDING",
+    "blocked": "BLOCK",
     "error": "PENDING",
     "recovery": "PENDING"
   },
@@ -82,9 +82,18 @@
     "historicalArchive": "PENDING",
     "notes": ""
   },
-  "findings": [],
+  "findings": [
+    {
+      "id": "G5-UX-CURRICULUM-MOBILE-TABLE-SCROLL-001",
+      "severity": "S2",
+      "status": "OPEN_CONFIRMED",
+      "title": "Le tabelle del Curricolo non scorrono orizzontalmente in portrait mobile",
+      "retest": "PENDING_REMEDIATION",
+      "evidence": "Human reviewer reported on the published 37d89ff2 release that tables do not scroll when the phone is held vertically, preventing inspection of all columns."
+    }
+  ],
   "severity1Open": 0,
-  "severity2Open": 0,
+  "severity2Open": 1,
   "verdict": "PENDING_HUMAN",
   "allowedVerdicts": [
     "BETA_HIA_PASS",
@@ -96,6 +105,7 @@
     "Automated browser evidence is not a substitute for this human review.",
     "A revoked or missing institutional membership must not be fabricated to obtain an authorized decision path.",
     "BETA_HIA_PASS must not be written before the human observations are complete.",
+    "The reported mobile table-scroll finding blocks acceptance of release 37d89ff26358ebf4eae84108c27956eae5897277 until it is remediated and human-retested on a newly deployed immutable release.",
     "A completed receipt must identify the exact immutable SHA exposed by the published beta-release.json."
   ]
 }
