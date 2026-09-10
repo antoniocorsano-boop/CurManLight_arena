@@ -12,19 +12,25 @@ on:
       - 'supabase/migrations/20260910140000_h3_bound_institutional_decision_pgcrypto_schema_fix.sql'
       - 'supabase/migrations/20260910150000_h4_canonical_adoption_handoff.sql'
       - 'supabase/migrations/20260910150500_h4_canonical_adoption_handoff_performance.sql'
+      - 'supabase/migrations/20260910153000_beta_development_pilot_dirigente_authority.sql'
+      - 'supabase/migrations/20260910160000_h4_bound_canonical_adoption_receipt.sql'
       - 'src/domain/revision/institutionalReviewHandoff.ts'
       - 'src/domain/revision/h3BoundInstitutionalDecision.ts'
       - 'src/domain/revision/h4CanonicalAdoptionHandoff.ts'
+      - 'src/domain/revision/h4BoundCanonicalAdoption.ts'
       - 'src/infrastructure/supabase/institutionalReviewHandoffRepository.ts'
       - 'src/infrastructure/supabase/h3BoundInstitutionalDecisionRepository.ts'
       - 'src/infrastructure/supabase/h4CanonicalAdoptionHandoffRepository.ts'
+      - 'src/infrastructure/supabase/h4BoundCanonicalAdoptionRepository.ts'
       - 'src/features/beta/H3BoundInstitutionalDecisionPanel.tsx'
       - 'src/features/beta/H4CanonicalAdoptionHandoffPanel.tsx'
+      - 'src/features/beta/H4BoundCanonicalAdoptionPanel.tsx'
       - 'src/features/beta/VerticalReviewPanel.tsx'
       - 'src/__tests__/vertical-review-institutional-handoff.test.ts'
       - 'src/__tests__/h3-bound-institutional-decision.test.ts'
       - 'src/__tests__/development-pilot-h4.test.ts'
       - 'src/__tests__/h4-canonical-adoption-handoff.test.ts'
+      - 'src/__tests__/h4-bound-canonical-adoption.test.ts'
       - 'vitest.fast.config.ts'
       - '.github/workflows/h3-h4-authority.yml'
   push:
@@ -39,19 +45,25 @@ on:
       - 'supabase/migrations/20260910140000_h3_bound_institutional_decision_pgcrypto_schema_fix.sql'
       - 'supabase/migrations/20260910150000_h4_canonical_adoption_handoff.sql'
       - 'supabase/migrations/20260910150500_h4_canonical_adoption_handoff_performance.sql'
+      - 'supabase/migrations/20260910153000_beta_development_pilot_dirigente_authority.sql'
+      - 'supabase/migrations/20260910160000_h4_bound_canonical_adoption_receipt.sql'
       - 'src/domain/revision/institutionalReviewHandoff.ts'
       - 'src/domain/revision/h3BoundInstitutionalDecision.ts'
       - 'src/domain/revision/h4CanonicalAdoptionHandoff.ts'
+      - 'src/domain/revision/h4BoundCanonicalAdoption.ts'
       - 'src/infrastructure/supabase/institutionalReviewHandoffRepository.ts'
       - 'src/infrastructure/supabase/h3BoundInstitutionalDecisionRepository.ts'
       - 'src/infrastructure/supabase/h4CanonicalAdoptionHandoffRepository.ts'
+      - 'src/infrastructure/supabase/h4BoundCanonicalAdoptionRepository.ts'
       - 'src/features/beta/H3BoundInstitutionalDecisionPanel.tsx'
       - 'src/features/beta/H4CanonicalAdoptionHandoffPanel.tsx'
+      - 'src/features/beta/H4BoundCanonicalAdoptionPanel.tsx'
       - 'src/features/beta/VerticalReviewPanel.tsx'
       - 'src/__tests__/vertical-review-institutional-handoff.test.ts'
       - 'src/__tests__/h3-bound-institutional-decision.test.ts'
       - 'src/__tests__/development-pilot-h4.test.ts'
       - 'src/__tests__/h4-canonical-adoption-handoff.test.ts'
+      - 'src/__tests__/h4-bound-canonical-adoption.test.ts'
       - 'vitest.fast.config.ts'
       - '.github/workflows/h3-h4-authority.yml'
 
@@ -70,13 +82,14 @@ jobs:
           cache: npm
       - run: npm ci
 
-      - name: H3, H4 and adoption handoff boundary tests
+      - name: H3, H4 and adoption boundary tests
         run: >-
           npx vitest run
           src/__tests__/vertical-review-institutional-handoff.test.ts
           src/__tests__/h3-bound-institutional-decision.test.ts
           src/__tests__/development-pilot-h4.test.ts
           src/__tests__/h4-canonical-adoption-handoff.test.ts
+          src/__tests__/h4-bound-canonical-adoption.test.ts
 
       - name: H4 server authority invariants
         run: |
@@ -88,6 +101,8 @@ jobs:
           crypto_fix='supabase/migrations/20260910140000_h3_bound_institutional_decision_pgcrypto_schema_fix.sql'
           adoption_handoff='supabase/migrations/20260910150000_h4_canonical_adoption_handoff.sql'
           adoption_perf='supabase/migrations/20260910150500_h4_canonical_adoption_handoff_performance.sql'
+          pilot_dirigente='supabase/migrations/20260910153000_beta_development_pilot_dirigente_authority.sql'
+          adoption='supabase/migrations/20260910160000_h4_bound_canonical_adoption_receipt.sql'
 
           grep -Fq 'record_h3_bound_institutional_decision_v1' "$h4"
           grep -Fq "v_role is distinct from 'collegio'" "$h4"
@@ -126,6 +141,25 @@ jobs:
           grep -Fq 'curriculum_in_force_changed boolean not null default false' "$adoption_handoff"
           grep -Fq 'automatic_master_promotion boolean not null default false' "$adoption_handoff"
           grep -Fq 'h4_canonical_adoption_handoffs_decision_idx' "$adoption_perf"
+
+          grep -Fq "authority_role in ('collegio','dirigente')" "$pilot_dirigente"
+          grep -Fq 'unique (workspace_id, user_id, scope, authority_role)' "$pilot_dirigente"
+          grep -Fq 'development_pilot_authority_assignments_role_active_idx' "$pilot_dirigente"
+
+          grep -Fq 'record_h4_bound_canonical_adoption_v1' "$adoption"
+          grep -Fq "assignment.authority_role = 'dirigente'" "$adoption"
+          grep -Fq "v_membership_role is distinct from 'dirigente'" "$adoption"
+          grep -Fq "status text not null default 'ADOPTED_PENDING_MATERIALIZATION'" "$adoption"
+          grep -Fq 'ADOPTION_CURRENT_FINAL_H4_REQUIRED' "$adoption"
+          grep -Fq 'ADOPTION_STALE_H2_SOURCE' "$adoption"
+          grep -Fq 'ADOPTION_H2_CONTINUATION_OPEN' "$adoption"
+          grep -Fq 'ADOPTION_STALE_H3' "$adoption"
+          grep -Fq 'CML_ARENA_H4_BOUND_ADOPTION_V1' "$adoption"
+          grep -Fq 'extensions.digest' "$adoption"
+          grep -Fq 'revoke insert, update, delete on table public.h4_bound_canonical_adoption_receipts' "$adoption"
+          grep -Fq 'materialization_created boolean not null default false' "$adoption"
+          grep -Fq 'curriculum_in_force_changed boolean not null default false' "$adoption"
+          grep -Fq 'automatic_master_promotion boolean not null default false' "$adoption"
 
       - name: TypeScript
         run: npx tsc --noEmit
