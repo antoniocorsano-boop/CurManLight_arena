@@ -76,8 +76,19 @@ const workSessionSource = readText('src/features/beta/RevisionWorkspace.tsx');
 assert(workSessionSource.includes('data-curriculum-work-session'), 'RevisionWorkspace non espone la CurriculumWorkSession');
 assert(workSessionSource.includes("type CurriculumWorkSessionStage = 'EXAMINE' | 'SHARE' | 'COMPARE' | 'RECORD_TEAM_OUTCOME';"), 'stadi della CurriculumWorkSession non espliciti');
 assert(!workSessionSource.includes('role="tablist"'), 'la revisione è tornata a tab concorrenti invece di una sessione progressiva');
-for (const label of ['Esamina', 'Condividi', 'Confronta', 'Esito del gruppo']) assert(workSessionSource.includes(label), `passaggio visibile mancante: ${label}`);
-assert(workSessionSource.includes('Anche il coordinatore completa prima il proprio contributo personale.'), 'il coordinatore può saltare il contributo personale');
+const visibleStageLabels = [
+  ["EXAMINE", "Valuta"],
+  ["SHARE", "Condividi"],
+  ["COMPARE", "Confronta"],
+  ["RECORD_TEAM_OUTCOME", "Esito del gruppo"],
+];
+for (const [stageId, label] of visibleStageLabels) {
+  assert(
+    workSessionSource.includes(`{ id: '${stageId}', label: '${label}' }`),
+    `etichetta docente mancante per ${stageId}: ${label}`,
+  );
+}
+assert(workSessionSource.includes('Anche chi coordina il gruppo comincia dal proprio parere personale.'), 'il coordinatore può saltare il contributo personale');
 assert(workSessionSource.includes('data-persisted-share-ready={sharePersistence.complete'), 'la sessione non espone lo stato di condivisione persistita');
 assert(workSessionSource.includes("(stage === 'COMPARE' || stage === 'RECORD_TEAM_OUTCOME') && !sharePersistence.complete"), 'COMPARE/RECORD non tornano fail-closed quando manca la condivisione corrente');
 assert(workSessionSource.includes('isCoordinator && !sharePersistence.complete'), 'il confronto non mostra il blocco quando la condivisione non è verificata');
@@ -90,7 +101,7 @@ assert(workSessionSource.includes('mode="compare"'), 'il confronto non è proiet
 assert(workSessionSource.includes('mode="record"'), 'la registrazione esito non è proiettata nella sessione');
 assert(workSessionSource.includes('data-curriculum-work-session-complete'), 'manca la conseguenza visibile della chiusura degli esiti correnti');
 assert(!workSessionSource.includes('Ho condiviso: apri il confronto del gruppo'), 'una dichiarazione utente può ancora simulare la condivisione');
-assert(workSessionSource.includes('Il tuo contributo è condiviso'), 'stato terminale del docente dopo persistenza mancante');
+assert(workSessionSource.includes('Il tuo parere è condiviso'), 'stato terminale del docente dopo persistenza mancante');
 
 const coordinationSource = readText('src/features/beta/TeamCoordinationWorkspace.tsx');
 assert(coordinationSource.includes("export type TeamCoordinationMode = 'status' | 'compare' | 'record'"), 'coordinamento non espone modalità subordinate alla sessione');
