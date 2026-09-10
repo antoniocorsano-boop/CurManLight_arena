@@ -74,10 +74,10 @@ async function readPlanningHandoffState(page) {
     await returnToRevision.click();
     await page.waitForURL((url) => url.pathname.endsWith('/revisione') && !url.searchParams.has('betaIdentity'), { timeout: 8000 });
     await closeLocalProfileIfPresent(page);
-    await expectVisibleText(page, 'Il mio lavoro sul curricolo');
+    await expectVisibleText(page, 'Rivedi il curricolo con i colleghi');
     check('0. betaIdentity query entry exits through live Router navigation', page.url().includes('/revisione') && !page.url().includes('betaIdentity=1'));
 
-    const initialResponse = await gotoWorkspace(page, revisionUrl, 'Il mio lavoro sul curricolo');
+    const initialResponse = await gotoWorkspace(page, revisionUrl, 'Rivedi il curricolo con i colleghi');
     const overview = page.locator('[data-general-review-overview]').first();
     await overview.waitFor({ state: 'visible', timeout: 8000 });
     check('1. /revisione renders the compact teacher review overview', Boolean(initialResponse) && page.url().includes('/revisione'));
@@ -107,7 +107,7 @@ async function readPlanningHandoffState(page) {
 
     const refreshResponse = await page.reload({ waitUntil: 'domcontentloaded', timeout: 30000 });
     await closeLocalProfileIfPresent(page);
-    await expectVisibleText(page, 'Il mio lavoro sul curricolo');
+    await expectVisibleText(page, 'Rivedi il curricolo con i colleghi');
     await page.locator('[data-general-review-overview]').first().waitFor({ state: 'visible', timeout: 8000 });
     await openPersonalReview(page);
     await expectVisibleText(page, 'Proposta confermata');
@@ -123,7 +123,7 @@ async function readPlanningHandoffState(page) {
     await handoff.handoff.scrollIntoViewIfNeeded();
     check('15. Planning handoff remains reachable on mobile', await handoff.handoff.isVisible());
 
-    await gotoWorkspace(page, revisionUrl, 'Il mio lavoro sul curricolo');
+    await gotoWorkspace(page, revisionUrl, 'Rivedi il curricolo con i colleghi');
     const mobileOverview = page.locator('[data-general-review-overview]').first();
     await mobileOverview.waitFor({ state: 'visible', timeout: 8000 });
     check('16. Compact teacher review overview remains reachable on mobile', await mobileOverview.isVisible());
