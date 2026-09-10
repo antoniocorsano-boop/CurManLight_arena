@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import workspaceSource from '../features/curriculum/CurriculumWorkspace.tsx?raw';
 import professionalReaderSource from '../features/curriculum/components/ProfessionalCurriculumReader.tsx?raw';
+import technologyPublicationDataSource from '../features/curriculum/data/departmentCurriculumV31.section-09.json?raw';
 import caseAwareSource from '../features/beta/CaseAwareRevisionSurface.tsx?raw';
 import baselineSource from '../lib/curriculumBaseline.ts?raw';
 import currentSource from '../domain/curriculum/institute/currentSource.ts?raw';
@@ -34,9 +35,10 @@ describe('canonical curriculum entry', () => {
   });
 
   it('exposes real mobile-safe navigation from the Technology section to the annual review', () => {
+    expect(professionalReaderSource).toContain('DepartmentCurriculumPublication');
     expect(professionalReaderSource).toContain('data-secondary-curriculum-navigation');
     expect(professionalReaderSource).toContain('data-open-technology-review-class');
-    expect(professionalReaderSource).toContain('Tecnologia — curricolo verticale');
+    expect(technologyPublicationDataSource).toContain('Tecnologia — curricolo verticale');
     expect(professionalReaderSource).toContain('Se vuoi riesaminare Tecnologia, scegli l’annualità.');
     expect(professionalReaderSource).toContain('Classe II');
     expect(workspaceSource).toContain("setOrder('secondaria')");

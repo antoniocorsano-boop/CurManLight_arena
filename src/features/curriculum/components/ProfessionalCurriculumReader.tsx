@@ -1,6 +1,11 @@
 import { useState } from 'react';
 import { BookOpen, ExternalLink, FileText } from 'lucide-react';
 import type { A07InstitutionalDocumentRead } from '../../../domain/institution';
+import {
+  DEPARTMENT_CURRICULUM_MANIFEST,
+  DEPARTMENT_CURRICULUM_SECTIONS,
+  DepartmentCurriculumPublication,
+} from './DepartmentCurriculumPublication';
 
 const DEPARTMENT_CURRICULUM_DOC_ID = '1VYNvik8oLAVWjwB5Y_Q960D62t-eUZRc';
 const DEPARTMENT_FOUNDATIONS_DOC_ID = '1KNjcyBzNAOsK-1FD1_HpasN9cyfASQTm';
@@ -10,96 +15,28 @@ const DEPARTMENT_FOUNDATIONS_DOC_URL = `https://docs.google.com/document/d/${DEP
 
 type CurriculumPresentationMode = 'web' | 'document';
 
-type CurriculumSection = {
+type CurriculumSectionNavigation = {
   id: string;
-  title: string;
-  summary: string;
-  highlights?: string[];
+  number: number;
 };
 
-const CURRICULUM_SECTIONS: CurriculumSection[] = [
-  {
-    id: 'identita',
-    title: 'Premessa e identità epistemologica',
-    summary: 'Il Dipartimento raccorda Matematica, Scienze, Tecnologia e Informatica in un percorso comune, mantenendo distinta l’identità di ogni disciplina e rendendo visibili i processi condivisi.',
-    highlights: ['razionalità matematica', 'indagine scientifica', 'progettazione tecnologica', 'pensiero computazionale'],
-  },
-  {
-    id: 'quadro',
-    title: 'Quadro normativo, fonti e regime transitorio',
-    summary: 'Il curricolo distingue il quadro nazionale applicabile alle diverse coorti dalle annualizzazioni d’Istituto, con particolare attenzione alla transizione tra Indicazioni 2012 e Indicazioni 2025 nell’anno scolastico 2026/2027.',
-  },
-  {
-    id: 'architettura',
-    title: 'Architettura del curricolo e lessico professionale',
-    summary: 'Competenze, traguardi, obiettivi, conoscenze, abilità, evidenze e raccordi sono trattati come elementi diversi e tracciabili, evitando sovrapposizioni terminologiche.',
-  },
-  {
-    id: 'profilo',
-    title: 'Profilo dello studente e competenze chiave',
-    summary: 'Il contributo del Dipartimento mira a uno studente capace di interpretare problemi e fenomeni, usare linguaggi formali e tecnici, valutare dati e fonti, progettare soluzioni e argomentare decisioni sulla base di evidenze.',
-  },
-  {
-    id: 'stem',
-    title: 'STEM e Informatica',
-    summary: 'L’approccio STEM è parte della didattica ordinaria e non una somma di attività occasionali. L’Informatica è trattata come componente culturale, distinta dal semplice uso di dispositivi e integrata con dati, algoritmi, programmazione, reti, sicurezza e comprensione critica dell’intelligenza artificiale.',
-  },
-  {
-    id: 'verticalita',
-    title: 'Competenze verticali comuni e progressione 3–14',
-    summary: 'La verticalità è letta come crescita della complessità cognitiva, dell’autonomia, dell’astrazione e della capacità di trasferimento, con un raccordo esplicito tra scuola dell’infanzia, primaria e secondaria di primo grado.',
-  },
-  {
-    id: 'matematica',
-    title: 'Matematica — curricolo verticale',
-    summary: 'La Matematica sviluppa astrazione, rappresentazione, modellizzazione, problem solving e argomentazione, facendo crescere progressivamente la capacità di passare tra linguaggio naturale, simbolico, grafico e informatico.',
-  },
-  {
-    id: 'scienze',
-    title: 'Scienze — curricolo verticale',
-    summary: 'Le Scienze educano a costruire spiegazioni fondate su osservazioni ed evidenze: porre domande, formulare ipotesi, misurare, sperimentare, interpretare dati e modelli, comunicare risultati e rivedere le spiegazioni.',
-  },
-  {
-    id: 'tecnologia',
-    title: 'Tecnologia — curricolo verticale',
-    summary: 'Tecnologia sviluppa una razionalità progettuale per comprendere come persone e comunità trasformano materiali, energia, informazioni e ambienti in risposta a bisogni, valutando funzionalità, sicurezza, sostenibilità e conseguenze.',
-    highlights: ['analizzare bisogni e sistemi', 'definire requisiti e vincoli', 'rappresentare e progettare', 'realizzare o simulare', 'testare e valutare impatti'],
-  },
-  {
-    id: 'informatica',
-    title: 'Informatica — progressione trasversale',
-    summary: 'La progressione informatica rende espliciti dati, algoritmi, programmazione, strutture di controllo, debugging, reti, automazione, sicurezza e comprensione critica dell’intelligenza artificiale.',
-  },
-  {
-    id: 'assi',
-    title: 'Assi trasversali',
-    summary: 'Sostenibilità, Educazione civica, sicurezza e orientamento sono raccordati alle discipline e alle rispettive fonti, senza essere trasformati in temi aggiuntivi scollegati dal curricolo.',
-  },
-  {
-    id: 'metodologie',
-    title: 'Metodologie e ambienti di apprendimento',
-    summary: 'Laboratorio, osservazione, modellizzazione, problem solving, progettazione, sperimentazione, discussione e revisione dell’errore sono utilizzati come modalità di costruzione della conoscenza.',
-  },
-  {
-    id: 'inclusione',
-    title: 'Inclusione e personalizzazione',
-    summary: 'Il curricolo comune resta il riferimento culturale, mentre mediazioni, strumenti, tempi, evidenze e modalità di espressione possono essere personalizzati o individualizzati in coerenza con PEI e PDP.',
-  },
-  {
-    id: 'valutazione',
-    title: 'Evidenze, verifica e valutazione',
-    summary: 'La valutazione è collegata a evidenze osservabili e criteri espliciti. Le rubriche interne non vengono confuse con i dispositivi ufficiali di valutazione e certificazione delle competenze.',
-  },
-  {
-    id: 'monitoraggio',
-    title: 'Impegni operativi e monitoraggio dipartimentale',
-    summary: 'Il curricolo è sottoposto a monitoraggio per individuare sovrapposizioni, lacune, prerequisiti impliciti, carico curricolare e qualità dei raccordi tra annualità e ordini di scuola.',
-  },
-  {
-    id: 'validazione',
-    title: 'Sintesi identitaria e validazione',
-    summary: 'La versione predisposta per il Dipartimento è pronta per l’esame professionale, ma non equivale ad approvazione formale né rende il curricolo vigente senza i successivi passaggi collegiali previsti dall’Istituto.',
-  },
+const SECTION_NAVIGATION: CurriculumSectionNavigation[] = [
+  { id: 'identita', number: 1 },
+  { id: 'quadro', number: 2 },
+  { id: 'architettura', number: 3 },
+  { id: 'profilo', number: 4 },
+  { id: 'stem', number: 5 },
+  { id: 'verticalita', number: 6 },
+  { id: 'matematica', number: 7 },
+  { id: 'scienze', number: 8 },
+  { id: 'tecnologia', number: 9 },
+  { id: 'informatica', number: 10 },
+  { id: 'assi', number: 11 },
+  { id: 'metodologie', number: 12 },
+  { id: 'inclusione', number: 13 },
+  { id: 'valutazione', number: 14 },
+  { id: 'monitoraggio', number: 15 },
+  { id: 'validazione', number: 16 },
 ];
 
 type ProfessionalCurriculumReaderProps = {
@@ -114,16 +51,18 @@ export function ProfessionalCurriculumReader({
   onOpenTechnologyReview,
 }: ProfessionalCurriculumReaderProps) {
   const [mode, setMode] = useState<CurriculumPresentationMode>('web');
-  const [sectionId, setSectionId] = useState(CURRICULUM_SECTIONS[0].id);
-  const selectedSection = CURRICULUM_SECTIONS.find((section) => section.id === sectionId) ?? CURRICULUM_SECTIONS[0];
-  const selectedSectionIndex = CURRICULUM_SECTIONS.findIndex((section) => section.id === selectedSection.id);
-  const academicYear = institutionalProfile.academicYearLabel || '2026/2027';
-  const instituteName = institutionalProfile.instituteName || 'Istituto Comprensivo Statale “don Lorenzo Milani” — Calvario–Covotta';
+  const [sectionId, setSectionId] = useState(SECTION_NAVIGATION[0].id);
+  const selectedNavigation = SECTION_NAVIGATION.find((section) => section.id === sectionId) ?? SECTION_NAVIGATION[0];
+  const selectedNavigationIndex = SECTION_NAVIGATION.findIndex((section) => section.id === selectedNavigation.id);
+  const selectedSection = DEPARTMENT_CURRICULUM_SECTIONS.find((section) => section.number === selectedNavigation.number) ?? DEPARTMENT_CURRICULUM_SECTIONS[0];
+  const academicYear = institutionalProfile.academicYearLabel || DEPARTMENT_CURRICULUM_MANIFEST.institution.academicYear;
+  const instituteName = institutionalProfile.instituteName || DEPARTMENT_CURRICULUM_MANIFEST.institution.name;
 
   const moveSection = (offset: number) => {
-    const nextIndex = selectedSectionIndex + offset;
-    if (nextIndex < 0 || nextIndex >= CURRICULUM_SECTIONS.length) return;
-    setSectionId(CURRICULUM_SECTIONS[nextIndex].id);
+    const nextIndex = selectedNavigationIndex + offset;
+    if (nextIndex < 0 || nextIndex >= SECTION_NAVIGATION.length) return;
+    setSectionId(SECTION_NAVIGATION[nextIndex].id);
+    window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
   };
 
   return (
@@ -132,13 +71,14 @@ export function ProfessionalCurriculumReader({
       data-canonical-curriculum-entry
       data-curriculum-primary-task="consultation"
       data-curriculum-presentation="professional-publication"
+      data-curriculum-publication-parity="source-snapshot"
       data-hcm-level="1"
     >
       <header className="border-b border-slate-200 bg-gradient-to-b from-slate-50 to-white px-5 py-7 text-center sm:px-8 sm:py-10">
         <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-slate-500">{instituteName}</p>
         <h1 className="mt-4 text-2xl font-black tracking-tight text-slate-950 sm:text-4xl">Curricolo verticale</h1>
-        <p className="mt-2 text-sm font-bold text-indigo-700 sm:text-base">Dipartimento Scientifico-Matematico-Tecnologico</p>
-        <p className="mt-1 text-sm text-slate-600">Matematica · Scienze · Tecnologia · Informatica · STEM</p>
+        <p className="mt-2 text-sm font-bold text-indigo-700 sm:text-base">{DEPARTMENT_CURRICULUM_MANIFEST.institution.department}</p>
+        <p className="mt-1 text-sm text-slate-600">{DEPARTMENT_CURRICULUM_MANIFEST.institution.disciplines.join(' · ')}</p>
         <div className="mt-4 flex flex-wrap items-center justify-center gap-2 text-xs font-semibold">
           <span className="rounded-full bg-slate-100 px-3 py-1.5 text-slate-700">A.S. {academicYear}</span>
           <span className="rounded-full bg-amber-50 px-3 py-1.5 text-amber-900">Da esaminare e validare</span>
@@ -172,10 +112,10 @@ export function ProfessionalCurriculumReader({
       </div>
 
       {mode === 'web' ? (
-        <div className="mx-auto max-w-4xl space-y-6 px-5 py-6 sm:px-8 sm:py-8" data-curriculum-web-reader>
-          <div className="space-y-2">
+        <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8" data-curriculum-web-reader>
+          <div className="mb-6 space-y-3 lg:pl-[19rem]">
             <p className="text-base leading-7 text-slate-700">
-              Questa vista organizza il curricolo per una consultazione rapida e leggibile. La modalità Documento conserva il testo integrale e le matrici predisposte per il Dipartimento.
+              Edizione web del fascicolo predisposto per il Dipartimento. Testi, matrici e raccordi sono gli stessi della versione Documento; cambia soltanto la modalità di consultazione.
             </p>
             <div className="flex flex-wrap gap-2" aria-label="Copertura del curricolo" data-curriculum-scope-summary>
               <span className="rounded-full bg-slate-100 px-3 py-2 text-xs font-bold text-slate-700">Infanzia · 3–5 anni</span>
@@ -184,7 +124,7 @@ export function ProfessionalCurriculumReader({
             </div>
           </div>
 
-          <div className="space-y-2">
+          <div className="mb-5 space-y-2 lg:hidden">
             <label htmlFor="curriculum-section" className="text-xs font-bold uppercase tracking-wide text-slate-500">Indice del curricolo</label>
             <select
               id="curriculum-section"
@@ -193,68 +133,91 @@ export function ProfessionalCurriculumReader({
               className="min-h-12 w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-800 shadow-sm focus:border-indigo-500 focus:outline-none"
               data-curriculum-section-selector
             >
-              {CURRICULUM_SECTIONS.map((section, index) => (
-                <option key={section.id} value={section.id}>{index + 1}. {section.title}</option>
-              ))}
+              {SECTION_NAVIGATION.map((navigation) => {
+                const section = DEPARTMENT_CURRICULUM_SECTIONS.find((item) => item.number === navigation.number);
+                return <option key={navigation.id} value={navigation.id}>{navigation.number}. {section?.title}</option>;
+              })}
             </select>
           </div>
 
-          <article className="rounded-2xl border border-slate-200 bg-slate-50/60 p-5 sm:p-7" data-curriculum-section={selectedSection.id}>
-            <p className="text-xs font-bold uppercase tracking-wide text-indigo-700">Sezione {selectedSectionIndex + 1} di {CURRICULUM_SECTIONS.length}</p>
-            <h2 className="mt-2 text-xl font-black leading-tight text-slate-950 sm:text-2xl">{selectedSection.title}</h2>
-            <p className="mt-4 text-base leading-7 text-slate-700">{selectedSection.summary}</p>
-
-            {selectedSection.highlights && (
-              <div className="mt-5 flex flex-wrap gap-2">
-                {selectedSection.highlights.map((highlight) => (
-                  <span key={highlight} className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700">{highlight}</span>
-                ))}
-              </div>
-            )}
-
-            {selectedSection.id === 'tecnologia' && (
-              <div className="mt-6 border-t border-slate-200 pt-5" data-secondary-curriculum-navigation>
-                <p className="text-xs font-bold uppercase tracking-wide text-indigo-700">Dal curricolo al lavoro del docente</p>
-                <p className="mt-1 text-sm leading-6 text-slate-600">Se vuoi riesaminare Tecnologia, scegli l’annualità. La consultazione del curricolo resta separata dal Riesame.</p>
-                <div className="mt-3 grid grid-cols-3 gap-2" aria-label="Apri il riesame di Tecnologia per classe">
-                  {(['1', '2', '3'] as const).map((classId) => {
-                    const selected = targetClass === classId;
+          <div className="lg:grid lg:grid-cols-[17rem_minmax(0,1fr)] lg:gap-8">
+            <nav className="hidden lg:block" aria-label="Indice del curricolo" data-curriculum-desktop-index>
+              <div className="sticky top-4 rounded-2xl border border-slate-200 bg-slate-50 p-3">
+                <p className="px-2 pb-2 text-xs font-bold uppercase tracking-wide text-slate-500">Indice</p>
+                <div className="max-h-[72vh] space-y-1 overflow-y-auto pr-1">
+                  {SECTION_NAVIGATION.map((navigation) => {
+                    const section = DEPARTMENT_CURRICULUM_SECTIONS.find((item) => item.number === navigation.number);
+                    const active = navigation.id === sectionId;
                     return (
                       <button
-                        key={classId}
+                        key={navigation.id}
                         type="button"
-                        onClick={() => onOpenTechnologyReview(classId)}
-                        aria-label={`Apri il riesame di Tecnologia per la classe ${classId === '1' ? 'prima' : classId === '2' ? 'seconda' : 'terza'}`}
-                        data-open-technology-review-class={classId}
-                        className={`min-h-11 rounded-xl border px-2 py-2 text-xs font-bold transition ${selected ? 'border-indigo-600 bg-indigo-600 text-white' : 'border-indigo-200 bg-white text-indigo-800 hover:border-indigo-400'}`}
+                        onClick={() => setSectionId(navigation.id)}
+                        aria-current={active ? 'page' : undefined}
+                        className={`w-full rounded-lg px-3 py-2 text-left text-sm leading-5 transition ${active ? 'bg-white font-bold text-indigo-800 shadow-sm ring-1 ring-indigo-100' : 'text-slate-600 hover:bg-white hover:text-slate-900'}`}
                       >
-                        {classId === '1' ? 'Classe I' : classId === '2' ? 'Classe II' : 'Classe III'}
+                        <span className="mr-2 text-xs font-bold text-slate-400">{navigation.number}</span>
+                        {section?.title}
                       </button>
                     );
                   })}
                 </div>
-                <p className="mt-2 text-xs leading-5 text-slate-500">Classe III: il Riesame non è ancora disponibile.</p>
               </div>
-            )}
-          </article>
+            </nav>
 
-          <div className="flex items-center justify-between gap-3">
-            <button
-              type="button"
-              onClick={() => moveSection(-1)}
-              disabled={selectedSectionIndex === 0}
-              className="min-h-11 rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 disabled:cursor-not-allowed disabled:opacity-40"
-            >
-              Precedente
-            </button>
-            <button
-              type="button"
-              onClick={() => moveSection(1)}
-              disabled={selectedSectionIndex === CURRICULUM_SECTIONS.length - 1}
-              className="min-h-11 rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 disabled:cursor-not-allowed disabled:opacity-40"
-            >
-              Successiva
-            </button>
+            <div className="min-w-0">
+              <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7 lg:p-9" data-curriculum-section={selectedNavigation.id}>
+                <p className="text-xs font-bold uppercase tracking-wide text-indigo-700">Sezione {selectedSection.number} di {DEPARTMENT_CURRICULUM_SECTIONS.length}</p>
+                <h2 className="mt-2 text-xl font-black leading-tight text-slate-950 sm:text-2xl lg:text-3xl">{selectedSection.title}</h2>
+                <div className="mt-5 border-t border-slate-100 pt-1">
+                  <DepartmentCurriculumPublication section={selectedSection} />
+                </div>
+
+                {selectedSection.number === 9 && (
+                  <div className="mt-8 border-t border-slate-200 pt-5" data-secondary-curriculum-navigation>
+                    <p className="text-xs font-bold uppercase tracking-wide text-indigo-700">Dal curricolo al lavoro del docente</p>
+                    <p className="mt-1 text-sm leading-6 text-slate-600">Se vuoi riesaminare Tecnologia, scegli l’annualità. La consultazione del curricolo resta separata dal Riesame.</p>
+                    <div className="mt-3 grid grid-cols-3 gap-2" aria-label="Apri il riesame di Tecnologia per classe">
+                      {(['1', '2', '3'] as const).map((classId) => {
+                        const selected = targetClass === classId;
+                        return (
+                          <button
+                            key={classId}
+                            type="button"
+                            onClick={() => onOpenTechnologyReview(classId)}
+                            aria-label={`Apri il riesame di Tecnologia per la classe ${classId === '1' ? 'prima' : classId === '2' ? 'seconda' : 'terza'}`}
+                            data-open-technology-review-class={classId}
+                            className={`min-h-11 rounded-xl border px-2 py-2 text-xs font-bold transition ${selected ? 'border-indigo-600 bg-indigo-600 text-white' : 'border-indigo-200 bg-white text-indigo-800 hover:border-indigo-400'}`}
+                          >
+                            {classId === '1' ? 'Classe I' : classId === '2' ? 'Classe II' : 'Classe III'}
+                          </button>
+                        );
+                      })}
+                    </div>
+                    <p className="mt-2 text-xs leading-5 text-slate-500">Classe III: il Riesame non è ancora disponibile.</p>
+                  </div>
+                )}
+              </article>
+
+              <div className="mt-4 flex items-center justify-between gap-3">
+                <button
+                  type="button"
+                  onClick={() => moveSection(-1)}
+                  disabled={selectedNavigationIndex === 0}
+                  className="min-h-11 rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  Precedente
+                </button>
+                <button
+                  type="button"
+                  onClick={() => moveSection(1)}
+                  disabled={selectedNavigationIndex === SECTION_NAVIGATION.length - 1}
+                  className="min-h-11 rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  Successiva
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       ) : (

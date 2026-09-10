@@ -32,6 +32,18 @@ const professionalCurriculumReaderSource = firstSource(import.meta.glob('../feat
   query: '?raw', import: 'default', eager: true,
 }) as Record<string, string>);
 
+const departmentCurriculumManifestSource = firstSource(import.meta.glob('../features/curriculum/data/departmentCurriculumV31.json', {
+  query: '?raw', import: 'default', eager: true,
+}) as Record<string, string>);
+
+const departmentCurriculumIdentitySource = firstSource(import.meta.glob('../features/curriculum/data/departmentCurriculumV31.sections-01-06.json', {
+  query: '?raw', import: 'default', eager: true,
+}) as Record<string, string>);
+
+const departmentCurriculumTechnologySource = firstSource(import.meta.glob('../features/curriculum/data/departmentCurriculumV31.section-09.json', {
+  query: '?raw', import: 'default', eager: true,
+}) as Record<string, string>);
+
 const curriculumPublicationSurfaceSource = `${curriculumWorkspaceSource}\n${professionalCurriculumReaderSource}`;
 
 const technologySourceReviewTaskSource = firstSource(import.meta.glob('../features/curriculum/components/TechnologySourceReviewTask.tsx', {
@@ -143,8 +155,11 @@ describe('Arena Beta canonical shell regression guard', () => {
     expect(professionalCurriculumReaderSource).toContain('data-canonical-curriculum-entry');
     expect(professionalCurriculumReaderSource).toContain('data-curriculum-presentation="professional-publication"');
     expect(professionalCurriculumReaderSource).toContain('Curricolo verticale');
-    expect(professionalCurriculumReaderSource).toContain('Dipartimento Scientifico-Matematico-Tecnologico');
-    expect(professionalCurriculumReaderSource).toContain('Matematica · Scienze · Tecnologia · Informatica · STEM');
+    expect(departmentCurriculumManifestSource).toContain('Dipartimento Scientifico-Matematico-Tecnologico');
+    for (const discipline of ['Matematica', 'Scienze', 'Tecnologia', 'Informatica', 'STEM']) {
+      expect(departmentCurriculumManifestSource).toContain(`"${discipline}"`);
+    }
+    expect(professionalCurriculumReaderSource).toContain("DEPARTMENT_CURRICULUM_MANIFEST.institution.disciplines.join(' · ')");
     expect(professionalCurriculumReaderSource).toContain('Da esaminare e validare');
     expect(professionalCurriculumReaderSource).toContain('Percorso 3–14');
     expect(professionalCurriculumReaderSource).toContain('data-curriculum-mode-switch');
@@ -155,8 +170,8 @@ describe('Arena Beta canonical shell regression guard', () => {
     expect(professionalCurriculumReaderSource).toContain('data-curriculum-web-reader');
     expect(professionalCurriculumReaderSource).toContain('data-curriculum-document-reader');
     expect(professionalCurriculumReaderSource).toContain('data-curriculum-section-selector');
-    expect(professionalCurriculumReaderSource).toContain('Premessa e identità epistemologica');
-    expect(professionalCurriculumReaderSource).toContain('Tecnologia — curricolo verticale');
+    expect(departmentCurriculumIdentitySource).toContain('Premessa e identità epistemologica');
+    expect(departmentCurriculumTechnologySource).toContain('Tecnologia — curricolo verticale');
     expect(professionalCurriculumReaderSource).toContain('data-curriculum-scope-summary');
     expect(professionalCurriculumReaderSource).toContain('Infanzia · 3–5 anni');
     expect(professionalCurriculumReaderSource).toContain('Primaria · I–V');
