@@ -68,7 +68,8 @@ export default defineConfig({
       'src/__tests__/team-review-deferred-continuation.test.ts',
       'src/__tests__/vertical-review-institutional-handoff.test.ts',
       'src/__tests__/h3-bound-institutional-decision.test.ts',
-      'src/__tests__/h4-canonical-adoption-handoff.test.ts'
+      'src/__tests__/h4-canonical-adoption-handoff.test.ts',
+      'src/__tests__/h4-bound-canonical-adoption.test.ts'
     ],
     exclude: ['**/node_modules/**', '**/.git/**'],
     pool: 'threads',
