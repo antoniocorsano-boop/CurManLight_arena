@@ -1,5 +1,3 @@
-import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 function firstSource(modules: Record<string, string>): string {
@@ -21,8 +19,6 @@ const curriculumReaderSource = firstSource(import.meta.glob('../features/curricu
 const curriculumPublicationSource = firstSource(import.meta.glob('../features/curriculum/components/DepartmentCurriculumPublication.tsx', {
   query: '?raw', import: 'default', eager: true,
 }) as Record<string, string>);
-
-const globalCssSource = readFileSync(resolve(process.cwd(), 'src/index.css'), 'utf8');
 
 const handoffSource = firstSource(import.meta.glob('../features/beta/PlanningHandoffPreview.tsx', {
   query: '?raw', import: 'default', eager: true,
@@ -79,12 +75,10 @@ describe('Arena S3C final human remediation', () => {
     expect(curriculumPublicationSource).toContain('scorri orizzontalmente per leggere tutte le colonne');
   });
 
-  it('preserves native table layout while the curriculum wrapper owns touch scrolling', () => {
-    expect(globalCssSource).toContain('#main-content [data-curriculum-table-scroll]');
-    expect(globalCssSource).toContain('touch-action: pan-x pan-y;');
-    expect(globalCssSource).toContain('#main-content [data-curriculum-table-scroll] > [data-curriculum-publication-grid]');
-    expect(globalCssSource).toContain('display: table;');
-    expect(globalCssSource).toContain('min-width: 720px;');
-    expect(globalCssSource).toContain('max-width: none;');
+  it('keeps the static gate focused on markup while browser evidence verifies real table motion', () => {
+    expect(curriculumPublicationSource).toContain('data-curriculum-table-scroll');
+    expect(curriculumPublicationSource).toContain('data-curriculum-publication-grid');
+    expect(curriculumPublicationSource).toContain('overflow-x-auto');
+    expect(curriculumPublicationSource).not.toContain('overflow-x-hidden');
   });
 });
