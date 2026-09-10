@@ -58,6 +58,36 @@ async function noHorizontalOverflow(page) {
   });
 }
 
+async function inspectCurriculumTableScroll(locator) {
+  return locator.evaluate((wrapper) => {
+    const table = wrapper.querySelector('[data-curriculum-publication-grid]');
+    if (!(table instanceof HTMLElement)) {
+      return {
+        hasTable: false,
+        overflowX: '',
+        tableDisplay: '',
+        clientWidth: wrapper.clientWidth,
+        scrollWidth: wrapper.scrollWidth,
+        scrollMoved: false,
+      };
+    }
+
+    const wrapperStyle = getComputedStyle(wrapper);
+    const tableStyle = getComputedStyle(table);
+    const maxScrollLeft = Math.max(0, wrapper.scrollWidth - wrapper.clientWidth);
+    wrapper.scrollLeft = Math.min(120, maxScrollLeft);
+
+    return {
+      hasTable: true,
+      overflowX: wrapperStyle.overflowX,
+      tableDisplay: tableStyle.display,
+      clientWidth: wrapper.clientWidth,
+      scrollWidth: wrapper.scrollWidth,
+      scrollMoved: maxScrollLeft > 0 && wrapper.scrollLeft > 0,
+    };
+  });
+}
+
 (async () => {
   const browser = await chromium.launch({ headless: true });
   const evidence = {
@@ -173,6 +203,18 @@ async function noHorizontalOverflow(page) {
       check('Technology web section preserves annual matrices', (await technologyPublication.locator('[data-curriculum-publication-table]').count()) >= 8);
       check('Technology web section exposes class I and class III progression', technologyText.includes('secondaria — classe i') && technologyText.includes('secondaria — classe iii'));
       check('full curriculum tables do not create page-level horizontal overflow', await noHorizontalOverflow(page));
+
+      if (profile.id === 'mobile-390x844') {
+        const tableScroll = technologyPublication.locator('[data-curriculum-table-scroll]').first();
+        await tableScroll.waitFor({ state: 'visible', timeout: 5000 });
+        const scrollState = await inspectCurriculumTableScroll(tableScroll);
+        result.curriculumTableScroll = scrollState;
+        check('portrait curriculum table exposes a dedicated scroll wrapper', scrollState.hasTable);
+        check('portrait curriculum table wrapper owns horizontal overflow', ['auto', 'scroll'].includes(scrollState.overflowX));
+        check('portrait curriculum table preserves native table layout', scrollState.tableDisplay === 'table');
+        check('portrait curriculum table is wider than its viewport container', scrollState.scrollWidth > scrollState.clientWidth);
+        check('portrait curriculum table can move horizontally inside its wrapper', scrollState.scrollMoved);
+      }
 
       await clickWithPersonalProfileRecovery(page, documentMode);
       const documentReader = page.locator('[data-curriculum-document-reader]').first();
