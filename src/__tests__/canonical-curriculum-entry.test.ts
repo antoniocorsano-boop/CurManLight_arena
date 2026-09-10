@@ -13,6 +13,7 @@ import {
 describe('canonical curriculum entry', () => {
   it('makes the unified master the first curriculum surface in teacher-readable language', () => {
     expect(workspaceSource).toContain('data-canonical-curriculum-entry');
+    expect(workspaceSource).toContain('data-curriculum-primary-task="consultation"');
     expect(workspaceSource).toContain('Curricolo verticale d’Istituto');
     expect(workspaceSource).toContain('Curricolo verticale 3–14');
     expect(workspaceSource).toContain('In revisione');
@@ -36,8 +37,18 @@ describe('canonical curriculum entry', () => {
     expect(workspaceSource).toContain('Classe II');
   });
 
+  it('keeps source verification behind two intentional disclosure levels', () => {
+    expect(workspaceSource).toContain('data-source-review-progressive-disclosure');
+    expect(workspaceSource).toContain('data-advanced-source-tools-default="collapsed"');
+    expect(workspaceSource).toContain('Fonti e verifiche');
+    expect(workspaceSource).toContain('Apri gli strumenti di verifica');
+    expect(workspaceSource).toContain('{sourceToolsOpen && (');
+    expect(workspaceSource).toContain('data-source-review-advanced-tools');
+  });
+
   it('keeps the legacy local curriculum behind an explicit historical disclosure', () => {
     expect(workspaceSource).toContain('data-legacy-curriculum-disclosure');
+    expect(workspaceSource).toContain('data-legacy-default="collapsed"');
     expect(workspaceSource).toContain('Archivio precedente');
     expect(workspaceSource).toContain('vecchia copia locale per consultazione storica');
     expect(workspaceSource).toContain('Non è il curricolo corrente dell’Istituto.');
