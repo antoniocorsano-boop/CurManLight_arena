@@ -28,26 +28,29 @@
     },
     {
       "id": "curriculum-primary",
-      "path": "src/features/curriculum/CurriculumWorkspace.tsx",
+      "path": "src/features/curriculum/components/ProfessionalCurriculumReader.tsx",
       "status": "conformant",
-      "operational_context": "Consultazione del curricolo d’Istituto",
-      "primary_task": "Riconoscere curricolo, stato, copertura e azione utile senza attraversare strumenti tecnici di verifica",
+      "operational_context": "Consultazione professionale del curricolo del Dipartimento",
+      "primary_task": "Leggere lo stesso curricolo in modalità web o documento, riconoscendone identità, stato e struttura senza attraversare strumenti tecnici di verifica",
       "communication_levels": {
-        "level_1": "Curricolo, stato, copertura, ambito docente e consultazione",
-        "level_2": "Fonti e archivio come aree secondarie chiuse",
-        "level_3": "Verifica documentale avanzata solo dopo una scelta intenzionale ulteriore"
+        "level_1": "Identità editoriale, stato, percorso 3–14 e scelta Vista web / Documento",
+        "level_2": "Indice di lettura, sezioni curricolari e raccordo al lavoro docente",
+        "level_3": "Fonti, verifiche e archivio restano superfici esterne secondarie governate da CurriculumWorkspace"
       },
       "required_tokens": [
         "data-canonical-curriculum-entry",
-        "Curricolo verticale 3–14",
-        "In revisione",
+        "data-curriculum-presentation=\"professional-publication\"",
+        "Dipartimento Scientifico-Matematico-Tecnologico",
+        "Da esaminare e validare",
+        "Percorso 3–14",
+        "data-curriculum-mode=\"web\"",
+        "data-curriculum-mode=\"document\"",
+        "Vista web",
+        "Documento",
+        "data-curriculum-section-selector",
         "data-curriculum-scope-summary",
-        "data-secondary-curriculum-navigation",
-        "Consulta il curricolo",
-        "data-source-review-progressive-disclosure",
-        "data-open-source-review-tools",
-        "data-source-review-advanced-tools",
-        "data-legacy-curriculum-disclosure"
+        "data-open-department-curriculum-document",
+        "data-open-department-foundations-document"
       ]
     },
     {
