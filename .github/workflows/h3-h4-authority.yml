@@ -10,15 +10,21 @@ on:
       - 'supabase/migrations/20260910133000_beta_development_pilot_authority.sql'
       - 'supabase/migrations/20260910134500_beta_development_pilot_authority_performance.sql'
       - 'supabase/migrations/20260910140000_h3_bound_institutional_decision_pgcrypto_schema_fix.sql'
+      - 'supabase/migrations/20260910150000_h4_canonical_adoption_handoff.sql'
+      - 'supabase/migrations/20260910150500_h4_canonical_adoption_handoff_performance.sql'
       - 'src/domain/revision/institutionalReviewHandoff.ts'
       - 'src/domain/revision/h3BoundInstitutionalDecision.ts'
+      - 'src/domain/revision/h4CanonicalAdoptionHandoff.ts'
       - 'src/infrastructure/supabase/institutionalReviewHandoffRepository.ts'
       - 'src/infrastructure/supabase/h3BoundInstitutionalDecisionRepository.ts'
+      - 'src/infrastructure/supabase/h4CanonicalAdoptionHandoffRepository.ts'
       - 'src/features/beta/H3BoundInstitutionalDecisionPanel.tsx'
+      - 'src/features/beta/H4CanonicalAdoptionHandoffPanel.tsx'
       - 'src/features/beta/VerticalReviewPanel.tsx'
       - 'src/__tests__/vertical-review-institutional-handoff.test.ts'
       - 'src/__tests__/h3-bound-institutional-decision.test.ts'
       - 'src/__tests__/development-pilot-h4.test.ts'
+      - 'src/__tests__/h4-canonical-adoption-handoff.test.ts'
       - 'vitest.fast.config.ts'
       - '.github/workflows/h3-h4-authority.yml'
   push:
@@ -31,15 +37,21 @@ on:
       - 'supabase/migrations/20260910133000_beta_development_pilot_authority.sql'
       - 'supabase/migrations/20260910134500_beta_development_pilot_authority_performance.sql'
       - 'supabase/migrations/20260910140000_h3_bound_institutional_decision_pgcrypto_schema_fix.sql'
+      - 'supabase/migrations/20260910150000_h4_canonical_adoption_handoff.sql'
+      - 'supabase/migrations/20260910150500_h4_canonical_adoption_handoff_performance.sql'
       - 'src/domain/revision/institutionalReviewHandoff.ts'
       - 'src/domain/revision/h3BoundInstitutionalDecision.ts'
+      - 'src/domain/revision/h4CanonicalAdoptionHandoff.ts'
       - 'src/infrastructure/supabase/institutionalReviewHandoffRepository.ts'
       - 'src/infrastructure/supabase/h3BoundInstitutionalDecisionRepository.ts'
+      - 'src/infrastructure/supabase/h4CanonicalAdoptionHandoffRepository.ts'
       - 'src/features/beta/H3BoundInstitutionalDecisionPanel.tsx'
+      - 'src/features/beta/H4CanonicalAdoptionHandoffPanel.tsx'
       - 'src/features/beta/VerticalReviewPanel.tsx'
       - 'src/__tests__/vertical-review-institutional-handoff.test.ts'
       - 'src/__tests__/h3-bound-institutional-decision.test.ts'
       - 'src/__tests__/development-pilot-h4.test.ts'
+      - 'src/__tests__/h4-canonical-adoption-handoff.test.ts'
       - 'vitest.fast.config.ts'
       - '.github/workflows/h3-h4-authority.yml'
 
@@ -58,12 +70,13 @@ jobs:
           cache: npm
       - run: npm ci
 
-      - name: H3 handoff and H4 boundary tests
+      - name: H3, H4 and adoption handoff boundary tests
         run: >-
           npx vitest run
           src/__tests__/vertical-review-institutional-handoff.test.ts
           src/__tests__/h3-bound-institutional-decision.test.ts
           src/__tests__/development-pilot-h4.test.ts
+          src/__tests__/h4-canonical-adoption-handoff.test.ts
 
       - name: H4 server authority invariants
         run: |
@@ -73,6 +86,8 @@ jobs:
           pilot='supabase/migrations/20260910133000_beta_development_pilot_authority.sql'
           pilot_perf='supabase/migrations/20260910134500_beta_development_pilot_authority_performance.sql'
           crypto_fix='supabase/migrations/20260910140000_h3_bound_institutional_decision_pgcrypto_schema_fix.sql'
+          adoption_handoff='supabase/migrations/20260910150000_h4_canonical_adoption_handoff.sql'
+          adoption_perf='supabase/migrations/20260910150500_h4_canonical_adoption_handoff_performance.sql'
 
           grep -Fq 'record_h3_bound_institutional_decision_v1' "$h4"
           grep -Fq "v_role is distinct from 'collegio'" "$h4"
@@ -98,6 +113,19 @@ jobs:
 
           grep -Fq 'alter function public.record_h3_bound_institutional_decision_v1' "$crypto_fix"
           grep -Fq 'set search_path = public, extensions, pg_temp' "$crypto_fix"
+
+          grep -Fq 'prepare_h4_canonical_adoption_handoff_v1' "$adoption_handoff"
+          grep -Fq "v_decision.decision_basis <> 'VERTICAL_REVIEW_HANDOFF'" "$adoption_handoff"
+          grep -Fq "v_decision.outcome not in ('approve','approve-with-changes')" "$adoption_handoff"
+          grep -Fq 'CURRENT_FINAL_H4_DECISION_REQUIRED' "$adoption_handoff"
+          grep -Fq 'ADOPTION_HANDOFF_STALE_H2_SOURCE' "$adoption_handoff"
+          grep -Fq 'ADOPTION_HANDOFF_STALE_H3' "$adoption_handoff"
+          grep -Fq 'CML_ARENA_H4_ADOPTION_HANDOFF_V1' "$adoption_handoff"
+          grep -Fq 'extensions.digest' "$adoption_handoff"
+          grep -Fq 'adoption_receipt_created boolean not null default false' "$adoption_handoff"
+          grep -Fq 'curriculum_in_force_changed boolean not null default false' "$adoption_handoff"
+          grep -Fq 'automatic_master_promotion boolean not null default false' "$adoption_handoff"
+          grep -Fq 'h4_canonical_adoption_handoffs_decision_idx' "$adoption_perf"
 
       - name: TypeScript
         run: npx tsc --noEmit
