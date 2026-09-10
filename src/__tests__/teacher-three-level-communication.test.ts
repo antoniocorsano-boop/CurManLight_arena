@@ -112,6 +112,7 @@ describe('Teacher three-level institutional communication', () => {
     expect(coordinationSource).toContain('hasDisciplineCompetence');
     expect(coordinationSource).toContain('repository.recordTeamOutcome');
     expect(coordinationSource).toContain('non approvazione istituzionale');
-    expect(workSessionSource).toContain('non approva il curricolo');
+    expect(workSessionSource).toContain('Questo esito non è ancora una decisione dell’Istituto.');
+    expect(workSessionSource).toContain('Il curricolo non è ancora approvato');
   });
 });
