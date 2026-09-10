@@ -1,6 +1,6 @@
 {
   "registry_id": "CCO-SURFACES",
-  "version": "1.6.1",
+  "version": "1.6.2",
   "contract": ".human/operational-communication.contract.json",
   "status_vocabulary": ["conformant", "migration", "guided-setup", "excluded"],
   "surfaces": [
@@ -30,8 +30,8 @@
       "id": "curriculum-work-session",
       "path": "src/features/beta/RevisionWorkspace.tsx",
       "status": "conformant",
-      "operational_context": "Validazione professionale — Il mio lavoro sul curricolo",
-      "primary_task": "Percorrere una sola sessione progressiva: esaminare, condividere, confrontare e, quando autorizzati, registrare l'esito professionale del gruppo come quarto stadio reale",
+      "operational_context": "Il tuo percorso — Rivedi il curricolo con i colleghi",
+      "primary_task": "Esprimere prima il proprio parere e aprire progressivamente condivisione, confronto ed esito del gruppo soltanto quando diventano pertinenti",
       "required_tokens": [
         "data-curriculum-work-session",
         "data-work-session-stage={stage}",
@@ -46,9 +46,11 @@
         "mode=\"compare\"",
         "mode=\"record\"",
         "data-team-comparison-blocked-by-share",
-        "Condivisione verificata",
+        "Adesso pensa soltanto al tuo parere. I passaggi successivi si aprono quando servono.",
+        "Condivisione completata",
         "Apri il confronto del gruppo",
         "Registra l’esito del gruppo",
+        "Questo esito non è ancora una decisione dell’Istituto.",
         "data-curriculum-work-session-complete"
       ]
     },
@@ -135,14 +137,17 @@
       "id": "case-aware-revision-surface",
       "path": "src/features/beta/CaseAwareRevisionSurface.tsx",
       "status": "conformant",
-      "operational_context": "Riesame — selezione esclusiva fra lavoro generale e caso mirato",
-      "primary_task": "Mantenere GENERAL e CASE_SCOPED percettivamente esclusivi, riportare il rientro all'inizio del Riesame e subordinare i casi assegnati al lavoro corrente",
+      "operational_context": "Riesame — classe corrente, lavoro generale e accesso subordinato ai passaggi successivi",
+      "primary_task": "Far riconoscere subito classe e compito corrente, mantenere GENERAL e CASE_SCOPED esclusivi e rendere il riesame verticale un passaggio successivo non concorrente",
       "required_tokens": [
         "data-revision-surface-mode=\"CASE_SCOPED\"",
         "data-revision-surface-mode=\"GENERAL\"",
-        "data-ux-consolidation=\"UX_CONSOLIDATION_R1_1\"",
+        "data-ux-consolidation=\"UX_CONSOLIDATION_R1_2\"",
         "data-general-review-primary-work",
         "data-general-review-assignment-support",
+        "data-vertical-review-entry",
+        "Dopo: controlla il raccordo tra le classi",
+        "Non è ancora una decisione dell’Istituto.",
         "window.scrollTo({ top: 0, left: 0, behavior: 'auto' })"
       ]
     },
