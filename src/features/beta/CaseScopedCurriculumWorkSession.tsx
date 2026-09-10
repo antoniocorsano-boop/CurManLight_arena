@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from 'react';
 import {
   casePreparedCount,
   completeCaseWorkSession,
-  getCaseScopedProposals,
   isCasePersonalReviewComplete,
   recordCaseDecision,
   resetCaseDecision,
@@ -34,7 +33,14 @@ const updateStoredCase = (reviewCaseId: string, updater: (reviewCase: Curriculum
 export function CaseScopedCurriculumWorkSession({ reviewCase, availableProposals, discipline, order, academicYear }: Props) {
   const team = useTeamWorkspaceContext();
   const session = reviewCase.workSession;
-  const proposals = useMemo(() => getCaseScopedProposals(reviewCase, availableProposals), [reviewCase, availableProposals]);
+  const sessionScopeKey = session?.targetedProposalRefs.join(String.fromCharCode(31)) ?? '';
+  const proposals = useMemo(() => {
+    if (!session) return [];
+    const byId = new Map(availableProposals.map((proposal) => [proposal.id, proposal]));
+    return session.targetedProposalRefs
+      .map((proposalRef) => byId.get(proposalRef))
+      .filter((proposal): proposal is Proposal => Boolean(proposal));
+  }, [availableProposals, sessionScopeKey]);
   const [index, setIndex] = useState(0);
   const [customDraft, setCustomDraft] = useState('');
   const [share, setShare] = useState<CaseScopedContributionPersistenceState>(() => emptyShare(proposals.length));
@@ -45,14 +51,17 @@ export function CaseScopedCurriculumWorkSession({ reviewCase, availableProposals
     setShare(emptyShare(proposals.length));
     setCoordination(emptyTeam());
     setOutcomeProposalRef(null);
-  }, [reviewCase.id, proposals.length]);
+  }, [reviewCase.id, proposals.length, sessionScopeKey]);
 
   if (!session) return null;
   if (session.reviewCaseId !== reviewCase.id) {
     return <section className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-900">La sessione persistita non appartiene al caso corrente. Il lavoro è bloccato per evitare contaminazioni tra riesami.</section>;
   }
-  if (proposals.length !== reviewCase.targetedProposalRefs.length) {
-    return <section className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">Una o più schede congelate nel caso non sono disponibili nella versione corrente. La sessione resta bloccata.</section>;
+  if (!session.targetedProposalRefs.every((proposalRef) => reviewCase.targetedProposalRefs.includes(proposalRef))) {
+    return <section className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-900">La sessione contiene una scheda esterna al perimetro immutabile del caso. Il lavoro è bloccato.</section>;
+  }
+  if (proposals.length !== session.targetedProposalRefs.length) {
+    return <section className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">Una o più schede congelate nella sessione non sono disponibili nella versione corrente. La sessione resta bloccata.</section>;
   }
 
   const preparedCount = casePreparedCount(session);
