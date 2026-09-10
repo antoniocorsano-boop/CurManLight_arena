@@ -35,6 +35,7 @@ export function CurriculumWorkspace(props: CurriculumWorkspaceProps) {
         <section
           className="space-y-5 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6"
           data-canonical-curriculum-entry
+          data-curriculum-primary-task="consultation"
           data-hcm-level="1"
         >
           <div className="space-y-2">
@@ -108,6 +109,7 @@ export function CurriculumWorkspace(props: CurriculumWorkspaceProps) {
           data-hcm-level="3"
           data-canonical-source-review
           data-source-review-progressive-disclosure
+          data-advanced-source-tools-default="collapsed"
         >
           <summary className="cursor-pointer text-sm font-bold text-slate-700">Fonti e verifiche</summary>
           <div className="mt-3 space-y-3 text-sm leading-6 text-slate-600">
@@ -138,6 +140,7 @@ export function CurriculumWorkspace(props: CurriculumWorkspaceProps) {
           className="rounded-2xl border border-slate-200 bg-slate-50 p-4 sm:p-5"
           data-hcm-level="3"
           data-legacy-curriculum-disclosure
+          data-legacy-default="collapsed"
         >
           <summary className="cursor-pointer text-sm font-bold text-slate-700">Archivio precedente</summary>
           <div className="mt-3 space-y-3 text-sm leading-6 text-slate-600">
