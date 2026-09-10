@@ -14,6 +14,7 @@ on:
       - 'supabase/migrations/20260910150500_h4_canonical_adoption_handoff_performance.sql'
       - 'supabase/migrations/20260910153000_beta_development_pilot_dirigente_authority.sql'
       - 'supabase/migrations/20260910160000_h4_bound_canonical_adoption_receipt.sql'
+      - 'supabase/migrations/20260910160500_h4_bound_canonical_adoption_performance.sql'
       - 'src/domain/revision/institutionalReviewHandoff.ts'
       - 'src/domain/revision/h3BoundInstitutionalDecision.ts'
       - 'src/domain/revision/h4CanonicalAdoptionHandoff.ts'
@@ -47,6 +48,7 @@ on:
       - 'supabase/migrations/20260910150500_h4_canonical_adoption_handoff_performance.sql'
       - 'supabase/migrations/20260910153000_beta_development_pilot_dirigente_authority.sql'
       - 'supabase/migrations/20260910160000_h4_bound_canonical_adoption_receipt.sql'
+      - 'supabase/migrations/20260910160500_h4_bound_canonical_adoption_performance.sql'
       - 'src/domain/revision/institutionalReviewHandoff.ts'
       - 'src/domain/revision/h3BoundInstitutionalDecision.ts'
       - 'src/domain/revision/h4CanonicalAdoptionHandoff.ts'
@@ -103,6 +105,7 @@ jobs:
           adoption_perf='supabase/migrations/20260910150500_h4_canonical_adoption_handoff_performance.sql'
           pilot_dirigente='supabase/migrations/20260910153000_beta_development_pilot_dirigente_authority.sql'
           adoption='supabase/migrations/20260910160000_h4_bound_canonical_adoption_receipt.sql'
+          adoption_receipt_perf='supabase/migrations/20260910160500_h4_bound_canonical_adoption_performance.sql'
 
           grep -Fq 'record_h3_bound_institutional_decision_v1' "$h4"
           grep -Fq "v_role is distinct from 'collegio'" "$h4"
@@ -160,6 +163,7 @@ jobs:
           grep -Fq 'materialization_created boolean not null default false' "$adoption"
           grep -Fq 'curriculum_in_force_changed boolean not null default false' "$adoption"
           grep -Fq 'automatic_master_promotion boolean not null default false' "$adoption"
+          grep -Fq 'h4_bound_canonical_adoption_handoff_fk_idx' "$adoption_receipt_perf"
 
       - name: TypeScript
         run: npx tsc --noEmit
