@@ -11,7 +11,7 @@ interface DevelopmentAuthorityRow {
   id: string;
   workspace_id: string;
   user_id: string;
-  authority_role: 'collegio';
+  authority_role: 'collegio' | 'dirigente';
   scope: 'BETA_DEVELOPMENT_PILOT';
   status: 'active' | 'revoked';
   previous_workspace_role: string;
@@ -87,6 +87,7 @@ export class SupabaseH3BoundInstitutionalDecisionRepository {
       .select('id,workspace_id,user_id,authority_role,scope,status,previous_workspace_role,basis,source_ref,assigned_at,revoked_at')
       .eq('workspace_id', context.membership.workspaceId)
       .eq('user_id', context.membership.userId)
+      .eq('authority_role', 'collegio')
       .eq('scope', 'BETA_DEVELOPMENT_PILOT')
       .eq('status', 'active')
       .maybeSingle();
