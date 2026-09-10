@@ -14,6 +14,7 @@ import {
 import { INSTITUTE_CURRICULUM_CURRENT_SOURCE } from '../../domain/curriculum/institute/currentSource';
 import { SupabaseVerticalReviewRepository } from '../../infrastructure/supabase/verticalReviewRepository';
 import { SupabaseInstitutionalReviewHandoffRepository } from '../../infrastructure/supabase/institutionalReviewHandoffRepository';
+import { H3BoundInstitutionalDecisionPanel } from './H3BoundInstitutionalDecisionPanel';
 import { useTeamWorkspaceContext } from './useTeamWorkspaceContext';
 
 interface Props {
@@ -299,16 +300,25 @@ export function VerticalReviewPanel({ discipline, onClose }: Props) {
     }
   };
 
-  const renderInstitutionalHandoff = (outcome: VerticalReviewOutcomeReceipt) => {
+  const renderInstitutionalHandoff = (outcome: VerticalReviewOutcomeReceipt, showH4Decision = true) => {
     const existing = handoffByVerticalReviewId.get(outcome.id);
     if (existing) {
       return (
-        <div className="mt-3 rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-xs leading-5 text-emerald-950" data-institutional-review-handoff-ready>
-          <strong className="block">Pronto per l’iter istituzionale</strong>
-          <span className="block">Ricevuta H3: <code>{outcome.id}</code></span>
-          <span className="block">Autorità richiesta per H4: Collegio.</span>
-          <span className="block">Nessuna decisione istituzionale, adozione o modifica del curricolo è stata generata.</span>
-        </div>
+        <>
+          <div className="mt-3 rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-xs leading-5 text-emerald-950" data-institutional-review-handoff-ready>
+            <strong className="block">Pronto per l’iter istituzionale</strong>
+            <span className="block">Ricevuta H3: <code>{outcome.id}</code></span>
+            <span className="block">Autorità richiesta per H4: Collegio.</span>
+            <span className="block">Nessuna decisione istituzionale, adozione o modifica del curricolo è stata generata.</span>
+          </div>
+          {showH4Decision && team.client && team.selectedMembership && (
+            <H3BoundInstitutionalDecisionPanel
+              client={team.client}
+              context={{ assurance: 'authenticated-workspace', membership: team.selectedMembership }}
+              handoff={existing}
+            />
+          )}
+        </>
       );
     }
     if (!canPrepareInstitutionalReviewHandoff(outcome)) {
@@ -452,7 +462,7 @@ export function VerticalReviewPanel({ discipline, onClose }: Props) {
         <section className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4" data-vertical-review-receipt>
           <strong className="block text-sm text-emerald-950">{verticalOutcomeLabel(receipt.outcome)}</strong>
           <p className="mt-1 text-xs leading-5 text-emerald-900">Ricevuta server registrata su due unità del master {receipt.master.version}. Nessuna decisione istituzionale o adozione è stata generata.</p>
-          {renderInstitutionalHandoff(receipt)}
+          {renderInstitutionalHandoff(receipt, false)}
         </section>
       )}
 
@@ -467,7 +477,7 @@ export function VerticalReviewPanel({ discipline, onClose }: Props) {
                   <span>{new Date(item.recordedAt).toLocaleString('it-IT')}</span>
                 </div>
                 <p className="mt-1">{item.rationale}</p>
-                {renderInstitutionalHandoff(item)}
+                {renderInstitutionalHandoff(item, true)}
               </article>
             ))}
           </div>
