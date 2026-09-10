@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import globalCssSource from '../index.css?raw';
 
 function firstSource(modules: Record<string, string>): string {
   return Object.values(modules)[0] ?? '';
@@ -17,10 +18,6 @@ const curriculumReaderSource = firstSource(import.meta.glob('../features/curricu
 }) as Record<string, string>);
 
 const curriculumPublicationSource = firstSource(import.meta.glob('../features/curriculum/components/DepartmentCurriculumPublication.tsx', {
-  query: '?raw', import: 'default', eager: true,
-}) as Record<string, string>);
-
-const globalCssSource = firstSource(import.meta.glob('../index.css', {
   query: '?raw', import: 'default', eager: true,
 }) as Record<string, string>);
 
