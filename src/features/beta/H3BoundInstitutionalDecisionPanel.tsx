@@ -9,6 +9,7 @@ import {
   type H3BoundInstitutionalDecisionReceipt,
 } from '../../domain/revision/h3BoundInstitutionalDecision';
 import { SupabaseH3BoundInstitutionalDecisionRepository } from '../../infrastructure/supabase/h3BoundInstitutionalDecisionRepository';
+import { H4CanonicalAdoptionHandoffPanel } from './H4CanonicalAdoptionHandoffPanel';
 
 interface Props {
   client: SupabaseClient;
@@ -142,7 +143,15 @@ export function H3BoundInstitutionalDecisionPanel({ client, context, handoff }: 
         </div>
       )}
 
-      {!loading && !canDecide && (
+      {!loading && latest && hasFinalDecision && (
+        <H4CanonicalAdoptionHandoffPanel
+          client={client}
+          context={context}
+          decision={latest}
+        />
+      )}
+
+      {!loading && !canDecide && !hasFinalDecision && (
         <div className="mt-3 rounded-lg border border-amber-200 bg-amber-50 p-3 text-amber-950" data-h4-authority-blocked>
           Il passaggio è pronto, ma il ruolo verificato <strong>{context.membership.role}</strong> non possiede <code>REVISION_DECIDE</code>.
         </div>
