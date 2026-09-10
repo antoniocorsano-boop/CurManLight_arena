@@ -27,6 +27,30 @@
       ]
     },
     {
+      "id": "curriculum-primary",
+      "path": "src/features/curriculum/CurriculumWorkspace.tsx",
+      "status": "conformant",
+      "operational_context": "Consultazione del curricolo d’Istituto",
+      "primary_task": "Riconoscere curricolo, stato, copertura e azione utile senza attraversare strumenti tecnici di verifica",
+      "communication_levels": {
+        "level_1": "Curricolo, stato, copertura, ambito docente e consultazione",
+        "level_2": "Fonti e archivio come aree secondarie chiuse",
+        "level_3": "Verifica documentale avanzata solo dopo una scelta intenzionale ulteriore"
+      },
+      "required_tokens": [
+        "data-canonical-curriculum-entry",
+        "Curricolo verticale 3–14",
+        "In revisione",
+        "data-curriculum-scope-summary",
+        "data-secondary-curriculum-navigation",
+        "Consulta il curricolo",
+        "data-source-review-progressive-disclosure",
+        "data-open-source-review-tools",
+        "data-source-review-advanced-tools",
+        "data-legacy-curriculum-disclosure"
+      ]
+    },
+    {
       "id": "curriculum-work-session",
       "path": "src/features/beta/RevisionWorkspace.tsx",
       "status": "conformant",

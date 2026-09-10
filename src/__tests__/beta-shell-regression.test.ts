@@ -132,18 +132,37 @@ describe('Arena Beta canonical shell regression guard', () => {
     expect(curriculumWorkspaceSource).toContain('data-teacher-surface="curriculum-workspace"');
   });
 
-  it('makes the canonical 3–14 curriculum primary and keeps source verification explicit', () => {
+  it('keeps Curriculum compact, teacher-readable and progressively discloses assurance tools', () => {
     expect(curriculumWorkspaceSource).toContain('data-canonical-curriculum-entry');
     expect(curriculumWorkspaceSource).toContain('Curricolo verticale d’Istituto');
-    expect(curriculumWorkspaceSource).toContain('Curricolo verticale integrale 3–14');
-    expect(curriculumWorkspaceSource).toContain('Baseline corrente');
-    expect(curriculumWorkspaceSource).toContain('Non è ancora il curricolo vigente dell’Istituto.');
-    expect(curriculumWorkspaceSource).toContain('Apri il curricolo integrale');
-    expect(curriculumWorkspaceSource).toContain('Verifica le fonti');
-    expect(curriculumWorkspaceSource).toContain('data-canonical-source-review');
-    expect(curriculumWorkspaceSource).toContain('data-legacy-curriculum-disclosure');
-    expect(curriculumWorkspaceSource).toContain('Archivio locale precedente');
+    expect(curriculumWorkspaceSource).toContain('Curricolo verticale 3–14');
+    expect(curriculumWorkspaceSource).toContain('In revisione');
+    expect(curriculumWorkspaceSource).toContain('deve ancora essere validato dall’Istituto.');
+    expect(curriculumWorkspaceSource).toContain('data-curriculum-scope-summary');
+    expect(curriculumWorkspaceSource).toContain('Infanzia · 3–5 anni');
+    expect(curriculumWorkspaceSource).toContain('Primaria · I–V');
+    expect(curriculumWorkspaceSource).toContain('Secondaria · I–III');
+    expect(curriculumWorkspaceSource).toContain('data-secondary-curriculum-navigation');
+    expect(curriculumWorkspaceSource).toContain('Per il tuo lavoro');
+    expect(curriculumWorkspaceSource).toContain('Tecnologia · Secondaria di primo grado');
+    expect(curriculumWorkspaceSource).toContain('Scegli una classe se vuoi passare al Riesame.');
+    expect(curriculumWorkspaceSource).toContain('Consulta il curricolo');
+    expect(curriculumWorkspaceSource).toContain('data-source-review-progressive-disclosure');
+    expect(curriculumWorkspaceSource).toContain('Fonti e verifiche');
+    expect(curriculumWorkspaceSource).toContain('Apri gli strumenti di verifica');
+    expect(curriculumWorkspaceSource).toContain('data-source-review-advanced-tools');
     expect(curriculumWorkspaceSource).toContain('FinalPublicationSourceReviewWorkbench');
+    expect(curriculumWorkspaceSource).toContain('data-legacy-curriculum-disclosure');
+    expect(curriculumWorkspaceSource).toContain('Archivio precedente');
+    expect(curriculumWorkspaceSource).not.toContain('Baseline corrente');
+    expect(curriculumWorkspaceSource).not.toContain('master canonico');
+    expect(curriculumWorkspaceSource).not.toContain('Riesame H2');
+    expect(curriculumWorkspaceSource).not.toContain('superficie H2');
+    expect(curriculumWorkspaceSource).not.toContain('SHA-256');
+    expect(curriculumWorkspaceSource).not.toContain('868 slot');
+    expect(curriculumWorkspaceSource).not.toContain('Esporta pacchetto');
+    expect(curriculumWorkspaceSource).not.toContain('Importa verifiche');
+
     expect(finalPublicationSourceReviewWorkbenchSource).toContain('data-source-review-roundtrip');
     expect(finalPublicationSourceReviewWorkbenchSource).toContain('Esporta pacchetto');
     expect(finalPublicationSourceReviewWorkbenchSource).toContain('Importa verifiche');
