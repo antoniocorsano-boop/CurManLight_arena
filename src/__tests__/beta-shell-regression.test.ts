@@ -173,14 +173,19 @@ describe('Arena Beta canonical shell regression guard', () => {
     expect(revisionSource).not.toContain('Istruzioni operative:');
   });
 
-  it('preserves H2, team, H3 and H4 as distinct governed surfaces', () => {
+  it('keeps governance boundaries while making the general revision surface teacher-readable', () => {
     expect(revisionWorkspaceSource).toContain('data-curriculum-work-session');
-    expect(revisionWorkspaceSource).toContain('Un solo percorso: esamina, condividi, confronta e registra l’esito del gruppo quando ti compete.');
-    expect(revisionWorkspaceSource).toContain('Il contributo personale, l’eventuale caso mirato e l’esito del gruppo restano passaggi distinti.');
+    expect(revisionWorkspaceSource).toContain('Adesso pensa soltanto al tuo parere. I passaggi successivi si aprono quando servono.');
+    expect(revisionWorkspaceSource).toContain('Esprimi il tuo parere');
+    expect(revisionWorkspaceSource).toContain('Prima dai il tuo parere. Poi lo confronti con il gruppo. Le decisioni dell’Istituto vengono dopo, in un passaggio separato.');
+    expect(revisionWorkspaceSource).not.toContain('Validazione professionale');
     expect(teamCoordinationSource).toContain('Esito del gruppo registrato. Non è una decisione istituzionale e non modifica da solo il curricolo.');
     expect(caseAwareRevisionSource).toContain('data-human-phase="H3_VERTICAL_REVIEW"');
-    expect(caseAwareRevisionSource).toContain('Fase distinta');
-    expect(caseAwareRevisionSource).toContain('H3 si apre solo con un gesto esplicito e resta separato dall’iter istituzionale.');
+    expect(caseAwareRevisionSource).toContain('Dopo: controlla il raccordo tra le classi');
+    expect(caseAwareRevisionSource).toContain('Non è ancora una decisione dell’Istituto.');
+    expect(caseAwareRevisionSource).toContain('Nei documenti di processo questo passaggio è chiamato riesame verticale.');
+    expect(caseAwareRevisionSource).not.toContain('Le schede H2 sono legate alla singola annualità.');
+    expect(caseAwareRevisionSource).not.toContain('H3 si apre solo con un gesto esplicito');
     expect(verticalReviewSource).toContain('H3BoundInstitutionalDecisionPanel');
     expect(verticalReviewSource).toContain('Nessuna decisione istituzionale è stata creata.');
     expect(h4DecisionSource).toContain('data-h3-bound-h4-panel');
