@@ -9,7 +9,7 @@
   "releaseIdentityVerified": true,
   "reviewedAt": null,
   "reviewerAttestation": {
-    "humanReviewActuallyPerformed": false,
+    "humanReviewActuallyPerformed": true,
     "desktopReviewed": false,
     "mobileReviewed": false,
     "noFabricatedAuthority": false,
@@ -38,7 +38,7 @@
         "unauthorizedReadOnly": "PENDING",
         "staleOrReentryRecovery": "PENDING"
       },
-      "notes": ""
+      "notes": "Evidenza mobile reale fornita dall'utente il 2026-09-10 alle 10:55 +02:00. Il revisore dichiara di capire di essere nella revisione curricolare di Tecnologia e di poter scegliere l'annualità. Segnala però una sensazione di ermetismo tecnico e richiede maggiore leggerezza, guida esecutiva e significati espressivi senza aumento del carico cognitivo. La schermata espone termini come H2/H3, unità curricolare del riesame, validazione professionale, contributo professionale, fase distinta e riesame verticale prima che l'utente abbia completato il compito principale. Il task resta PENDING: non sono ancora state ispezionate proposta, razionale/evidenze, requisiti mancanti, percorso read-only e recupero."
     },
     "HT-REVISION-DECISION": {
       "desktop": "PENDING",
@@ -82,9 +82,20 @@
     "historicalArchive": "PENDING",
     "notes": ""
   },
-  "findings": [],
+  "findings": [
+    {
+      "id": "G5-UX-REVISION-001",
+      "task": "HT-BETA-REVISION-PREPARE",
+      "device": "mobile",
+      "severity": 2,
+      "status": "OPEN",
+      "summary": "La superficie Riesame orienta correttamente su disciplina e annualità, ma usa terminologia di processo troppo tecnica e mostra troppi livelli decisionali prima del bisogno dell'utente.",
+      "humanEvidence": "Il revisore comprende di essere nella revisione curricolare di Tecnologia e di poter scegliere l'annualità, ma riferisce ermetismo tecnico e chiede maggiore leggerezza e guida esecutiva senza carico cognitivo.",
+      "remediationIntent": "Portare in primo piano una sola domanda operativa alla volta; tradurre H2/H3 e il lessico di governo in linguaggio docente; spostare i dettagli di processo dietro divulgazione progressiva; rendere il passaggio verticale successivo e non concorrente al compito corrente."
+    }
+  ],
   "severity1Open": 0,
-  "severity2Open": 0,
+  "severity2Open": 1,
   "verdict": "PENDING_HUMAN",
   "allowedVerdicts": [
     "BETA_HIA_PASS",
