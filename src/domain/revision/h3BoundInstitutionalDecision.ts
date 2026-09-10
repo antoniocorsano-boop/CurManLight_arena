@@ -1,12 +1,13 @@
 import type { InstitutionalDecisionOutcome } from './sharedDecisionPort';
 
 export type H3BoundInstitutionalAuthorityContext = 'INSTITUTIONAL' | 'DEVELOPMENT_PILOT';
+export type DevelopmentPilotAuthorityRole = 'collegio' | 'dirigente';
 
 export interface DevelopmentPilotAuthorityAssignment {
   id: string;
   workspaceId: string;
   userId: string;
-  authorityRole: 'collegio';
+  authorityRole: DevelopmentPilotAuthorityRole;
   scope: 'BETA_DEVELOPMENT_PILOT';
   status: 'active' | 'revoked';
   previousWorkspaceRole: string;
