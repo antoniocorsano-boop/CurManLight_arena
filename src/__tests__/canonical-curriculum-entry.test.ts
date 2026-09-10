@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import workspaceSource from '../features/curriculum/CurriculumWorkspace.tsx?raw';
+import professionalReaderSource from '../features/curriculum/components/ProfessionalCurriculumReader.tsx?raw';
 import caseAwareSource from '../features/beta/CaseAwareRevisionSurface.tsx?raw';
 import baselineSource from '../lib/curriculumBaseline.ts?raw';
 import currentSource from '../domain/curriculum/institute/currentSource.ts?raw';
@@ -11,30 +12,36 @@ import {
 } from '../domain/curriculum/validation/technologySecondaryClassReview';
 
 describe('canonical curriculum entry', () => {
-  it('makes the unified master the first curriculum surface in teacher-readable language', () => {
-    expect(workspaceSource).toContain('data-canonical-curriculum-entry');
-    expect(workspaceSource).toContain('data-curriculum-primary-task="consultation"');
-    expect(workspaceSource).toContain('Curricolo verticale d’Istituto');
-    expect(workspaceSource).toContain('Curricolo verticale 3–14');
-    expect(workspaceSource).toContain('In revisione');
-    expect(workspaceSource).toContain('deve ancora essere validato dall’Istituto.');
-    expect(workspaceSource).toContain('data-curriculum-scope-summary');
-    expect(workspaceSource).toContain('Infanzia · 3–5 anni');
-    expect(workspaceSource).toContain('Primaria · I–V');
-    expect(workspaceSource).toContain('Secondaria · I–III');
-    expect(workspaceSource).toContain('Consulta il curricolo');
-    expect(workspaceSource).not.toContain('Baseline corrente');
-    expect(workspaceSource).not.toContain('master canonico');
+  it('presents the canonical curriculum as a professional publication instead of exposing the raw master', () => {
+    expect(workspaceSource).toContain('ProfessionalCurriculumReader');
+    expect(professionalReaderSource).toContain('data-canonical-curriculum-entry');
+    expect(professionalReaderSource).toContain('data-curriculum-primary-task="consultation"');
+    expect(professionalReaderSource).toContain('data-curriculum-presentation="professional-publication"');
+    expect(professionalReaderSource).toContain('Curricolo verticale');
+    expect(professionalReaderSource).toContain('Dipartimento Scientifico-Matematico-Tecnologico');
+    expect(professionalReaderSource).toContain('Da esaminare e validare');
+    expect(professionalReaderSource).toContain('Percorso 3–14');
+    expect(professionalReaderSource).toContain('data-curriculum-mode="web"');
+    expect(professionalReaderSource).toContain('data-curriculum-mode="document"');
+    expect(professionalReaderSource).toContain('Vista web');
+    expect(professionalReaderSource).toContain('Documento');
+    expect(professionalReaderSource).toContain('data-curriculum-scope-summary');
+    expect(professionalReaderSource).toContain('Infanzia · 3–5 anni');
+    expect(professionalReaderSource).toContain('Primaria · I–V');
+    expect(professionalReaderSource).toContain('Secondaria · I–III');
+    expect(professionalReaderSource).not.toContain('Baseline corrente');
+    expect(professionalReaderSource).not.toContain('master canonico');
   });
 
-  it('exposes real mobile-safe navigation from the secondary curriculum context to the annual review', () => {
-    expect(workspaceSource).toContain('data-secondary-curriculum-navigation');
-    expect(workspaceSource).toContain('data-open-technology-review-class');
+  it('exposes real mobile-safe navigation from the Technology section to the annual review', () => {
+    expect(professionalReaderSource).toContain('data-secondary-curriculum-navigation');
+    expect(professionalReaderSource).toContain('data-open-technology-review-class');
+    expect(professionalReaderSource).toContain('Tecnologia — curricolo verticale');
+    expect(professionalReaderSource).toContain('Se vuoi riesaminare Tecnologia, scegli l’annualità.');
+    expect(professionalReaderSource).toContain('Classe II');
     expect(workspaceSource).toContain("setOrder('secondaria')");
     expect(workspaceSource).toContain("setDiscipline('tecnologia')");
     expect(workspaceSource).toContain("props.handleTabSwitch('revisione')");
-    expect(workspaceSource).toContain('Scegli una classe se vuoi passare al Riesame.');
-    expect(workspaceSource).toContain('Classe II');
   });
 
   it('keeps source verification behind two intentional disclosure levels', () => {
@@ -57,11 +64,18 @@ describe('canonical curriculum entry', () => {
     expect(workspaceSource).toContain('onClick={() => setLegacyOpen(true)}');
   });
 
-  it('binds the canonical entry to the same master registered by the domain', () => {
+  it('keeps canonical authority in the domain while Department documents remain presentation artifacts', () => {
     expect(currentSource).toContain('CAN-CURR-MASTER-00_Curricolo_verticale_integrale_unificato_3-14_2026-2027');
     expect(currentSource).toContain('12eWTPUZBJxZixd6-p8drNAaW5_eL8qWpXZUSDyZZAv4');
-    expect(workspaceSource).toContain('INSTITUTE_CURRICULUM_CURRENT_SOURCE.driveFileId');
-    expect(workspaceSource).toContain('CANONICAL_MASTER_URL');
+
+    expect(professionalReaderSource).toContain("DEPARTMENT_CURRICULUM_DOC_ID = '1VYNvik8oLAVWjwB5Y_Q960D62t-eUZRc'");
+    expect(professionalReaderSource).toContain("DEPARTMENT_FOUNDATIONS_DOC_ID = '1KNjcyBzNAOsK-1FD1_HpasN9cyfASQTm'");
+    expect(professionalReaderSource).not.toContain('12eWTPUZBJxZixd6-p8drNAaW5_eL8qWpXZUSDyZZAv4');
+    expect(professionalReaderSource).not.toContain('INSTITUTE_CURRICULUM_CURRENT_SOURCE');
+
+    expect(workspaceSource).toContain('ProfessionalCurriculumReader');
+    expect(workspaceSource).not.toContain('CANONICAL_MASTER_URL');
+    expect(workspaceSource).not.toContain('INSTITUTE_CURRICULUM_CURRENT_SOURCE.driveFileId');
   });
 
   it('materializes a distinct class-II H2 pilot from the canonical master without reusing class-I cards', () => {
