@@ -11,10 +11,6 @@ fs.mkdirSync(OUT_DIR, { recursive: true });
 (async () => {
   const browser = await chromium.launch({ headless: true });
   const context = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 1, locale: 'it-IT' });
-  await context.addInitScript(() => {
-    window.localStorage.setItem('curmanlight-react-db-state-v1.4.0', 'support-audit-profile-present');
-  });
-
   const page = await context.newPage();
   const checks = [];
   const findings = [];
@@ -34,13 +30,54 @@ fs.mkdirSync(OUT_DIR, { recursive: true });
     console.log(`PRODUCT_FINDING=${code} — ${detail}`);
   };
 
+  const completePersonalProfileIfRequired = async () => {
+    const dialog = page.locator('[data-onboarding-contract="personal-work-profile-v1"]');
+    if (!await dialog.isVisible().catch(() => false)) return false;
+
+    await dialog.locator('[data-personal-role="insegnante"]').click();
+    await dialog.getByRole('button', { name: 'Disciplinare', exact: true }).click();
+    await dialog.getByRole('button', { name: 'Prossimo', exact: true }).click();
+    await dialog.getByRole('button', { name: 'secondaria', exact: true }).click();
+    await dialog.getByRole('button', { name: 'Prossimo', exact: true }).click();
+
+    const discipline = dialog.locator('#personal-work-discipline');
+    await discipline.selectOption({ label: 'Tecnologia' }).catch(async () => {
+      const options = await discipline.locator('option').allTextContents();
+      const technologyIndex = options.findIndex((label) => /tecnologia/i.test(label));
+      if (technologyIndex < 0) throw new Error(`Disciplina Tecnologia non disponibile: ${options.join(', ')}`);
+      await discipline.selectOption({ index: technologyIndex });
+    });
+    await dialog.getByRole('button', { name: 'Prossimo', exact: true }).click();
+
+    const firstCombination = dialog.locator('button').filter({ hasText: /^1\^A$/ }).first();
+    if (await firstCombination.isVisible().catch(() => false)) await firstCombination.click();
+
+    await dialog.locator('[data-save-personal-profile="explicit"]').click();
+    await dialog.waitFor({ state: 'detached', timeout: 5000 }).catch(async () => dialog.waitFor({ state: 'hidden', timeout: 5000 }));
+    return !await dialog.isVisible().catch(() => false);
+  };
+
   try {
     const response = await page.goto(`${BETA_URL}/`, { waitUntil: 'domcontentloaded', timeout: 45000 });
     check('Beta pubblica raggiungibile', Boolean(response && response.ok()), response ? `HTTP ${response.status()}` : 'nessuna risposta');
     await page.waitForTimeout(1400);
 
+    const onboardingInitiallyVisible = await page.locator('[data-onboarding-contract="personal-work-profile-v1"]').isVisible().catch(() => false);
+    if (onboardingInitiallyVisible) {
+      check('Profilo di prova configurato tramite flusso reale', await completePersonalProfileIfRequired(), 'onboarding completato esplicitamente');
+      await page.reload({ waitUntil: 'domcontentloaded', timeout: 45000 });
+      await page.waitForTimeout(1200);
+    } else {
+      check('Profilo di prova configurato tramite flusso reale', true, 'profilo già disponibile nella sessione di prova');
+    }
+
     const blockingDialogs = await page.locator('[role="dialog"][aria-modal="true"]:visible').count().catch(() => 0);
     check('Utente locale già configurato non riceve onboarding automatico', blockingDialogs === 0, `dialoghi visibili=${blockingDialogs}`);
+
+    if (blockingDialogs > 0) {
+      await completePersonalProfileIfRequired();
+      await page.waitForTimeout(300);
+    }
 
     const releaseResponse = await context.request.get(`${BETA_URL}/beta-release.json`);
     const releaseIdentity = releaseResponse.ok() ? await releaseResponse.json().catch(() => null) : null;
@@ -140,7 +177,7 @@ fs.mkdirSync(OUT_DIR, { recursive: true });
       releaseIdentity,
       generatedAt: new Date().toISOString(),
       humanVerdictIssued: false,
-      auditPersona: 'configured-local-user',
+      auditPersona: 'configured-local-user-via-real-profile-flow',
       checks,
       findings,
       metrics: { overflowMetrics, typography, verticalScreens },
