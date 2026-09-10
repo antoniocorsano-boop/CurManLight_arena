@@ -1,5 +1,5 @@
+import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import globalCssSource from '../index.css?raw';
 
 function firstSource(modules: Record<string, string>): string {
   return Object.values(modules)[0] ?? '';
@@ -20,6 +20,8 @@ const curriculumReaderSource = firstSource(import.meta.glob('../features/curricu
 const curriculumPublicationSource = firstSource(import.meta.glob('../features/curriculum/components/DepartmentCurriculumPublication.tsx', {
   query: '?raw', import: 'default', eager: true,
 }) as Record<string, string>);
+
+const globalCssSource = readFileSync(new URL('../index.css', import.meta.url), 'utf8');
 
 const handoffSource = firstSource(import.meta.glob('../features/beta/PlanningHandoffPreview.tsx', {
   query: '?raw', import: 'default', eager: true,
