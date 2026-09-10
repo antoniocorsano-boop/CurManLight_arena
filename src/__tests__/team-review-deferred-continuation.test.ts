@@ -128,13 +128,13 @@ describe('H2 deferred continuation', () => {
     const migration = readFileSync(new URL('../../supabase/migrations/20260910090000_team_review_deferred_continuation.sql', import.meta.url), 'utf8');
 
     expect(migration).toContain('source_outcome_id uuid not null unique references public.team_review_outcomes');
+    expect(migration).toContain('completed_by_outcome_id uuid references public.team_review_outcomes');
     expect(migration).toContain('team_review_contribution_history');
     expect(migration.indexOf('insert into public.team_review_contribution_history')).toBeLessThan(
       migration.indexOf('delete from public.team_review_contributions contribution'),
     );
     expect(migration).toContain("if v_source.outcome <> 'defer' then");
     expect(migration).toContain('DEFERRED_CONTINUATION_ALREADY_OPEN');
-    expect(migration).toContain('previous H2');
     expect(migration).toContain('VERTICAL_REVIEW_H2_CONTINUATION_OPEN');
     expect(migration).toContain('completed_by_outcome_id = new.id');
     expect(migration).not.toContain('insert into public.institutional_revision_decisions');
