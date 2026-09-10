@@ -12,17 +12,22 @@ const curriculumWorkspaceSource = firstSource(import.meta.glob('../features/curr
   query: '?raw', import: 'default', eager: true,
 }) as Record<string, string>);
 
+const curriculumReaderSource = firstSource(import.meta.glob('../features/curriculum/components/ProfessionalCurriculumReader.tsx', {
+  query: '?raw', import: 'default', eager: true,
+}) as Record<string, string>);
+
 const handoffSource = firstSource(import.meta.glob('../features/beta/PlanningHandoffPreview.tsx', {
   query: '?raw', import: 'default', eager: true,
 }) as Record<string, string>);
 
 describe('Arena S3C final human remediation', () => {
   it('keeps curriculum, review and planning as explicit distinct steps', () => {
-    expect(curriculumWorkspaceSource).toContain('data-canonical-curriculum-entry');
-    expect(curriculumWorkspaceSource).toContain('data-open-technology-review-class');
+    expect(curriculumWorkspaceSource).toContain('<ProfessionalCurriculumReader');
+    expect(curriculumReaderSource).toContain('data-canonical-curriculum-entry');
+    expect(curriculumReaderSource).toContain('data-open-technology-review-class');
+    expect(curriculumReaderSource).toContain('La consultazione del curricolo resta separata dal Riesame.');
+    expect(curriculumReaderSource).not.toContain('Riesame H2');
     expect(curriculumWorkspaceSource).toContain("props.handleTabSwitch('revisione')");
-    expect(curriculumWorkspaceSource).toContain('Scegli una classe se vuoi passare al Riesame.');
-    expect(curriculumWorkspaceSource).not.toContain('Riesame H2');
     expect(viewsSource).toContain("props.activeTab === 'revisione'");
     expect(viewsSource).toContain('<CaseAwareRevisionSurface');
     expect(viewsSource).toContain('data-teacher-surface="revision"');
