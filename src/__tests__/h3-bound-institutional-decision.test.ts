@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { resolveCapabilityAccess } from '../domain/institution/capabilities';
 import migration from '../../supabase/migrations/20260910130000_h3_bound_institutional_decision.sql?raw';
 import performanceMigration from '../../supabase/migrations/20260910130500_h3_bound_institutional_decision_performance_hardening.sql?raw';
+import pgcryptoSchemaFix from '../../supabase/migrations/20260910140000_h3_bound_institutional_decision_pgcrypto_schema_fix.sql?raw';
 
 describe('H4 institutional decision bound to H3 handoff', () => {
   it('keeps REVISION_DECIDE exclusive to an authenticated Collegio actor', () => {
@@ -37,6 +38,14 @@ describe('H4 institutional decision bound to H3 handoff', () => {
     expect(migration).toContain('vertical_review_binding_version');
     expect(migration).toContain('vertical_review_binding_fingerprint');
     expect(migration).toMatch(/values \(\s*p_workspace_id,\s*null,\s*null,\s*null,\s*'VERTICAL_REVIEW_HANDOFF'/s);
+  });
+
+  it('resolves pgcrypto deterministically in Supabase without weakening the H4 boundary', () => {
+    expect(pgcryptoSchemaFix).toContain('alter function public.record_h3_bound_institutional_decision_v1');
+    expect(pgcryptoSchemaFix).toContain('set search_path = public, extensions, pg_temp');
+    expect(pgcryptoSchemaFix).not.toMatch(/grant\s+execute/i);
+    expect(pgcryptoSchemaFix).not.toMatch(/insert\s+into/i);
+    expect(pgcryptoSchemaFix).not.toMatch(/update\s+public\./i);
   });
 
   it('revokes every proposal-only institutional write path for authenticated clients', () => {
