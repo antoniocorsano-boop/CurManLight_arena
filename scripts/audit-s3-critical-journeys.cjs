@@ -22,6 +22,22 @@ async function closeLocalProfileIfPresent(page) {
   }
 }
 
+async function clickWithPersonalProfileRecovery(page, locator) {
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    await closeLocalProfileIfPresent(page);
+    try {
+      await locator.click({ timeout: 5000 });
+      return;
+    } catch (error) {
+      const personalProfile = page.locator('[data-onboarding-contract="personal-work-profile-v1"]').first();
+      const interceptedByProfile = await personalProfile.isVisible({ timeout: 300 }).catch(() => false);
+      if (!interceptedByProfile) throw error;
+      await closeLocalProfileIfPresent(page);
+    }
+  }
+  throw new Error('Could not complete click after dismissing the personal work profile modal');
+}
+
 async function gotoRoute(page, route) {
   const response = await page.goto(`${baseUrl}${route}`, {
     waitUntil: 'domcontentloaded',
@@ -139,7 +155,7 @@ async function noHorizontalOverflow(page) {
         check('desktop web reader offers a persistent editorial index', await desktopIndex.isVisible());
         const indexButtons = desktopIndex.locator('button');
         check('desktop editorial index exposes all 16 sections', (await indexButtons.count()) === 16);
-        await indexButtons.nth(8).click();
+        await clickWithPersonalProfileRecovery(page, indexButtons.nth(8));
       } else {
         const sectionSelector = canonicalEntry.locator('[data-curriculum-section-selector]').first();
         await sectionSelector.waitFor({ state: 'visible', timeout: 5000 });
@@ -157,7 +173,7 @@ async function noHorizontalOverflow(page) {
       check('Technology web section exposes class I and class III progression', technologyText.includes('secondaria — classe i') && technologyText.includes('secondaria — classe iii'));
       check('full curriculum tables do not create page-level horizontal overflow', await noHorizontalOverflow(page));
 
-      await documentMode.click();
+      await clickWithPersonalProfileRecovery(page, documentMode);
       const documentReader = page.locator('[data-curriculum-document-reader]').first();
       await documentReader.waitFor({ state: 'visible', timeout: 5000 });
       check('document mode opens only after an explicit teacher action', await documentReader.isVisible());
@@ -165,7 +181,7 @@ async function noHorizontalOverflow(page) {
       check('foundations and traceability document is available as a secondary document', (await documentReader.locator('[data-open-department-foundations-document]').count()) === 1);
       check('document mode has no material horizontal overflow', await noHorizontalOverflow(page));
 
-      await webMode.click();
+      await clickWithPersonalProfileRecovery(page, webMode);
       await page.locator('[data-curriculum-web-reader]').first().waitFor({ state: 'visible', timeout: 5000 });
       check('teacher can return from document to web reading without leaving Curriculum', page.url().includes('/curriculum'));
 
@@ -174,13 +190,13 @@ async function noHorizontalOverflow(page) {
       check('source verification is available as a secondary closed disclosure', await sourceDisclosure.isVisible());
       check('advanced source tools are not mounted by default', (await page.locator('[data-source-review-advanced-tools]').count()) === 0);
 
-      await sourceDisclosure.locator('summary').click();
+      await clickWithPersonalProfileRecovery(page, sourceDisclosure.locator('summary'));
       const sourceToolsAction = sourceDisclosure.getByRole('button', { name: /apri gli strumenti di verifica/i }).first();
       await sourceToolsAction.waitFor({ state: 'visible', timeout: 5000 });
       check('source assurance requires a second intentional action', await sourceToolsAction.isVisible());
       check('first disclosure still keeps advanced assurance tools unmounted', (await page.locator('[data-source-review-advanced-tools]').count()) === 0);
 
-      await sourceToolsAction.click();
+      await clickWithPersonalProfileRecovery(page, sourceToolsAction);
       const advancedTools = page.locator('[data-source-review-advanced-tools]').first();
       await advancedTools.waitFor({ state: 'visible', timeout: 5000 });
       check('advanced source verification mounts only after the second action', await advancedTools.isVisible());
