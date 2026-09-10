@@ -77,9 +77,10 @@ async function noPageHorizontalOverflow(page) {
       const focusedExplorer = surface.locator('[data-curriculum-focused-explorer]').first();
       await focusedExplorer.waitFor({ state: 'visible', timeout: 4000 });
       const explorerText = await focusedExplorer.innerText();
-      check('class II can be reached without traversing the 16 editorial sections', explorerText.includes('Secondaria — classe II'));
+      const explorerTextNormalized = explorerText.toLocaleLowerCase('it-IT');
+      check('class II can be reached without traversing the 16 editorial sections', explorerTextNormalized.includes('secondaria — classe ii'));
       check('class II is rendered as semantic cards rather than requiring the integral table', (await focusedExplorer.locator('[data-curriculum-node-cards] article').count()) >= 8);
-      check('focused exploration preserves nucleus and annual outcome content', explorerText.includes('Cultura tecnica e sistemi') && explorerText.includes('Esito annuale d’Istituto'));
+      check('focused exploration preserves nucleus and annual outcome content', explorerTextNormalized.includes('cultura tecnica e sistemi') && explorerTextNormalized.includes('esito annuale d’istituto'));
       check('focused exploration has no page-level horizontal overflow', await noPageHorizontalOverflow(page));
 
       const cultureCard = focusedExplorer.locator('[data-curriculum-node-cards] article').filter({ hasText: 'Cultura tecnica e sistemi' }).first();
@@ -93,7 +94,8 @@ async function noPageHorizontalOverflow(page) {
       check('Trama declares exact-only relation policy', (await graph.getAttribute('data-relation-policy')) === 'same-nucleus-exact-only');
       check('exact repeated nucleus produces a visible three-year progression', (await graph.locator('[data-curriculum-trama-node]').count()) === 3);
       const tramaText = await trama.innerText();
-      check('Trama exposes classes I, II and III for the repeated nucleus', tramaText.includes('Secondaria — classe I') && tramaText.includes('Secondaria — classe II') && tramaText.includes('Secondaria — classe III'));
+      const tramaTextNormalized = tramaText.toLocaleLowerCase('it-IT');
+      check('Trama exposes classes I, II and III for the repeated nucleus', tramaTextNormalized.includes('secondaria — classe i') && tramaTextNormalized.includes('secondaria — classe ii') && tramaTextNormalized.includes('secondaria — classe iii'));
       check('Trama explains that links are not inferred or invented', tramaText.includes('Nessun collegamento viene inferito o inventato'));
       check('Trama remains usable without page-level horizontal overflow', await noPageHorizontalOverflow(page));
 
