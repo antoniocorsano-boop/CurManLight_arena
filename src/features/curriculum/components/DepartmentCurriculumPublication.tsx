@@ -68,6 +68,8 @@ function PublicationTable({ rows }: { rows: string[][] }) {
 }
 
 export function DepartmentCurriculumPublication({ section }: { section: DepartmentCurriculumSection }) {
+  let orderedItemNumber = 0;
+
   return (
     <div data-curriculum-publication-content data-source-section={section.number}>
       {section.blocks.map((block, index) => {
@@ -88,7 +90,8 @@ export function DepartmentCurriculumPublication({ section }: { section: Departme
           return <p key={key} className="my-2 pl-5 text-[15px] leading-7 text-slate-700 before:-ml-4 before:mr-2 before:content-['•'] sm:text-base">{block.text}</p>;
         }
         if (block.type === 'number') {
-          return <p key={key} className="my-2 flex gap-3 text-[15px] leading-7 text-slate-700 sm:text-base"><span className="font-bold text-indigo-700">{index + 1}.</span><span>{block.text}</span></p>;
+          orderedItemNumber += 1;
+          return <p key={key} className="my-2 flex gap-3 text-[15px] leading-7 text-slate-700 sm:text-base"><span className="font-bold text-indigo-700">{orderedItemNumber}.</span><span>{block.text}</span></p>;
         }
         if (block.type === 'table' && block.rows) {
           return <PublicationTable key={key} rows={block.rows} />;
