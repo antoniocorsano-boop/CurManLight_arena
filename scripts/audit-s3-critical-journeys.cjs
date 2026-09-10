@@ -86,35 +86,34 @@ async function noHorizontalOverflow(page) {
       console.log(`=== S3B CURRICULUM CONTEXT — ${profile.id} ===`);
       await gotoRoute(page, '/curriculum');
 
-      const contextHeader = page.getByText('Area locale di consultazione', { exact: false }).first();
-      await contextHeader.waitFor({ state: 'visible', timeout: 8000 });
+      const canonicalEntry = page.locator('[data-canonical-curriculum-entry]').first();
+      await canonicalEntry.waitFor({ state: 'visible', timeout: 8000 });
       check('curriculum context route is reachable', page.url().includes('/curriculum'));
-      check('curriculum context is visibly identified', await contextHeader.isVisible());
+      check('canonical curriculum context is visibly identified', await canonicalEntry.isVisible());
 
-      const authorityNotice = page.locator('[data-human-task="curriculum-authority-context"]').first();
-      await authorityNotice.waitFor({ state: 'visible', timeout: 5000 });
-      const authorityText = (await authorityNotice.innerText()).toLowerCase();
+      const authorityText = (await canonicalEntry.innerText()).toLowerCase();
       check(
-        'curriculum authority state is persistently visible',
-        authorityText.includes('copia locale') &&
-          authorityText.includes('fonti') &&
-          authorityText.includes('applicabilità') &&
-          authorityText.includes('stato')
+        'canonical curriculum authority state is persistently visible',
+        authorityText.includes('baseline corrente') &&
+          authorityText.includes('validazione professionale') &&
+          authorityText.includes('non è ancora il curricolo vigente')
+      );
+      check(
+        'canonical curriculum is the unified 3–14 master',
+        authorityText.includes('curricolo verticale integrale 3–14')
       );
 
-      const nextAction = authorityNotice.locator('[data-human-next-action="verify-curriculum-validity"]').first();
-      await nextAction.waitFor({ state: 'visible', timeout: 5000 });
-      const nextActionText = (await nextAction.innerText()).toLowerCase();
-      check(
-        'curriculum exposes one explicit human next action',
-        await nextAction.isVisible() && nextActionText.includes('verifica se puoi usarlo')
-      );
+      const sourceAction = canonicalEntry.getByRole('button', { name: /verifica le fonti/i }).first();
+      await sourceAction.waitFor({ state: 'visible', timeout: 5000 });
+      check('provenance inspection action is visible', await sourceAction.isVisible());
       check('curriculum context has no material horizontal overflow', await noHorizontalOverflow(page));
 
-      check('provenance inspection entry point is visible', await nextAction.isVisible());
-      await nextAction.click();
-      await page.waitForURL(/\/fonti(?:\/|$|\?)/, { timeout: 5000 });
-      check('provenance entry reaches the canonical /fonti route', page.url().includes('/fonti'));
+      await sourceAction.click();
+      const sourceReview = page.locator('[data-canonical-source-review]').first();
+      await sourceReview.waitFor({ state: 'visible', timeout: 5000 });
+      check('source verification opens inside the canonical curriculum surface', await sourceReview.isVisible());
+      check('source review preserves the canonical curriculum route', page.url().includes('/curriculum'));
+      check('expanded source review has no material horizontal overflow', await noHorizontalOverflow(page));
 
       await page.screenshot({
         path: path.join(artifactDir, `${profile.id}-curriculum-context.png`),

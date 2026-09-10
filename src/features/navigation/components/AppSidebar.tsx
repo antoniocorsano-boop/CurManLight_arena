@@ -66,11 +66,6 @@ export function AppSidebar(props: AppSidebarProps) {
               )}
             </button>
 
-            <button type="button" onClick={() => switchTab('fonti')} className={itemClass(props.activeTab === 'fonti')}>
-              <BookOpenCheck className="h-4 w-4 shrink-0" aria-hidden="true" />
-              <span>Controlla le fonti</span>
-            </button>
-
             <button type="button" onClick={() => switchTab('esportazioni')} className={itemClass(props.activeTab === 'esportazioni')}>
               <FileText className="h-4 w-4 shrink-0" aria-hidden="true" />
               <span>Crea un documento</span>
@@ -89,9 +84,13 @@ export function AppSidebar(props: AppSidebarProps) {
           )}
         </section>
 
-        <section aria-labelledby="nav-supporto" className="border-t border-slate-100 pt-4">
+        <section aria-labelledby="nav-supporto" className="border-t border-slate-100 pt-4" data-beta-secondary-navigation="support">
           <p id="nav-supporto" className="mb-1.5 px-3 text-[10px] font-black uppercase tracking-wider text-slate-400">Supporto</p>
           <div className="space-y-1">
+            <button type="button" onClick={() => switchTab('fonti')} className={itemClass(props.activeTab === 'fonti')} data-secondary-destination="fascicolo">
+              <BookOpenCheck className="h-4 w-4 shrink-0" aria-hidden="true" />
+              <span>Fascicolo</span>
+            </button>
             <button type="button" onClick={() => switchTab('certificazione-pa')} className={itemClass(props.activeTab === 'certificazione-pa')}>
               <ShieldCheck className="h-4 w-4 shrink-0" aria-hidden="true" />
               <span>Controlli e checklist</span>

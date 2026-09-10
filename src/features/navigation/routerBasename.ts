@@ -1,2 +1,11 @@
-export const resolveRouterBasename = (mode: string): string =>
-  mode === 'beta' ? '/CurManLight_arena' : '/';
+const BETA_REPOSITORY_BASENAME = '/CurManLight_arena';
+
+export const resolveRouterBasename = (
+  mode: string,
+  pathname: string = BETA_REPOSITORY_BASENAME,
+): string => {
+  if (mode !== 'beta') return '/';
+  return pathname === BETA_REPOSITORY_BASENAME || pathname.startsWith(`${BETA_REPOSITORY_BASENAME}/`)
+    ? BETA_REPOSITORY_BASENAME
+    : '/';
+};

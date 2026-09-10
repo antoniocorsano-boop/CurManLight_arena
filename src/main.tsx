@@ -36,7 +36,7 @@ if ('serviceWorker' in navigator && window.location.protocol !== 'file:') {
 
 import React from 'react'
 import ReactDOM from 'react-dom/client'
-import { BrowserRouter, Route, Routes } from 'react-router-dom'
+import { BrowserRouter, Route, Routes, useLocation } from 'react-router-dom'
 import App from './App.tsx'
 import BetaIdentityPage from './features/beta/BetaIdentityPage.tsx'
 import HvaRecorder from './features/hva-recorder/HvaRecorder.tsx'
@@ -77,23 +77,31 @@ class ErrorBoundary extends React.Component<
  }
 }
 
-const betaIdentityQueryEntry = new URLSearchParams(window.location.search).get('betaIdentity') === '1';
-const routerBasename = resolveRouterBasename(import.meta.env.MODE);
+const routerBasename = resolveRouterBasename(import.meta.env.MODE, window.location.pathname);
+
+function RouterContent() {
+ const location = useLocation();
+ const betaIdentityQueryEntry = new URLSearchParams(location.search).get('betaIdentity') === '1';
+
+ if (betaIdentityQueryEntry) return <BetaIdentityPage />;
+
+ return (
+  <>
+   <Routes>
+    <Route path="/beta-identity" element={<BetaIdentityPage />} />
+    <Route path="*" element={<App />} />
+   </Routes>
+   <HvaRecorder />
+  </>
+ );
+}
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
  <React.StrictMode>
   <ErrorBoundary>
-   {betaIdentityQueryEntry ? (
-    <BetaIdentityPage />
-   ) : (
-    <BrowserRouter basename={routerBasename}>
-     <Routes>
-      <Route path="/beta-identity" element={<BetaIdentityPage />} />
-      <Route path="*" element={<App />} />
-     </Routes>
-     <HvaRecorder />
-    </BrowserRouter>
-   )}
+   <BrowserRouter basename={routerBasename}>
+    <RouterContent />
+   </BrowserRouter>
   </ErrorBoundary>
  </React.StrictMode>,
 )

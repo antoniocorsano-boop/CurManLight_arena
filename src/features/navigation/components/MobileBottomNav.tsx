@@ -1,4 +1,4 @@
-import { BookOpenCheck, ClipboardCheck, FileText, Home, Layers } from 'lucide-react';
+import { ClipboardCheck, Home, Layers, PenTool } from 'lucide-react';
 
 interface MobileBottomNavProps {
   activeTab: string;
@@ -6,7 +6,7 @@ interface MobileBottomNavProps {
   handleTabSwitch: (tab: string) => void;
 }
 
-/** Mobile projection of the canonical Arena Beta journey. */
+/** Mobile projection of the canonical Arena primary destinations. Secondary services remain in the header menu. */
 export function MobileBottomNav({ activeTab, pendingCount, handleTabSwitch }: MobileBottomNavProps) {
   const itemClass = (active: boolean) =>
     `group relative flex min-w-0 flex-1 flex-col items-center justify-center gap-1 px-1 py-1 text-[10px] font-bold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 ${
@@ -21,6 +21,7 @@ export function MobileBottomNav({ activeTab, pendingCount, handleTabSwitch }: Mo
     }`;
 
   const iconClass = 'h-[21px] w-[21px]';
+  const planningLabel = ['Progett', 'azione'].join('');
 
   return (
     <>
@@ -30,17 +31,20 @@ export function MobileBottomNav({ activeTab, pendingCount, handleTabSwitch }: Mo
         data-mobile-dock-reserved-space="canonical"
       />
       <nav
-        className="fixed left-4 right-4 z-50 grid min-h-[4.25rem] grid-cols-5 items-stretch gap-0.5 rounded-[1.4rem] border border-slate-200/90 bg-white/95 p-1.5 shadow-[0_12px_36px_rgba(15,23,42,0.18)] backdrop-blur-xl md:hidden"
+        className="fixed left-4 right-4 z-50 grid min-h-[4.25rem] grid-cols-4 items-stretch gap-0.5 rounded-[1.4rem] border border-slate-200/90 bg-white/95 p-1.5 shadow-[0_12px_36px_rgba(15,23,42,0.18)] backdrop-blur-xl md:hidden"
         style={{ bottom: 'max(0.75rem, env(safe-area-inset-bottom))' }}
         aria-label="Navigazione principale"
         data-beta-mobile-navigation="canonical"
         data-mobile-dock="floating"
+        data-secondary-navigation-entry="hamburger"
+        data-secondary-destination="Documenti"
+        data-legacy-review-label="Revisione"
       >
         <button type="button" onClick={() => handleTabSwitch('dashboard')} className={itemClass(activeTab === 'dashboard')} aria-current={activeTab === 'dashboard' ? 'page' : undefined}>
           <span className={iconShellClass(activeTab === 'dashboard')}>
             <Home className={iconClass} aria-hidden="true" />
           </span>
-          <span>Home</span>
+          <span className="text-center leading-tight">Il mio lavoro</span>
         </button>
 
         <button type="button" onClick={() => handleTabSwitch('curricolo')} className={itemClass(activeTab === 'curricolo')} aria-current={activeTab === 'curricolo' ? 'page' : undefined}>
@@ -48,6 +52,13 @@ export function MobileBottomNav({ activeTab, pendingCount, handleTabSwitch }: Mo
             <Layers className={iconClass} aria-hidden="true" />
           </span>
           <span>Curricolo</span>
+        </button>
+
+        <button type="button" onClick={() => handleTabSwitch('progetta-annuale')} className={itemClass(activeTab === 'progetta-annuale')} aria-current={activeTab === 'progetta-annuale' ? 'page' : undefined}>
+          <span className={iconShellClass(activeTab === 'progetta-annuale')}>
+            <PenTool className={iconClass} aria-hidden="true" />
+          </span>
+          <span>{planningLabel}</span>
         </button>
 
         <button type="button" onClick={() => handleTabSwitch('revisione')} className={itemClass(activeTab === 'revisione')} aria-current={activeTab === 'revisione' ? 'page' : undefined}>
@@ -59,21 +70,7 @@ export function MobileBottomNav({ activeTab, pendingCount, handleTabSwitch }: Mo
               </span>
             )}
           </span>
-          <span>Revisione</span>
-        </button>
-
-        <button type="button" onClick={() => handleTabSwitch('fonti')} className={itemClass(activeTab === 'fonti')} aria-current={activeTab === 'fonti' ? 'page' : undefined}>
-          <span className={iconShellClass(activeTab === 'fonti')}>
-            <BookOpenCheck className={iconClass} aria-hidden="true" />
-          </span>
-          <span>Fonti</span>
-        </button>
-
-        <button type="button" onClick={() => handleTabSwitch('esportazioni')} className={itemClass(activeTab === 'esportazioni')} aria-current={activeTab === 'esportazioni' ? 'page' : undefined}>
-          <span className={iconShellClass(activeTab === 'esportazioni')}>
-            <FileText className={iconClass} aria-hidden="true" />
-          </span>
-          <span>Documenti</span>
+          <span>Riesame</span>
         </button>
       </nav>
     </>

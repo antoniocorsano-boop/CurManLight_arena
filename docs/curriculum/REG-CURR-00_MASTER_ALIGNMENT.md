@@ -1,140 +1,114 @@
 # REG-CURR-00 — Registro maestro del fascicolo curricolare e dell’allineamento Arena
 
-**Versione:** 1.6 — 6 settembre 2026  
+**Versione:** 1.13 — 6 settembre 2026  
 **Ambito:** Curricolo verticale d’Istituto — A.S. 2026/2027
 
 ## Funzione
 
-Questo documento è il mirror repository del registro Drive `REG-CURR-00_Registro_maestro_fascicolo_curricolare_e_allineamento_Arena_2026-2027` (`1IMKwWWukefIDIOsbHQByiXLN7YuU7He0V5b01tjitG4`). Mantiene allineati fascicolo Drive, fonte curricolare corrente, logiche e contratti di Arena e documentazione operativa.
+Questo documento è il mirror repository del registro Drive `REG-CURR-00_Registro_maestro_fascicolo_curricolare_e_allineamento_Arena_2026-2027` (`1IMKwWWukefIDIOsbHQByiXLN7YuU7He0V5b01tjitG4`). Il registro macchina associato è `docs/curriculum/REG-CURR-00.registry.json`.
 
-Il registro macchina associato è `docs/curriculum/REG-CURR-00.registry.json`.
+La completezza non è attestata dalla semplice esistenza di documenti distribuiti. Richiede una baseline curricolare unica, un repertorio delle fonti identificato, una catena di provenienza esplicita e la separazione fra autorità normativa, documentazione istruttoria, provenienza e stato di validazione.
 
-## Fonte curricolare corrente
+## Baseline curricolare corrente
 
-La base istruttoria corrente resta:
+L’unica baseline curricolare canonica di lavoro è:
 
-- `CURRICOLO_VERTICALE_CORRETTO_PROPOSTA_2026-09-03.docx`;
-- Drive file ID `1DPdK_EIZsE3lI-LIzTJG776cU1PcAcnf`;
-- SHA-256 `c89fbbbe43432db8410913675381b7dc3654d2448f9f91a8c72b115b9ec6fc55`;
-- stato: **proposta d’Istituto da validare**.
+- `CAN-CURR-MASTER-00_Curricolo_verticale_integrale_unificato_3-14_2026-2027`;
+- Drive file ID `12eWTPUZBJxZixd6-p8drNAaW5_eL8qWpXZUSDyZZAv4`;
+- versione `1.3` — 6 settembre 2026;
+- stato: **MATERIALIZZAZIONE COMPLETA — COPERTURA DOCUMENTALE OSA COMPLETA — DA VALIDARE PROFESSIONALMENTE — NON VIGENTE**.
 
-La precedente `source reconstruction v3` resta storico tecnico.
+Il master contiene materialmente il percorso ordinario 3–14 e gli assi integrati: Infanzia 3/4/5, Primaria I–V, Secondaria di primo grado I–III, Insegnamento della religione cattolica, Latino per l’Educazione Linguistica II–III, Educazione civica e alfabetizzazione all’intelligenza artificiale.
 
-**correzioni documentali recepite ≠ contributo individuale ≠ esito professionale del gruppo ≠ approvazione collegiale ≠ curricolo vigente**.
+La versione 1.3 mantiene lo stesso Drive ID e incorpora cumulativamente i GAP/PARTIAL emersi dal gate requisito-per-requisito. Le integrazioni sono espresse come requisiti, traiettorie di benchmark e regole di autorità; non trasformano le annualizzazioni d’Istituto in OSA ministeriali annuali e non riscrivono retroattivamente le coorti ancora in regime 2012.
+
+La denominazione canonica del campo dell’Infanzia è **IL CORPO E IL MOVIMENTO**. La precedente forma «IL CORPO IN MOVIMENTO» resta soltanto nella provenienza storica/editoriale.
+
+## Gate OSA uno-a-uno
+
+`MATR-CURR-MASTER-01_Matrice_conformita_normativa_IN2025_e_atti_collegati_2026-2027` — Drive `1Wiw8Wsifls1-wr_GPYuqIAoB8GnwXMChO8Mz_kwiLKY` — resta un **allegato di controllo, non una baseline curricolare**.
+
+Il gate usa identificativi interni `OSA-AUD-*`; non inventa codici ministeriali. La regola semantica resta vincolante:
+
+- Primaria: i benchmark nazionali sono letti ai termini previsti delle classi III e V; le annualizzazioni delle singole classi sono elaborazioni d’Istituto;
+- Secondaria di primo grado: il benchmark nazionale è letto al termine della classe III; le annualizzazioni I–III sono elaborazioni d’Istituto;
+- le classi ancora in regime 2012 non vengono riscritte retroattivamente per simulare l’applicazione delle IN2025.
+
+Stato corrente: `OSA_ONE_TO_ONE_GATE = COMPLETE_FOR_DOCUMENTARY_COVERAGE`. Tutti i GAP/PARTIAL rilevati sono stati deduplicati e materializzati nel master 1.3 oppure classificati come requisiti di governance separati, controlli di applicabilità o riferimenti normativi specifici.
+
+La chiusura è **documentale soltanto**: `OSA_COMPLETION_CLAIM_SCOPE = DOCUMENTARY_ONLY`. Non equivale a validazione professionale delle annualizzazioni, revisione verticale finale, approvazione collegiale o vigenza.
+
+## Repertorio delle fonti corrente
+
+`ALL-CURR-A_Repertorio_fonti_normative_e_istituzionali_2026-2027` — Drive `1MBZKbis6i6xg50z6fKgbh9yUianJXdhZ5jsK4r852PQ` — versione `1.1` è il repertorio istruttorio corrente collegato al master 1.3.
+
+Arena espone come fonti applicate il sottoinsieme effettivamente usato per costruire o controllare il master. Il contratto macchina è `src/domain/curriculum/institute/sourceRegister.ts`. Per ogni fonte applicata registra codice, titolo, ente, data, funzione nel master, applicabilità, localizzatore, tipo di localizzatore, stato e data della verifica.
+
+La presenza di una fonte nell’app **non ne aumenta l’autorità**. Un localizzatore è `OFFICIAL` soltanto quando conduce a una fonte ufficiale verificata; una copia pubblicata da un’altra istituzione è `INSTITUTIONAL_MIRROR`.
+
+La Nota MIM prot. n. 1312 del 12 marzo 2026 resta registrata come atto ministeriale verificato mediante **copia istituzionale di trasmissione** finché non viene acquisito e verificato un localizzatore MIM diretto stabile.
+
+La catena documentale corrente è:
+
+`CAN-CURR-MASTER-00@1.3 → MATR-CURR-MASTER-01 → ALL-CURR-A@1.1 → fonti normative/ministeriali applicate → PRIMARY_CORRECTED_PROVENANCE`.
+
+## Fonte primaria di provenienza
+
+`CURRICOLO_VERTICALE_CORRETTO_PROPOSTA_2026-09-03.docx` — Drive `1DPdK_EIZsE3lI-LIzTJG776cU1PcAcnf` — SHA-256 `c89fbbbe43432db8410913675381b7dc3654d2448f9f91a8c72b115b9ec6fc55` resta immutata come **fonte primaria di provenienza** e non è la rappresentazione corrente del curricolo.
+
+**fonte normativa ≠ repertorio delle fonti ≠ fonte di provenienza ≠ elaborazione d’Istituto ≠ proposta professionale ≠ contributo individuale ≠ esito professionale del gruppo ≠ decisione istituzionale ≠ curricolo vigente**.
 
 ## Stato del processo
 
 | Ambito | Stato corrente |
 |---|---|
-| Copertura istruttoria 3–14 | `PASS_ISTRUTTORIO` |
-| Audit istruttorio Tecnologia | correzioni recepite nella R2 |
-| Contributo individuale Tecnologia R2 | `COMPLETE_5_OF_5` |
-| Confronto del Dipartimento Tecnologia R2 | `READY_TO_START` |
-| Esito del Dipartimento | `OPEN` |
+| Materializzazione del curricolo ordinario 3–14 | `COMPLETE` |
+| Infanzia 3/4/5 | `MATERIALIZED` |
+| Primaria I–V | `MATERIALIZED` |
+| Secondaria I–III | `MATERIALIZED` |
+| IRC | `MATERIALIZED` |
+| Latino per l’Educazione Linguistica II–III | `MATERIALIZED` |
+| Educazione civica 3–14 | `MATERIALIZED` |
+| Alfabetizzazione all’intelligenza artificiale 3–14 | `MATERIALIZED` |
+| Primo audit normativo — lacune individuate/materializzate | `6 / 6` |
+| Gate OSA uno-a-uno | `COMPLETE_FOR_DOCUMENTARY_COVERAGE` |
+| Integrazioni OSA deduplicate incorporate nel master 1.3 | `TRUE` |
+| Ambito del claim OSA | `DOCUMENTARY_ONLY` |
+| Repertorio fonti | `ALL-CURR-A@1.1 — ALIGNED_TO_MASTER_1_3` |
+| Fonti applicate registrate in Arena | `11` |
 | Validazione professionale complessiva | `OPEN` |
 | Revisione verticale finale | `OPEN` |
 | Pronto per il Collegio | `NOT_YET` |
 | Approvazione collegiale | `NOT_YET` |
+| Curricolo vigente | `NO` |
 | Promozione canonica | `NOT_AUTHORIZED` |
 
-La prossima fase autorizzata è **SECONDARY_DEPARTMENT_TEAM_COMPARISON_R2**.
+## Regola di non frammentazione
 
-## Baseline Arena
+Una correzione, una proposta, una matrice, un audit, un repertorio o un verbale non genera un nuovo curricolo parallelo. Il ciclo autorizzato resta:
 
-Per il lavoro corrente si assume:
+`CAN-CURR-MASTER-00 corrente → controllo/mappatura → integrazione tracciata nello stesso master → validazione professionale → revisione verticale finale → eventuale iter istituzionale`.
 
-- PR **#198**;
-- branch `feature/team-meeting-workspace`;
-- product head funzionale R2 `2317b57fef35695f0c8373208d5b5f4898671478`;
-- CCO `1.3.0`;
-- registro superfici CCO `1.4.1`.
+La matrice normativa resta una prova di controllo. `ALL-CURR-A` resta repertorio istruttorio. Nessuno dei due è una baseline curricolare concorrente.
 
-Il runtime del pilot non viene modificato per trasformare una decisione personale in dato di gruppo: il passaggio individuale → team avviene mediante il workspace condiviso autenticato già previsto dalla #198.
+## Baseline Arena e PR Draft
 
-## Pilota attivo — Tecnologia classe prima — Revisione R2
+La baseline di prodotto istituzionalmente registrata resta PR #198 / `feature/team-meeting-workspace`, con CCO `1.3.0` e registro superfici `1.4.1`. Le PR #199–#201 restano candidata Beta evolutiva Draft; non modificano da sole il fascicolo istituzionale o la vigenza del curricolo. Le PR #202–#207 restano fuori baseline fino a riallineamento e nuova validazione.
 
-**Pilot ID:** `TEC-SEC1-2026-01`  
-**Revisione attiva:** `R2`  
-**Stato:** `READY_FOR_TEAM_COMPARISON`  
-**Esito umano del gruppo:** `OPEN`  
-**Carry-forward delle decisioni R1:** `NOT_AUTHORIZED`  
-**Promozione canonica:** `NOT_AUTHORIZED`
+## Regola applicativa Arena
 
-La R2 mantiene cinque identità correnti:
+Arena deve distinguere:
 
-1. `tec-sec1-2026-r2-n1` — osservare, misurare e rappresentare;
-2. `tec-sec1-2026-r2-n2` — progettare con problema e vincoli;
-3. `tec-sec1-2026-r2-n3` — realizzare, verificare e considerare il ciclo di vita;
-4. `tec-sec1-2026-r2-n4` — Informatica integrata: sistemi, dati e processi;
-5. `tec-sec1-2026-r2-verticalita` — raccordo classe I → classi II–III.
+- **baseline curricolare corrente:** `CAN-CURR-MASTER-00@1.3`;
+- **matrice normativa/OSA:** `MATR-CURR-MASTER-01`, allegato di controllo con copertura documentale completa;
+- **repertorio delle fonti:** `ALL-CURR-A@1.1`, documento istruttorio;
+- **fonte corretta di provenienza:** proposta del 3 settembre 2026;
+- **archivio locale:** materiale incorporato o aggiunto, separato dall’autorità istituzionale;
+- **stato di validazione:** `OPEN`, distinto dalla copertura documentale;
+- **vigenza:** mai inferita da file, fonte verificata, commit, test, mapping OSA, contributi o esiti tecnici.
 
-Le identità R1 restano storico semantico; le decisioni R1 non sono trasferite alla R2.
+## Prossima fase autorizzata
 
-## Contributo individuale completato
+`HUMAN_PROFESSIONAL_VALIDATION_ON_CANONICAL_MASTER_1_3`
 
-Il documento `CONTR-CURR-TEC-SEC1-R2-01_Contributo_individuale_Tecnologia_classe_prima_2026-09-06` (`17dnvfLP3YPghJlwT7FUwgO5p9J499Lw5kZVIAnXlvyk`) registra **cinque conferme su cinque** sulla R2.
-
-Autorità del documento: `INDIVIDUAL_PROFESSIONAL_CONTRIBUTION`.
-
-Questo stato significa soltanto che un contributo professionale individuale è completo. Non produce consenso del gruppo e non aggiorna `DEC-CURR-SEC1-00`.
-
-## Pacchetto di confronto del Dipartimento
-
-È stato creato il pacchetto:
-
-`TEAM-CURR-TEC-SEC1-R2-01_Pacchetto_confronto_Dipartimento_Tecnologia_classe_prima_2026-09-06` — Drive `1V-yit_LYow1P5jLY5wSrbsrKzxgJF0WfHncV6BJyR-g`.
-
-Stato: `READY_TO_START`.  
-Esito del team: `OPEN`.
-
-Tutti e cinque i punti restano aperti al Dipartimento. Il pacchetto porta al confronto il contributo disponibile ma **non precompila alcun esito collettivo**.
-
-## Regole del confronto condiviso
-
-Arena applica questi vincoli:
-
-- un contributo individuale completo non diventa automaticamente esito del team;
-- un punto può essere classificato come già condiviso solo con copertura completa dei contributori attivi attesi nel workspace;
-- con un solo componente attivo nessun punto è automaticamente condiviso;
-- l’esito professionale può essere registrato soltanto da una membership `dipartimento` o `referente` autenticata;
-- la ricevuta di esito resta vincolata alla fingerprint della proposta R2 corrente;
-- l’esito del Dipartimento non equivale ad approvazione istituzionale e non modifica automaticamente il curricolo vigente.
-
-Gli esiti disponibili per ciascun punto sono: accogliere la proposta R2; mantenere il testo precedente; definire un testo condiviso; rinviare con motivazione.
-
-## Correzioni recepite nella R2
-
-L’audit `AUD-CURR-TEC-SEC1-01` (`1SZ_lmaYXNF2Fx8ro1C-hTh5iUH-riECcqyZtRx9JRPM`) resta applicato senza chiudere alcun gate collettivo:
-
-- tre nuclei fondanti di Tecnologia integrati con un asse d’Istituto di Informatica e sistemi digitali;
-- formulazioni della classe prima qualificate come obiettivi annuali d’Istituto;
-- N1 centrato su osservazione, misura e rappresentazione;
-- N3 con provenienza esplicita dei raccordi di sostenibilità;
-- N4 centrato su sistemi informatici, dati, processi, Internet, Web, servizi, algoritmi, protezione dei dati e attendibilità delle informazioni;
-- raccordo digitale I→II→III progressivo nel rispetto del regime transitorio.
-
-## Catena documentale esatta
-
-- fonte: `CURRICOLO_VERTICALE_CORRETTO_PROPOSTA_2026-09-03.docx` — `1DPdK_EIZsE3lI-LIzTJG776cU1PcAcnf`;
-- proposta R2, revisione 1.1: `PROP-CURR-SEC1-TEC-1...` — `19nPCsAj_ItBscUwwcHwrVhxDbBy-MXIJ`;
-- matrice transitoria R2, revisione 1.1: `MATR-CURR-TEC-T01...` — `1CMSESN73HCi_2jM_tZYhN9hd6oWzyHgK`;
-- audit: `AUD-CURR-TEC-SEC1-01...` — `1SZ_lmaYXNF2Fx8ro1C-hTh5iUH-riECcqyZtRx9JRPM`;
-- contributo individuale: `CONTR-CURR-TEC-SEC1-R2-01...` — `17dnvfLP3YPghJlwT7FUwgO5p9J499Lw5kZVIAnXlvyk`;
-- pacchetto di confronto: `TEAM-CURR-TEC-SEC1-R2-01...` — `1V-yit_LYow1P5jLY5wSrbsrKzxgJF0WfHncV6BJyR-g`;
-- gate: `VAL-CURR-SEC1-01...` — `1rxKy2IDD5V7l4Nc1LfJeLr407ltfa_vbt_EFK54s7mU`;
-- registro decisioni: `DEC-CURR-SEC1-00...` — `1KmnrgWrNxVDUjOvdPo0oibqTvr1lQ72QepBE8KNsdZA`;
-- manifesto operativo, revisione 1.2: `WORK-CURR-TEC-01...` — `1s2qZf53O6BqjgyrtzcXuL5lSdafoAmtAUEFv-4mwcog`.
-
-Il contratto applicativo delle cinque schede resta `src/domain/curriculum/validation/technologyClass1Review.ts`. Il contratto del confronto condiviso resta implementato da `src/features/beta/TeamReviewWorkspace.tsx` e dal dominio `src/domain/revision/teamReview.ts`.
-
-## Catena di autorità
-
-`fonte normativa ≠ elaborazione d’Istituto ≠ proposta professionale ≠ contributo individuale ≠ esito professionale del gruppo ≠ decisione istituzionale ≠ curricolo vigente`
-
-## PR successive
-
-Le PR **#199–#201** e **#202–#207** restano Draft e non canoniche finché non vengono riallineate sulla baseline corrente e nuovamente validate.
-
-## Criterio di allineamento
-
-Drive, repository, logiche e documenti sono allineati soltanto se indicano la stessa fonte, la stessa revisione attiva del pilot, gli stessi ID delle proposte, lo stesso stato dei gate e gli stessi confini di autorità. In particolare, un contributo individuale `COMPLETE_5_OF_5` non può essere interpretato come `TEAM_OUTCOME`.
+Il lavoro successivo riguarda la validazione professionale reale delle annualizzazioni, sequenze, profondità, evidenze e raccordi del master 1.3. Gli OSA nazionali applicabili non possono essere resi facoltativi da una decisione dipartimentale. Gli esiti validati confluiscono nello stesso master e precedono la revisione verticale finale.

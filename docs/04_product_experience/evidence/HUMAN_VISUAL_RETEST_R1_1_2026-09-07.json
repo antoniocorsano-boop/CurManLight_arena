@@ -1,0 +1,53 @@
+{
+  "evidence_id": "HUMAN_VISUAL_RETEST_R1_1",
+  "date": "2026-09-07",
+  "subject": "UX_CONSOLIDATION_R1.1 — rientro generale e densità verticale",
+  "human_verdict": "PASS",
+  "tested_candidate": {
+    "pr": 201,
+    "branch": "feature/team-organizational-binding",
+    "runtime_sha": "fce5c63e69d0b97d21c00319050c94d7e84a91a5",
+    "render_deploy": "dep-daf9rdlbedkc738c4j10",
+    "preview": "https://curmanlight-pr201-test.onrender.com"
+  },
+  "evidence": {
+    "source": "real human mobile screenshots supplied during the visual retest",
+    "reference_mobile_contract": "390x844 CSS-class mobile experience",
+    "screenshots_observed": 2,
+    "states_observed": [
+      "Riesame general context at top of page",
+      "Assigned shared-review cases in subordinate lower section"
+    ]
+  },
+  "acceptance_checks": {
+    "return_to_general_context_starts_at_top": true,
+    "one_dominant_current_task_in_general_review": true,
+    "personal_contribution_and_targeted_review_are_explicit_non_stacked_entries": true,
+    "assigned_cases_are_subordinate_support": true,
+    "process_rail_is_single_and_non_competing": true,
+    "primary_action_is_not_obscured_by_mobile_navigation": true,
+    "technical_traceability_is_not_in_default_level_1": true,
+    "previous_r1_general_return_failure_reproduced": false
+  },
+  "residual_notes": [
+    "The mobile surface remains vertically scrollable, but scrolling no longer encodes process progression.",
+    "The assigned-case card remains reachable below the current work area and does not compete with the primary task."
+  ],
+  "governance_effect": {
+    "cco_surfaces_registry_promoted": [
+      "case-aware-revision-surface",
+      "case-scoped-experience-shell",
+      "case-scoped-work-session-content",
+      "case-scoped-team-contribution-publisher",
+      "case-scoped-team-coordination-workspace"
+    ],
+    "new_status": "conformant",
+    "cco_contract_version_changed": false,
+    "curriculum_lifecycle_changed": false,
+    "authority_model_changed": false,
+    "database_schema_changed": false,
+    "curriculum_master_changed": false,
+    "institutional_decision_created": false,
+    "merge_authorized": false
+  }
+}

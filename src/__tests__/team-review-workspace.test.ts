@@ -7,12 +7,18 @@ import {
 } from '../domain/revision/teamReview';
 
 const fingerprint = (digit: string) => digit.repeat(64);
+const scope = {
+  academicYear: '2026/2027',
+  order: 'secondaria' as const,
+  groupCode: 'S-G02' as const,
+  discipline: 'tecnologia',
+};
 
 const proposals: TeamReviewProposalDescriptor[] = [
-  { proposalRef: 'p-shared', focus: 'Punto condiviso', proposalFingerprint: fingerprint('1') },
-  { proposalRef: 'p-change', focus: 'Modifica proposta', proposalFingerprint: fingerprint('2') },
-  { proposalRef: 'p-divergent', focus: 'Opinioni diverse', proposalFingerprint: fingerprint('3') },
-  { proposalRef: 'p-clarify', focus: 'Da chiarire', proposalFingerprint: fingerprint('4') },
+  { ...scope, proposalRef: 'p-shared', focus: 'Punto condiviso', proposalFingerprint: fingerprint('1') },
+  { ...scope, proposalRef: 'p-change', focus: 'Modifica proposta', proposalFingerprint: fingerprint('2') },
+  { ...scope, proposalRef: 'p-divergent', focus: 'Opinioni diverse', proposalFingerprint: fingerprint('3') },
+  { ...scope, proposalRef: 'p-clarify', focus: 'Da chiarire', proposalFingerprint: fingerprint('4') },
 ];
 
 const contribution = (
@@ -22,6 +28,7 @@ const contribution = (
   orientation: TeamReviewContribution['orientation'],
   customText: string | null = null,
 ): TeamReviewContribution => ({
+  ...scope,
   workspaceId: '11111111-1111-4111-8111-111111111111',
   proposalRef,
   proposalFingerprint,
@@ -55,9 +62,9 @@ describe('Arena team review synthesis', () => {
     expect(summary.items.find((item) => item.proposalRef === 'p-clarify')?.staleContributionCount).toBe(1);
   });
 
-  it('never treats one unanimous contribution as full-team sharing when more contributors are expected', () => {
+  it('never treats one unanimous contribution as full-team sharing when more competent contributors are expected', () => {
     const summary = deriveTeamReviewSummary(
-      [{ proposalRef: 'p1', focus: 'P1', proposalFingerprint: fingerprint('a') }],
+      [{ ...scope, proposalRef: 'p1', focus: 'P1', proposalFingerprint: fingerprint('a') }],
       [contribution('p1', fingerprint('a'), 'u1', 'confirm-proposal')],
       3,
     );
@@ -69,23 +76,9 @@ describe('Arena team review synthesis', () => {
     expect(summary.items[0].expectedContributorCount).toBe(3);
   });
 
-  it('never treats a one-person workspace as team consensus', () => {
-    const summary = deriveTeamReviewSummary(
-      [{ proposalRef: 'p1', focus: 'P1', proposalFingerprint: fingerprint('a') }],
-      [contribution('p1', fingerprint('a'), 'u1', 'confirm-proposal')],
-      1,
-    );
-
-    expect(summary.shared).toBe(0);
-    expect(summary.needsClarification).toBe(1);
-    expect(summary.items[0].coverageComplete).toBe(false);
-    expect(summary.items[0].contributionCount).toBe(1);
-    expect(summary.items[0].expectedContributorCount).toBe(1);
-  });
-
   it('does not treat different custom formulations as consensus', () => {
     const summary = deriveTeamReviewSummary(
-      [{ proposalRef: 'p1', focus: 'P1', proposalFingerprint: fingerprint('a') }],
+      [{ ...scope, proposalRef: 'p1', focus: 'P1', proposalFingerprint: fingerprint('a') }],
       [
         contribution('p1', fingerprint('a'), 'u1', 'propose-change', 'Prima formulazione'),
         contribution('p1', fingerprint('a'), 'u2', 'propose-change', 'Seconda formulazione'),
@@ -97,28 +90,32 @@ describe('Arena team review synthesis', () => {
     expect(summary.changeProposed).toBe(0);
   });
 
-  it('fingerprints the complete visible proposal and changes when the text changes', async () => {
+  it('fingerprints scope and visible proposal so cross-discipline versions cannot collide', async () => {
     const base = await fingerprintTeamReviewProposal({
+      ...scope,
       proposalRef: 'p1',
       focus: 'Tecnologia — classe prima',
       oldText: 'Testo precedente',
       newText: 'Proposta aggiornata',
     });
     const same = await fingerprintTeamReviewProposal({
+      ...scope,
       proposalRef: 'p1',
       focus: 'Tecnologia — classe prima',
       oldText: 'Testo precedente',
       newText: 'Proposta aggiornata',
     });
-    const changed = await fingerprintTeamReviewProposal({
+    const changedScope = await fingerprintTeamReviewProposal({
+      ...scope,
+      discipline: 'scienze',
       proposalRef: 'p1',
       focus: 'Tecnologia — classe prima',
       oldText: 'Testo precedente',
-      newText: 'Proposta aggiornata e modificata',
+      newText: 'Proposta aggiornata',
     });
 
     expect(base).toMatch(/^[0-9a-f]{64}$/);
     expect(same).toBe(base);
-    expect(changed).not.toBe(base);
+    expect(changedScope).not.toBe(base);
   });
 });

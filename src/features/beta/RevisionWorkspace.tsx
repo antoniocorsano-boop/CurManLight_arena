@@ -1,13 +1,23 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { RevisioneTab } from '../curriculum';
+import { CurriculumReviewCasePanel } from '../curriculum/components/CurriculumReviewCasePanel';
+import { RevisionTriggerQualificationPanel } from '../curriculum/components/RevisionTriggerQualificationPanel';
 import { useCurriculumStore } from '../../store/useCurriculumStore';
 import type { AppViewsLayerProps } from '../session/types/appViewContracts';
-import { TeamContributionPublisher } from './TeamContributionPublisher';
-import { TeamCoordinationWorkspace } from './TeamCoordinationWorkspace';
+import { TeamContributionPublisher, type TeamContributionPersistenceState } from './TeamContributionPublisher';
+import {
+  TeamCoordinationWorkspace,
+  type TeamCoordinationSessionState,
+} from './TeamCoordinationWorkspace';
 import { useTeamWorkspaceContext } from './useTeamWorkspaceContext';
 
-type RevisionWorkspacePane = 'mine' | 'team';
-type PersonalRevisionStage = 'review' | 'sharing';
+type CurriculumWorkSessionStage = 'EXAMINE' | 'SHARE' | 'COMPARE' | 'RECORD_TEAM_OUTCOME';
+type ExamineSurface = 'OVERVIEW' | 'PERSONAL_REVIEW' | 'REOPEN_CASE';
+
+type RevisionWorkspaceProps = AppViewsLayerProps & {
+  initialNormativeSourceCode?: string | null;
+  onInitialNormativeSourceConsumed?: () => void;
+};
 
 const roleLabel = (role: string | undefined): string | null => {
   if (!role) return null;
@@ -17,16 +27,60 @@ const roleLabel = (role: string | undefined): string | null => {
   return role;
 };
 
-export function RevisionWorkspace(props: AppViewsLayerProps) {
-  const { decisions, customTexts } = useCurriculumStore();
+const SESSION_STEPS = [
+  { id: 'EXAMINE', label: 'Esamina' },
+  { id: 'SHARE', label: 'Condividi' },
+  { id: 'COMPARE', label: 'Confronta' },
+  { id: 'RECORD_TEAM_OUTCOME', label: 'Esito del gruppo' },
+] as const;
+
+const emptyPersistenceState = (requiredCount = 0): TeamContributionPersistenceState => ({
+  requiredCount,
+  persistedCurrentCount: 0,
+  complete: false,
+});
+
+const emptyCoordinationState = (): TeamCoordinationSessionState => ({
+  total: 0,
+  openDiscussionCount: 0,
+  pendingSharedOutcomeCount: 0,
+  resolvedCount: 0,
+  remainingOutcomeCount: 0,
+  allCurrentOutcomesRecorded: false,
+  canRecordTeamOutcome: false,
+});
+
+export function RevisionWorkspace(props: RevisionWorkspaceProps) {
+  const { decisions, customTexts, schoolYear } = useCurriculumStore();
   const team = useTeamWorkspaceContext();
-  const [pane, setPane] = useState<RevisionWorkspacePane>('mine');
-  const [userSelectedPane, setUserSelectedPane] = useState(false);
-  const [personalStage, setPersonalStage] = useState<PersonalRevisionStage>('review');
+  const [stage, setStage] = useState<CurriculumWorkSessionStage>('EXAMINE');
+  const [examineSurface, setExamineSurface] = useState<ExamineSurface>(
+    props.initialNormativeSourceCode ? 'REOPEN_CASE' : 'OVERVIEW',
+  );
+  const [sharePersistence, setSharePersistence] = useState<TeamContributionPersistenceState>(() => emptyPersistenceState());
+  const [coordinationState, setCoordinationState] = useState<TeamCoordinationSessionState>(() => emptyCoordinationState());
+  const [outcomeProposalRef, setOutcomeProposalRef] = useState<string | null>(null);
 
   const selectedRole = team.selectedMembership?.role;
   const isCoordinator = selectedRole === 'dipartimento' || selectedRole === 'referente';
   const selectedRoleLabel = roleLabel(selectedRole);
+  const matchingOperationalAcademicYears = useMemo(
+    () => Array.from(new Set(
+      team.operationalMemberships
+        .filter((membership) => (
+          membership.schoolOrder === props.order
+          && membership.disciplines.includes(props.discipline)
+        ))
+        .map((membership) => membership.academicYear),
+    )),
+    [team.operationalMemberships, props.order, props.discipline],
+  );
+  const authenticatedOperationalAcademicYear = matchingOperationalAcademicYears.length === 1
+    ? matchingOperationalAcademicYears[0]
+    : null;
+  const sharedReviewAcademicYear = team.configured && team.session
+    ? authenticatedOperationalAcademicYear ?? ''
+    : schoolYear;
   const totalReviewCount = props.currentDisciplineProps.length;
   const preparedReviewCount = props.currentDisciplineProps.filter((proposal) => {
     const decision = decisions[proposal.id];
@@ -35,68 +89,183 @@ export function RevisionWorkspace(props: AppViewsLayerProps) {
     return true;
   }).length;
   const reviewComplete = totalReviewCount > 0 && preparedReviewCount === totalReviewCount;
+  const personalContributionIdentityKey = useMemo(
+    () => JSON.stringify([
+      props.discipline,
+      props.order,
+      sharedReviewAcademicYear,
+      props.currentDisciplineProps.map((proposal) => [
+        proposal.id,
+        decisions[proposal.id] ?? null,
+        customTexts[proposal.id]?.trim().replace(/\s+/g, ' ') ?? '',
+      ]),
+    ]),
+    [props.discipline, props.order, props.currentDisciplineProps, sharedReviewAcademicYear, decisions, customTexts],
+  );
+
+  const handlePersistenceStateChange = useCallback((next: TeamContributionPersistenceState) => {
+    setSharePersistence(next);
+  }, []);
+
+  const handleCoordinationStateChange = useCallback((next: TeamCoordinationSessionState) => {
+    setCoordinationState(next);
+  }, []);
+
+  const openOutcomeStage = useCallback((proposalRef: string | null) => {
+    setOutcomeProposalRef(proposalRef);
+    setStage('RECORD_TEAM_OUTCOME');
+  }, []);
 
   useEffect(() => {
-    if (!userSelectedPane && isCoordinator) setPane('team');
-  }, [isCoordinator, userSelectedPane]);
+    setStage('EXAMINE');
+    setExamineSurface(props.initialNormativeSourceCode ? 'REOPEN_CASE' : 'OVERVIEW');
+    setOutcomeProposalRef(null);
+    setCoordinationState(emptyCoordinationState());
+  }, [props.discipline, props.order, props.initialNormativeSourceCode]);
 
   useEffect(() => {
-    setPersonalStage('review');
-  }, [props.discipline, props.order]);
+    if (props.initialNormativeSourceCode) setExamineSurface('REOPEN_CASE');
+  }, [props.initialNormativeSourceCode]);
 
   useEffect(() => {
-    if (personalStage === 'sharing' && !reviewComplete) setPersonalStage('review');
-  }, [personalStage, reviewComplete]);
+    setSharePersistence(emptyPersistenceState(totalReviewCount));
+  }, [personalContributionIdentityKey, team.selectedMembership?.workspaceId, team.session?.user.id, totalReviewCount]);
 
-  const selectPane = (next: RevisionWorkspacePane) => {
-    setUserSelectedPane(true);
-    setPane(next);
-    if (typeof window !== 'undefined') window.scrollTo({ top: 0, behavior: 'smooth' });
+  useEffect(() => {
+    if (!reviewComplete && stage !== 'EXAMINE') {
+      setStage('EXAMINE');
+      setExamineSurface('PERSONAL_REVIEW');
+    }
+  }, [reviewComplete, stage]);
+
+  useEffect(() => {
+    if ((stage === 'COMPARE' || stage === 'RECORD_TEAM_OUTCOME') && !sharePersistence.complete) {
+      setOutcomeProposalRef(null);
+      setStage('SHARE');
+    }
+  }, [stage, sharePersistence.complete]);
+
+  const stepState = (index: number): 'complete' | 'active' | 'future' => {
+    if (stage === 'EXAMINE') return index === 0 ? 'active' : 'future';
+    if (stage === 'SHARE') {
+      if (index === 0) return 'complete';
+      if (index === 1) return sharePersistence.complete ? 'complete' : 'active';
+      return 'future';
+    }
+    if (stage === 'COMPARE') {
+      if (index < 2) return 'complete';
+      return index === 2 ? 'active' : 'future';
+    }
+    if (index < 3) return 'complete';
+    return coordinationState.allCurrentOutcomesRecorded ? 'complete' : 'active';
   };
 
   return (
-    <div className="space-y-3 pb-24 md:pb-0" data-revision-workspace>
-      <section className="sticky top-0 z-40 -mx-3 border-b border-slate-200 bg-white/95 px-3 py-2.5 backdrop-blur sm:static sm:mx-0 sm:rounded-2xl sm:border sm:p-3" aria-label="Spazio di lavoro della revisione">
-        <div className="mb-2 flex items-start justify-between gap-3">
-          <strong className="block text-sm text-slate-900">Revisione del curricolo</strong>
+    <div
+      className="space-y-3 pb-24 md:pb-0"
+      data-revision-workspace
+      data-curriculum-work-session
+      data-work-session-stage={stage}
+      data-examine-surface={stage === 'EXAMINE' ? examineSurface : undefined}
+      data-persisted-share-ready={sharePersistence.complete ? 'true' : 'false'}
+      data-team-outcome-complete={coordinationState.allCurrentOutcomesRecorded ? 'true' : 'false'}
+    >
+      <section
+        className="sticky top-0 z-40 -mx-3 border-b border-slate-200 bg-white/95 px-3 py-3 backdrop-blur sm:static sm:mx-0 sm:rounded-2xl sm:border sm:p-4"
+        aria-label="Sessione di lavoro sul curricolo"
+      >
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <span className="text-[10px] font-black uppercase tracking-wide text-indigo-600">Validazione professionale</span>
+            <strong className="mt-1 block text-base text-slate-900">Il mio lavoro sul curricolo</strong>
+            <p className="mt-1 text-xs leading-relaxed text-slate-600">
+              Un solo percorso: esamina, condividi, confronta e registra l’esito del gruppo quando ti compete.
+            </p>
+          </div>
           {selectedRoleLabel && (
             <span className="shrink-0 rounded-full bg-indigo-50 px-2.5 py-1 text-[10px] font-bold text-indigo-700">{selectedRoleLabel}</span>
           )}
         </div>
 
-        <div role="tablist" aria-label="Contesto della revisione" className="grid grid-cols-2 gap-2">
-          <button
-            type="button"
-            role="tab"
-            aria-selected={pane === 'mine'}
-            onClick={() => selectPane('mine')}
-            className={`min-h-11 rounded-xl px-3 py-2 text-xs font-bold transition ${pane === 'mine' ? 'bg-indigo-700 text-white shadow-sm' : 'border border-slate-200 bg-white text-slate-700'}`}
-          >
-            Il mio contributo
-          </button>
-          <button
-            type="button"
-            role="tab"
-            aria-selected={pane === 'team'}
-            onClick={() => selectPane('team')}
-            className={`min-h-11 rounded-xl px-3 py-2 text-xs font-bold transition ${pane === 'team' ? 'bg-indigo-700 text-white shadow-sm' : 'border border-slate-200 bg-white text-slate-700'}`}
-          >
-            {isCoordinator ? 'Coordinamento del team' : 'Lavoro del team'}
-          </button>
-        </div>
+        <ol className="mt-3 grid grid-cols-4 gap-1.5" aria-label="Avanzamento della sessione">
+          {SESSION_STEPS.map((step, index) => {
+            const state = stepState(index);
+            return (
+              <li
+                key={step.id}
+                data-work-session-step={step.id}
+                data-work-session-step-state={state}
+                className={`rounded-lg border px-2 py-2 text-center text-[10px] font-bold leading-tight ${
+                  state === 'complete'
+                    ? 'border-emerald-200 bg-emerald-50 text-emerald-800'
+                    : state === 'active'
+                      ? 'border-indigo-300 bg-indigo-50 text-indigo-800'
+                      : 'border-slate-200 bg-slate-50 text-slate-400'
+                }`}
+              >
+                <span className="block text-[9px] font-black">{state === 'complete' ? '✓' : index + 1}</span>
+                {step.label}
+              </li>
+            );
+          })}
+        </ol>
       </section>
 
-      {pane === 'mine' ? (
-        <div className="space-y-3" role="tabpanel" aria-label="Il mio contributo">
-          {personalStage === 'review' ? (
-            <div className="space-y-3" data-revision-stage="review">
+      {stage === 'EXAMINE' && (
+        <div className="space-y-3" data-revision-stage="review" aria-label="Esamina il tuo contributo">
+          {examineSurface === 'OVERVIEW' && (
+            <section className="rounded-2xl border border-indigo-200 bg-white p-4 shadow-sm" data-general-review-overview>
+              <span className="text-[10px] font-black uppercase tracking-wide text-indigo-600">Cosa richiede attenzione adesso</span>
+              <div className="mt-2 flex items-end justify-between gap-4">
+                <div>
+                  <strong className="block text-lg text-slate-950">Il mio contributo professionale</strong>
+                  <p className="mt-1 text-sm leading-6 text-slate-600">
+                    {preparedReviewCount} di {totalReviewCount} schede esaminate. Completa il tuo orientamento prima di condividerlo con il gruppo.
+                  </p>
+                </div>
+                <span className="shrink-0 rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-700">
+                  {preparedReviewCount}/{totalReviewCount}
+                </span>
+              </div>
+              <button
+                type="button"
+                data-human-next-action="open-personal-review"
+                onClick={() => setExamineSurface('PERSONAL_REVIEW')}
+                className="mt-4 min-h-11 w-full rounded-xl bg-indigo-700 px-4 py-3 text-sm font-bold text-white"
+              >
+                {preparedReviewCount > 0 ? 'Continua il mio contributo' : 'Inizia il mio contributo'}
+              </button>
+              <button
+                type="button"
+                data-human-secondary-action="open-targeted-review-tools"
+                onClick={() => setExamineSurface('REOPEN_CASE')}
+                className="mt-2 min-h-11 w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm font-bold text-slate-700"
+              >
+                Apri solo il riesame necessario
+              </button>
+              <p className="mt-3 text-xs leading-5 text-slate-500">
+                Il contributo personale, l’eventuale caso mirato e l’esito del gruppo restano passaggi distinti.
+              </p>
+            </section>
+          )}
+
+          {examineSurface === 'PERSONAL_REVIEW' && (
+            <div className="space-y-3" data-general-personal-review>
+              <section className="rounded-2xl border border-slate-200 bg-slate-50 p-3">
+                <button
+                  type="button"
+                  onClick={() => setExamineSurface('OVERVIEW')}
+                  className="min-h-10 rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs font-bold text-slate-700"
+                >
+                  Torna alla panoramica
+                </button>
+              </section>
               <RevisioneTab
                 {...props}
                 onContinueAfterReview={() => {
-                  if (reviewComplete) setPersonalStage('sharing');
+                  if (reviewComplete) setStage('SHARE');
                 }}
               />
-
               <details
                 data-hva-revision-guide
                 data-revision-learning
@@ -104,49 +273,215 @@ export function RevisionWorkspace(props: AppViewsLayerProps) {
               >
                 <summary className="cursor-pointer px-4 py-3 font-bold text-slate-900">Come funziona questa revisione</summary>
                 <div className="border-t border-indigo-100 p-4">
-                  <p>In questo spazio prepari soltanto il tuo contributo personale; non esprimi l’esito del team.</p>
+                  <p>Qui prepari soltanto il tuo contributo personale; non esprimi l’esito del gruppo.</p>
                   <ol className="mt-2 grid gap-1 pl-5 text-sm list-decimal">
                     <li>Esamina una scheda alla volta.</li>
-                    <li>Registra il tuo orientamento.</li>
+                    <li>Registra il tuo orientamento professionale.</li>
                     <li>Quando tutte le schede sono complete, passa alla condivisione.</li>
                   </ol>
-                  <p className="mt-2 font-semibold text-indigo-950">Il coordinatore resta un contributore come gli altri quando lavora in questo spazio.</p>
+                  <p className="mt-2 font-semibold text-indigo-950">Anche il coordinatore completa prima il proprio contributo personale.</p>
                 </div>
               </details>
             </div>
-          ) : (
-            <div className="space-y-3 fade-in" data-revision-stage="sharing">
-              <section className="rounded-2xl border border-emerald-200 bg-emerald-50/70 p-4" aria-label="Revisione personale completata">
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                  <div>
-                    <strong className="block text-base text-emerald-950">Revisione personale completata</strong>
-                    <p className="mt-1 text-xs leading-relaxed text-emerald-800">{preparedReviewCount} di {totalReviewCount} schede completate. Ora il compito attivo è la condivisione con il team.</p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setPersonalStage('review')}
-                    className="min-h-10 rounded-xl border border-emerald-300 bg-white px-3 py-2 text-xs font-bold text-emerald-900"
-                  >
-                    Rivedi la revisione personale
-                  </button>
-                </div>
-              </section>
+          )}
 
-              <TeamContributionPublisher
-                proposals={props.currentDisciplineProps}
-                decisions={decisions}
-                customTexts={customTexts}
+          {examineSurface === 'REOPEN_CASE' && (
+            <section className="space-y-3 rounded-2xl border border-slate-200 bg-white p-3" data-targeted-review-tools>
+              <div className="flex items-start justify-between gap-3 px-1">
+                <div>
+                  <strong className="block text-base text-slate-950">Apri solo il riesame necessario</strong>
+                  <p className="mt-1 text-xs leading-5 text-slate-600">
+                    Qualifica prima il motivo, poi delimita soltanto le schede realmente interessate.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setExamineSurface('OVERVIEW')}
+                  className="shrink-0 min-h-10 rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs font-bold text-slate-700"
+                >
+                  Chiudi
+                </button>
+              </div>
+
+              <RevisionTriggerQualificationPanel
+                order={props.order}
+                targetClass={props.targetClass}
+                discipline={props.discipline}
+                initialNormativeSourceCode={props.initialNormativeSourceCode}
+                onInitialNormativeSourceConsumed={props.onInitialNormativeSourceConsumed}
               />
-            </div>
+
+              <CurriculumReviewCasePanel
+                order={props.order}
+                targetClass={props.targetClass}
+                discipline={props.discipline}
+                proposals={props.currentDisciplineProps}
+                actorId={team.session?.user.id}
+                roleContext={selectedRole}
+              />
+            </section>
           )}
         </div>
-      ) : (
-        <div role="tabpanel" aria-label={isCoordinator ? 'Coordinamento del team' : 'Lavoro del team'}>
+      )}
+
+      {stage === 'SHARE' && (
+        <div className="space-y-3 fade-in" data-revision-stage="sharing" aria-label="Condividi il tuo contributo">
+          <section className="rounded-2xl border border-emerald-200 bg-emerald-50/70 p-4" aria-label="Revisione personale completata">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <strong className="block text-base text-emerald-950">Il contributo personale è pronto</strong>
+                <p className="mt-1 text-xs leading-relaxed text-emerald-800">
+                  {preparedReviewCount} di {totalReviewCount} schede completate. Ora rendi esplicitamente visibile il tuo contributo al gruppo.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setExamineSurface('PERSONAL_REVIEW');
+                  setStage('EXAMINE');
+                }}
+                className="min-h-10 rounded-xl border border-emerald-300 bg-white px-3 py-2 text-xs font-bold text-emerald-900"
+              >
+                Rivedi il mio contributo
+              </button>
+            </div>
+          </section>
+
+          <TeamContributionPublisher
+            proposals={props.currentDisciplineProps}
+            decisions={decisions}
+            customTexts={customTexts}
+            discipline={props.discipline}
+            order={props.order}
+            academicYear={sharedReviewAcademicYear}
+            onPersistenceStateChange={handlePersistenceStateChange}
+          />
+
+          {isCoordinator && !sharePersistence.complete && (
+            <section className="rounded-2xl border border-amber-200 bg-amber-50 p-4" aria-label="Confronto non ancora disponibile" data-team-comparison-blocked-by-share>
+              <strong className="block text-sm text-amber-950">Il confronto si apre dopo la condivisione verificata</strong>
+              <p className="mt-1 text-xs leading-relaxed text-amber-900">
+                Arena abilita il confronto soltanto quando tutte le {sharePersistence.requiredCount || totalReviewCount} schede del tuo contributo corrente risultano registrate nel gruppo.
+              </p>
+            </section>
+          )}
+
+          {isCoordinator && sharePersistence.complete && (
+            <section className="rounded-2xl border border-indigo-200 bg-white p-4" aria-label="Passaggio al confronto del gruppo" data-team-comparison-ready>
+              <strong className="block text-sm text-slate-900">Condivisione verificata</strong>
+              <p className="mt-1 text-xs leading-relaxed text-slate-600">
+                Il tuo contributo corrente è registrato nel gruppo. Ora puoi aprire il confronto come coordinatore; il ruolo di coordinamento resta distinto dal contributo individuale.
+              </p>
+              <button
+                type="button"
+                data-human-next-action="open-team-comparison"
+                onClick={() => setStage('COMPARE')}
+                className="mt-3 min-h-11 w-full rounded-xl bg-indigo-700 px-4 py-3 text-sm font-bold text-white sm:w-auto"
+              >
+                Apri il confronto del gruppo
+              </button>
+            </section>
+          )}
+
+          {!isCoordinator && sharePersistence.complete && (
+            <section className="rounded-2xl border border-slate-200 bg-slate-50 p-4" aria-label="Attesa del confronto del gruppo" data-personal-work-complete>
+              <strong className="block text-sm text-slate-900">Il tuo contributo è condiviso</strong>
+              <p className="mt-1 text-xs leading-relaxed text-slate-600">
+                Per ora non devi fare altro. Il coordinatore proseguirà con il confronto e la registrazione degli esiti quando il gruppo sarà pronto.
+              </p>
+              <details className="mt-3 rounded-xl border border-slate-200 bg-white">
+                <summary className="cursor-pointer px-3 py-2 text-xs font-bold text-slate-700">Vedi lo stato del confronto</summary>
+                <div className="border-t border-slate-100 p-3">
+                  <TeamCoordinationWorkspace
+                    proposals={props.currentDisciplineProps}
+                    discipline={props.discipline}
+                    order={props.order}
+                    academicYear={sharedReviewAcademicYear}
+                    mode="status"
+                  />
+                </div>
+              </details>
+            </section>
+          )}
+        </div>
+      )}
+
+      {stage === 'COMPARE' && isCoordinator && sharePersistence.complete && (
+        <div className="space-y-3 fade-in" data-revision-stage="compare" aria-label="Confronto del gruppo">
+          <section className="rounded-2xl border border-indigo-200 bg-indigo-50/50 p-4">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <strong className="block text-base text-indigo-950">Confronta i punti aperti</strong>
+                <p className="mt-1 text-xs leading-relaxed text-indigo-800">
+                  Leggi i contributi e porta all’esito soltanto il punto su cui il gruppo ha maturato una decisione professionale.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setStage('SHARE')}
+                className="min-h-10 rounded-xl border border-indigo-300 bg-white px-3 py-2 text-xs font-bold text-indigo-900"
+              >
+                Torna alla condivisione
+              </button>
+            </div>
+          </section>
+
           <TeamCoordinationWorkspace
             proposals={props.currentDisciplineProps}
             discipline={props.discipline}
             order={props.order}
+            academicYear={sharedReviewAcademicYear}
+            mode="compare"
+            onSessionStateChange={handleCoordinationStateChange}
+            onRequestRecordOutcome={openOutcomeStage}
           />
+        </div>
+      )}
+
+      {stage === 'RECORD_TEAM_OUTCOME' && isCoordinator && sharePersistence.complete && (
+        <div className="space-y-3 fade-in" data-revision-stage="team-outcome" aria-label="Registra l’esito del gruppo">
+          <section className="rounded-2xl border border-indigo-200 bg-indigo-50/50 p-4">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <strong className="block text-base text-indigo-950">Registra l’esito del gruppo</strong>
+                <p className="mt-1 text-xs leading-relaxed text-indigo-800">
+                  Registra soltanto ciò che il gruppo ha già concordato. L’esito professionale resta distinto dalla successiva decisione istituzionale.
+                </p>
+              </div>
+              <button
+                type="button"
+                data-human-next-action="return-to-team-comparison"
+                onClick={() => {
+                  setOutcomeProposalRef(null);
+                  setStage('COMPARE');
+                }}
+                className="min-h-10 rounded-xl border border-indigo-300 bg-white px-3 py-2 text-xs font-bold text-indigo-900"
+              >
+                Torna al confronto
+              </button>
+            </div>
+          </section>
+
+          <TeamCoordinationWorkspace
+            proposals={props.currentDisciplineProps}
+            discipline={props.discipline}
+            order={props.order}
+            academicYear={sharedReviewAcademicYear}
+            mode="record"
+            outcomeProposalRef={outcomeProposalRef}
+            onSessionStateChange={handleCoordinationStateChange}
+            onRequestRecordOutcome={setOutcomeProposalRef}
+            onOutcomeRecorded={() => setOutcomeProposalRef(null)}
+          />
+
+          {coordinationState.allCurrentOutcomesRecorded && (
+            <section className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4" data-curriculum-work-session-complete>
+              <strong className="block text-sm text-emerald-950">Sessione professionale del gruppo completata per queste schede</strong>
+              <p className="mt-1 text-xs leading-relaxed text-emerald-800">
+                Gli esiti correnti sono registrati. Questo non approva il curricolo: il riesame verticale e l’eventuale iter istituzionale sono passaggi successivi e separati.
+              </p>
+            </section>
+          )}
         </div>
       )}
     </div>

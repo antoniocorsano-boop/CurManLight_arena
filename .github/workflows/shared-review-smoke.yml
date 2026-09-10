@@ -1,0 +1,100 @@
+name: Shared Review Authority Smoke
+
+on:
+  pull_request:
+    paths:
+      - 'src/__tests__/shared-review-case-discovery.test.ts'
+      - 'src/__tests__/shared-review-case-authority.test.ts'
+      - 'src/domain/curriculum/sharedReviewCase.ts'
+      - 'src/domain/curriculum/caseWorkSession.ts'
+      - 'src/domain/revision/caseScopedTeamReview.ts'
+      - 'src/features/beta/SharedReviewCaseInbox.tsx'
+      - 'src/features/beta/CaseAwareRevisionSurface.tsx'
+      - 'src/infrastructure/supabase/sharedCurriculumReviewCaseRepository.ts'
+      - 'src/infrastructure/supabase/caseScopedTeamReviewRepository.ts'
+      - 'supabase/migrations/20260907043000_team_review_case_scope.sql'
+      - 'supabase/migrations/20260907064000_shared_curriculum_review_case_discovery.sql'
+      - 'supabase/migrations/20260907071500_team_review_case_assignment_authority.sql'
+      - 'supabase/migrations/20260907072000_fix_team_review_case_assignment_guard_actor.sql'
+      - 'scripts/smoke-multi-actor-shared-review.sql'
+      - '.github/workflows/shared-review-smoke.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'src/__tests__/shared-review-case-discovery.test.ts'
+      - 'src/__tests__/shared-review-case-authority.test.ts'
+      - 'src/domain/curriculum/sharedReviewCase.ts'
+      - 'src/domain/curriculum/caseWorkSession.ts'
+      - 'src/domain/revision/caseScopedTeamReview.ts'
+      - 'src/features/beta/SharedReviewCaseInbox.tsx'
+      - 'src/features/beta/CaseAwareRevisionSurface.tsx'
+      - 'src/infrastructure/supabase/sharedCurriculumReviewCaseRepository.ts'
+      - 'src/infrastructure/supabase/caseScopedTeamReviewRepository.ts'
+      - 'supabase/migrations/20260907043000_team_review_case_scope.sql'
+      - 'supabase/migrations/20260907064000_shared_curriculum_review_case_discovery.sql'
+      - 'supabase/migrations/20260907071500_team_review_case_assignment_authority.sql'
+      - 'supabase/migrations/20260907072000_fix_team_review_case_assignment_guard_actor.sql'
+      - 'scripts/smoke-multi-actor-shared-review.sql'
+      - '.github/workflows/shared-review-smoke.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  contract-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+
+      - name: Shared review domain and authority contracts
+        run: >-
+          npx vitest run
+          src/__tests__/shared-review-case-discovery.test.ts
+          src/__tests__/shared-review-case-authority.test.ts
+
+      - name: Transactional smoke contract is destructive-safe
+        run: |
+          set -euo pipefail
+          smoke='scripts/smoke-multi-actor-shared-review.sql'
+          guard='supabase/migrations/20260907071500_team_review_case_assignment_authority.sql'
+          fix='supabase/migrations/20260907072000_fix_team_review_case_assignment_guard_actor.sql'
+
+          grep -Fq 'begin;' "$smoke"
+          grep -Fq 'rollback;' "$smoke"
+          grep -Fq 'MULTI_ACTOR_SHARED_REVIEW_SMOKE_PASS' "$smoke"
+          grep -Fq 'SMOKE_UNASSIGNED_CASE_WRITE_ACCEPTED' "$smoke"
+          grep -Fq 'SMOKE_OUTSIDE_SCOPE_WRITE_ACCEPTED' "$smoke"
+          grep -Fq 'SMOKE_INCOMPLETE_COVERAGE_OUTCOME_ACCEPTED' "$smoke"
+          grep -Fq 'SMOKE_INSTITUTIONAL_BOUNDARY_VIOLATED' "$smoke"
+          grep -Fq 'publish_curriculum_review_case_v1' "$smoke"
+          grep -Fq 'list_my_assigned_curriculum_review_cases_v1' "$smoke"
+          grep -Fq 'upsert_team_review_contribution_v3' "$smoke"
+          grep -Fq 'record_team_review_outcome_v3' "$smoke"
+
+          grep -Fq 'team_review_contributions_case_assignment_guard' "$guard"
+          grep -Fq 'team_review_outcomes_case_assignment_guard' "$guard"
+          grep -Fq 'SHARED_REVIEW_CASE_SCOPE_REQUIRED' "$guard"
+          grep -Fq 'SHARED_REVIEW_CASE_ASSIGNMENT_REQUIRED' "$guard"
+          grep -Fq 'to_jsonb(new)' "$fix"
+
+  live-beta-smoke:
+    if: ${{ github.event_name == 'workflow_dispatch' }}
+    runs-on: ubuntu-latest
+    env:
+      CML_ARENA_BETA_DB_URL: ${{ secrets.CML_ARENA_BETA_DB_URL }}
+    steps:
+      - uses: actions/checkout@v7
+      - name: Run real multi-actor smoke against Beta database when configured
+        run: |
+          set -euo pipefail
+          if [ -z "${CML_ARENA_BETA_DB_URL:-}" ]; then
+            echo '::notice::CML_ARENA_BETA_DB_URL is not configured; live smoke skipped. Contract smoke still ran on pull_request.'
+            exit 0
+          fi
+          psql "$CML_ARENA_BETA_DB_URL" -v ON_ERROR_STOP=1 -f scripts/smoke-multi-actor-shared-review.sql

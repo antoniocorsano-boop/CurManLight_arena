@@ -71,17 +71,20 @@ describe('Arena Beta canonical shell regression guard', () => {
     expect(headerSource).toContain('Curricolo d’istituto');
   });
 
-  it('keeps primary navigation aligned with the institutional Beta journey', () => {
-    for (const text of ['Consulta il curricolo', 'Rivedi le proposte', 'Controlla le fonti', 'Crea un documento']) {
+  it('keeps primary navigation aligned with the institutional Beta journey and Fascicolo secondary', () => {
+    for (const text of ['Consulta il curricolo', 'Rivedi le proposte', 'Crea un documento', 'Fascicolo']) {
       expect(sidebarSource).toContain(text);
     }
 
     expect(sidebarSource).not.toMatch(/Spazio d['’]Aula|UDA condivise|WikiLLM|Compilatore UDA|Progettazione UDA|Pilota Sperimentale/i);
+    expect(sidebarSource).toContain('data-beta-secondary-navigation="support"');
+    expect(sidebarSource).not.toContain('Controlla le fonti');
     expect(mobileSource).not.toMatch(/Progetta|Classe|Social|Copilot/i);
     expect(mobileSource).toContain('Curricolo');
     expect(mobileSource).toContain('Revisione');
-    expect(mobileSource).toContain('Fonti');
+    expect(mobileSource).not.toContain('<span>Fonti</span>');
     expect(mobileSource).toContain('Documenti');
+    expect(mobileSource).toContain('grid-cols-4');
   });
 
   it('keeps Home compact, task-first and authority-safe with progressive disclosure', () => {
@@ -106,7 +109,7 @@ describe('Arena Beta canonical shell regression guard', () => {
 
   it('gives curriculum context one explicit human next action', () => {
     expect(viewsSource).toContain('Adesso: controlla se puoi usare questo curricolo');
-    expect(viewsSource).toContain('verifica Fonti, Applicabilità e Stato');
+    expect(viewsSource).toContain('verifica nel Fascicolo fonti, applicabilità e stato');
     expect(viewsSource).toContain('data-human-next-action="verify-curriculum-validity"');
     expect(viewsSource).toContain('Verifica se puoi usarlo');
     expect(viewsSource).toContain("safeHandleTabSwitch('fonti')");
@@ -180,8 +183,10 @@ describe('Arena Beta canonical shell regression guard', () => {
     expect(documentsSource).not.toContain('handleClearLocalStorageWithReset()');
   });
 
-  it('emits /fonti as the canonical source route while retaining legacy /settings compatibility', () => {
-    expect(routingSource).toContain("case 'fonti': return '/fonti'");
+  it('emits /fascicolo as the canonical source route while retaining legacy source compatibility', () => {
+    expect(routingSource).toContain("case 'fonti': return '/fascicolo'");
+    expect(routingSource).toContain("pathname.startsWith('/fascicolo')");
+    expect(routingSource).toContain("pathname.startsWith('/fonti')");
     expect(routingSource).toContain("pathname.startsWith('/settings')");
     expect(routingSource).not.toContain("case 'fonti': return '/settings'");
   });
