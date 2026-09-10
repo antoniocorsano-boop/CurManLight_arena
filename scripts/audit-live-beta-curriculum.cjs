@@ -31,7 +31,7 @@ fs.mkdirSync(OUT_DIR, { recursive: true });
     }
 
     check('Onboarding personale rilevato', true, 'completamento esplicito del profilo di prova');
-    await dialog.getByRole('button', { name: 'Docente', exact: true }).click();
+    await dialog.locator('[data-personal-role="insegnante"]').click();
     await dialog.getByRole('button', { name: 'Disciplinare', exact: true }).click();
     await dialog.getByRole('button', { name: 'Prossimo', exact: true }).click();
     await dialog.getByRole('button', { name: 'secondaria', exact: true }).click();
