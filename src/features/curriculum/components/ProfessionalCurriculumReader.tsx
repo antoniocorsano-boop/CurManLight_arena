@@ -6,6 +6,7 @@ import {
   DEPARTMENT_CURRICULUM_SECTIONS,
   DepartmentCurriculumPublication,
 } from './DepartmentCurriculumPublication';
+import { CurriculumExploreTrama } from './CurriculumExploreTrama';
 
 const DEPARTMENT_CURRICULUM_DOC_ID = '1VYNvik8oLAVWjwB5Y_Q960D62t-eUZRc';
 const DEPARTMENT_FOUNDATIONS_DOC_ID = '1KNjcyBzNAOsK-1FD1_HpasN9cyfASQTm';
@@ -113,9 +114,15 @@ export function ProfessionalCurriculumReader({
 
       {mode === 'web' ? (
         <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8" data-curriculum-web-reader>
-          <div className="mb-6 space-y-3 lg:pl-[19rem]">
+          <CurriculumExploreTrama
+            sections={DEPARTMENT_CURRICULUM_SECTIONS}
+            targetClass={targetClass}
+            onOpenTechnologyReview={onOpenTechnologyReview}
+          />
+
+          <div className="mb-6 space-y-3 lg:pl-[19rem]" data-curriculum-integral-publication-intro>
             <p className="text-base leading-7 text-slate-700">
-              Edizione web del fascicolo predisposto per il Dipartimento. Testi, matrici e raccordi sono gli stessi della versione Documento; cambia soltanto la modalità di consultazione.
+              Fascicolo integrale: testi, matrici e raccordi sono gli stessi della versione Documento. Puoi continuare a consultarli per sezione quando serve una lettura editoriale completa.
             </p>
             <div className="flex flex-wrap gap-2" aria-label="Copertura del curricolo" data-curriculum-scope-summary>
               <span className="rounded-full bg-slate-100 px-3 py-2 text-xs font-bold text-slate-700">Infanzia · 3–5 anni</span>
