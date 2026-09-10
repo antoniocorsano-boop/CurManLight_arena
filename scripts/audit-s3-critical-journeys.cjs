@@ -23,6 +23,7 @@ async function closeLocalProfileIfPresent(page) {
 }
 
 async function clickWithPersonalProfileRecovery(page, locator) {
+  // Recover only from the known personal-profile onboarding modal; every other click failure remains hard.
   for (let attempt = 0; attempt < 3; attempt += 1) {
     await closeLocalProfileIfPresent(page);
     try {
