@@ -21,7 +21,8 @@ describe('Arena S3C final human remediation', () => {
     expect(curriculumWorkspaceSource).toContain('data-canonical-curriculum-entry');
     expect(curriculumWorkspaceSource).toContain('data-open-technology-review-class');
     expect(curriculumWorkspaceSource).toContain("props.handleTabSwitch('revisione')");
-    expect(curriculumWorkspaceSource).toContain('Pilota Tecnologia: scegli l’annualità da portare nel Riesame H2.');
+    expect(curriculumWorkspaceSource).toContain('Scegli una classe se vuoi passare al Riesame.');
+    expect(curriculumWorkspaceSource).not.toContain('Riesame H2');
     expect(viewsSource).toContain("props.activeTab === 'revisione'");
     expect(viewsSource).toContain('<CaseAwareRevisionSurface');
     expect(viewsSource).toContain('data-teacher-surface="revision"');
