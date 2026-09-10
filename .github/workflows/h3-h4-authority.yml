@@ -9,6 +9,7 @@ on:
       - 'supabase/migrations/20260910130500_h3_bound_institutional_decision_performance_hardening.sql'
       - 'supabase/migrations/20260910133000_beta_development_pilot_authority.sql'
       - 'supabase/migrations/20260910134500_beta_development_pilot_authority_performance.sql'
+      - 'supabase/migrations/20260910140000_h3_bound_institutional_decision_pgcrypto_schema_fix.sql'
       - 'src/domain/revision/institutionalReviewHandoff.ts'
       - 'src/domain/revision/h3BoundInstitutionalDecision.ts'
       - 'src/infrastructure/supabase/institutionalReviewHandoffRepository.ts'
@@ -29,6 +30,7 @@ on:
       - 'supabase/migrations/20260910130500_h3_bound_institutional_decision_performance_hardening.sql'
       - 'supabase/migrations/20260910133000_beta_development_pilot_authority.sql'
       - 'supabase/migrations/20260910134500_beta_development_pilot_authority_performance.sql'
+      - 'supabase/migrations/20260910140000_h3_bound_institutional_decision_pgcrypto_schema_fix.sql'
       - 'src/domain/revision/institutionalReviewHandoff.ts'
       - 'src/domain/revision/h3BoundInstitutionalDecision.ts'
       - 'src/infrastructure/supabase/institutionalReviewHandoffRepository.ts'
@@ -70,6 +72,7 @@ jobs:
           perf='supabase/migrations/20260910130500_h3_bound_institutional_decision_performance_hardening.sql'
           pilot='supabase/migrations/20260910133000_beta_development_pilot_authority.sql'
           pilot_perf='supabase/migrations/20260910134500_beta_development_pilot_authority_performance.sql'
+          crypto_fix='supabase/migrations/20260910140000_h3_bound_institutional_decision_pgcrypto_schema_fix.sql'
 
           grep -Fq 'record_h3_bound_institutional_decision_v1' "$h4"
           grep -Fq "v_role is distinct from 'collegio'" "$h4"
@@ -92,6 +95,9 @@ jobs:
           grep -Fq 'revoke insert, update, delete on table public.development_pilot_authority_assignments' "$pilot"
           grep -Fq 'development_pilot_authority_assignments_user_idx' "$pilot_perf"
           grep -Fq 'development_pilot_authority_assignments(user_id)' "$pilot_perf"
+
+          grep -Fq 'alter function public.record_h3_bound_institutional_decision_v1' "$crypto_fix"
+          grep -Fq 'set search_path = public, extensions, pg_temp' "$crypto_fix"
 
       - name: TypeScript
         run: npx tsc --noEmit
