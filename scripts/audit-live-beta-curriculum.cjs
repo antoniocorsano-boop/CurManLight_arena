@@ -89,7 +89,14 @@ fs.mkdirSync(OUT_DIR, { recursive: true });
     check('Archivio locale precedente relegato a disclosure secondaria', await legacyDisclosure.isVisible().catch(() => false));
 
     const primaryText = (await canonicalSurface.innerText().catch(() => '')).replace(/\s+/g, ' ').trim();
-    check('La superficie primaria contiene copertura 3–14', primaryText.includes('3 · 4 · 5 anni') && primaryText.includes('Classi I · II · III · IV · V') && primaryText.includes('Secondaria di primo grado'));
+    const normalizedPrimaryText = primaryText.toLocaleLowerCase('it-IT');
+    check(
+      'La superficie primaria contiene copertura 3–14',
+      normalizedPrimaryText.includes('3 · 4 · 5 anni')
+        && normalizedPrimaryText.includes('classi i · ii · iii · iv · v')
+        && normalizedPrimaryText.includes('secondaria di primo grado'),
+      primaryText,
+    );
     check('Nessun errore pagina non gestito', pageErrors.length === 0, pageErrors.join(' | '));
 
     await page.screenshot({ path: path.join(OUT_DIR, 'curricolo-mobile.png'), fullPage: true });
