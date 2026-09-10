@@ -16,6 +16,14 @@ const curriculumReaderSource = firstSource(import.meta.glob('../features/curricu
   query: '?raw', import: 'default', eager: true,
 }) as Record<string, string>);
 
+const curriculumPublicationSource = firstSource(import.meta.glob('../features/curriculum/components/DepartmentCurriculumPublication.tsx', {
+  query: '?raw', import: 'default', eager: true,
+}) as Record<string, string>);
+
+const globalCssSource = firstSource(import.meta.glob('../index.css', {
+  query: '?raw', import: 'default', eager: true,
+}) as Record<string, string>);
+
 const handoffSource = firstSource(import.meta.glob('../features/beta/PlanningHandoffPreview.tsx', {
   query: '?raw', import: 'default', eager: true,
 }) as Record<string, string>);
@@ -61,5 +69,22 @@ describe('Arena S3C final human remediation', () => {
     expect(handoffSource).not.toContain('fetch(');
     expect(handoffSource).not.toContain('supabase');
     expect(handoffSource).not.toContain('text-[10px]');
+  });
+
+  it('assigns portrait mobile table scrolling to a dedicated curriculum wrapper', () => {
+    expect(curriculumPublicationSource).toContain('data-curriculum-table-scroll');
+    expect(curriculumPublicationSource).toContain('data-curriculum-publication-grid');
+    expect(curriculumPublicationSource).toContain('overflow-x-auto');
+    expect(curriculumPublicationSource).toContain('tabIndex={0}');
+    expect(curriculumPublicationSource).toContain('scorri orizzontalmente per leggere tutte le colonne');
+  });
+
+  it('preserves native table layout while the curriculum wrapper owns touch scrolling', () => {
+    expect(globalCssSource).toContain('#main-content [data-curriculum-table-scroll]');
+    expect(globalCssSource).toContain('touch-action: pan-x pan-y;');
+    expect(globalCssSource).toContain('#main-content [data-curriculum-table-scroll] > [data-curriculum-publication-grid]');
+    expect(globalCssSource).toContain('display: table;');
+    expect(globalCssSource).toContain('min-width: 720px;');
+    expect(globalCssSource).toContain('max-width: none;');
   });
 });
