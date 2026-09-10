@@ -26,7 +26,7 @@
         "invalidOrIncompleteContext": "PENDING",
         "recovery": "PENDING"
       },
-      "notes": "Human reviewer reported that the curriculum presentation appears good overall, but the curriculum tables do not scroll horizontally when the phone is held vertically. The table columns therefore cannot all be inspected in the required portrait mobile view. No broader curriculum-context PASS is inferred from this observation."
+      "notes": "Human reviewer reported that the first curriculum screen is decisively improved and reads much more like a professional curriculum surface. The same mobile review confirmed that portrait tables do not scroll horizontally, so not all columns can be inspected. The reviewer also identified a broader usability limit: entering the substance of the curriculum still behaves too much like sequential document reading and should evolve toward focused teacher exploration. No broader curriculum-context PASS is inferred from these partial observations."
     },
     "HT-BETA-REVISION-PREPARE": {
       "desktop": "PENDING",
@@ -80,7 +80,7 @@
     "relationsFailClosed": "PENDING",
     "keyTerms": "PENDING",
     "historicalArchive": "PENDING",
-    "notes": ""
+    "notes": "Human reviewer explicitly proposed a smart graph view as a complementary way to inspect curricular relations. This is recorded as product direction only; no graph relation or knowledge-experience PASS is inferred from the request."
   },
   "findings": [
     {
@@ -90,6 +90,14 @@
       "title": "Le tabelle del Curricolo non scorrono orizzontalmente in portrait mobile",
       "retest": "PENDING_REMEDIATION",
       "evidence": "Human reviewer reported on the published 37d89ff2 release that tables do not scroll when the phone is held vertically, preventing inspection of all columns."
+    },
+    {
+      "id": "G5-UX-CURRICULUM-NONSEQUENTIAL-EXPLORATION-001",
+      "severity": "S3",
+      "status": "OPEN_CONFIRMED",
+      "title": "La consultazione web resta troppo sequenziale per entrare nel merito del curricolo",
+      "retest": "PENDING_PRODUCT_SLICE",
+      "evidence": "Human reviewer judged the first screen decisively improved but identified the remaining limit as teacher usability: reaching annualities and curricular substance should not require document-like sequential reading. A focused exploration mode and a smart relational view were requested as the preferred direction."
     }
   ],
   "severity1Open": 0,
@@ -106,6 +114,7 @@
     "A revoked or missing institutional membership must not be fabricated to obtain an authorized decision path.",
     "BETA_HIA_PASS must not be written before the human observations are complete.",
     "The reported mobile table-scroll finding blocks acceptance of release 37d89ff26358ebf4eae84108c27956eae5897277 until it is remediated and human-retested on a newly deployed immutable release.",
+    "The non-sequential exploration finding is a confirmed usability direction, not an automatically promoted curriculum change or institutional decision.",
     "A completed receipt must identify the exact immutable SHA exposed by the published beta-release.json."
   ]
 }
