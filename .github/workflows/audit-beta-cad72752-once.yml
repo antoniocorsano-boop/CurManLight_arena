@@ -1,0 +1,49 @@
+name: Audit Arena Beta cad72752 Once
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/audit-beta-cad72752-once.yml'
+      - 'scripts/audit-live-beta-curriculum.cjs'
+      - '.github/workflows/deploy-beta-cad72752-main-once.yml'
+
+permissions:
+  contents: read
+
+env:
+  BETA_URL: https://antoniocorsano-boop.github.io/CurManLight_arena/
+  EXPECTED_RELEASE_SHA: cad72752c70a90c448fd05eb16a55c1ad83bb0f1
+
+jobs:
+  live-curriculum-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Checkout operational audit files
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Verify live Beta curriculum primary surface
+        run: node scripts/audit-live-beta-curriculum.cjs
+
+      - name: Upload browser evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: beta-curriculum-cad72752-browser-evidence
+          path: artifacts/live-beta-curriculum
+          if-no-files-found: warn
+          retention-days: 30
