@@ -23,6 +23,8 @@ export default defineConfig({
       'src/domain/ai/requestPreview.test.ts',
       'src/__tests__/transfer-domain.test.ts',
       'src/__tests__/docente-feedback-intake.test.ts',
+      'src/__tests__/professional-observation-intake-v1.test.ts',
+      'src/__tests__/c2p-golden-path-preflight-v1.test.ts',
       'src/__tests__/revision-domain.test.ts',
       'src/__tests__/r7a4-shared-submitted-proposal-authority-boundary.test.ts',
       'src/__tests__/r7a4-shared-proposal-scope-binding.test.ts',
@@ -69,7 +71,8 @@ export default defineConfig({
       'src/__tests__/vertical-review-institutional-handoff.test.ts',
       'src/__tests__/h3-bound-institutional-decision.test.ts',
       'src/__tests__/h4-canonical-adoption-handoff.test.ts',
-      'src/__tests__/h4-bound-canonical-adoption.test.ts'
+      'src/__tests__/h4-bound-canonical-adoption.test.ts',
+      'src/__tests__/curriculum-release-contract-v1.test.ts'
     ],
     exclude: ['**/node_modules/**', '**/.git/**'],
     pool: 'threads',
