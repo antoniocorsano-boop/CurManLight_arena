@@ -1,7 +1,7 @@
-import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { buildDeferredCaseContinuationWorkSession } from '../domain/curriculum/deferredCaseContinuation';
 import type { CaseScopedCurriculumWorkSession, CurriculumReviewCase, Proposal } from '../types/curriculum';
+import migration from '../../supabase/migrations/20260910090000_team_review_deferred_continuation.sql?raw';
 
 const proposals: Proposal[] = [
   { id: 'p-1', focus: 'Osservare, misurare e rappresentare', oldText: 'Testo precedente', newText: 'Proposta uno', notes: '' },
@@ -125,8 +125,6 @@ describe('H2 deferred continuation', () => {
   });
 
   it('keeps the SQL boundary append-only and blocks H3 while a continuation is open', () => {
-    const migration = readFileSync(new URL('../../supabase/migrations/20260910090000_team_review_deferred_continuation.sql', import.meta.url), 'utf8');
-
     expect(migration).toContain('source_outcome_id uuid not null unique references public.team_review_outcomes');
     expect(migration).toContain('completed_by_outcome_id uuid references public.team_review_outcomes');
     expect(migration).toContain('team_review_contribution_history');
