@@ -74,6 +74,27 @@ function targetClassFromAnnuality(annuality: CurriculumAnnualityProjection): str
   return numericMatch?.[1] ?? '';
 }
 
+function CurriculumFieldList({
+  fields,
+  className,
+  scope,
+}: {
+  fields: CurriculumField[];
+  className: string;
+  scope: 'mobile' | 'desktop';
+}) {
+  return (
+    <dl className={className} data-curriculum-detail-fields={scope}>
+      {fields.map((field) => (
+        <div key={`${scope}-${field.label}`}>
+          <dt className="text-xs font-bold uppercase tracking-wide text-indigo-700">{field.label}</dt>
+          <dd className="mt-1 text-sm leading-6 text-slate-700">{field.value}</dd>
+        </div>
+      ))}
+    </dl>
+  );
+}
+
 export function buildDisciplineProjection(section: DepartmentCurriculumSection): CurriculumAnnualityProjection[] {
   const annualities: CurriculumAnnualityProjection[] = [];
   let current: CurriculumAnnualityProjection | null = null;
@@ -315,14 +336,19 @@ export function CurriculumExploreTrama({
                 <article key={`${selectedAnnuality.id}-${row.nucleus}`} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5" data-curriculum-unit-card>
                   <p className="text-xs font-bold uppercase tracking-wide text-slate-500">Nucleo</p>
                   <h4 className="mt-1 text-base font-black text-slate-950">{row.nucleus}</h4>
-                  <dl className="mt-4 space-y-3">
-                    {row.fields.map((field) => (
-                      <div key={`${row.nucleus}-${field.label}`}>
-                        <dt className="text-xs font-bold uppercase tracking-wide text-indigo-700">{field.label}</dt>
-                        <dd className="mt-1 text-sm leading-6 text-slate-700">{field.value}</dd>
-                      </div>
-                    ))}
-                  </dl>
+
+                  <details className="group mt-4 sm:hidden" data-curriculum-mobile-detail="expandable">
+                    <summary
+                      className="flex min-h-11 cursor-pointer list-none items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm font-bold text-slate-700 [&::-webkit-details-marker]:hidden"
+                      data-curriculum-mobile-summary="detail"
+                    >
+                      <span>Dettaglio curricolare</span>
+                      <ArrowDown className="h-4 w-4 text-indigo-600" aria-hidden="true" />
+                    </summary>
+                    <CurriculumFieldList fields={row.fields} className="mt-3 space-y-3" scope="mobile" />
+                  </details>
+
+                  <CurriculumFieldList fields={row.fields} className="mt-4 hidden space-y-3 sm:block" scope="desktop" />
 
                   <button
                     type="button"
