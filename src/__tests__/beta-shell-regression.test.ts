@@ -150,38 +150,41 @@ describe('Arena Beta canonical shell regression guard', () => {
     expect(curriculumWorkspaceSource).toContain('data-teacher-surface="curriculum-workspace"');
   });
 
-  it('presents Curriculum as one professional publication with web and document modes', () => {
+  it('presents Curriculum as one professional publication with Esplora Trama and Documento projections', () => {
     expect(curriculumWorkspaceSource).toContain('ProfessionalCurriculumReader');
     expect(professionalCurriculumReaderSource).toContain('data-canonical-curriculum-entry');
     expect(professionalCurriculumReaderSource).toContain('data-curriculum-presentation="professional-publication"');
+    expect(professionalCurriculumReaderSource).toContain('data-curriculum-ux-contract="ARENA_UX_CONTRACT@1.0.0"');
     expect(professionalCurriculumReaderSource).toContain('Curricolo verticale');
     expect(departmentCurriculumManifestSource).toContain('Dipartimento Scientifico-Matematico-Tecnologico');
     for (const discipline of ['Matematica', 'Scienze', 'Tecnologia', 'Informatica', 'STEM']) {
       expect(departmentCurriculumManifestSource).toContain(`"${discipline}"`);
     }
     expect(professionalCurriculumReaderSource).toContain("DEPARTMENT_CURRICULUM_MANIFEST.institution.disciplines.join(' · ')");
-    expect(professionalCurriculumReaderSource).toContain('Da esaminare e validare');
-    expect(professionalCurriculumReaderSource).toContain('Percorso 3–14');
+    expect(professionalCurriculumReaderSource).toContain('Versione di lavoro');
+    expect(professionalCurriculumReaderSource).toContain('Validazione professionale aperta');
+    expect(professionalCurriculumReaderSource).toContain('Percorso verticale 3–14');
     expect(professionalCurriculumReaderSource).toContain('data-curriculum-mode-switch');
-    expect(professionalCurriculumReaderSource).toContain('data-curriculum-mode="web"');
+    expect(professionalCurriculumReaderSource).toContain('data-curriculum-mode="explore"');
+    expect(professionalCurriculumReaderSource).toContain('data-curriculum-mode="trama"');
     expect(professionalCurriculumReaderSource).toContain('data-curriculum-mode="document"');
-    expect(professionalCurriculumReaderSource).toContain('Vista web');
+    expect(professionalCurriculumReaderSource).toContain('Esplora');
+    expect(professionalCurriculumReaderSource).toContain('Trama');
     expect(professionalCurriculumReaderSource).toContain('Documento');
-    expect(professionalCurriculumReaderSource).toContain('data-curriculum-web-reader');
+    expect(professionalCurriculumReaderSource).toContain('data-curriculum-professional-explorer');
     expect(professionalCurriculumReaderSource).toContain('data-curriculum-document-reader');
+    expect(professionalCurriculumReaderSource).toContain('data-curriculum-integral-web-publication');
     expect(professionalCurriculumReaderSource).toContain('data-curriculum-section-selector');
     expect(departmentCurriculumIdentitySource).toContain('Premessa e identità epistemologica');
     expect(departmentCurriculumTechnologySource).toContain('Tecnologia — curricolo verticale');
-    expect(professionalCurriculumReaderSource).toContain('data-curriculum-scope-summary');
-    expect(professionalCurriculumReaderSource).toContain('Infanzia · 3–5 anni');
-    expect(professionalCurriculumReaderSource).toContain('Primaria · I–V');
-    expect(professionalCurriculumReaderSource).toContain('Secondaria · I–III');
-    expect(professionalCurriculumReaderSource).toContain('data-secondary-curriculum-navigation');
     expect(professionalCurriculumReaderSource).toContain('data-open-department-curriculum-document');
-    expect(professionalCurriculumReaderSource).toContain('Apri il documento');
+    expect(professionalCurriculumReaderSource).toContain('Apri il documento completo');
     expect(professionalCurriculumReaderSource).toContain('data-open-department-foundations-document');
     expect(professionalCurriculumReaderSource).toContain('Fondamenti e tracciabilità');
     expect(professionalCurriculumReaderSource).toContain('data-curriculum-document-preview');
+    expect(professionalCurriculumReaderSource).not.toContain('Vista web');
+    expect(professionalCurriculumReaderSource).not.toContain('Da esaminare e validare');
+    expect(professionalCurriculumReaderSource).not.toContain('data-secondary-curriculum-navigation');
 
     expect(curriculumWorkspaceSource).toContain('data-source-review-progressive-disclosure');
     expect(curriculumWorkspaceSource).toContain('Fonti e verifiche');

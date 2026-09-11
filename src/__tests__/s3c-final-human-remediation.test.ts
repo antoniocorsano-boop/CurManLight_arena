@@ -16,6 +16,10 @@ const curriculumReaderSource = firstSource(import.meta.glob('../features/curricu
   query: '?raw', import: 'default', eager: true,
 }) as Record<string, string>);
 
+const curriculumExploreSource = firstSource(import.meta.glob('../features/curriculum/components/CurriculumExploreTrama.tsx', {
+  query: '?raw', import: 'default', eager: true,
+}) as Record<string, string>);
+
 const curriculumPublicationSource = firstSource(import.meta.glob('../features/curriculum/components/DepartmentCurriculumPublication.tsx', {
   query: '?raw', import: 'default', eager: true,
 }) as Record<string, string>);
@@ -28,10 +32,17 @@ describe('Arena S3C final human remediation', () => {
   it('keeps curriculum, review and planning as explicit distinct steps', () => {
     expect(curriculumWorkspaceSource).toContain('<ProfessionalCurriculumReader');
     expect(curriculumReaderSource).toContain('data-canonical-curriculum-entry');
-    expect(curriculumReaderSource).toContain('data-open-technology-review-class');
-    expect(curriculumReaderSource).toContain('La consultazione del curricolo resta separata dal Riesame.');
+    expect(curriculumReaderSource).toContain('data-curriculum-primary-task="consultation"');
+    expect(curriculumReaderSource).toContain('data-curriculum-mode="explore"');
+    expect(curriculumReaderSource).toContain('data-curriculum-mode="trama"');
+    expect(curriculumReaderSource).toContain('data-curriculum-mode="document"');
+    expect(curriculumExploreSource).toContain('data-annuality-semantics="consultation-only"');
+    expect(curriculumExploreSource).toContain('data-use-curriculum-in-planning');
+    expect(curriculumExploreSource).toContain('data-send-curriculum-to-review');
+    expect(curriculumReaderSource).not.toContain('data-open-technology-review-class');
     expect(curriculumReaderSource).not.toContain('Riesame H2');
     expect(curriculumWorkspaceSource).toContain("props.handleTabSwitch('revisione')");
+    expect(curriculumWorkspaceSource).toContain("props.handleTabSwitch('progetta-annuale')");
     expect(viewsSource).toContain("props.activeTab === 'revisione'");
     expect(viewsSource).toContain('<CaseAwareRevisionSurface');
     expect(viewsSource).toContain('data-teacher-surface="revision"');
