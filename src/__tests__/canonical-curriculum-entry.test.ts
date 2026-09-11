@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import workspaceSource from '../features/curriculum/CurriculumWorkspace.tsx?raw';
 import professionalReaderSource from '../features/curriculum/components/ProfessionalCurriculumReader.tsx?raw';
+import exploreTramaSource from '../features/curriculum/components/CurriculumExploreTrama.tsx?raw';
 import technologyPublicationDataSource from '../features/curriculum/data/departmentCurriculumV31.section-09.json?raw';
 import caseAwareSource from '../features/beta/CaseAwareRevisionSurface.tsx?raw';
 import baselineSource from '../lib/curriculumBaseline.ts?raw';
@@ -13,37 +14,46 @@ import {
 } from '../domain/curriculum/validation/technologySecondaryClassReview';
 
 describe('canonical curriculum entry', () => {
-  it('presents the canonical curriculum as a professional publication instead of exposing the raw master', () => {
+  it('presents the canonical curriculum through Esplora Trama Documento instead of exposing the raw master', () => {
     expect(workspaceSource).toContain('ProfessionalCurriculumReader');
     expect(professionalReaderSource).toContain('data-canonical-curriculum-entry');
     expect(professionalReaderSource).toContain('data-curriculum-primary-task="consultation"');
     expect(professionalReaderSource).toContain('data-curriculum-presentation="professional-publication"');
+    expect(professionalReaderSource).toContain('ARENA_UX_CONTRACT@1.0.0');
     expect(professionalReaderSource).toContain('Curricolo verticale');
     expect(professionalReaderSource).toContain('Dipartimento Scientifico-Matematico-Tecnologico');
-    expect(professionalReaderSource).toContain('Da esaminare e validare');
-    expect(professionalReaderSource).toContain('Percorso 3–14');
-    expect(professionalReaderSource).toContain('data-curriculum-mode="web"');
+    expect(professionalReaderSource).toContain('Versione di lavoro');
+    expect(professionalReaderSource).toContain('Validazione professionale aperta');
+    expect(professionalReaderSource).toContain('Percorso verticale 3–14');
+    expect(professionalReaderSource).toContain('data-curriculum-mode="explore"');
+    expect(professionalReaderSource).toContain('data-curriculum-mode="trama"');
     expect(professionalReaderSource).toContain('data-curriculum-mode="document"');
-    expect(professionalReaderSource).toContain('Vista web');
+    expect(professionalReaderSource).toContain('Esplora');
+    expect(professionalReaderSource).toContain('Trama');
     expect(professionalReaderSource).toContain('Documento');
-    expect(professionalReaderSource).toContain('data-curriculum-scope-summary');
-    expect(professionalReaderSource).toContain('Infanzia · 3–5 anni');
-    expect(professionalReaderSource).toContain('Primaria · I–V');
-    expect(professionalReaderSource).toContain('Secondaria · I–III');
+    expect(professionalReaderSource).toContain('data-curriculum-professional-explorer');
+    expect(professionalReaderSource).toContain('data-curriculum-document-reader');
+    expect(professionalReaderSource).not.toContain('Vista web');
+    expect(professionalReaderSource).not.toContain('Da esaminare e validare');
     expect(professionalReaderSource).not.toContain('Baseline corrente');
     expect(professionalReaderSource).not.toContain('master canonico');
   });
 
-  it('exposes real mobile-safe navigation from the Technology section to the annual review', () => {
-    expect(professionalReaderSource).toContain('DepartmentCurriculumPublication');
-    expect(professionalReaderSource).toContain('data-secondary-curriculum-navigation');
-    expect(professionalReaderSource).toContain('data-open-technology-review-class');
+  it('keeps curriculum annuality consultation independent from review state and uses an explicit handoff to Riesame', () => {
+    expect(professionalReaderSource).toContain('CurriculumExploreTrama');
+    expect(exploreTramaSource).toContain('data-annuality-semantics="consultation-only"');
+    expect(exploreTramaSource).toContain('data-curriculum-unit-card');
+    expect(exploreTramaSource).toContain('Segnala per il Riesame');
+    expect(exploreTramaSource).toContain('La consultazione resta comunque completa.');
+    expect(exploreTramaSource).not.toContain('preferredTechnologyAnnuality');
+    expect(exploreTramaSource).not.toContain('targetRoman');
     expect(technologyPublicationDataSource).toContain('Tecnologia — curricolo verticale');
-    expect(professionalReaderSource).toContain('Se vuoi riesaminare Tecnologia, scegli l’annualità.');
-    expect(professionalReaderSource).toContain('Classe II');
-    expect(workspaceSource).toContain("setOrder('secondaria')");
-    expect(workspaceSource).toContain("setDiscipline('tecnologia')");
+    expect(workspaceSource).toContain('applyCurriculumContext(context)');
+    expect(workspaceSource).toContain('setOrder(schoolOrder)');
+    expect(workspaceSource).toContain('setDiscipline(context.disciplineId)');
+    expect(workspaceSource).toContain('props.setTargetClass(context.targetClass)');
     expect(workspaceSource).toContain("props.handleTabSwitch('revisione')");
+    expect(workspaceSource).toContain("context.targetClass === '1' || context.targetClass === '2'");
   });
 
   it('keeps source verification behind two intentional disclosure levels', () => {
