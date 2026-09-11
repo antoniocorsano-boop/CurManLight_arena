@@ -2,7 +2,8 @@ import { AgentSetupModal } from '../../copilot';
 import { AddKbDocumentModal, WikiReaderModal } from '../../documents';
 import { UdaDetailModal } from '../../progettazione';
 import { CloudAccountModal, GemmaSuggestionModal, MicPermissionGuideModal } from '../../workspace';
-import { DocumentViewModal, MottoModal, OnboardingModal, SaveSettingsModal, TourModal } from './SessionModals';
+import { DocumentViewModal, MottoModal, SaveSettingsModal, TourModal } from './SessionModals';
+import { PersonalWorkProfileModal } from './PersonalWorkProfileModal';
 import type { AppModalsLayerProps, CloudAccountType, LocalAgentSize, LocalAgentStatus, OllamaStatus } from '../types/appModalContracts';
 import type { AppTab } from '../../navigation';
 
@@ -86,7 +87,6 @@ export function AppModalsLayer(props: AppModalsLayerProps) {
     setNewSectionInput,
     handleAddSectionLocal,
     saveOnboardingProfile,
-    getRoleLabel,
     getDisciplineLabel,
     showMottoModal,
     setShowMottoModal,
@@ -188,7 +188,7 @@ export function AppModalsLayer(props: AppModalsLayerProps) {
         handleWorkspaceLogin={(type) => { if (isCloudAccountType(type)) handleWorkspaceLogin(type); }}
         handleLocalDriveSync={handleLocalDriveSync}
       />
-      <OnboardingModal
+      <PersonalWorkProfileModal
         showOnboardingModal={showOnboardingModal}
         setShowOnboardingModal={setShowOnboardingModal}
         onboardingRole={onboardingRole}
@@ -210,10 +210,7 @@ export function AppModalsLayer(props: AppModalsLayerProps) {
         newSectionInput={newSectionInput}
         setNewSectionInput={setNewSectionInput}
         handleAddSectionLocal={handleAddSectionLocal}
-        safeLocalStorageSetItem={safeLocalStorageSetItem}
-        showToast={showToast}
         saveOnboardingProfile={saveOnboardingProfile}
-        getRoleLabel={getRoleLabel}
         getDisciplineLabel={getDisciplineLabel}
       />
       <MottoModal

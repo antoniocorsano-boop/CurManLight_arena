@@ -1,0 +1,88 @@
+name: Publish PR198 Render Preview
+
+on:
+  push:
+    branches:
+      - feature/team-meeting-workspace
+    paths:
+      - 'src/**'
+      - 'scripts/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'vite.config.ts'
+      - '.env.beta'
+      - '.github/workflows/pr198-render-preview.yml'
+
+permissions:
+  contents: write
+
+# Keep preview publication serialized: each completed build force-publishes one coherent static tree.
+concurrency:
+  group: pr198-render-static-preview
+  cancel-in-progress: false
+
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout PR198 source
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: TypeScript
+        run: npx tsc --noEmit
+
+      - name: Build Beta artifact
+        env:
+          CML_RELEASE_SHA: ${{ github.sha }}
+          CML_RELEASE_REF: feature/team-meeting-workspace
+        run: npm run build:beta
+
+      - name: Verify Beta release contract
+        run: npm run beta:verify
+
+      - name: Stage Render static tree
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/pr198-render-preview
+          mkdir -p /tmp/pr198-render-preview/CurManLight_arena
+          cp -a dist/. /tmp/pr198-render-preview/CurManLight_arena/
+          cp dist/beta-release.json /tmp/pr198-render-preview/beta-release.json
+          cat > /tmp/pr198-render-preview/index.html <<'HTML'
+          <!doctype html>
+          <html lang="it">
+          <head>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width,initial-scale=1">
+            <meta http-equiv="refresh" content="0;url=/CurManLight_arena/">
+            <title>CurManLight Arena Beta</title>
+          </head>
+          <body><a href="/CurManLight_arena/">Apri CurManLight Arena Beta</a></body>
+          </html>
+          HTML
+          cp /tmp/pr198-render-preview/index.html /tmp/pr198-render-preview/404.html
+
+      - name: Publish static preview branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout --orphan pr198-render-publish
+          git rm -rf .
+          cp -a /tmp/pr198-render-preview/. .
+          git add -A
+          git commit -m "preview: publish PR198 ${GITHUB_SHA}"
+          git push --force origin HEAD:pr198-static-preview

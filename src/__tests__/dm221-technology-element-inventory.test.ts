@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   DM221_TECHNOLOGY_ELEMENT_COUNTS,
   DM221_TECHNOLOGY_ELEMENT_INVENTORY,
+  DM221_TECHNOLOGY_ELEMENT_START_PAGES,
   getTechnologyInventoryGroup,
 } from '../domain/curriculum/national/technologyElementInventory';
 import { assessElementBinding } from '../domain/curriculum/national/elementBindings';
@@ -18,6 +19,22 @@ describe('DM221 Technology element inventory', () => {
       LOWER_SECONDARY_GRADE3_OBJECTIVES: 18,
       LOWER_SECONDARY_KNOWLEDGE: 4,
     });
+  });
+
+  it('uses the final March 2026 MIM printed-page locators', () => {
+    expect(DM221_TECHNOLOGY_ELEMENT_START_PAGES).toEqual({
+      PRIMARY_EXPECTED_COMPETENCES: 141,
+      PRIMARY_GRADE3_OBJECTIVES: 142,
+      PRIMARY_GRADE5_OBJECTIVES: 143,
+      PRIMARY_KNOWLEDGE: 143,
+      LOWER_SECONDARY_EXPECTED_COMPETENCES: 144,
+      LOWER_SECONDARY_GRADE3_OBJECTIVES: 144,
+      LOWER_SECONDARY_KNOWLEDGE: 145,
+    });
+
+    for (const item of DM221_TECHNOLOGY_ELEMENT_INVENTORY) {
+      expect(item.sourceLocator.page).toBe(DM221_TECHNOLOGY_ELEMENT_START_PAGES[item.group]);
+    }
   });
 
   it('keeps every inventory item source-located but not source-verified', () => {

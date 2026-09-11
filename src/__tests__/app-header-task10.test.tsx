@@ -8,7 +8,7 @@ function props(overrides: Partial<ComponentProps<typeof AppHeader>> = {}): Compo
     toggleSidebar: vi.fn(), isCopilotChatOpen: false, setIsCopilotChatOpen: vi.fn(), setShowAgentSetupModal: vi.fn(), localAgentStatus: 'none', localAgentType: 'none',
     ollamaStatus: 'disconnected', ollamaModelName: '', localAgentSize: 'none', setShowSaveModal: vi.fn(), roleDropdownOpen: false, setRoleDropdownOpen: vi.fn(),
     isWorkspaceLoggedIn: false, cloudAccountType: 'personale', workspaceUserEmail: '', handleWorkspaceSync: vi.fn(), showToast: vi.fn(), handleClearLocalStorageWithReset: vi.fn(),
-    handleWorkspaceLogout: vi.fn(), setShowCloudAccountModal: vi.fn(), ...overrides,
+    handleWorkspaceLogout: vi.fn(), openLocalProfileEditor: vi.fn(), setShowCloudAccountModal: vi.fn(), ...overrides,
   };
 }
 

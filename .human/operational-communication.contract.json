@@ -1,0 +1,251 @@
+{
+  "contract_id": "CCO",
+  "name": "Contratto di comunicazione operativa di Arena",
+  "version": "1.5.1",
+  "purpose": "Separare orientamento operativo, spiegazione del processo e verifica tecnica affinché il docente possa agire con linguaggio istituzionale senza essere esposto al funzionamento interno del sistema, mantenendo sempre consapevolezza della posizione nel processo professionale.",
+  "principles": {
+    "structure_before_explanation": true,
+    "state_before_explanation": true,
+    "recognition_before_interpretation": true,
+    "operational_use_must_not_depend_on_training_copy": true,
+    "trust_through_predictability": true,
+    "progressive_disclosure_for_learning": true,
+    "visual_state_preferred_over_explanatory_copy": true,
+    "one_dominant_object_per_task_context": true,
+    "action_must_be_adjacent_to_object": true,
+    "routine_copy_must_not_restate_visible_structure": true,
+    "work_mode_is_default": true,
+    "explanations_are_on_demand": true,
+    "vertical_workflows_must_be_state_progressive": true,
+    "future_steps_must_not_compete_with_current_task": true,
+    "completed_steps_should_compact_when_possible": true,
+    "automatic_scroll_must_not_replace_explicit_user_progression": true,
+    "progression_requires_real_state_transition": true,
+    "one_visible_process_hierarchy_per_task_context": true,
+    "secondary_navigation_must_not_interrupt_primary_flow": true,
+    "draft_actions_must_not_claim_completion_before_commit": true,
+    "teacher_language_must_be_institutional_not_system_centered": true,
+    "technical_traceability_must_not_occupy_level_1": true,
+    "coordinator_personal_contribution_precedes_coordination": true,
+    "shared_stage_requires_persisted_current_contribution": true,
+    "stale_persisted_share_must_reopen_share": true,
+    "process_awareness_is_part_of_operational_usability": true,
+    "future_process_orientation_may_remain_visible_without_future_controls": true,
+    "process_context_must_survive_stage_transition": true,
+    "viewport_continuity_must_preserve_process_orientation": true,
+    "completion_must_be_acknowledged_before_context_exit": true,
+    "layer_boundaries_must_be_structural": true
+  },
+  "teacher_progressive_levels": {
+    "level_1": {
+      "name": "Orientamento e azione",
+      "default_visible": true,
+      "must_answer": ["dove_sono", "dove_sono_nel_percorso", "cosa_devo_fare", "stato_del_mio_lavoro", "effetto_immediato", "chi_agisce_dopo_se_pertinente"],
+      "language": "istituzionale, professionale, naturale",
+      "system_jargon_forbidden": ["membership", "assurance", "gate", "SHA", "handoff", "export", "blocker", "esito locale", "workflow interno"],
+      "technical_ids_forbidden": true
+    },
+    "level_2": {
+      "name": "Spiegazione del processo",
+      "default_collapsed": true,
+      "purpose": "Spiegare motivazione, criteri, senso del passaggio corrente e passaggi successivi a chi desidera comprendere meglio il lavoro.",
+      "language": "istituzionale e comprensibile al personale docente",
+      "must_not_be_required_to_complete_primary_task": true
+    },
+    "level_3": {
+      "name": "Verifica e tracciabilità",
+      "default_collapsed": true,
+      "purpose": "Rendere disponibili fonti, versioni, riferimenti interni e identificativi a chi deve verificare o approfondire.",
+      "may_include": ["documenti_di_riferimento", "versioni", "riferimenti_interni", "identificativi_tecnici"],
+      "must_not_compete_with_primary_task": true
+    }
+  },
+  "layers": {
+    "operational": {
+      "required": true,
+      "must_answer": ["where_am_i", "where_in_process", "current_state", "next_action", "immediate_effect", "who_acts_next_when_relevant"],
+      "primary_action_must_be_self_describing": true
+    },
+    "recognition": {
+      "required": true,
+      "single_dominant_object": true,
+      "state_by_transformation_preferred": true,
+      "actions_adjacent_to_object": true,
+      "routine_explanation_default_hidden": true,
+      "secondary_metadata_progressive_disclosure": true,
+      "persistent_copy_must_prevent_a_current_error": true
+    },
+    "assurance": {
+      "persistent_required_when": ["shared_effect", "institutional_authority_action", "irreversible_or_external_effect"],
+      "on_demand_allowed_when": ["personal_scope_boundary", "background_governance"],
+      "must_be_contextual": true,
+      "must_not_replace_action_label": true,
+      "preferred_max_words": 18
+    },
+    "learning": {
+      "progressive_disclosure": true,
+      "must_not_block_primary_action": true,
+      "must_remain_reachable": true
+    },
+    "workflow_progression": {
+      "required_for_multistep_vertical_surfaces": true,
+      "current_step_must_dominate": true,
+      "future_step_controls_should_be_hidden_until_relevant": true,
+      "future_step_labels_may_remain_visible_for_orientation": true,
+      "future_step_labels_must_not_be_interactive": true,
+      "completed_step_should_become_compact_summary_when_next_stage_is_active": true,
+      "next_step_should_appear_as_consequence_of_completed_work": true,
+      "partial_progress_must_remain_recoverable": true,
+      "explicit_continue_action_must_change_active_stage": true,
+      "scrolling_alone_is_not_a_stage_transition": true,
+      "duplicate_progress_rails_are_forbidden": true,
+      "secondary_filters_must_use_progressive_disclosure": true,
+      "shared_progress_requires_persisted_current_state": true,
+      "viewport_anchor_must_remain_stable_across_stage_changes": true,
+      "stage_change_must_not_land_midpage": true,
+      "completion_must_render_in_same_workframe_before_exit": true,
+      "return_to_general_context_after_completion_requires_explicit_action": true
+    }
+  },
+  "process_awareness": {
+    "required": true,
+    "canonical_progression": ["ESAMINA", "CONDIVIDI", "CONFRONTA", "REGISTRA_L_ESITO"],
+    "must_answer": ["where_in_process", "what_is_current", "what_is_completed", "what_happens_next", "who_acts_next_when_relevant"],
+    "future_steps_may_be_visible_as_noninteractive_orientation": true,
+    "future_controls_must_remain_hidden_until_relevant": true,
+    "past_steps_must_compact_not_disappear_without_context": true,
+    "single_progress_indicator": true,
+    "technical_objects_must_not_be_required_to_understand_process": true,
+    "authority_boundary_must_be_expressed_in_professional_language": true,
+    "completion_must_be_acknowledged_in_same_workframe_before_exit": true,
+    "return_to_general_context_after_completion_must_be_explicit": true,
+    "lifecycle_future_stage_hidden_rule_applies_to_controls_and_task_content_not_noninteractive_orientation_labels": true
+  },
+  "viewport_stability": {
+    "reference_mobile_viewport": "390x844",
+    "page_scroll_must_not_encode_stage_progression": true,
+    "page_viewport_anchor_must_not_jump_on_stage_transition": true,
+    "internal_workframe_may_reset_to_start_only_after_real_stage_transition": true,
+    "primary_action_must_not_be_obscured_by_mobile_navigation": true,
+    "terminal_state_must_be_visible_before_context_replacement": true
+  },
+  "action_grammar": [
+    {"verb": "Esamina", "meaning": "leggi e valuta una scheda"},
+    {"verb": "Conferma", "meaning": "esprimi accordo con la proposta visibile nel contesto corrente"},
+    {"verb": "Modifica", "meaning": "apri la formulazione di un'alternativa senza registrarla come completata"},
+    {"verb": "Registra modifica", "meaning": "salva la formulazione alternativa come orientamento personale completo"},
+    {"verb": "Mantieni", "meaning": "mantieni il testo precedente nel contesto corrente"},
+    {"verb": "Condividi", "meaning": "registra e rende visibile al gruppo un contributo personale corrente"},
+    {"verb": "Confronta", "meaning": "esamina con il gruppo i punti che richiedono realmente discussione dopo una condivisione verificata"},
+    {"verb": "Registra l'esito", "meaning": "documenta un esito già maturato nel gruppo autorizzato"}
+  ],
+  "reserved_authority_verbs": ["Approva", "Adotta"],
+  "authority_boundaries": {
+    "personal_profile_is_not_verified_role": true,
+    "membership_is_not_authority": true,
+    "individual_contribution_is_not_team_outcome": true,
+    "team_outcome_is_not_institutional_decision": true,
+    "institutional_decision_is_not_adopted_curriculum_until_recorded": true
+  },
+  "acceptance": {
+    "orientation_target_seconds": 5,
+    "one_primary_action_per_task_context": true,
+    "flow_must_survive_training_copy_removal": true,
+    "full_explanation_must_remain_reachable": true,
+    "state_must_precede_process_explanation": true,
+    "recognition_must_precede_interpretation": true,
+    "single_dominant_object": true,
+    "routine_copy_must_not_duplicate_visible_state": true,
+    "action_object_proximity_required": true,
+    "secondary_explanation_default_collapsed": true,
+    "persistent_assurance_requires_current_risk": true,
+    "downstream_controls_must_not_be_fully_active_before_prerequisite": true,
+    "completion_must_produce_visible_consequence": true,
+    "incomplete_required_input_must_not_count_as_completed_work": true,
+    "stage_transition_must_change_rendered_task_context": true,
+    "no_duplicate_progress_hierarchies": true,
+    "secondary_filters_under_progressive_disclosure": true,
+    "draft_requires_explicit_commit": true,
+    "teacher_level_1_must_not_contain_system_jargon": true,
+    "level_2_and_level_3_default_collapsed": true,
+    "work_session_has_single_progression": true,
+    "coordinator_must_not_skip_personal_contribution": true,
+    "compare_requires_persisted_current_share": true,
+    "changed_personal_orientation_invalidates_previous_share": true,
+    "local_confirmation_must_not_simulate_persisted_share": true,
+    "process_position_must_be_visible_at_level_1": true,
+    "future_orientation_labels_must_not_be_future_controls": true,
+    "technical_traceability_must_be_absent_from_default_level_1": true,
+    "stage_transition_must_preserve_viewport_orientation": true,
+    "completion_must_be_acknowledged_before_return_to_general_context": true,
+    "return_to_general_context_after_completion_must_be_explicit": true
+  },
+  "pilot_surfaces": [
+    {
+      "path": "src/features/session/components/DashboardView.tsx",
+      "required_tokens": [
+        "data-beta-home=\"role-work-queue\"",
+        "data-home-queue=\"actionable\"",
+        "data-home-work-action=",
+        "data-hcm-level=\"1\"",
+        "data-hcm-level=\"2\"",
+        "data-hcm-level=\"3\"",
+        "Il mio lavoro sul curricolo",
+        "Da fare",
+        "Il percorso di lavoro",
+        "Ruoli e condizioni di accesso"
+      ]
+    },
+    {
+      "path": "src/features/beta/RevisionWorkspace.tsx",
+      "required_tokens": [
+        "data-curriculum-work-session",
+        "data-work-session-stage={stage}",
+        "data-persisted-share-ready={sharePersistence.complete ? 'true' : 'false'}",
+        "data-revision-stage=\"review\"",
+        "data-revision-stage=\"sharing\"",
+        "setStage('SHARE')",
+        "Adesso pensa soltanto al tuo parere. I passaggi successivi si aprono quando servono.",
+        "Rivedi il mio parere",
+        "Anche chi coordina il gruppo comincia dal proprio parere personale.",
+        "data-team-comparison-blocked-by-share",
+        "Condivisione completata",
+        "Apri il confronto del gruppo"
+      ]
+    },
+    {
+      "path": "src/features/beta/TeamContributionPublisher.tsx",
+      "required_tokens": [
+        "data-team-contribution-publisher",
+        "data-contribution-persistence-complete={persistedCurrentContributionComplete ? 'true' : 'false'}",
+        "data-professional-contribution-persisted",
+        "contributionMatchesCurrentWork",
+        "proposalFingerprint",
+        "contribution.orientation !== expectedOrientation",
+        "normalizeText(contribution.customText) === normalizeText(customTexts[contribution.proposalRef])",
+        "Il contributo corrente è registrato e verificato nel team."
+      ]
+    },
+    {
+      "path": "src/features/curriculum/components/RevisioneTab.tsx",
+      "required_tokens": [
+        "data-revision-flow=\"recognition-first\"",
+        "data-revision-recognition-header",
+        "data-revision-current-card",
+        "data-revision-completed-card",
+        "data-revision-assurance-on-demand",
+        "data-hcm-level=\"1\"",
+        "data-hcm-level=\"2\"",
+        "data-hcm-level=\"3\"",
+        "Testo precedente",
+        "Proposta da esaminare",
+        "Conferma la proposta",
+        "Proponi una modifica",
+        "Mantieni testo precedente",
+        "Registra modifica",
+        "Fonti e tracciabilità",
+        "Tutte le schede"
+      ]
+    }
+  ]
+}

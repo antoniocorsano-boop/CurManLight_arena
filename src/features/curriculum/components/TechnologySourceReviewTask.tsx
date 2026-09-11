@@ -124,7 +124,7 @@ export function TechnologySourceReviewTask() {
 
   if (!current) return null;
 
-  const officialSourceUrl = `${DM221_2025_SOURCE.officialLocator.pdfUrl}#page=${current.page}`;
+  const officialSourceUrl = DM221_2025_SOURCE.officialCurriculumVolume.url;
 
   return (
     <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm space-y-5" aria-labelledby="technology-source-review-title">
@@ -132,7 +132,7 @@ export function TechnologySourceReviewTask() {
         <span className="text-[10px] font-black uppercase tracking-wider text-indigo-600">Curricolo verticale · Tecnologia</span>
         <h3 id="technology-source-review-title" className="text-base font-black text-slate-900">Verifica il testo nella fonte ufficiale</h3>
         <p className="text-sm text-slate-600 leading-relaxed max-w-3xl">
-          Apri la pagina indicata, riporta ciò che leggi e scegli l’esito. Nessuna modifica automatica.
+          Apri la pubblicazione finale MIM, raggiungi la pagina stampata indicata, riporta ciò che leggi e scegli l’esito. Nessuna modifica automatica.
         </p>
       </div>
 
@@ -148,7 +148,7 @@ export function TechnologySourceReviewTask() {
         <p className="text-xs font-black uppercase tracking-wide text-indigo-700">{getSchoolOrderLabel(current.schoolOrder)}</p>
         <p className="text-sm font-bold text-slate-900">{GROUP_LABELS[current.group] ?? current.group} · elemento {current.ordinal}</p>
         <div className="flex flex-wrap items-center gap-3">
-          <span className="text-xs font-bold text-slate-600">D.M. 221/2025 · pagina {current.page}</span>
+          <span className="text-xs font-bold text-slate-600">D.M. 221/2025 · pagina stampata {current.page}</span>
           <a
             href={officialSourceUrl}
             target="_blank"

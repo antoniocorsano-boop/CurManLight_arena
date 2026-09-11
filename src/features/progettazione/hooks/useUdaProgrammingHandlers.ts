@@ -4,6 +4,7 @@ import type { CurriculumMap } from '../../session';
 import { safeLocalStorageGetItem, safeLocalStorageSetItem } from '../../../lib/consolidatedStorage';
 import { getA04InstitutionalRead } from '../../../domain/institution';
 import { useCurriculumStore } from '../../../store/useCurriculumStore';
+import { buildDidacticBinding, formatDidacticBindingHumanLabel } from '../../../domain/curriculum/didacticBinding';
 
 type ProgStatus = 'bozza' | 'in revisione' | 'pronta per confronto';
 
@@ -64,6 +65,13 @@ export const useUdaProgrammingHandlers = ({
     safeLocalStorageSetItem('curman_progCoAuthors', progCoAuthors);
   }, [progTitle, progPeriod, progStatus, progHours, progNotes, realTaskInput, progCoAuthors]);
 
+  const createCurrentBinding = (targetType: 'annual-planning' | 'uda') => buildDidacticBinding({
+    targetType,
+    order: effectiveOrder,
+    targetClass,
+    disciplineOrField: discipline,
+  });
+
   const saveProgDraft = () => {
     safeLocalStorageSetItem('curman_progTitle', progTitle);
     safeLocalStorageSetItem('curman_progPeriod', progPeriod);
@@ -72,13 +80,15 @@ export const useUdaProgrammingHandlers = ({
     safeLocalStorageSetItem('curman_progNotes', progNotes);
     safeLocalStorageSetItem('curman_realTaskInput', realTaskInput);
     safeLocalStorageSetItem('curman_progCoAuthors', progCoAuthors);
-    showToast("Bozza della programmazione annuale salvata con successo!");
+    safeLocalStorageSetItem('curman_didacticBinding', JSON.stringify(createCurrentBinding('annual-planning')));
+    showToast("Bozza della programmazione annuale salvata con collegamento al curricolo corrente.");
   };
 
   const compileProgPreviewText = () => {
     const currentData = localCurriculum[discipline]?.[effectiveOrder] || { traguardi: [], obiettivi: [] };
     const selTraguardi = selectedTraguardi.map(idx => currentData.traguardi[idx]);
     const selObiettivi = selectedObiettivi.map(idx => currentData.obiettivi[idx]);
+    const didacticBinding = createCurrentBinding('annual-planning');
 
     const isReformed = !(effectiveSchoolYear.replace('/', '-') === '2026-2027' && targetClass !== '1' && effectiveOrder !== 'infanzia');
     const normativeRef = isReformed ? "Nuovo Ordinamento D.M. 221/2025" : "Previgente Ordinamento D.M. 254/2012";
@@ -96,6 +106,7 @@ export const useUdaProgrammingHandlers = ({
     text += `CLASSE:   Classe ${effectiveOrder === 'infanzia' ? 'Fascia Unica' : targetClass + '^ Sez. ' + targetSection}\n`;
     text += `ANNO SCOL.: ${effectiveSchoolYear}\n`;
     text += `NORMATIVA:  ${normativeRef}\n`;
+    text += `CURRICOLO DI RIFERIMENTO: ${formatDidacticBindingHumanLabel(didacticBinding)}\n`;
     text += `MODULO:   ${progTitle}\n`;
     text += `PERIODO:   ${progPeriod}\n`;
     text += `ORE PREV.:  ${progHours} ore\n`;
@@ -135,7 +146,12 @@ export const useUdaProgrammingHandlers = ({
     text += `${realTaskInput || "Non impostato."}\n\n`;
 
     text += `--- INCLUSIONE, METODOLOGIE E NOTE ---\n`;
-    text += `${progNotes || "Nessuna nota integrativa digitata."}\n`;
+    text += `${progNotes || "Nessuna nota integrativa digitata."}\n\n`;
+
+    text += `--- TRACCIABILITA CURRICOLARE ---\n`;
+    text += `Binding: ${didacticBinding.curriculumUnit.unitKey}\n`;
+    text += `Uso: ${didacticBinding.useScope}\n`;
+    text += `I testi selezionati nella progettazione sono una copia di lavoro e non sostituiscono la fonte curricolare canonica.\n`;
 
     return text;
   };
@@ -152,6 +168,7 @@ export const useUdaProgrammingHandlers = ({
 
     const currentData = localCurriculum[discipline]?.[effectiveOrder] || { traguardi: [], obiettivi: [] };
     const titleSuffix = effectiveOrder === 'infanzia' ? '' : ` (Target: ${targetClass}^${targetSection})`;
+    const didacticBinding = createCurrentBinding('uda');
     const newUda: UdaModel = {
       id: "uda-" + Date.now(),
       title: `${progTitle}${titleSuffix}`,
@@ -165,12 +182,13 @@ export const useUdaProgrammingHandlers = ({
       evidenze: [...selectedEvidenze],
       realTask: realTaskInput || "Realizzazione di un prodotto di sintesi disciplinare.",
       notes: progNotes || "Adattamento personalizzato secondo bisogni della classe.",
+      curriculumBindings: [didacticBinding],
       createdAt: new Date().toLocaleDateString('it-IT')
     };
 
     addUda(newUda);
     setActiveProgTab('uda');
-    showToast("Bozza di UDA Generata con successo e aggiunta all'archivio locale!");
+    showToast("Bozza UDA generata e collegata al curricolo corrente. Il collegamento resta di lavoro finché il master non è vigente.");
   };
 
   const handleLoadSuggestedUda = (udaType: string) => {

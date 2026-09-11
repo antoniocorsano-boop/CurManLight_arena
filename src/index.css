@@ -146,6 +146,24 @@
     -webkit-overflow-scrolling: touch;
   }
 
+  /* G5: the publication wrapper, not the table itself, owns horizontal scrolling. */
+  #main-content [data-curriculum-table-scroll] {
+    max-width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    overscroll-behavior-inline: contain;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-x pan-y;
+  }
+
+  #main-content [data-curriculum-table-scroll] > [data-curriculum-publication-grid] {
+    display: table;
+    width: 100%;
+    min-width: 720px;
+    max-width: none;
+    overflow: visible;
+  }
+
   [data-hcm-secondary-content] {
     margin-top: var(--ui-mobile-section-gap);
   }

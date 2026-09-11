@@ -1,0 +1,189 @@
+{
+  "contract_id": "ARENA_UX_CONTRACT",
+  "name": "Contratto canonico di esperienza utente di CurManLight Arena",
+  "version": "1.0.0",
+  "date": "2026-09-11",
+  "status": "CANONICAL_UX_CONTRACT",
+  "authority": {
+    "product_vision": "ARENA-PRODUCT-VISION@1.0.0",
+    "lifecycle": "CURRICULUM_LIFECYCLE@1.2.0",
+    "information_architecture": "docs/04_product_experience/01_INFORMATION_ARCHITECTURE.md",
+    "navigation": "docs/04_product_experience/02_NAVIGATION_MODEL.md",
+    "critical_flows": "docs/04_product_experience/09_USER_FLOWS.md",
+    "human_task_contract": "docs/04_product_experience/ARENA_HUMAN_TASK_CONTRACT.md",
+    "communication_contract": ".human/operational-communication.contract.json"
+  },
+  "purpose": "Rendere stabile e verificabile l'esperienza di Arena separando consultazione del curricolo, progettazione, riesame e fascicolo; ogni controllo deve avere un significato univoco e ogni passaggio deve preservare contesto, autorita e provenienza senza esporre al docente la struttura tecnica del sistema.",
+  "primary_navigation": [
+    {"id": "my_work", "label": "Il mio lavoro", "intent": "act", "question": "Che cosa devo fare adesso?"},
+    {"id": "curriculum", "label": "Curricolo", "intent": "understand", "question": "Che cosa si applica e come e organizzato?"},
+    {"id": "planning", "label": "Progettazione", "intent": "design", "question": "Come utilizzo il curricolo nella progettazione didattica?"},
+    {"id": "review", "label": "Riesame", "intent": "review", "question": "Che cosa deve essere verificato, discusso o eventualmente modificato?"}
+  ],
+  "secondary_surfaces": [
+    {"id": "fascicolo", "label": "Fascicolo", "purpose": "fonti, versioni, ricevute, verbali, documenti, export e tracciabilita"}
+  ],
+  "global_invariants": {
+    "one_environment_one_intent": true,
+    "one_control_one_meaning": true,
+    "one_dominant_object_per_context": true,
+    "one_primary_action_per_task_context": true,
+    "preserve_context_across_handoffs": true,
+    "document_is_subordinate_projection": true,
+    "technical_traceability_not_level_1": true,
+    "authority_fails_closed": true,
+    "back_restores_previous_context": true,
+    "no_duplicate_user_facing_surface_for_same_task": true,
+    "runtime_state_must_not_redefine_product_language": true,
+    "implementation_snapshot_never_overrides_canonical_ux": true
+  },
+  "curriculum": {
+    "intent": "consultation",
+    "default_projection": "explore",
+    "projections": ["explore", "trama", "document"],
+    "explore_hierarchy": ["discipline_or_field", "school_order", "annuality", "nucleus", "curriculum_unit_detail"],
+    "annuality_selector_semantics": "changes_only_the_consulted_annuality",
+    "review_state_must_not_select_annuality": true,
+    "review_availability_must_not_disable_annuality": true,
+    "selectors_must_derive_from_canonical_curriculum_data": true,
+    "hardcoded_discipline_to_section_mapping_forbidden_as_target_architecture": true,
+    "ordinary_mobile_consultation_must_not_depend_on_horizontal_tables": true,
+    "document_tables_may_scroll_horizontally": true,
+    "ambiguous_previous_next_controls_forbidden": true,
+    "contextual_actions": {
+      "trama": "Vedi nella Trama",
+      "planning": "Usa in Progettazione",
+      "review": "Segnala per il Riesame",
+      "source": "Vedi fonte",
+      "document": "Apri Documento"
+    }
+  },
+  "trama": {
+    "purpose": "show_curricular_relations_and_progression",
+    "editor": false,
+    "inference_engine": false,
+    "relations_must_be_typed_and_traceable": true,
+    "unknown_relations_fail_closed": true,
+    "mobile_requires_pan_zoom": false,
+    "mobile_vertical_fallback_required": true,
+    "allowed_v1_relation_policy": "same-nucleus-exact-only",
+    "future_relation_types_may_include": [
+      "PRECEDES",
+      "DEVELOPS",
+      "REQUIRES",
+      "DUPLICATES",
+      "RELATES_TO",
+      "CROSS_DISCIPLINE",
+      "SUPPORTED_BY_SOURCE",
+      "USED_IN_PLANNING"
+    ],
+    "future_relation_types_require_recorded_or_human_validated_evidence": true
+  },
+  "document": {
+    "purpose": "editorial_institutional_printable_representation",
+    "may_use_sequential_sections": true,
+    "may_use_full_matrices": true,
+    "must_not_be_required_for_ordinary_curriculum_consultation": true,
+    "must_not_be_a_second_source_of_truth": true
+  },
+  "planning": {
+    "handoff_from_curriculum_preserves": ["curriculum_unit", "discipline_or_field", "school_order", "annuality", "nucleus", "master_identity", "master_version", "authority_state"],
+    "handoff_uses_didactic_binding": true,
+    "didactic_binding_is_not_level_1_jargon": true,
+    "non_in_force_master_label": "Riferimento di lavoro",
+    "must_not_present_non_in_force_master_as_adopted": true
+  },
+  "review": {
+    "separate_from_curriculum_consultation": true,
+    "entry_requires_explicit_intent": true,
+    "curriculum_may_offer_contextual_handoff_only": true,
+    "work_session_progression": ["ESAMINA", "CONDIVIDI", "CONFRONTA", "REGISTRA_L_ESITO"],
+    "one_stage_dominates": true,
+    "future_stage_controls_hidden_until_relevant": true,
+    "review_case_availability_must_not_change_curriculum_readability": true,
+    "institutional_authority_never_inferred_from_navigation": true
+  },
+  "my_work": {
+    "card_contract": ["object", "human_readable_state", "next_real_action"],
+    "must_not_expose_full_process_architecture": true,
+    "must_not_use_technical_state_as_primary_copy": true
+  },
+  "fascicolo": {
+    "secondary": true,
+    "reachable_from_contextual_source_actions": true,
+    "technical_ids_allowed_only_under_progressive_disclosure": true,
+    "legacy_archives_must_not_compete_with_current_curriculum": true
+  },
+  "mobile": {
+    "primary_orientation": "portrait",
+    "primary_navigation": ["my_work", "curriculum", "planning", "review"],
+    "curriculum_explore_uses_semantic_cards": true,
+    "page_level_horizontal_overflow_forbidden": true,
+    "touch_target_min_px": 44,
+    "no_second_primary_navigation_rail": true,
+    "trama_must_be_understandable_without_pan_zoom": true,
+    "desktop_compression_is_not_an_acceptable_mobile_strategy": true
+  },
+  "language": {
+    "level_1_style": "professional_school_language",
+    "forbidden_as_primary_copy": [
+      "baseline corrente",
+      "master canonico",
+      "H2",
+      "H3",
+      "H4",
+      "superficie materializzata",
+      "fingerprint",
+      "DidacticBinding",
+      "RevisionTrigger",
+      "gate",
+      "SHA",
+      "legacy"
+    ],
+    "preferred_replacements": {
+      "baseline corrente": "Versione di lavoro oppure Curricolo vigente, secondo lo stato reale",
+      "master canonico": "Curricolo d'Istituto",
+      "H2": "Validazione professionale",
+      "H3": "Riesame verticale",
+      "H4": "Iter istituzionale",
+      "superficie materializzata": "Funzione disponibile oppure non ancora disponibile",
+      "fingerprint": "Versione",
+      "DidacticBinding": "Collegamento al curricolo",
+      "RevisionTrigger": "Motivo del riesame",
+      "gate": "Verifica oppure stato da completare",
+      "legacy": "Archivio precedente, solo quando serve all'utente"
+    }
+  },
+  "acceptance_scenarios": [
+    {
+      "id": "UX-CURR-01",
+      "goal": "Trova Tecnologia classe II",
+      "success": "Il docente raggiunge la classe II senza percorrere sezioni editoriali e senza entrare nel Riesame"
+    },
+    {
+      "id": "UX-CURR-02",
+      "goal": "Comprendi cosa viene prima e dopo un nucleo",
+      "success": "La Trama mostra relazioni reali e comprensibili senza richiedere pan o zoom su telefono"
+    },
+    {
+      "id": "UX-CURR-03",
+      "goal": "Usa un nucleo in una UDA o programmazione",
+      "success": "Il passaggio a Progettazione conserva contesto e versione tramite collegamento persistito al curricolo"
+    },
+    {
+      "id": "UX-CURR-04",
+      "goal": "Segnala un prerequisito mancante",
+      "success": "Il docente entra intenzionalmente nel Riesame senza modificare il curricolo e senza perdere il contesto dell'unita"
+    }
+  ],
+  "implementation_prohibitions": [
+    "do_not_use_review_target_class_to_choose_curriculum_annuality",
+    "do_not_disable_curriculum_annuality_because_review_is_unavailable",
+    "do_not_hardcode_target_discipline_catalog_from_document_section_numbers",
+    "do_not_make_document_sequence_the_default_curriculum_navigation",
+    "do_not_expose_internal_governance_codes_in_level_1_teacher_copy",
+    "do_not_create_graph_edges_without_recorded_or_validated_relation_evidence",
+    "do_not_duplicate_review_controls_inside_curriculum_consultation",
+    "do_not_use_technical_pass_as_human_acceptance"
+  ]
+}

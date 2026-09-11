@@ -1,0 +1,62 @@
+{
+  "schemaVersion": "arena-r7c7a-institute-source-remediation-v1",
+  "workItem": "R7C7A",
+  "date": "2026-09-03",
+  "state": "BLOCKED_HUMAN_REMEDIATION_REQUIRED",
+  "logicalBase": {
+    "workItem": "R7C6C",
+    "sha": "60225147d2a0c34ae05f005cde24fe6ac67f6a83"
+  },
+  "source": {
+    "file": "CURRICOLO VERTICALE .docx",
+    "sha256": "187bc12a771a29331c0d6638abe9e74788a2554af2735e3b9f43321d8f2ae57b",
+    "authority": "LOCAL_WORKING",
+    "semanticStatus": "UNASSESSED"
+  },
+  "queue": {
+    "taskCount": 7,
+    "presentationTaskCount": 5,
+    "rationaleTaskCount": 2,
+    "correctedSourceVersionRequiredTaskCount": 5,
+    "humanScopeDecisionTaskCount": 1,
+    "humanIdentityDecisionTaskCount": 1,
+    "resolvedTaskCount": 0,
+    "unresolvedTaskCount": 7
+  },
+  "taskIds": [
+    "CV-AUD-001-ITALIANO",
+    "CV-AUD-001-INGLESE",
+    "CV-AUD-002-MUSICA-RATIONALE",
+    "CV-AUD-003-MOTORIA-RATIONALE",
+    "CV-AUD-004-LATINO-SCOPE",
+    "CV-AUD-005-EDUCAZIONE-FISICA-HEADER",
+    "CV-AUD-006-CORPO-IDENTITY"
+  ],
+  "resolutionRules": {
+    "acknowledgementCanResolve": false,
+    "correctedSourceMustHaveDifferentSha256": true,
+    "correctedSourceRequiresCorrectionNote": true,
+    "scopeDecisionRequiresHumanReceipt": true,
+    "identityDecisionRequiresHumanReceipt": true,
+    "conflictingReceiptsFailClosed": true,
+    "receiptPackBoundToSourceSha256": true
+  },
+  "readinessEffect": {
+    "sourceReviewBlockerCount": 7,
+    "sourceRemediationComplete": false,
+    "semanticReviewComplete": false,
+    "dualReadTransitionAuthorized": false
+  },
+  "authorityEffects": {
+    "sourceAuthorityMutation": false,
+    "nationalAuthorityMutation": false,
+    "institutionalAuthorityMutation": false,
+    "automaticCanonicalPromotion": false,
+    "institutionalAdoption": false,
+    "p3Mutation": false,
+    "p7Mutation": false,
+    "persistenceModeMutation": false,
+    "runtimeMutation": false
+  },
+  "nextGovernedStep": "BUILD_HUMAN_REMEDIATION_WORKBENCH_WITHOUT_AUTO_RESOLUTION"
+}

@@ -26,13 +26,21 @@ interface GroupSpec {
   section: string;
 }
 
+/**
+ * Locator del volume finale MIM stampato a marzo 2026.
+ *
+ * I numeri indicano la prima pagina stampata in cui compare il gruppo. Alcuni
+ * gruppi proseguono nella pagina successiva. R7C5A corregge soltanto i locator:
+ * conteggi e testi restano soggetti alla verifica elemento-per-elemento gia'
+ * prevista dal contratto di source review.
+ */
 const GROUPS: readonly GroupSpec[] = [
   {
     group: 'PRIMARY_EXPECTED_COMPETENCES',
     schoolOrder: 'primaria',
     elementKind: 'EXPECTED_COMPETENCE',
     count: 8,
-    page: 96,
+    page: 141,
     section: 'Tecnologia — Scuola primaria — Competenze attese al termine della classe quinta',
   },
   {
@@ -40,7 +48,7 @@ const GROUPS: readonly GroupSpec[] = [
     schoolOrder: 'primaria',
     elementKind: 'LEARNING_OBJECTIVE',
     count: 8,
-    page: 97,
+    page: 142,
     section: 'Tecnologia — Scuola primaria — Obiettivi specifici di apprendimento al termine della classe terza',
   },
   {
@@ -48,7 +56,7 @@ const GROUPS: readonly GroupSpec[] = [
     schoolOrder: 'primaria',
     elementKind: 'LEARNING_OBJECTIVE',
     count: 12,
-    page: 97,
+    page: 143,
     section: 'Tecnologia — Scuola primaria — Obiettivi specifici di apprendimento al termine della classe quinta',
   },
   {
@@ -56,7 +64,7 @@ const GROUPS: readonly GroupSpec[] = [
     schoolOrder: 'primaria',
     elementKind: 'KNOWLEDGE_OR_CONTENT',
     count: 3,
-    page: 97,
+    page: 143,
     section: 'Tecnologia — Scuola primaria — Conoscenze',
   },
   {
@@ -64,7 +72,7 @@ const GROUPS: readonly GroupSpec[] = [
     schoolOrder: 'secondaria',
     elementKind: 'EXPECTED_COMPETENCE',
     count: 8,
-    page: 98,
+    page: 144,
     section: 'Tecnologia — Scuola secondaria di primo grado — Competenze attese al termine della classe terza',
   },
   {
@@ -72,7 +80,7 @@ const GROUPS: readonly GroupSpec[] = [
     schoolOrder: 'secondaria',
     elementKind: 'LEARNING_OBJECTIVE',
     count: 18,
-    page: 98,
+    page: 144,
     section: 'Tecnologia — Scuola secondaria di primo grado — Obiettivi specifici di apprendimento al termine della classe terza',
   },
   {
@@ -80,7 +88,7 @@ const GROUPS: readonly GroupSpec[] = [
     schoolOrder: 'secondaria',
     elementKind: 'KNOWLEDGE_OR_CONTENT',
     count: 4,
-    page: 98,
+    page: 145,
     section: 'Tecnologia — Scuola secondaria di primo grado — Conoscenze',
   },
 ];
@@ -97,14 +105,14 @@ function createGroup(spec: GroupSpec): TechnologyElementInventoryItem[] {
         sourceId: DM221_2025_SOURCE_ID,
         section: spec.section,
         page: spec.page,
-        note: `Elemento n. ${ordinal} nel gruppo ${spec.group}; testo non importato in questa tranche.`,
+        note: `Elemento n. ${ordinal} nel gruppo ${spec.group}; locator riallineato al volume finale MIM di marzo 2026; testo non importato in questa tranche.`,
       },
       sourceBindingStatus: 'SOURCE_LOCATED',
       verifiedByHuman: false,
       canonicalTextStatus: 'SOURCE_LOCATED_ONLY',
       group: spec.group,
       ordinal,
-      notes: 'Inventario strutturale derivato dalla fonte ufficiale; richiede verifica umana del singolo testo prima di SOURCE_VERIFIED/HUMAN_VERIFIED_SOURCE_TEXT.',
+      notes: 'Inventario strutturale localizzato nella fonte finale; richiede verifica umana del singolo testo prima di SOURCE_VERIFIED/HUMAN_VERIFIED_SOURCE_TEXT.',
     } satisfies TechnologyElementInventoryItem;
   });
 }
@@ -113,6 +121,10 @@ export const DM221_TECHNOLOGY_ELEMENT_INVENTORY: readonly TechnologyElementInven
 
 export const DM221_TECHNOLOGY_ELEMENT_COUNTS = Object.freeze(
   Object.fromEntries(GROUPS.map((group) => [group.group, group.count])) as Record<TechnologyElementGroup, number>,
+);
+
+export const DM221_TECHNOLOGY_ELEMENT_START_PAGES = Object.freeze(
+  Object.fromEntries(GROUPS.map((group) => [group.group, group.page])) as Record<TechnologyElementGroup, number>,
 );
 
 export function getTechnologyInventoryGroup(group: TechnologyElementGroup): readonly TechnologyElementInventoryItem[] {

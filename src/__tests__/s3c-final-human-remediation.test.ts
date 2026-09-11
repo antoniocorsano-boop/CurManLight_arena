@@ -8,20 +8,47 @@ const viewsSource = firstSource(import.meta.glob('../features/session/components
   query: '?raw', import: 'default', eager: true,
 }) as Record<string, string>);
 
+const curriculumWorkspaceSource = firstSource(import.meta.glob('../features/curriculum/CurriculumWorkspace.tsx', {
+  query: '?raw', import: 'default', eager: true,
+}) as Record<string, string>);
+
+const curriculumReaderSource = firstSource(import.meta.glob('../features/curriculum/components/ProfessionalCurriculumReader.tsx', {
+  query: '?raw', import: 'default', eager: true,
+}) as Record<string, string>);
+
+const curriculumExploreSource = firstSource(import.meta.glob('../features/curriculum/components/CurriculumExploreTrama.tsx', {
+  query: '?raw', import: 'default', eager: true,
+}) as Record<string, string>);
+
+const curriculumPublicationSource = firstSource(import.meta.glob('../features/curriculum/components/DepartmentCurriculumPublication.tsx', {
+  query: '?raw', import: 'default', eager: true,
+}) as Record<string, string>);
+
 const handoffSource = firstSource(import.meta.glob('../features/beta/PlanningHandoffPreview.tsx', {
   query: '?raw', import: 'default', eager: true,
 }) as Record<string, string>);
 
 describe('Arena S3C final human remediation', () => {
-  it('makes the post-curriculum path explicit without collapsing review and planning', () => {
-    expect(viewsSource).toContain('data-human-next-step="after-curriculum-check"');
-    expect(viewsSource).toContain('Dopo il controllo, scegli cosa devi fare');
-    expect(viewsSource).toContain('Se il curricolo va bene, passa alla progettazione.');
-    expect(viewsSource).toContain('Passa alla progettazione');
-    expect(viewsSource).toContain('Proponi una modifica');
-    expect(viewsSource).toContain("safeHandleTabSwitch('esportazioni')");
-    expect(viewsSource).toContain("safeHandleTabSwitch('revisione')");
-    expect(viewsSource).toContain('data-human-next-action="verify-curriculum-validity"');
+  it('keeps curriculum, review and planning as explicit distinct steps', () => {
+    expect(curriculumWorkspaceSource).toContain('<ProfessionalCurriculumReader');
+    expect(curriculumReaderSource).toContain('data-canonical-curriculum-entry');
+    expect(curriculumReaderSource).toContain('data-curriculum-primary-task="consultation"');
+    expect(curriculumReaderSource).toContain('data-curriculum-mode="explore"');
+    expect(curriculumReaderSource).toContain('data-curriculum-mode="trama"');
+    expect(curriculumReaderSource).toContain('data-curriculum-mode="document"');
+    expect(curriculumExploreSource).toContain('data-annuality-semantics="consultation-only"');
+    expect(curriculumExploreSource).toContain('data-use-curriculum-in-planning');
+    expect(curriculumExploreSource).toContain('data-send-curriculum-to-review');
+    expect(curriculumReaderSource).not.toContain('data-open-technology-review-class');
+    expect(curriculumReaderSource).not.toContain('Riesame H2');
+    expect(curriculumWorkspaceSource).toContain("props.handleTabSwitch('revisione')");
+    expect(curriculumWorkspaceSource).toContain("props.handleTabSwitch('progetta-annuale')");
+    expect(viewsSource).toContain("props.activeTab === 'revisione'");
+    expect(viewsSource).toContain('<CaseAwareRevisionSurface');
+    expect(viewsSource).toContain('data-teacher-surface="revision"');
+    expect(viewsSource).toContain("props.activeTab === 'progetta-annuale'");
+    expect(viewsSource).toContain('<ProgettazioneTab');
+    expect(viewsSource).toContain('data-teacher-surface="planning"');
   });
 
   it('renders the planning handoff from the canonical Documents surface', () => {
@@ -49,5 +76,20 @@ describe('Arena S3C final human remediation', () => {
     expect(handoffSource).not.toContain('fetch(');
     expect(handoffSource).not.toContain('supabase');
     expect(handoffSource).not.toContain('text-[10px]');
+  });
+
+  it('assigns portrait mobile table scrolling to a dedicated curriculum wrapper', () => {
+    expect(curriculumPublicationSource).toContain('data-curriculum-table-scroll');
+    expect(curriculumPublicationSource).toContain('data-curriculum-publication-grid');
+    expect(curriculumPublicationSource).toContain('overflow-x-auto');
+    expect(curriculumPublicationSource).toContain('tabIndex={0}');
+    expect(curriculumPublicationSource).toContain('scorri orizzontalmente per leggere tutte le colonne');
+  });
+
+  it('keeps the static gate focused on markup while browser evidence verifies real table motion', () => {
+    expect(curriculumPublicationSource).toContain('data-curriculum-table-scroll');
+    expect(curriculumPublicationSource).toContain('data-curriculum-publication-grid');
+    expect(curriculumPublicationSource).toContain('overflow-x-auto');
+    expect(curriculumPublicationSource).not.toContain('overflow-x-hidden');
   });
 });

@@ -11,8 +11,9 @@ describe('BETA-G4 revision routing contract', () => {
     expect(appTabToPath('curricolo')).toBe('/curriculum');
   });
 
-  it('usa /fonti come destinazione canonica mantenendo leggibili i deep link legacy /settings', () => {
-    expect(appTabToPath('fonti')).toBe('/fonti');
+  it('usa /fascicolo come destinazione canonica mantenendo leggibili i deep link legacy /fonti e /settings', () => {
+    expect(appTabToPath('fonti')).toBe('/fascicolo');
+    expect(pathnameToAppTab('/fascicolo')).toBe('fonti');
     expect(pathnameToAppTab('/fonti')).toBe('fonti');
     expect(pathnameToAppTab('/settings')).toBe('fonti');
   });

@@ -1,4 +1,5 @@
-export { CertificazioneTab, ProgettazioneTab, UdaDetailModal } from './components';
+export { PlanningWorkspace as ProgettazioneTab } from './PlanningWorkspace';
+export { CertificazioneTab, UdaDetailModal } from './components';
 export type {
   CertificazioneTabProps,
   ProgettazioneTabProps,

@@ -230,8 +230,11 @@ export default function App() {
   handleSetOnboardingOrdLocal,
   handleToggleOnboardingCombination,
   handleAddSectionLocal,
+  openOnboardingProfileEditor,
   saveOnboardingProfile
  } = useOnboardingProfile({
+  role,
+  discipline,
   order,
   setRole,
   setDiscipline,
@@ -903,6 +906,7 @@ export default function App() {
      showToast={showToast}
      handleClearLocalStorageWithReset={handleClearLocalStorageWithReset}
      handleWorkspaceLogout={handleWorkspaceLogout}
+     openLocalProfileEditor={openOnboardingProfileEditor}
      setShowCloudAccountModal={setShowCloudAccountModal}
     />
 

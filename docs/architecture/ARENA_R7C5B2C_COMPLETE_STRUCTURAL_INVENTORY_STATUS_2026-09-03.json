@@ -1,0 +1,52 @@
+{
+  "schemaVersion": "arena-r7c5b2c-complete-structural-inventory-v1",
+  "workItem": "R7C5B2C_CLOSE_REMAINING_STRUCTURAL_INVENTORY",
+  "state": "STRUCTURAL_INVENTORY_COMPLETE_SOURCE_TEXT_UNVERIFIED",
+  "base": {
+    "r7c5b2bHead": "9cd74f7b5987e160142a3140a88ba027257de727",
+    "r7c5b2aHead": "9b0cf666152c77a42a5dde1076fdd1a9bf8b2e1c"
+  },
+  "source": {
+    "publication": "Indicazioni nazionali per il curricolo della scuola dell’infanzia e del primo ciclo d’istruzione",
+    "publisher": "Ministero dell’Istruzione e del Merito",
+    "printedAt": "2026-03",
+    "pageNumbering": "PRINTED_PAGE"
+  },
+  "closingInventories": {
+    "INFANZIA_GENERAL_FRAMEWORK": { "elements": 5, "sourceBoundary": "printed pp. 53-57 before first field" },
+    "MUSICA": { "elements": 50, "pages": "147-151" },
+    "STRUMENTO_MUSICALE": { "elements": 53, "pages": "152-157", "scopeKind": "CONDITIONAL_OFFERING" },
+    "ARTE_E_IMMAGINE": { "elements": 61, "pages": "158-167" },
+    "EDUCAZIONE_MOTORIA": { "elements": 38, "pages": "170-172", "schoolOrder": "primaria" },
+    "EDUCAZIONE_FISICA": { "elements": 27, "pages": "172-174", "schoolOrder": "secondaria" }
+  },
+  "ledger": {
+    "entries": 22,
+    "countVerifiedEntries": 22,
+    "countRequiredEntries": 0,
+    "verifiedStructuralElementCount": 868,
+    "newlyVerifiedStructuralElementCount": 234,
+    "guessedCountsAllowed": false,
+    "structuralInventoryComplete": true
+  },
+  "authorityInvariants": {
+    "humanSourceTextVerified": false,
+    "sourceVerifiedClaimed": false,
+    "nationalPrescriptiveClaimed": false,
+    "automaticInstituteNationalMapping": false,
+    "runtimeMutation": false,
+    "persistenceMutation": false,
+    "p3Mutation": false,
+    "p7Mutation": false,
+    "institutionalAdoptionClaimed": false
+  },
+  "nextGate": {
+    "workItem": "R7C5C_ELEMENT_LEVEL_SOURCE_TEXT_ACQUISITION_AND_HUMAN_VERIFICATION",
+    "requires": [
+      "exact final-publication wording per structural slot",
+      "page/section provenance per element",
+      "explicit human verification before SOURCE_VERIFIED",
+      "no institute-national semantic mapping before verified national text"
+    ]
+  }
+}

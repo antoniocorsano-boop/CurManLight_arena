@@ -1,0 +1,109 @@
+{
+  "schemaVersion": "arena-r7c5b2b-humanities-stem-science-element-inventory-v1",
+  "workItem": "R7C5B2B_HUMANITIES_STEM_SCIENCE_ELEMENT_INVENTORY",
+  "state": "PARTIAL_STRUCTURAL_INVENTORY_FAIL_CLOSED",
+  "base": {
+    "r7c5b2aHead": "9b0cf666152c77a42a5dde1076fdd1a9bf8b2e1c",
+    "r7c5b1Head": "e368684b53d958cb0d920533891eb4a18e5fa8ce"
+  },
+  "source": {
+    "publication": "Indicazioni nazionali per il curricolo della scuola dell’infanzia e del primo ciclo d’istruzione",
+    "publisher": "Ministero dell’Istruzione e del Merito",
+    "printedAt": "2026-03",
+    "pageNumbering": "PRINTED_PAGE"
+  },
+  "inventories": {
+    "STORIA": {
+      "elements": 93,
+      "pages": "96-104",
+      "groups": {
+        "primaryExpectedCompetences": 4,
+        "primaryGrade3Objectives": 3,
+        "primaryGrade5Objectives": 4,
+        "primaryKnowledge": 36,
+        "lowerSecondaryExpectedCompetences": 3,
+        "lowerSecondaryGrade3Objectives": 5,
+        "lowerSecondaryKnowledge": 38
+      }
+    },
+    "GEOGRAFIA": {
+      "elements": 81,
+      "pages": "105-112",
+      "groups": {
+        "primaryExpectedCompetences": 5,
+        "primaryGrade3Objectives": 17,
+        "primaryGrade5Objectives": 14,
+        "primaryKnowledgeBlocks": 6,
+        "lowerSecondaryExpectedCompetences": 4,
+        "lowerSecondaryGrade3Objectives": 25,
+        "lowerSecondaryKnowledgeBlocks": 10
+      }
+    },
+    "STEM": {
+      "elements": 8,
+      "pages": "113-117",
+      "scopeKind": "CROSS_DISCIPLINARY_FRAMEWORK",
+      "groups": {
+        "generalFrameworkNarrative": 1,
+        "primaryGuidanceNarrative": 1,
+        "lowerSecondaryGuidanceNarrative": 1,
+        "innovativeAspects": 5
+      }
+    },
+    "MATEMATICA": {
+      "elements": 78,
+      "pages": "118-129",
+      "groups": {
+        "primaryExpectedCompetences": 8,
+        "primaryGrade3Objectives": 11,
+        "primaryGrade5Objectives": 14,
+        "primaryKnowledge": 4,
+        "lowerSecondaryExpectedCompetences": 8,
+        "lowerSecondaryGrade3Objectives": 28,
+        "lowerSecondaryKnowledge": 5
+      },
+      "informaticaIdentity": "INTERNAL_TO_MATEMATICA"
+    },
+    "SCIENZE": {
+      "elements": 113,
+      "pages": "130-139",
+      "groups": {
+        "primaryExpectedCompetences": 3,
+        "primaryGrade3Objectives": 15,
+        "primaryGrade5Objectives": 34,
+        "primaryKnowledge": 5,
+        "lowerSecondaryExpectedCompetences": 3,
+        "lowerSecondaryGrade3Objectives": 47,
+        "lowerSecondaryKnowledge": 6
+      }
+    }
+  },
+  "ledger": {
+    "entries": 22,
+    "countVerifiedEntries": 16,
+    "countRequiredEntries": 6,
+    "verifiedStructuralElementCount": 634,
+    "newlyVerifiedStructuralElementCount": 373,
+    "guessedCountsAllowed": false
+  },
+  "pendingCountSections": [
+    "INFANZIA_GENERAL_FRAMEWORK",
+    "MUSICA",
+    "STRUMENTO_MUSICALE",
+    "ARTE_E_IMMAGINE",
+    "EDUCAZIONE_MOTORIA",
+    "EDUCAZIONE_FISICA"
+  ],
+  "authorityInvariants": {
+    "humanSourceTextVerified": false,
+    "sourceVerifiedClaimed": false,
+    "nationalPrescriptiveClaimed": false,
+    "automaticInstituteNationalMapping": false,
+    "runtimeMutation": false,
+    "persistenceMutation": false,
+    "p3Mutation": false,
+    "p7Mutation": false,
+    "institutionalAdoptionClaimed": false
+  },
+  "nextWorkItem": "R7C5B2C_CLOSE_REMAINING_STRUCTURAL_INVENTORY"
+}

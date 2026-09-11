@@ -2,6 +2,7 @@ import type { UdaModel } from '../../../types/curriculum';
 import { projectA07InstitutionalDocumentHeader, type A07InstitutionalDocumentRead } from '../../../domain/institution';
 import { LocalZipPacker } from '../../../lib/localZipPacker';
 import { escapeHtml } from '../../../lib/escapeHtml';
+import { formatDidacticBindingHumanLabel } from '../../../domain/curriculum/didacticBinding';
 
 const escapeHtmlWithBreaks = (value: string): string => escapeHtml(value).replace(/\r?\n/g, '<br>');
 const escapeXml = (value: string): string => escapeHtml(value);
@@ -29,13 +30,29 @@ export function useUdaPackageHandlers({
   .filter((line): line is string => Boolean(line));
  const identityText = identityLines.join('\n');
  const identityHtml = identityLines.map(line => `<div>${escapeHtml(line)}</div>`).join('');
+ const describeBinding = (u: UdaModel): string | null => {
+  const binding = u.curriculumBindings?.[0];
+  return binding ? formatDidacticBindingHumanLabel(binding) : null;
+ };
+ const bindingAuthorityNotice = (u: UdaModel): string | null => {
+  const binding = u.curriculumBindings?.[0];
+  if (!binding) return null;
+  return binding.curriculumInForce
+   ? 'Riferimento curricolare vigente registrato nel binding.'
+   : 'Riferimento di lavoro: il master collegato non è vigente e la bozza non costituisce adozione.';
+ };
  const copyUdaTextLocal = (id: string) => {
   const u = savedUda.find(item => item.id === id);
   if (!u) return;
+  const bindingText = describeBinding(u);
+  const authorityNotice = bindingAuthorityNotice(u);
 
   let text = `${identityText}\n\nUNITA' DI APPRENDIMENTO (UDA): ${u.title.toUpperCase()}\n`;
   text += `Discipline correlate: ${u.discipline.toUpperCase()} (${u.order.toUpperCase()})\n`;
-  text += `Periodo di svolgimento: ${u.period} (Monte ore: ${u.hours} ore)\n\n`;
+  text += `Periodo di svolgimento: ${u.period} (Monte ore: ${u.hours} ore)\n`;
+  if (bindingText) text += `Curricolo di riferimento: ${bindingText}\n`;
+  if (authorityNotice) text += `${authorityNotice}\n`;
+  text += `\n`;
   
   text += `1. TRAGUARDI DI RIFERIMENTO:\n`;
   u.traguardi.forEach((t) => { text += `- ${t}\n`; });
@@ -64,16 +81,21 @@ export function useUdaPackageHandlers({
  const copyUdaForRegister = (id: string) => {
   const u = savedUda.find(item => item.id === id);
   if (!u) return;
+  const bindingText = describeBinding(u);
+  const authorityNotice = bindingAuthorityNotice(u);
   let text = `${identityText}\n\n*** TRACCIATO LOCALE DI CO-PROGETTAZIONE UDA ***\n`;
   text += `MODULO: ${u.title.toUpperCase()}\n`;
   text += `DISCIPLINA: ${u.discipline.toUpperCase()} (${u.order.toUpperCase()})\n`;
   text += `PERIODO / ORE: ${u.period} - Ore previste: ${u.hours}\n`;
-  text += `CLASSE/SEZIONE: Classe ${targetClass}^ Sezione ${targetSection}\n\n`;
+  text += `CLASSE/SEZIONE: Classe ${targetClass}^ Sezione ${targetSection}\n`;
+  if (bindingText) text += `CURRICOLO DI RIFERIMENTO: ${bindingText}\n`;
+  if (authorityNotice) text += `${authorityNotice}\n`;
+  text += `\n`;
   text += `TRAGUARDI SELEZIONATI:\n`;
   u.traguardi.forEach((t) => { text += `- ${t}\n`; });
   text += `\nOBIETTIVI FORMATIVI:\n`;
   u.obiettivi.forEach((o) => { text += `- ${o}\n`; });
-  text += `\nCOMPITO DI REALTÃƒâ‚¬ / PRODOTTO ATTESO:\n"${u.realTask}"\n\n`;
+  text += `\nCOMPITO DI REALTA' / PRODOTTO ATTESO:\n"${u.realTask}"\n\n`;
   text += `MISURE METODOLOGICHE & INCLUSIONE (PEI/PDP/DSA):\n"${u.notes}"\n`;
   text += `\nGenerato localmente con CurManLight`;
   if (projection.footer) text += `\n${projection.footer}`;
@@ -88,6 +110,9 @@ export function useUdaPackageHandlers({
  const handleDownloadScormManifest = (id: string) => {
   const u = savedUda.find(item => item.id === id);
   if (!u) return;
+  const binding = u.curriculumBindings?.[0];
+  const bindingText = describeBinding(u);
+  const authorityNotice = bindingAuthorityNotice(u);
 
   let xml = `<?xml version="1.0" encoding="UTF-8"?>\n`;
    xml += `<manifest identifier="UDA-${escapeXml(u.id)}" version="1.1"\n`;
@@ -121,8 +146,15 @@ export function useUdaPackageHandlers({
    projection.secondaryLines.forEach(line => { xml += `    <secondaryLine>${escapeXml(line)}</secondaryLine>\n`; });
    if (projection.footer) xml += `    <footer>${escapeXml(projection.footer)}</footer>\n`;
    if (projection.declaredRoleLine) xml += `    <declaredRole>${escapeXml(projection.declaredRoleLine)}</declaredRole>\n`;
-  xml += `    <tipoDocumento>UDA (UnitÃƒÂ  di Apprendimento)</tipoDocumento>\n`;
+  xml += `    <tipoDocumento>UDA (Unità di Apprendimento)</tipoDocumento>\n`;
   xml += `    <chiaveLettura>CURRICOLO / UDA</chiaveLettura>\n`;
+  if (binding) {
+   xml += `    <curriculumMasterId>${escapeXml(binding.curriculumUnit.masterId)}</curriculumMasterId>\n`;
+   xml += `    <curriculumMasterVersion>${escapeXml(binding.curriculumUnit.masterVersion)}</curriculumMasterVersion>\n`;
+   xml += `    <curriculumUnitKey>${escapeXml(binding.curriculumUnit.unitKey)}</curriculumUnitKey>\n`;
+   xml += `    <curriculumBindingUseScope>${escapeXml(binding.useScope)}</curriculumBindingUseScope>\n`;
+   xml += `    <curriculumInForce>${binding.curriculumInForce ? 'true' : 'false'}</curriculumInForce>\n`;
+  }
   xml += `   </localMetadata>\n`;
   xml += `  </lom>\n`;
   xml += ` </metadata>\n`;
@@ -152,6 +184,7 @@ export function useUdaPackageHandlers({
   .meta { font-size: 12px; color: #64748b; margin-bottom: 20px; font-weight: bold; }
   .section { background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
   .section h2 { margin-top: 0; font-size: 14px; text-transform: uppercase; color: #4338ca; }
+  .curriculum-reference { border-color: #f59e0b; background: #fffbeb; }
   ul { padding-left: 20px; }
   li { margin-bottom: 8px; }
  </style>
@@ -188,7 +221,6 @@ export function useUdaPackageHandlers({
 
   function submitQuiz() {
    var elapsedSeconds = (Date.now() - startTime) / 1000;
-   // Uses a local reading threshold for this self-assessment.
    if (elapsedSeconds < 180) {
     alert("Tempo di consultazione breve. Dedica almeno 3 minuti alla lettura prima di registrare l'autovalutazione.");
     return;
@@ -198,7 +230,7 @@ export function useUdaPackageHandlers({
    var q2 = document.querySelector('input[name="q2"]:checked');
    
    if (!q1 || !q2) {
-    alert(" Per favore, rispondi a tutte le domande dell'autovalutazione prima di inviare!");
+    alert("Per favore, rispondi a tutte le domande dell'autovalutazione prima di inviare!");
     return;
    }
    
@@ -235,6 +267,7 @@ export function useUdaPackageHandlers({
  <div class="meta">${identityHtml}</div>
  <h1>${escapeHtml(u.title)}</h1>
   <div class="meta">Disciplina: ${escapeHtml(u.discipline.toUpperCase())} | Grado: ${escapeHtml(u.order.toUpperCase())} | Ore: ${escapeHtml(String(u.hours))} ore</div>
+ ${bindingText ? `<div class="section curriculum-reference"><h2>Collegamento al curricolo</h2><p><strong>${escapeHtml(bindingText)}</strong></p>${authorityNotice ? `<p>${escapeHtml(authorityNotice)}</p>` : ''}</div>` : ''}
  
  <div class="section">
   <h2>Traguardi</h2>
@@ -252,7 +285,7 @@ export function useUdaPackageHandlers({
  </div>
  
  <div class="section">
-  <h2>Compito di RealtÃƒÂ </h2>
+  <h2>Compito di Realtà</h2>
    <p><em>"${escapeHtmlWithBreaks(u.realTask)}"</em></p>
  </div>
  
@@ -267,13 +300,13 @@ export function useUdaPackageHandlers({
   
   <div style="margin-top: 15px;">
    <div style="margin-bottom: 15px;">
-    <p><strong>1. Qual ÃƒÂ¨ lo scopo fondamentale di questa UnitÃƒÂ  di Apprendimento (UDA)?</strong></p>
+    <p><strong>1. Qual è lo scopo fondamentale di questa Unità di Apprendimento (UDA)?</strong></p>
     <label style="display: block; margin-top: 5px; cursor: pointer;"><input type="radio" name="q1" value="wrong"> Svolgere memorizzazioni passive di nozioni</label>
-    <label style="display: block; margin-top: 5px; cursor: pointer;"><input type="radio" name="q1" value="correct"> Sviluppare competenze attraverso un compito di realtÃƒÂ  autentico</label>
+    <label style="display: block; margin-top: 5px; cursor: pointer;"><input type="radio" name="q1" value="correct"> Sviluppare competenze attraverso un compito di realtà autentico</label>
    </div>
    
    <div style="margin-bottom: 15px;">
-    <p><strong>2. Come vengono descritti gli esiti in questa attivitÃƒÂ ?</strong></p>
+    <p><strong>2. Come vengono descritti gli esiti in questa attività?</strong></p>
     <label style="display: block; margin-top: 5px; cursor: pointer;"><input type="radio" name="q2" value="correct"> Tramite i 4 livelli nazionali (Avanzato, Intermedio, Base, Iniziale)</label>
     <label style="display: block; margin-top: 5px; cursor: pointer;"><input type="radio" name="q2" value="wrong"> Tramite un solo giudizio numerico fisso non modificabile</label>
    </div>
@@ -289,7 +322,6 @@ export function useUdaPackageHandlers({
 </body>
 </html>`;
 
-  // Pack everything using LocalZipPacker nativo client-side (Fase A)
   const packer = new LocalZipPacker();
   packer.addFile('imsmanifest.xml', xml);
   packer.addFile('uda_content.html', htmlContent);
@@ -301,7 +333,6 @@ export function useUdaPackageHandlers({
   link.click();
   notifyA07Result("Pacchetto SCORM locale scaricato con successo!", true);
  };
-
 
  return {
   copyUdaTextLocal,

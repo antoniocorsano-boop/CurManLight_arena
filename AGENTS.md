@@ -22,14 +22,27 @@ Guide ID: `CML-ARENA-CURRICULUM-ADOPTION-VALIDATION-V1`.
 
 This guide is the persistent development direction for evolving Arena into a complete curriculum adoption and validation system. It does not override the integrated governed memory, routing/architecture freezes or active promotion gates. Resume from the first incomplete authorized AD tranche; never infer completion or authorization from conversation history alone.
 
+## Mandatory Curriculum-to-Practice specification
+
+Before any task that affects curriculum handoff, annual planning bindings, UDA interoperability, teacher execution evidence/feedback, professional curriculum observations or curriculum-version migration, also read:
+
+- `docs/architecture/CURRICULUM_TO_PRACTICE_OPERATING_MODEL_V1.md`
+- `docs/architecture/CURRICULUM_TO_PRACTICE_CONTRACTS_V1.md`
+- `docs/architecture/CURRICULUM_TO_PRACTICE_EXECUTION_PLAN_V1.md`
+- `docs/architecture/CURRICULUM_TO_PRACTICE_ACCEPTANCE_V1.md`
+- `agent_skills/curriculum-to-practice/SKILL.md`
+
+C2P documents are subordinate to the integrated governed memory and Arena curriculum-adoption guide. They refine execution and interoperability; they do not authorize bypassing active stabilization, human-validation or institutional-decision gates. Execute only the explicitly authorized C2P tranche and stop at its gate.
+
 ## Load Order
 
 1. Read this file first.
 2. Read `docs/architecture/INTEGRATED_PROJECT_GOVERNED_MEMORY_V1.md` whenever the task can affect the integrated Arena + Docente OS system.
 3. Read `docs/architecture/CURRICULUM_ADOPTION_VALIDATION_DEVELOPMENT_GUIDE_V1.md` whenever the task can affect curriculum governance, adoption, validation, revision, institutional decisions or curricular feedback/interoperability.
-4. If `session/` exists, read the latest relevant `session/*/handoff.md`.
-5. Read that session's `session_state.md`, then only the timeline entries needed for the current task.
-6. Read `docs/AGENT_MEMORY.md` only when you need the full protocol or templates.
+4. Read the C2P specification set whenever the task affects Curriculum-to-Practice contracts or execution.
+5. If `session/` exists, read the latest relevant `session/*/handoff.md`.
+6. Read that session's `session_state.md`, then only the timeline entries needed for the current task.
+7. Read `docs/AGENT_MEMORY.md` only when you need the full protocol or templates.
 
 ## Session Rules
 

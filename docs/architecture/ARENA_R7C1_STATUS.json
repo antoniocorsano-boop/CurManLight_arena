@@ -1,0 +1,19 @@
+{
+  "workItem": "R7C1",
+  "title": "Operational Curriculum Contract",
+  "status": "CONTRACT_IMPLEMENTED_PENDING_GATE",
+  "runtimeMutation": false,
+  "persistenceModeChanged": false,
+  "p3ScopeChanged": false,
+  "p7RuntimeChanged": false,
+  "infanziaPromotion": false,
+  "sourcePlanes": {
+    "canonical": "CML_633C_CANONICAL_DOMAIN",
+    "legacy": "LEGACY_CURRICULUM_MAP_PROJECTION"
+  },
+  "authorityRule": "LEGACY_PROJECTION_NEVER_AUTHORITATIVE",
+  "infanziaIdentityRule": "FIELD_OF_EXPERIENCE_ONLY",
+  "nationalRequirementRule": "HUMAN_VERIFIED_SOURCE_TEXT_AND_MATCHING_FINGERPRINT_REQUIRED",
+  "semanticValidation": "EXPLICIT_REFERENCE_REQUIRED",
+  "nextWorkItem": "R7C2_TECHNOLOGY_END_TO_END"
+}
