@@ -1,7 +1,7 @@
 {
   "registry_id": "ARENA-PRODUCT-DOCS",
   "version": "1.0.13",
-  "date": "2026-09-07",
+  "date": "2026-09-11",
   "product_vision": {
     "id": "ARENA-PRODUCT-VISION",
     "version": "1.0.0",
@@ -15,12 +15,20 @@
     "version": "1.2.0",
     "path": ".human/curriculum-lifecycle.contract.json"
   },
+  "ux_contract": {
+    "id": "ARENA_UX_CONTRACT",
+    "version": "1.0.0",
+    "path": ".human/arena-ux.contract.json",
+    "human_path": "docs/04_product_experience/12_CANONICAL_UX_CONTRACT.md",
+    "status": "CANONICAL_UX_CONTRACT"
+  },
   "canonical_documents": [
     {"path":"docs/04_product_experience/00_VISION.md","role":"PRODUCT_VISION","status":"CURRENT","must_align_with_lifecycle":true},
     {"path":"docs/04_product_experience/01_INFORMATION_ARCHITECTURE.md","role":"INFORMATION_ARCHITECTURE","status":"CURRENT_TARGET","must_align_with_lifecycle":true},
     {"path":"docs/04_product_experience/02_NAVIGATION_MODEL.md","role":"NAVIGATION_MODEL","status":"CURRENT_TARGET","must_align_with_lifecycle":true},
     {"path":"docs/04_product_experience/09_USER_FLOWS.md","role":"CRITICAL_USER_FLOWS","status":"CURRENT_TARGET","must_align_with_lifecycle":true},
-    {"path":"docs/04_product_experience/11_OPERATIONAL_COMMUNICATION_CONTRACT.md","role":"OPERATIONAL_COMMUNICATION","status":"CURRENT","must_align_with_lifecycle":false}
+    {"path":"docs/04_product_experience/11_OPERATIONAL_COMMUNICATION_CONTRACT.md","role":"OPERATIONAL_COMMUNICATION","status":"CURRENT","must_align_with_lifecycle":false},
+    {"path":"docs/04_product_experience/12_CANONICAL_UX_CONTRACT.md","role":"CANONICAL_UX_CONTRACT","status":"CURRENT","must_align_with_lifecycle":true}
   ],
   "subordinate_documents": [
     {"path":"docs/04_product_experience/03_DESIGN_SYSTEM.md","status":"IMPLEMENTATION_REFERENCE_REVIEW_REQUIRED"},
@@ -39,6 +47,8 @@
     "authority_boundary_change_requires_vision_ia_flows_and_cco_review": true,
     "didactic_binding_change_requires_vision_ia_and_flows_update": true,
     "revision_trigger_change_requires_vision_ia_and_flows_update": true,
+    "ux_contract_change_requires_navigation_and_flows_review": true,
+    "curriculum_interaction_change_requires_ux_contract_review": true,
     "implementation_snapshot_never_overrides_product_direction": true,
     "drive_and_repo_product_vision_identity_must_match": true,
     "ci_must_fail_on_canonical_document_drift": true
@@ -46,6 +56,8 @@
   "implementation_state": {
     "vision_defined": true,
     "lifecycle_contract_validated": true,
+    "canonical_ux_contract_defined": true,
+    "canonical_ux_contract_machine_readable": true,
     "revision_trigger_governance_defined": true,
     "target_information_architecture_defined": true,
     "target_navigation_defined": true,
@@ -141,6 +153,7 @@
     "shared_review_case_snapshot_conflict_fails_closed": true,
     "shared_review_case_discovery_reuses_revision_surface": true,
     "shared_review_case_server_snapshot_excludes_personal_work_session": true,
+    "curriculum_explore_trama_must_conform_to_ux_contract": true,
     "target_ui_fully_implemented": false,
     "human_end_to_end_pilot_complete": true
   }
