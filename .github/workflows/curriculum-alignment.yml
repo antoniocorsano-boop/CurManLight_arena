@@ -6,7 +6,9 @@ on:
       - 'docs/curriculum/REG-CURR-00.registry.json'
       - 'docs/curriculum/REG-CURR-00_MASTER_ALIGNMENT.md'
       - 'docs/foundation/CML_633C_CURRICULUMKB_MIGRATION_MATRIX.md'
+      - 'docs/04_product_experience/12_CANONICAL_UX_CONTRACT.md'
       - '.human/him.config.json'
+      - '.human/arena-ux.contract.json'
       - '.human/operational-communication.contract.json'
       - '.human/operational-communication.surfaces.json'
       - 'src/data/curriculumKB.ts'
@@ -15,6 +17,10 @@ on:
       - 'src/domain/curriculum/institute/sourceRegister.ts'
       - 'src/domain/curriculum/validation/technologyClass1Review.ts'
       - 'src/features/curriculum/CurriculumWorkspace.tsx'
+      - 'src/features/curriculum/components/ProfessionalCurriculumReader.tsx'
+      - 'src/features/curriculum/components/CurriculumExploreTrama.tsx'
+      - 'src/features/curriculum/components/DepartmentCurriculumPublication.tsx'
+      - 'src/features/curriculum/data/departmentCurriculumV31.section-*.json'
       - 'src/features/curriculum/components/RevisioneTab.tsx'
       - 'src/features/curriculum/hooks/useCurriculumProgressStats.ts'
       - 'src/features/documents/components/InstituteCurrentSourcePanel.tsx'
@@ -22,6 +28,7 @@ on:
       - 'src/features/documents/components/FontiWorkspace.tsx'
       - 'src/types/curriculum.ts'
       - 'src/__tests__/canonical-curriculum-entry.test.ts'
+      - 'src/__tests__/curriculum-explore-trama-v2-contract.test.ts'
       - 'src/__tests__/current-institute-curriculum-source.test.ts'
       - 'src/__tests__/institutional-curriculum-source-register.test.ts'
       - 'src/__tests__/technology-class1-professional-review.test.ts'
@@ -33,7 +40,9 @@ on:
       - 'docs/curriculum/REG-CURR-00.registry.json'
       - 'docs/curriculum/REG-CURR-00_MASTER_ALIGNMENT.md'
       - 'docs/foundation/CML_633C_CURRICULUMKB_MIGRATION_MATRIX.md'
+      - 'docs/04_product_experience/12_CANONICAL_UX_CONTRACT.md'
       - '.human/him.config.json'
+      - '.human/arena-ux.contract.json'
       - '.human/operational-communication.contract.json'
       - '.human/operational-communication.surfaces.json'
       - 'src/data/curriculumKB.ts'
@@ -42,6 +51,10 @@ on:
       - 'src/domain/curriculum/institute/sourceRegister.ts'
       - 'src/domain/curriculum/validation/technologyClass1Review.ts'
       - 'src/features/curriculum/CurriculumWorkspace.tsx'
+      - 'src/features/curriculum/components/ProfessionalCurriculumReader.tsx'
+      - 'src/features/curriculum/components/CurriculumExploreTrama.tsx'
+      - 'src/features/curriculum/components/DepartmentCurriculumPublication.tsx'
+      - 'src/features/curriculum/data/departmentCurriculumV31.section-*.json'
       - 'src/features/curriculum/components/RevisioneTab.tsx'
       - 'src/features/curriculum/hooks/useCurriculumProgressStats.ts'
       - 'src/features/documents/components/InstituteCurrentSourcePanel.tsx'
@@ -49,6 +62,7 @@ on:
       - 'src/features/documents/components/FontiWorkspace.tsx'
       - 'src/types/curriculum.ts'
       - 'src/__tests__/canonical-curriculum-entry.test.ts'
+      - 'src/__tests__/curriculum-explore-trama-v2-contract.test.ts'
       - 'src/__tests__/current-institute-curriculum-source.test.ts'
       - 'src/__tests__/institutional-curriculum-source-register.test.ts'
       - 'src/__tests__/technology-class1-professional-review.test.ts'
@@ -78,9 +92,10 @@ jobs:
       - name: Validate canonical master versus legacy boundary
         run: node tools/curriculum-alignment/validate-legacy-boundary.mjs
 
-      - name: Validate canonical curriculum entry and source traceability
+      - name: Validate canonical curriculum entry, Explore Trama contract, and source traceability
         run: >-
           npx vitest run
           src/__tests__/canonical-curriculum-entry.test.ts
+          src/__tests__/curriculum-explore-trama-v2-contract.test.ts
           src/__tests__/current-institute-curriculum-source.test.ts
           src/__tests__/institutional-curriculum-source-register.test.ts

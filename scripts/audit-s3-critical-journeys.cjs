@@ -23,7 +23,6 @@ async function closeLocalProfileIfPresent(page) {
 }
 
 async function clickWithPersonalProfileRecovery(page, locator) {
-  // Recover only from the known personal-profile onboarding modal; every other click failure remains hard.
   for (let attempt = 0; attempt < 3; attempt += 1) {
     await closeLocalProfileIfPresent(page);
     try {
@@ -52,10 +51,7 @@ async function gotoRoute(page, route) {
 }
 
 async function noHorizontalOverflow(page) {
-  return page.evaluate(() => {
-    const root = document.documentElement;
-    return root.scrollWidth <= window.innerWidth + 4;
-  });
+  return page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 4);
 }
 
 async function inspectCurriculumTableScroll(locator) {
@@ -91,12 +87,15 @@ async function inspectCurriculumTableScroll(locator) {
 (async () => {
   const browser = await chromium.launch({ headless: true });
   const evidence = {
-    schema: 'CML_ARENA_S3B_BROWSER_EVIDENCE_V1',
+    schema: 'CML_ARENA_S3B_BROWSER_EVIDENCE_V2',
+    uxContract: 'ARENA_UX_CONTRACT@1.0.0',
     baseUrl,
     generatedAt: new Date().toISOString(),
     humanVerdictIssued: false,
     tasks: {
       'HT-BETA-CURRICULUM-CONTEXT': {},
+      'UX-CURR-01': {},
+      'UX-CURR-02': {},
       'HT-BETA-REVISION-PREPARE': { delegatedTo: 'verify-beta-g4-browser.cjs' },
       'HT-REVISION-DECISION': { delegatedTo: 'verify-beta-g4-browser.cjs' },
       'HT-BETA-PLANNING-HANDOFF': { delegatedTo: 'verify-beta-g4-browser.cjs' },
@@ -126,7 +125,7 @@ async function inspectCurriculumTableScroll(locator) {
         if (!pass) failed = true;
       };
 
-      console.log(`=== S3B CURRICULUM CONTEXT — ${profile.id} ===`);
+      console.log(`=== S3B CURRICULUM CONTEXT V2 — ${profile.id} ===`);
       await gotoRoute(page, '/curriculum');
 
       const canonicalEntry = page.locator('[data-canonical-curriculum-entry]').first();
@@ -138,14 +137,18 @@ async function inspectCurriculumTableScroll(locator) {
         (await canonicalEntry.getAttribute('data-curriculum-presentation')) === 'professional-publication'
       );
       check(
-        'web publication declares source-snapshot parity with the department document',
+        'curriculum surface declares the canonical UX contract',
+        (await canonicalEntry.getAttribute('data-curriculum-ux-contract')) === 'ARENA_UX_CONTRACT@1.0.0'
+      );
+      check(
+        'curriculum declares source-snapshot parity with the department document',
         (await canonicalEntry.getAttribute('data-curriculum-publication-parity')) === 'source-snapshot'
       );
 
       const authorityText = (await canonicalEntry.innerText()).toLowerCase();
       check(
         'curriculum validation state is persistently visible in teacher-readable language',
-        authorityText.includes('da esaminare e validare')
+        authorityText.includes('versione di lavoro') && authorityText.includes('validazione professionale aperta')
       );
       check(
         'professional identity of the department is visible',
@@ -156,77 +159,119 @@ async function inspectCurriculumTableScroll(locator) {
           authorityText.includes('informatica')
       );
       check(
-        'canonical curriculum is visibly a 3–14 path',
-        authorityText.includes('curricolo verticale') &&
-          authorityText.includes('percorso 3–14') &&
-          authorityText.includes('infanzia') &&
-          authorityText.includes('primaria') &&
-          authorityText.includes('secondaria')
+        'canonical curriculum is visibly a vertical 3–14 path',
+        authorityText.includes('curricolo verticale') && authorityText.includes('percorso verticale 3–14')
       );
       check(
         'ordinary curriculum surface does not expose assurance jargon',
         !authorityText.includes('sha-256') &&
           !authorityText.includes('master canonico') &&
           !authorityText.includes('riesame h2') &&
-          !authorityText.includes('868')
+          !authorityText.includes('fingerprint')
       );
 
-      const webMode = canonicalEntry.locator('[data-curriculum-mode="web"]').first();
+      const exploreMode = canonicalEntry.locator('[data-curriculum-mode="explore"]').first();
+      const tramaMode = canonicalEntry.locator('[data-curriculum-mode="trama"]').first();
       const documentMode = canonicalEntry.locator('[data-curriculum-mode="document"]').first();
-      await webMode.waitFor({ state: 'visible', timeout: 5000 });
+      await exploreMode.waitFor({ state: 'visible', timeout: 5000 });
+      await tramaMode.waitFor({ state: 'visible', timeout: 5000 });
       await documentMode.waitFor({ state: 'visible', timeout: 5000 });
-      check('web and document presentation modes are both visible', await webMode.isVisible() && await documentMode.isVisible());
-      check('web reader is the default opening mode', (await page.locator('[data-curriculum-web-reader]').count()) === 1);
-      check('document reader is not mounted before the teacher chooses it', (await page.locator('[data-curriculum-document-reader]').count()) === 0);
+      check(
+        'Esplora Trama and Documento are the three visible curriculum projections',
+        await exploreMode.isVisible() && await tramaMode.isVisible() && await documentMode.isVisible()
+      );
+      check('Esplora is the default curriculum projection', (await page.locator('[data-curriculum-professional-explorer]').count()) === 1);
+      check('Documento is not mounted before explicit selection', (await page.locator('[data-curriculum-document-reader]').count()) === 0);
       check('curriculum context has no material horizontal overflow', await noHorizontalOverflow(page));
 
+      const explorer = page.locator('[data-curriculum-explore-trama]').first();
+      await explorer.waitFor({ state: 'visible', timeout: 5000 });
+      const technologyButton = explorer.getByRole('button', { name: 'Tecnologia', exact: true }).first();
+      const secondaryButton = explorer.getByRole('button', { name: 'Secondaria', exact: true }).first();
+      const class2Button = explorer.getByRole('button', { name: 'Classe II', exact: true }).first();
+      await technologyButton.waitFor({ state: 'visible', timeout: 5000 });
+      await clickWithPersonalProfileRecovery(page, technologyButton);
+      await clickWithPersonalProfileRecovery(page, secondaryButton);
+      await clickWithPersonalProfileRecovery(page, class2Button);
+
+      const focusedExplorer = page.locator('[data-curriculum-focused-explorer]').first();
+      await focusedExplorer.waitFor({ state: 'visible', timeout: 5000 });
+      const focusedText = (await focusedExplorer.innerText()).toLowerCase();
+      check('UX-CURR-01 reaches Tecnologia · Secondaria · Classe II directly', focusedText.includes('tecnologia') && focusedText.includes('secondaria — classe ii'));
+      const nodeCards = focusedExplorer.locator('[data-curriculum-unit-card]');
+      check('Classe II is rendered as semantic curriculum cards', (await nodeCards.count()) > 0);
+      check('semantic exploration does not create page-level horizontal overflow', await noHorizontalOverflow(page));
+
+      const firstCard = nodeCards.first();
+      const tramaAction = firstCard.locator('[data-open-curriculum-trama]').first();
+      await tramaAction.waitFor({ state: 'visible', timeout: 5000 });
+      await clickWithPersonalProfileRecovery(page, tramaAction);
+      const tramaView = page.locator('[data-curriculum-trama-view]').first();
+      await tramaView.waitFor({ state: 'visible', timeout: 5000 });
+      const tramaGraph = tramaView.locator('[data-curriculum-trama-graph]').first();
+      check('UX-CURR-02 opens Trama from the selected curriculum unit', await tramaView.isVisible());
+      check('Trama is explicitly fail-closed on exact nucleus identity', (await tramaGraph.getAttribute('data-relation-policy')) === 'same-nucleus-exact-only');
+      check('Trama remains readable without page-level horizontal overflow', await noHorizontalOverflow(page));
+
+      const backToExplore = tramaView.getByRole('button', { name: /torna a esplora/i }).first();
+      await clickWithPersonalProfileRecovery(page, backToExplore);
+      await focusedExplorer.waitFor({ state: 'visible', timeout: 5000 });
+
+      const currentFirstCard = focusedExplorer.locator('[data-curriculum-unit-card]').first();
+      const contextActions = currentFirstCard.locator('[data-curriculum-context-actions]').first();
+      await clickWithPersonalProfileRecovery(page, contextActions.locator('summary'));
+      check('curriculum unit exposes a distinct planning handoff', (await contextActions.locator('[data-use-curriculum-in-planning]').count()) === 1);
+      check('curriculum unit exposes a distinct review handoff for Technology class II', (await contextActions.locator('[data-send-curriculum-to-review]').count()) === 1);
+      check('curriculum unit exposes source as a secondary action', (await contextActions.locator('[data-open-curriculum-source]').count()) === 1);
+      check('curriculum unit exposes Document as a distinct projection action', (await contextActions.locator('[data-open-curriculum-document-from-unit]').count()) === 1);
+
+      await clickWithPersonalProfileRecovery(page, documentMode);
+      const documentReader = page.locator('[data-curriculum-document-reader]').first();
+      await documentReader.waitFor({ state: 'visible', timeout: 5000 });
+      check('Documento opens only after an explicit teacher action', await documentReader.isVisible());
+      check('department curriculum document is available in Documento', (await documentReader.locator('[data-open-department-curriculum-document]').count()) === 1);
+      check('foundations and traceability remain a secondary document', (await documentReader.locator('[data-open-department-foundations-document]').count()) === 1);
+
+      const integralPublication = documentReader.locator('[data-curriculum-integral-web-publication]').first();
+      await clickWithPersonalProfileRecovery(page, integralPublication.locator('summary'));
+
       if (profile.id === 'desktop') {
-        const desktopIndex = canonicalEntry.locator('[data-curriculum-desktop-index]').first();
+        const desktopIndex = integralPublication.locator('[data-curriculum-desktop-index]').first();
         await desktopIndex.waitFor({ state: 'visible', timeout: 5000 });
-        check('desktop web reader offers a persistent editorial index', await desktopIndex.isVisible());
-        const indexButtons = desktopIndex.locator('button');
-        check('desktop editorial index exposes all 16 sections', (await indexButtons.count()) === 16);
-        await clickWithPersonalProfileRecovery(page, indexButtons.nth(8));
+        check('Documento exposes the full 16-section editorial index on desktop', (await desktopIndex.locator('button').count()) === 16);
+        const technologyIndexButton = desktopIndex.getByRole('button', { name: /Tecnologia — curricolo verticale/i }).first();
+        await clickWithPersonalProfileRecovery(page, technologyIndexButton);
       } else {
-        const sectionSelector = canonicalEntry.locator('[data-curriculum-section-selector]').first();
+        const sectionSelector = integralPublication.locator('[data-curriculum-section-selector]').first();
         await sectionSelector.waitFor({ state: 'visible', timeout: 5000 });
-        check('mobile web reader offers compact section navigation', await sectionSelector.isVisible());
-        check('mobile web reader starts from the first editorial section', (await sectionSelector.inputValue()) === 'identita');
+        check('Documento exposes compact editorial navigation on mobile', await sectionSelector.isVisible());
         check('mobile editorial selector exposes all 16 sections', (await sectionSelector.locator('option').count()) === 16);
         await sectionSelector.selectOption('tecnologia');
       }
 
-      const technologyPublication = canonicalEntry.locator('[data-curriculum-publication-content][data-source-section="9"]').first();
+      const technologyPublication = integralPublication.locator('[data-curriculum-publication-content][data-source-section="9"]').first();
       await technologyPublication.waitFor({ state: 'visible', timeout: 5000 });
       const technologyText = (await technologyPublication.innerText()).toLowerCase();
-      check('structured web publication can open the full Technology section', technologyText.includes('perché si studia tecnologia'));
-      check('Technology web section preserves annual matrices', (await technologyPublication.locator('[data-curriculum-publication-table]').count()) >= 8);
-      check('Technology web section exposes class I and class III progression', technologyText.includes('secondaria — classe i') && technologyText.includes('secondaria — classe iii'));
-      check('full curriculum tables do not create page-level horizontal overflow', await noHorizontalOverflow(page));
+      check('Documento can still open the complete Technology section', technologyText.includes('perché si studia tecnologia'));
+      check('Documento preserves the annual matrices', (await technologyPublication.locator('[data-curriculum-publication-table]').count()) >= 8);
+      check('Documento preserves class I to class III progression', technologyText.includes('secondaria — classe i') && technologyText.includes('secondaria — classe iii'));
+      check('Documento does not create page-level horizontal overflow', await noHorizontalOverflow(page));
 
       if (profile.id === 'mobile-390x844') {
         const tableScroll = technologyPublication.locator('[data-curriculum-table-scroll]').first();
         await tableScroll.waitFor({ state: 'visible', timeout: 5000 });
         const scrollState = await inspectCurriculumTableScroll(tableScroll);
         result.curriculumTableScroll = scrollState;
-        check('portrait curriculum table exposes a dedicated scroll wrapper', scrollState.hasTable);
-        check('portrait curriculum table wrapper owns horizontal overflow', ['auto', 'scroll'].includes(scrollState.overflowX));
-        check('portrait curriculum table preserves native table layout', scrollState.tableDisplay === 'table');
-        check('portrait curriculum table is wider than its viewport container', scrollState.scrollWidth > scrollState.clientWidth);
-        check('portrait curriculum table can move horizontally inside its wrapper', scrollState.scrollMoved);
+        check('portrait document table exposes a dedicated scroll wrapper', scrollState.hasTable);
+        check('portrait document table wrapper owns horizontal overflow', ['auto', 'scroll'].includes(scrollState.overflowX));
+        check('portrait document table preserves native table layout', scrollState.tableDisplay === 'table');
+        check('portrait document table is wider than its viewport container', scrollState.scrollWidth > scrollState.clientWidth);
+        check('portrait document table can move horizontally inside its wrapper', scrollState.scrollMoved);
       }
 
-      await clickWithPersonalProfileRecovery(page, documentMode);
-      const documentReader = page.locator('[data-curriculum-document-reader]').first();
-      await documentReader.waitFor({ state: 'visible', timeout: 5000 });
-      check('document mode opens only after an explicit teacher action', await documentReader.isVisible());
-      check('department curriculum document is available in document mode', (await documentReader.locator('[data-open-department-curriculum-document]').count()) === 1);
-      check('foundations and traceability document is available as a secondary document', (await documentReader.locator('[data-open-department-foundations-document]').count()) === 1);
-      check('document mode has no material horizontal overflow', await noHorizontalOverflow(page));
-
-      await clickWithPersonalProfileRecovery(page, webMode);
-      await page.locator('[data-curriculum-web-reader]').first().waitFor({ state: 'visible', timeout: 5000 });
-      check('teacher can return from document to web reading without leaving Curriculum', page.url().includes('/curriculum'));
+      await clickWithPersonalProfileRecovery(page, exploreMode);
+      await page.locator('[data-curriculum-professional-explorer]').first().waitFor({ state: 'visible', timeout: 5000 });
+      check('teacher can return from Documento to Esplora without leaving Curricolo', page.url().includes('/curriculum'));
 
       const sourceDisclosure = page.locator('[data-source-review-progressive-disclosure]').first();
       await sourceDisclosure.waitFor({ state: 'visible', timeout: 5000 });
@@ -252,10 +297,10 @@ async function inspectCurriculumTableScroll(locator) {
       });
 
       check('no uncaught page errors in curriculum/provenance journey', pageErrors.length === 0);
-      evidence.tasks['HT-BETA-CURRICULUM-CONTEXT'][profile.id] = {
-        status: result.checks.every((item) => item.pass) ? 'AUTOMATED_EVIDENCE_PASS' : 'AUTOMATED_EVIDENCE_FAIL',
-        checks: result.checks,
-      };
+      const profileStatus = result.checks.every((item) => item.pass) ? 'AUTOMATED_EVIDENCE_PASS' : 'AUTOMATED_EVIDENCE_FAIL';
+      evidence.tasks['HT-BETA-CURRICULUM-CONTEXT'][profile.id] = { status: profileStatus, checks: result.checks };
+      evidence.tasks['UX-CURR-01'][profile.id] = { status: profileStatus };
+      evidence.tasks['UX-CURR-02'][profile.id] = { status: profileStatus };
       evidence.profiles.push(result);
       await context.close();
     }

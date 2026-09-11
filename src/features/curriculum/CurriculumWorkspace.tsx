@@ -1,17 +1,26 @@
 import { useState } from 'react';
 import { useCurriculumStore } from '../../store/useCurriculumStore';
+import type { SchoolOrder } from '../../types/curriculum';
 import type { AppViewsLayerProps } from '../session/types/appViewContracts';
 import { CurriculumTab as CurriculumTabBase, type CurriculumTabProps } from './components/CurriculumTab';
 import { FinalPublicationSourceReviewWorkbench } from './components/FinalPublicationSourceReviewWorkbench';
 import { ProfessionalCurriculumReader } from './components/ProfessionalCurriculumReader';
+import type { CurriculumExploreContext } from './components/CurriculumExploreTrama';
 
 type CurriculumWorkspaceProps = CurriculumTabProps & Pick<
   AppViewsLayerProps,
   'targetClass' | 'setTargetClass' | 'handleTabSwitch' | 'institutionalProfile'
 >;
 
+function toSchoolOrder(value: string): SchoolOrder | null {
+  const normalized = value.trim().toLowerCase();
+  if (normalized === 'infanzia' || normalized === 'primaria' || normalized === 'secondaria') return normalized;
+  return null;
+}
+
 export function CurriculumWorkspace(props: CurriculumWorkspaceProps) {
-  const { setActiveCurricoloView, setOrder, setDiscipline } = useCurriculumStore();
+  const { setActiveCurricoloView, setActiveProgTab, setOrder, setDiscipline } = useCurriculumStore();
+  const [sourceDisclosureOpen, setSourceDisclosureOpen] = useState(false);
   const [sourceToolsOpen, setSourceToolsOpen] = useState(false);
   const [legacyOpen, setLegacyOpen] = useState(false);
 
@@ -20,11 +29,36 @@ export function CurriculumWorkspace(props: CurriculumWorkspaceProps) {
     setLegacyOpen(false);
   };
 
-  const openTechnologyReview = (targetClass: '1' | '2' | '3') => {
-    setOrder('secondaria');
-    setDiscipline('tecnologia');
-    props.setTargetClass(targetClass);
+  const applyCurriculumContext = (context: CurriculumExploreContext) => {
+    const schoolOrder = toSchoolOrder(context.order);
+    if (schoolOrder) setOrder(schoolOrder);
+    setDiscipline(context.disciplineId);
+    if (context.targetClass) props.setTargetClass(context.targetClass);
+  };
+
+  const useInPlanning = (context: CurriculumExploreContext) => {
+    applyCurriculumContext(context);
+    setActiveProgTab('annuale');
+    props.handleTabSwitch('progetta-annuale');
+  };
+
+  const canOpenReview = (context: CurriculumExploreContext) => (
+    context.disciplineId === 'tecnologia'
+    && context.order.toLowerCase() === 'secondaria'
+    && (context.targetClass === '1' || context.targetClass === '2')
+  );
+
+  const openCurriculumReview = (context: CurriculumExploreContext) => {
+    if (!canOpenReview(context)) return;
+    applyCurriculumContext(context);
     props.handleTabSwitch('revisione');
+  };
+
+  const openSource = (_context: CurriculumExploreContext) => {
+    setSourceDisclosureOpen(true);
+    window.requestAnimationFrame(() => {
+      document.querySelector('[data-canonical-source-review]')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
   };
 
   return (
@@ -32,13 +66,17 @@ export function CurriculumWorkspace(props: CurriculumWorkspaceProps) {
       {!legacyOpen && (
         <ProfessionalCurriculumReader
           institutionalProfile={props.institutionalProfile}
-          targetClass={props.targetClass}
-          onOpenTechnologyReview={openTechnologyReview}
+          onUseInPlanning={useInPlanning}
+          onOpenReview={openCurriculumReview}
+          canOpenReview={canOpenReview}
+          onOpenSource={openSource}
         />
       )}
 
       {!legacyOpen && (
         <details
+          open={sourceDisclosureOpen}
+          onToggle={(event) => setSourceDisclosureOpen(event.currentTarget.open)}
           className="rounded-2xl border border-slate-200 bg-slate-50 p-4 sm:p-5"
           data-hcm-level="3"
           data-canonical-source-review
