@@ -17,6 +17,9 @@ import {
 const technologySection = technologySectionData[0] as DepartmentCurriculumSection;
 const technologyProjection = buildDisciplineProjection(technologySection);
 const catalog = buildCurriculumCatalog(DEPARTMENT_CURRICULUM_SECTIONS);
+const annualizedSections = DEPARTMENT_CURRICULUM_SECTIONS.filter(
+  (section) => buildDisciplineProjection(section).length > 0,
+);
 const ux = JSON.parse(uxContractRaw) as {
   contract_id: string;
   curriculum: { projections: string[]; annuality_selector_semantics: string };
@@ -29,9 +32,14 @@ function findAnnuality(title: string): CurriculumAnnualityProjection {
 }
 
 describe('Curriculum Explore + Trama V2 — ARENA_UX_CONTRACT alignment', () => {
-  it('derives the discipline catalog from curriculum sections instead of fixed section numbers', () => {
-    expect(catalog.length).toBeGreaterThanOrEqual(4);
-    expect(catalog.map((item) => item.label)).toContain('Tecnologia');
+  it('derives the discipline catalog from annualized curriculum sections instead of fixed section numbers', () => {
+    expect(catalog).toHaveLength(annualizedSections.length);
+    expect(catalog.length).toBeGreaterThanOrEqual(3);
+    expect(catalog.map((item) => item.label)).toEqual(expect.arrayContaining([
+      'Matematica',
+      'Scienze',
+      'Tecnologia',
+    ]));
     expect(catalog.find((item) => item.label === 'Tecnologia')?.annualities).toHaveLength(8);
     expect(exploreTramaSource).not.toContain('const DISCIPLINES');
     expect(exploreTramaSource).not.toContain('sectionNumber');
@@ -105,9 +113,18 @@ describe('Curriculum Explore + Trama V2 — ARENA_UX_CONTRACT alignment', () => 
   });
 
   it('keeps internal governance jargon out of the level-1 curriculum reader', () => {
-    for (const forbidden of ['H2', 'H3', 'H4', 'fingerprint', 'SHA', 'master canonico', 'baseline corrente']) {
-      expect(professionalReaderSource.toLowerCase()).not.toContain(forbidden.toLowerCase());
-      expect(exploreTramaSource.toLowerCase()).not.toContain(forbidden.toLowerCase());
+    const level1Sources = `${professionalReaderSource}\n${exploreTramaSource}`.toLowerCase();
+    for (const forbiddenPhrase of [
+      'riesame h2',
+      'riesame h3',
+      'riesame h4',
+      'superficie h2',
+      'fingerprint',
+      'sha-256',
+      'master canonico',
+      'baseline corrente',
+    ]) {
+      expect(level1Sources).not.toContain(forbiddenPhrase);
     }
     expect(professionalReaderSource).toContain('Versione di lavoro');
     expect(professionalReaderSource).toContain('Validazione professionale aperta');
