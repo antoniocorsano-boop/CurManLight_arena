@@ -8,6 +8,7 @@ const failures = [];
 const assert = (condition, message) => { if (!condition) failures.push(message); };
 
 const contract = readJson('.human/arena-ux.contract.json');
+const him = readJson('.human/him.config.json');
 const registry = readJson('docs/04_product_experience/PRODUCT_DOCS.registry.json');
 const doc = readText('docs/04_product_experience/12_CANONICAL_UX_CONTRACT.md');
 const vision = readText('docs/04_product_experience/00_VISION.md');
@@ -16,6 +17,10 @@ const navigation = readText('docs/04_product_experience/02_NAVIGATION_MODEL.md')
 assert(contract.contract_id === 'ARENA_UX_CONTRACT', 'contract_id UX inatteso');
 assert(contract.version === '1.0.0', 'versione ARENA_UX_CONTRACT inattesa');
 assert(contract.status === 'CANONICAL_UX_CONTRACT', 'stato UX non canonico');
+assert(him.requirements?.canonical_ux_contract_required === true, 'HIM non richiede esplicitamente il contratto UX canonico');
+assert(him.canonical_ux?.contract === '.human/arena-ux.contract.json', 'HIM non punta al contratto UX macchina');
+assert(him.canonical_ux?.documentation === 'docs/04_product_experience/12_CANONICAL_UX_CONTRACT.md', 'HIM non punta al contratto UX umano');
+assert(him.canonical_ux?.version === contract.version, 'versione UX HIM non allineata al contratto');
 
 const primaryIds = (contract.primary_navigation ?? []).map((item) => item.id);
 const primaryLabels = (contract.primary_navigation ?? []).map((item) => item.label);
