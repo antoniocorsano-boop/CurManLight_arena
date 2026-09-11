@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import uxContractRaw from '../../.human/arena-ux.contract.json?raw';
 import uxDocRaw from '../../docs/04_product_experience/12_CANONICAL_UX_CONTRACT.md?raw';
+import registryRaw from '../../docs/04_product_experience/PRODUCT_DOCS.registry.json?raw';
 import visionRaw from '../../docs/04_product_experience/00_VISION.md?raw';
 import navigationRaw from '../../docs/04_product_experience/02_NAVIGATION_MODEL.md?raw';
 
@@ -41,7 +42,36 @@ const ux = JSON.parse(uxContractRaw) as {
   implementation_prohibitions: string[];
 };
 
+const registry = JSON.parse(registryRaw) as {
+  ux_contract?: {
+    id: string;
+    version: string;
+    path: string;
+    human_path: string;
+    status: string;
+  };
+  canonical_documents: Array<{ path: string; role: string; status: string }>;
+  update_rules: Record<string, boolean>;
+};
+
 describe('Arena canonical UX contract', () => {
+  it('is registered as a canonical product-governance source', () => {
+    expect(registry.ux_contract).toEqual({
+      id: 'ARENA_UX_CONTRACT',
+      version: '1.0.0',
+      path: '.human/arena-ux.contract.json',
+      human_path: 'docs/04_product_experience/12_CANONICAL_UX_CONTRACT.md',
+      status: 'CANONICAL_UX_CONTRACT',
+    });
+    expect(registry.canonical_documents).toContainEqual(expect.objectContaining({
+      path: 'docs/04_product_experience/12_CANONICAL_UX_CONTRACT.md',
+      role: 'CANONICAL_UX_CONTRACT',
+      status: 'CURRENT',
+    }));
+    expect(registry.update_rules.curriculum_interaction_change_requires_ux_contract_review).toBe(true);
+    expect(registry.update_rules.ux_contract_change_requires_navigation_and_flows_review).toBe(true);
+  });
+
   it('freezes the four primary professional environments and keeps Fascicolo secondary', () => {
     expect(ux.contract_id).toBe('ARENA_UX_CONTRACT');
     expect(ux.version).toBe('1.0.0');
