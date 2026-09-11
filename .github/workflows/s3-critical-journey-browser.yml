@@ -20,6 +20,7 @@ on:
       - 'src/domain/revision/**'
       - 'src/domain/transfer/**'
       - 'scripts/audit-s3-critical-journeys.cjs'
+      - 'scripts/audit-curriculum-mobile-compact.cjs'
       - 'scripts/verify-beta-g4-browser.cjs'
       - 'scripts/serve-beta-pages-preview.cjs'
       - 'docs/evidence/BETA_G5_HUMAN_ACCEPTANCE_PROTOCOL_v2.md'
@@ -45,6 +46,7 @@ on:
       - 'src/domain/revision/**'
       - 'src/domain/transfer/**'
       - 'scripts/audit-s3-critical-journeys.cjs'
+      - 'scripts/audit-curriculum-mobile-compact.cjs'
       - 'scripts/verify-beta-g4-browser.cjs'
       - 'scripts/serve-beta-pages-preview.cjs'
       - 'docs/evidence/BETA_G5_HUMAN_ACCEPTANCE_PROTOCOL_v2.md'
@@ -90,12 +92,14 @@ jobs:
           echo 'BETA_PAGES_DEEP_LINK_NOTE: HTTP 404 on direct SPA routes is expected in this preview because it mirrors GitHub Pages 404.html rehydration.'
 
           curriculum_status=0
+          compact_status=0
           g4_status=0
           node scripts/audit-s3-critical-journeys.cjs || curriculum_status=$?
+          node scripts/audit-curriculum-mobile-compact.cjs || compact_status=$?
           node scripts/verify-beta-g4-browser.cjs || g4_status=$?
 
-          if [ "$curriculum_status" -ne 0 ] || [ "$g4_status" -ne 0 ]; then
-            echo "S3B_BROWSER_EVIDENCE_FAIL curriculum=$curriculum_status g4=$g4_status"
+          if [ "$curriculum_status" -ne 0 ] || [ "$compact_status" -ne 0 ] || [ "$g4_status" -ne 0 ]; then
+            echo "S3B_BROWSER_EVIDENCE_FAIL curriculum=$curriculum_status compact=$compact_status g4=$g4_status"
             exit 1
           fi
           echo 'S3B_BROWSER_EVIDENCE_PASS'
