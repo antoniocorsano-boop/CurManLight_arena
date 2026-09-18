@@ -42,6 +42,7 @@ describe('SUP-01 canonical support contract', () => {
   });
 
   it('renders Verifiche as a real readiness surface without institutional authority claims', () => {
+    const setShowSaveModal = vi.fn();
     const { container } = render(
       <SupportVerificationView
         institutionalProfile={neutralInstitution}
@@ -49,6 +50,7 @@ describe('SUP-01 canonical support contract', () => {
         currentDisciplineProps={[]}
         currentDisciplineDecided={0}
         handleTabSwitch={vi.fn()}
+        setShowSaveModal={setShowSaveModal}
       />,
     );
 
@@ -56,6 +58,9 @@ describe('SUP-01 canonical support contract', () => {
     expect(container.querySelectorAll('[data-verification-state]').length).toBeGreaterThanOrEqual(5);
     expect(screen.getByText(/non certifica il curricolo/i)).toBeTruthy();
     expect(container.querySelector('[data-teacher-surface="documents"]')).toBeNull();
+
+    fireEvent.click(screen.getByRole('button', { name: /Apri le Impostazioni locali/i }));
+    expect(setShowSaveModal).toHaveBeenCalledWith(true);
   });
 
   it('renders Guida as a task-first support surface', () => {
