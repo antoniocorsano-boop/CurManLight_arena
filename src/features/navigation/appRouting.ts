@@ -6,6 +6,7 @@ export const pathnameToAppTab = (pathname: string): AppTab => {
   if (pathname.startsWith('/classroom')) return 'progetta-annuale';
   if (pathname.startsWith('/planning')) return 'progetta-annuale';
   if (pathname.startsWith('/documents')) return 'esportazioni';
+  if (pathname.startsWith('/verifiche')) return 'verifiche';
   if (pathname.startsWith('/copilot')) return 'dashboard';
   if (pathname.startsWith('/knowledge') || pathname.startsWith('/second-brain')) return 'second-brain';
   if (pathname.startsWith('/social')) return 'dashboard';
@@ -26,7 +27,8 @@ export const appTabToPath = (tab: AppTab): string => {
     case 'progetta-annuale': return '/planning';
     case 'processo': return '/planning';
     case 'esportazioni': return '/documents';
-    case 'certificazione-pa': return '/documents';
+    case 'verifiche': return '/verifiche';
+    case 'certificazione-pa': return '/verifiche';
     case 'second-brain': return '/knowledge';
     case 'fonti': return '/fascicolo';
     case 'guida': return '/guida';
