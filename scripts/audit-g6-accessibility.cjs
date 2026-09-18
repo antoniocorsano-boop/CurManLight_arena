@@ -242,6 +242,12 @@ async function inspectDialogs(page) {
 
           const axe = await runAxe(page);
           const severe = axe.violations.filter((v) => ['critical', 'serious'].includes(v.impact));
+          for (const violation of severe) {
+            console.log(`AXE_DETAIL — ${profile.id}/${route.id} — ${violation.id} — ${violation.help}`);
+            for (const node of violation.nodes.slice(0, 12)) {
+              console.log(`AXE_NODE — target=${JSON.stringify(node.target)} — html=${String(node.html).slice(0, 320)} — summary=${String(node.failureSummary || '').replace(/\\s+/g, ' ').slice(0, 500)}`);
+            }
+          }
           bucket.axe = {
             violations: axe.violations.map((v) => ({
               id: v.id,
