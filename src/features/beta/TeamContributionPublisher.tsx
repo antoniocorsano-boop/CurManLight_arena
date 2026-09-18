@@ -168,10 +168,12 @@ export function TeamContributionPublisher({
   ).length;
   const persistedCurrentContributionComplete = proposals.length > 0 && currentUserContributionCount === proposals.length;
   const hasDisciplineCompetence = Boolean(operationalMembership?.disciplines.includes(discipline));
+  const contributorRoles = ['docente', 'dipartimento', 'referente'] as const;
+  const roleCanContribute = Boolean(team.selectedMembership && contributorRoles.includes(team.selectedMembership.role as typeof contributorRoles[number]));
   const canContribute = Boolean(
     academicYearReady
     && team.selectedMembership
-    && ['docente', 'dipartimento', 'referente'].includes(team.selectedMembership.role)
+    && roleCanContribute
     && hasDisciplineCompetence,
   );
 
@@ -307,6 +309,21 @@ export function TeamContributionPublisher({
             ))}
           </select>
         </label>
+      )}
+
+      {team.selectedMembership && !roleCanContribute && (
+        <div
+          className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs leading-5 text-amber-950"
+          data-team-contribution-role-blocked
+        >
+          <strong className="block text-sm">Questo ruolo non può pubblicare contributi disciplinari</strong>
+          <p className="mt-1">
+            Il parere personale resta salvato. Per condividerlo con il gruppo serve una membership attiva con ruolo Docente, Dipartimento o Referente.
+          </p>
+          {team.activeMemberships.length > 1 && (
+            <p className="mt-1 font-semibold">Se disponibile, seleziona sopra un altro team o ruolo abilitato.</p>
+          )}
+        </div>
       )}
 
       {team.selectedMembership && (
