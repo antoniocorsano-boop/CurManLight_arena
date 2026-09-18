@@ -54,7 +54,7 @@ export function SupportGuideView({ handleTabSwitch, institutionalProfile }: Supp
         <div className="flex items-start gap-3">
           <CircleHelp className="mt-0.5 h-6 w-6 shrink-0 text-indigo-700" aria-hidden="true" />
           <div>
-            <p className="text-xs font-bold uppercase tracking-wide text-indigo-700">Supporto</p>
+            <span className="block text-xs font-bold uppercase tracking-wide text-indigo-700">Supporto</span>
             <h1 id="support-guide-title" className="mt-1 text-2xl font-black text-slate-950">Guida</h1>
             <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
               Scegli il compito che devi svolgere. La Guida ti porta alla superficie corretta e chiarisce i confini delle azioni disponibili.
