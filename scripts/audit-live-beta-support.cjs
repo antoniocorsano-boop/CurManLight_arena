@@ -96,13 +96,13 @@ fs.mkdirSync(OUT_DIR, { recursive: true });
     check('Menu secondario mobile si apre', await sidebar.isVisible().catch(() => false));
 
     const guideEntry = sidebar.getByRole('button', { name: 'Guida', exact: true });
-    const controlsEntry = sidebar.getByRole('button', { name: 'Controlli e checklist', exact: true });
+    const verificationEntry = sidebar.getByRole('button', { name: 'Verifiche', exact: true });
     check('Guida è raggiungibile dal menu mobile', await guideEntry.isVisible().catch(() => false));
-    check('Voce nominale Controlli e checklist è visibile', await controlsEntry.isVisible().catch(() => false), '', 'soft');
+    check('Verifiche è raggiungibile dal menu mobile', await verificationEntry.isVisible().catch(() => false));
 
     await guideEntry.click();
     await page.waitForURL(/\/guida(?:\/|$|\?)/, { timeout: 5000 });
-    const guideHeading = page.locator('h1').filter({ hasText: "Guida Utente e Manuale d'Uso della Piattaforma" }).first();
+    const guideHeading = page.locator('[data-teacher-surface="support-guide"] h1').filter({ hasText: "Guida" }).first();
     await guideHeading.waitFor({ state: 'visible', timeout: 5000 }).catch(() => undefined);
     const guideVisible = await guideHeading.isVisible().catch(() => false);
     check('Azione Guida apre la vista reale', guideVisible, page.url());
@@ -156,17 +156,23 @@ fs.mkdirSync(OUT_DIR, { recursive: true });
     await sidebar.waitFor({ state: 'visible', timeout: 1500 }).catch(() => undefined);
     check('Menu mobile si riapre dalla Guida', await sidebar.isVisible().catch(() => false));
 
-    const controlsAgain = sidebar.getByRole('button', { name: 'Controlli e checklist', exact: true });
-    if (await controlsAgain.isVisible().catch(() => false)) {
-      await controlsAgain.click();
-      await page.waitForTimeout(650);
-      const documentsSurface = page.locator('[data-teacher-surface="documents"]');
-      const aliasesDocuments = page.url().includes('/documents') || await documentsSurface.isVisible().catch(() => false);
-      check('Controlli e checklist non ricade su Documenti', !aliasesDocuments, page.url(), 'soft');
-      if (aliasesDocuments) {
-        finding('NOMINAL_CONTROLS_ENTRY_ALIASES_DOCUMENTS', 'La voce Controlli e checklist ricade sulla superficie Documenti; A1 la classifica già come nominale/non risolta e vieta di creare una nuova route durante S3.');
-      }
-    }
+    const verificationAgain = sidebar.getByRole('button', { name: 'Verifiche', exact: true });
+    check('Verifiche resta disponibile dopo la Guida', await verificationAgain.isVisible().catch(() => false));
+    await verificationAgain.click();
+    await page.waitForURL(/\/verifiche(?:\/|$|\?)/, { timeout: 5000 });
+    await page.waitForTimeout(350);
+
+    const verificationSurface = page.locator('[data-teacher-surface="support-verification"]');
+    const documentsSurface = page.locator('[data-teacher-surface="documents"]');
+    check('Verifiche apre una superficie reale dedicata', await verificationSurface.isVisible().catch(() => false), page.url());
+    check(
+      'Verifiche non ricade su Documenti',
+      !page.url().includes('/documents') && !await documentsSurface.isVisible().catch(() => false),
+      page.url(),
+    );
+
+    const verificationCards = await verificationSurface.locator('[data-verification-state]').count().catch(() => 0);
+    check('Verifiche espone controlli orientati al compito', verificationCards >= 4, `controlli=${verificationCards}`);
 
     check('Nessun errore pagina non gestito', pageErrors.length === 0, pageErrors.join(' | '));
 
