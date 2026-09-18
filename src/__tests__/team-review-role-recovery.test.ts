@@ -44,13 +44,13 @@ describe('G5 mobile contribution role recovery', () => {
   it('does not expose TEAM_REVIEW_CONTRIBUTE_REQUIRED from the local contribution guard', () => {
     expect(teamRepositorySource).not.toContain("throw new Error('TEAM_REVIEW_CONTRIBUTE_REQUIRED')");
     expect(teamRepositorySource).toContain("message.includes('TEAM_REVIEW_CONTRIBUTE_REQUIRED')");
-    expect(teamRepositorySource).toContain('Il ruolo corrente non può pubblicare contributi disciplinari nel team');
+    expect(teamRepositorySource).toContain('Il ruolo corrente non può pubblicare contributi disciplinari nel gruppo');
     expect(caseRepositorySource).toContain("message.includes('TEAM_REVIEW_CONTRIBUTE_REQUIRED')");
     expect(caseRepositorySource).toContain('Il ruolo corrente non può contribuire a questo riesame condiviso');
   });
 
   it('makes the completed review message role-aware', () => {
     expect(revisionSource).toContain('canSharePersonalContribution');
-    expect(revisionSource).toContain('Il parere personale è completo, ma il ruolo corrente non può pubblicarlo nel team.');
+    expect(revisionSource).toContain('Il parere personale è completo, ma il ruolo corrente non può pubblicarlo nel gruppo.');
   });
 });
