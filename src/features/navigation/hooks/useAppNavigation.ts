@@ -9,6 +9,7 @@ export type AppTab =
   | 'processo'
   | 'esportazioni'
   | 'certificazione-pa'
+  | 'verifiche'
   | 'fonti'
   | 'guida'
   | 'second-brain';
