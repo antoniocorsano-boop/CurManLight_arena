@@ -349,7 +349,7 @@ export function TeamContributionPublisher({
       >
         {busy ? 'Condivisione in corso…' : persistedCurrentContributionComplete ? 'Aggiorna il mio contributo condiviso' : 'Condividi il mio lavoro con il team'}
       </button>
-      <p className="text-[11px] font-semibold leading-relaxed text-indigo-950">Il contributo condiviso resta personale: non è un voto, un esito del team o una decisione della scuola.</p>
+      <p className="text-[11px] font-semibold leading-relaxed text-indigo-950">Il contributo condiviso resta personale: non è un voto, un esito del gruppo o una decisione della scuola.</p>
 
       {feedback && (
         <div role="status" aria-live="polite" className={`rounded-xl border p-3 text-xs font-semibold leading-relaxed ${feedback.kind === 'success' ? 'border-emerald-200 bg-emerald-50 text-emerald-800' : 'border-rose-200 bg-rose-50 text-rose-800'}`}>
