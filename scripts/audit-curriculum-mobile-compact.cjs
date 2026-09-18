@@ -54,7 +54,7 @@ async function gotoCurriculum(page) {
   const browser = await chromium.launch({ headless: true });
   let failed = false;
   const evidence = {
-    schema: 'CML_CURRICULUM_MOBILE_COMPACT_BROWSER_EVIDENCE_V1',
+    schema: 'CML_CURRICULUM_MOBILE_COMPACT_BROWSER_EVIDENCE_V2',
     baseUrl,
     generatedAt: new Date().toISOString(),
     humanVerdictIssued: false,
@@ -92,26 +92,31 @@ async function gotoCurriculum(page) {
       await clickWithPersonalProfileRecovery(page, explorer.getByRole('button', { name: 'Secondaria', exact: true }).first());
       await clickWithPersonalProfileRecovery(page, explorer.getByRole('button', { name: 'Classe II', exact: true }).first());
 
-      const firstCard = page.locator('[data-curriculum-focused-explorer] [data-curriculum-unit-card]').first();
+      const focusedExplorer = page.locator('[data-curriculum-focused-explorer]').first();
+      const allCards = focusedExplorer.locator('[data-curriculum-unit-card]');
+      const firstCard = allCards.first();
       await firstCard.waitFor({ state: 'visible', timeout: 5000 });
-      const mobileDetail = firstCard.locator('[data-curriculum-mobile-detail="expandable"]').first();
-      const mobileSummary = firstCard.locator('[data-curriculum-mobile-summary="detail"]').first();
+      const unitDisclosure = firstCard.locator('[data-curriculum-unit-disclosure]').first();
+      const unitSummary = firstCard.locator('[data-curriculum-unit-summary]').first();
       const mobileFields = firstCard.locator('[data-curriculum-detail-fields="mobile"]').first();
       const desktopFields = firstCard.locator('[data-curriculum-detail-fields="desktop"]').first();
       const tramaAction = firstCard.locator('[data-open-curriculum-trama]').first();
 
       if (profile.id === 'mobile-390x844') {
-        check('mobile compact summary is visible', await mobileSummary.isVisible());
-        check('mobile curriculum detail starts collapsed', !(await mobileDetail.evaluate((element) => element.open)));
+        check('mobile compact summary is visible', await unitSummary.isVisible());
+        check('mobile curriculum unit starts collapsed', !(await unitDisclosure.evaluate((element) => element.open)));
         check('mobile curriculum fields are hidden before expansion', !(await mobileFields.isVisible()));
-        check('Trama action remains visible while detail is collapsed', await tramaAction.isVisible());
+        check('Trama action is contextual and hidden before expansion', !(await tramaAction.isVisible()));
+        const openCardsBefore = await allCards.locator('[data-curriculum-unit-disclosure][open]').count();
+        check('all curriculum nuclei start compact on mobile', openCardsBefore === 0);
 
-        await clickWithPersonalProfileRecovery(page, mobileSummary);
-        check('mobile curriculum detail opens on explicit teacher action', await mobileDetail.evaluate((element) => element.open));
+        await clickWithPersonalProfileRecovery(page, unitSummary);
+        check('mobile curriculum unit opens on explicit teacher action', await unitDisclosure.evaluate((element) => element.open));
         check('mobile curriculum fields become visible after expansion', await mobileFields.isVisible());
-        check('Trama action remains visible after detail expansion', await tramaAction.isVisible());
+        check('Trama action becomes visible inside expanded detail', await tramaAction.isVisible());
       } else {
-        check('mobile disclosure is hidden on desktop', !(await mobileSummary.isVisible()));
+        check('compact disclosure summary is hidden on desktop', !(await unitSummary.isVisible()));
+        check('desktop curriculum unit starts expanded', await unitDisclosure.evaluate((element) => element.open));
         check('desktop curriculum detail is visible without interaction', await desktopFields.isVisible());
         check('Trama action remains directly visible on desktop', await tramaAction.isVisible());
       }
