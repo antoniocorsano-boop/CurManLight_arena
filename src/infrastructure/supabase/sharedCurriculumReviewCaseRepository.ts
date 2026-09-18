@@ -28,7 +28,7 @@ export interface PublishSharedReviewCaseReceipt {
 const assertContext = (context: WorkspaceActorContext, workspaceId: string): void => {
   if (context.assurance !== 'authenticated-workspace') throw new Error('SHARED_REVIEW_CASE_AUTHORITY_UNAVAILABLE');
   if (context.membership.workspaceId !== workspaceId || context.membership.status !== 'active') {
-    throw new Error('Il caso non appartiene a una membership attiva del workspace corrente.');
+    throw new Error('Il caso non appartiene a un profilo di partecipazione attivo nello spazio di lavoro corrente.');
   }
 };
 
@@ -52,10 +52,10 @@ const assertScope = (scope: SharedReviewCaseScope): void => {
 
 const sharedError = (message: string): Error => {
   if (message.includes('TEAM_REVIEW_CONTRIBUTE_REQUIRED')) {
-    return new Error('Il ruolo corrente non può contribuire a questo riesame condiviso. Usa una membership attiva come Docente, Dipartimento o Referente.');
+    return new Error('Il ruolo corrente non può contribuire a questo riesame condiviso. Usa un profilo di partecipazione attivo con ruolo Docente, Dipartimento o Referente.');
   }
   if (message.includes('SHARED_REVIEW_CASE_ASSIGN_REQUIRED')) {
-    return new Error('Solo una membership verificata di Dipartimento o Referente può assegnare il caso al gruppo.');
+    return new Error('Solo un profilo di partecipazione verificato con ruolo Dipartimento o Referente può assegnare il caso al gruppo.');
   }
   if (message.includes('OPERATIONAL_DISCIPLINE_MEMBERSHIP_REQUIRED')) {
     return new Error('La tua appartenenza operativa non copre questa disciplina.');
