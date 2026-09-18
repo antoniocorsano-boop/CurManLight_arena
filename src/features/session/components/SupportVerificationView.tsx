@@ -22,6 +22,7 @@ export type SupportVerificationViewProps = Pick<AppViewsLayerProps,
   | 'currentDisciplineProps'
   | 'currentDisciplineDecided'
   | 'handleTabSwitch'
+  | 'setShowSaveModal'
 >;
 
 export function SupportVerificationView({
@@ -30,6 +31,7 @@ export function SupportVerificationView({
   currentDisciplineProps,
   currentDisciplineDecided,
   handleTabSwitch,
+  setShowSaveModal,
 }: SupportVerificationViewProps) {
 
   const unverifiedLocalSources = customKbDocs.filter((source) => source.authorityStatus !== 'LOCAL_VERIFIED').length;
@@ -41,7 +43,11 @@ export function SupportVerificationView({
     title: string;
     state: VerificationState;
     explanation: string;
-    action?: { label: string; tab: 'fonti' | 'revisione' | 'esportazioni' };
+    action?: {
+      label: string;
+      tab?: 'fonti' | 'revisione' | 'esportazioni';
+      openSettings?: boolean;
+    };
   }> = [
     {
       id: 'institution',
@@ -50,6 +56,9 @@ export function SupportVerificationView({
       explanation: institutionalProfile.configured
         ? `È attivo il contesto “${institutionalProfile.instituteName}”.`
         : 'L’istituto non è ancora configurato. Le pubblicazioni sorgente restano consultabili, ma non possono essere presentate come adottate dall’istituto corrente.',
+      action: institutionalProfile.configured
+        ? undefined
+        : { label: 'Apri le Impostazioni locali', openSettings: true },
     },
     {
       id: 'source-publication',
@@ -147,7 +156,13 @@ export function SupportVerificationView({
                 {check.action && (
                   <button
                     type="button"
-                    onClick={() => handleTabSwitch(check.action!.tab)}
+                    onClick={() => {
+                      if (check.action?.openSettings) {
+                        setShowSaveModal(true);
+                        return;
+                      }
+                      if (check.action?.tab) handleTabSwitch(check.action.tab);
+                    }}
                     className="mt-3 inline-flex min-h-11 items-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                   >
                     {check.action.label}
