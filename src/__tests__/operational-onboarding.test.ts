@@ -44,6 +44,6 @@ describe('Arena operational onboarding authority boundary', () => {
   it('requires the verified shared role again at the repository boundary', () => {
     expect(teamRepositorySource).toContain("const TEAM_OUTCOME_ROLES: readonly WorkspaceMemberRole[] = ['dipartimento', 'referente']");
     expect(teamRepositorySource).toContain("if (!TEAM_OUTCOME_ROLES.includes(context.membership.role))");
-    expect(teamRepositorySource).toContain('Solo una membership verificata di Dipartimento o Referente può registrare l’esito del team.');
+    expect(teamRepositorySource).toContain('Solo un profilo di partecipazione verificato con ruolo Dipartimento o Referente può registrare l’esito del gruppo.');
   });
 });
