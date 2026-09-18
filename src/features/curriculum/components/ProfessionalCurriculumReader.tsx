@@ -95,6 +95,7 @@ export function ProfessionalCurriculumReader({
         className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm"
         data-curriculum-catalog
         data-curriculum-primary-task="scope-selection"
+        data-curriculum-scope-state={institutionalProfile.configured ? 'configured-institution' : 'source-only'}
         data-curriculum-ux-contract="ARENA_UX_CONTRACT@1.0.0"
         data-hcm-level="1"
       >
