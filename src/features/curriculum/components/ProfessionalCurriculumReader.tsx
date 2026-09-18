@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { BookOpen, ExternalLink, FileText, Network } from 'lucide-react';
+import { BookOpen, ExternalLink, FileText, Network, ChevronLeft } from 'lucide-react';
 import type { A07InstitutionalDocumentRead } from '../../../domain/institution';
 import {
   DEPARTMENT_CURRICULUM_MANIFEST,
@@ -60,6 +60,7 @@ export function ProfessionalCurriculumReader({
   onOpenSource,
 }: ProfessionalCurriculumReaderProps) {
   const [mode, setMode] = useState<CurriculumPresentationMode>('explore');
+  const [catalogOpen, setCatalogOpen] = useState(true);
   const [sectionId, setSectionId] = useState(SECTION_NAVIGATION[0].id);
   const selectedNavigation = SECTION_NAVIGATION.find((section) => section.id === sectionId) ?? SECTION_NAVIGATION[0];
   const selectedNavigationIndex = SECTION_NAVIGATION.findIndex((section) => section.id === selectedNavigation.id);
@@ -75,6 +76,15 @@ export function ProfessionalCurriculumReader({
 
   const setExploreView = (view: CurriculumExploreView) => setMode(view);
 
+  const disciplineSections = DEPARTMENT_CURRICULUM_SECTIONS.filter((section) =>
+    SECTION_NAVIGATION.some((navigation) =>
+      navigation.number === section.number
+      && ['matematica', 'scienze', 'tecnologia', 'informatica'].includes(navigation.id)
+    )
+  );
+
+  const openDepartment = () => setCatalogOpen(false);
+
   return (
     <section
       className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm"
@@ -85,18 +95,84 @@ export function ProfessionalCurriculumReader({
       data-curriculum-ux-contract="ARENA_UX_CONTRACT@1.0.0"
       data-hcm-level="1"
     >
-      <header className="border-b border-slate-200 bg-gradient-to-b from-slate-50 to-white px-5 py-7 text-center sm:px-8 sm:py-10">
-        <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-slate-500">{instituteName}</p>
-        <h1 className="mt-4 text-2xl font-black tracking-tight text-slate-950 sm:text-4xl">Curricolo verticale</h1>
-        <p className="mt-2 text-sm font-bold text-indigo-700 sm:text-base">{DEPARTMENT_CURRICULUM_MANIFEST.institution.department}</p>
-        <p className="mt-1 text-sm text-slate-600">{DEPARTMENT_CURRICULUM_MANIFEST.institution.disciplines.join(' · ')}</p>
-        <div className="mt-4 flex flex-wrap items-center justify-center gap-2 text-xs font-semibold">
-          <span className="rounded-full bg-slate-100 px-3 py-1.5 text-slate-700">A.S. {academicYear}</span>
-          <span className="rounded-full bg-indigo-50 px-3 py-1.5 text-indigo-800">Versione di lavoro</span>
-          <span className="rounded-full bg-amber-50 px-3 py-1.5 text-amber-900">Validazione professionale aperta</span>
-          <span className="rounded-full bg-slate-100 px-3 py-1.5 text-slate-700">Percorso verticale 3–14</span>
+      {catalogOpen ? (
+        <div className="bg-gradient-to-b from-slate-50 to-white px-5 py-7 sm:px-8 sm:py-10" data-curriculum-institute-catalog>
+          <header className="mx-auto max-w-4xl text-center">
+            <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-slate-500">{instituteName}</p>
+            <h1 className="mt-4 text-2xl font-black tracking-tight text-slate-950 sm:text-4xl">Curricolo d’Istituto</h1>
+            <p className="mx-auto mt-3 max-w-2xl text-sm leading-6 text-slate-600">
+              Consulta il curricolo per area e disciplina. Ogni fascicolo mantiene la propria provenienza, versione e stato di validazione.
+            </p>
+            <div className="mt-4 flex flex-wrap items-center justify-center gap-2 text-xs font-semibold">
+              <span className="rounded-full bg-slate-100 px-3 py-1.5 text-slate-700">A.S. {academicYear}</span>
+              <span className="rounded-full bg-amber-50 px-3 py-1.5 text-amber-900">Configurazione istituzionale da completare</span>
+            </div>
+          </header>
+
+          <div className="mx-auto mt-7 max-w-4xl">
+            <p className="text-xs font-bold uppercase tracking-wide text-slate-500">Fascicoli disponibili</p>
+            <article className="mt-2 rounded-2xl border border-indigo-200 bg-white p-5 shadow-sm sm:p-6" data-curriculum-department-card>
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-wide text-indigo-700">Fascicolo dipartimentale disponibile</p>
+                  <h2 className="mt-1 text-lg font-black text-slate-950">{DEPARTMENT_CURRICULUM_MANIFEST.institution.department}</h2>
+                  <p className="mt-2 text-sm leading-6 text-slate-600">
+                    Versione di lavoro · validazione professionale aperta. Questo fascicolo non rappresenta da solo l’intero curricolo d’Istituto.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={openDepartment}
+                  className="min-h-11 shrink-0 rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-bold text-white hover:bg-indigo-700"
+                  data-open-department-curriculum
+                >
+                  Apri il fascicolo
+                </button>
+              </div>
+
+              <div className="mt-5 border-t border-slate-100 pt-4">
+                <p className="text-xs font-bold uppercase tracking-wide text-slate-500">Discipline presenti</p>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {disciplineSections.map((section) => (
+                    <span key={section.id} className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-sm font-semibold text-slate-700">
+                      {section.title.replace(/^\\d+\\.?\\s*/, '').replace(/\\s+—\\s+curricolo verticale.*$/i, '')}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </article>
+
+            <div className="mt-4 rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-5" data-curriculum-catalog-incomplete>
+              <p className="text-sm font-bold text-slate-800">Altri dipartimenti e aree</p>
+              <p className="mt-1 text-sm leading-6 text-slate-600">
+                Non sono ancora disponibili come fascicoli verificati in questa versione. Non vengono creati o presentati come adottati senza una fonte e uno stato documentale verificabili.
+              </p>
+            </div>
+          </div>
         </div>
-      </header>
+      ) : (
+        <>
+          <header className="border-b border-slate-200 bg-gradient-to-b from-slate-50 to-white px-5 py-7 text-center sm:px-8 sm:py-10">
+            <button
+              type="button"
+              onClick={() => setCatalogOpen(true)}
+              className="mx-auto mb-4 inline-flex min-h-11 items-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700"
+              data-back-to-curriculum-catalog
+            >
+              <ChevronLeft className="h-4 w-4" aria-hidden="true" />
+              Curricolo d’Istituto
+            </button>
+            <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-slate-500">{instituteName}</p>
+            <h1 className="mt-4 text-2xl font-black tracking-tight text-slate-950 sm:text-4xl">Curricolo verticale</h1>
+            <p className="mt-2 text-sm font-bold text-indigo-700 sm:text-base">{DEPARTMENT_CURRICULUM_MANIFEST.institution.department}</p>
+            <p className="mt-1 text-sm text-slate-600">{DEPARTMENT_CURRICULUM_MANIFEST.institution.disciplines.join(' · ')}</p>
+            <div className="mt-4 flex flex-wrap items-center justify-center gap-2 text-xs font-semibold">
+              <span className="rounded-full bg-slate-100 px-3 py-1.5 text-slate-700">A.S. {academicYear}</span>
+              <span className="rounded-full bg-indigo-50 px-3 py-1.5 text-indigo-800">Versione di lavoro</span>
+              <span className="rounded-full bg-amber-50 px-3 py-1.5 text-amber-900">Validazione professionale aperta</span>
+              <span className="rounded-full bg-slate-100 px-3 py-1.5 text-slate-700">Percorso verticale 3–14</span>
+            </div>
+          </header>
 
       <div className="border-b border-slate-200 bg-white px-4 py-3 sm:px-6" aria-label="Modalità di consultazione del curricolo">
         <div className="mx-auto grid max-w-xl grid-cols-3 gap-1 rounded-xl bg-slate-100 p-1" data-curriculum-mode-switch>
@@ -269,6 +345,8 @@ export function ProfessionalCurriculumReader({
             </div>
           </details>
         </div>
+      )}
+        </>
       )}
     </section>
   );
