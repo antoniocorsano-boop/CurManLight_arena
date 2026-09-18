@@ -356,3 +356,25 @@ Regole architetturali:
 - la conclusione professionale compare nello stesso workframe; solo dopo una conferma esplicita l'utente rientra nella superficie generale **Riesame**.
 
 Questa regola non modifica il lifecycle, l'autorità o la persistenza: specifica come il lifecycle deve essere percepito e compreso.
+
+---
+
+## 15. Supporto canonico — SUP-01
+
+Lo strato di supporto viene proiettato attraverso tre compiti distinti:
+
+- **Fascicolo** — risponde a “quali fonti, versioni e registri sostengono ciò che sto consultando?”;
+- **Verifiche** — risponde a “cosa è pronto, cosa manca e cosa mi impedisce di procedere?”;
+- **Guida** — risponde a “come svolgo il compito corrente e come recupero da un blocco?”.
+
+Regole:
+
+- le tre superfici non attribuiscono autorità deliberativa;
+- Verifiche proietta stati esistenti e non crea una seconda fonte di verità;
+- Fascicolo conserva provenienza, versione, catena documentale e archivi subordinati;
+- Guida è organizzata per compiti e non ripropone capability legacy come funzioni correnti;
+- Documenti/Handoff resta distinto da Verifiche;
+- la presenza di una fonte non equivale ad adozione istituzionale.
+
+Decisione di routing autorizzata da `ADR_SUPPORT_SURFACES_CANONICAL_2026-09-18.md`: la route canonica di Verifiche è `/verifiche`.
+
