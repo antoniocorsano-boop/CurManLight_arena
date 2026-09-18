@@ -318,17 +318,17 @@ export function TeamContributionPublisher({
         >
           <strong className="block text-sm">Questo ruolo non può pubblicare contributi disciplinari</strong>
           <p className="mt-1">
-            Il parere personale resta salvato. Per condividerlo con il gruppo serve una membership attiva con ruolo Docente, Dipartimento o Referente.
+            Il parere personale resta salvato. Per condividerlo con il gruppo serve un profilo di partecipazione attivo con ruolo Docente, Dipartimento o Referente.
           </p>
           {team.activeMemberships.length > 1 && (
-            <p className="mt-1 font-semibold">Se disponibile, seleziona sopra un altro team o ruolo abilitato.</p>
+            <p className="mt-1 font-semibold">Se disponibile, seleziona sopra un altro gruppo o un ruolo abilitato.</p>
           )}
         </div>
       )}
 
       {team.selectedMembership && (
         <div className="rounded-xl border border-slate-200 bg-white p-3 text-xs text-slate-600" data-team-contribution-status>
-          <strong className="text-slate-800">Team selezionato:</strong> {team.selectedMembership.workspaceName}
+          <strong className="text-slate-800">Gruppo selezionato:</strong> {team.selectedMembership.workspaceName}
           <span className="mt-1 block"><strong className="text-slate-800">Pronte:</strong> {localPreparedCount} · <strong className="text-slate-800">condivisione corrente verificata:</strong> {currentUserContributionCount} di {proposals.length}</span>
           {persistedCurrentContributionComplete && (
             <span className="mt-2 block rounded-lg bg-emerald-50 px-2 py-1.5 font-bold text-emerald-800" data-professional-contribution-persisted>
