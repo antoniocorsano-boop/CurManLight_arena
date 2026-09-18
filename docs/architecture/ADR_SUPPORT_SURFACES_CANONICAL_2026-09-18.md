@@ -1,6 +1,6 @@
 # ADR — Supporto canonico di CurManLight Arena
 
-Status: `PROPOSED`  
+Status: `ACCEPTED`  
 Date: 2026-09-18  
 Issue: #257  
 Baseline di partenza: `b262b85964306afa8c58fc12c80017b5688d111f`  
