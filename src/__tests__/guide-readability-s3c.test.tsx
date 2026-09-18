@@ -2,25 +2,34 @@
 
 import { render } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import { InfoViews } from '../features/session/components/InfoViews';
+import { SupportGuideView } from '../features/session/components/SupportGuideView';
 
-describe('S3C guide readability guard', () => {
-  it('keeps the mobile guide body at 12px or above', () => {
+describe('canonical support guide readability guard', () => {
+  it('keeps task-first guide content readable and free of legacy UDA-manual framing', () => {
     const { container } = render(
-      <InfoViews
-        activeTab="guida"
-        activeGeneralSubtab="premessa"
-        setActiveGeneralSubtab={vi.fn()}
+      <SupportGuideView
+        handleTabSwitch={vi.fn()}
+        institutionalProfile={{
+          configured: false,
+          instituteName: 'Istituto non configurato',
+          organizationId: 'curmanlight-local',
+        }}
       />,
     );
 
-    const guide = container.querySelector('[data-hva-guide-readability]');
+    const guide = container.querySelector('[data-teacher-surface="support-guide"]');
     expect(guide).not.toBeNull();
 
     const markup = guide?.innerHTML ?? '';
     expect(markup).not.toMatch(/text-\[(?:[0-9]|10|11)px\]/);
+    expect(markup).not.toContain('Progettazione Guidata Unità di Apprendimento');
+    expect(markup).not.toContain('Traduzione Olistica');
+    expect(markup).not.toContain('Carousel Monoscheda');
 
-    const bodyBlocks = Array.from(guide?.querySelectorAll('p, ul') ?? []);
+    const taskHeadings = Array.from(guide?.querySelectorAll('article h2') ?? []);
+    expect(taskHeadings.length).toBeGreaterThanOrEqual(5);
+
+    const bodyBlocks = Array.from(guide?.querySelectorAll('p') ?? []);
     expect(bodyBlocks.length).toBeGreaterThan(0);
     for (const block of bodyBlocks) {
       expect(block.classList.contains('text-sm')).toBe(true);
