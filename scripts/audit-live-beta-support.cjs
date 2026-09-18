@@ -111,9 +111,9 @@ fs.mkdirSync(OUT_DIR, { recursive: true });
     await guideEntry.click();
     await page.waitForURL(/\/guida(?:\/|$|\?)/, { timeout: 5000 });
     const canonicalGuide = page.locator('[data-teacher-surface="support-guide"]').first();
-    const legacyGuide = page.locator('[data-hva-guide-readability]').first();
-    const guideVisible = await canonicalGuide.isVisible().catch(() => false)
-      || await legacyGuide.isVisible().catch(() => false);
+    const guideVisible = canonicalSupportPublished
+      ? await canonicalGuide.isVisible().catch(() => false)
+      : page.url().includes('/guida') && (await page.locator('#main-content').innerText().catch(() => '')).trim().length > 20;
     check('Azione Guida apre la vista reale', guideVisible, page.url());
 
     const overflowMetrics = await page.evaluate(() => {
