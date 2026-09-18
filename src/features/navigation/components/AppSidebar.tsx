@@ -91,9 +91,9 @@ export function AppSidebar(props: AppSidebarProps) {
               <BookOpenCheck className="h-4 w-4 shrink-0" aria-hidden="true" />
               <span>Fascicolo</span>
             </button>
-            <button type="button" onClick={() => switchTab('certificazione-pa')} className={itemClass(props.activeTab === 'certificazione-pa')}>
+            <button type="button" onClick={() => switchTab('verifiche')} className={itemClass(props.activeTab === 'verifiche')}>
               <ShieldCheck className="h-4 w-4 shrink-0" aria-hidden="true" />
-              <span>Controlli e checklist</span>
+              <span>Verifiche</span>
             </button>
             <button type="button" onClick={() => switchTab('guida')} className={itemClass(props.activeTab === 'guida')}>
               <HelpCircle className="h-4 w-4 shrink-0" aria-hidden="true" />
