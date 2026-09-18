@@ -102,10 +102,15 @@ fs.mkdirSync(OUT_DIR, { recursive: true });
     const legacySupportPublished = await legacyControlsEntry.isVisible().catch(() => false);
 
     check('Guida è raggiungibile dal menu mobile', await guideEntry.isVisible().catch(() => false));
+    const exactCandidateAudit = Boolean(EXPECTED_RELEASE_SHA);
     check(
-      'Navigazione Supporto pubblicata riconoscibile',
-      canonicalSupportPublished || legacySupportPublished,
-      canonicalSupportPublished ? 'supporto canonico' : 'supporto precedente in attesa di deploy',
+      exactCandidateAudit ? 'Navigazione Supporto canonica pubblicata' : 'Navigazione Supporto pubblicata riconoscibile',
+      exactCandidateAudit ? canonicalSupportPublished : (canonicalSupportPublished || legacySupportPublished),
+      canonicalSupportPublished
+        ? 'supporto canonico'
+        : exactCandidateAudit
+          ? 'supporto canonico assente sulla release candidata'
+          : 'supporto precedente in attesa di deploy',
     );
 
     await guideEntry.click();
@@ -113,7 +118,7 @@ fs.mkdirSync(OUT_DIR, { recursive: true });
     const canonicalGuide = page.locator('[data-teacher-surface="support-guide"]').first();
     const guideVisible = canonicalSupportPublished
       ? await canonicalGuide.isVisible().catch(() => false)
-      : page.url().includes('/guida') && (await page.locator('#main-content').innerText().catch(() => '')).trim().length > 20;
+      : !exactCandidateAudit && page.url().includes('/guida') && (await page.locator('#main-content').innerText().catch(() => '')).trim().length > 20;
     check('Azione Guida apre la vista reale', guideVisible, page.url());
 
     const overflowMetrics = await page.evaluate(() => {
@@ -183,11 +188,16 @@ fs.mkdirSync(OUT_DIR, { recursive: true });
 
       const verificationCards = await verificationSurface.locator('[data-verification-state]').count().catch(() => 0);
       check('Verifiche espone controlli orientati al compito', verificationCards >= 4, `controlli=${verificationCards}`);
-    } else {
+    } else if (!exactCandidateAudit) {
       check('Supporto live precedente resta raggiungibile in attesa del deploy della tranche', legacySupportPublished);
       finding(
         'CANONICAL_SUPPORT_PENDING_DEPLOY',
         'La Beta pubblica serve ancora la baseline precedente: le asserzioni Verifiche/Guida task-first saranno obbligatorie dopo il deploy della tranche Supporto.',
+      );
+    } else {
+      finding(
+        'CANONICAL_SUPPORT_NOT_PUBLISHED',
+        'La release candidata dichiarata da EXPECTED_RELEASE_SHA non espone ancora il Supporto canonico richiesto da M4-S1.',
       );
     }
 
