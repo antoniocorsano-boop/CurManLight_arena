@@ -41,6 +41,15 @@ describe('G5 curriculum information architecture', () => {
     expect(screen.getByText(/Fonte del fascicolo:/)).toHaveTextContent(AVAILABLE_DEPARTMENT_PUBLICATION.sourceInstitutionName ?? '');
     expect(screen.getByRole('button', { name: 'Tecnologia' })).toHaveAttribute('aria-pressed', 'true');
     expect(screen.getByText(/stesso fascicolo curricolare sorgente/i)).toBeInTheDocument();
+    expect(screen.getByText('Riferimenti del fascicolo sorgente')).toBeInTheDocument();
+    expect(screen.getByText(/non attestano, da soli, l’adozione da parte dell’istituto corrente/i)).toBeInTheDocument();
+
+    const firstCard = document.querySelector('[data-curriculum-unit-card]');
+    expect(firstCard).not.toBeNull();
+    expect(firstCard).toHaveAttribute('data-curriculum-card-density', 'compact-disclosure');
+    const disclosure = firstCard?.querySelector('details[data-curriculum-unit-disclosure]') as HTMLDetailsElement | null;
+    expect(disclosure).not.toBeNull();
+    expect(disclosure?.open).toBe(false);
   });
 
   it('does not expose unavailable areas as actionable publications', () => {
