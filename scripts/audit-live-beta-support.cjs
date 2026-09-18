@@ -116,6 +116,9 @@ fs.mkdirSync(OUT_DIR, { recursive: true });
     await guideEntry.click();
     await page.waitForURL(/\/guida(?:\/|$|\?)/, { timeout: 5000 });
     const canonicalGuide = page.locator('[data-teacher-surface="support-guide"]').first();
+    if (canonicalSupportPublished) {
+      await canonicalGuide.waitFor({ state: 'visible', timeout: 3000 }).catch(() => undefined);
+    }
     const guideVisible = canonicalSupportPublished
       ? await canonicalGuide.isVisible().catch(() => false)
       : !exactCandidateAudit && page.url().includes('/guida') && (await page.locator('#main-content').innerText().catch(() => '')).trim().length > 20;
