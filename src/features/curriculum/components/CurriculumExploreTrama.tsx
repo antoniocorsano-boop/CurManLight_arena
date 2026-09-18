@@ -169,6 +169,8 @@ export function buildCurriculumCatalog(sections: DepartmentCurriculumSection[]):
 type CurriculumExploreTramaProps = {
   sections: DepartmentCurriculumSection[];
   initialDisciplineId?: string;
+  sourceInstitutionName?: string;
+  institutionalContextConfigured?: boolean;
   view: CurriculumExploreView;
   onViewChange: (view: CurriculumExploreView) => void;
   onUseInPlanning?: (context: CurriculumExploreContext) => void;
@@ -178,9 +180,139 @@ type CurriculumExploreTramaProps = {
   onOpenDocument?: () => void;
 };
 
+function isDesktopCurriculumViewport() {
+  return typeof window !== 'undefined'
+    && typeof window.matchMedia === 'function'
+    && window.matchMedia('(min-width: 640px)').matches;
+}
+
+type CurriculumUnitCardProps = {
+  row: CurriculumNodeProjection;
+  context: CurriculumExploreContext;
+  reviewAvailable: boolean;
+  onOpenTrama: () => void;
+  onUseInPlanning?: (context: CurriculumExploreContext) => void;
+  onOpenReview?: (context: CurriculumExploreContext) => void;
+  onOpenSource?: (context: CurriculumExploreContext) => void;
+  onOpenDocument?: () => void;
+};
+
+function CurriculumUnitCard({
+  row,
+  context,
+  reviewAvailable,
+  onOpenTrama,
+  onUseInPlanning,
+  onOpenReview,
+  onOpenSource,
+  onOpenDocument,
+}: CurriculumUnitCardProps) {
+  const [desktopLayout] = useState(isDesktopCurriculumViewport);
+  const [expanded, setExpanded] = useState(desktopLayout);
+
+  return (
+    <article
+      className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5"
+      data-curriculum-unit-card
+      data-curriculum-card-density="compact-disclosure"
+    >
+      <p className="text-xs font-bold uppercase tracking-wide text-slate-500">Nucleo</p>
+      <h4 className="mt-1 text-base font-black text-slate-950">{row.nucleus}</h4>
+
+      <details
+        open={expanded}
+        onToggle={(event) => setExpanded(event.currentTarget.open)}
+        className="group mt-3"
+        data-curriculum-unit-disclosure
+      >
+        <summary
+          className="flex min-h-11 cursor-pointer list-none items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm font-bold text-slate-700 sm:hidden [&::-webkit-details-marker]:hidden"
+          data-curriculum-unit-summary
+        >
+          <span>{expanded ? 'Chiudi dettaglio e azioni' : 'Dettaglio e azioni'}</span>
+          <ArrowDown className={`h-4 w-4 text-indigo-600 transition-transform ${expanded ? 'rotate-180' : ''}`} aria-hidden="true" />
+        </summary>
+
+        <div className="mt-4 border-t border-slate-100 pt-4 sm:mt-3 sm:border-t-0 sm:pt-0" data-curriculum-unit-expanded-content>
+          <CurriculumFieldList
+            fields={row.fields}
+            className="space-y-3"
+            scope={desktopLayout ? 'desktop' : 'mobile'}
+          />
+
+          <button
+            type="button"
+            onClick={onOpenTrama}
+            className="mt-4 inline-flex min-h-11 items-center gap-2 rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-2 text-sm font-bold text-indigo-800"
+            data-open-curriculum-trama
+          >
+            <Network className="h-4 w-4" aria-hidden="true" />
+            Vedi nella Trama
+          </button>
+
+          <details className="mt-3 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2" data-curriculum-context-actions>
+            <summary className="cursor-pointer py-1 text-sm font-bold text-slate-700">Altre azioni</summary>
+            <div className="mt-2 grid gap-2 sm:grid-cols-2">
+              {onUseInPlanning && (
+                <button
+                  type="button"
+                  onClick={() => onUseInPlanning(context)}
+                  className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700"
+                  data-use-curriculum-in-planning
+                >
+                  <Send className="h-4 w-4" aria-hidden="true" />
+                  Usa in Progettazione
+                </button>
+              )}
+              {reviewAvailable ? (
+                <button
+                  type="button"
+                  onClick={() => onOpenReview?.(context)}
+                  className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700"
+                  data-send-curriculum-to-review
+                >
+                  <SearchCheck className="h-4 w-4" aria-hidden="true" />
+                  Segnala per il Riesame
+                </button>
+              ) : onOpenReview ? (
+                <p className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs leading-5 text-slate-500" data-review-unavailable-for-context>
+                  Il Riesame non è ancora disponibile per questo contesto. La consultazione resta comunque completa.
+                </p>
+              ) : null}
+              {onOpenSource && (
+                <button
+                  type="button"
+                  onClick={() => onOpenSource(context)}
+                  className="min-h-11 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700"
+                  data-open-curriculum-source
+                >
+                  Vedi fonte
+                </button>
+              )}
+              {onOpenDocument && (
+                <button
+                  type="button"
+                  onClick={onOpenDocument}
+                  className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700"
+                  data-open-curriculum-document-from-unit
+                >
+                  <FileText className="h-4 w-4" aria-hidden="true" />
+                  Apri Documento
+                </button>
+              )}
+            </div>
+          </details>
+        </div>
+      </details>
+    </article>
+  );
+}
+
 export function CurriculumExploreTrama({
   sections,
   initialDisciplineId,
+  sourceInstitutionName,
+  institutionalContextConfigured = false,
   view,
   onViewChange,
   onUseInPlanning,
@@ -328,9 +460,26 @@ export function CurriculumExploreTrama({
           <div className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-5">
             <p className="text-xs font-bold uppercase tracking-wide text-indigo-700">{discipline.label}</p>
             <h3 className="mt-1 text-lg font-black text-slate-950 sm:text-xl">{selectedAnnuality.title}</h3>
-            {selectedAnnuality.references.map((reference, index) => (
-              <p key={`${selectedAnnuality.id}-reference-${index}`} className="mt-2 text-sm leading-6 text-slate-600">{reference}</p>
-            ))}
+            {selectedAnnuality.references.length > 0 && (
+              <div className="mt-3 rounded-xl border border-slate-200 bg-slate-50 px-3 py-3" data-curriculum-reference-scope>
+                <p className="text-xs font-bold uppercase tracking-wide text-slate-500">Riferimenti del fascicolo sorgente</p>
+                {sourceInstitutionName && (
+                  <p className="mt-1 text-xs font-semibold leading-5 text-slate-700" data-curriculum-reference-source>
+                    Fonte: {sourceInstitutionName}
+                  </p>
+                )}
+                {!institutionalContextConfigured && (
+                  <p className="mt-1 text-xs leading-5 text-amber-900" data-curriculum-reference-context-warning>
+                    Questi riferimenti appartengono al fascicolo sorgente e non attestano, da soli, l’adozione da parte dell’istituto corrente.
+                  </p>
+                )}
+                {selectedAnnuality.references.map((reference, index) => (
+                  <p key={`${selectedAnnuality.id}-reference-${index}`} className="mt-2 text-sm leading-6 text-slate-600">
+                    <span className="font-semibold text-slate-700">Dal fascicolo sorgente: </span>{reference}
+                  </p>
+                ))}
+              </div>
+            )}
           </div>
 
           <div className="mt-4 grid gap-3 xl:grid-cols-2" data-curriculum-node-cards>
@@ -338,89 +487,20 @@ export function CurriculumExploreTrama({
               const context = makeContext(row.nucleus);
               const reviewAvailable = Boolean(onOpenReview && (canOpenReview ? canOpenReview(context) : true));
               return (
-                <article key={`${selectedAnnuality.id}-${row.nucleus}`} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5" data-curriculum-unit-card>
-                  <p className="text-xs font-bold uppercase tracking-wide text-slate-500">Nucleo</p>
-                  <h4 className="mt-1 text-base font-black text-slate-950">{row.nucleus}</h4>
-
-                  <details className="group mt-4 sm:hidden" data-curriculum-mobile-detail="expandable">
-                    <summary
-                      className="flex min-h-11 cursor-pointer list-none items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm font-bold text-slate-700 [&::-webkit-details-marker]:hidden"
-                      data-curriculum-mobile-summary="detail"
-                    >
-                      <span>Dettaglio curricolare</span>
-                      <ArrowDown className="h-4 w-4 text-indigo-600" aria-hidden="true" />
-                    </summary>
-                    <CurriculumFieldList fields={row.fields} className="mt-3 space-y-3" scope="mobile" />
-                  </details>
-
-                  <CurriculumFieldList fields={row.fields} className="mt-4 hidden space-y-3 sm:block" scope="desktop" />
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setNucleus(row.nucleus);
-                      onViewChange('trama');
-                    }}
-                    className="mt-4 inline-flex min-h-11 items-center gap-2 rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-2 text-sm font-bold text-indigo-800"
-                    data-open-curriculum-trama
-                  >
-                    <Network className="h-4 w-4" aria-hidden="true" />
-                    Vedi nella Trama
-                  </button>
-
-                  <details className="mt-3 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2" data-curriculum-context-actions>
-                    <summary className="cursor-pointer py-1 text-sm font-bold text-slate-700">Altre azioni</summary>
-                    <div className="mt-2 grid gap-2 sm:grid-cols-2">
-                      {onUseInPlanning && (
-                        <button
-                          type="button"
-                          onClick={() => onUseInPlanning(context)}
-                          className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700"
-                          data-use-curriculum-in-planning
-                        >
-                          <Send className="h-4 w-4" aria-hidden="true" />
-                          Usa in Progettazione
-                        </button>
-                      )}
-                      {reviewAvailable ? (
-                        <button
-                          type="button"
-                          onClick={() => onOpenReview?.(context)}
-                          className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700"
-                          data-send-curriculum-to-review
-                        >
-                          <SearchCheck className="h-4 w-4" aria-hidden="true" />
-                          Segnala per il Riesame
-                        </button>
-                      ) : onOpenReview ? (
-                        <p className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs leading-5 text-slate-500" data-review-unavailable-for-context>
-                          Il Riesame non è ancora disponibile per questo contesto. La consultazione resta comunque completa.
-                        </p>
-                      ) : null}
-                      {onOpenSource && (
-                        <button
-                          type="button"
-                          onClick={() => onOpenSource(context)}
-                          className="min-h-11 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700"
-                          data-open-curriculum-source
-                        >
-                          Vedi fonte
-                        </button>
-                      )}
-                      {onOpenDocument && (
-                        <button
-                          type="button"
-                          onClick={onOpenDocument}
-                          className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700"
-                          data-open-curriculum-document-from-unit
-                        >
-                          <FileText className="h-4 w-4" aria-hidden="true" />
-                          Apri Documento
-                        </button>
-                      )}
-                    </div>
-                  </details>
-                </article>
+                <CurriculumUnitCard
+                  key={`${selectedAnnuality.id}-${row.nucleus}`}
+                  row={row}
+                  context={context}
+                  reviewAvailable={reviewAvailable}
+                  onOpenTrama={() => {
+                    setNucleus(row.nucleus);
+                    onViewChange('trama');
+                  }}
+                  onUseInPlanning={onUseInPlanning}
+                  onOpenReview={onOpenReview}
+                  onOpenSource={onOpenSource}
+                  onOpenDocument={onOpenDocument}
+                />
               );
             })}
           </div>
