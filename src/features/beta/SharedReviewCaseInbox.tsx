@@ -1,0 +1,353 @@
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { buildCaseScopedCurriculumWorkSession, resumeCaseWorkSession } from '../../domain/curriculum/caseWorkSession';
+import {
+  buildDeferredCaseContinuationWorkSession,
+  type DeferredTeamReviewContinuationState,
+} from '../../domain/curriculum/deferredCaseContinuation';
+import { reviewCaseMatchesCurrentUnit } from '../../domain/curriculum/reviewCase';
+import {
+  getSharedReviewCaseContext,
+  mergeAssignedReviewCases,
+} from '../../domain/curriculum/sharedReviewCase';
+import { resolveCurriculumUnitReference } from '../../domain/curriculum/didacticBinding';
+import { getOperationalGroupForDiscipline } from '../../domain/institution/operationalGroups';
+import type { WorkspaceActorContext } from '../../domain/institution/sharedWorkspacePort';
+import { SupabaseDeferredTeamReviewContinuationRepository } from '../../infrastructure/supabase/deferredTeamReviewContinuationRepository';
+import { SupabaseSharedCurriculumReviewCaseRepository } from '../../infrastructure/supabase/sharedCurriculumReviewCaseRepository';
+import { schoolYearToInstitutionalLabel } from '../../lib/academicYear';
+import { useCurriculumStore } from '../../store/useCurriculumStore';
+import type { CurriculumReviewCase, Proposal, SchoolOrder } from '../../types/curriculum';
+import { useTeamWorkspaceContext } from './useTeamWorkspaceContext';
+
+type Props = {
+  order: SchoolOrder;
+  targetClass: string;
+  discipline: string;
+  academicYear: string;
+  proposals: Proposal[];
+};
+
+const replaceCase = (reviewCaseId: string, updater: (reviewCase: CurriculumReviewCase) => CurriculumReviewCase) => {
+  useCurriculumStore.setState((state) => ({
+    curriculumReviewCases: (state.curriculumReviewCases ?? []).map((reviewCase) => (
+      reviewCase.id === reviewCaseId ? updater(reviewCase) : reviewCase
+    )),
+  }));
+};
+
+export function SharedReviewCaseInbox({ order, targetClass, discipline, academicYear, proposals }: Props) {
+  const team = useTeamWorkspaceContext();
+  const curriculumReviewCases = useCurriculumStore((state) => state.curriculumReviewCases ?? []);
+  const curriculumUnit = useMemo(() => resolveCurriculumUnitReference({
+    order,
+    targetClass,
+    disciplineOrField: discipline,
+  }), [discipline, order, targetClass]);
+  const group = useMemo(() => getOperationalGroupForDiscipline(order, discipline), [discipline, order]);
+  const repository = useMemo(() => team.client ? new SupabaseSharedCurriculumReviewCaseRepository(team.client) : null, [team.client]);
+  const continuationRepository = useMemo(() => team.client ? new SupabaseDeferredTeamReviewContinuationRepository(team.client) : null, [team.client]);
+  const [busy, setBusy] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
+  const [lastSyncAt, setLastSyncAt] = useState<string | null>(null);
+  const [continuationStates, setContinuationStates] = useState<Record<string, DeferredTeamReviewContinuationState[]>>({});
+
+  const preferredAcademicYear = useMemo(() => schoolYearToInstitutionalLabel(academicYear), [academicYear]);
+  const operationalMembership = useMemo(() => {
+    if (!group) return null;
+    const matches = team.operationalMemberships.filter((membership) => (
+      membership.schoolOrder === group.order
+      && membership.groupCode === group.code
+      && membership.disciplines.includes(discipline)
+    ));
+    return matches.find((membership) => membership.academicYear === preferredAcademicYear)
+      ?? (matches.length === 1 ? matches[0] : null);
+  }, [discipline, group, preferredAcademicYear, team.operationalMemberships]);
+  const sharedAcademicYear = operationalMembership?.academicYear ?? '';
+
+  const relevantCases = useMemo(() => curriculumReviewCases.filter((reviewCase) => (
+    reviewCaseMatchesCurrentUnit(reviewCase, curriculumUnit)
+  )), [curriculumReviewCases, curriculumUnit]);
+  const assignedCases = useMemo(() => relevantCases.filter((reviewCase) => {
+    const shared = getSharedReviewCaseContext(reviewCase);
+    return shared?.source === 'SERVER_ASSIGNMENT'
+      && shared.academicYear === sharedAcademicYear
+      && shared.discipline === discipline
+      && (!group || shared.groupCode === group.code);
+  }), [discipline, group, relevantCases, sharedAcademicYear]);
+  const assignedCaseKey = assignedCases.map((reviewCase) => reviewCase.id).sort().join(String.fromCharCode(31));
+  const selectedRole = team.selectedMembership?.role;
+  const canAssign = selectedRole === 'dipartimento' || selectedRole === 'referente';
+  const publishableCases = useMemo(() => relevantCases.filter((reviewCase) => (
+    !getSharedReviewCaseContext(reviewCase)
+    && reviewCase.openedBy.actorId === team.session?.user.id
+    && reviewCase.openedBy.roleContext === selectedRole
+    && reviewCase.targetedProposalRefs.length > 0
+    && reviewCase.caseState !== 'PROFESSIONAL_REVIEW_COMPLETE'
+  )), [relevantCases, selectedRole, team.session?.user.id]);
+
+  const context = useMemo<WorkspaceActorContext | null>(() => (
+    team.selectedMembership && team.session
+      ? { membership: team.selectedMembership, assurance: 'authenticated-workspace' }
+      : null
+  ), [team.selectedMembership, team.session]);
+
+  const syncAssigned = useCallback(async (silent = false) => {
+    if (!repository || !context || !group || !operationalMembership) return;
+    if (!silent) setBusy(true);
+    setMessage(null);
+    try {
+      const assigned = await repository.listMyAssignedCases(context, {
+        workspaceId: context.membership.workspaceId,
+        academicYear: operationalMembership.academicYear,
+        groupCode: group.code,
+        discipline,
+      });
+      useCurriculumStore.setState((state) => ({
+        curriculumReviewCases: mergeAssignedReviewCases(state.curriculumReviewCases ?? [], assigned),
+      }));
+      setLastSyncAt(new Date().toISOString());
+      if (!silent) {
+        setMessage(assigned.length > 0
+          ? `${assigned.length} caso${assigned.length === 1 ? '' : 'i'} assegnato${assigned.length === 1 ? '' : 'i'} disponibile${assigned.length === 1 ? '' : 'i'} nel Riesame.`
+          : 'Non risultano casi condivisi assegnati per questo ambito.');
+      }
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : 'Casi condivisi non leggibili.');
+    } finally {
+      if (!silent) setBusy(false);
+    }
+  }, [context, discipline, group, operationalMembership, repository]);
+
+  useEffect(() => {
+    if (!team.configured || !team.session || !team.selectedMembership || !group) return;
+    if (!operationalMembership) {
+      setMessage('Non è disponibile un incarico operativo univoco per questa disciplina e questo gruppo.');
+      return;
+    }
+    void syncAssigned(true);
+  }, [group, operationalMembership, syncAssigned, team.configured, team.selectedMembership?.workspaceId, team.session?.user.id]);
+
+  useEffect(() => {
+    let active = true;
+    if (!continuationRepository || !context || !group || !operationalMembership || assignedCases.length === 0) {
+      setContinuationStates({});
+      return () => { active = false; };
+    }
+    void Promise.all(assignedCases.map(async (reviewCase) => [
+      reviewCase.id,
+      await continuationRepository.listStates(context, context.membership.workspaceId, {
+        academicYear: operationalMembership.academicYear,
+        order: group.order,
+        groupCode: group.code,
+        discipline,
+        reviewCaseId: reviewCase.id,
+      }),
+    ] as const)).then((entries) => {
+      if (active) setContinuationStates(Object.fromEntries(entries));
+    }).catch((error) => {
+      if (active) setMessage(error instanceof Error ? error.message : 'Stato dei punti rinviati non leggibile.');
+    });
+    return () => { active = false; };
+  }, [assignedCaseKey, continuationRepository, context, discipline, group, operationalMembership]);
+
+  const publish = async (reviewCase: CurriculumReviewCase) => {
+    if (!repository || !context || !group || !canAssign || !operationalMembership) return;
+    setBusy(true);
+    setMessage(null);
+    try {
+      const receipt = await repository.publishCase(context, {
+        workspaceId: context.membership.workspaceId,
+        academicYear: operationalMembership.academicYear,
+        groupCode: group.code,
+        discipline,
+        reviewCase,
+      });
+      useCurriculumStore.setState((state) => ({
+        curriculumReviewCases: mergeAssignedReviewCases(state.curriculumReviewCases ?? [], [receipt.reviewCase]),
+      }));
+      setMessage(`Caso assegnato a ${receipt.assignmentCount} partecipant${receipt.assignmentCount === 1 ? 'e' : 'i'}. Nessun riesame personale è stato avviato automaticamente.`);
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : 'Caso non assegnato al gruppo.');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const startOrResume = (reviewCase: CurriculumReviewCase) => {
+    try {
+      const nextSession = reviewCase.workSession
+        ? resumeCaseWorkSession(reviewCase.workSession, team.session?.user.id)
+        : buildCaseScopedCurriculumWorkSession({
+            reviewCase,
+            availableProposals: proposals,
+            actorId: team.session?.user.id,
+          });
+      replaceCase(reviewCase.id, (stored) => ({
+        ...stored,
+        workSession: nextSession,
+        caseState: 'PROFESSIONAL_VALIDATION_IN_PROGRESS',
+        currentHumanPhase: 'H2_PROFESSIONAL_VALIDATION',
+        professionalValidationState: 'IN_PROGRESS',
+      }));
+      setMessage(null);
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : 'Il riesame assegnato non può essere avviato con il contesto corrente.');
+    }
+  };
+
+  const openDeferredContinuationSession = (reviewCase: CurriculumReviewCase, proposalRef: string) => {
+    const nextSession = buildDeferredCaseContinuationWorkSession({
+      reviewCase,
+      availableProposals: proposals,
+      proposalRef,
+      actorId: team.session?.user.id,
+    });
+    replaceCase(reviewCase.id, (stored) => ({
+      ...stored,
+      workSession: nextSession,
+      caseState: 'PROFESSIONAL_VALIDATION_IN_PROGRESS',
+      currentHumanPhase: 'H2_PROFESSIONAL_VALIDATION',
+      professionalValidationState: 'IN_PROGRESS',
+    }));
+  };
+
+  const resumeDeferred = async (reviewCase: CurriculumReviewCase, proposalRef: string) => {
+    if (!continuationRepository || !context || !group || !operationalMembership || !canAssign) return;
+    setBusy(true);
+    setMessage(null);
+    try {
+      await continuationRepository.resumeDeferredItem(context, context.membership.workspaceId, {
+        academicYear: operationalMembership.academicYear,
+        order: group.order,
+        groupCode: group.code,
+        discipline,
+        reviewCaseId: reviewCase.id,
+      }, proposalRef);
+      openDeferredContinuationSession(reviewCase, proposalRef);
+      setContinuationStates((current) => ({
+        ...current,
+        [reviewCase.id]: (current[reviewCase.id] ?? []).map((state) => state.proposalRef === proposalRef
+          ? { ...state, continuationOpen: true, canResume: false }
+          : state),
+      }));
+      setMessage('Il punto rinviato è stato riaperto nello stesso caso. I contributi precedenti restano nello storico e la nuova sessione parte vuota.');
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : 'Il punto rinviato non può essere ripreso.');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  if (!team.configured || !team.session || !team.selectedMembership || !group) return null;
+  if (assignedCases.length === 0 && publishableCases.length === 0 && !message) return null;
+
+  return (
+    <section
+      className="rounded-2xl border border-indigo-200 bg-white p-3 shadow-sm"
+      data-shared-review-case-inbox
+      data-last-sync-at={lastSyncAt ?? ''}
+      data-shared-academic-year={sharedAcademicYear}
+      data-ux-layering="L1-L2-L3"
+    >
+      <div data-hcm-level="1">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <span className="text-[10px] font-black uppercase tracking-wide text-indigo-700">Riesame condiviso</span>
+            <h2 className="mt-1 text-sm font-extrabold text-slate-900">Casi assegnati al mio gruppo</h2>
+            <p className="mt-1 text-xs leading-5 text-slate-600">Ricevere un caso non avvia automaticamente la validazione.</p>
+          </div>
+          <button type="button" disabled={busy || !operationalMembership} onClick={() => void syncAssigned()} className="min-h-10 shrink-0 rounded-xl border border-indigo-200 bg-indigo-50 px-3 py-2 text-xs font-bold text-indigo-800 disabled:opacity-40">
+            {busy ? 'Aggiornamento…' : 'Aggiorna casi'}
+          </button>
+        </div>
+
+        {assignedCases.length > 0 && (
+          <div className="mt-3 space-y-2" data-assigned-review-case-list>
+            {assignedCases.map((reviewCase) => {
+              const missing = reviewCase.targetedProposalRefs.filter((proposalRef) => !proposals.some((proposal) => proposal.id === proposalRef));
+              const states = continuationStates[reviewCase.id] ?? [];
+              const activeContinuations = states.filter((state) => state.continuationOpen);
+              const resumableDeferred = states.filter((state) => state.canResume);
+              return (
+                <article key={reviewCase.id} className="rounded-xl border border-slate-200 bg-slate-50/70 p-3" data-assigned-review-case={reviewCase.id}>
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <strong className="block text-sm leading-5 text-slate-900">{reviewCase.scopeReason}</strong>
+                      <p className="mt-1 text-xs text-slate-600">{reviewCase.targetedProposalRefs.length} {reviewCase.targetedProposalRefs.length === 1 ? 'scheda da riesaminare' : 'schede da riesaminare'}</p>
+                    </div>
+                    <span className="shrink-0 rounded-full bg-indigo-50 px-2.5 py-1 text-[10px] font-bold text-indigo-800">Assegnato</span>
+                  </div>
+                  {missing.length > 0 ? (
+                    <p className="mt-3 rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs leading-5 text-amber-900">Il caso non può essere avviato perché una parte del perimetro non è disponibile nel contesto corrente.</p>
+                  ) : activeContinuations.length > 0 && (!reviewCase.workSession || reviewCase.workSession.sessionState === 'COMPLETE') ? (
+                    <div className="mt-3 space-y-2 rounded-xl border border-indigo-200 bg-indigo-50 p-3">
+                      <p className="text-xs leading-5 text-indigo-950">Un punto rinviato è stato riaperto nello stesso caso. La nuova sessione non riutilizza le scelte precedenti.</p>
+                      {activeContinuations.map((state) => (
+                        <button key={state.proposalRef} type="button" onClick={() => openDeferredContinuationSession(reviewCase, state.proposalRef)} data-human-next-action="join-deferred-team-review-continuation" className="min-h-11 w-full rounded-xl bg-indigo-700 px-4 py-2.5 text-sm font-bold text-white">
+                          Partecipa al nuovo confronto
+                        </button>
+                      ))}
+                    </div>
+                  ) : canAssign && resumableDeferred.length > 0 && (!reviewCase.workSession || reviewCase.workSession.sessionState === 'COMPLETE') ? (
+                    <div className="mt-3 space-y-2 rounded-xl border border-amber-200 bg-amber-50 p-3">
+                      <p className="text-xs leading-5 text-amber-950">L’ultimo esito H2 è un rinvio. Puoi aprire un nuovo confronto professionale mantenendo immutato e tracciato l’esito precedente.</p>
+                      {resumableDeferred.map((state) => (
+                        <button key={state.proposalRef} type="button" disabled={busy} onClick={() => void resumeDeferred(reviewCase, state.proposalRef)} data-human-next-action="resume-deferred-team-review" className="min-h-11 w-full rounded-xl bg-indigo-700 px-4 py-2.5 text-sm font-bold text-white disabled:opacity-40">
+                          Riprendi il punto rinviato
+                        </button>
+                      ))}
+                    </div>
+                  ) : reviewCase.workSession?.sessionState === 'COMPLETE' ? (
+                    <p className="mt-3 text-xs font-semibold text-emerald-800">Il tuo lavoro professionale su questo caso risulta completato.</p>
+                  ) : (
+                    <button type="button" onClick={() => startOrResume(reviewCase)} data-human-next-action="start-assigned-review-case" className="mt-3 min-h-11 w-full rounded-xl bg-indigo-700 px-4 py-2.5 text-sm font-bold text-white sm:w-auto">
+                      {reviewCase.workSession ? 'Riprendi il riesame assegnato' : 'Avvia il riesame assegnato'}
+                    </button>
+                  )}
+                </article>
+              );
+            })}
+          </div>
+        )}
+
+        {canAssign && publishableCases.length > 0 && operationalMembership && (
+          <div className="mt-3 border-t border-slate-100 pt-3" data-review-case-assignment-actions>
+            <strong className="text-xs text-slate-800">Casi pronti per il gruppo</strong>
+            <div className="mt-2 space-y-2">
+              {publishableCases.map((reviewCase) => (
+                <div key={reviewCase.id} className="rounded-xl border border-slate-200 p-3">
+                  <span className="block text-xs leading-5 text-slate-700"><strong>{reviewCase.targetedProposalRefs.length} {reviewCase.targetedProposalRefs.length === 1 ? 'scheda' : 'schede'}</strong> · {reviewCase.scopeReason}</span>
+                  <button type="button" disabled={busy} onClick={() => void publish(reviewCase)} data-human-next-action="assign-review-case-to-team" className="mt-2 min-h-10 w-full rounded-xl bg-indigo-700 px-3 py-2 text-xs font-bold text-white disabled:opacity-40 sm:w-auto">Condividi e assegna al gruppo</button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {message && <p role="status" className="mt-3 rounded-lg bg-indigo-50 p-3 text-xs leading-5 text-slate-700">{message}</p>}
+      </div>
+
+      <details className="mt-3 rounded-xl border border-slate-200 bg-white" data-hcm-level="2">
+        <summary className="cursor-pointer px-3 py-2.5 text-xs font-bold text-slate-700">Come funziona l’assegnazione</summary>
+        <div className="border-t border-slate-100 p-3 text-xs leading-5 text-slate-600">
+          <p>Arena mostra soltanto i casi assegnati al gruppo di lavoro pertinente e alla disciplina corrente. L’assegnazione rende disponibile il caso, ma ogni docente avvia e compila il proprio riesame personalmente.</p>
+        </div>
+      </details>
+
+      <details className="mt-2 rounded-xl border border-slate-200 bg-slate-50" data-hcm-level="3">
+        <summary className="cursor-pointer px-3 py-2.5 text-xs font-bold text-slate-600">Verifica e tracciabilità</summary>
+        <div className="space-y-2 border-t border-slate-200 p-3 text-[11px] leading-5 text-slate-600">
+          {operationalMembership && <p data-operational-review-scope>Ambito operativo verificato: {operationalMembership.academicYear} · {group.code} · {discipline} · {operationalMembership.membershipState === 'FORMALIZZATO' ? 'formalizzato' : 'operativo provvisorio'}.</p>}
+          {assignedCases.map((reviewCase) => {
+            const shared = getSharedReviewCaseContext(reviewCase);
+            const states = continuationStates[reviewCase.id] ?? [];
+            const openCount = states.filter((state) => state.continuationOpen).length;
+            return <p key={reviewCase.id} className="break-all">Caso {reviewCase.id} · master {reviewCase.currentMaster.version} · assegnati {shared?.assignmentCount ?? 0} · continuazioni H2 aperte {openCount}</p>;
+          })}
+          <p>Assegnazione del caso ≠ avvio H2 ≠ contributo professionale ≠ esito del gruppo ≠ decisione istituzionale.</p>
+          <p>Ripresa di un rinvio = nuova sessione professionale nello stesso caso; il precedente H2 e i contributi precedenti restano nello storico e non vengono riutilizzati.</p>
+        </div>
+      </details>
+    </section>
+  );
+}

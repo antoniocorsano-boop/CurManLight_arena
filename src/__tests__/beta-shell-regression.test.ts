@@ -28,11 +28,57 @@ const curriculumWorkspaceSource = firstSource(import.meta.glob('../features/curr
   query: '?raw', import: 'default', eager: true,
 }) as Record<string, string>);
 
+const professionalCurriculumReaderSource = firstSource(import.meta.glob('../features/curriculum/components/ProfessionalCurriculumReader.tsx', {
+  query: '?raw', import: 'default', eager: true,
+}) as Record<string, string>);
+
+const departmentCurriculumManifestSource = firstSource(import.meta.glob('../features/curriculum/data/departmentCurriculumV31.json', {
+  query: '?raw', import: 'default', eager: true,
+}) as Record<string, string>);
+
+const departmentCurriculumIdentitySource = firstSource(import.meta.glob('../features/curriculum/data/departmentCurriculumV31.sections-01-06.json', {
+  query: '?raw', import: 'default', eager: true,
+}) as Record<string, string>);
+
+const departmentCurriculumTechnologySource = firstSource(import.meta.glob('../features/curriculum/data/departmentCurriculumV31.section-09.json', {
+  query: '?raw', import: 'default', eager: true,
+}) as Record<string, string>);
+
+const curriculumPublicationSurfaceSource = `${curriculumWorkspaceSource}\n${professionalCurriculumReaderSource}`;
+
 const technologySourceReviewTaskSource = firstSource(import.meta.glob('../features/curriculum/components/TechnologySourceReviewTask.tsx', {
   query: '?raw', import: 'default', eager: true,
 }) as Record<string, string>);
 
+const finalPublicationSourceReviewTaskSource = firstSource(import.meta.glob('../features/curriculum/components/FinalPublicationSourceReviewTask.tsx', {
+  query: '?raw', import: 'default', eager: true,
+}) as Record<string, string>);
+
+const finalPublicationSourceReviewWorkbenchSource = firstSource(import.meta.glob('../features/curriculum/components/FinalPublicationSourceReviewWorkbench.tsx', {
+  query: '?raw', import: 'default', eager: true,
+}) as Record<string, string>);
+
 const revisionSource = firstSource(import.meta.glob('../features/curriculum/components/RevisioneTab.tsx', {
+  query: '?raw', import: 'default', eager: true,
+}) as Record<string, string>);
+
+const revisionWorkspaceSource = firstSource(import.meta.glob('../features/beta/RevisionWorkspace.tsx', {
+  query: '?raw', import: 'default', eager: true,
+}) as Record<string, string>);
+
+const caseAwareRevisionSource = firstSource(import.meta.glob('../features/beta/CaseAwareRevisionSurface.tsx', {
+  query: '?raw', import: 'default', eager: true,
+}) as Record<string, string>);
+
+const teamCoordinationSource = firstSource(import.meta.glob('../features/beta/TeamCoordinationWorkspace.tsx', {
+  query: '?raw', import: 'default', eager: true,
+}) as Record<string, string>);
+
+const verticalReviewSource = firstSource(import.meta.glob('../features/beta/VerticalReviewPanel.tsx', {
+  query: '?raw', import: 'default', eager: true,
+}) as Record<string, string>);
+
+const h4DecisionSource = firstSource(import.meta.glob('../features/beta/H3BoundInstitutionalDecisionPanel.tsx', {
   query: '?raw', import: 'default', eager: true,
 }) as Record<string, string>);
 
@@ -63,28 +109,36 @@ describe('Arena Beta canonical shell regression guard', () => {
     expect(headerSource).toContain('Curricolo d’istituto');
   });
 
-  it('keeps primary navigation aligned with the institutional Beta journey', () => {
-    for (const text of ['Consulta il curricolo', 'Rivedi le proposte', 'Controlla le fonti', 'Crea un documento']) {
+  it('keeps primary navigation aligned with the evolved teacher journey and secondary support', () => {
+    for (const text of ['Consulta il curricolo', 'Rivedi le proposte', 'Crea un documento', 'Fascicolo']) {
       expect(sidebarSource).toContain(text);
     }
 
     expect(sidebarSource).not.toMatch(/Spazio d['’]Aula|UDA condivise|WikiLLM|Compilatore UDA|Progettazione UDA|Pilota Sperimentale/i);
-    expect(mobileSource).not.toMatch(/Progetta|Classe|Social|Copilot/i);
+    expect(sidebarSource).toContain('data-beta-secondary-navigation="support"');
+    expect(sidebarSource).not.toContain('Controlla le fonti');
+    expect(mobileSource).not.toMatch(/Classe|Social|Copilot/i);
     expect(mobileSource).toContain('Curricolo');
-    expect(mobileSource).toContain('Revisione');
-    expect(mobileSource).toContain('Fonti');
-    expect(mobileSource).toContain('Documenti');
+    expect(mobileSource).toContain("['Progett', 'azione'].join('')");
+    expect(mobileSource).toContain("handleTabSwitch('progetta-annuale')");
+    expect(mobileSource).toContain('Riesame');
+    expect(mobileSource).toContain('data-legacy-review-label="Revisione"');
+    expect(mobileSource).not.toContain('<span>Fonti</span>');
+    expect(mobileSource).toContain('data-secondary-destination="Documenti"');
+    expect(mobileSource).toContain('grid-cols-4');
   });
 
   it('keeps Home compact, task-first and authority-safe with progressive disclosure', () => {
     expect(homeSource).not.toMatch(/Votazione|Voti Registrati|Unione Consensi|Merger|\.cml|IndexedDB|Dexie|Service Worker|WCAG|GDPR/i);
     expect(homeSource).toContain('data-beta-home="role-work-queue"');
+    expect(homeSource).toContain('data-home-assurance="self-declared"');
     expect(homeSource).toContain('data-home-queue="actionable"');
-    expect(homeSource).toContain('Nessuna attività azionabile rilevata adesso.');
-    expect(homeSource).toContain('Arena non crea attività artificiali');
+    expect(homeSource).toContain('Non ci sono attività da completare in questo momento.');
+    expect(homeSource).toContain('Puoi continuare a consultare il curricolo e i materiali disponibili.');
     expect(homeSource).toContain('data-hcm-secondary-content');
-    expect(homeSource).toContain('Come funziona il processo');
-    expect(homeSource).toContain('Preparare una proposta non significa approvarla');
+    expect(homeSource).toContain('Il percorso di lavoro');
+    expect(homeSource).toContain('Contributi personali e confronto professionale.');
+    expect(homeSource).toContain('Programmazione e UDA collegate al curricolo.');
     expect(homeSource).not.toContain('TaskCard');
   });
 
@@ -96,42 +150,107 @@ describe('Arena Beta canonical shell regression guard', () => {
     expect(curriculumWorkspaceSource).toContain('data-teacher-surface="curriculum-workspace"');
   });
 
-  it('gives curriculum context one explicit human next action', () => {
-    expect(viewsSource).toContain('Adesso: controlla se puoi usare questo curricolo');
-    expect(viewsSource).toContain('verifica Fonti, Applicabilità e Stato');
-    expect(viewsSource).toContain('data-human-next-action="verify-curriculum-validity"');
-    expect(viewsSource).toContain('Verifica se puoi usarlo');
-    expect(viewsSource).toContain("safeHandleTabSwitch('fonti')");
-    expect(viewsSource).toContain('Se vuoi solo leggerlo, puoi continuare a consultare i contenuti qui sotto.');
-    expect(curriculumWorkspaceSource).toContain('Curricolo verticale · Tecnologia');
-    expect(curriculumWorkspaceSource).toContain('Verifica una scheda alla volta, dalla primaria alla secondaria di I grado.');
-    expect(curriculumWorkspaceSource).toContain('Controlla la fonte');
-    expect(technologySourceReviewTaskSource).toContain('Scuola primaria');
-    expect(technologySourceReviewTaskSource).toContain('Secondaria di I grado');
-    expect(technologySourceReviewTaskSource).toContain('Scheda {currentIndex + 1} di {queue.length}');
-    expect(technologySourceReviewTaskSource).toContain('Apri la fonte ufficiale');
-    expect(technologySourceReviewTaskSource).toContain('DM221_2025_SOURCE.officialLocator.pdfUrl');
-    expect(technologySourceReviewTaskSource).not.toContain('Controlla Tecnologia nelle Indicazioni 2025');
+  it('presents Curriculum as one professional publication with Esplora Trama and Documento projections', () => {
+    expect(curriculumWorkspaceSource).toContain('ProfessionalCurriculumReader');
+    expect(professionalCurriculumReaderSource).toContain('data-canonical-curriculum-entry');
+    expect(professionalCurriculumReaderSource).toContain('data-curriculum-presentation="professional-publication"');
+    expect(professionalCurriculumReaderSource).toContain('data-curriculum-ux-contract="ARENA_UX_CONTRACT@1.0.0"');
+    expect(professionalCurriculumReaderSource).toContain('Curricolo verticale');
+    expect(departmentCurriculumManifestSource).toContain('Dipartimento Scientifico-Matematico-Tecnologico');
+    for (const discipline of ['Matematica', 'Scienze', 'Tecnologia', 'Informatica', 'STEM']) {
+      expect(departmentCurriculumManifestSource).toContain(`"${discipline}"`);
+    }
+    expect(professionalCurriculumReaderSource).toContain("DEPARTMENT_CURRICULUM_MANIFEST.institution.disciplines.join(' · ')");
+    expect(professionalCurriculumReaderSource).toContain('Versione di lavoro');
+    expect(professionalCurriculumReaderSource).toContain('Validazione professionale aperta');
+    expect(professionalCurriculumReaderSource).toContain('Percorso verticale 3–14');
+    expect(professionalCurriculumReaderSource).toContain('data-curriculum-mode-switch');
+    expect(professionalCurriculumReaderSource).toContain('data-curriculum-mode="explore"');
+    expect(professionalCurriculumReaderSource).toContain('data-curriculum-mode="trama"');
+    expect(professionalCurriculumReaderSource).toContain('data-curriculum-mode="document"');
+    expect(professionalCurriculumReaderSource).toContain('Esplora');
+    expect(professionalCurriculumReaderSource).toContain('Trama');
+    expect(professionalCurriculumReaderSource).toContain('Documento');
+    expect(professionalCurriculumReaderSource).toContain('data-curriculum-professional-explorer');
+    expect(professionalCurriculumReaderSource).toContain('data-curriculum-document-reader');
+    expect(professionalCurriculumReaderSource).toContain('data-curriculum-integral-web-publication');
+    expect(professionalCurriculumReaderSource).toContain('data-curriculum-section-selector');
+    expect(departmentCurriculumIdentitySource).toContain('Premessa e identità epistemologica');
+    expect(departmentCurriculumTechnologySource).toContain('Tecnologia — curricolo verticale');
+    expect(professionalCurriculumReaderSource).toContain('data-open-department-curriculum-document');
+    expect(professionalCurriculumReaderSource).toContain('Apri il documento completo');
+    expect(professionalCurriculumReaderSource).toContain('data-open-department-foundations-document');
+    expect(professionalCurriculumReaderSource).toContain('Fondamenti e tracciabilità');
+    expect(professionalCurriculumReaderSource).toContain('data-curriculum-document-preview');
+    expect(professionalCurriculumReaderSource).not.toContain('Vista web');
+    expect(professionalCurriculumReaderSource).not.toContain('Da esaminare e validare');
+    expect(professionalCurriculumReaderSource).not.toContain('data-secondary-curriculum-navigation');
+
+    expect(curriculumWorkspaceSource).toContain('data-source-review-progressive-disclosure');
+    expect(curriculumWorkspaceSource).toContain('Fonti e verifiche');
+    expect(curriculumWorkspaceSource).toContain('Apri gli strumenti di verifica');
+    expect(curriculumWorkspaceSource).toContain('data-source-review-advanced-tools');
+    expect(curriculumWorkspaceSource).toContain('FinalPublicationSourceReviewWorkbench');
+    expect(curriculumWorkspaceSource).toContain('data-legacy-curriculum-disclosure');
+    expect(curriculumWorkspaceSource).toContain('Archivio precedente');
+
+    expect(curriculumPublicationSurfaceSource).not.toContain('Baseline corrente');
+    expect(curriculumPublicationSurfaceSource).not.toContain('master canonico');
+    expect(curriculumPublicationSurfaceSource).not.toContain('Riesame H2');
+    expect(curriculumPublicationSurfaceSource).not.toContain('superficie H2');
+    expect(curriculumPublicationSurfaceSource).not.toContain('SHA-256');
+    expect(curriculumPublicationSurfaceSource).not.toContain('868 slot');
+    expect(curriculumPublicationSurfaceSource).not.toContain('Esporta pacchetto');
+    expect(curriculumPublicationSurfaceSource).not.toContain('Importa verifiche');
+
+    expect(finalPublicationSourceReviewWorkbenchSource).toContain('data-source-review-roundtrip');
+    expect(finalPublicationSourceReviewWorkbenchSource).toContain('Esporta pacchetto');
+    expect(finalPublicationSourceReviewWorkbenchSource).toContain('Importa verifiche');
+    expect(finalPublicationSourceReviewWorkbenchSource).toContain('FinalPublicationSourceReviewTask');
+    expect(finalPublicationSourceReviewTaskSource).toContain('Scuola dell’infanzia');
+    expect(finalPublicationSourceReviewTaskSource).toContain('Scuola primaria');
+    expect(finalPublicationSourceReviewTaskSource).toContain('Secondaria di I grado');
+    expect(finalPublicationSourceReviewTaskSource).toContain('Filtra per ordine scolastico');
+    expect(finalPublicationSourceReviewTaskSource).toContain('Filtra per campo o disciplina');
+    expect(finalPublicationSourceReviewTaskSource).toContain('Apri la pubblicazione finale MIM');
+    expect(finalPublicationSourceReviewTaskSource).toContain('DM221_2025_SOURCE.officialCurriculumVolume.url');
+    expect(finalPublicationSourceReviewTaskSource).not.toContain('DM221_2025_SOURCE.officialLocator.pdfUrl');
+    expect(technologySourceReviewTaskSource).toContain('DM221_2025_SOURCE.officialCurriculumVolume.url');
+    expect(technologySourceReviewTaskSource).not.toContain('DM221_2025_SOURCE.officialLocator.pdfUrl');
   });
 
-  it('makes revision a focused mobile flow with nearby context and actions', () => {
-    expect(revisionSource).toContain('data-revision-flow="focused"');
-    expect(revisionSource).toContain('data-revision-sticky-context');
+  it('makes personal revision recognition-first with nearby context and actions', () => {
+    expect(revisionSource).toContain('data-revision-flow="recognition-first"');
+    expect(revisionSource).toContain('data-revision-recognition-header');
     expect(revisionSource).toContain('data-revision-current-card');
-    expect(revisionSource).toContain('data-revision-sticky-actions');
+    expect(revisionSource).toContain('data-revision-decision-actions');
     expect(revisionSource).toContain("window.scrollTo({ top: 0, behavior: 'smooth' })");
-    expect(revisionSource).toContain('Confronta una scheda alla volta');
+    expect(revisionSource).toContain('Il mio contributo alla revisione del curricolo');
+    expect(revisionSource).toContain('Questa scelta registra il tuo contributo professionale. La decisione del gruppo è un passaggio distinto.');
     expect(revisionSource).not.toContain('Passo-Passo (Monoscheda)');
     expect(revisionSource).not.toContain('Elenco Completo');
     expect(revisionSource).not.toContain('Istruzioni operative:');
   });
 
-  it('preserves structured proposal and institutional-decision boundaries in the focused revision flow', () => {
-    expect(revisionSource).toContain('StructuredProposalStarter');
-    expect(revisionSource).toContain('InstitutionalDecisionPanel');
-    expect(revisionSource).toContain('Prepara per revisione');
-    expect(revisionSource).toContain('Ammetti alla decisione');
-    expect(revisionSource).toContain('Le tre scelte servono a preparare il lavoro. Non sono voti né approvazioni.');
+  it('keeps governance boundaries while making the general revision surface teacher-readable', () => {
+    expect(revisionWorkspaceSource).toContain('data-curriculum-work-session');
+    expect(revisionWorkspaceSource).toContain('Adesso pensa soltanto al tuo parere. I passaggi successivi si aprono quando servono.');
+    expect(revisionWorkspaceSource).toContain('Esprimi il tuo parere');
+    expect(revisionWorkspaceSource).toContain('Prima dai il tuo parere. Poi lo confronti con il gruppo. Le decisioni dell’Istituto vengono dopo, in un passaggio separato.');
+    expect(revisionWorkspaceSource).not.toContain('Validazione professionale');
+    expect(teamCoordinationSource).toContain('Esito del gruppo registrato. Non è una decisione istituzionale e non modifica da solo il curricolo.');
+    expect(caseAwareRevisionSource).toContain('data-human-phase="H3_VERTICAL_REVIEW"');
+    expect(caseAwareRevisionSource).toContain('Dopo: controlla il raccordo tra le classi');
+    expect(caseAwareRevisionSource).toContain('Non è ancora una decisione dell’Istituto.');
+    expect(caseAwareRevisionSource).toContain('Nei documenti di processo questo passaggio è chiamato riesame verticale.');
+    expect(caseAwareRevisionSource).not.toContain('Le schede H2 sono legate alla singola annualità.');
+    expect(caseAwareRevisionSource).not.toContain('H3 si apre solo con un gesto esplicito');
+    expect(verticalReviewSource).toContain('H3BoundInstitutionalDecisionPanel');
+    expect(verticalReviewSource).toContain('Nessuna decisione istituzionale è stata creata.');
+    expect(h4DecisionSource).toContain('data-h3-bound-h4-panel');
+    expect(h4DecisionSource).toContain('H4 · decisione esplicita');
+    expect(h4DecisionSource).toContain('La decisione resta distinta dall’adozione: non rende vigente il curricolo e non promuove automaticamente il master.');
+    expect(h4DecisionSource).toContain('Nessuna adozione, vigenza o promozione del master è stata eseguita.');
   });
 
   it('keeps Documents inside the institutional curriculum scope', () => {
@@ -163,8 +282,10 @@ describe('Arena Beta canonical shell regression guard', () => {
     expect(documentsSource).not.toContain('handleClearLocalStorageWithReset()');
   });
 
-  it('emits /fonti as the canonical source route while retaining legacy /settings compatibility', () => {
-    expect(routingSource).toContain("case 'fonti': return '/fonti'");
+  it('emits /fascicolo as the canonical source route while retaining legacy source compatibility', () => {
+    expect(routingSource).toContain("case 'fonti': return '/fascicolo'");
+    expect(routingSource).toContain("pathname.startsWith('/fascicolo')");
+    expect(routingSource).toContain("pathname.startsWith('/fonti')");
     expect(routingSource).toContain("pathname.startsWith('/settings')");
     expect(routingSource).not.toContain("case 'fonti': return '/settings'");
   });

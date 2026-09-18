@@ -53,17 +53,18 @@ export interface CanonicalNationalSegment {
   notes?: string;
 }
 
-const art2 = (note: string): NationalSourceLocator => ({
+const art2 = (note: string, page = 6): NationalSourceLocator => ({
   sourceId: DM221_2025_SOURCE_ID,
   article: '2',
-  page: 34,
+  page,
   note,
 });
 
-const annexInfanzia = (section: string): NationalSourceLocator => ({
+const annexInfanzia = (section: string, page: number): NationalSourceLocator => ({
   sourceId: DM221_2025_SOURCE_ID,
   section,
-  note: 'Sezione canonica dell’allegato; il locator di dettaglio per competenze e obiettivi sarà aggiunto elemento per elemento.',
+  page,
+  note: 'Locator della sezione nel volume finale MIM di marzo 2026; il singolo testo resta da verificare elemento per elemento.',
 });
 
 export const DM221_INFANZIA_FIELDS: Readonly<Record<InfanziaFieldId, CanonicalNationalSegment>> = {
@@ -73,7 +74,7 @@ export const DM221_INFANZIA_FIELDS: Readonly<Record<InfanziaFieldId, CanonicalNa
     label: 'Il sé e l’altro',
     schoolOrders: ['infanzia'],
     universalRequirement: true,
-    sourceLocator: annexInfanzia('Campo di esperienza — Il sé e l’altro'),
+    sourceLocator: annexInfanzia('Campo di esperienza — Il sé e l’altro', 57),
   },
   IL_CORPO_E_IL_MOVIMENTO: {
     id: 'dm221-infanzia-il-corpo-e-il-movimento',
@@ -81,7 +82,7 @@ export const DM221_INFANZIA_FIELDS: Readonly<Record<InfanziaFieldId, CanonicalNa
     label: 'Il corpo e il movimento',
     schoolOrders: ['infanzia'],
     universalRequirement: true,
-    sourceLocator: annexInfanzia('Campo di esperienza — Il corpo e il movimento'),
+    sourceLocator: annexInfanzia('Campo di esperienza — Il corpo e il movimento', 59),
   },
   IMMAGINI_SUONI_COLORI: {
     id: 'dm221-infanzia-immagini-suoni-colori',
@@ -89,7 +90,7 @@ export const DM221_INFANZIA_FIELDS: Readonly<Record<InfanziaFieldId, CanonicalNa
     label: 'Immagini, suoni e colori',
     schoolOrders: ['infanzia'],
     universalRequirement: true,
-    sourceLocator: annexInfanzia('Campo di esperienza — Immagini, suoni e colori'),
+    sourceLocator: annexInfanzia('Campo di esperienza — Immagini, suoni e colori', 61),
   },
   I_DISCORSI_E_LE_PAROLE: {
     id: 'dm221-infanzia-i-discorsi-e-le-parole',
@@ -97,7 +98,7 @@ export const DM221_INFANZIA_FIELDS: Readonly<Record<InfanziaFieldId, CanonicalNa
     label: 'I discorsi e le parole',
     schoolOrders: ['infanzia'],
     universalRequirement: true,
-    sourceLocator: annexInfanzia('Campo di esperienza — I discorsi e le parole'),
+    sourceLocator: annexInfanzia('Campo di esperienza — I discorsi e le parole', 63),
   },
   LA_CONOSCENZA_DEL_MONDO: {
     id: 'dm221-infanzia-la-conoscenza-del-mondo',
@@ -105,7 +106,7 @@ export const DM221_INFANZIA_FIELDS: Readonly<Record<InfanziaFieldId, CanonicalNa
     label: 'La conoscenza del mondo',
     schoolOrders: ['infanzia'],
     universalRequirement: true,
-    sourceLocator: annexInfanzia('Campo di esperienza — La conoscenza del mondo'),
+    sourceLocator: annexInfanzia('Campo di esperienza — La conoscenza del mondo', 64),
   },
 };
 
@@ -131,7 +132,7 @@ export const DM221_SPECIAL_SEGMENTS: readonly CanonicalNationalSegment[] = [
     label: 'Educazione integrata matematico-scientifico-tecnologica (STEM)',
     schoolOrders: ['primaria', 'secondaria'],
     universalRequirement: false,
-    sourceLocator: { sourceId: DM221_2025_SOURCE_ID, section: 'Educazione integrata matematico-scientifico-tecnologica (STEM)', page: 83 },
+    sourceLocator: { sourceId: DM221_2025_SOURCE_ID, section: 'Educazione integrata matematico-scientifico-tecnologica (STEM)', page: 113 },
     notes: 'Sezione integrata dell’allegato; non viene trasformata in una disciplina autonoma dell’art. 2, comma 1.',
   },
   {
@@ -166,7 +167,7 @@ export const DM221_SPECIAL_SEGMENTS: readonly CanonicalNationalSegment[] = [
     label: 'Religione cattolica',
     schoolOrders: ['infanzia', 'primaria', 'secondaria'],
     universalRequirement: false,
-    sourceLocator: art2('Art. 2, c. 6 — rinvio al D.P.R. 11 febbraio 2010'),
+    sourceLocator: art2('Art. 2, c. 6 — rinvio al D.P.R. 11 febbraio 2010', 7),
     notes: 'Il contenuto curricolare IRC richiede la fonte concordataria richiamata; non va auto-popolato dal D.M. 221/2025.',
   },
   {

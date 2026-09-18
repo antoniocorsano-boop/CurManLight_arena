@@ -1,0 +1,64 @@
+{
+  "schemaVersion": "arena-r7c6a-migration-readiness-v1",
+  "workItem": "R7C6A",
+  "date": "2026-09-03",
+  "state": "PREP_BLOCKED",
+  "logicalBase": {
+    "workItem": "R7C5C3",
+    "sha": "bfeadc81e5f5093ee8cb67eadd92b3d65e2632c6"
+  },
+  "persistence": {
+    "currentMode": "legacy-only",
+    "nextCandidateMode": "dual-read",
+    "transitionAuthorized": false,
+    "automaticModeMutationAuthorized": false,
+    "dualWriteAuthorized": false,
+    "newDomainPrimaryAuthorized": false
+  },
+  "nationalSource": {
+    "structuralElementCount": 868,
+    "expectedStructuralElementCount": 868,
+    "canonicalPdfSha256Present": false,
+    "humanVerifiedElementCount": null,
+    "humanVerifiedElementCountEvidence": "NOT_DURABLY_PROVEN"
+  },
+  "instituteSource": {
+    "file": "CURRICOLO VERTICALE .docx",
+    "sha256": "187bc12a771a29331c0d6638abe9e74788a2554af2735e3b9f43321d8f2ae57b",
+    "pages": 89,
+    "sourceReconstructionAuditPr": 182,
+    "sourceReconstructionAuditHead": "f4fe11a43c73d9ded562c773d2cb56eebb511ad9",
+    "authority": "LOCAL_WORKING",
+    "semanticStatus": "UNASSESSED",
+    "curriculumPresentations": 32,
+    "derivedSourceItems": 741,
+    "presentationStatus": {
+      "SOURCE_READY_FOR_SEMANTIC_REVIEW": 27,
+      "BLOCKED_SOURCE_DEFECT": 3,
+      "BLOCKED_HEADER_REPAIR": 1,
+      "REVIEW_REQUIRED_IDENTITY_LABEL": 1
+    },
+    "humanSemanticReviewComplete": false
+  },
+  "currentBlockers": [
+    "CANONICAL_NATIONAL_PDF_FINGERPRINT_MISSING",
+    "NATIONAL_SOURCE_VERIFICATION_INCOMPLETE_OR_UNEVIDENCED",
+    "INSTITUTE_SOURCE_DEFECTS_UNRESOLVED",
+    "INSTITUTE_SEMANTIC_REVIEW_INCOMPLETE",
+    "BACKUP_GATE_NOT_PROVEN",
+    "ROLLBACK_GATE_NOT_PROVEN",
+    "DETERMINISTIC_COMPARISON_NOT_PROVEN",
+    "HUMAN_VALIDATION_NOT_PROVEN"
+  ],
+  "authorityEffects": {
+    "nationalAuthorityMutation": false,
+    "institutionalAuthorityMutation": false,
+    "p3Mutation": false,
+    "p7Mutation": false,
+    "runtimeMutation": false,
+    "persistenceMutation": false,
+    "legacyDataMutation": false,
+    "institutionalAdoption": false
+  },
+  "nextGovernedStep": "PROVE_PREREQUISITES_BEFORE_DUAL_READ_VALIDATION"
+}

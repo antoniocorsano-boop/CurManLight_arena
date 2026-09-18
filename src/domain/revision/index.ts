@@ -15,3 +15,4 @@ export * from './sharedDecisionPort';
 export * from './sharedSubmittedProposalAuthority';
 export * from './versionFingerprint';
 export * from './adoptionBinding';
+export * from './teamReview';

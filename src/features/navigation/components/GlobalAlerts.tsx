@@ -21,11 +21,11 @@ export function GlobalAlerts({
        <div className="bg-rose-50 border-2 border-rose-200 p-4 rounded-xl flex items-start space-x-3 text-xs leading-normal font-semibold text-rose-950 shadow-sm fade-in text-left">
         <span className="text-xl shrink-0"></span>
         <div className="space-y-1">
-         <strong className="font-extrabold uppercase tracking-wide text-rose-900 block text-[10px]">Attenzione: memoria temporanea volatile</strong>
+         <strong className="font-extrabold uppercase tracking-wide text-rose-900 block text-[10px]">Persistenza locale non disponibile</strong>
          <p className="text-[11px] text-rose-800 font-medium leading-relaxed">
-          Il browser ha inibito l'accesso al database permanente locale (IndexedDB / localStorage) a causa di restrizioni di sicurezza (es. modalità navigazione in incognito o Sandbox Iframe bloccato). 
-          <strong>Qualsiasi programmazione, bozza o UDA inserita verrà persa alla chiusura di questa pagina.</strong> 
-           Esporta regolarmente una copia JSON sul dispositivo o prova il caricamento sul Google Drive dell'account selezionato. Destinazione e protezione non sono verificate dall'app.
+          Arena non ha superato una verifica reale di scrittura e lettura su IndexedDB oppure una successiva operazione sul database locale è fallita. 
+          <strong>L'applicazione sta quindi usando memoria temporanea e il test reale non è valido finché questo avviso rimane visibile.</strong> 
+          Non inserire lavoro da conservare: ricarica la pagina in una finestra normale del browser o usa un ambiente in cui IndexedDB sia consentito.
          </p>
         </div>
        </div>

@@ -1,0 +1,80 @@
+{
+  "schema_version": "1.0",
+  "design_id": "CML-DOS-C2P-DOMAIN-INSERTION-V1",
+  "date": "2026-09-09",
+  "status": "C2P-01_PURE_DOMAIN_DESIGN_CANDIDATE",
+  "mirror_role": "ARENA_AUTHORITY_BOUNDARY_MIRROR",
+  "canonical_tranche_numbering_preserved": true,
+  "c2p_02": "Arena Curriculum Release Boundary (C1)",
+  "authorization": {
+    "runtime_changes": false,
+    "database_schema_changes": false,
+    "migrations": false,
+    "api_changes": false,
+    "ui_changes": false,
+    "deployment_changes": false,
+    "authority_transitions": false
+  },
+  "surfaces": [
+    {
+      "id": "PLAN_BLOCK_CURRICULUM_BINDING",
+      "contract": "C2",
+      "owner": "DOCENTE_OS",
+      "source_authority_owner": "ARENA",
+      "future_tranche": "C2P-04",
+      "reuse_root": "existing Annual Plan engine plus accepted curriculum context"
+    },
+    {
+      "id": "UDA_CURRICULUM_BINDING",
+      "contract": "C3",
+      "owner": "DOCENTE_OS",
+      "source_authority_owner": "ARENA",
+      "future_tranche": "C2P-05",
+      "reuse_root": "existing UDA/Progetta/authored-document identity and version history"
+    },
+    {
+      "id": "EVIDENCE_FEEDBACK_REVISION_ASSESSMENT_LINEAGE",
+      "contract": "C4",
+      "owner": "DOCENTE_OS",
+      "future_tranche": "C2P-06",
+      "reuse_root": "existing TeachingSession/canonical block allocation",
+      "pupil_level_data_residency": "DOCENTE_OS_ONLY"
+    },
+    {
+      "id": "CURRICULUM_MIGRATION_IMPACT_MANIFEST",
+      "contract": "C6",
+      "owner": "DOCENTE_OS",
+      "trigger_authority_owner": "ARENA",
+      "future_tranche": "C2P-09",
+      "reuse_root": "existing accepted-curriculum revalidation and structural-footprint comparison",
+      "dispositions": [
+        "UNCHANGED_COMPATIBLE",
+        "FUTURE_REVALIDATION_REQUIRED",
+        "FUTURE_REBIND_REQUIRED",
+        "HISTORICAL_PRESERVE",
+        "MANUAL_REVIEW_REQUIRED"
+      ]
+    }
+  ],
+  "unique_channels": {
+    "C1": "CML_LOCAL_HANDOFF_V2 plus Docente OS acceptance/revalidation",
+    "C5": "CurriculumFeedbackDraft/EnvelopeV1"
+  },
+  "invariants": [
+    "Arena remains institutional curriculum authority.",
+    "Docente OS remains teacher professional-work owner.",
+    "No shared canonical database.",
+    "No duplicate Annual Plan engine or UDA archive.",
+    "No duplicate C1 or C5 transport.",
+    "No pupil-level data to Arena.",
+    "No silent historical rewrite or future rebinding.",
+    "Teacher professional judgment remains human."
+  ],
+  "acceptance": {
+    "owner_assigned_to_every_surface": true,
+    "reuse_root_assigned_to_every_surface": true,
+    "duplicate_cross_product_channel": false,
+    "pupil_data_crosses_to_arena": false,
+    "runtime_mutation": false
+  }
+}

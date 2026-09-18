@@ -1,0 +1,79 @@
+{
+  "schemaVersion": "arena-r7c5b1-final-publication-element-inventory-v1",
+  "workItem": "R7C5B1_FINAL_PUBLICATION_ELEMENT_INVENTORY_CONTRACT",
+  "state": "PARTIAL_STRUCTURAL_INVENTORY_FAIL_CLOSED",
+  "gateMode": "EXACT_HEAD_REQUIRED",
+  "base": {
+    "r7c5aHead": "5b49e7b044f6e1410c63d9f74a999bd9300cfb1b",
+    "r7c4Head": "a20b062e49d972fff083d0d5c6d2f12635c81ecc"
+  },
+  "source": {
+    "publication": "Indicazioni nazionali per il curricolo della scuola dell’infanzia e del primo ciclo d’istruzione",
+    "publisher": "Ministero dell’Istruzione e del Merito",
+    "printedAt": "2026-03",
+    "pageNumbering": "PRINTED_PAGE"
+  },
+  "ledger": {
+    "entries": 22,
+    "countVerifiedEntries": 7,
+    "countRequiredEntries": 15,
+    "verifiedStructuralElementCount": 123,
+    "guessedCountsAllowed": false
+  },
+  "verifiedInventories": {
+    "infanziaFields": {
+      "elements": 61,
+      "fieldCount": 5,
+      "expectedCompetences": 24,
+      "specificObjectives": 27,
+      "finalityNarrativeEntries": 5,
+      "methodologicalGuidanceNarrativeEntries": 5
+    },
+    "infanziaTransitionProfile": {
+      "elements": 1,
+      "printedPage": 67
+    },
+    "technology": {
+      "elements": 61,
+      "printedPages": "140-146",
+      "groups": {
+        "primaryExpectedCompetences": 8,
+        "primaryGrade3Objectives": 8,
+        "primaryGrade5Objectives": 12,
+        "primaryKnowledge": 3,
+        "lowerSecondaryExpectedCompetences": 8,
+        "lowerSecondaryGrade3Objectives": 18,
+        "lowerSecondaryKnowledge": 4
+      }
+    }
+  },
+  "pendingCountSections": [
+    "INFANZIA_GENERAL_FRAMEWORK",
+    "ITALIANO",
+    "LEL",
+    "LINGUA_INGLESE",
+    "SECONDA_LINGUA_COMUNITARIA",
+    "STORIA",
+    "GEOGRAFIA",
+    "STEM",
+    "MATEMATICA",
+    "SCIENZE",
+    "MUSICA",
+    "STRUMENTO_MUSICALE",
+    "ARTE_E_IMMAGINE",
+    "EDUCAZIONE_MOTORIA",
+    "EDUCAZIONE_FISICA"
+  ],
+  "authorityInvariants": {
+    "humanSourceTextVerified": false,
+    "sourceVerifiedClaimed": false,
+    "nationalPrescriptiveClaimed": false,
+    "automaticInstituteNationalMapping": false,
+    "runtimeMutation": false,
+    "persistenceMutation": false,
+    "p3Mutation": false,
+    "p7Mutation": false,
+    "institutionalAdoptionClaimed": false
+  },
+  "nextWorkItem": "R7C5B2_COUNT_REMAINING_FINAL_PUBLICATION_SECTIONS"
+}

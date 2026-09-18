@@ -162,6 +162,8 @@ function OnboardingNavigationHarness({
 }) {
  const [order, setOrderState] = useState<SchoolOrder>('primaria');
  const onboarding = useOnboardingProfile({
+  role: 'non-dichiarato',
+  discipline: 'italiano',
   order,
   setRole: onRole,
   setDiscipline: onDiscipline,

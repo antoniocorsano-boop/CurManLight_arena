@@ -1,4 +1,5 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
+import { resolveRouterBasename } from '../../features/navigation/routerBasename';
 import { getSupabasePublicConfig, type SupabaseConfigResolution } from './config';
 
 let browserClient: SupabaseClient | null = null;
@@ -7,6 +8,43 @@ export interface OptionalSupabaseClientResult {
   client: SupabaseClient | null;
   config: SupabaseConfigResolution;
 }
+
+export const resolveBetaIdentityRedirectUrl = (): string | null => {
+  if (typeof window === 'undefined' || import.meta.env.MODE !== 'beta') return null;
+
+  const basename = resolveRouterBasename(import.meta.env.MODE, window.location.pathname);
+  const target = new URL(basename === '/' ? '/beta-identity' : `${basename}/`, window.location.origin);
+
+  // GitHub Pages cannot serve /<repo>/beta-identity as a physical deep route.
+  // Keep the root route for root-hosted previews and use the SPA query entry
+  // when Arena is published below a repository basename.
+  if (basename !== '/') {
+    target.searchParams.set('betaIdentity', '1');
+  }
+
+  return target.toString();
+};
+
+const createRedirectAwareFetch = (supabaseUrl: string): typeof fetch => {
+  const nativeFetch = globalThis.fetch.bind(globalThis);
+  const supabaseOrigin = new URL(supabaseUrl).origin;
+
+  return (input, init) => {
+    if (typeof input === 'string' || input instanceof URL) {
+      const requestUrl = new URL(input.toString());
+      const isEmailAuthRequest = requestUrl.origin === supabaseOrigin
+        && (requestUrl.pathname.endsWith('/auth/v1/signup') || requestUrl.pathname.endsWith('/auth/v1/resend'));
+      const redirectTo = resolveBetaIdentityRedirectUrl();
+
+      if (isEmailAuthRequest && redirectTo && !requestUrl.searchParams.has('redirect_to')) {
+        requestUrl.searchParams.set('redirect_to', redirectTo);
+        return nativeFetch(requestUrl, init);
+      }
+    }
+
+    return nativeFetch(input, init);
+  };
+};
 
 /**
  * Creates no client in local-only mode. A partially configured environment
@@ -29,6 +67,9 @@ export const getOptionalSupabaseBrowserClient = (): OptionalSupabaseClientResult
         persistSession: true,
         autoRefreshToken: true,
         detectSessionInUrl: true,
+      },
+      global: {
+        fetch: createRedirectAwareFetch(config.config.url),
       },
     });
   }

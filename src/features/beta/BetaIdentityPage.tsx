@@ -1,6 +1,10 @@
 import { FormEvent, useEffect, useMemo, useState, type CSSProperties } from 'react';
 import type { Session } from '@supabase/supabase-js';
-import { getOptionalSupabaseBrowserClient } from '../../infrastructure/supabase/client';
+import { Link } from 'react-router-dom';
+import {
+  getOptionalSupabaseBrowserClient,
+  resolveBetaIdentityRedirectUrl,
+} from '../../infrastructure/supabase/client';
 
 type MembershipRow = {
   workspace_id: string;
@@ -15,7 +19,6 @@ type ProbeState = {
 };
 
 type AuthMode = 'sign-in' | 'sign-up' | 'forgot-password' | 'recovery';
-type MessageKind = 'success' | 'error' | 'info';
 
 const colors = {
   ink: '#172033',
@@ -102,13 +105,6 @@ const linkButtonStyle: CSSProperties = {
   textDecoration: 'underline',
 };
 
-function hasRecoveryHint() {
-  if (typeof window === 'undefined') return false;
-  return window.location.hash.includes('type=recovery')
-    || window.location.search.includes('type=recovery')
-    || window.location.search.includes('recovery=1');
-}
-
 function roleLabel(role: string) {
   switch (role) {
     case 'docente': return 'Docente';
@@ -116,9 +112,15 @@ function roleLabel(role: string) {
     case 'referente': return 'Referente';
     case 'dirigente': return 'Dirigente';
     case 'amministratore': return 'Amministratore';
-    case 'collegio': return 'Collegio';
     default: return role;
   }
+}
+
+function hasRecoveryHint() {
+  if (typeof window === 'undefined') return false;
+  return window.location.hash.includes('type=recovery')
+    || window.location.search.includes('type=recovery')
+    || window.location.search.includes('recovery=1');
 }
 
 export default function BetaIdentityPage() {
@@ -138,7 +140,8 @@ export default function BetaIdentityPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
-  const [messageKind, setMessageKind] = useState<MessageKind>('info');
+  const [messageKind, setMessageKind] = useState<'success' | 'error' | 'info'>('info');
+  const [awaitingEmailConfirmation, setAwaitingEmailConfirmation] = useState(false);
   const [transportProbe, setTransportProbe] = useState<ProbeState>({ status: 'idle', detail: 'Non verificato' });
   const [apiProbe, setApiProbe] = useState<ProbeState>({ status: 'idle', detail: 'Non verificata' });
 
@@ -198,7 +201,7 @@ export default function BetaIdentityPage() {
     if (error) {
       setMemberships([]);
       setMessageKind('error');
-      setMessage(`Non riesco a leggere l’appartenenza al team: ${error.message}`);
+      setMessage(`Non riesco a leggere l'appartenenza al team: ${error.message}`);
       return;
     }
     setMemberships((data ?? []) as MembershipRow[]);
@@ -209,7 +212,6 @@ export default function BetaIdentityPage() {
     void probeSupabase();
     void client.auth.getSession().then(({ data }) => {
       setSession(data.session);
-      if (data.session && hasRecoveryHint()) setAuthMode('recovery');
       void refreshMemberships(data.session);
     });
 
@@ -232,11 +234,19 @@ export default function BetaIdentityPage() {
     const { error } = await client.auth.signInWithPassword({ email: email.trim(), password });
     setBusy(false);
     if (error) {
+      const authCode = (error as { code?: string }).code;
+      if (authCode === 'email_not_confirmed' || /email not confirmed/i.test(error.message)) {
+        setAwaitingEmailConfirmation(true);
+        setMessageKind('info');
+        setMessage('Account creato, ma email non ancora confermata. Apri il messaggio ricevuto e conferma l’indirizzo prima di accedere.');
+        return;
+      }
       setMessageKind('error');
       setMessage('Accesso non riuscito. Controlla email e password oppure usa “Password dimenticata?”.');
       if (/failed to fetch|network/i.test(error.message)) void probeSupabase();
       return;
     }
+    setAwaitingEmailConfirmation(false);
     setMessageKind('success');
     setMessage('Accesso effettuato. Ora puoi entrare nel lavoro condiviso del team.');
   };
@@ -260,12 +270,14 @@ export default function BetaIdentityPage() {
     }
     setMessageKind('success');
     if (data.session) {
+      setAwaitingEmailConfirmation(false);
       setMessage('Account creato. La sessione è già attiva.');
     } else {
+      setAwaitingEmailConfirmation(true);
       setAuthMode('sign-in');
       setPassword('');
       setPasswordConfirm('');
-      setMessage('Account creato. Controlla l’email e conferma l’indirizzo prima di accedere.');
+      setMessage('Account creato. Ti abbiamo inviato un’email: conferma l’indirizzo prima di accedere.');
     }
   };
 
@@ -273,9 +285,11 @@ export default function BetaIdentityPage() {
     if (!client || !email.trim()) return;
     setBusy(true);
     setMessage(null);
-    // Il Site URL Supabase è già autorizzato. main.tsx conserva il token one-time
-    // e instrada il fallback GitHub Pages verso l’ingresso SPA ?betaIdentity=1.
-    const { error } = await client.auth.resetPasswordForEmail(email.trim());
+    const redirectTo = resolveBetaIdentityRedirectUrl();
+    const { error } = await client.auth.resetPasswordForEmail(
+      email.trim(),
+      redirectTo ? { redirectTo } : undefined,
+    );
     setBusy(false);
     if (error) {
       setMessageKind('error');
@@ -299,7 +313,6 @@ export default function BetaIdentityPage() {
       return;
     }
     setBusy(true);
-    setMessage(null);
     const { error } = await client.auth.updateUser({ password: recoveryPassword });
     setBusy(false);
     if (error) {
@@ -312,9 +325,20 @@ export default function BetaIdentityPage() {
     setAuthMode('sign-in');
     setMessageKind('success');
     setMessage('Password aggiornata. La sessione è attiva e puoi continuare nel lavoro del team.');
-    if (typeof window !== 'undefined' && window.location.hash) {
-      window.history.replaceState(null, '', `${window.location.pathname}${window.location.search}`);
+  };
+
+  const resendConfirmation = async () => {
+    if (!client || !email.trim()) return;
+    setBusy(true);
+    const { error } = await client.auth.resend({ type: 'signup', email: email.trim() });
+    setBusy(false);
+    if (error) {
+      setMessageKind('error');
+      setMessage('Non riesco a reinviare l’email di conferma. Riprova tra poco.');
+      return;
     }
+    setMessageKind('success');
+    setMessage('Email di conferma inviata di nuovo. Controlla anche la cartella Spam o Posta indesiderata.');
   };
 
   const submitAuth = async (event: FormEvent) => {
@@ -338,6 +362,7 @@ export default function BetaIdentityPage() {
   const switchMode = (nextMode: AuthMode) => {
     setAuthMode(nextMode);
     setMessage(null);
+    setAwaitingEmailConfirmation(false);
     setPassword('');
     setPasswordConfirm('');
     setRecoveryPassword('');
@@ -348,11 +373,10 @@ export default function BetaIdentityPage() {
     return (
       <main style={pageStyle}>
         <div style={shellStyle}>
+          <Link to="/revisione" style={{ color: colors.primary, fontWeight: 800, textDecoration: 'none' }}>← Torna alla revisione</Link>
           <section style={panelStyle}>
-            <span style={{ display: 'inline-block', padding: '5px 9px', borderRadius: 999, background: '#eeecff', color: colors.primaryDark, fontSize: 12, fontWeight: 900, letterSpacing: '.04em' }}>
-              CURMANLIGHT ARENA · BETA
-            </span>
-            <h1 style={{ margin: '14px 0 8px', fontSize: 30, lineHeight: 1.15 }}>Accesso non disponibile</h1>
+            <p style={{ margin: 0, color: colors.error, fontWeight: 800 }}>Accesso non disponibile</p>
+            <h1 style={{ margin: '6px 0 8px', fontSize: 28 }}>Identità Beta non configurata</h1>
             <p style={{ marginBottom: 0, color: colors.muted }}>Questa build non è collegata al servizio di identità necessario per il lavoro del team.</p>
           </section>
         </div>
@@ -374,7 +398,6 @@ export default function BetaIdentityPage() {
       : apiReachable
         ? 'Connessione al servizio di identità disponibile.'
         : 'Diagnostica in corso o non ancora conclusiva.';
-
   const messageStyle: CSSProperties = messageKind === 'error'
     ? { background: colors.errorBg, color: colors.error, border: '1px solid #fecdca' }
     : messageKind === 'success'
@@ -396,6 +419,10 @@ export default function BetaIdentityPage() {
   return (
     <main style={pageStyle}>
       <div style={shellStyle}>
+        <Link to="/revisione" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, color: colors.primary, fontWeight: 800, textDecoration: 'none' }}>
+          ← Torna alla revisione
+        </Link>
+
         <section style={panelStyle}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12, flexWrap: 'wrap' }}>
             <div>
@@ -462,12 +489,7 @@ export default function BetaIdentityPage() {
                   <>
                     <label style={labelStyle}>
                       Nuova password
-                      <div style={{ position: 'relative' }}>
-                        <input type={showPassword ? 'text' : 'password'} value={recoveryPassword} onChange={(event) => setRecoveryPassword(event.target.value)} required minLength={8} autoComplete="new-password" placeholder="Almeno 8 caratteri" style={{ ...inputStyle, paddingRight: 86 }} />
-                        <button type="button" onClick={() => setShowPassword((current) => !current)} aria-pressed={showPassword} style={{ position: 'absolute', right: 8, top: 13, border: 0, background: 'transparent', color: colors.primary, fontWeight: 800, padding: '8px 9px', cursor: 'pointer' }}>
-                          {showPassword ? 'Nascondi' : 'Mostra'}
-                        </button>
-                      </div>
+                      <input type={showPassword ? 'text' : 'password'} value={recoveryPassword} onChange={(event) => setRecoveryPassword(event.target.value)} required minLength={8} autoComplete="new-password" placeholder="Almeno 8 caratteri" style={inputStyle} />
                     </label>
                     <label style={labelStyle}>
                       Conferma nuova password
@@ -478,6 +500,14 @@ export default function BetaIdentityPage() {
 
                 {message && (
                   <p role="status" aria-live="polite" style={{ ...messageStyle, margin: 0, padding: '11px 12px', borderRadius: 10, fontWeight: 700 }}>{message}</p>
+                )}
+
+                {awaitingEmailConfirmation && (
+                  <section style={{ padding: 14, borderRadius: 12, background: colors.warningBg, border: '1px solid #fedf89' }}>
+                    <strong style={{ display: 'block', color: colors.warning }}>Conferma la tua email</strong>
+                    <p style={{ margin: '6px 0 12px', color: '#754c00' }}>L’account esiste già. Prima del primo accesso devi aprire l’email di conferma ricevuta dal servizio Beta.</p>
+                    <button type="button" onClick={() => void resendConfirmation()} disabled={busy} style={secondaryButtonStyle}>{busy ? 'Invio in corso…' : 'Invia di nuovo l’email di conferma'}</button>
+                  </section>
                 )}
 
                 <button
@@ -541,7 +571,7 @@ export default function BetaIdentityPage() {
                     {activeMemberships.map((membership) => (
                       <article key={`${membership.workspace_id}:${membership.user_id}`} style={{ padding: 14, borderRadius: 12, border: `1px solid ${colors.border}`, background: '#fbfcff' }}>
                         <strong style={{ display: 'block' }}>{roleLabel(membership.role)}</strong>
-                        <span style={{ color: colors.success, fontSize: 14, fontWeight: 800 }}>Appartenenza attiva</span>
+                        <span style={{ color: colors.success, fontSize: 14, fontWeight: 800 }}>Membership attiva</span>
                         <details style={{ marginTop: 7, color: colors.muted, fontSize: 13 }}>
                           <summary style={{ cursor: 'pointer' }}>Dettagli tecnici</summary>
                           <code style={{ wordBreak: 'break-all' }}>{membership.workspace_id}</code>
@@ -552,7 +582,8 @@ export default function BetaIdentityPage() {
                 </section>
               )}
 
-              <button type="button" disabled={busy} onClick={signOut} style={{ ...secondaryButtonStyle, width: '100%', marginTop: 20 }}>Esci dall’account</button>
+              <Link to="/revisione" style={{ ...primaryButtonStyle, display: 'flex', alignItems: 'center', justifyContent: 'center', boxSizing: 'border-box', marginTop: 20, textDecoration: 'none' }}>Continua alla revisione</Link>
+              <button type="button" disabled={busy} onClick={signOut} style={{ ...secondaryButtonStyle, width: '100%', marginTop: 10 }}>Esci dall’account</button>
             </>
           )}
 

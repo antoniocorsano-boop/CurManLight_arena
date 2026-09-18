@@ -37,7 +37,7 @@ export function AppSidebar(props: AppSidebarProps) {
     <aside id="sidebar" className="hidden w-full shrink-0 space-y-5 transition-all duration-300 md:block md:w-64" data-beta-navigation="canonical">
       <nav className="space-y-5 text-left" aria-label="Navigazione principale">
         <section aria-labelledby="nav-orientamento">
-          <p id="nav-orientamento" className="mb-1.5 px-3 text-[10px] font-black uppercase tracking-wider text-slate-400">Orientamento</p>
+          <p id="nav-orientamento" className="mb-1.5 px-3 text-[10px] font-black uppercase tracking-wider text-slate-500">Orientamento</p>
           <button type="button" onClick={() => switchTab('dashboard')} className={itemClass(props.activeTab === 'dashboard')}>
             <FolderOpen className="h-4 w-4 shrink-0" aria-hidden="true" />
             <span>Home</span>
@@ -45,7 +45,7 @@ export function AppSidebar(props: AppSidebarProps) {
         </section>
 
         <section aria-labelledby="nav-curricolo" className="border-t border-slate-100 pt-4">
-          <p id="nav-curricolo" className="mb-1.5 px-3 text-[10px] font-black uppercase tracking-wider text-slate-400">Curricolo d’istituto</p>
+          <p id="nav-curricolo" className="mb-1.5 px-3 text-[10px] font-black uppercase tracking-wider text-slate-500">Curricolo d’istituto</p>
           <div className="space-y-1">
             <button
               type="button"
@@ -60,15 +60,10 @@ export function AppSidebar(props: AppSidebarProps) {
               <RotateCcw className="h-4 w-4 shrink-0" aria-hidden="true" />
               <span className="min-w-0 flex-1">Rivedi le proposte</span>
               {props.pendingCount > 0 && (
-                <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-black text-amber-800" aria-label={`${props.pendingCount} elementi da rivedere`}>
+                <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-black text-amber-800" aria-label={`${props.pendingCount} schede del contesto personale corrente da esaminare`}>
                   {props.pendingCount}
                 </span>
               )}
-            </button>
-
-            <button type="button" onClick={() => switchTab('fonti')} className={itemClass(props.activeTab === 'fonti')}>
-              <BookOpenCheck className="h-4 w-4 shrink-0" aria-hidden="true" />
-              <span>Controlla le fonti</span>
             </button>
 
             <button type="button" onClick={() => switchTab('esportazioni')} className={itemClass(props.activeTab === 'esportazioni')}>
@@ -89,9 +84,13 @@ export function AppSidebar(props: AppSidebarProps) {
           )}
         </section>
 
-        <section aria-labelledby="nav-supporto" className="border-t border-slate-100 pt-4">
-          <p id="nav-supporto" className="mb-1.5 px-3 text-[10px] font-black uppercase tracking-wider text-slate-400">Supporto</p>
+        <section aria-labelledby="nav-supporto" className="border-t border-slate-100 pt-4" data-beta-secondary-navigation="support">
+          <p id="nav-supporto" className="mb-1.5 px-3 text-[10px] font-black uppercase tracking-wider text-slate-500">Supporto</p>
           <div className="space-y-1">
+            <button type="button" onClick={() => switchTab('fonti')} className={itemClass(props.activeTab === 'fonti')} data-secondary-destination="fascicolo">
+              <BookOpenCheck className="h-4 w-4 shrink-0" aria-hidden="true" />
+              <span>Fascicolo</span>
+            </button>
             <button type="button" onClick={() => switchTab('certificazione-pa')} className={itemClass(props.activeTab === 'certificazione-pa')}>
               <ShieldCheck className="h-4 w-4 shrink-0" aria-hidden="true" />
               <span>Controlli e checklist</span>

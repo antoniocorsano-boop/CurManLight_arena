@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest';
 import type { A07InstitutionalDocumentRead } from '../domain/institution';
-import { createEmptyRevisionArchive } from '../domain/revision';
 import type { CurriculumMap } from '../features/session/types/appViewContracts';
 import {
   buildPlanningHandoffPreview,
@@ -56,7 +55,6 @@ function baseInput() {
     sectionRef: 'A',
     disciplineRef: 'tecnologia',
     curriculumMap: curriculumMap(),
-    revisionArchive: createEmptyRevisionArchive('2026-08-27T12:00:00.000Z'),
     emittedAt: '2026-08-27T12:30:00.000Z',
   };
 }

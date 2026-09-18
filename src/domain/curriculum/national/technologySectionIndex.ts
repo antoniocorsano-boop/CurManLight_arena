@@ -48,32 +48,32 @@ const located = (
 /**
  * Indice di localizzazione della sezione Tecnologia del D.M. 221/2025.
  *
- * I locator sono verificati contro la pubblicazione ufficiale in Gazzetta
- * Ufficiale, ma restano intenzionalmente SOURCE_LOCATED: questo indice non
- * attesta ancora che ogni singolo testo sia stato verificato da una persona.
+ * I numeri di pagina sono quelli stampati nel volume finale MIM di marzo
+ * 2026. L'indice resta intenzionalmente SOURCE_LOCATED: non attesta che il
+ * singolo testo sia stato verificato da una persona.
  */
 export const DM221_TECHNOLOGY_SECTION_INDEX: readonly TechnologySectionIndexEntry[] = [
   located(
     'RATIONALE',
     'primaria+secondaria',
     'Perché si studia Tecnologia',
-    96,
+    140,
     'Tecnologia — Perché si studia Tecnologia',
-    'La sezione Tecnologia inizia a p. 96 della pubblicazione ufficiale; la premessa comprende continuità primaria-secondaria e integrazione dell’informatica.',
+    'La sezione Tecnologia inizia a p. 140 del volume finale MIM e introduce continuità primaria-secondaria e integrazione dell’informatica.',
   ),
   located(
     'PRIMARY_EXPECTED_COMPETENCES',
     'primaria',
     'Competenze attese al termine della classe quinta',
-    96,
+    141,
     'Tecnologia — Scuola primaria — Competenze attese al termine della classe quinta',
-    'La sezione primaria inizia a p. 96 e prosegue a p. 97.',
+    'Le competenze attese della primaria iniziano a p. 141 e proseguono a p. 142.',
   ),
   located(
     'PRIMARY_GRADE3_OBJECTIVES',
     'primaria',
     'Obiettivi specifici di apprendimento al termine della classe terza',
-    97,
+    142,
     'Tecnologia — Scuola primaria — Obiettivi specifici di apprendimento al termine della classe terza',
     'Comprende Vedere e osservare, Prevedere e immaginare, Intervenire e trasformare e obiettivi di Informatica.',
   ),
@@ -81,7 +81,7 @@ export const DM221_TECHNOLOGY_SECTION_INDEX: readonly TechnologySectionIndexEntr
     'PRIMARY_GRADE5_OBJECTIVES',
     'primaria',
     'Obiettivi specifici di apprendimento al termine della classe quinta',
-    97,
+    143,
     'Tecnologia — Scuola primaria — Obiettivi specifici di apprendimento al termine della classe quinta',
     'Comprende i tre nuclei fondanti e Informatica.',
   ),
@@ -89,33 +89,33 @@ export const DM221_TECHNOLOGY_SECTION_INDEX: readonly TechnologySectionIndexEntr
     'PRIMARY_KNOWLEDGE',
     'primaria',
     'Conoscenze',
-    97,
+    143,
     'Tecnologia — Scuola primaria — Conoscenze',
-    'La sezione termina tra p. 97 e p. 98.',
+    'Le conoscenze della primaria iniziano a p. 143 e proseguono a p. 144.',
   ),
   located(
     'LOWER_SECONDARY_EXPECTED_COMPETENCES',
     'secondaria',
     'Competenze attese al termine della classe terza',
-    98,
+    144,
     'Tecnologia — Scuola secondaria di primo grado — Competenze attese al termine della classe terza',
-    'La sezione secondaria inizia a p. 98.',
+    'Le competenze attese della secondaria iniziano a p. 144.',
   ),
   located(
     'LOWER_SECONDARY_GRADE3_OBJECTIVES',
     'secondaria',
     'Obiettivi specifici di apprendimento al termine della classe terza',
-    98,
+    144,
     'Tecnologia — Scuola secondaria di primo grado — Obiettivi specifici di apprendimento al termine della classe terza',
-    'Comprende Vedere, osservare e sperimentare; Prevedere, immaginare e progettare; Intervenire, trasformare e produrre; Informatica.',
+    'Gli obiettivi iniziano a p. 144 e proseguono a p. 145; comprendono i tre nuclei fondanti e Informatica.',
   ),
   located(
     'LOWER_SECONDARY_KNOWLEDGE',
     'secondaria',
     'Conoscenze',
-    98,
+    145,
     'Tecnologia — Scuola secondaria di primo grado — Conoscenze',
-    'La sezione Conoscenze inizia a p. 98 e prosegue nelle pagine successive.',
+    'Le conoscenze della secondaria iniziano a p. 145 e proseguono a p. 146.',
   ),
 ];
 

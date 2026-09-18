@@ -1,0 +1,51 @@
+{
+  "proof_id": "HUMAN_MULTI_ACTOR_SHARED_REVIEW_CASE_END_TO_END_PROOF",
+  "date": "2026-09-07",
+  "environment": {
+    "preview": "https://curmanlight-pr201-test.onrender.com",
+    "tested_runtime_sha": "357092d3d2a064c305de39a252d514d4d9f122da",
+    "tested_render_deploy": "dep-daf65fid0e5s73b07hng",
+    "supabase_project": "ysgaokenrutmgzkhcxvy"
+  },
+  "case": {
+    "review_case_id": "CRC:CAN-CURR-MASTER-00_Curricolo_verticale_integrale_unificato_3-14_2026-2027:v1.3:secondaria:classe-1:tecnologia:2026-09-07T06:12:47.075Z",
+    "proposal_ref": "tec-sec1-2026-r2-n1",
+    "proposal_fingerprint": "db4a4f5a806c2ad4a2526010ecc0a3f8750c15d4aceabb26a9083fda3ecabbd1",
+    "assignment_count": 2
+  },
+  "human_checkpoints": {
+    "shared_case_discovered_by_second_real_actor": true,
+    "assigned_case_hydrated_at_h1_without_personal_session_transfer": true,
+    "second_actor_explicit_h2_start": true,
+    "second_actor_personal_choice_remained_local_before_share": true,
+    "case_scoped_professional_contribution_persisted": true,
+    "active_identity_and_role_visible_during_case_work": true,
+    "two_distinct_current_contributions_same_case_and_fingerprint": true,
+    "divergent_orientations_visible_in_compare": true,
+    "server_authoritative_compare_coverage_2_of_2": true,
+    "team_professional_outcome_recorded_explicitly": true,
+    "professional_session_closed_back_to_general_revision_surface": true
+  },
+  "contributions": [
+    {"role": "dipartimento", "orientation": "keep-previous"},
+    {"role": "docente", "orientation": "confirm-proposal"}
+  ],
+  "team_professional_outcome": {
+    "count": 1,
+    "outcome": "defer",
+    "rationale": "Il gruppo rileva orientamenti diversi sulla scheda. Il punto resta aperto per un successivo confronto professionale."
+  },
+  "authority_non_consequences_verified": {
+    "matching_institutional_decisions": 0,
+    "automatic_h3": false,
+    "automatic_adoption_receipt": false,
+    "automatic_master_change_or_promotion": false,
+    "parallel_curriculum_baseline_creation": false
+  },
+  "pilot_result": "PASS",
+  "human_end_to_end_pilot_complete": true,
+  "non_claim": {
+    "target_ui_fully_implemented": false,
+    "curriculum_in_force": false
+  }
+}

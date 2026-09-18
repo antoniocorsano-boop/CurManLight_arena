@@ -9,6 +9,8 @@ export const pathnameToAppTab = (pathname: string): AppTab => {
   if (pathname.startsWith('/copilot')) return 'dashboard';
   if (pathname.startsWith('/knowledge') || pathname.startsWith('/second-brain')) return 'second-brain';
   if (pathname.startsWith('/social')) return 'dashboard';
+  if (pathname.startsWith('/fascicolo')) return 'fonti';
+  // Legacy source deep links remain readable while new navigation emits /fascicolo.
   if (pathname.startsWith('/fonti')) return 'fonti';
   // Legacy deep links remain readable, but new navigation never emits /settings.
   if (pathname.startsWith('/settings')) return 'fonti';
@@ -26,7 +28,7 @@ export const appTabToPath = (tab: AppTab): string => {
     case 'esportazioni': return '/documents';
     case 'certificazione-pa': return '/documents';
     case 'second-brain': return '/knowledge';
-    case 'fonti': return '/fonti';
+    case 'fonti': return '/fascicolo';
     case 'guida': return '/guida';
     case 'dashboard':
     default: return '/';

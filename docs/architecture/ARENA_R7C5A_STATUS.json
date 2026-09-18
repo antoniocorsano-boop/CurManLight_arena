@@ -1,0 +1,60 @@
+{
+  "schemaVersion": "arena-r7c5a-status-v1",
+  "workItem": "R7C5A_FINAL_PUBLICATION_LOCATORS",
+  "state": "IMPLEMENTED_AWAITING_EXACT_HEAD_GATES",
+  "base": {
+    "workItem": "R7C4_NATIVE_INFANZIA_RUNTIME_IDENTITY",
+    "exactHead": "a20b062e49d972fff083d0d5c6d2f12635c81ecc"
+  },
+  "officialSources": {
+    "legalAuthority": "Gazzetta Ufficiale Serie Generale n. 21 del 27-01-2026",
+    "finalCurriculumVolume": "MIM March 2026",
+    "pageNumbering": "PRINTED_PAGE"
+  },
+  "finalPublication": {
+    "sectionManifestImplemented": true,
+    "infanziaStartPage": 53,
+    "transitionProfilePage": 67,
+    "firstCycleStartPage": 68,
+    "technologyRange": [140, 146],
+    "physicalEducationRange": [168, 181]
+  },
+  "technologyStartPages": {
+    "PRIMARY_EXPECTED_COMPETENCES": 141,
+    "PRIMARY_GRADE3_OBJECTIVES": 142,
+    "PRIMARY_GRADE5_OBJECTIVES": 143,
+    "PRIMARY_KNOWLEDGE": 143,
+    "LOWER_SECONDARY_EXPECTED_COMPETENCES": 144,
+    "LOWER_SECONDARY_GRADE3_OBJECTIVES": 144,
+    "LOWER_SECONDARY_KNOWLEDGE": 145
+  },
+  "disciplineQueue": {
+    "technologyManagedSeparately": true,
+    "remainingDisciplineSections": 11,
+    "locatorRequired": 0,
+    "sourceLocated": 11,
+    "sourceVerified": 0
+  },
+  "locatorCorrections": {
+    "article2PrintedPage": 6,
+    "ircArticle2Paragraph6PrintedPage": 7,
+    "stemPrintedPage": 113,
+    "infanziaFieldStartPages": [57, 59, 61, 63, 64],
+    "staleTechnologyPagesRemoved": [96, 97, 98]
+  },
+  "invariants": {
+    "canonicalStructureIdentityChanged": false,
+    "infanziaNativeFieldsPreserved": true,
+    "conditionalSegmentsPreserved": true,
+    "automaticTextImport": false,
+    "automaticSourceVerification": false,
+    "verifiedByHuman": false,
+    "runtimeMutation": false,
+    "persistenceModeChanged": false,
+    "p3Mutation": false,
+    "p7Mutation": false,
+    "institutionalAdoptionClaimed": false,
+    "deployment": false
+  },
+  "nextWorkItem": "R7C5B_FINAL_PUBLICATION_ELEMENT_INVENTORY"
+}

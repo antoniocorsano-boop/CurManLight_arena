@@ -1,0 +1,110 @@
+{
+  "plan_id": "PRODUCT_CONVERGENCE_AND_LIFECYCLE_CLOSURE_R2",
+  "version": "1.0.0",
+  "opened_at": "2026-09-07",
+  "pr": 201,
+  "branch": "feature/team-organizational-binding",
+  "starting_head": "944030389bd2a7e37c8f8deff72e938899a4c480",
+  "current_state": "IN_PROGRESS",
+  "constraints": {
+    "single_pr": true,
+    "single_curriculum_baseline": true,
+    "canonical_curriculum": "CAN-CURR-MASTER-00@1.3",
+    "curriculum_in_force": false,
+    "lifecycle": "CURRICULUM_LIFECYCLE@1.2.0",
+    "cco": "1.5.0",
+    "cco_surfaces": "1.6.1",
+    "automatic_merge_forbidden": true,
+    "automatic_institutional_decision_forbidden": true,
+    "automatic_adoption_forbidden": true
+  },
+  "phases": [
+    {
+      "id": "R2-A",
+      "name": "PRIMARY_SURFACES_CONVERGENCE",
+      "state": "IN_PROGRESS",
+      "exit": [
+        "four_primary_surfaces_audited",
+        "no_p0_open",
+        "l1_l2_l3_separation_verified",
+        "no_competing_primary_flow"
+      ]
+    },
+    {
+      "id": "R2-B",
+      "name": "H3_VERTICAL_REVIEW",
+      "state": "NOT_STARTED",
+      "depends_on": ["R2-A"],
+      "exit": [
+        "vertical_review_outcome_persisted",
+        "same_master_version_scope_verified",
+        "smoke_pass",
+        "human_guided_proof_pass"
+      ]
+    },
+    {
+      "id": "R2-C",
+      "name": "H4_INSTITUTIONAL_PROCESS",
+      "state": "NOT_STARTED",
+      "depends_on": ["R2-B"],
+      "exit": [
+        "institutional_readiness_verified",
+        "verified_authority_decision_proof",
+        "decision_adoption_boundary_preserved",
+        "receipt_reconstructible"
+      ]
+    },
+    {
+      "id": "R2-D",
+      "name": "H5_ADOPTED_CURRICULUM_DIDACTIC_BINDING",
+      "state": "BLOCKED_BY_R2_C",
+      "depends_on": ["R2-C"],
+      "exit": [
+        "annual_planning_bound_to_adopted_version",
+        "uda_bound_to_adopted_version",
+        "copied_text_not_authoritative"
+      ]
+    },
+    {
+      "id": "R2-E",
+      "name": "H6_PRACTICE_REVIEW_CYCLE_CLOSURE",
+      "state": "NOT_STARTED",
+      "depends_on": ["R2-D"],
+      "exit": [
+        "implementation_observation_to_trigger_proved",
+        "qualified_trigger_to_explicit_case_proved",
+        "no_student_personal_data_required",
+        "no_parallel_baseline"
+      ]
+    },
+    {
+      "id": "R2-F",
+      "name": "QUALITY_HARDENING",
+      "state": "IN_PROGRESS_TRANSVERSAL",
+      "depends_on": ["R2-E"],
+      "exit": [
+        "accessibility_audit_pass",
+        "recovery_smoke_pass",
+        "design_system_current",
+        "component_library_current",
+        "legacy_primary_surfaces_retired"
+      ]
+    },
+    {
+      "id": "R2-G",
+      "name": "FINAL_PRODUCT_ACCEPTANCE",
+      "state": "NOT_STARTED",
+      "depends_on": ["R2-F"],
+      "exit": [
+        "four_primary_surfaces_hva_pass",
+        "teacher_journey_pass",
+        "coordinator_journey_pass",
+        "institutional_journey_pass",
+        "practice_review_cycle_pass",
+        "all_exact_head_gates_pass",
+        "target_ui_fully_implemented_true"
+      ]
+    }
+  ],
+  "next_action": "R2-A1_PRIMARY_SURFACES_CONTRACT_AUDIT"
+}

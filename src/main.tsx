@@ -36,7 +36,7 @@ if ('serviceWorker' in navigator && window.location.protocol !== 'file:') {
 
 import React from 'react'
 import ReactDOM from 'react-dom/client'
-import { BrowserRouter, Route, Routes } from 'react-router-dom'
+import { BrowserRouter, Route, Routes, useLocation } from 'react-router-dom'
 import App from './App.tsx'
 import BetaIdentityPage from './features/beta/BetaIdentityPage.tsx'
 import HvaRecorder from './features/hva-recorder/HvaRecorder.tsx'
@@ -77,39 +77,50 @@ class ErrorBoundary extends React.Component<
  }
 }
 
-const betaIdentityQueryEntry = new URLSearchParams(window.location.search).get('betaIdentity') === '1';
-const routerBasename = resolveRouterBasename(import.meta.env.MODE);
-const recoveryHint = window.location.hash.includes('type=recovery')
-  || window.location.search.includes('type=recovery');
+const routerBasename = resolveRouterBasename(import.meta.env.MODE, window.location.pathname);
 
-// Supabase may fall back to the configured Site URL when a preview redirect is
-// not allow-listed. On GitHub Pages a deep SPA route is not a physical file, so
-// use the existing query entry point and keep the one-time recovery fragment.
-if (recoveryHint && !betaIdentityQueryEntry && !window.location.pathname.endsWith('/beta-identity')) {
-  if (routerBasename === '/') {
-    window.location.replace(`/beta-identity${window.location.search}${window.location.hash}`);
-  } else {
-    const redirectUrl = new URL(window.location.href);
-    redirectUrl.pathname = `${routerBasename}/`;
-    redirectUrl.searchParams.set('betaIdentity', '1');
-    window.location.replace(`${redirectUrl.pathname}${redirectUrl.search}${redirectUrl.hash}`);
-  }
+// Supabase may fall back to the configured Site URL and append the recovery
+// session as a fragment. Route only that fragment before BrowserRouter starts.
+// The ordinary ?betaIdentity=1 entry remains owned by RouterContent/useLocation
+// so navigation stays reactive inside BrowserRouter.
+const recoveryFragmentAtBootstrap = window.location.hash.includes('type=recovery')
+ || window.location.hash.includes('access_token=');
+const betaIdentityPhysicalPathAtBootstrap = window.location.pathname.endsWith('/beta-identity');
+
+if (recoveryFragmentAtBootstrap && !betaIdentityPhysicalPathAtBootstrap) {
+ const recoveryTarget = new URL(window.location.href);
+ if (routerBasename === '/') {
+  recoveryTarget.pathname = '/beta-identity';
+ } else {
+  recoveryTarget.pathname = `${routerBasename}/`.replace(/\/+/g, '/');
+  recoveryTarget.searchParams.set('betaIdentity', '1');
+ }
+ window.history.replaceState({}, '', `${recoveryTarget.pathname}${recoveryTarget.search}${recoveryTarget.hash}`);
+}
+
+function RouterContent() {
+ const location = useLocation();
+ const betaIdentityQueryEntry = new URLSearchParams(location.search).get('betaIdentity') === '1';
+
+ if (betaIdentityQueryEntry) return <BetaIdentityPage />;
+
+ return (
+  <>
+   <Routes>
+    <Route path="/beta-identity" element={<BetaIdentityPage />} />
+    <Route path="*" element={<App />} />
+   </Routes>
+   <HvaRecorder />
+  </>
+ );
 }
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
  <React.StrictMode>
   <ErrorBoundary>
-   {betaIdentityQueryEntry ? (
-    <BetaIdentityPage />
-   ) : (
-    <BrowserRouter basename={routerBasename}>
-     <Routes>
-      <Route path="/beta-identity" element={<BetaIdentityPage />} />
-      <Route path="*" element={<App />} />
-     </Routes>
-     <HvaRecorder />
-    </BrowserRouter>
-   )}
+   <BrowserRouter basename={routerBasename}>
+    <RouterContent />
+   </BrowserRouter>
   </ErrorBoundary>
  </React.StrictMode>,
 )

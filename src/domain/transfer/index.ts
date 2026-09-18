@@ -123,6 +123,19 @@ export {
   DocenteFeedbackInbox,
 } from './docenteFeedbackIntake';
 
+// C2P-08 professional observation profile — review input only, never a governed outcome.
+export type {
+  ProfessionalObservationReviewBoundaryState,
+  ProfessionalObservationRoutingState,
+  ProfessionalObservationReviewInputV1,
+  ProfessionalObservationIntakeReceiptV1,
+} from './professionalObservationIntakeV1';
+export {
+  CML_PROFESSIONAL_OBSERVATION_REVIEW_INPUT_V1,
+  projectProfessionalObservationReviewInputV1,
+  receiveProfessionalObservationReviewInputV1,
+} from './professionalObservationIntakeV1';
+
 // Local Arena → Docente OS handoff v1 — preview only, teacher acceptance required.
 export type { CmlLocalHandoffV1, CmlLocalHandoffValidationResult } from './interopHandoffV1';
 export {

@@ -1,0 +1,70 @@
+{
+  "schemaVersion": "arena-r7c6c-local-data-preflight-v1",
+  "workItem": "R7C6C",
+  "date": "2026-09-03",
+  "state": "IMPLEMENTED_AWAITING_EXACT_HEAD_GATES",
+  "logicalBase": {
+    "workItem": "R7C6B",
+    "sha": "c2ee645e6d48be718353f519d897f5ea135a3570"
+  },
+  "entryPoint": {
+    "workspace": "Fonti",
+    "disclosure": "Controllo tecnico dei dati curricolari locali",
+    "explicitUserActionRequired": true,
+    "actionLabel": "Esegui controllo in copia"
+  },
+  "legacySnapshot": {
+    "priority": [
+      "localStorage:curmanlight-custom-curriculum-v2",
+      "bundled:getCurriculumBaseline"
+    ],
+    "invalidJsonFailsClosed": true,
+    "invalidShapeFailsClosed": true,
+    "canonicalSha256Computed": true,
+    "canonicalFnv1aComputed": true
+  },
+  "rehearsal": {
+    "backend": "MemoryCurriculumPersistenceBackend",
+    "productiveIndexedDbOpened": false,
+    "sequence": [
+      "BACKUP",
+      "MIGRATE_ISOLATED_COPY",
+      "DETERMINISTIC_COMPARE",
+      "ROLLBACK",
+      "VERIFY_ZERO_MIGRATION_RESIDUALS"
+    ]
+  },
+  "receipt": {
+    "schemaVersion": "arena-r7c6c-local-migration-preflight-v1",
+    "containsCurriculumText": false,
+    "storedOnlyAfterPass": true,
+    "exportable": true,
+    "deletable": true,
+    "staleWhenCurrentSourceSha256Changes": true
+  },
+  "readinessEffect": {
+    "maySetProductionDatasetMigrationRehearsalProven": true,
+    "requiresCurrentSha256Match": true,
+    "maySetCanonicalNationalPdfFingerprint": false,
+    "maySetNationalHumanVerification": false,
+    "maySetInstituteSemanticReview": false,
+    "maySetHumanValidation": false,
+    "mayAuthorizeModeMutation": false
+  },
+  "persistence": {
+    "currentMode": "legacy-only",
+    "automaticModeMutationAuthorized": false,
+    "dualReadAutomaticallyEnabled": false,
+    "dualWriteAuthorized": false,
+    "newDomainPrimaryAuthorized": false
+  },
+  "authorityEffects": {
+    "nationalAuthorityMutation": false,
+    "institutionalAuthorityMutation": false,
+    "p3Mutation": false,
+    "p7Mutation": false,
+    "institutionalAdoption": false,
+    "deployment": false
+  },
+  "nextGovernedStep": "USE_VALID_CURRENT_RECEIPT_AS_ONE_READINESS_INPUT_ONLY"
+}
