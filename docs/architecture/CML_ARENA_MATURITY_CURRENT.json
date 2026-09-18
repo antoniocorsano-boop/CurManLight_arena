@@ -1,17 +1,24 @@
 {
-  "asOf": "2026-08-28",
-  "canonicalMainSha": "e8958406c6fb8e3a191ed705de7f3229e13439b6",
+  "asOf": "2026-09-18",
+  "canonicalMainSha": "dd46122cc0038c3e5de3fe8714e14e25b895bc18",
   "maturity": {
     "level": "M3.3",
     "classification": "ADVANCED_CONTROLLED_BETA"
   },
   "beta": {
-    "phase": "B3",
+    "phase": "S3 / BETA-G5-G6",
     "status": "IN_PROGRESS",
+    "evolvedCandidate": {
+      "pullRequest": 222,
+      "candidateSha": "a64560202567f67eac5fd6ecaad30c6062199c0f",
+      "automaticExactHeadGates": "PASS",
+      "immutableDeployOfCandidate": "PENDING",
+      "actualHumanAcceptanceOfCandidate": "PENDING"
+    },
     "gates": {
       "BETA-G4": "PASS",
-      "BETA-G5": "PENDING_HUMAN",
-      "BETA-G6": "PENDING_HUMAN"
+      "BETA-G5": "PENDING_HUMAN_ON_EVOLVED_CANDIDATE",
+      "BETA-G6": "PENDING_HUMAN_ACCESSIBILITY"
     }
   },
   "institutionalAuthority": {
@@ -34,14 +41,19 @@
     "runtimeCrossProductTransport": false
   },
   "readinessBlockers": [
-    "BETA-G5 Human Interaction Acceptance",
-    "BETA-G6 Accessibility Acceptance"
+    "Reconcile evolved PR #222 candidate with current main",
+    "Immutable deploy of the reconciled exact candidate",
+    "BETA-G5 actual human acceptance on the deployed exact candidate",
+    "BETA-G6 accessibility acceptance",
+    "Remaining M4 governance/operations blockers after S3"
   ],
   "nextSequence": [
-    "BETA-G5",
-    "BETA-G6",
-    "sustained-beta-evidence",
-    "controlled-interop-e2e-if-required"
+    "reconcile-evolved-candidate-with-main",
+    "immutable-beta-deploy",
+    "BETA-G5-human-acceptance",
+    "BETA-G6-accessibility",
+    "re-evaluate-M4-A1-A10-against-evolved-candidate",
+    "ARENA-S4-only-after-S3-closes"
   ],
-  "auditRef": "docs/architecture/SYSTEM_MATURITY_AUDIT_2026-08-28.md"
+  "auditRef": "docs/architecture/DUAL_SYSTEM_CANONICAL_RESET_2026-09-18.md"
 }
