@@ -214,7 +214,7 @@ export function TeamContributionPublisher({
       setRefreshVersion((value) => value + 1);
       setFeedback({
         kind: 'success',
-        text: `${publishable.length} ${publishable.length === 1 ? 'scheda registrata' : 'schede registrate'} nel team. Arena verifica ora che il contributo persistito corrisponda al lavoro corrente.`,
+        text: `${publishable.length} ${publishable.length === 1 ? 'scheda registrata' : 'schede registrate'} nel gruppo. Arena verifica ora che il contributo persistito corrisponda al lavoro corrente.`,
       });
     } catch (error) {
       setFeedback({ kind: 'error', text: error instanceof Error ? error.message : 'Contributi non registrati.' });
@@ -239,21 +239,21 @@ export function TeamContributionPublisher({
   if (!team.configured) {
     return (
       <section className="rounded-2xl border border-slate-200 bg-white p-4" aria-label="Condivisione del contributo">
-        <strong className="block text-sm text-slate-900">Condivisione con il team</strong>
-        <p className="mt-1 text-xs leading-relaxed text-slate-600">In modalità locale puoi preparare il tuo orientamento, ma non puoi pubblicarlo nel workspace condiviso.</p>
+        <strong className="block text-sm text-slate-900">Condivisione con il gruppo</strong>
+        <p className="mt-1 text-xs leading-relaxed text-slate-600">In modalità locale puoi preparare il tuo orientamento, ma non puoi pubblicarlo nello spazio di lavoro condiviso.</p>
       </section>
     );
   }
 
   if (team.loading) {
-    return <section className="rounded-2xl border border-slate-200 bg-white p-4 text-xs text-slate-600">Verifica del team in corso…</section>;
+    return <section className="rounded-2xl border border-slate-200 bg-white p-4 text-xs text-slate-600">Verifica del gruppo in corso…</section>;
   }
 
   if (!team.session) {
     return (
       <section className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-xs text-amber-950">
         <strong className="block text-sm">Accedi per condividere il tuo contributo</strong>
-        <p className="mt-1 leading-relaxed">La revisione personale resta locale finché non viene pubblicata esplicitamente nel team autenticato.</p>
+        <p className="mt-1 leading-relaxed">La revisione personale resta locale finché non viene pubblicata esplicitamente nel gruppo autenticato.</p>
         <Link to="/beta-identity" className="mt-3 inline-flex min-h-10 items-center rounded-lg bg-white px-3 py-2 font-bold underline">Accedi</Link>
       </section>
     );
@@ -262,7 +262,7 @@ export function TeamContributionPublisher({
   if (team.activeMemberships.length === 0) {
     return (
       <section className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-xs text-amber-950">
-        <strong className="block text-sm">Account collegato, ma nessun team disponibile</strong>
+        <strong className="block text-sm">Account collegato, ma nessun gruppo disponibile</strong>
         <p className="mt-1 leading-relaxed">Questo account non risulta associato a un workspace scolastico attivo.</p>
       </section>
     );
@@ -292,7 +292,7 @@ export function TeamContributionPublisher({
     >
       <div>
         <strong className="block text-base text-slate-900">Condividi il mio contributo</strong>
-        <p className="mt-1 text-xs leading-relaxed text-slate-600">Solo questa azione rende visibile al team il lavoro personale già preparato.</p>
+        <p className="mt-1 text-xs leading-relaxed text-slate-600">Solo questa azione rende visibile al gruppo il lavoro personale già preparato.</p>
       </div>
 
       <div className="rounded-xl border border-indigo-100 bg-white p-3 text-xs leading-relaxed text-slate-700" data-operational-group-context>
@@ -302,7 +302,7 @@ export function TeamContributionPublisher({
       </div>
 
       {team.activeMemberships.length > 1 && (
-        <label className="block text-xs font-semibold text-slate-700">Team
+        <label className="block text-xs font-semibold text-slate-700">Gruppo
           <select value={team.workspaceId} onChange={(event) => team.setWorkspaceId(event.target.value)} className="mt-1 block w-full rounded-lg border border-slate-300 bg-white p-2">
             {team.activeMemberships.map((membership) => (
               <option key={membership.workspaceId} value={membership.workspaceId}>{membership.workspaceName} · {membership.role}</option>
@@ -332,7 +332,7 @@ export function TeamContributionPublisher({
           <span className="mt-1 block"><strong className="text-slate-800">Pronte:</strong> {localPreparedCount} · <strong className="text-slate-800">condivisione corrente verificata:</strong> {currentUserContributionCount} di {proposals.length}</span>
           {persistedCurrentContributionComplete && (
             <span className="mt-2 block rounded-lg bg-emerald-50 px-2 py-1.5 font-bold text-emerald-800" data-professional-contribution-persisted>
-              ✓ Il contributo corrente è registrato e verificato nel team.
+              ✓ Il contributo corrente è registrato e verificato nel gruppo.
             </span>
           )}
           {incompleteCustomCount > 0 && <span className="mt-1 block font-semibold text-amber-800">{incompleteCustomCount === 1 ? '1 modifica deve essere completata.' : `${incompleteCustomCount} modifiche devono essere completate.`}</span>}
@@ -347,7 +347,7 @@ export function TeamContributionPublisher({
         onClick={() => void publishPreparation()}
         className="min-h-11 w-full rounded-xl bg-indigo-700 px-4 py-3 text-sm font-bold text-white disabled:cursor-not-allowed disabled:opacity-40"
       >
-        {busy ? 'Condivisione in corso…' : persistedCurrentContributionComplete ? 'Aggiorna il mio contributo condiviso' : 'Condividi il mio lavoro con il team'}
+        {busy ? 'Condivisione in corso…' : persistedCurrentContributionComplete ? 'Aggiorna il mio contributo condiviso' : 'Condividi il mio lavoro con il gruppo'}
       </button>
       <p className="text-[11px] font-semibold leading-relaxed text-indigo-950">Il contributo condiviso resta personale: non è un voto, un esito del gruppo o una decisione della scuola.</p>
 
