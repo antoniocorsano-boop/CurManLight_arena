@@ -24,6 +24,9 @@ const roleLabel = (role: string | undefined): string | null => {
   if (role === 'dipartimento') return 'Coordinatore di dipartimento';
   if (role === 'referente') return 'Referente';
   if (role === 'docente') return 'Docente';
+  if (role === 'collegio') return 'Collegio';
+  if (role === 'dirigente') return 'Dirigente scolastico';
+  if (role === 'amministratore') return 'Amministratore';
   return role;
 };
 
@@ -62,6 +65,7 @@ export function RevisionWorkspace(props: RevisionWorkspaceProps) {
   const [outcomeProposalRef, setOutcomeProposalRef] = useState<string | null>(null);
 
   const selectedRole = team.selectedMembership?.role;
+  const canSharePersonalContribution = selectedRole === 'docente' || selectedRole === 'dipartimento' || selectedRole === 'referente';
   const isCoordinator = selectedRole === 'dipartimento' || selectedRole === 'referente';
   const selectedRoleLabel = roleLabel(selectedRole);
   const matchingOperationalAcademicYears = useMemo(
@@ -341,7 +345,9 @@ export function RevisionWorkspace(props: RevisionWorkspaceProps) {
               <div>
                 <strong className="block text-base text-emerald-950">Il tuo parere è pronto</strong>
                 <p className="mt-1 text-xs leading-relaxed text-emerald-800">
-                  Hai completato {preparedReviewCount} di {totalReviewCount} schede. Ora puoi condividerle con il gruppo.
+                  Hai completato {preparedReviewCount} di {totalReviewCount} schede. {canSharePersonalContribution
+                    ? 'Ora puoi condividerle con il gruppo.'
+                    : 'Il parere personale è completo, ma il ruolo corrente non può pubblicarlo nel team.'}
                 </p>
               </div>
               <button
