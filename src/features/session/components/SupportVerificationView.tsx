@@ -1,5 +1,5 @@
 import { AlertTriangle, CheckCircle2, ChevronRight, CircleHelp, FileSearch, ShieldCheck } from 'lucide-react';
-import { useAppContext } from '../../../components/layout/AppContext';
+import type { AppViewsLayerProps } from '../types/appViewContracts';
 import { AVAILABLE_DEPARTMENT_PUBLICATION } from '../../curriculum/data/curriculumPublicationRegistry';
 
 type VerificationState = 'ok' | 'attention' | 'blocked';
@@ -16,14 +16,21 @@ const STATE_LABELS: Record<VerificationState, string> = {
   blocked: 'Bloccato',
 };
 
-export function SupportVerificationView() {
-  const {
-    institutionalProfile,
-    customKbDocs,
-    currentDisciplineProps,
-    currentDisciplineDecided,
-    handleTabSwitch,
-  } = useAppContext();
+export type SupportVerificationViewProps = Pick<AppViewsLayerProps,
+  | 'institutionalProfile'
+  | 'customKbDocs'
+  | 'currentDisciplineProps'
+  | 'currentDisciplineDecided'
+  | 'handleTabSwitch'
+>;
+
+export function SupportVerificationView({
+  institutionalProfile,
+  customKbDocs,
+  currentDisciplineProps,
+  currentDisciplineDecided,
+  handleTabSwitch,
+}: SupportVerificationViewProps) {
 
   const unverifiedLocalSources = customKbDocs.filter((source) => source.authorityStatus !== 'LOCAL_VERIFIED').length;
   const pendingRevisionItems = Math.max(0, currentDisciplineProps.length - currentDisciplineDecided);
