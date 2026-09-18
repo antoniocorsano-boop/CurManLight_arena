@@ -121,7 +121,7 @@
       "path": "src/features/beta/TeamContributionPublisher.tsx",
       "status": "conformant",
       "operational_context": "Condivisione del contributo personale",
-      "primary_task": "Registrare nel team il contributo personale corrente e rendere verificabile che la condivisione corrisponda alla versione e all'orientamento correnti",
+      "primary_task": "Registrare nel gruppo il contributo personale corrente e rendere verificabile che la condivisione corrisponda alla versione e all'orientamento correnti",
       "required_tokens": [
         "data-team-contribution-publisher",
         "data-contribution-persistence-complete={persistedCurrentContributionComplete ? 'true' : 'false'}",
@@ -130,7 +130,7 @@
         "proposalFingerprint",
         "contribution.orientation !== expectedOrientation",
         "normalizeText(contribution.customText) === normalizeText(customTexts[contribution.proposalRef])",
-        "Il contributo corrente è registrato e verificato nel team."
+        "Il contributo corrente è registrato e verificato nel gruppo."
       ]
     },
     {

@@ -223,7 +223,7 @@
         "proposalFingerprint",
         "contribution.orientation !== expectedOrientation",
         "normalizeText(contribution.customText) === normalizeText(customTexts[contribution.proposalRef])",
-        "Il contributo corrente è registrato e verificato nel team."
+        "Il contributo corrente è registrato e verificato nel gruppo."
       ]
     },
     {
