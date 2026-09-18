@@ -1,0 +1,86 @@
+{
+  "schemaVersion": "arena-curriculum-system-audit-v1",
+  "auditedMainSha": "bc23f708be83029733f93f5c6a6fb13290e76f2a",
+  "auditedAt": "2026-09-03",
+  "scope": "curriculum-end-to-end",
+  "overallStatus": "CONVERGENCE_REQUIRED",
+  "authorityPipeline": {
+    "status": "IMPLEMENTED_SCOPE_BOUND",
+    "canonicalScope": "DM221_FIRST_CYCLE_ONLY",
+    "excludedSchoolOrders": ["infanzia"],
+    "semanticCompletenessClaim": false
+  },
+  "operationalCurriculum": {
+    "primaryRuntimeModel": "CurriculumMap",
+    "persistenceMode": "legacy-only",
+    "newDomainAvailable": true,
+    "newDomainPrimary": false
+  },
+  "nationalSourceCoverage": {
+    "canonicalStructure": "IMPLEMENTED",
+    "elementLevelMain": ["TECNOLOGIA"],
+    "elementLevelCandidatePullRequests": {
+      "174": ["INFANZIA"]
+    },
+    "allDisciplinesComplete": false
+  },
+  "blockers": [
+    {
+      "id": "CURR-SYS-001",
+      "severity": "P1",
+      "title": "Operational runtime remains legacy CurriculumMap",
+      "closure": "Activate versioned curriculum domain through governed dual-read/dual-write migration"
+    },
+    {
+      "id": "CURR-SYS-002",
+      "severity": "P1",
+      "title": "Infanzia UI still projects fields through discipline keys",
+      "closure": "Use canonical field identities in the operational model"
+    },
+    {
+      "id": "CURR-SYS-003",
+      "severity": "P1",
+      "title": "IN2025 element-level inventory is incomplete across disciplines",
+      "closure": "Inventory and source-bind all national elements"
+    },
+    {
+      "id": "CURR-SYS-004",
+      "severity": "P1",
+      "title": "P3 is structural rather than element-semantic",
+      "closure": "Analyze institute nodes against verified national element bindings"
+    },
+    {
+      "id": "CURR-SYS-005",
+      "severity": "P1",
+      "title": "Planning handoff can classify legacy text as nationally prescriptive",
+      "closure": "Require verified national element references before NATIONAL_PRESCRIPTIVE authority"
+    },
+    {
+      "id": "CURR-SYS-006",
+      "severity": "P1",
+      "title": "Canonical materialization curriculum payload is opaque to the server-side schema gate",
+      "closure": "Validate a versioned canonical institute curriculum payload before materialization"
+    },
+    {
+      "id": "CURR-SYS-007",
+      "severity": "P2",
+      "title": "UDA stores text snapshots without stable curriculum node/version references",
+      "closure": "Persist curriculum version, segment/node refs, provenance and readable snapshots"
+    },
+    {
+      "id": "CURR-SYS-008",
+      "severity": "P2",
+      "title": "Curriculum operational attachments are not a unified versioned artifact graph",
+      "closure": "Bind UDA, rubrics, grids, portfolio, monitoring and decision records to canonical curriculum entities"
+    }
+  ],
+  "recommendedSequence": [
+    "R7B3_INFANZIA_FOUNDATION",
+    "R7C1_CANONICAL_OPERATIONAL_AGGREGATE",
+    "R7C2_TECHNOLOGY_END_TO_END_PILOT",
+    "R7C3_ELEMENT_SEMANTIC_ANALYSIS",
+    "R7C4_NATIVE_INFANZIA_RUNTIME",
+    "R7C5_COMPLETE_IN2025_ACQUISITION",
+    "R7C6_RUNTIME_MIGRATION"
+  ]
+}
