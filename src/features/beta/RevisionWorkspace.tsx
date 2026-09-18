@@ -347,7 +347,7 @@ export function RevisionWorkspace(props: RevisionWorkspaceProps) {
                 <p className="mt-1 text-xs leading-relaxed text-emerald-800">
                   Hai completato {preparedReviewCount} di {totalReviewCount} schede. {canSharePersonalContribution
                     ? 'Ora puoi condividerle con il gruppo.'
-                    : 'Il parere personale è completo, ma il ruolo corrente non può pubblicarlo nel team.'}
+                    : 'Il parere personale è completo, ma il ruolo corrente non può pubblicarlo nel gruppo.'}
                 </p>
               </div>
               <button
