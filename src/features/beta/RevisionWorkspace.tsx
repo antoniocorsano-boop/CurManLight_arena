@@ -200,7 +200,7 @@ export function RevisionWorkspace(props: RevisionWorkspaceProps) {
                     ? 'border-emerald-200 bg-emerald-50 text-emerald-800'
                     : state === 'active'
                       ? 'border-indigo-300 bg-indigo-50 text-indigo-800'
-                      : 'border-slate-200 bg-slate-50 text-slate-400'
+                      : 'border-slate-200 bg-slate-50 text-slate-500'
                 }`}
               >
                 <span className="block text-[9px] font-black">{state === 'complete' ? '✓' : index + 1}</span>

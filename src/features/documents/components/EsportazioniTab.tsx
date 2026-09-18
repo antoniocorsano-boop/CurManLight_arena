@@ -135,7 +135,7 @@ export function EsportazioniTab({
       )}
 
       <details className="rounded-ui-panel border border-ui-border bg-ui-surface" data-hcm-technical-details>
-        <summary className="cursor-pointer px-4 py-3 text-sm font-semibold text-ui-text-muted focus:outline-none focus:ring-2 focus:ring-ui-focus focus:ring-inset">Cosa non fa questa pagina</summary>
+        <summary className="cursor-pointer px-4 py-3 text-sm font-semibold text-ui-text-secondary focus:outline-none focus:ring-2 focus:ring-ui-focus focus:ring-inset">Cosa non fa questa pagina</summary>
         <div className="border-t border-ui-border px-4 py-3 text-sm leading-6 text-ui-text-secondary">
           Non adotta il curricolo, non attribuisce autorità e non modifica automaticamente il lavoro didattico a valle.
         </div>
