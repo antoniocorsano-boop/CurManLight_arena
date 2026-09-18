@@ -1,8 +1,9 @@
 import { ArrowRight, BookOpenCheck, CircleHelp, FileText, Layers, RotateCcw, ShieldCheck } from 'lucide-react';
-import { useAppContext } from '../../../components/layout/AppContext';
+import type { AppViewsLayerProps } from '../types/appViewContracts';
 
-export function SupportGuideView() {
-  const { handleTabSwitch, institutionalProfile } = useAppContext();
+export type SupportGuideViewProps = Pick<AppViewsLayerProps, 'handleTabSwitch' | 'institutionalProfile'>;
+
+export function SupportGuideView({ handleTabSwitch, institutionalProfile }: SupportGuideViewProps) {
 
   const tasks = [
     {
