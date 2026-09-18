@@ -212,7 +212,17 @@ async function inspectCurriculumTableScroll(locator) {
       check('Classe II is rendered as semantic curriculum cards', (await nodeCards.count()) > 0);
       check('semantic exploration does not create page-level horizontal overflow', await noHorizontalOverflow(page));
 
+      const referenceScope = focusedExplorer.locator('[data-curriculum-reference-scope]').first();
+      await referenceScope.waitFor({ state: 'visible', timeout: 5000 });
+      const referenceScopeText = (await referenceScope.innerText()).toLowerCase();
+      check('curriculum references are explicitly scoped to the source publication', referenceScopeText.includes('riferimenti del fascicolo sorgente'));
+      check('unconfigured context does not turn source references into institute adoption', referenceScopeText.includes('non attestano, da soli, l’adozione'));
+
       const firstCard = nodeCards.first();
+      const firstDisclosure = firstCard.locator('[data-curriculum-unit-disclosure]').first();
+      if (!(await firstDisclosure.evaluate((element) => element.open))) {
+        await clickWithPersonalProfileRecovery(page, firstCard.locator('[data-curriculum-unit-summary]').first());
+      }
       const tramaAction = firstCard.locator('[data-open-curriculum-trama]').first();
       await tramaAction.waitFor({ state: 'visible', timeout: 5000 });
       await clickWithPersonalProfileRecovery(page, tramaAction);
@@ -228,6 +238,10 @@ async function inspectCurriculumTableScroll(locator) {
       await focusedExplorer.waitFor({ state: 'visible', timeout: 5000 });
 
       const currentFirstCard = focusedExplorer.locator('[data-curriculum-unit-card]').first();
+      const currentDisclosure = currentFirstCard.locator('[data-curriculum-unit-disclosure]').first();
+      if (!(await currentDisclosure.evaluate((element) => element.open))) {
+        await clickWithPersonalProfileRecovery(page, currentFirstCard.locator('[data-curriculum-unit-summary]').first());
+      }
       const contextActions = currentFirstCard.locator('[data-curriculum-context-actions]').first();
       await clickWithPersonalProfileRecovery(page, contextActions.locator('summary'));
       check('curriculum unit exposes a distinct planning handoff', (await contextActions.locator('[data-use-curriculum-in-planning]').count()) === 1);
