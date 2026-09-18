@@ -7,6 +7,7 @@ describe('CML-604D canonical navigation', () => {
     expect(appTabToPath('progetta-annuale')).toBe('/planning');
     expect(appTabToPath('esportazioni')).toBe('/documents');
     expect(appTabToPath('second-brain')).toBe('/knowledge');
+    expect(appTabToPath('verifiche')).toBe('/verifiche');
   });
 
   it('keeps retired Classroom and Social deep links outside canonical destinations', () => {
@@ -20,5 +21,6 @@ describe('CML-604D canonical navigation', () => {
     expect(pathnameToAppTab('/planning')).toBe('progetta-annuale');
     expect(pathnameToAppTab('/planning/wizard')).toBe('progetta-annuale');
     expect(pathnameToAppTab('/knowledge')).toBe('second-brain');
+    expect(pathnameToAppTab('/verifiche')).toBe('verifiche');
   });
 });
