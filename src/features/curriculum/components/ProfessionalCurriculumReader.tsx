@@ -267,6 +267,8 @@ export function ProfessionalCurriculumReader({
             key={selectedDisciplineId ?? 'department-entry'}
             sections={DEPARTMENT_CURRICULUM_SECTIONS}
             initialDisciplineId={selectedDisciplineId}
+            sourceInstitutionName={DEPARTMENT_CURRICULUM_MANIFEST.institution.name}
+            institutionalContextConfigured={institutionalProfile.configured}
             view={mode}
             onViewChange={setExploreView}
             onUseInPlanning={onUseInPlanning}
