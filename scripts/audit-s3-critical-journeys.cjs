@@ -126,6 +126,7 @@ async function inspectCurriculumTableScroll(locator) {
         result.checks.push({ label, pass });
         console.log(`${pass ? '✓' : '✗'} [${profile.id}] ${label}`);
         if (!pass) failed = true;
+        return pass;
       };
 
       console.log(`=== S3B CURRICULUM CONTEXT V2 — ${profile.id} ===`);
@@ -329,22 +330,26 @@ async function inspectCurriculumTableScroll(locator) {
       const fascicolo = page.locator('[data-teacher-surface="sources"]').first();
       await fascicolo.waitFor({ state: 'visible', timeout: 5000 });
       const sourcePublication = fascicolo.locator('[data-canonical-source-publication]').first();
-      check('SUP-H1 Fascicolo has a stable canonical route', page.url().includes('/fascicolo'));
-      check('SUP-H1 Fascicolo exposes the source publication', await sourcePublication.isVisible().catch(() => false));
-      check('SUP-H1 Fascicolo has no material horizontal overflow', await noHorizontalOverflow(page));
+      const fascicoloRoutePass = check('SUP-H1 Fascicolo has a stable canonical route', page.url().includes('/fascicolo'));
+      const fascicoloPublicationPass = check('SUP-H1 Fascicolo exposes the source publication', await sourcePublication.isVisible().catch(() => false));
+      const fascicoloOverflowPass = check('SUP-H1 Fascicolo has no material horizontal overflow', await noHorizontalOverflow(page));
       evidence.tasks['SUP-H1-FASCICOLO'][profile.id] = {
-        status: (await sourcePublication.isVisible().catch(() => false)) ? 'AUTOMATED_EVIDENCE_PASS' : 'AUTOMATED_EVIDENCE_FAIL',
+        status: [fascicoloRoutePass, fascicoloPublicationPass, fascicoloOverflowPass].every(Boolean)
+          ? 'AUTOMATED_EVIDENCE_PASS'
+          : 'AUTOMATED_EVIDENCE_FAIL',
       };
 
       await gotoRoute(page, '/verifiche');
       const verificationSurface = page.locator('[data-teacher-surface="support-verification"]').first();
       await verificationSurface.waitFor({ state: 'visible', timeout: 5000 });
       const verificationCards = await verificationSurface.locator('[data-verification-state]').count();
-      check('SUP-H2 Verifiche has a stable route distinct from Documenti', page.url().includes('/verifiche') && !page.url().includes('/documents'));
-      check('SUP-H2 Verifiche exposes task-oriented readiness checks', verificationCards >= 5);
-      check('SUP-H2 Verifiche has no material horizontal overflow', await noHorizontalOverflow(page));
+      const verificationRoutePass = check('SUP-H2 Verifiche has a stable route distinct from Documenti', page.url().includes('/verifiche') && !page.url().includes('/documents'));
+      const verificationCardsPass = check('SUP-H2 Verifiche exposes task-oriented readiness checks', verificationCards >= 5);
+      const verificationOverflowPass = check('SUP-H2 Verifiche has no material horizontal overflow', await noHorizontalOverflow(page));
       evidence.tasks['SUP-H2-VERIFICHE'][profile.id] = {
-        status: verificationCards >= 5 ? 'AUTOMATED_EVIDENCE_PASS' : 'AUTOMATED_EVIDENCE_FAIL',
+        status: [verificationRoutePass, verificationCardsPass, verificationOverflowPass].every(Boolean)
+          ? 'AUTOMATED_EVIDENCE_PASS'
+          : 'AUTOMATED_EVIDENCE_FAIL',
         verificationCards,
       };
 
@@ -352,11 +357,13 @@ async function inspectCurriculumTableScroll(locator) {
       const guideSurface = page.locator('[data-teacher-surface="support-guide"]').first();
       await guideSurface.waitFor({ state: 'visible', timeout: 5000 });
       const guideTasks = await guideSurface.locator('article').count();
-      check('SUP-H3 Guida opens the task-first support surface', await guideSurface.isVisible().catch(() => false));
-      check('SUP-H3 Guida exposes task cards instead of a serial legacy manual', guideTasks >= 5);
-      check('SUP-H3 Guida has no material horizontal overflow', await noHorizontalOverflow(page));
+      const guideSurfacePass = check('SUP-H3 Guida opens the task-first support surface', await guideSurface.isVisible().catch(() => false));
+      const guideTasksPass = check('SUP-H3 Guida exposes task cards instead of a serial legacy manual', guideTasks >= 5);
+      const guideOverflowPass = check('SUP-H3 Guida has no material horizontal overflow', await noHorizontalOverflow(page));
       evidence.tasks['SUP-H3-GUIDA'][profile.id] = {
-        status: guideTasks >= 5 ? 'AUTOMATED_EVIDENCE_PASS' : 'AUTOMATED_EVIDENCE_FAIL',
+        status: [guideSurfacePass, guideTasksPass, guideOverflowPass].every(Boolean)
+          ? 'AUTOMATED_EVIDENCE_PASS'
+          : 'AUTOMATED_EVIDENCE_FAIL',
         guideTasks,
       };
 
