@@ -51,6 +51,9 @@ const assertScope = (scope: SharedReviewCaseScope): void => {
 };
 
 const sharedError = (message: string): Error => {
+  if (message.includes('TEAM_REVIEW_CONTRIBUTE_REQUIRED')) {
+    return new Error('Il ruolo corrente non può contribuire a questo riesame condiviso. Usa una membership attiva come Docente, Dipartimento o Referente.');
+  }
   if (message.includes('SHARED_REVIEW_CASE_ASSIGN_REQUIRED')) {
     return new Error('Solo una membership verificata di Dipartimento o Referente può assegnare il caso al gruppo.');
   }

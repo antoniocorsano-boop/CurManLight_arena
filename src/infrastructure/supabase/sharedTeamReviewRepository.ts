@@ -202,6 +202,9 @@ const operationalError = (message: string): Error => {
   if (message.includes('SELF_ASSIGNED_OPERATIONAL_COORDINATOR_FORBIDDEN')) {
     return new Error('Il coordinamento non può essere autoassegnato dal profilo personale.');
   }
+  if (message.includes('TEAM_REVIEW_CONTRIBUTE_REQUIRED')) {
+    return new Error('Il ruolo corrente non può pubblicare contributi disciplinari nel team. Seleziona una membership attiva come Docente, Dipartimento o Referente.');
+  }
   if (message.includes('TEAM_REVIEW_DECIDE_REQUIRED') || message.includes('VERIFIED_TEAM_OUTCOME_AUTHORITY_REQUIRED')) {
     return new Error('Solo una membership verificata di Dipartimento o Referente può registrare l’esito del team.');
   }
@@ -225,7 +228,9 @@ export class SupabaseSharedTeamReviewRepository implements SharedTeamReviewRepos
     assertScope(input);
     assertRef(input.proposalRef, 'proposalRef');
     assertFingerprint(input.proposalFingerprint);
-    if (!CONTRIBUTOR_ROLES.includes(context.membership.role)) throw new Error('TEAM_REVIEW_CONTRIBUTE_REQUIRED');
+    if (!CONTRIBUTOR_ROLES.includes(context.membership.role)) {
+      throw new Error('Il ruolo corrente non può pubblicare contributi disciplinari nel team. Seleziona una membership attiva come Docente, Dipartimento o Referente.');
+    }
     if (!CONTRIBUTION_ORIENTATIONS.includes(input.orientation)) throw new Error('Orientamento non valido.');
     if (input.orientation === 'propose-change' && !input.customText?.trim()) {
       throw new Error('La modifica proposta richiede una formulazione esplicita.');
