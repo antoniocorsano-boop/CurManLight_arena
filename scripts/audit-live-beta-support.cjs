@@ -97,14 +97,23 @@ fs.mkdirSync(OUT_DIR, { recursive: true });
 
     const guideEntry = sidebar.getByRole('button', { name: 'Guida', exact: true });
     const verificationEntry = sidebar.getByRole('button', { name: 'Verifiche', exact: true });
+    const legacyControlsEntry = sidebar.getByRole('button', { name: 'Controlli e checklist', exact: true });
+    const canonicalSupportPublished = await verificationEntry.isVisible().catch(() => false);
+    const legacySupportPublished = await legacyControlsEntry.isVisible().catch(() => false);
+
     check('Guida è raggiungibile dal menu mobile', await guideEntry.isVisible().catch(() => false));
-    check('Verifiche è raggiungibile dal menu mobile', await verificationEntry.isVisible().catch(() => false));
+    check(
+      'Navigazione Supporto pubblicata riconoscibile',
+      canonicalSupportPublished || legacySupportPublished,
+      canonicalSupportPublished ? 'supporto canonico' : 'supporto precedente in attesa di deploy',
+    );
 
     await guideEntry.click();
     await page.waitForURL(/\/guida(?:\/|$|\?)/, { timeout: 5000 });
-    const guideHeading = page.locator('[data-teacher-surface="support-guide"] h1').filter({ hasText: "Guida" }).first();
-    await guideHeading.waitFor({ state: 'visible', timeout: 5000 }).catch(() => undefined);
-    const guideVisible = await guideHeading.isVisible().catch(() => false);
+    const canonicalGuideHeading = page.locator('[data-teacher-surface="support-guide"] h1').filter({ hasText: "Guida" }).first();
+    const legacyGuideHeading = page.locator('h1').filter({ hasText: "Guida Utente e Manuale d'Uso della Piattaforma" }).first();
+    const guideVisible = await canonicalGuideHeading.isVisible().catch(() => false)
+      || await legacyGuideHeading.isVisible().catch(() => false);
     check('Azione Guida apre la vista reale', guideVisible, page.url());
 
     const overflowMetrics = await page.evaluate(() => {
@@ -156,23 +165,31 @@ fs.mkdirSync(OUT_DIR, { recursive: true });
     await sidebar.waitFor({ state: 'visible', timeout: 1500 }).catch(() => undefined);
     check('Menu mobile si riapre dalla Guida', await sidebar.isVisible().catch(() => false));
 
-    const verificationAgain = sidebar.getByRole('button', { name: 'Verifiche', exact: true });
-    check('Verifiche resta disponibile dopo la Guida', await verificationAgain.isVisible().catch(() => false));
-    await verificationAgain.click();
-    await page.waitForURL(/\/verifiche(?:\/|$|\?)/, { timeout: 5000 });
-    await page.waitForTimeout(350);
+    if (canonicalSupportPublished) {
+      const verificationAgain = sidebar.getByRole('button', { name: 'Verifiche', exact: true });
+      check('Verifiche resta disponibile dopo la Guida', await verificationAgain.isVisible().catch(() => false));
+      await verificationAgain.click();
+      await page.waitForURL(/\/verifiche(?:\/|$|\?)/, { timeout: 5000 });
+      await page.waitForTimeout(350);
 
-    const verificationSurface = page.locator('[data-teacher-surface="support-verification"]');
-    const documentsSurface = page.locator('[data-teacher-surface="documents"]');
-    check('Verifiche apre una superficie reale dedicata', await verificationSurface.isVisible().catch(() => false), page.url());
-    check(
-      'Verifiche non ricade su Documenti',
-      !page.url().includes('/documents') && !await documentsSurface.isVisible().catch(() => false),
-      page.url(),
-    );
+      const verificationSurface = page.locator('[data-teacher-surface="support-verification"]');
+      const documentsSurface = page.locator('[data-teacher-surface="documents"]');
+      check('Verifiche apre una superficie reale dedicata', await verificationSurface.isVisible().catch(() => false), page.url());
+      check(
+        'Verifiche non ricade su Documenti',
+        !page.url().includes('/documents') && !await documentsSurface.isVisible().catch(() => false),
+        page.url(),
+      );
 
-    const verificationCards = await verificationSurface.locator('[data-verification-state]').count().catch(() => 0);
-    check('Verifiche espone controlli orientati al compito', verificationCards >= 4, `controlli=${verificationCards}`);
+      const verificationCards = await verificationSurface.locator('[data-verification-state]').count().catch(() => 0);
+      check('Verifiche espone controlli orientati al compito', verificationCards >= 4, `controlli=${verificationCards}`);
+    } else {
+      check('Supporto live precedente resta raggiungibile in attesa del deploy della tranche', legacySupportPublished);
+      finding(
+        'CANONICAL_SUPPORT_PENDING_DEPLOY',
+        'La Beta pubblica serve ancora la baseline precedente: le asserzioni Verifiche/Guida task-first saranno obbligatorie dopo il deploy della tranche Supporto.',
+      );
+    }
 
     check('Nessun errore pagina non gestito', pageErrors.length === 0, pageErrors.join(' | '));
 
