@@ -83,7 +83,7 @@ const AUTHORITY_STATES: readonly TeamReviewAuthorityState[] = ['PRE_SCOPE_LEGACY
 const assertContextWorkspace = (context: WorkspaceActorContext, workspaceId: string): void => {
   if (context.assurance !== 'authenticated-workspace') throw new Error('TEAM_REVIEW_AUTHORITY_UNAVAILABLE');
   if (context.membership.workspaceId !== workspaceId || context.membership.status !== 'active') {
-    throw new Error('La richiesta non appartiene a una membership attiva del workspace corrente.');
+    throw new Error('La richiesta non appartiene a un profilo di partecipazione attivo nello spazio di lavoro corrente.');
   }
 };
 
@@ -203,10 +203,10 @@ const operationalError = (message: string): Error => {
     return new Error('Il coordinamento non può essere autoassegnato dal profilo personale.');
   }
   if (message.includes('TEAM_REVIEW_CONTRIBUTE_REQUIRED')) {
-    return new Error('Il ruolo corrente non può pubblicare contributi disciplinari nel team. Seleziona una membership attiva come Docente, Dipartimento o Referente.');
+    return new Error('Il ruolo corrente non può pubblicare contributi disciplinari nel team. Seleziona un profilo di partecipazione attivo con ruolo Docente, Dipartimento o Referente.');
   }
   if (message.includes('TEAM_REVIEW_DECIDE_REQUIRED') || message.includes('VERIFIED_TEAM_OUTCOME_AUTHORITY_REQUIRED')) {
-    return new Error('Solo una membership verificata di Dipartimento o Referente può registrare l’esito del team.');
+    return new Error('Solo un profilo di partecipazione verificato con ruolo Dipartimento o Referente può registrare l’esito del gruppo.');
   }
   if (message.includes('OPERATIONAL_DISCIPLINE_MEMBERSHIP_REQUIRED')) {
     return new Error('Questa disciplina non è tra le competenze dichiarate nel tuo gruppo operativo.');
@@ -229,7 +229,7 @@ export class SupabaseSharedTeamReviewRepository implements SharedTeamReviewRepos
     assertRef(input.proposalRef, 'proposalRef');
     assertFingerprint(input.proposalFingerprint);
     if (!CONTRIBUTOR_ROLES.includes(context.membership.role)) {
-      throw new Error('Il ruolo corrente non può pubblicare contributi disciplinari nel team. Seleziona una membership attiva come Docente, Dipartimento o Referente.');
+      throw new Error('Il ruolo corrente non può pubblicare contributi disciplinari nel team. Seleziona un profilo di partecipazione attivo con ruolo Docente, Dipartimento o Referente.');
     }
     if (!CONTRIBUTION_ORIENTATIONS.includes(input.orientation)) throw new Error('Orientamento non valido.');
     if (input.orientation === 'propose-change' && !input.customText?.trim()) {
@@ -313,7 +313,7 @@ export class SupabaseSharedTeamReviewRepository implements SharedTeamReviewRepos
     assertFingerprint(input.proposalFingerprint);
     assertRef(input.clientRequestId, 'clientRequestId');
     if (!TEAM_OUTCOME_ROLES.includes(context.membership.role)) {
-      throw new Error('Solo una membership verificata di Dipartimento o Referente può registrare l’esito del team.');
+      throw new Error('Solo un profilo di partecipazione verificato con ruolo Dipartimento o Referente può registrare l’esito del gruppo.');
     }
     if (!TEAM_OUTCOMES.includes(input.outcome)) throw new Error('Esito del gruppo non valido.');
     if (!input.rationale.trim()) throw new Error('La motivazione dell’esito del gruppo è obbligatoria.');
