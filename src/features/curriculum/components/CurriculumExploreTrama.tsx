@@ -168,6 +168,7 @@ export function buildCurriculumCatalog(sections: DepartmentCurriculumSection[]):
 
 type CurriculumExploreTramaProps = {
   sections: DepartmentCurriculumSection[];
+  initialDisciplineId?: string;
   view: CurriculumExploreView;
   onViewChange: (view: CurriculumExploreView) => void;
   onUseInPlanning?: (context: CurriculumExploreContext) => void;
@@ -179,6 +180,7 @@ type CurriculumExploreTramaProps = {
 
 export function CurriculumExploreTrama({
   sections,
+  initialDisciplineId,
   view,
   onViewChange,
   onUseInPlanning,
@@ -188,8 +190,11 @@ export function CurriculumExploreTrama({
   onOpenDocument,
 }: CurriculumExploreTramaProps) {
   const catalog = useMemo(() => buildCurriculumCatalog(sections), [sections]);
-  const preferredEntry = catalog.find((item) => normalizeKey(item.label) === 'tecnologia') ?? catalog[0];
-  const [disciplineId, setDisciplineId] = useState('');
+  const requestedEntry = initialDisciplineId
+    ? catalog.find((item) => item.id === normalizeKey(initialDisciplineId))
+    : undefined;
+  const preferredEntry = requestedEntry ?? catalog.find((item) => normalizeKey(item.label) === 'tecnologia') ?? catalog[0];
+  const [disciplineId, setDisciplineId] = useState(preferredEntry?.id ?? '');
   const [order, setOrder] = useState('Secondaria');
   const [annualityId, setAnnualityId] = useState('');
   const [nucleus, setNucleus] = useState('');
@@ -261,7 +266,7 @@ export function CurriculumExploreTrama({
         <p className="text-xs font-bold uppercase tracking-wide text-indigo-700">Consultazione del curricolo</p>
         <h2 className="mt-1 text-xl font-black text-slate-950">Trova ciò che si applica senza percorrere il documento in sequenza</h2>
         <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
-          Scegli disciplina, ordine e annualità. Esplora e Trama sono due letture dello stesso curricolo d’Istituto.
+          Scegli disciplina, ordine e annualità. Esplora e Trama sono due letture dello stesso fascicolo curricolare sorgente; non ne estendono l’ambito.
         </p>
       </div>
 

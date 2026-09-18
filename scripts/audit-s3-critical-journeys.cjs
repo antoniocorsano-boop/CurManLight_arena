@@ -128,9 +128,19 @@ async function inspectCurriculumTableScroll(locator) {
       console.log(`=== S3B CURRICULUM CONTEXT V2 — ${profile.id} ===`);
       await gotoRoute(page, '/curriculum');
 
+      const catalog = page.locator('[data-curriculum-catalog]').first();
+      await catalog.waitFor({ state: 'visible', timeout: 8000 });
+      check('curriculum context route is reachable', page.url().includes('/curriculum'));
+      check('curriculum opens on the scope catalog before any department publication', await catalog.isVisible());
+      check('catalog exposes the available pilot publication', (await catalog.locator('[data-curriculum-area="scientific-mathematical-technological"]').count()) === 1);
+      check('catalog keeps unavailable coverage non-actionable', (await catalog.getByText('Non acquisito nella Beta', { exact: true }).count()) >= 1);
+
+      const directTechnology = catalog.locator('[data-open-curriculum-discipline="tecnologia"]').first();
+      await directTechnology.waitFor({ state: 'visible', timeout: 5000 });
+      await clickWithPersonalProfileRecovery(page, directTechnology);
+
       const canonicalEntry = page.locator('[data-canonical-curriculum-entry]').first();
       await canonicalEntry.waitFor({ state: 'visible', timeout: 8000 });
-      check('curriculum context route is reachable', page.url().includes('/curriculum'));
       check('canonical curriculum context is visibly identified', await canonicalEntry.isVisible());
       check(
         'curriculum is presented as a professional publication',

@@ -77,6 +77,14 @@ async function gotoCurriculum(page) {
       };
 
       await gotoCurriculum(page);
+      const catalog = page.locator('[data-curriculum-catalog]').first();
+      await catalog.waitFor({ state: 'visible', timeout: 8000 });
+      check('curriculum compact audit starts from the scope catalog', await catalog.isVisible());
+
+      const directTechnology = catalog.locator('[data-open-curriculum-discipline="tecnologia"]').first();
+      await directTechnology.waitFor({ state: 'visible', timeout: 5000 });
+      await clickWithPersonalProfileRecovery(page, directTechnology);
+
       const explorer = page.locator('[data-curriculum-explore-trama]').first();
       await explorer.waitFor({ state: 'visible', timeout: 8000 });
 
