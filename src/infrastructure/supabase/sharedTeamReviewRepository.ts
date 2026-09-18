@@ -203,7 +203,7 @@ const operationalError = (message: string): Error => {
     return new Error('Il coordinamento non può essere autoassegnato dal profilo personale.');
   }
   if (message.includes('TEAM_REVIEW_CONTRIBUTE_REQUIRED')) {
-    return new Error('Il ruolo corrente non può pubblicare contributi disciplinari nel team. Seleziona un profilo di partecipazione attivo con ruolo Docente, Dipartimento o Referente.');
+    return new Error('Il ruolo corrente non può pubblicare contributi disciplinari nel gruppo. Seleziona un profilo di partecipazione attivo con ruolo Docente, Dipartimento o Referente.');
   }
   if (message.includes('TEAM_REVIEW_DECIDE_REQUIRED') || message.includes('VERIFIED_TEAM_OUTCOME_AUTHORITY_REQUIRED')) {
     return new Error('Solo un profilo di partecipazione verificato con ruolo Dipartimento o Referente può registrare l’esito del gruppo.');
@@ -229,7 +229,7 @@ export class SupabaseSharedTeamReviewRepository implements SharedTeamReviewRepos
     assertRef(input.proposalRef, 'proposalRef');
     assertFingerprint(input.proposalFingerprint);
     if (!CONTRIBUTOR_ROLES.includes(context.membership.role)) {
-      throw new Error('Il ruolo corrente non può pubblicare contributi disciplinari nel team. Seleziona un profilo di partecipazione attivo con ruolo Docente, Dipartimento o Referente.');
+      throw new Error('Il ruolo corrente non può pubblicare contributi disciplinari nel gruppo. Seleziona un profilo di partecipazione attivo con ruolo Docente, Dipartimento o Referente.');
     }
     if (!CONTRIBUTION_ORIENTATIONS.includes(input.orientation)) throw new Error('Orientamento non valido.');
     if (input.orientation === 'propose-change' && !input.customText?.trim()) {
