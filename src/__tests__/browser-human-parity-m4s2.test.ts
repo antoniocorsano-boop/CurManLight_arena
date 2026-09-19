@@ -1,3 +1,4 @@
+// @ts-nocheck -- repository guard intentionally uses Node built-ins not included in the app tsconfig.
 import fs from 'node:fs';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
