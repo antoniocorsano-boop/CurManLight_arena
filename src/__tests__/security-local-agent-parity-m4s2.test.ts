@@ -10,7 +10,14 @@ describe('M4-S2 local-agent security regression', () => {
 
     expect(localAgentSetupSource).toContain("method: 'GET'");
     expect(localAgentSetupSource).toContain("${ollamaServerUrl}/api/tags");
-    expect(localAgentSetupSource).toContain("safeLocalStorageGetItem('curman_localAgentStatus', '') === ''");
+    expect(localAgentSetupSource).toContain('useState(false)');
+    expect(localAgentSetupSource).not.toContain("safeLocalStorageGetItem('curman_localAgentStatus', '') === ''");
+  });
+
+  it('keeps local-agent setup opt-in instead of blocking first-run onboarding', () => {
+    expect(localAgentSetupSource).toContain('showAgentSetupModal');
+    expect(localAgentSetupSource).toContain('setShowAgentSetupModal');
+    expect(localAgentSetupSource).toContain('useState(false)');
   });
 
   it('does not introduce credential persistence while preserving local configuration only', () => {
