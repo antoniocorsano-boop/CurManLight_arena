@@ -215,13 +215,49 @@ function stateFromDecision(decision: Decision | undefined): RevisionPresentation
   };
 }
 
+function sourceSnapshotKey(values: Array<string | null | undefined>): string {
+  return values.map((value) => normalizeText(value)).filter(Boolean).sort().join('|');
+}
+
+function presentationProposalMatchesSource(
+  candidate: RevisionProposal,
+  proposal: Proposal,
+): boolean {
+  if (normalizeText(candidate.targetNodeRef.snapshotLabel) !== normalizeText(proposal.focus)) return false;
+  if (normalizeText(candidate.currentTextSnapshot) !== normalizeText(proposal.oldText)) return false;
+  if (normalizeText(candidate.proposedText) !== normalizeText(proposal.newText)) return false;
+
+  const candidateSources = sourceSnapshotKey(candidate.sourceRefs.map((source) => source.snapshotLabel));
+  const proposalSources = sourceSnapshotKey(proposal.sourceRefs ?? []);
+  return candidateSources === proposalSources;
+}
+
+function resolvePresentationProposalId(
+  archive: RevisionArchive,
+  proposal: Proposal,
+  context: RevisionPresentationContext,
+): EntityId | null {
+  const exactId = revisionPresentationProposalId(context, proposal.id);
+  if (presentationDecisions(archive, exactId).length > 0) return exactId;
+
+  const compatibleIds = archive.proposals
+    .filter((candidate) => candidate.id !== exactId)
+    .filter((candidate) => presentationProposalMatchesSource(candidate, proposal))
+    .map((candidate) => candidate.id)
+    .filter((candidateId) => presentationDecisions(archive, candidateId).length > 0);
+
+  return compatibleIds.length === 1 ? compatibleIds[0] : null;
+}
+
 export function getRevisionPresentationState(
   archive: RevisionArchive,
   proposal: Proposal,
   context: RevisionPresentationContext,
 ): RevisionPresentationState {
-  const proposalId = revisionPresentationProposalId(context, proposal.id);
-  return stateFromDecision(presentationDecisions(archive, proposalId)[0]);
+  const proposalId = resolvePresentationProposalId(archive, proposal, context);
+  return proposalId
+    ? stateFromDecision(presentationDecisions(archive, proposalId)[0])
+    : { choice: null, customText: '', prepared: false, source: 'none' };
 }
 
 function outcomeForChoice(choice: RevisionPresentationChoice): Decision['outcome'] {
@@ -318,11 +354,13 @@ export function resetRevisionPresentationChoice(input: {
   now?: string;
 }): RevisionArchive {
   const now = input.now ?? new Date().toISOString();
-  const proposalId = revisionPresentationProposalId(input.context, input.proposal.id);
-  const existingProposal = input.archive.proposals.find((item) => item.id === proposalId);
-  if (!existingProposal) return input.archive;
+  const visibleState = getRevisionPresentationState(input.archive, input.proposal, input.context);
+  if (visibleState.source === 'none') return input.archive;
 
-  const updated = cloneArchive(input.archive);
+  let updated = ensurePresentationProposal(input.archive, input.proposal, input.context, now);
+  updated = cloneArchive(updated);
+
+  const proposalId = revisionPresentationProposalId(input.context, input.proposal.id);
   const canonicalProposal = updated.proposals.find((item) => item.id === proposalId);
   if (!canonicalProposal) return input.archive;
 
