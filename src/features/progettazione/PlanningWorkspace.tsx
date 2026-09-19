@@ -1,10 +1,13 @@
 import { ExternalLink, Route, ShieldCheck } from 'lucide-react';
+import { getA04InstitutionalRead } from '../../domain/institution';
+import {
+  resolvePlanningSourceContext,
+  type PlanningSourceContext,
+} from '../../domain/curriculum/institute/planningSourceContext';
 import { useCurriculumStore } from '../../store/useCurriculumStore';
-import { INSTITUTE_CURRICULUM_CURRENT_SOURCE } from '../../domain/curriculum/institute/currentSource';
 import { PlanningHandoffPreview } from '../beta/PlanningHandoffPreview';
 import type { ProgettazioneTabProps } from './components/ProgettazioneTab';
 
-const CANONICAL_MASTER_ID = 'CAN-CURR-MASTER-00';
 const CURRICULUM_ATLAS_URL = 'https://antoniocorsano-boop.github.io/Curriculum-Atlas/';
 
 const ORDER_LABELS: Record<string, string> = {
@@ -41,30 +44,57 @@ function buildAtlasContextUrl(input: {
   discipline: string;
   order: string;
   targetClass: string;
+  sourceContext: PlanningSourceContext;
 }) {
   const params = new URLSearchParams({
     sourceProduct: 'curmanlight-arena',
-    masterId: CANONICAL_MASTER_ID,
-    masterVersion: INSTITUTE_CURRICULUM_CURRENT_SOURCE.sourceVersion,
-    curriculumState: INSTITUTE_CURRICULUM_CURRENT_SOURCE.curriculumInForce ? 'IN_FORCE' : 'WORKING_REFERENCE',
+    masterId: input.sourceContext.masterId,
+    masterVersion: input.sourceContext.masterVersion,
+    curriculumState: input.sourceContext.masterInstitutionalStatus === 'IN_FORCE'
+      ? 'IN_FORCE'
+      : 'WORKING_REFERENCE',
+    masterGovernanceStatus: input.sourceContext.masterInstitutionalStatus,
+    masterLifecycleState: input.sourceContext.masterLifecycleState,
+    sourceRepertoryId: input.sourceContext.sourceRepertoryId,
+    sourceRepertoryVersion: input.sourceContext.sourceRepertoryVersion,
+    applicabilityState: input.sourceContext.applicabilityState,
+    academicYear: input.sourceContext.academicYear || 'unspecified',
     discipline: input.discipline,
     order: input.order,
     classLevel: input.targetClass?.trim() || 'unspecified',
   });
+
+  if (input.sourceContext.framework) {
+    params.set('applicableFramework', input.sourceContext.framework);
+  }
+  if (input.sourceContext.applicableSource) {
+    params.set('applicableSourceCode', input.sourceContext.applicableSource.code);
+  }
+
   return `${CURRICULUM_ATLAS_URL}?${params.toString()}`;
 }
 
 export function PlanningWorkspace(props: ProgettazioneTabProps) {
-  const { discipline, order } = useCurriculumStore();
+  const {
+    discipline,
+    order,
+    schoolYear,
+    institutionalArchive,
+  } = useCurriculumStore();
   const disciplineLabel = DISCIPLINE_LABELS[discipline] ?? discipline;
   const orderLabel = ORDER_LABELS[order] ?? order;
-  const authorityLabel = INSTITUTE_CURRICULUM_CURRENT_SOURCE.curriculumInForce
-    ? `Curricolo vigente · master ${INSTITUTE_CURRICULUM_CURRENT_SOURCE.sourceVersion}`
-    : `Riferimento di lavoro · master ${INSTITUTE_CURRICULUM_CURRENT_SOURCE.sourceVersion} non vigente`;
+  const institutionalContext = getA04InstitutionalRead(institutionalArchive, order);
+  const effectiveSchoolYear = institutionalContext.academicYearLabel ?? schoolYear;
+  const sourceContext = resolvePlanningSourceContext({
+    schoolYear: effectiveSchoolYear,
+    order,
+    targetClass: props.targetClass,
+  });
   const atlasContextUrl = buildAtlasContextUrl({
     discipline,
     order,
     targetClass: props.targetClass,
+    sourceContext,
   });
 
   return (
@@ -83,10 +113,48 @@ export function PlanningWorkspace(props: ProgettazioneTabProps) {
           </p>
         </div>
 
-        <div className="rounded-xl border border-slate-200 bg-slate-50 p-4" aria-label="Contesto curricolare">
-          <p className="text-sm font-extrabold text-slate-950">{disciplineLabel}</p>
-          <p className="mt-1 text-sm text-slate-700">{orderLabel} · {classLabel(order, props.targetClass, props.targetSection)}</p>
-          <p className="mt-2 text-xs font-bold text-amber-800">{authorityLabel}</p>
+        <div className="space-y-3 rounded-xl border border-slate-200 bg-slate-50 p-4" aria-label="Contesto curricolare">
+          <div>
+            <p className="text-sm font-extrabold text-slate-950">{disciplineLabel}</p>
+            <p className="mt-1 text-sm text-slate-700">
+              {orderLabel} · {classLabel(order, props.targetClass, props.targetSection)}
+              {sourceContext.academicYear ? ` · A.S. ${sourceContext.academicYear}` : ''}
+            </p>
+          </div>
+
+          <div className="grid gap-2 sm:grid-cols-2">
+            <div
+              className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5"
+              data-planning-master-state={sourceContext.masterInstitutionalStatus}
+            >
+              <p className="text-xs font-extrabold text-amber-950">{sourceContext.masterLabel}</p>
+              <p className="mt-1 text-xs leading-5 text-amber-900">{sourceContext.masterStatusLabel}</p>
+            </div>
+
+            <div
+              className={`rounded-lg border px-3 py-2.5 ${
+                sourceContext.framework
+                  ? 'border-emerald-200 bg-emerald-50'
+                  : 'border-slate-200 bg-white'
+              }`}
+              data-planning-applicability={sourceContext.applicabilityState}
+            >
+              <p className={`text-xs font-extrabold ${
+                sourceContext.framework ? 'text-emerald-950' : 'text-slate-800'
+              }`}>
+                {sourceContext.applicabilityLabel}
+              </p>
+              <p className={`mt-1 text-xs leading-5 ${
+                sourceContext.framework ? 'text-emerald-900' : 'text-slate-600'
+              }`}>
+                {sourceContext.applicabilityDetail}
+              </p>
+            </div>
+          </div>
+
+          <p className="text-[11px] leading-5 text-slate-600">
+            Il quadro nazionale applicabile alla coorte e lo stato di approvazione del master d’Istituto sono informazioni distinte. Arena conserva entrambe senza trasformare una baseline di lavoro in un’adozione istituzionale.
+          </p>
         </div>
 
         <div className="grid gap-3 lg:grid-cols-3" aria-label="Confine tra i tre ambienti">
@@ -128,7 +196,7 @@ export function PlanningWorkspace(props: ProgettazioneTabProps) {
               <ExternalLink className="h-4 w-4" aria-hidden="true" />
             </a>
             <p className="mt-2 text-[11px] leading-5 text-slate-500">
-              Anteprima S1 pubblica · sola consultazione. Il link conserva master, versione, disciplina, ordine e classe senza dati personali.
+              Anteprima S1 pubblica · sola consultazione. Il link conserva master, repertorio fonti, regime della coorte, disciplina, ordine e classe senza dati personali.
             </p>
           </article>
 
@@ -159,8 +227,10 @@ export function PlanningWorkspace(props: ProgettazioneTabProps) {
         <details className="rounded-xl border border-slate-200 bg-white p-4" data-hcm-level="3">
           <summary className="cursor-pointer text-sm font-bold text-slate-600">Verifica e tracciabilità</summary>
           <div className="mt-3 space-y-1 text-xs leading-5 text-slate-600">
-            <p>Master: {CANONICAL_MASTER_ID}@{INSTITUTE_CURRICULUM_CURRENT_SOURCE.sourceVersion}</p>
-            <p>Stato: validazione professionale {INSTITUTE_CURRICULUM_CURRENT_SOURCE.humanProfessionalValidation.toLowerCase()} · curricolo vigente: {INSTITUTE_CURRICULUM_CURRENT_SOURCE.curriculumInForce ? 'sì' : 'no'}.</p>
+            <p>Master: {sourceContext.masterId}@{sourceContext.masterVersion}</p>
+            <p>Stato master d’Istituto: {sourceContext.masterStatusLabel}.</p>
+            <p>Repertorio fonti: {sourceContext.sourceRepertoryId}@{sourceContext.sourceRepertoryVersion}.</p>
+            <p>Applicabilità: {sourceContext.applicabilityLabel}{sourceContext.applicableSource ? ` · ${sourceContext.applicableSource.code}` : ''}.</p>
             <p>Atlas è una proiezione di consultazione e non trasferisce autorità. Il passaggio a Docente OS conserva identità, provenienza e stato del curricolo.</p>
           </div>
         </details>

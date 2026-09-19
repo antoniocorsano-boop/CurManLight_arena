@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { ArrowRight, CheckCircle2, Download, ShieldCheck, TriangleAlert } from 'lucide-react';
+import { ArrowRight, Building2, CheckCircle2, Download, ShieldCheck, TriangleAlert } from 'lucide-react';
 import { useAppContext } from '../../components/layout/AppContext';
 import { getA04InstitutionalRead } from '../../domain/institution';
 import { useCurriculumStore } from '../../store/useCurriculumStore';
@@ -18,6 +18,7 @@ export function PlanningHandoffPreview() {
     targetClass,
     targetSection,
     institutionalProfile,
+    setShowSaveModal,
   } = useAppContext();
   const {
     discipline,
@@ -61,6 +62,9 @@ export function PlanningHandoffPreview() {
     ? `${targetClass}${targetSection ? ` · Sezione ${targetSection}` : ''}`
     : `Classe ${targetClass}${targetSection}`;
 
+  const institutionConfigurationRequired = preview.status === 'blocked'
+    && preview.reason.includes('Configura prima l’istituto');
+
   const downloadHandoff = () => {
     if (preview.status !== 'ready' || !preview.valid || typeof document === 'undefined') return;
 
@@ -103,6 +107,17 @@ export function PlanningHandoffPreview() {
               <span>{preview.reason}</span>
             </div>
           </div>
+          {institutionConfigurationRequired && (
+            <button
+              type="button"
+              onClick={() => setShowSaveModal(true)}
+              data-human-next-action="configure-institution"
+              className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-amber-300 bg-white px-4 py-2.5 font-semibold text-amber-950 transition hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 sm:w-auto"
+            >
+              <Building2 className="h-4 w-4" aria-hidden="true" />
+              Configura l’istituto
+            </button>
+          )}
           <div className="rounded-xl border border-slate-200 bg-white p-3">
             <strong className="block text-slate-900">Quando sarà pronto</strong>
             <ul className="mt-1 list-disc space-y-1 pl-5">

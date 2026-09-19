@@ -40,6 +40,8 @@ describe('MOBILE-SHELL regression contract', () => {
     expect(headerSource).toContain('Apri Assistente Arena');
     expect(headerSource).toContain('Copia della sessione');
     expect(headerSource).toContain('Azzera i dati locali');
+    expect(headerSource).not.toContain('data-institution-config-entry="direct"');
+    expect(headerSource).not.toContain('data-institution-settings-entry="canonical"');
   });
 
   it('turns the avatar into a dedicated personal and institutional profile entry', () => {
