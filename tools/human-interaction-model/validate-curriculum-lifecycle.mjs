@@ -119,7 +119,7 @@ assert(publisherSource.includes('data-contribution-persistence-complete'), 'publ
 assert(publisherSource.includes('data-professional-contribution-persisted'), 'publisher non rende riconoscibile la condivisione verificata');
 assert(publisherSource.includes('contribution.proposalFingerprint'), 'publisher non verifica il fingerprint corrente');
 assert(publisherSource.includes('contribution.orientation !== expectedOrientation'), 'publisher non confronta l’orientamento persistito con quello corrente');
-assert(publisherSource.includes('normalizeText(contribution.customText) === normalizeText(customTexts[contribution.proposalRef])'), 'publisher non confronta il testo custom persistito con quello corrente');
+assert(publisherSource.includes('normalizeText(contribution.customText) === normalizeText(state?.customText)'), 'publisher non confronta il testo custom persistito con quello corrente');
 assert(publisherSource.includes('complete: proposals.length > 0 && count === proposals.length'), 'completezza di persistenza non richiede tutte le schede');
 
 const binding = contract.didactic_binding ?? {};
