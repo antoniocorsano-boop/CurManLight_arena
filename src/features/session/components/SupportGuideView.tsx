@@ -72,7 +72,7 @@ export function SupportGuideView({ handleTabSwitch, institutionalProfile }: Supp
 
         {!institutionalProfile.configured && (
           <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm leading-6 text-amber-950">
-            <strong>Contesto istituzionale non configurato.</strong> Puoi consultare e preparare lavoro locale, ma le azioni che richiedono un istituto verificabile restano bloccate.
+            <strong>Contesto istituzionale non configurato.</strong> Puoi consultare il curricolo e preparare passaggi locali, ma le azioni che richiedono un istituto verificabile restano bloccate.
           </div>
         )}
       </header>
