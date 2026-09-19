@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import type { DecisionStatus, Proposal, SchoolOrder } from '../../types/curriculum';
+import type { Proposal, SchoolOrder } from '../../types/curriculum';
+import { getRevisionPresentationState, type RevisionArchive, type RevisionPresentationChoice } from '../../domain/revision';
 import { getOperationalGroupForDiscipline } from '../../domain/institution/operationalGroups';
 import type { WorkspaceActorContext } from '../../domain/institution/sharedWorkspacePort';
 import type { OperationalGroupMembership, TeamReviewContribution, TeamReviewScope } from '../../domain/revision/teamReview';
@@ -16,8 +17,7 @@ export interface TeamContributionPersistenceState {
 
 export interface TeamContributionPublisherProps {
   proposals: Proposal[];
-  decisions: Record<string, DecisionStatus>;
-  customTexts: Record<string, string>;
+  revisionArchive: RevisionArchive;
   discipline: string;
   order: SchoolOrder;
   academicYear: string;
@@ -26,19 +26,11 @@ export interface TeamContributionPublisherProps {
 
 type FingerprintMap = Record<string, string>;
 
-const localOrientation = (decision?: DecisionStatus) => {
-  if (decision === 'approved') return 'confirm-proposal' as const;
-  if (decision === 'custom') return 'propose-change' as const;
-  if (decision === 'rejected') return 'keep-previous' as const;
-  return null;
-};
-
 const normalizeText = (value: string | null | undefined): string => value?.trim().replace(/\s+/g, ' ') ?? '';
 
 export function TeamContributionPublisher({
   proposals,
-  decisions,
-  customTexts,
+  revisionArchive,
   discipline,
   order,
   academicYear,
@@ -63,14 +55,29 @@ export function TeamContributionPublisher({
   const [refreshVersion, setRefreshVersion] = useState(0);
   const [busy, setBusy] = useState(false);
   const [feedback, setFeedback] = useState<{ kind: 'success' | 'error'; text: string } | null>(null);
+  const reviewContext = useMemo(() => ({
+    discipline,
+    order,
+    academicYear,
+  }), [discipline, order, academicYear]);
+  const presentationStates = useMemo(
+    () => new Map(proposals.map((proposal) => [
+      proposal.id,
+      getRevisionPresentationState(revisionArchive, proposal, reviewContext),
+    ])),
+    [proposals, revisionArchive, reviewContext],
+  );
 
   const proposalIdentityKey = useMemo(
     () => JSON.stringify([academicYear, order, discipline, group?.code, proposals.map((proposal) => [proposal.id, proposal.focus, proposal.oldText, proposal.newText])]),
     [academicYear, order, discipline, group?.code, proposals],
   );
   const localContributionIdentityKey = useMemo(
-    () => JSON.stringify(proposals.map((proposal) => [proposal.id, decisions[proposal.id] ?? null, normalizeText(customTexts[proposal.id])])),
-    [proposals, decisions, customTexts],
+    () => JSON.stringify(proposals.map((proposal) => {
+      const state = presentationStates.get(proposal.id);
+      return [proposal.id, state?.choice ?? null, normalizeText(state?.customText)];
+    })),
+    [proposals, presentationStates],
   );
   const proposalsById = useMemo(
     () => new Map(proposals.map((proposal) => [proposal.id, proposal])),
@@ -126,10 +133,11 @@ export function TeamContributionPublisher({
       if (contribution.contributorUserId !== team.session?.user.id) return false;
       if (fingerprints[contribution.proposalRef] !== contribution.proposalFingerprint) return false;
       if (!proposalsById.has(contribution.proposalRef)) return false;
-      const expectedOrientation = localOrientation(decisions[contribution.proposalRef]);
+      const state = presentationStates.get(contribution.proposalRef);
+      const expectedOrientation = state?.choice ?? null;
       if (!expectedOrientation || contribution.orientation !== expectedOrientation) return false;
       if (expectedOrientation === 'propose-change') {
-        return normalizeText(contribution.customText) === normalizeText(customTexts[contribution.proposalRef]);
+        return normalizeText(contribution.customText) === normalizeText(state?.customText);
       }
       return true;
     };
@@ -155,17 +163,13 @@ export function TeamContributionPublisher({
     });
 
     return () => { active = false; };
-  }, [repository, team.selectedMembership?.workspaceId, team.session?.user.id, proposalIdentityKey, localContributionIdentityKey, fingerprints, refreshVersion, scope, proposals.length, proposalsById, onPersistenceStateChange]);
+  }, [repository, team.selectedMembership?.workspaceId, team.session?.user.id, proposalIdentityKey, localContributionIdentityKey, fingerprints, refreshVersion, scope, proposals.length, proposalsById, presentationStates, onPersistenceStateChange]);
 
-  const localPreparedCount = proposals.filter((proposal) => {
-    const decision = decisions[proposal.id];
-    if (!decision) return false;
-    if (decision === 'custom') return Boolean(customTexts[proposal.id]?.trim());
-    return true;
+  const localPreparedCount = proposals.filter((proposal) => presentationStates.get(proposal.id)?.prepared).length;
+  const incompleteCustomCount = proposals.filter((proposal) => {
+    const state = presentationStates.get(proposal.id);
+    return state?.choice === 'propose-change' && !state.customText.trim();
   }).length;
-  const incompleteCustomCount = proposals.filter(
-    (proposal) => decisions[proposal.id] === 'custom' && !customTexts[proposal.id]?.trim(),
-  ).length;
   const persistedCurrentContributionComplete = proposals.length > 0 && currentUserContributionCount === proposals.length;
   const hasDisciplineCompetence = Boolean(operationalMembership?.disciplines.includes(discipline));
   const contributorRoles = ['docente', 'dipartimento', 'referente'] as const;
@@ -179,8 +183,11 @@ export function TeamContributionPublisher({
 
   const publishPreparation = async () => {
     if (!repository || !team.selectedMembership || !team.session || !scope || !canContribute || Object.keys(fingerprints).length !== proposals.length) return;
-    const publishable = proposals.filter((proposal) => Boolean(localOrientation(decisions[proposal.id])));
-    const invalidCustom = publishable.find((proposal) => decisions[proposal.id] === 'custom' && !customTexts[proposal.id]?.trim());
+    const publishable = proposals.filter((proposal) => Boolean(presentationStates.get(proposal.id)?.choice));
+    const invalidCustom = publishable.find((proposal) => {
+      const state = presentationStates.get(proposal.id);
+      return state?.choice === 'propose-change' && !state.customText.trim();
+    });
 
     if (invalidCustom) {
       setFeedback({ kind: 'error', text: `Completa la modifica proposta per “${invalidCustom.focus}” prima di condividerla con il team.` });
@@ -200,7 +207,8 @@ export function TeamContributionPublisher({
     setFeedback(null);
     try {
       for (const proposal of publishable) {
-        const orientation = localOrientation(decisions[proposal.id]);
+        const state = presentationStates.get(proposal.id);
+        const orientation = state?.choice as RevisionPresentationChoice | null;
         if (!orientation) continue;
         await repository.upsertContribution(context, {
           workspaceId: team.selectedMembership.workspaceId,
@@ -208,7 +216,7 @@ export function TeamContributionPublisher({
           proposalRef: proposal.id,
           proposalFingerprint: fingerprints[proposal.id],
           orientation,
-          customText: orientation === 'propose-change' ? customTexts[proposal.id] : null,
+          customText: orientation === 'propose-change' ? state?.customText ?? null : null,
         });
       }
       setRefreshVersion((value) => value + 1);
