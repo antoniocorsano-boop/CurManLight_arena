@@ -53,6 +53,8 @@ function buildAtlasContextUrl(input: {
     curriculumState: input.sourceContext.masterInstitutionalStatus === 'IN_FORCE'
       ? 'IN_FORCE'
       : 'WORKING_REFERENCE',
+    masterGovernanceStatus: input.sourceContext.masterInstitutionalStatus,
+    masterLifecycleState: input.sourceContext.masterLifecycleState,
     sourceRepertoryId: input.sourceContext.sourceRepertoryId,
     sourceRepertoryVersion: input.sourceContext.sourceRepertoryVersion,
     applicabilityState: input.sourceContext.applicabilityState,
