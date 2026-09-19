@@ -195,4 +195,65 @@ describe('M4-S3 revision presentation convergence', () => {
     })).toEqual({ decisions: {}, customTexts: {} });
   });
 
+  it('keeps a completed personal choice visible when the presentation context key changes', () => {
+    const authenticatedContext = {
+      ...context,
+      academicYear: '2026/2027',
+    };
+    const localContext = {
+      ...context,
+      academicYear: '',
+    };
+    const recorded = recordRevisionPresentationChoice({
+      archive: createEmptyRevisionStore('2026-09-19T08:00:00.000Z'),
+      proposal,
+      context: authenticatedContext,
+      choice: 'confirm-proposal',
+      now: '2026-09-19T08:01:00.000Z',
+    });
+
+    expect(getRevisionPresentationState(recorded, proposal, authenticatedContext)).toMatchObject({
+      choice: 'confirm-proposal',
+      prepared: true,
+      source: 'canonical',
+    });
+    expect(getRevisionPresentationState(recorded, proposal, localContext)).toMatchObject({
+      choice: 'confirm-proposal',
+      prepared: true,
+      source: 'canonical',
+    });
+  });
+
+  it('reopening through a new context masks the portable prior choice without deleting history', () => {
+    const authenticatedContext = {
+      ...context,
+      academicYear: '2026/2027',
+    };
+    const localContext = {
+      ...context,
+      academicYear: '',
+    };
+    const recorded = recordRevisionPresentationChoice({
+      archive: createEmptyRevisionStore('2026-09-19T08:00:00.000Z'),
+      proposal,
+      context: authenticatedContext,
+      choice: 'keep-previous',
+      now: '2026-09-19T08:01:00.000Z',
+    });
+    const reopened = resetRevisionPresentationChoice({
+      archive: recorded,
+      proposal,
+      context: localContext,
+      now: '2026-09-19T08:02:00.000Z',
+    });
+
+    expect(getRevisionPresentationState(reopened, proposal, localContext)).toMatchObject({
+      choice: null,
+      prepared: false,
+      source: 'canonical',
+    });
+    expect(reopened.decisions.some((decision) => decision.outcome === 'reject')).toBe(true);
+    expect(reopened.decisions.some((decision) => decision.outcome === 'defer' && decision.status === 'recorded-local')).toBe(true);
+  });
+
 });
