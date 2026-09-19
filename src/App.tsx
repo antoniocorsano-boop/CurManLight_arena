@@ -923,6 +923,7 @@ export default function App() {
      ollamaModelName={ollamaModelName}
      localAgentSize={localAgentSize}
      setShowSaveModal={setShowSaveModal}
+     openInstitutionConfig={() => { setShowSaveModal(true); }}
      roleDropdownOpen={roleDropdownOpen}
      setRoleDropdownOpen={setRoleDropdownOpen}
      isWorkspaceLoggedIn={isWorkspaceLoggedIn}
