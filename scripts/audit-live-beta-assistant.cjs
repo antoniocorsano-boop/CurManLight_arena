@@ -3,6 +3,7 @@ const fs = require('fs');
 const path = require('path');
 
 const BETA_URL = process.env.BETA_URL || 'https://antoniocorsano-boop.github.io/CurManLight_arena/';
+const EXPECTED_RELEASE_SHA = (process.env.EXPECTED_RELEASE_SHA || '').trim();
 const OUT_DIR = process.env.AUDIT_OUT_DIR || 'artifacts/live-beta-assistant';
 
 fs.mkdirSync(OUT_DIR, { recursive: true });
@@ -52,6 +53,33 @@ fs.mkdirSync(OUT_DIR, { recursive: true });
     return false;
   };
 
+  const completePersonalProfileIfRequired = async () => {
+    const dialog = page.locator('[data-onboarding-contract="personal-work-profile-v1"]');
+    if (!await dialog.isVisible().catch(() => false)) return true;
+
+    await dialog.locator('[data-personal-role="insegnante"]').click({ timeout: 5000 });
+    await dialog.getByRole('button', { name: 'Disciplinare', exact: true }).click({ timeout: 5000 });
+    await dialog.getByRole('button', { name: 'Prossimo', exact: true }).click({ timeout: 5000 });
+    await dialog.getByRole('button', { name: 'secondaria', exact: true }).click({ timeout: 5000 });
+    await dialog.getByRole('button', { name: 'Prossimo', exact: true }).click({ timeout: 5000 });
+
+    const discipline = dialog.locator('#personal-work-discipline');
+    await discipline.selectOption({ label: 'Tecnologia' }).catch(async () => {
+      const options = await discipline.locator('option').allTextContents();
+      const technologyIndex = options.findIndex((label) => /tecnologia/i.test(label));
+      if (technologyIndex < 0) throw new Error(`Disciplina Tecnologia non disponibile: ${options.join(', ')}`);
+      await discipline.selectOption({ index: technologyIndex });
+    });
+    await dialog.getByRole('button', { name: 'Prossimo', exact: true }).click({ timeout: 5000 });
+
+    const firstCombination = dialog.locator('button').filter({ hasText: /^1\^A$/ }).first();
+    if (await firstCombination.isVisible().catch(() => false)) await firstCombination.click({ timeout: 5000 });
+
+    await dialog.locator('[data-save-personal-profile="explicit"]').click({ timeout: 5000 });
+    await dialog.waitFor({ state: 'detached', timeout: 5000 }).catch(async () => dialog.waitFor({ state: 'hidden', timeout: 5000 }));
+    return !await dialog.isVisible().catch(() => false);
+  };
+
   const openAssistantFromSettings = async () => {
     const settingsEntry = page.locator('[data-settings-entry="canonical"]');
     const settingsVisible = await settingsEntry.isVisible({ timeout: 2000 }).catch(() => false);
@@ -59,7 +87,7 @@ fs.mkdirSync(OUT_DIR, { recursive: true });
     if (!settingsVisible) return false;
 
     try {
-      await settingsEntry.click({ timeout: 1200 });
+      await settingsEntry.click({ timeout: 5000 });
     } catch (error) {
       if (await onboardingVisible()) {
         finding('ONBOARDING_MODAL_BLOCKS_ASSISTANT_ENTRY', 'Il wizard Profilo personale locale blocca l’accesso a Impostazioni → Assistente Arena.');
@@ -76,7 +104,7 @@ fs.mkdirSync(OUT_DIR, { recursive: true });
     if (!assistantVisible) return false;
 
     try {
-      await assistantEntry.click({ timeout: 1200 });
+      await assistantEntry.click({ timeout: 5000 });
     } catch (error) {
       if (await onboardingVisible()) {
         finding('ONBOARDING_MODAL_BLOCKS_ASSISTANT_ENTRY', 'Il wizard Profilo personale locale blocca l’apertura dell’Assistente dal menu Impostazioni.');
@@ -94,6 +122,19 @@ fs.mkdirSync(OUT_DIR, { recursive: true });
   const navigateAndOpenAssistant = async () => {
     const response = await page.goto(BETA_URL, { waitUntil: 'domcontentloaded', timeout: 45000 });
     check('Beta pubblica raggiungibile', Boolean(response && response.ok()), response ? `HTTP ${response.status()}` : 'nessuna risposta');
+    await page.waitForTimeout(1200);
+
+    const localAgentModal = page.getByRole('dialog').filter({ hasText: /Configurazione personale del connettore LLM/i });
+    check(
+      'Configurazione LLM non si apre automaticamente',
+      !await localAgentModal.isVisible().catch(() => false),
+      'la configurazione locale deve restare opt-in',
+    );
+
+    const profileReady = await completePersonalProfileIfRequired();
+    check('Profilo personale disponibile prima dell’Assistente', profileReady);
+    if (!profileReady) return false;
+
     const assistantOpened = await openAssistantFromSettings();
     await page.waitForLoadState('networkidle', { timeout: 10000 }).catch(() => undefined);
     return assistantOpened;
@@ -115,6 +156,13 @@ fs.mkdirSync(OUT_DIR, { recursive: true });
       try { releaseIdentity = await releaseResponse.json(); } catch (_) {}
     }
     check('Identità release disponibile', releaseResponse.ok(), releaseIdentity ? JSON.stringify(releaseIdentity) : `HTTP ${releaseResponse.status()}`);
+    if (EXPECTED_RELEASE_SHA) {
+      check(
+        'Release pubblicata coincide con lo SHA distribuito',
+        releaseIdentity?.releaseSha === EXPECTED_RELEASE_SHA,
+        `atteso=${EXPECTED_RELEASE_SHA} pubblicato=${releaseIdentity?.releaseSha || 'assente'}`,
+      );
+    }
 
     const onboardingStillVisible = await onboardingVisible();
     if (onboardingStillVisible && assistantOpened) {
@@ -180,6 +228,7 @@ fs.mkdirSync(OUT_DIR, { recursive: true });
 
     fs.writeFileSync(path.join(OUT_DIR, 'report.json'), JSON.stringify({
       betaUrl: BETA_URL,
+      expectedReleaseSha: EXPECTED_RELEASE_SHA || null,
       releaseIdentity,
       knowledgeActionVisible,
       graphActionVisible,
