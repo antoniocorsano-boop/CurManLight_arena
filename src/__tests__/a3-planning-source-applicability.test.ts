@@ -5,6 +5,8 @@ import {
   resolvePlanningSourceContext,
 } from '../domain/curriculum/institute/planningSourceContext';
 import planningWorkspaceSource from '../features/progettazione/PlanningWorkspace.tsx?raw';
+import appHeaderSource from '../features/navigation/components/AppHeader.tsx?raw';
+import planningHandoffSource from '../features/beta/PlanningHandoffPreview.tsx?raw';
 
 describe('M4-S7 A3 planning source applicability closure', () => {
   it('keeps the Arena master as a working baseline without inventing institutional adoption', () => {
@@ -142,4 +144,15 @@ describe('M4-S7 A3 planning source applicability closure', () => {
     expect(planningWorkspaceSource).toContain('applicableFramework');
     expect(planningWorkspaceSource).toContain('applicableSourceCode');
   });
+  it('exposes direct and contextual routes to the canonical institution configuration panel', () => {
+    expect(appHeaderSource).toContain('data-institution-settings-entry="canonical"');
+    expect(appHeaderSource).toContain('Configurazione istituto');
+    expect(appHeaderSource).toContain('props.setShowSaveModal(true)');
+
+    expect(planningHandoffSource).toContain("preview.reason.includes('Configura prima l’istituto')");
+    expect(planningHandoffSource).toContain('data-human-next-action="configure-institution"');
+    expect(planningHandoffSource).toContain('Configura l’istituto');
+    expect(planningHandoffSource).toContain('setShowSaveModal(true)');
+  });
+
 });
