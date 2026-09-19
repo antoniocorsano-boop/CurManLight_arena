@@ -316,8 +316,12 @@ export function resetRevisionPresentationChoice(input: {
 }): RevisionArchive {
   const now = input.now ?? new Date().toISOString();
   const proposalId = revisionPresentationProposalId(input.context, input.proposal.id);
+  const existingProposal = input.archive.proposals.find((item) => item.id === proposalId);
+  if (!existingProposal) return input.archive;
+
   const updated = cloneArchive(input.archive);
-  let changed = false;
+  const canonicalProposal = updated.proposals.find((item) => item.id === proposalId);
+  if (!canonicalProposal) return input.archive;
 
   for (const decision of updated.decisions) {
     if (
@@ -325,21 +329,53 @@ export function resetRevisionPresentationChoice(input: {
       && decision.authority.declaredRole === 'docente'
       && decision.status === 'recorded-local'
     ) {
-      decision.status = 'revoked';
-      changed = true;
+      decision.status = 'superseded';
       updated.events.push(createRevisionEvent({
         entityRef: createEntityReference(decision.id, 'decision', input.proposal.focus),
-        eventType: 'decision-revoked',
+        eventType: 'decision-superseded',
         role: 'docente',
         previousStatus: 'recorded-local',
-        newStatus: 'revoked',
+        newStatus: 'superseded',
         rationale: 'Orientamento riaperto dal docente',
       }));
     }
   }
 
-  if (changed) updated.updatedAt = now;
-  return changed ? updated : input.archive;
+  const decisionId = generateDeterministicId(
+    `revision-presentation-reopen|${contextSeed(input.context)}|${input.proposal.id}|${now}`,
+  );
+  const reopeningDecision: Decision = {
+    id: decisionId,
+    metadata: createMetadata('teacher', undefined, now),
+    proposalRef: createEntityReference(proposalId, 'revision-proposal', input.proposal.focus),
+    proposalVersionRef: createEntityReference(
+      canonicalProposal.currentVersionRef,
+      'revision-proposal',
+      'v1',
+    ),
+    outcome: 'defer',
+    rationale: 'Orientamento personale riaperto; nessuna scelta corrente',
+    authority: { declaredRole: 'docente', note: 'Riapertura esplicita del parere personale' },
+    decidedBy: undefined,
+    institutionalContext: undefined,
+    decidedAt: now,
+    effectiveFrom: undefined,
+    sourceRefs: [],
+    documentRefs: [],
+    status: 'recorded-local',
+  };
+
+  updated.decisions.push(reopeningDecision);
+  canonicalProposal.decisionRefs.push(createEntityReference(decisionId, 'decision', input.proposal.focus));
+  updated.events.push(createRevisionEvent({
+    entityRef: createEntityReference(decisionId, 'decision', input.proposal.focus),
+    eventType: 'decision-recorded',
+    role: 'docente',
+    newStatus: 'recorded-local',
+    rationale: reopeningDecision.rationale,
+  }));
+  updated.updatedAt = now;
+  return updated;
 }
 
 function legacyChoice(status: LegacyDecisionStatus): RevisionPresentationChoice {
