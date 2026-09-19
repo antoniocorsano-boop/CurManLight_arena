@@ -1,6 +1,7 @@
 import { AlertTriangle, CheckCircle2, ChevronRight, CircleHelp, FileSearch, ShieldCheck } from 'lucide-react';
 import type { AppViewsLayerProps } from '../types/appViewContracts';
 import { AVAILABLE_DEPARTMENT_PUBLICATION } from '../../curriculum/data/curriculumPublicationRegistry';
+import { ARENA_M4_PERSISTENCE_POLICY } from '../../../domain/persistence/m4PersistencePolicy';
 
 type VerificationState = 'ok' | 'attention' | 'blocked';
 
@@ -88,6 +89,12 @@ export function SupportVerificationView({
         ? `${pendingRevisionItems} sched${pendingRevisionItems === 1 ? 'a' : 'e'} da esaminare nel contesto disciplinare corrente.`
         : 'Non risultano schede correnti in attesa nel contesto disciplinare selezionato.',
       action: { label: 'Apri il riesame', tab: 'revisione' },
+    },
+    {
+      id: 'persistence',
+      title: 'Persistenza e portabilità',
+      state: 'attention',
+      explanation: `Modello ${ARENA_M4_PERSISTENCE_POLICY.model}: lavoro personale sul dispositivo tramite IndexedDB; atti condivisi soltanto nel workspace autenticato con RLS. Il curricolo canonico resta ${ARENA_M4_PERSISTENCE_POLICY.curriculumPersistenceMode} nel pilot M4 e non migra automaticamente.`,
     },
     {
       id: 'surface-boundary',
@@ -188,7 +195,7 @@ export function SupportVerificationView({
         </summary>
         <div className="mt-3 flex items-start gap-2 text-sm leading-6 text-slate-600">
           <FileSearch className="mt-1 h-4 w-4 shrink-0" aria-hidden="true" />
-          <p>Non approva il curricolo, non sostituisce la decisione istituzionale, non rende Atlas autoritativo, non certifica conformità amministrativa e non modifica Docente OS.</p>
+          <p>Non approva il curricolo, non trasforma lo storage locale in autorità istituzionale, non rende Atlas autoritativo, non certifica conformità amministrativa e non modifica Docente OS.</p>
         </div>
       </details>
     </section>
