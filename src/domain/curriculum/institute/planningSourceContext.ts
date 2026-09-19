@@ -66,11 +66,22 @@ export function resolvePlanningSourceContext({
   });
 
   const masterInForce = INSTITUTE_CURRICULUM_CURRENT_SOURCE.curriculumInForce;
-  const masterInstitutionalStatus = masterInForce
+  const masterInstitutionalStatus: PlanningSourceContext['masterInstitutionalStatus'] = masterInForce
     ? 'IN_FORCE'
     : 'WORKING_BASELINE_PENDING_APPROVAL';
 
-  const base = {
+  const base: Pick<
+    PlanningSourceContext,
+    | 'masterId'
+    | 'masterVersion'
+    | 'masterLifecycleState'
+    | 'masterInstitutionalStatus'
+    | 'masterLabel'
+    | 'masterStatusLabel'
+    | 'sourceRepertoryId'
+    | 'sourceRepertoryVersion'
+    | 'academicYear'
+  > = {
     masterId: 'CAN-CURR-MASTER-00' as const,
     masterVersion: INSTITUTE_CURRICULUM_CURRENT_SOURCE.sourceVersion,
     masterLifecycleState: INSTITUTE_CURRICULUM_CURRENT_SOURCE.lifecycleState,
