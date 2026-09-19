@@ -52,6 +52,9 @@ async function readPlanningHandoffState(page) {
 (async () => {
   const browser = await chromium.launch({ headless: true });
   const context = await browser.newContext({ viewport: { width: 1280, height: 900 }, locale: 'it-IT' });
+  await context.addInitScript(() => {
+    localStorage.setItem('curman_localAgentStatus', 'not_installed');
+  });
   const page = await context.newPage();
   const pageErrors = [];
   let decisionRpcCalls = 0;

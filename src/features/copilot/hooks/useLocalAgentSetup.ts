@@ -24,9 +24,6 @@ export const useLocalAgentSetup = ({ showToast }: UseLocalAgentSetupArgs) => {
     return safeLocalStorageGetItem('curman_localAgentSize', 'none') as LocalAgentSize;
   });
   const [showAgentSetupModal, setShowAgentSetupModal] = useState(() => {
-    if (typeof navigator !== 'undefined' && navigator.webdriver) {
-      return false;
-    }
     return safeLocalStorageGetItem('curman_localAgentStatus', '') === '';
   });
   const [activeHelpModel, setActiveHelpModel] = useState<string | null>(null);

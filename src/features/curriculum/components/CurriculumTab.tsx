@@ -108,8 +108,7 @@ export function CurriculumTab({
           </p>
         </div>
 
-        {typeof navigator !== 'undefined' && navigator.webdriver && (
-          <div className="bg-slate-100 p-1 rounded-xl flex space-x-1 border border-slate-200 shrink-0">
+        <div className="bg-slate-100 p-1 rounded-xl flex space-x-1 border border-slate-200 shrink-0">
             {(['albero', 'mappa', 'popolamento'] as const).map(view => (
               <button
                 key={view}
@@ -124,7 +123,6 @@ export function CurriculumTab({
               </button>
             ))}
           </div>
-        )}
       </div>
 
       {activeCurricoloView === 'home' && (
@@ -454,9 +452,7 @@ function MappaView({
 
         {(['infanzia', 'primaria', 'secondaria'] as SchoolOrder[]).map(o => {
           const data = localCurriculum[discipline]?.[o] || { traguardi: [], obiettivi: [], proposals: [] };
-          const isExpanded = typeof navigator !== 'undefined' && navigator.webdriver
-            ? true
-            : !!expandedMapSections[o];
+          const isExpanded = !!expandedMapSections[o];
 
           return (
             <div key={o} className="relative fade-in">
@@ -569,100 +565,7 @@ function PopolamentoView({
 }: PopolamentoViewProps) {
   return (
     <div className="space-y-4 fade-in text-left">
-      {typeof navigator !== 'undefined' && navigator.webdriver ? (
-        /* Automated Test Session: standard layout */
-        <div className="space-y-5">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 items-start">
-            {/* AI semantic copilota */}
-            <div className="border border-indigo-100 bg-indigo-50/10 p-5 rounded-2xl space-y-4">
-              <div className="space-y-1">
-                <span className="px-2 py-0.5 bg-indigo-100 text-indigo-800 rounded text-[8px] font-black uppercase tracking-wider">Metodo A (Consigliato)</span>
-                  <h4 className="text-xs font-black text-indigo-950 uppercase tracking-wider">Assistente locale per la generazione non verificata</h4>
-              </div>
-              <div className="bg-white border rounded-xl p-3 flex justify-between items-center text-[10px] shadow-sm">
-                <div className="space-y-0.5">
-                  <span className="text-[8px] font-black text-slate-400 uppercase tracking-wider block">Stato Assistente Locale:</span>
-                  <span className="font-extrabold text-slate-800 uppercase">ATTIVO (Banca Dati Semantica ~12.5 MB)</span>
-                </div>
-                <button onClick={() => setShowAgentSetupModal(true)} className="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold border rounded-lg transition">Configura</button>
-              </div>
-              <div className="space-y-3 bg-white p-4 border border-slate-150 rounded-xl">
-                <div className="space-y-1">
-                  <span className="text-[9px] font-black text-slate-400 uppercase tracking-wider block">Materia d'insegnamento attiva:</span>
-                  <span className="text-xs font-bold text-slate-700 bg-slate-100 px-2.5 py-1 rounded-md inline-block uppercase">{discipline} ({orderLabelsForMap[order]?.split(" ")[0]})</span>
-                </div>
-                <div className="space-y-1">
-                  <span className="text-[9px] font-black text-slate-400 uppercase tracking-wider block">Inserisci argomento o nucleo tematico:</span>
-                  <input type="text" value={importTopicInput} onChange={(e) => setImportTopicInput(e.target.value)} className="w-full border border-slate-200 rounded-xl p-2.5 text-xs font-bold outline-none focus:ring-2 focus:ring-indigo-500/20" placeholder="Es. Le equazioni..." />
-                </div>
-                <button onClick={handleAiGenerateCurriculum} disabled={isGeneratingKB} className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-black text-[10px] uppercase tracking-wider py-2.5 rounded-xl transition shadow-md shadow-indigo-600/10">Avvia Generazione Co-pilota</button>
-
-                {generatedKBOuput && (
-                  <div className="bg-indigo-50/50 border border-indigo-150 p-4 rounded-xl space-y-3 mt-3 fade-in">
-                    <div className="flex justify-between items-center border-b border-indigo-100 pb-1.5">
-                      <span className="text-[9px] font-black text-indigo-950 uppercase tracking-wider block">Risultato della Generazione Assistita:</span>
-                      <span className="bg-indigo-100 text-indigo-800 text-[8px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full">Pronto all'Uso</span>
-                    </div>
-                    <div className="space-y-2.5 text-[10px] text-slate-700 leading-relaxed font-semibold">
-                      <div className="space-y-0.5">
-                        <strong className="text-[8px] font-black text-indigo-700 uppercase tracking-wider block">Traguardo Competenza:</strong>
-                        <p className="bg-white p-2 rounded border border-indigo-100/50 italic">{generatedKBOuput.traguardi[0]}</p>
-                      </div>
-                      <div className="space-y-0.5">
-                        <strong className="text-[8px] font-black text-indigo-700 uppercase tracking-wider block">Obiettivi di Apprendimento:</strong>
-                        <ul className="list-disc pl-4 space-y-1 bg-white p-2 rounded border border-indigo-100/50">
-                          {generatedKBOuput.obiettivi.map((o, idx) => (
-                            <li key={idx}>{o}</li>
-                          ))}
-                        </ul>
-                      </div>
-                      <div className="space-y-0.5">
-                        <strong className="text-[8px] font-black text-indigo-700 uppercase tracking-wider block">Evidenze Osservabili:</strong>
-                        <p className="bg-white p-2 rounded border border-indigo-100/50 italic">{generatedKBOuput.evidenze[0]}</p>
-                      </div>
-                    </div>
-                    <button
-                      onClick={handleSaveGeneratedToKB}
-                      className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-black text-[10px] uppercase tracking-wider py-2.5 rounded-xl transition"
-                    >
-                      Integra ed Inserisci nel Curricolo
-                    </button>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* CSV importer */}
-            <div className="border border-slate-200 bg-slate-50 p-5 rounded-2xl space-y-4">
-              <div className="space-y-1">
-                <span className="px-2 py-0.5 bg-slate-200 text-slate-700 rounded text-[8px] font-black uppercase tracking-wider">Metodo B (Alternativo)</span>
-                <h4 className="text-xs font-black text-slate-800 uppercase tracking-wider">IMPORTATORE MASSIVO DA EXCEL / CSV</h4>
-              </div>
-              <div className="bg-white border-2 border-dashed border-slate-300 rounded-xl p-6 text-center space-y-3">
-                <div className="space-y-1">
-                  <p className="text-[11px] font-bold text-slate-700">Seleziona un file CSV locale</p>
-                  <p className="text-[9px] text-slate-400">Dimensione massima consentita: 10 MB</p>
-                </div>
-                <input type="file" accept=".csv" onChange={handleCSVUpload} className="mx-auto block text-[10px] text-slate-500 cursor-pointer" />
-              </div>
-              <div className="bg-slate-100 p-3.5 border border-slate-200 rounded-xl space-y-1.5 text-[9px] text-slate-500 font-semibold leading-relaxed">
-                <span className="font-bold text-slate-700 uppercase tracking-wider">Formato CSV supportato:</span>
-                <pre className="bg-slate-50 p-2 border border-slate-200 rounded font-mono text-[8px] text-slate-600 block text-left whitespace-pre">materia,ordine,tipo,testo
-italiano,primaria,obiettivo,Scrivere testi in corsivo
-storia,secondaria,traguardo,Padroneggia la comprensione critica</pre>
-              </div>
-            </div>
-          </div>
-
-          {/* Reset block */}
-          <div className="border border-rose-100 bg-rose-50/10 p-5 rounded-2xl text-left space-y-3">
-            <h4 className="text-xs font-black text-rose-950 uppercase tracking-wider">Ripristino al Baseline di default</h4>
-            <button onClick={handleResetCurriculumToBaseline} className="bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-700 font-black text-[10px] uppercase tracking-wider px-4 py-2.5 rounded-xl transition">Ripristina baseline curricolare locale</button>
-          </div>
-        </div>
-      ) : (
-        /* Real Users: Compact Tabbed Console */
-        <div className="space-y-4">
+      <div className="space-y-4">
           <div className="flex space-x-1 bg-slate-100 p-1 border rounded-xl w-fit text-[10px] font-black uppercase shadow-sm">
             <button onClick={() => setPopolamentoTab('copilot')} className={`px-3 py-1.5 rounded-lg transition ${popolamentoTab === 'copilot' ? 'bg-white text-indigo-950 shadow-sm border' : 'text-slate-500 hover:text-slate-800'}`}>Assistente locale</button>
             <button onClick={() => setPopolamentoTab('csv')} className={`px-3 py-1.5 rounded-lg transition ${popolamentoTab === 'csv' ? 'bg-white text-indigo-950 shadow-sm border' : 'text-slate-500 hover:text-slate-800'}`}>☆ Importatore CSV</button>
@@ -751,7 +654,6 @@ storia,secondaria,traguardo,Padroneggia la comprensione critica</pre>
             </div>
           )}
         </div>
-      )}
     </div>
   );
 }
