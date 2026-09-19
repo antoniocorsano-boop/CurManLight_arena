@@ -1,17 +1,18 @@
-import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
+import revisioneRaw from '../features/curriculum/components/RevisioneTab.tsx?raw';
+import workspaceRaw from '../features/beta/RevisionWorkspace.tsx?raw';
+import publisherRaw from '../features/beta/TeamContributionPublisher.tsx?raw';
+import curriculumRaw from '../features/curriculum/components/CurriculumTab.tsx?raw';
 
 const canonicalReviewSurfaces = [
-  'src/features/curriculum/components/RevisioneTab.tsx',
-  'src/features/beta/RevisionWorkspace.tsx',
-  'src/features/beta/TeamContributionPublisher.tsx',
-  'src/features/curriculum/components/CurriculumTab.tsx',
+  ['RevisioneTab', revisioneRaw],
+  ['RevisionWorkspace', workspaceRaw],
+  ['TeamContributionPublisher', publisherRaw],
+  ['CurriculumTab', curriculumRaw],
 ] as const;
 
 describe('M4-S3 canonical revision presentation guard', () => {
-  it.each(canonicalReviewSurfaces)('%s does not consume legacy decisions/customTexts directly', (path) => {
-    const source = readFileSync(resolve(process.cwd(), path), 'utf8');
+  it.each(canonicalReviewSurfaces)('%s does not consume legacy decisions/customTexts directly', (_name, source) => {
     expect(source).not.toMatch(/\bdecisions\b/);
     expect(source).not.toMatch(/\bcustomTexts\b/);
     expect(source).not.toMatch(/\bsetDecision\b/);
