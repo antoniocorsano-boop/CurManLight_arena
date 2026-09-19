@@ -378,6 +378,45 @@ export function resetRevisionPresentationChoice(input: {
   return updated;
 }
 
+export function projectRevisionPresentationLegacyState(input: {
+  archive: RevisionArchive;
+  proposals: Proposal[];
+  context: RevisionPresentationContext;
+  legacy?: LegacyRevisionPresentationSnapshot;
+}): LegacyRevisionPresentationSnapshot {
+  const decisions: Record<string, LegacyDecisionStatus> = {};
+  const customTexts: Record<string, string> = {};
+
+  for (const proposal of input.proposals) {
+    const state = getRevisionPresentationState(input.archive, proposal, input.context);
+
+    if (state.source === 'none') {
+      const legacyStatus = input.legacy?.decisions[proposal.id];
+      if (!legacyStatus) continue;
+      if (legacyStatus === 'custom') {
+        const legacyText = normalizeText(input.legacy?.customTexts[proposal.id]);
+        if (!legacyText) continue;
+        decisions[proposal.id] = 'custom';
+        customTexts[proposal.id] = legacyText;
+        continue;
+      }
+      decisions[proposal.id] = legacyStatus;
+      continue;
+    }
+
+    if (state.choice === 'confirm-proposal') {
+      decisions[proposal.id] = 'approved';
+    } else if (state.choice === 'keep-previous') {
+      decisions[proposal.id] = 'rejected';
+    } else if (state.choice === 'propose-change' && state.customText.trim()) {
+      decisions[proposal.id] = 'custom';
+      customTexts[proposal.id] = state.customText;
+    }
+  }
+
+  return { decisions, customTexts };
+}
+
 function legacyChoice(status: LegacyDecisionStatus): RevisionPresentationChoice {
   if (status === 'approved') return 'confirm-proposal';
   if (status === 'rejected') return 'keep-previous';
