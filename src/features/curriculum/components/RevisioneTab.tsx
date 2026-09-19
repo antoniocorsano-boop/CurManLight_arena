@@ -2,7 +2,13 @@ import { FileSearch } from 'lucide-react';
 import { useState } from 'react';
 import { useCurriculumStore } from '../../../store/useCurriculumStore';
 import { UiEmptyState } from '../../../ui/components/UiEmptyState';
-import type { DecisionStatus, Proposal } from '../../../types/curriculum';
+import type { Proposal } from '../../../types/curriculum';
+import {
+  getRevisionPresentationState,
+  recordRevisionPresentationChoice,
+  resetRevisionPresentationChoice,
+  type RevisionPresentationChoice,
+} from '../../../domain/revision';
 import type { AppViewsLayerProps } from '../../session';
 
 export type RevisioneTabProps = Pick<AppViewsLayerProps,
@@ -26,22 +32,11 @@ type ParsedSourceRef = {
   driveId: string | null;
 };
 
-function isPreparedProposal(
-  proposal: Proposal,
-  decisions: Record<string, DecisionStatus>,
-  customTexts: Record<string, string>,
-) {
-  const decision = decisions[proposal.id];
-  if (!decision) return false;
-  if (decision === 'custom') return Boolean(customTexts[proposal.id]?.trim());
-  return true;
-}
-
-function reviewStatusLabel(decision?: DecisionStatus, customText = '') {
-  if (decision === 'approved') return 'Proposta confermata';
-  if (decision === 'custom' && customText.trim()) return 'Modifica proposta';
-  if (decision === 'custom') return 'Modifica da completare';
-  if (decision === 'rejected') return 'Testo precedente mantenuto';
+function reviewStatusLabel(choice?: RevisionPresentationChoice | null, customText = '') {
+  if (choice === 'confirm-proposal') return 'Proposta confermata';
+  if (choice === 'propose-change' && customText.trim()) return 'Modifica proposta';
+  if (choice === 'propose-change') return 'Modifica da completare';
+  if (choice === 'keep-previous') return 'Testo precedente mantenuto';
   return 'Da esaminare';
 }
 
@@ -62,32 +57,35 @@ export function RevisioneTab({
   onContinueAfterReview,
 }: RevisioneTabProps) {
   const {
-    decisions,
-    customTexts,
-    setDecision,
-    resetDecision,
-    setCustomText,
+    revisionArchive,
+    replaceRevisionArchive,
+    discipline,
+    order,
+    schoolYear,
   } = useCurriculumStore();
   const [customDraft, setCustomDraft] = useState<CustomDraft | null>(null);
 
+  const reviewContext = { discipline, order, academicYear: schoolYear };
+  const stateFor = (proposal: Proposal) => getRevisionPresentationState(revisionArchive, proposal, reviewContext);
   const totalCount = currentDisciplineProps.length;
-  const preparedCount = currentDisciplineProps.filter((proposal) => isPreparedProposal(proposal, decisions, customTexts)).length;
+  const preparedCount = currentDisciplineProps.filter((proposal) => stateFor(proposal).prepared).length;
   const pendingCount = Math.max(0, totalCount - preparedCount);
-  const localChangeCount = currentDisciplineProps.filter((proposal) => decisions[proposal.id] === 'custom' && Boolean(customTexts[proposal.id]?.trim())).length;
+  const localChangeCount = currentDisciplineProps.filter((proposal) => stateFor(proposal).choice === 'propose-change').length;
   const safeIndex = Math.max(0, Math.min(revisioneWizardIndex, Math.max(0, totalCount - 1)));
   const current = currentDisciplineProps[safeIndex];
-  const currentDecision = current ? decisions[current.id] : undefined;
-  const currentCustomText = current ? customTexts[current.id] || '' : '';
-  const currentPrepared = current ? isPreparedProposal(current, decisions, customTexts) : false;
+  const currentState = current ? stateFor(current) : null;
+  const currentDecision = currentState?.choice ?? null;
+  const currentCustomText = currentState?.customText ?? '';
+  const currentPrepared = currentState?.prepared ?? false;
   const keepActionLabel = current ? (current.keepLabel || 'Mantieni testo precedente') : 'Mantieni testo precedente';
 
   const nextPendingIndex = (() => {
     if (!current || pendingCount === 0) return -1;
     for (let index = safeIndex + 1; index < totalCount; index += 1) {
-      if (!isPreparedProposal(currentDisciplineProps[index], decisions, customTexts)) return index;
+      if (!stateFor(currentDisciplineProps[index]).prepared) return index;
     }
     for (let index = 0; index < safeIndex; index += 1) {
-      if (!isPreparedProposal(currentDisciplineProps[index], decisions, customTexts)) return index;
+      if (!stateFor(currentDisciplineProps[index]).prepared) return index;
     }
     return -1;
   })();
@@ -98,10 +96,15 @@ export function RevisioneTab({
     if (typeof window !== 'undefined') window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const recordDecision = (decision: 'approved' | 'rejected') => {
+  const recordDecision = (choice: 'confirm-proposal' | 'keep-previous') => {
     if (!current) return;
     setCustomDraft(null);
-    setDecision(current.id, decision);
+    replaceRevisionArchive(recordRevisionPresentationChoice({
+      archive: revisionArchive,
+      proposal: current,
+      context: reviewContext,
+      choice,
+    }));
   };
 
   const startCustomDraft = () => {
@@ -110,7 +113,6 @@ export function RevisioneTab({
   };
 
   const cancelCustomDraft = () => {
-    if (current && currentDecision === 'custom' && !currentPrepared) resetDecision(current.id);
     setCustomDraft(null);
   };
 
@@ -118,27 +120,42 @@ export function RevisioneTab({
     if (!current) return;
     const value = customDraft?.proposalId === current.id ? customDraft.text.trim() : currentCustomText.trim();
     if (!value) return;
-    setCustomText(current.id, value);
-    setDecision(current.id, 'custom');
+    replaceRevisionArchive(recordRevisionPresentationChoice({
+      archive: revisionArchive,
+      proposal: current,
+      context: reviewContext,
+      choice: 'propose-change',
+      customText: value,
+    }));
     setCustomDraft(null);
   };
 
   const reopenCurrent = () => {
     if (!current) return;
     setCustomDraft(null);
-    resetDecision(current.id);
+    replaceRevisionArchive(resetRevisionPresentationChoice({
+      archive: revisionArchive,
+      proposal: current,
+      context: reviewContext,
+    }));
   };
 
   const deferCurrent = () => {
     if (!current) return;
     setCustomDraft(null);
-    if (currentDecision) resetDecision(current.id);
+    if (currentDecision) {
+      replaceRevisionArchive(resetRevisionPresentationChoice({
+        archive: revisionArchive,
+        proposal: current,
+        context: reviewContext,
+      }));
+    }
     if (nextPendingIndex >= 0) moveToProposal(nextPendingIndex);
   };
 
   const customEditorOpen = Boolean(
     current
-      && ((customDraft?.proposalId === current.id) || (currentDecision === 'custom' && !currentPrepared)),
+      && (customDraft?.proposalId === current.id),
   );
   const customDraftValue = customDraft?.proposalId === current?.id ? customDraft.text : currentCustomText;
 
@@ -194,7 +211,7 @@ export function RevisioneTab({
               </div>
             </div>
 
-            {currentDecision === 'custom' && (
+            {currentDecision === 'propose-change' && (
               <p className="mt-3 rounded-xl bg-slate-50 p-3 text-sm leading-relaxed text-slate-700">{currentCustomText}</p>
             )}
 
@@ -279,9 +296,9 @@ export function RevisioneTab({
                 <>
                   <p className="text-xs font-semibold text-slate-700">Registra il tuo orientamento</p>
                   <div className="grid gap-2 sm:grid-cols-3" data-revision-decision-actions>
-                    <button aria-label="Conferma la proposta" type="button" onClick={() => recordDecision('approved')} className="min-h-11 rounded-xl bg-indigo-700 px-3 py-3 text-sm font-bold text-white">Conferma la proposta</button>
+                    <button aria-label="Conferma la proposta" type="button" onClick={() => recordDecision('confirm-proposal')} className="min-h-11 rounded-xl bg-indigo-700 px-3 py-3 text-sm font-bold text-white">Conferma la proposta</button>
                     <button aria-label="Proponi una modifica" type="button" onClick={startCustomDraft} className="min-h-11 rounded-xl border border-slate-300 bg-white px-3 py-3 text-sm font-bold text-slate-700">Proponi una modifica</button>
-                    <button aria-label={keepActionLabel} type="button" onClick={() => recordDecision('rejected')} className="min-h-11 rounded-xl border border-slate-300 bg-white px-3 py-3 text-sm font-bold text-slate-700">{keepActionLabel}</button>
+                    <button aria-label={keepActionLabel} type="button" onClick={() => recordDecision('keep-previous')} className="min-h-11 rounded-xl border border-slate-300 bg-white px-3 py-3 text-sm font-bold text-slate-700">{keepActionLabel}</button>
                   </div>
                   <button type="button" onClick={deferCurrent} className="min-h-11 w-full rounded-xl bg-slate-50 px-3 py-2.5 text-left text-xs font-bold text-indigo-700">
                     Rinvia la scheda al confronto
@@ -348,9 +365,10 @@ export function RevisioneTab({
         <summary className="cursor-pointer px-4 py-3 text-xs font-bold text-slate-600">Tutte le schede · {preparedCount}/{totalCount}</summary>
         <div className="grid gap-2 border-t border-slate-100 p-3">
           {currentDisciplineProps.map((proposal, index) => {
-            const decision = decisions[proposal.id];
-            const customText = customTexts[proposal.id] || '';
-            const prepared = isPreparedProposal(proposal, decisions, customTexts);
+            const reviewState = stateFor(proposal);
+            const decision = reviewState.choice;
+            const customText = reviewState.customText;
+            const prepared = reviewState.prepared;
             return (
               <button
                 key={proposal.id}
