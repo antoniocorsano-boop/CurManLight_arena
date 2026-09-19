@@ -97,7 +97,7 @@ export function PlanningWorkspace(props: ProgettazioneTabProps) {
             <a
               href={CURRICULUM_ATLAS_URL}
               target="_blank"
-              rel="noreferrer"
+              rel="noopener noreferrer"
               className="mt-4 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-violet-300 bg-white px-4 py-2.5 text-sm font-bold text-violet-800 hover:bg-violet-50"
               data-human-next-action="open-curriculum-atlas"
             >
