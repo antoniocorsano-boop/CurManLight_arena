@@ -30,6 +30,13 @@ describe('M4-S4 Arena / Atlas / Docente OS surface boundary', () => {
     expect(planningWorkspaceSource).toContain('Anteprima S1 pubblica · sola consultazione.');
     expect(planningWorkspaceSource).toContain('L’anteprima non approva né modifica il curricolo.');
     expect(planningWorkspaceSource).toContain('Atlas è una proiezione di consultazione e non trasferisce autorità.');
+    expect(planningWorkspaceSource).toContain("sourceProduct: 'curmanlight-arena'");
+    expect(planningWorkspaceSource).toContain('masterId: CANONICAL_MASTER_ID');
+    expect(planningWorkspaceSource).toContain('masterVersion: INSTITUTE_CURRICULUM_CURRENT_SOURCE.sourceVersion');
+    expect(planningWorkspaceSource).toContain('discipline: input.discipline');
+    expect(planningWorkspaceSource).toContain('order: input.order');
+    expect(planningWorkspaceSource).toContain('classLevel: input.targetClass');
+    expect(planningWorkspaceSource).toContain('data-atlas-handoff="read-only-context"');
   });
 
   it('keeps the Docente OS transition explicit and versioned', () => {
