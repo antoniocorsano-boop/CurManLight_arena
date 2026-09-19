@@ -83,6 +83,12 @@
     "technical_pipeline_ids_forbidden_at_teacher_level_1": true
   },
   "didactic_binding": {
+    "operational_authoring_owner": "DOCENTE_OS",
+    "arena_role": "VERSIONED_GOVERNED_CONTEXT_PROVIDER",
+    "atlas_role": "READ_ONLY_SEMANTIC_PROJECTION",
+    "arena_broad_uda_authoring_forbidden": true,
+    "atlas_curriculum_mutation_forbidden": true,
+    "downstream_automatic_write_forbidden": true,
     "must_reference_curriculum_unit_identity_and_version": true,
     "must_not_copy_curriculum_as_new_source_of_truth": true,
     "targets": ["annual-planning","uda","learning-activity"],

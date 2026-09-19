@@ -138,7 +138,7 @@ describe('Arena Beta canonical shell regression guard', () => {
     expect(homeSource).toContain('data-hcm-secondary-content');
     expect(homeSource).toContain('Il percorso di lavoro');
     expect(homeSource).toContain('Contributi personali e confronto professionale.');
-    expect(homeSource).toContain('Programmazione e UDA collegate al curricolo.');
+    expect(homeSource).toContain('Esplorazione in Atlas e passaggio operativo a Docente OS.');
     expect(homeSource).not.toContain('TaskCard');
   });
 

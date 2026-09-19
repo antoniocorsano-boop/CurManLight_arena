@@ -87,7 +87,7 @@ const ROLE_ORIENTATION: Record<UserRole, RoleOrientation> = {
 const JOURNEY = [
   { number: 1, icon: Layers, title: 'Curricolo', text: 'Contesto disciplinare e stato del lavoro.', tab: 'curricolo' },
   { number: 2, icon: RotateCcw, title: 'Revisione', text: 'Contributi personali e confronto professionale.', tab: 'revisione' },
-  { number: 3, icon: FileText, title: 'Progettazione', text: 'Programmazione e UDA collegate al curricolo.', tab: 'progetta-annuale' },
+  { number: 3, icon: FileText, title: 'Dal curricolo alla pratica', text: 'Esplorazione in Atlas e passaggio operativo a Docente OS.', tab: 'progetta-annuale' },
 ] as const;
 
 const toInstitutionalRole = (role: UserRole): InstitutionalRole =>

@@ -22,24 +22,26 @@ describe('R2-A — convergenza delle superfici primarie', () => {
     expect(appViewsSource).toContain('<CurriculumTab {...props} />');
   });
 
-  it('routes Progettazione through a context-first workspace on every primary entry', () => {
+  it('routes Progettazione through the canonical three-layer boundary hub', () => {
     expect(planningIndexSource).toContain("PlanningWorkspace as ProgettazioneTab");
-    expect(planningWorkspaceSource).toContain('data-teacher-surface="planning-context-first"');
-    expect(planningWorkspaceSource).toContain('Prepara il lavoro della classe');
-    expect(planningWorkspaceSource).toContain('Riferimento di lavoro');
-    expect(planningWorkspaceSource).toContain('master ${INSTITUTE_CURRICULUM_CURRENT_SOURCE.sourceVersion} non vigente');
-    expect(planningWorkspaceSource).toContain('const [entryVisible, setEntryVisible] = useState(true)');
-    expect(planningWorkspaceSource).toContain('if (entryVisible)');
-    expect(planningWorkspaceSource).toContain('data-human-next-action="start-current-planning"');
-    expect(planningWorkspaceSource).toContain('Altri strumenti di progettazione');
+    expect(planningWorkspaceSource).toContain('data-teacher-surface="planning-boundary-hub"');
+    expect(planningWorkspaceSource).toContain('data-surface-boundary="arena-atlas-docente-os"');
+    expect(planningWorkspaceSource).toContain('Arena · governa');
+    expect(planningWorkspaceSource).toContain('Curriculum Atlas · naviga');
+    expect(planningWorkspaceSource).toContain('Docente OS · opera');
+    expect(planningWorkspaceSource).toContain('Esplora in Curriculum Atlas');
+    expect(planningWorkspaceSource).toContain('<PlanningHandoffPreview />');
     expect(planningWorkspaceSource).toContain('Verifica e tracciabilità');
   });
 
-  it('does not project generic legacy UDA suggestions in the context-first entry', () => {
+  it('quarantines broad UDA authoring from the primary Arena planning route', () => {
     expect(planningBaseSource).toContain('Smart Home con Blender 3D');
-    expect(planningWorkspaceSource).not.toContain('Smart Home con Blender 3D');
-    const entryBranch = planningWorkspaceSource.split("if (entryVisible)")[1]?.split('return (\n    <div className="space-y-4"')[0] ?? '';
-    expect(entryBranch).not.toContain('<ProgettazioneTabBase');
+    expect(planningWorkspaceSource).not.toContain('ProgettazioneTabBase');
+    expect(planningWorkspaceSource).not.toContain('Compilatore UDA');
+    expect(planningWorkspaceSource).not.toContain('Archivio UDA locale');
+    expect(planningWorkspaceSource).not.toContain('Programmazione Annuale delle Attività');
+    expect(planningWorkspaceSource).not.toContain('Riusa e importa localmente');
+    expect(planningWorkspaceSource).toContain('Cosa non si fa più in Arena');
   });
 
   it('keeps Riesame on the already conformant case-aware surface', () => {

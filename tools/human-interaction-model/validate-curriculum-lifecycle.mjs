@@ -40,6 +40,14 @@ assert(contract.navigation_invariants?.institutional_decision_is_role_and_state_
 assert(contract.navigation_invariants?.technical_pipeline_ids_forbidden_at_teacher_level_1 === true, 'pipeline tecnica esponibile al livello docente');
 assert(JSON.stringify(contract.primary_navigation) === JSON.stringify(['IL_MIO_LAVORO', 'CURRICOLO', 'PROGETTAZIONE', 'RIESAME']), 'navigazione primaria non canonica');
 assert(Array.isArray(contract.secondary_navigation) && contract.secondary_navigation.includes('FASCICOLO'), 'Fascicolo non subordinato');
+const bindingBoundary = contract.didactic_binding ?? {};
+assert(bindingBoundary.operational_authoring_owner === 'DOCENTE_OS', 'authoring operativo non assegnato a Docente OS');
+assert(bindingBoundary.arena_role === 'VERSIONED_GOVERNED_CONTEXT_PROVIDER', 'Arena non limitata al contesto governato/versionato');
+assert(bindingBoundary.atlas_role === 'READ_ONLY_SEMANTIC_PROJECTION', 'Curriculum Atlas non limitato alla proiezione semantica read-only');
+assert(bindingBoundary.arena_broad_uda_authoring_forbidden === true, 'Arena può reintrodurre broad UDA authoring');
+assert(bindingBoundary.atlas_curriculum_mutation_forbidden === true, 'Atlas può mutare il curricolo');
+assert(bindingBoundary.downstream_automatic_write_forbidden === true, 'scrittura downstream automatica non vietata');
+
 
 for (const boundary of ['individual_contribution_is_not_team_outcome','team_professional_outcome_is_not_institutional_decision','institutional_decision_is_not_adoption_until_recorded','technical_pass_never_advances_human_or_institutional_state']) {
   assert(contract.authority_boundaries?.[boundary] === true, `confine di autorità mancante: ${boundary}`);

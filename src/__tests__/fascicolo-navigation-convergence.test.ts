@@ -55,7 +55,7 @@ describe('FASCICOLO_NAVIGATION_CONVERGENCE', () => {
     const journeyBlock = sliceBetween(homeSource, 'const JOURNEY = [', '] as const;');
     expect(journeyBlock).toContain("title: 'Curricolo'");
     expect(journeyBlock).toContain("title: 'Revisione'");
-    expect(journeyBlock).toContain("title: 'Progettazione'");
+    expect(journeyBlock).toContain("title: 'Dal curricolo alla pratica'");
     expect(journeyBlock).not.toContain("title: 'Fonti'");
     expect(journeyBlock).not.toContain("title: 'Decisione'");
     expect(homeSource).toContain('data-secondary-service="fascicolo"');
