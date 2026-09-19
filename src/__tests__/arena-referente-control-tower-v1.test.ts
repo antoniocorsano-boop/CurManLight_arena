@@ -115,4 +115,32 @@ describe('R4 Referente Control Tower v1', () => {
     expect(snapshot.scopeNote).toMatch(/primo ciclo/i);
     expect(snapshot.scopeNote).toMatch(/infanzia è esclusa/i);
   });
+  it('does not count personal review presentation decisions as institutional local decisions', () => {
+    const proposals = [
+      { id: 'personal-review-p1', status: 'legacy' },
+      { id: 'p2', status: 'under-review' },
+    ] as RevisionArchive['proposals'];
+    const decisions = [
+      {
+        id: 'personal-d1',
+        status: 'recorded-local',
+        outcome: 'approve',
+        proposalRef: { id: 'personal-review-p1' },
+        authority: { declaredRole: 'docente' },
+      },
+      {
+        id: 'd2',
+        status: 'recorded-local',
+        outcome: 'defer',
+        proposalRef: { id: 'p2' },
+        authority: { declaredRole: 'referente-curricolo' },
+      },
+    ] as RevisionArchive['decisions'];
+
+    const snapshot = deriveReferenteControlTowerSnapshot([], archive({ proposals, decisions }), new Set());
+
+    expect(snapshot.decisionsRecordedLocal).toBe(1);
+    expect(snapshot.proposalInReview).toBe(1);
+  });
+
 });
