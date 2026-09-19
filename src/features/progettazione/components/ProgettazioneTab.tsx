@@ -186,15 +186,13 @@ export function ProgettazioneTab(props: ProgettazioneTabProps) {
           </p>
         </div>
 
-        {typeof navigator !== 'undefined' && navigator.webdriver && (
-          <div className="bg-slate-100 p-1 rounded-xl flex flex-wrap gap-1 border border-slate-200 shrink-0 text-[10px] sm:text-xs font-bold shadow-sm self-end sm:self-auto">
+        <div className="bg-slate-100 p-1 rounded-xl flex flex-wrap gap-1 border border-slate-200 shrink-0 text-[10px] sm:text-xs font-bold shadow-sm self-end sm:self-auto">
             {(['annuale', 'uda', 'certificazione'] as const).map(tab => (
               <button key={tab} onClick={() => setActiveProgTab(tab)} className={`px-2.5 py-1 rounded-lg transition ${activeProgTab === tab ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500'}`}>
                 {tab === 'annuale' ? 'Progettatore' : tab === 'uda' ? 'Archivio UDA' : 'Matrice Competenze (DM 14/24)'}
               </button>
             ))}
           </div>
-        )}
       </div>
 
       {!(activeProgTab === 'annuale' || activeProgTab === 'uda' || activeProgTab === 'certificazione') && (
