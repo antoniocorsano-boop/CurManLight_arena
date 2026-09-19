@@ -31,5 +31,33 @@
     "rulesets_or_branch_protection_must_be_effective": true,
     "main_branch_api_must_report_protected": true,
     "issue_to_close_after_verification": 105
+  },
+  "verified_after_admin_configuration": {
+    "observed_at": "2026-09-19T14:23:30+02:00",
+    "ruleset": {
+      "id": 23698740,
+      "name": "Protect main",
+      "target": "branch",
+      "enforcement": "active",
+      "include": [
+        "refs/heads/main"
+      ],
+      "bypass_actors": [],
+      "current_user_can_bypass": "never"
+    },
+    "effective": {
+      "main_protected": true,
+      "pull_request_before_merge": true,
+      "required_status_checks": [
+        "product-gate",
+        "beta-release-contract"
+      ],
+      "strict_required_status_checks_policy": true,
+      "require_conversation_resolution": true,
+      "allow_force_pushes": false,
+      "allow_deletions": false
+    },
+    "issue_105": "CLOSED",
+    "status": "PASS"
   }
 }

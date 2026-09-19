@@ -21,10 +21,27 @@
     {
       "id": "GOV-01-MAIN-PROTECTION",
       "issue": 105,
-      "classification": "RELEASE_GOVERNANCE_BLOCKER",
-      "state": "OPEN",
-      "summary": "main is not yet protected at GitHub hosting level; PR and required-check enforcement must be enabled before A10 closure.",
-      "absorbed_by_m4s6": false
+      "classification": "CLOSED_RELEASE_GOVERNANCE_FINDING",
+      "state": "CLOSED",
+      "summary": "GitHub main protection is materially enforced through active ruleset Protect main (id 23698740); PRs, universal required checks, up-to-date policy, conversation resolution, deletion/force-push blocking and no bypass are verified.",
+      "absorbed_by_m4s6": true,
+      "resolution": {
+        "ruleset_id": 23698740,
+        "ruleset_name": "Protect main",
+        "enforcement": "active",
+        "target": "refs/heads/main",
+        "main_protected": true,
+        "required_status_checks": [
+          "product-gate",
+          "beta-release-contract"
+        ],
+        "strict_required_status_checks_policy": true,
+        "required_review_thread_resolution": true,
+        "deletion_blocked": true,
+        "force_push_blocked": true,
+        "bypass_actors": [],
+        "current_user_can_bypass": "never"
+      }
     },
     {
       "id": "ATLAS-S1-PREVIEW",

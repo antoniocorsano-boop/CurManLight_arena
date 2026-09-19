@@ -3,7 +3,7 @@
 Status: M4-S6 IMPLEMENTATION CONTRACT  
 Date: 2026-09-19  
 Tracker: #288  
-Repository governance blocker: #105
+Repository governance finding: #105 — **CLOSED WITH VERIFIED HOSTING EVIDENCE**
 
 ## 1. Purpose
 
@@ -74,12 +74,23 @@ Why only two required checks at hosting level:
 - both run on every PR to `main`;
 - path-filtered checks such as `validate-him`, Beta E2E or browser evidence remain mandatory when applicable, but must not be configured as universal required checks because GitHub would wait forever on PRs that do not trigger them.
 
-Current observation at M4-S6 opening:
+Historical opening observation for M4-S6:
 - rulesets API: `[]`;
 - `main.protected = false`;
 - branch protection `enabled = false`.
 
-Therefore GOV-01/#105 remains a release-governance blocker until the effective GitHub configuration is re-read and recorded.
+Verified after the administrative GitHub action on 2026-09-19:
+- ruleset `Protect main` (`id=23698740`) is `active`;
+- target is exactly `refs/heads/main`;
+- pull request is required before merge;
+- required status checks are exactly `product-gate` and `beta-release-contract`;
+- strict/up-to-date required-check policy is enabled;
+- conversation resolution is required;
+- deletion and force push are blocked;
+- bypass actor list is empty and `current_user_can_bypass=never`;
+- branch API reports `main.protected=true`.
+
+GOV-01/#105 is therefore closed with current repository-hosting evidence. If this ruleset changes, the hosting-state evidence must be re-read.
 
 ## 6. Incident severity
 
@@ -205,8 +216,8 @@ Issue #121 is the canonical M4 tracker. If its body conflicts with merged eviden
 ### Parallel source finding
 - A3/#280: non-current planning reference / source-registry convergence remains open and is not absorbed by M4-S6.
 
-### Release-governance blocker
-- #105: `main` hosting protection is required before A10/M4 operations closure.
+### Closed release-governance finding
+- #105: `main` hosting protection is verified effective through active ruleset `Protect main`; closure evidence is recorded in #105 and the M4 evidence registry.
 
 ## 11. Stop / go rules
 

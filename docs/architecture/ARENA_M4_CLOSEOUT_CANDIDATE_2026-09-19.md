@@ -1,6 +1,6 @@
 # CurManLight Arena — M4 Closeout Candidate
 
-Status: **NOT YET AUTHORIZED / GOVERNANCE CLOSURE IN PROGRESS**  
+Status: **GOVERNANCE BLOCKER CLEARED / EXACT BETA + HUMAN REVIEW PENDING**  
 Date: 2026-09-19  
 Tracker: #121  
 M4-S6: #288  
@@ -29,12 +29,18 @@ It does not authorize the M4 production pilot by itself. It exists to prevent hi
 Issue #280 remains open. The visible non-current planning reference and source-registry convergence are not silently accepted by M4-S6.
 
 ### A10 — Operations / Governance Closure
-Repository-side operations are being consolidated in M4-S6, but GOV-01/#105 remains open while GitHub reports:
-- `main.protected = false`;
-- branch protection disabled;
-- rulesets `[]`.
+Repository-hosting governance is now materially enforced and GOV-01/#105 is closed with re-read GitHub evidence:
+- active ruleset `Protect main` (`id=23698740`);
+- target exactly `refs/heads/main`;
+- `main.protected = true`;
+- pull request required before merge;
+- required checks exactly `product-gate` and `beta-release-contract`;
+- strict/up-to-date required-check policy enabled;
+- conversation resolution required;
+- deletion and force push blocked;
+- bypass list empty and `current_user_can_bypass=never`.
 
-Therefore A10 is not yet closed.
+The governance side of A10 is therefore fixed. A10 is not yet declared fully closed because M4-S6 still requires fresh exact-head automated certification, exact Beta deployment and human review on the resulting candidate SHA, followed by integration.
 
 ## 4. M4 operational architecture
 
@@ -66,9 +72,9 @@ Current decision:
 
 `ARENA_M4_DECISION_PENDING`
 
-It may not become `ARENA_M4_CONTROLLED_PRODUCTION_PILOT` while a current blocker is unresolved or while repository-hosting governance is unenforced.
+Repository-hosting governance is no longer the blocker. Recording the verified closure changes the M4-S6 candidate SHA, so prior exact-head gate evidence is historical for promotion.
 
-M4-S6 can close A10 only after #105 is materially closed. The final disposition of A3/#280 must then be handled explicitly before the overall M4 decision.
+A10 can close only after the refreshed M4-S6 exact head passes automated gates, immutable Beta deployment and human review. The final disposition of A3/#280 must then be handled explicitly before the overall M4 decision.
 
 ## 7. Non-claim
 

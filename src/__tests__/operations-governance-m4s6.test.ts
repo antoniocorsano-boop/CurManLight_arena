@@ -26,6 +26,26 @@ describe('M4-S6 governance and operations contract', () => {
     expect(protection.required.allow_deletions).toBe(false);
   });
 
+  it('records the effective main-protection state after admin verification', () => {
+    expect(protection.verified_after_admin_configuration).toMatchObject({
+      status: 'PASS',
+      issue_105: 'CLOSED',
+    });
+    expect(protection.verified_after_admin_configuration.ruleset).toMatchObject({
+      id: 23698740,
+      name: 'Protect main',
+      enforcement: 'active',
+      current_user_can_bypass: 'never',
+    });
+    expect(protection.verified_after_admin_configuration.effective).toMatchObject({
+      main_protected: true,
+      strict_required_status_checks_policy: true,
+      require_conversation_resolution: true,
+      allow_force_pushes: false,
+      allow_deletions: false,
+    });
+  });
+
   it('binds required check names to workflows that run on every PR to main', () => {
     expect(productCi).toContain('pull_request:');
     expect(productCi).toContain('branches: [main]');
@@ -60,14 +80,18 @@ describe('M4-S6 governance and operations contract', () => {
     expect(incidentTemplate).toContain('I did not include student personal data, credentials, tokens or secrets.');
   });
 
-  it('keeps blockers distinct from governed limitations', () => {
+  it('keeps the open source finding distinct from the closed governance finding', () => {
     const a3 = limitations.items.find((item: { id: string }) => item.id === 'A3-SOURCES-REGISTRY');
     const a7 = limitations.items.find((item: { id: string }) => item.id === 'A7-LEGACY-ONLY-PERSISTENCE');
     const gov = limitations.items.find((item: { id: string }) => item.id === 'GOV-01-MAIN-PROTECTION');
 
     expect(a3).toMatchObject({ state: 'OPEN', classification: 'OPEN_MATURITY_FINDING' });
     expect(a7).toMatchObject({ state: 'GOVERNED', classification: 'ACCEPTED_BOUNDED_LIMITATION' });
-    expect(gov).toMatchObject({ state: 'OPEN', classification: 'RELEASE_GOVERNANCE_BLOCKER' });
+    expect(gov).toMatchObject({
+      state: 'CLOSED',
+      classification: 'CLOSED_RELEASE_GOVERNANCE_FINDING',
+      absorbed_by_m4s6: true,
+    });
     expect(limitations.rules.blocker_cannot_be_relabelled_without_explicit_decision).toBe(true);
   });
 
