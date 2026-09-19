@@ -1,6 +1,6 @@
 import { useEffect, type Dispatch, type SetStateAction } from 'react';
 import type { SchoolOrder, UserRole } from '../../../types/curriculum';
-import { safeLocalStorageSetItem } from '../../../lib/consolidatedStorage';
+import { safeLocalStorageRemoveItem, safeLocalStorageSetItem } from '../../../lib/consolidatedStorage';
 import { ARENA_STORAGE_VOLATILE_EVENT, verifyBrowserStorage } from '../../../lib/storageRuntimeHealth';
 import { hasPersistedCurriculumState } from '../../../store/useCurriculumStore';
 
@@ -118,16 +118,16 @@ export function useAppStartupEffects({
     const params = new URLSearchParams(window.location.hash.substring(1));
     const token = params.get('access_token');
     if (token) {
+     for (const key of ['curman_workspaceAccessToken', 'curman_workspaceTokenExpiry', 'curman_isWorkspaceLoggedIn']) {
+      safeLocalStorageRemoveItem(key);
+     }
      setWorkspaceAccessToken(token);
-     safeLocalStorageSetItem('curman_workspaceAccessToken', token);
 
      const expiresIn = Number(params.get('expires_in')) || 3600;
      const expiryTime = Date.now() + expiresIn * 1000;
      setWorkspaceTokenExpiry(expiryTime);
-     safeLocalStorageSetItem('curman_workspaceTokenExpiry', String(expiryTime));
 
      setIsWorkspaceLoggedIn(true);
-     safeLocalStorageSetItem('curman_isWorkspaceLoggedIn', 'true');
 
      fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
       headers: { Authorization: `Bearer ${token}` }
