@@ -574,7 +574,7 @@ export default function App() {
   clearDocumentExportHistory,
   documentExportHistory,
   computeCurrentCurriculumSignature,
- } = useDocumentContinuity();
+ } = useDocumentContinuity({ decisions, customTexts });
 
  const {
   esportazioniTab,
