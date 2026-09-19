@@ -4,9 +4,8 @@ on:
   workflow_dispatch:
     inputs:
       ref:
-        description: Immutable commit SHA or known-good ref to deploy/rollback
+        description: Immutable 40-character commit SHA to deploy or rollback
         required: true
-        default: main
         type: string
 
 permissions:
@@ -27,6 +26,15 @@ jobs:
     outputs:
       release_sha: ${{ steps.release.outputs.sha }}
     steps:
+      - name: Validate immutable release SHA
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ ! "$CML_RELEASE_REF" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "Release ref must be an immutable 40-character lowercase Git SHA, got: ${CML_RELEASE_REF:-<empty>}"
+            exit 1
+          fi
+
       - name: Checkout requested release
         uses: actions/checkout@v4
         with:
