@@ -52,6 +52,26 @@ export const useWorkspaceStore = create<WorkspaceState>()(
           syncProgress: 0,
         }),
     }),
-    { name: 'curmanlight-workspace-v1' }
+    {
+      name: 'curmanlight-workspace-v1',
+      version: 2,
+      partialize: (state) => ({
+        userInfo: state.userInfo,
+        folderId: state.folderId,
+        lastSyncTime: state.lastSyncTime,
+        isSyncLocked: false,
+        syncProgress: 0,
+      }),
+      migrate: (persisted) => {
+        if (typeof persisted !== 'object' || persisted === null) return persisted as WorkspaceState;
+        return {
+          ...(persisted as Partial<WorkspaceState>),
+          accessToken: null,
+          refreshToken: null,
+          isSyncLocked: false,
+          syncProgress: 0,
+        } as WorkspaceState;
+      },
+    }
   )
 );
