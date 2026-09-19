@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import { UserState, DecisionStatus, UdaModel, SchoolOrder, UserRole, DocumentExportEvent } from '../types/curriculum';
+import { UserState, DecisionStatus, UdaModel, SchoolOrder, UserRole, DocumentExportEvent, type Proposal } from '../types/curriculum';
 import { getCurriculumBaseline } from '../lib';
 import type Dexie from 'dexie';
 import { createCurriculumDatabase } from '../domain/curriculum/persistence/backend';
@@ -19,7 +19,9 @@ import {
   createEmptyRevisionStore,
   cloneRevisionArchiveStore,
   verifyArchiveIntegrity as verifyRevisionArchiveIntegrity,
+  migrateLegacyRevisionPresentation,
   type RevisionArchive,
+  type RevisionPresentationContext,
 } from '../domain/revision';
 import {
   createEmptyDesignStore,
@@ -194,6 +196,7 @@ interface StoreActions extends CurriculumStoreState {
   setDecision: (id: string, status: DecisionStatus) => void;
   setCustomText: (id: string, text: string) => void;
   resetDecision: (id: string) => void;
+  migrateLegacyReviewPresentation: (proposals: Proposal[], context: RevisionPresentationContext) => void;
   addUda: (uda: UdaModel) => void;
   deleteUda: (id: string) => void;
   clearUdaLibrary: () => void;
@@ -264,6 +267,18 @@ export const useCurriculumStore = create<StoreActions>()(
         };
       }),
       setSchoolYear: (schoolYear) => set({ schoolYear }),
+      migrateLegacyReviewPresentation: (proposals, context) => set((state) => {
+        const revisionArchive = migrateLegacyRevisionPresentation({
+          archive: state.revisionArchive,
+          proposals,
+          legacy: {
+            decisions: state.decisions,
+            customTexts: state.customTexts,
+          },
+          context,
+        });
+        return revisionArchive === state.revisionArchive ? state : { ...state, revisionArchive };
+      }),
       setDecision: (id, status) => set((state) => ({ decisions: { ...state.decisions, [id]: status } })),
       setCustomText: (id, text) => set((state) => ({ customTexts: { ...state.customTexts, [id]: text } })),
       resetDecision: (id) => set((state) => {
