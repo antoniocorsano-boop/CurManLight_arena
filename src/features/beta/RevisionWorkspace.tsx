@@ -89,8 +89,8 @@ export function RevisionWorkspace(props: RevisionWorkspaceProps) {
   const reviewContext = useMemo(() => ({
     discipline: props.discipline,
     order: props.order,
-    academicYear: sharedReviewAcademicYear,
-  }), [props.discipline, props.order, sharedReviewAcademicYear]);
+    academicYear: schoolYear,
+  }), [props.discipline, props.order, schoolYear]);
   const totalReviewCount = props.currentDisciplineProps.length;
   const presentationStates = useMemo(
     () => props.currentDisciplineProps.map((proposal) => getRevisionPresentationState(revisionArchive, proposal, reviewContext)),
@@ -102,14 +102,14 @@ export function RevisionWorkspace(props: RevisionWorkspaceProps) {
     () => JSON.stringify([
       props.discipline,
       props.order,
-      sharedReviewAcademicYear,
+      reviewContext.academicYear,
       props.currentDisciplineProps.map((proposal, index) => [
         proposal.id,
         presentationStates[index]?.choice ?? null,
         presentationStates[index]?.customText ?? '',
       ]),
     ]),
-    [props.discipline, props.order, props.currentDisciplineProps, sharedReviewAcademicYear, presentationStates],
+    [props.discipline, props.order, props.currentDisciplineProps, reviewContext.academicYear, presentationStates],
   );
 
   useEffect(() => {
@@ -285,7 +285,7 @@ export function RevisionWorkspace(props: RevisionWorkspaceProps) {
               </section>
               <RevisioneTab
                 {...props}
-                revisionPresentationAcademicYear={sharedReviewAcademicYear}
+                revisionPresentationContext={reviewContext}
                 onContinueAfterReview={() => {
                   if (reviewComplete) setStage('SHARE');
                 }}
@@ -379,6 +379,7 @@ export function RevisionWorkspace(props: RevisionWorkspaceProps) {
             discipline={props.discipline}
             order={props.order}
             academicYear={sharedReviewAcademicYear}
+            revisionPresentationContext={reviewContext}
             onPersistenceStateChange={handlePersistenceStateChange}
           />
 
