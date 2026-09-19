@@ -37,6 +37,23 @@ function classLabel(order: string, targetClass: string, targetSection: string) {
   return `Classe ${normalizedClass}${normalizedSection ? ` ${normalizedSection}` : ''}`;
 }
 
+function buildAtlasContextUrl(input: {
+  discipline: string;
+  order: string;
+  targetClass: string;
+}) {
+  const params = new URLSearchParams({
+    sourceProduct: 'curmanlight-arena',
+    masterId: CANONICAL_MASTER_ID,
+    masterVersion: INSTITUTE_CURRICULUM_CURRENT_SOURCE.sourceVersion,
+    curriculumState: INSTITUTE_CURRICULUM_CURRENT_SOURCE.curriculumInForce ? 'IN_FORCE' : 'WORKING_REFERENCE',
+    discipline: input.discipline,
+    order: input.order,
+    classLevel: input.targetClass?.trim() || 'unspecified',
+  });
+  return `${CURRICULUM_ATLAS_URL}?${params.toString()}`;
+}
+
 export function PlanningWorkspace(props: ProgettazioneTabProps) {
   const { discipline, order } = useCurriculumStore();
   const disciplineLabel = DISCIPLINE_LABELS[discipline] ?? discipline;
@@ -44,6 +61,11 @@ export function PlanningWorkspace(props: ProgettazioneTabProps) {
   const authorityLabel = INSTITUTE_CURRICULUM_CURRENT_SOURCE.curriculumInForce
     ? `Curricolo vigente · master ${INSTITUTE_CURRICULUM_CURRENT_SOURCE.sourceVersion}`
     : `Riferimento di lavoro · master ${INSTITUTE_CURRICULUM_CURRENT_SOURCE.sourceVersion} non vigente`;
+  const atlasContextUrl = buildAtlasContextUrl({
+    discipline,
+    order,
+    targetClass: props.targetClass,
+  });
 
   return (
     <div
@@ -95,16 +117,19 @@ export function PlanningWorkspace(props: ProgettazioneTabProps) {
               Esplora relazioni, verticale, timeline e provenienza in modalità read-only. L’anteprima non approva né modifica il curricolo.
             </p>
             <a
-              href={CURRICULUM_ATLAS_URL}
+              href={atlasContextUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="mt-4 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-violet-300 bg-white px-4 py-2.5 text-sm font-bold text-violet-800 hover:bg-violet-50"
               data-human-next-action="open-curriculum-atlas"
+              data-atlas-handoff="read-only-context"
             >
               Esplora in Curriculum Atlas
               <ExternalLink className="h-4 w-4" aria-hidden="true" />
             </a>
-            <p className="mt-2 text-[11px] leading-5 text-slate-500">Anteprima S1 pubblica · sola consultazione.</p>
+            <p className="mt-2 text-[11px] leading-5 text-slate-500">
+              Anteprima S1 pubblica · sola consultazione. Il link conserva master, versione, disciplina, ordine e classe senza dati personali.
+            </p>
           </article>
 
           <article className="rounded-2xl border border-emerald-200 bg-emerald-50/40 p-4">
