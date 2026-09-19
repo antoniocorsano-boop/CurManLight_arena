@@ -1,4 +1,4 @@
-import { ArrowRight, BookOpenCheck, CircleHelp, FileText, Layers, RotateCcw, ShieldCheck } from 'lucide-react';
+import { ArrowRight, BookOpenCheck, CircleHelp, FileText, Layers, RotateCcw, Route, ShieldCheck } from 'lucide-react';
 import type { AppViewsLayerProps } from '../types/appViewContracts';
 
 export type SupportGuideViewProps = Pick<AppViewsLayerProps, 'handleTabSwitch' | 'institutionalProfile'>;
@@ -39,9 +39,17 @@ export function SupportGuideView({ handleTabSwitch, institutionalProfile }: Supp
       icon: RotateCcw,
     },
     {
+      id: 'atlas',
+      title: 'Esplorare relazioni in Curriculum Atlas',
+      description: 'Apri il confine di progettazione per passare alla preview read-only di Atlas. Atlas aiuta a navigare il curricolo, ma non lo approva e non lo modifica.',
+      action: 'Apri il passaggio',
+      tab: 'progetta-annuale' as const,
+      icon: Route,
+    },
+    {
       id: 'handoff',
       title: 'Preparare il passaggio a Docente OS',
-      description: 'Documenti mostra cosa Arena può consegnare alla progettazione. Il trasferimento è esplicito e non modifica automaticamente classi, UDA o lezioni.',
+      description: 'Arena prepara un contesto curricolare versionato; Docente OS lo accetta prima di usarlo per programmazione annuale, UDA, lezioni e materiali.',
       action: 'Apri Documenti',
       tab: 'esportazioni' as const,
       icon: FileText,
@@ -110,6 +118,13 @@ export function SupportGuideView({ handleTabSwitch, institutionalProfile }: Supp
           <summary className="cursor-pointer font-bold text-slate-800">Una fonte presente significa che l’istituto l’ha adottata?</summary>
           <p className="mt-2 text-sm leading-6 text-slate-600">
             No. La presenza di una fonte o di un fascicolo ne documenta provenienza e contenuto; l’adozione istituzionale è uno stato distinto e deve essere attestata dal relativo processo.
+          </p>
+        </details>
+
+        <details className="rounded-xl border border-slate-200 bg-white p-4">
+          <summary className="cursor-pointer font-bold text-slate-800">Che cosa fa Curriculum Atlas?</summary>
+          <p className="mt-2 text-sm leading-6 text-slate-600">
+            Curriculum Atlas rende il curricolo leggibile e navigabile con viste e relazioni read-only. Non approva il curricolo, non modifica Arena e non sostituisce l’ambiente operativo Docente OS.
           </p>
         </details>
 
