@@ -23,9 +23,7 @@ export const useLocalAgentSetup = ({ showToast }: UseLocalAgentSetupArgs) => {
   const [localAgentSize, setLocalAgentSize] = useState<LocalAgentSize>(() => {
     return safeLocalStorageGetItem('curman_localAgentSize', 'none') as LocalAgentSize;
   });
-  const [showAgentSetupModal, setShowAgentSetupModal] = useState(() => {
-    return safeLocalStorageGetItem('curman_localAgentStatus', '') === '';
-  });
+  const [showAgentSetupModal, setShowAgentSetupModal] = useState(false);
   const [activeHelpModel, setActiveHelpModel] = useState<string | null>(null);
   const agentIntervalRefs = useRef<number[]>([]);
   const [detectedDeviceType] = useState<DetectedDeviceType>(() => {
