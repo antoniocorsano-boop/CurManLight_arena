@@ -19,6 +19,7 @@ import { copyText } from './lib/clipboard';
 import { getRoleLabel } from './lib/roleLabels';
 import { getA07InstitutionalDocumentRead } from './domain/institution';
 import { projectRevisionPresentationLegacyState } from './domain/revision';
+import { resolveOperationalReviewProposals } from './domain/curriculum/validation/technologyClass1Review';
 
 export default function App() {
  const {
@@ -44,7 +45,8 @@ export default function App() {
   };
   (Object.keys(localCurriculum) as string[]).forEach((disc) => {
    (['infanzia', 'primaria', 'secondaria'] as SchoolOrder[]).forEach((ord) => {
-    const proposals = localCurriculum[disc]?.[ord]?.proposals ?? [];
+    const fallbackProposals = localCurriculum[disc]?.[ord]?.proposals ?? [];
+    const proposals = resolveOperationalReviewProposals(disc, ord, fallbackProposals);
     const slice = projectRevisionPresentationLegacyState({
      archive: revisionArchive,
      proposals,
