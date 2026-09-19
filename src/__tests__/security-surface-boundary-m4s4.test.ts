@@ -11,6 +11,13 @@ describe('M4-S4 security boundary regression', () => {
     expect(planningWorkspaceSource).toContain('rel="noopener noreferrer"');
     expect(planningWorkspaceSource).not.toContain('window.open(');
     expect(planningWorkspaceSource).not.toContain('dangerouslySetInnerHTML');
+    const atlasBuilder = planningWorkspaceSource.split('function buildAtlasContextUrl')[1]?.split('export function PlanningWorkspace')[0] ?? '';
+    expect(atlasBuilder).toContain("sourceProduct: 'curmanlight-arena'");
+    expect(atlasBuilder).toContain('masterId: CANONICAL_MASTER_ID');
+    expect(atlasBuilder).toContain('classLevel: input.targetClass');
+    expect(atlasBuilder).not.toContain('targetSection');
+    expect(atlasBuilder).not.toContain('user');
+    expect(atlasBuilder).not.toContain('email');
   });
 
   it('does not introduce automatic cross-product network writes', () => {
