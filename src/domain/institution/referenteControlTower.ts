@@ -76,6 +76,11 @@ export function deriveReferenteControlTowerSnapshot(
   curriculum: CurriculumMap | null = null,
 ): ReferenteControlTowerSnapshot {
   const acceptedForDecision = archive.proposals.filter((proposal) => proposal.status === 'accepted-for-decision');
+  const legacyPresentationProposalRefs = new Set(
+    archive.proposals
+      .filter((proposal) => proposal.status === 'legacy')
+      .map((proposal) => proposal.id),
+  );
   const localTerminalProposalRefs = new Set(
     archive.decisions
       .filter((decision) => decision.status === 'recorded-local' && TERMINAL_DECISION_OUTCOMES.has(decision.outcome))
@@ -102,7 +107,10 @@ export function deriveReferenteControlTowerSnapshot(
     proposalAcceptedForDecision: acceptedForDecision.length,
     proposalReadyForDecision,
     decisionReceiptCoverageAvailable,
-    decisionsRecordedLocal: archive.decisions.filter((decision) => decision.status === 'recorded-local').length,
+    decisionsRecordedLocal: archive.decisions.filter(
+      (decision) => decision.status === 'recorded-local'
+        && !legacyPresentationProposalRefs.has(decision.proposalRef.id),
+    ).length,
     disciplineCoverageAvailable: curriculumSummary !== null,
     curriculumCoverageScope: curriculumSummary ? CURRICULUM_ANALYSIS_CANONICAL_SCOPE : null,
     curriculumTargetTotal: curriculumSummary?.totalTargets ?? null,
