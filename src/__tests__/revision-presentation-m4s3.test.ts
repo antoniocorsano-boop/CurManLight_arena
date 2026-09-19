@@ -4,6 +4,7 @@ import {
   createEmptyRevisionStore,
   getRevisionPresentationState,
   migrateLegacyRevisionPresentation,
+  projectRevisionPresentationLegacyState,
   recordRevisionPresentationChoice,
   resetRevisionPresentationChoice,
 } from '../domain/revision';
@@ -132,4 +133,66 @@ describe('M4-S3 revision presentation convergence', () => {
     expect(reopened.decisions.some((decision) => decision.status === 'legacy')).toBe(true);
     expect(reopened.decisions.some((decision) => decision.outcome === 'defer' && decision.status === 'recorded-local')).toBe(true);
   });
+  it('projects canonical state over stale legacy compatibility fields', () => {
+    const migrated = migrateLegacyRevisionPresentation({
+      archive: createEmptyRevisionStore('2026-09-19T08:00:00.000Z'),
+      proposals: [proposal],
+      legacy: {
+        decisions: { [proposal.id]: 'approved' },
+        customTexts: {},
+      },
+      context,
+      now: '2026-09-19T08:01:00.000Z',
+    });
+    const canonical = recordRevisionPresentationChoice({
+      archive: migrated,
+      proposal,
+      context,
+      choice: 'keep-previous',
+      now: '2026-09-19T08:02:00.000Z',
+    });
+
+    expect(projectRevisionPresentationLegacyState({
+      archive: canonical,
+      proposals: [proposal],
+      context,
+      legacy: {
+        decisions: { [proposal.id]: 'approved' },
+        customTexts: {},
+      },
+    })).toEqual({
+      decisions: { [proposal.id]: 'rejected' },
+      customTexts: {},
+    });
+  });
+
+  it('does not resurrect legacy compatibility state after canonical reopening', () => {
+    const migrated = migrateLegacyRevisionPresentation({
+      archive: createEmptyRevisionStore('2026-09-19T08:00:00.000Z'),
+      proposals: [proposal],
+      legacy: {
+        decisions: { [proposal.id]: 'approved' },
+        customTexts: {},
+      },
+      context,
+      now: '2026-09-19T08:01:00.000Z',
+    });
+    const reopened = resetRevisionPresentationChoice({
+      archive: migrated,
+      proposal,
+      context,
+      now: '2026-09-19T08:02:00.000Z',
+    });
+
+    expect(projectRevisionPresentationLegacyState({
+      archive: reopened,
+      proposals: [proposal],
+      context,
+      legacy: {
+        decisions: { [proposal.id]: 'approved' },
+        customTexts: {},
+      },
+    })).toEqual({ decisions: {}, customTexts: {} });
+  });
+
 });
