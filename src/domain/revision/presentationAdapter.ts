@@ -3,6 +3,7 @@ import {
   createEntityReference,
   createMetadata,
   generateDeterministicId,
+  type EntityId,
 } from '../curriculum/identity';
 import { createRevisionEvent } from './constructors';
 import type {
@@ -50,27 +51,27 @@ const contextSeed = (context: RevisionPresentationContext): string => [
 export function revisionPresentationProposalId(
   context: RevisionPresentationContext,
   proposalId: string,
-): string {
+): EntityId {
   return generateDeterministicId(`revision-presentation-proposal|${contextSeed(context)}|${proposalId}`);
 }
 
 function revisionPresentationVersionId(
   context: RevisionPresentationContext,
   proposalId: string,
-): string {
+): EntityId {
   return generateDeterministicId(`revision-presentation-version-v1|${contextSeed(context)}|${proposalId}`);
 }
 
 function revisionPresentationTargetId(
   context: RevisionPresentationContext,
   proposalId: string,
-): string {
+): EntityId {
   return generateDeterministicId(`revision-presentation-target|${contextSeed(context)}|${proposalId}`);
 }
 
 function revisionPresentationCurriculumVersionId(
   context: RevisionPresentationContext,
-): string {
+): EntityId {
   return generateDeterministicId(`revision-presentation-curriculum|${contextSeed(context)}`);
 }
 
