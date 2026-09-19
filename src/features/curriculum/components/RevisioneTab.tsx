@@ -20,6 +20,7 @@ export type RevisioneTabProps = Pick<AppViewsLayerProps,
   | 'setRevisioneWizardIndex'
 > & {
   onContinueAfterReview?: () => void;
+  revisionPresentationAcademicYear?: string;
 };
 
 type CustomDraft = {
@@ -55,6 +56,7 @@ export function RevisioneTab({
   revisioneWizardIndex,
   setRevisioneWizardIndex,
   onContinueAfterReview,
+  revisionPresentationAcademicYear,
 }: RevisioneTabProps) {
   const {
     revisionArchive,
@@ -65,7 +67,11 @@ export function RevisioneTab({
   } = useCurriculumStore();
   const [customDraft, setCustomDraft] = useState<CustomDraft | null>(null);
 
-  const reviewContext = { discipline, order, academicYear: schoolYear };
+  const reviewContext = {
+    discipline,
+    order,
+    academicYear: revisionPresentationAcademicYear ?? schoolYear,
+  };
   const stateFor = (proposal: Proposal) => getRevisionPresentationState(revisionArchive, proposal, reviewContext);
   const totalCount = currentDisciplineProps.length;
   const preparedCount = currentDisciplineProps.filter((proposal) => stateFor(proposal).prepared).length;
