@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import type { Proposal, SchoolOrder } from '../../types/curriculum';
-import { getRevisionPresentationState, type RevisionArchive, type RevisionPresentationChoice } from '../../domain/revision';
+import { getRevisionPresentationState, type RevisionArchive, type RevisionPresentationChoice, type RevisionPresentationContext } from '../../domain/revision';
 import { getOperationalGroupForDiscipline } from '../../domain/institution/operationalGroups';
 import type { WorkspaceActorContext } from '../../domain/institution/sharedWorkspacePort';
 import type { OperationalGroupMembership, TeamReviewContribution, TeamReviewScope } from '../../domain/revision/teamReview';
@@ -21,6 +21,7 @@ export interface TeamContributionPublisherProps {
   discipline: string;
   order: SchoolOrder;
   academicYear: string;
+  revisionPresentationContext?: RevisionPresentationContext;
   onPersistenceStateChange?: (state: TeamContributionPersistenceState) => void;
 }
 
@@ -34,6 +35,7 @@ export function TeamContributionPublisher({
   discipline,
   order,
   academicYear,
+  revisionPresentationContext,
   onPersistenceStateChange,
 }: TeamContributionPublisherProps) {
   const team = useTeamWorkspaceContext();
@@ -55,11 +57,10 @@ export function TeamContributionPublisher({
   const [refreshVersion, setRefreshVersion] = useState(0);
   const [busy, setBusy] = useState(false);
   const [feedback, setFeedback] = useState<{ kind: 'success' | 'error'; text: string } | null>(null);
-  const reviewContext = useMemo(() => ({
-    discipline,
-    order,
-    academicYear,
-  }), [discipline, order, academicYear]);
+  const reviewContext = useMemo(
+    () => revisionPresentationContext ?? { discipline, order, academicYear },
+    [revisionPresentationContext, discipline, order, academicYear],
+  );
   const presentationStates = useMemo(
     () => new Map(proposals.map((proposal) => [
       proposal.id,
