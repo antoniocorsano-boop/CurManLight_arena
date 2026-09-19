@@ -3,6 +3,7 @@ import {
   createEntityReference,
   createMetadata,
   generateDeterministicId,
+  generateEntityId,
   type EntityId,
 } from '../curriculum/identity';
 import { createRevisionEvent } from './constructors';
@@ -157,17 +158,21 @@ function presentationDecisions(
   archive: RevisionArchive,
   proposalId: string,
 ): Decision[] {
-  const active = archive.decisions.filter((decision) =>
-    decision.proposalRef.id === proposalId
-    && decision.authority.declaredRole === 'docente'
-    && !['superseded', 'revoked', 'archived'].includes(decision.status),
-  );
+  const active = archive.decisions
+    .map((decision, index) => ({ decision, index }))
+    .filter(({ decision }) =>
+      decision.proposalRef.id === proposalId
+      && decision.authority.declaredRole === 'docente'
+      && !['superseded', 'revoked', 'archived'].includes(decision.status),
+    );
   return active.sort((a, b) => {
     const canonicalRank = (value: Decision) => value.status === 'legacy' ? 0 : 1;
-    const rankDiff = canonicalRank(b) - canonicalRank(a);
+    const rankDiff = canonicalRank(b.decision) - canonicalRank(a.decision);
     if (rankDiff !== 0) return rankDiff;
-    return b.metadata.createdAt.localeCompare(a.metadata.createdAt);
-  });
+    const timestampDiff = b.decision.metadata.createdAt.localeCompare(a.decision.metadata.createdAt);
+    if (timestampDiff !== 0) return timestampDiff;
+    return b.index - a.index;
+  }).map(({ decision }) => decision);
 }
 
 function stateFromDecision(decision: Decision | undefined): RevisionPresentationState {
@@ -271,9 +276,7 @@ export function recordRevisionPresentationChoice(input: {
     }
   }
 
-  const decisionId = generateDeterministicId(
-    `revision-presentation-decision|${contextSeed(input.context)}|${input.proposal.id}|${now}`,
-  );
+  const decisionId = generateEntityId();
   const decision: Decision = {
     id: decisionId,
     metadata: createMetadata('teacher', undefined, now),
@@ -341,9 +344,7 @@ export function resetRevisionPresentationChoice(input: {
     }
   }
 
-  const decisionId = generateDeterministicId(
-    `revision-presentation-reopen|${contextSeed(input.context)}|${input.proposal.id}|${now}`,
-  );
+  const decisionId = generateEntityId();
   const reopeningDecision: Decision = {
     id: decisionId,
     metadata: createMetadata('teacher', undefined, now),
