@@ -20,11 +20,20 @@ export interface ResolvePlanningSourceContextInput {
   targetClass: string;
 }
 
+export type PlanningMasterInstitutionalStatus =
+  | 'IN_FORCE'
+  | 'PENDING_PROFESSIONAL_VALIDATION'
+  | 'PENDING_VERTICALITY_REVIEW'
+  | 'NOT_READY_FOR_COLLEGIO'
+  | 'READY_FOR_COLLEGIO_PENDING_APPROVAL'
+  | 'APPROVED_PENDING_CANONICAL_PROMOTION'
+  | 'PROMOTION_AUTHORIZED_PENDING_IN_FORCE';
+
 export interface PlanningSourceContext {
   masterId: 'CAN-CURR-MASTER-00';
   masterVersion: string;
   masterLifecycleState: string;
-  masterInstitutionalStatus: 'IN_FORCE' | 'WORKING_BASELINE_PENDING_APPROVAL';
+  masterInstitutionalStatus: PlanningMasterInstitutionalStatus;
   masterLabel: string;
   masterStatusLabel: string;
   sourceRepertoryId: string;
@@ -53,6 +62,66 @@ function sourceForFramework(framework: PlanningFramework): CurriculumSourceRecor
   return INSTITUTE_CURRICULUM_AUTHORITATIVE_SOURCES.find((source) => source.code === code) ?? null;
 }
 
+interface MasterGovernanceStateInput {
+  curriculumInForce: boolean;
+  humanProfessionalValidation: string;
+  verticalityFinalReview: string;
+  readyForCollegio: boolean;
+  collegiateApproval: boolean;
+  canonicalPromotionAuthorized: boolean;
+}
+
+export function resolvePlanningMasterGovernanceState(
+  source: MasterGovernanceStateInput,
+): Pick<PlanningSourceContext, 'masterInstitutionalStatus' | 'masterStatusLabel'> {
+  if (source.curriculumInForce) {
+    return {
+      masterInstitutionalStatus: 'IN_FORCE',
+      masterStatusLabel: 'Curricolo d’Istituto vigente',
+    };
+  }
+
+  if (source.humanProfessionalValidation !== 'COMPLETE') {
+    return {
+      masterInstitutionalStatus: 'PENDING_PROFESSIONAL_VALIDATION',
+      masterStatusLabel: 'Baseline canonica di lavoro · validazione professionale ancora aperta',
+    };
+  }
+
+  if (source.verticalityFinalReview !== 'COMPLETE') {
+    return {
+      masterInstitutionalStatus: 'PENDING_VERTICALITY_REVIEW',
+      masterStatusLabel: 'Baseline canonica di lavoro · revisione verticale finale ancora aperta',
+    };
+  }
+
+  if (!source.readyForCollegio) {
+    return {
+      masterInstitutionalStatus: 'NOT_READY_FOR_COLLEGIO',
+      masterStatusLabel: 'Baseline canonica di lavoro · non ancora pronta per il Collegio',
+    };
+  }
+
+  if (!source.collegiateApproval) {
+    return {
+      masterInstitutionalStatus: 'READY_FOR_COLLEGIO_PENDING_APPROVAL',
+      masterStatusLabel: 'Pronta per il Collegio · approvazione collegiale non ancora registrata',
+    };
+  }
+
+  if (!source.canonicalPromotionAuthorized) {
+    return {
+      masterInstitutionalStatus: 'APPROVED_PENDING_CANONICAL_PROMOTION',
+      masterStatusLabel: 'Approvazione collegiale registrata · promozione canonica non ancora autorizzata',
+    };
+  }
+
+  return {
+    masterInstitutionalStatus: 'PROMOTION_AUTHORIZED_PENDING_IN_FORCE',
+    masterStatusLabel: 'Promozione canonica autorizzata · vigenza non ancora registrata',
+  };
+}
+
 export function resolvePlanningSourceContext({
   schoolYear,
   order,
@@ -65,10 +134,10 @@ export function resolvePlanningSourceContext({
     targetClass,
   });
 
-  const masterInForce = INSTITUTE_CURRICULUM_CURRENT_SOURCE.curriculumInForce;
-  const masterInstitutionalStatus: PlanningSourceContext['masterInstitutionalStatus'] = masterInForce
-    ? 'IN_FORCE'
-    : 'WORKING_BASELINE_PENDING_APPROVAL';
+  const {
+    masterInstitutionalStatus,
+    masterStatusLabel,
+  } = resolvePlanningMasterGovernanceState(INSTITUTE_CURRICULUM_CURRENT_SOURCE);
 
   const base: Pick<
     PlanningSourceContext,
@@ -87,9 +156,7 @@ export function resolvePlanningSourceContext({
     masterLifecycleState: INSTITUTE_CURRICULUM_CURRENT_SOURCE.lifecycleState,
     masterInstitutionalStatus,
     masterLabel: `Baseline Arena · master ${INSTITUTE_CURRICULUM_CURRENT_SOURCE.sourceVersion}`,
-    masterStatusLabel: masterInForce
-      ? 'Curricolo d’Istituto vigente'
-      : 'Baseline canonica di lavoro · approvazione collegiale non ancora registrata',
+    masterStatusLabel,
     sourceRepertoryId: INSTITUTE_CURRICULUM_SOURCE_REPERTORY.repertoryId,
     sourceRepertoryVersion: INSTITUTE_CURRICULUM_SOURCE_REPERTORY.version,
     academicYear,
