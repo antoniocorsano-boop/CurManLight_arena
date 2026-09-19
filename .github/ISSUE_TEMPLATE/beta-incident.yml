@@ -16,6 +16,18 @@ body:
     validations:
       required: true
   - type: dropdown
+    id: severity
+    attributes:
+      label: Severity
+      description: Use the M4 operations runbook classification.
+      options:
+        - SEV-0 — stop immediately
+        - SEV-1 — core pilot blocked
+        - SEV-2 — degraded with safe workaround
+        - SEV-3 — minor
+    validations:
+      required: true
+  - type: dropdown
     id: impact
     attributes:
       label: Impact
