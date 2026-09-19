@@ -1,0 +1,35 @@
+{
+  "schema": "CML_ARENA_MAIN_PROTECTION_M4_V1",
+  "branch": "main",
+  "required": {
+    "pull_request_before_merge": true,
+    "required_status_checks": [
+      "product-gate",
+      "beta-release-contract"
+    ],
+    "require_branch_up_to_date": true,
+    "require_conversation_resolution": true,
+    "allow_force_pushes": false,
+    "allow_deletions": false,
+    "allow_normal_admin_bypass": false
+  },
+  "path_filtered_checks": {
+    "not_universal_required": [
+      "validate-him",
+      "revision-journey",
+      "critical-journey-evidence"
+    ],
+    "reason": "These checks are mandatory when triggered but cannot be universal required checks because their workflows are path-filtered."
+  },
+  "observed_at_m4s6_open": {
+    "rulesets": [],
+    "main_protected": false,
+    "protection_enabled": false,
+    "status": "BLOCKED_UNTIL_ADMIN_CONFIGURATION"
+  },
+  "verification": {
+    "rulesets_or_branch_protection_must_be_effective": true,
+    "main_branch_api_must_report_protected": true,
+    "issue_to_close_after_verification": 105
+  }
+}
