@@ -134,6 +134,8 @@ describe('M4-S7 A3 planning source applicability closure', () => {
   });
 
   it('carries source repertory and applicability provenance into the read-only Atlas handoff', () => {
+    expect(planningWorkspaceSource).toContain('masterGovernanceStatus');
+    expect(planningWorkspaceSource).toContain('masterLifecycleState');
     expect(planningWorkspaceSource).toContain('sourceRepertoryId');
     expect(planningWorkspaceSource).toContain('sourceRepertoryVersion');
     expect(planningWorkspaceSource).toContain('applicabilityState');
