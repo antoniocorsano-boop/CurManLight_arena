@@ -285,6 +285,7 @@ export function RevisionWorkspace(props: RevisionWorkspaceProps) {
               </section>
               <RevisioneTab
                 {...props}
+                revisionPresentationAcademicYear={sharedReviewAcademicYear}
                 onContinueAfterReview={() => {
                   if (reviewComplete) setStage('SHARE');
                 }}
