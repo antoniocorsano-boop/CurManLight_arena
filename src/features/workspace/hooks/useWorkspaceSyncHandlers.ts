@@ -4,6 +4,7 @@ import type { CurriculumMap } from '../../session';
 import { safeLocalStorageRemoveItem, safeLocalStorageSetItem } from '../../../lib/consolidatedStorage';
 import type { RestoreBackupResult } from '../../../store/useCurriculumStore';
 import type { InstitutionalArchive } from '../../../domain/institution';
+import type { RevisionArchive } from '../../../domain/revision';
 
 type WorkspaceStateRef = React.MutableRefObject<{
  savedUda: UdaModel[];
@@ -43,6 +44,7 @@ type UseWorkspaceSyncHandlersArgs = {
  discipline: string;
  order: SchoolOrder;
  institutionalArchive: InstitutionalArchive;
+ revisionArchive?: RevisionArchive;
  stateRef: WorkspaceStateRef;
  restoreBackupState: (newState: unknown) => RestoreBackupResult;
  setIsSyncingWorkspace: (value: boolean) => void;
@@ -69,6 +71,7 @@ export function useWorkspaceSyncHandlers({
  discipline,
  order,
  institutionalArchive,
+ revisionArchive,
  stateRef,
  restoreBackupState,
  setIsSyncingWorkspace,
@@ -123,6 +126,7 @@ export function useWorkspaceSyncHandlers({
     discipline,
      order,
      institutionalArchive,
+     revisionArchive,
     lastUpdated: Date.now()
    };
 
@@ -222,7 +226,7 @@ export function useWorkspaceSyncHandlers({
    
    // Fallback simulated backup file generation for local offline use
    setTimeout(() => {
-     const blob = new Blob([JSON.stringify({ localCurriculum, savedUda, decisions, customTexts, institutionalArchive }, null, 2)], { type: 'application/json' });
+     const blob = new Blob([JSON.stringify({ localCurriculum, savedUda, decisions, customTexts, institutionalArchive, revisionArchive }, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
@@ -246,7 +250,8 @@ export function useWorkspaceSyncHandlers({
     role,
     discipline,
      order,
-     institutionalArchive
+     institutionalArchive,
+     revisionArchive
    };
 
    const fileContent = JSON.stringify(stateToBackup, null, 2);

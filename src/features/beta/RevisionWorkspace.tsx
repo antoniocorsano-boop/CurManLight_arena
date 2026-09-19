@@ -3,6 +3,7 @@ import { RevisioneTab } from '../curriculum';
 import { CurriculumReviewCasePanel } from '../curriculum/components/CurriculumReviewCasePanel';
 import { RevisionTriggerQualificationPanel } from '../curriculum/components/RevisionTriggerQualificationPanel';
 import { useCurriculumStore } from '../../store/useCurriculumStore';
+import { getRevisionPresentationState } from '../../domain/revision';
 import type { AppViewsLayerProps } from '../session/types/appViewContracts';
 import { TeamContributionPublisher, type TeamContributionPersistenceState } from './TeamContributionPublisher';
 import {
@@ -54,7 +55,7 @@ const emptyCoordinationState = (): TeamCoordinationSessionState => ({
 });
 
 export function RevisionWorkspace(props: RevisionWorkspaceProps) {
-  const { decisions, customTexts, schoolYear } = useCurriculumStore();
+  const { revisionArchive, schoolYear, migrateLegacyReviewPresentation } = useCurriculumStore();
   const team = useTeamWorkspaceContext();
   const [stage, setStage] = useState<CurriculumWorkSessionStage>('EXAMINE');
   const [examineSurface, setExamineSurface] = useState<ExamineSurface>(
@@ -85,27 +86,35 @@ export function RevisionWorkspace(props: RevisionWorkspaceProps) {
   const sharedReviewAcademicYear = team.configured && team.session
     ? authenticatedOperationalAcademicYear ?? ''
     : schoolYear;
+  const reviewContext = useMemo(() => ({
+    discipline: props.discipline,
+    order: props.order,
+    academicYear: schoolYear,
+  }), [props.discipline, props.order, schoolYear]);
   const totalReviewCount = props.currentDisciplineProps.length;
-  const preparedReviewCount = props.currentDisciplineProps.filter((proposal) => {
-    const decision = decisions[proposal.id];
-    if (!decision) return false;
-    if (decision === 'custom') return Boolean(customTexts[proposal.id]?.trim());
-    return true;
-  }).length;
+  const presentationStates = useMemo(
+    () => props.currentDisciplineProps.map((proposal) => getRevisionPresentationState(revisionArchive, proposal, reviewContext)),
+    [props.currentDisciplineProps, revisionArchive, reviewContext],
+  );
+  const preparedReviewCount = presentationStates.filter((state) => state.prepared).length;
   const reviewComplete = totalReviewCount > 0 && preparedReviewCount === totalReviewCount;
   const personalContributionIdentityKey = useMemo(
     () => JSON.stringify([
       props.discipline,
       props.order,
-      sharedReviewAcademicYear,
-      props.currentDisciplineProps.map((proposal) => [
+      reviewContext.academicYear,
+      props.currentDisciplineProps.map((proposal, index) => [
         proposal.id,
-        decisions[proposal.id] ?? null,
-        customTexts[proposal.id]?.trim().replace(/\s+/g, ' ') ?? '',
+        presentationStates[index]?.choice ?? null,
+        presentationStates[index]?.customText ?? '',
       ]),
     ]),
-    [props.discipline, props.order, props.currentDisciplineProps, sharedReviewAcademicYear, decisions, customTexts],
+    [props.discipline, props.order, props.currentDisciplineProps, reviewContext.academicYear, presentationStates],
   );
+
+  useEffect(() => {
+    migrateLegacyReviewPresentation(props.currentDisciplineProps, reviewContext);
+  }, [migrateLegacyReviewPresentation, props.currentDisciplineProps, reviewContext]);
 
   const handlePersistenceStateChange = useCallback((next: TeamContributionPersistenceState) => {
     setSharePersistence(next);
@@ -276,6 +285,7 @@ export function RevisionWorkspace(props: RevisionWorkspaceProps) {
               </section>
               <RevisioneTab
                 {...props}
+                revisionPresentationContext={reviewContext}
                 onContinueAfterReview={() => {
                   if (reviewComplete) setStage('SHARE');
                 }}
@@ -365,11 +375,11 @@ export function RevisionWorkspace(props: RevisionWorkspaceProps) {
 
           <TeamContributionPublisher
             proposals={props.currentDisciplineProps}
-            decisions={decisions}
-            customTexts={customTexts}
+            revisionArchive={revisionArchive}
             discipline={props.discipline}
             order={props.order}
             academicYear={sharedReviewAcademicYear}
+            revisionPresentationContext={reviewContext}
             onPersistenceStateChange={handlePersistenceStateChange}
           />
 

@@ -7,6 +7,7 @@ import {
   type InstitutionalArchive,
 } from '../../../domain/institution';
 import type { RestoreBackupResult } from '../../../store/useCurriculumStore';
+import type { RevisionArchive } from '../../../domain/revision';
 
 interface SessionAutoSaveState {
   localCurriculum: CurriculumMap;
@@ -18,6 +19,7 @@ interface SessionAutoSaveState {
   discipline: string;
   order: SchoolOrder;
   institutionalArchive: InstitutionalArchive;
+  revisionArchive?: RevisionArchive;
   isWorkspaceLoggedIn: boolean;
   workspaceAccessToken: string;
   isWorkspaceSyncLocked: boolean;
@@ -33,6 +35,7 @@ interface EmergencyBackupPayload {
   discipline: string;
   order: SchoolOrder;
   institutionalArchive: InstitutionalArchive;
+  revisionArchive?: RevisionArchive;
 }
 
 interface UseSessionAutoSaveArgs extends SessionAutoSaveState {
@@ -49,7 +52,8 @@ const toEmergencyBackupPayload = (state: SessionAutoSaveState): EmergencyBackupP
   role: state.role,
   discipline: state.discipline,
   order: state.order,
-  institutionalArchive: state.institutionalArchive
+  institutionalArchive: state.institutionalArchive,
+  revisionArchive: state.revisionArchive
 });
 
 export const useSessionAutoSave = ({
@@ -62,6 +66,7 @@ export const useSessionAutoSave = ({
   discipline,
   order,
   institutionalArchive,
+  revisionArchive,
   isWorkspaceLoggedIn,
   workspaceAccessToken,
   isWorkspaceSyncLocked,
@@ -78,6 +83,7 @@ export const useSessionAutoSave = ({
     discipline,
     order,
     institutionalArchive,
+    revisionArchive,
     isWorkspaceLoggedIn,
     workspaceAccessToken,
     isWorkspaceSyncLocked
@@ -94,11 +100,12 @@ export const useSessionAutoSave = ({
       discipline,
       order,
       institutionalArchive,
+      revisionArchive,
       isWorkspaceLoggedIn,
       workspaceAccessToken,
       isWorkspaceSyncLocked
     };
-  }, [localCurriculum, savedUda, decisions, customTexts, schoolYear, role, discipline, order, institutionalArchive, isWorkspaceLoggedIn, workspaceAccessToken, isWorkspaceSyncLocked]);
+  }, [localCurriculum, savedUda, decisions, customTexts, schoolYear, role, discipline, order, institutionalArchive, revisionArchive, isWorkspaceLoggedIn, workspaceAccessToken, isWorkspaceSyncLocked]);
 
   useEffect(() => {
     const performSessionAutoSave = () => {

@@ -129,7 +129,7 @@
         "contributionMatchesCurrentWork",
         "proposalFingerprint",
         "contribution.orientation !== expectedOrientation",
-        "normalizeText(contribution.customText) === normalizeText(customTexts[contribution.proposalRef])",
+        "normalizeText(contribution.customText) === normalizeText(state?.customText)",
         "Il contributo corrente è registrato e verificato nel gruppo."
       ]
     },

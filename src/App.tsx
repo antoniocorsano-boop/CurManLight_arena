@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Suspense } from 'react';
 import { Check } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -18,10 +18,12 @@ import { useSessionAutoSave, useWorkspaceState, useWorkspaceSyncHandlers } from 
 import { copyText } from './lib/clipboard';
 import { getRoleLabel } from './lib/roleLabels';
 import { getA07InstitutionalDocumentRead } from './domain/institution';
+import { projectRevisionPresentationLegacyState } from './domain/revision';
+import { resolveOperationalReviewProposals } from './domain/curriculum/validation/technologyClass1Review';
 
 export default function App() {
  const {
-  role, discipline, order, schoolYear, decisions, customTexts, savedUda, institutionalArchive,
+  role, discipline, order, schoolYear, decisions: legacyDecisions, customTexts: legacyCustomTexts, revisionArchive, savedUda, institutionalArchive,
   selectedTraguardi, selectedObiettivi, selectedEvidenze,
   activeProgTab, activeCurricoloView, activeProcessoTab, activeGeneralSubtab,
   setRole, setDiscipline, setOrder, setDecision, setCustomText,
@@ -35,6 +37,28 @@ export default function App() {
   localCurriculum,
   setLocalCurriculum
  } = useLocalCurriculum();
+
+ const { decisions, customTexts } = useMemo(() => {
+  const projected = {
+   decisions: {} as typeof legacyDecisions,
+   customTexts: {} as typeof legacyCustomTexts,
+  };
+  (Object.keys(localCurriculum) as string[]).forEach((disc) => {
+   (['infanzia', 'primaria', 'secondaria'] as SchoolOrder[]).forEach((ord) => {
+    const fallbackProposals = localCurriculum[disc]?.[ord]?.proposals ?? [];
+    const proposals = resolveOperationalReviewProposals(disc, ord, fallbackProposals);
+    const slice = projectRevisionPresentationLegacyState({
+     archive: revisionArchive,
+     proposals,
+     context: { discipline: disc, order: ord, academicYear: schoolYear },
+     legacy: { decisions: legacyDecisions, customTexts: legacyCustomTexts },
+    });
+    Object.assign(projected.decisions, slice.decisions);
+    Object.assign(projected.customTexts, slice.customTexts);
+   });
+  });
+  return projected;
+ }, [localCurriculum, revisionArchive, schoolYear, legacyDecisions, legacyCustomTexts]);
 
  const {
   cloudAccountType,
@@ -256,6 +280,7 @@ export default function App() {
   discipline,
   order,
   institutionalArchive,
+  revisionArchive,
   isWorkspaceLoggedIn,
   workspaceAccessToken,
   isWorkspaceSyncLocked,
@@ -460,6 +485,7 @@ export default function App() {
   discipline,
   order,
   institutionalArchive,
+  revisionArchive,
   stateRef,
   restoreBackupState,
   setIsSyncingWorkspace,
@@ -550,7 +576,7 @@ export default function App() {
   clearDocumentExportHistory,
   documentExportHistory,
   computeCurrentCurriculumSignature,
- } = useDocumentContinuity();
+ } = useDocumentContinuity({ decisions, customTexts });
 
  const {
   esportazioniTab,

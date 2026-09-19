@@ -25,13 +25,17 @@ type RecordExportArgs = {
   sourceSignature?: string;
 };
 
-export function useDocumentContinuity() {
+export function useDocumentContinuity({
+  decisions,
+  customTexts,
+}: {
+  decisions: Record<string, string>;
+  customTexts: Record<string, string>;
+}) {
   const addDocumentExportEvent = useCurriculumStore((s) => s.addDocumentExportEvent);
   const clearDocumentExportHistory = useCurriculumStore((s) => s.clearDocumentExportHistory);
   const documentExportHistory = useCurriculumStore((s) => s.documentExportHistory);
   const savedUda = useCurriculumStore((s) => s.savedUda);
-  const decisions = useCurriculumStore((s) => s.decisions);
-  const customTexts = useCurriculumStore((s) => s.customTexts);
   const discipline = useCurriculumStore((s) => s.discipline);
   const order = useCurriculumStore((s) => s.order);
   const selectedTraguardi = useCurriculumStore((s) => s.selectedTraguardi);
@@ -67,7 +71,7 @@ export function useDocumentContinuity() {
   );
 
   const computeCurrentCurriculumSignature = useCallback(
-    () => computeCurriculumSignature(discipline, order, decisions as Record<string, string>, customTexts as Record<string, string>, selectedTraguardi, selectedObiettivi),
+    () => computeCurriculumSignature(discipline, order, decisions, customTexts, selectedTraguardi, selectedObiettivi),
     [discipline, order, decisions, customTexts, selectedTraguardi, selectedObiettivi]
   );
 
@@ -86,8 +90,8 @@ export function useDocumentContinuity() {
         const currentSig = computeCurriculumSignature(
           discipline,
           order,
-          decisions as Record<string, string>,
-          customTexts as Record<string, string>,
+          decisions,
+          customTexts,
           selectedTraguardi,
           selectedObiettivi
         );
