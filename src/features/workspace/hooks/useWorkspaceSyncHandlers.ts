@@ -44,7 +44,7 @@ type UseWorkspaceSyncHandlersArgs = {
  discipline: string;
  order: SchoolOrder;
  institutionalArchive: InstitutionalArchive;
- revisionArchive: RevisionArchive;
+ revisionArchive?: RevisionArchive;
  stateRef: WorkspaceStateRef;
  restoreBackupState: (newState: unknown) => RestoreBackupResult;
  setIsSyncingWorkspace: (value: boolean) => void;
