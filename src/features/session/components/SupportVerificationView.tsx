@@ -45,7 +45,7 @@ export function SupportVerificationView({
     explanation: string;
     action?: {
       label: string;
-      tab?: 'fonti' | 'revisione' | 'esportazioni';
+      tab?: 'fonti' | 'revisione' | 'esportazioni' | 'progetta-annuale';
       openSettings?: boolean;
     };
   }> = [
@@ -90,11 +90,18 @@ export function SupportVerificationView({
       action: { label: 'Apri il riesame', tab: 'revisione' },
     },
     {
+      id: 'surface-boundary',
+      title: 'Confine Arena · Atlas · Docente OS',
+      state: 'ok',
+      explanation: 'Arena governa il curricolo; Curriculum Atlas lo rende navigabile in sola lettura; Docente OS possiede programmazione annuale, UDA, lezioni e materiali.',
+      action: { label: 'Apri il passaggio', tab: 'progetta-annuale' },
+    },
+    {
       id: 'handoff',
-      title: 'Passaggio alla progettazione',
+      title: 'Passaggio operativo a Docente OS',
       state: institutionalProfile.configured ? 'attention' : 'blocked',
       explanation: institutionalProfile.configured
-        ? 'Il prerequisito istituzionale è presente. La validità completa del passaggio viene verificata nella superficie Documenti.'
+        ? 'Il prerequisito istituzionale è presente. Arena può preparare il contesto versionato; Docente OS dovrà accettarlo prima di usarlo.'
         : 'Senza un contesto istituzionale verificabile Arena non prepara un passaggio istituzionale verso Docente OS.',
       action: { label: 'Verifica il passaggio', tab: 'esportazioni' },
     },
@@ -181,7 +188,7 @@ export function SupportVerificationView({
         </summary>
         <div className="mt-3 flex items-start gap-2 text-sm leading-6 text-slate-600">
           <FileSearch className="mt-1 h-4 w-4 shrink-0" aria-hidden="true" />
-          <p>Non approva il curricolo, non sostituisce la decisione istituzionale, non certifica conformità amministrativa e non modifica Docente OS.</p>
+          <p>Non approva il curricolo, non sostituisce la decisione istituzionale, non rende Atlas autoritativo, non certifica conformità amministrativa e non modifica Docente OS.</p>
         </div>
       </details>
     </section>
