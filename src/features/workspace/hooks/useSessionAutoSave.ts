@@ -19,7 +19,7 @@ interface SessionAutoSaveState {
   discipline: string;
   order: SchoolOrder;
   institutionalArchive: InstitutionalArchive;
-  revisionArchive: RevisionArchive;
+  revisionArchive?: RevisionArchive;
   isWorkspaceLoggedIn: boolean;
   workspaceAccessToken: string;
   isWorkspaceSyncLocked: boolean;
@@ -35,7 +35,7 @@ interface EmergencyBackupPayload {
   discipline: string;
   order: SchoolOrder;
   institutionalArchive: InstitutionalArchive;
-  revisionArchive: RevisionArchive;
+  revisionArchive?: RevisionArchive;
 }
 
 interface UseSessionAutoSaveArgs extends SessionAutoSaveState {
