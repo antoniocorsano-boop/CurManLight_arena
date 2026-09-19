@@ -8,6 +8,7 @@ import {
   recordRevisionPresentationChoice,
   resetRevisionPresentationChoice,
   type RevisionPresentationChoice,
+  type RevisionPresentationContext,
 } from '../../../domain/revision';
 import type { AppViewsLayerProps } from '../../session';
 
@@ -20,6 +21,7 @@ export type RevisioneTabProps = Pick<AppViewsLayerProps,
   | 'setRevisioneWizardIndex'
 > & {
   onContinueAfterReview?: () => void;
+  revisionPresentationContext?: RevisionPresentationContext;
   revisionPresentationAcademicYear?: string;
 };
 
@@ -56,6 +58,7 @@ export function RevisioneTab({
   revisioneWizardIndex,
   setRevisioneWizardIndex,
   onContinueAfterReview,
+  revisionPresentationContext,
   revisionPresentationAcademicYear,
 }: RevisioneTabProps) {
   const {
@@ -67,7 +70,7 @@ export function RevisioneTab({
   } = useCurriculumStore();
   const [customDraft, setCustomDraft] = useState<CustomDraft | null>(null);
 
-  const reviewContext = {
+  const reviewContext = revisionPresentationContext ?? {
     discipline,
     order,
     academicYear: revisionPresentationAcademicYear ?? schoolYear,
