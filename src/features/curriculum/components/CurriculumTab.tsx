@@ -1,6 +1,7 @@
 import { ChevronRight } from 'lucide-react';
 import { useCurriculumStore } from '../../../store/useCurriculumStore';
-import type { DecisionStatus, Proposal, SchoolOrder } from '../../../types/curriculum';
+import type { Proposal, SchoolOrder } from '../../../types/curriculum';
+import { getRevisionPresentationState, type RevisionArchive } from '../../../domain/revision';
 import type { AppViewsLayerProps, CurriculumMap, GeneratedKnowledgeOutput, PopolamentoTab } from '../../session';
 import { PilotMainView } from '../../curriculum-functional-pilot';
 
@@ -81,7 +82,7 @@ export function CurriculumTab({
   handleCSVUpload,
   handleResetCurriculumToBaseline,
 }: CurriculumTabProps) {
-  const { activeCurricoloView, setActiveCurricoloView, discipline, order, setDiscipline, decisions, customTexts } = useCurriculumStore();
+  const { activeCurricoloView, setActiveCurricoloView, discipline, order, setDiscipline, revisionArchive, schoolYear } = useCurriculumStore();
 
   return (
     <div className="space-y-6 fade-in text-left">
@@ -188,8 +189,8 @@ export function CurriculumTab({
           setShowOnlyProfileProcesso={setShowOnlyProfileProcesso}
           expandedMapSections={expandedMapSections}
           setExpandedMapSections={setExpandedMapSections}
-          decisions={decisions}
-          customTexts={customTexts}
+          revisionArchive={revisionArchive}
+          academicYear={schoolYear}
         />
       )}
 
@@ -383,8 +384,8 @@ interface MappaViewProps {
   setShowOnlyProfileProcesso: (v: boolean) => void;
   expandedMapSections: Record<string, boolean>;
   setExpandedMapSections: React.Dispatch<React.SetStateAction<Record<string, boolean>>>;
-  decisions: Record<string, DecisionStatus>;
-  customTexts: Record<string, string>;
+  revisionArchive: RevisionArchive;
+  academicYear: string;
 }
 
 function MappaView({
@@ -396,8 +397,8 @@ function MappaView({
   setShowOnlyProfileProcesso,
   expandedMapSections,
   setExpandedMapSections,
-  decisions,
-  customTexts,
+  revisionArchive,
+  academicYear,
 }: MappaViewProps) {
   return (
     <div className="space-y-5 fade-in">
@@ -486,21 +487,26 @@ function MappaView({
                         </span>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                           {data.proposals.map((p: Proposal) => {
-                            const dec = decisions[p.id];
+                            const reviewState = getRevisionPresentationState(
+                              revisionArchive,
+                              p,
+                              { discipline, order, academicYear },
+                            );
+                            const choice = reviewState.choice;
                             let txt = p.newText;
                             let choiceLabel = "Nessuna scelta";
                             let colorClasses = "bg-slate-100 text-slate-600 border-slate-200";
-                            if (dec === 'approved') {
+                            if (choice === 'confirm-proposal') {
                               choiceLabel = "Usa testo proposto 2025";
                               colorClasses = "bg-emerald-50 text-emerald-800 border-emerald-150";
-                            } else if (dec === 'rejected') {
+                            } else if (choice === 'keep-previous') {
                               choiceLabel = "Mantieni testo 2012";
                               colorClasses = "bg-rose-50 text-rose-800 border-rose-150";
                               txt = p.oldText;
-                            } else if (dec === 'custom') {
+                            } else if (choice === 'propose-change') {
                               choiceLabel = "Testo personalizzato";
                               colorClasses = "bg-amber-50 text-amber-800 border-amber-150";
-                              txt = customTexts[p.id] || p.newText;
+                              txt = reviewState.customText || p.newText;
                             }
                             return (
                               <div key={p.id} className="bg-white border rounded-lg p-2.5 space-y-1 shadow-sm text-left">
