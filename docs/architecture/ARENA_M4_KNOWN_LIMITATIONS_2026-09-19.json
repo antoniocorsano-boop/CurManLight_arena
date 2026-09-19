@@ -1,0 +1,42 @@
+{
+  "schema": "CML_ARENA_M4_LIMITATIONS_V1",
+  "date": "2026-09-19",
+  "items": [
+    {
+      "id": "A3-SOURCES-REGISTRY",
+      "issue": 280,
+      "classification": "OPEN_MATURITY_FINDING",
+      "state": "OPEN",
+      "summary": "Non-current planning reference / source-registry convergence remains unresolved.",
+      "absorbed_by_m4s6": false
+    },
+    {
+      "id": "A7-LEGACY-ONLY-PERSISTENCE",
+      "issue": 286,
+      "classification": "ACCEPTED_BOUNDED_LIMITATION",
+      "state": "GOVERNED",
+      "summary": "Canonical curriculum persistence remains legacy-only for the controlled M4 pilot; migration remains separately gated.",
+      "absorbed_by_m4s6": false
+    },
+    {
+      "id": "GOV-01-MAIN-PROTECTION",
+      "issue": 105,
+      "classification": "RELEASE_GOVERNANCE_BLOCKER",
+      "state": "OPEN",
+      "summary": "main is not yet protected at GitHub hosting level; PR and required-check enforcement must be enabled before A10 closure.",
+      "absorbed_by_m4s6": false
+    },
+    {
+      "id": "ATLAS-S1-PREVIEW",
+      "classification": "ACCEPTED_PRODUCT_BOUNDARY",
+      "state": "GOVERNED",
+      "summary": "Curriculum Atlas S1 is a separate read-only exploration preview and is not curriculum authority.",
+      "absorbed_by_m4s6": false
+    }
+  ],
+  "rules": {
+    "blocker_cannot_be_relabelled_without_explicit_decision": true,
+    "historical_evidence_cannot_close_current_blocker": true,
+    "m4s6_does_not_modify_a3": true
+  }
+}
