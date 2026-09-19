@@ -11,12 +11,14 @@ import { ProcessoTab } from '../../processo';
 import { ProgettazioneTab } from '../../progettazione';
 import { DashboardView } from './DashboardView';
 import { InfoViews } from './InfoViews';
+import { SupportGuideView } from './SupportGuideView';
+import { SupportVerificationView } from './SupportVerificationView';
 import type { ActiveProgTab, AppViewsLayerProps } from '../types/appViewContracts';
 import type { AppTab } from '../../navigation';
 
 export type { AppViewsLayerProps } from '../types/appViewContracts';
 
-const APP_TABS = ['dashboard', 'curricolo', 'revisione', 'progetta-evidenze', 'progetta-annuale', 'processo', 'esportazioni', 'certificazione-pa', 'fonti', 'guida', 'second-brain'] as const;
+const APP_TABS = ['dashboard', 'curricolo', 'revisione', 'progetta-evidenze', 'progetta-annuale', 'processo', 'esportazioni', 'certificazione-pa', 'verifiche', 'fonti', 'guida', 'second-brain'] as const;
 const ACTIVE_PROG_TABS = ['home', 'annuale', 'uda', 'certificazione'] as const;
 
 const isAppTab = (tab: string): tab is AppTab => (APP_TABS as readonly string[]).includes(tab);
@@ -93,7 +95,11 @@ export function AppViewsLayer(props: AppViewsLayerProps) {
 
       {props.activeTab === 'fonti' && <FontiTab {...props} />}
 
-      {props.activeTab !== 'fonti' && (
+      {props.activeTab === 'verifiche' && <SupportVerificationView {...props} />}
+
+      {props.activeTab === 'guida' && <SupportGuideView {...props} />}
+
+      {props.activeTab !== 'fonti' && props.activeTab !== 'verifiche' && props.activeTab !== 'guida' && (
         <InfoViews
           activeTab={props.activeTab}
           activeGeneralSubtab={props.activeGeneralSubtab}

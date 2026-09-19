@@ -99,6 +99,9 @@ async function inspectCurriculumTableScroll(locator) {
       'HT-BETA-REVISION-PREPARE': { delegatedTo: 'verify-beta-g4-browser.cjs' },
       'HT-REVISION-DECISION': { delegatedTo: 'verify-beta-g4-browser.cjs' },
       'HT-BETA-PLANNING-HANDOFF': { delegatedTo: 'verify-beta-g4-browser.cjs' },
+      'SUP-H1-FASCICOLO': {},
+      'SUP-H2-VERIFICHE': {},
+      'SUP-H3-GUIDA': {},
     },
     profiles: [],
   };
@@ -123,6 +126,7 @@ async function inspectCurriculumTableScroll(locator) {
         result.checks.push({ label, pass });
         console.log(`${pass ? '✓' : '✗'} [${profile.id}] ${label}`);
         if (!pass) failed = true;
+        return pass;
       };
 
       console.log(`=== S3B CURRICULUM CONTEXT V2 — ${profile.id} ===`);
@@ -320,7 +324,55 @@ async function inspectCurriculumTableScroll(locator) {
         fullPage: true,
       });
 
-      check('no uncaught page errors in curriculum/provenance journey', pageErrors.length === 0);
+      console.log(`=== SUPPORT CANONICAL V1 — ${profile.id} ===`);
+
+      await gotoRoute(page, '/fascicolo');
+      const fascicolo = page.locator('[data-teacher-surface="sources"]').first();
+      await fascicolo.waitFor({ state: 'visible', timeout: 5000 });
+      const sourcePublication = fascicolo.locator('[data-canonical-source-publication]').first();
+      const fascicoloRoutePass = check('SUP-H1 Fascicolo has a stable canonical route', page.url().includes('/fascicolo'));
+      const fascicoloPublicationPass = check('SUP-H1 Fascicolo exposes the source publication', await sourcePublication.isVisible().catch(() => false));
+      const fascicoloOverflowPass = check('SUP-H1 Fascicolo has no material horizontal overflow', await noHorizontalOverflow(page));
+      evidence.tasks['SUP-H1-FASCICOLO'][profile.id] = {
+        status: [fascicoloRoutePass, fascicoloPublicationPass, fascicoloOverflowPass].every(Boolean)
+          ? 'AUTOMATED_EVIDENCE_PASS'
+          : 'AUTOMATED_EVIDENCE_FAIL',
+      };
+
+      await gotoRoute(page, '/verifiche');
+      const verificationSurface = page.locator('[data-teacher-surface="support-verification"]').first();
+      await verificationSurface.waitFor({ state: 'visible', timeout: 5000 });
+      const verificationCards = await verificationSurface.locator('[data-verification-state]').count();
+      const verificationRoutePass = check('SUP-H2 Verifiche has a stable route distinct from Documenti', page.url().includes('/verifiche') && !page.url().includes('/documents'));
+      const verificationCardsPass = check('SUP-H2 Verifiche exposes task-oriented readiness checks', verificationCards >= 5);
+      const verificationOverflowPass = check('SUP-H2 Verifiche has no material horizontal overflow', await noHorizontalOverflow(page));
+      evidence.tasks['SUP-H2-VERIFICHE'][profile.id] = {
+        status: [verificationRoutePass, verificationCardsPass, verificationOverflowPass].every(Boolean)
+          ? 'AUTOMATED_EVIDENCE_PASS'
+          : 'AUTOMATED_EVIDENCE_FAIL',
+        verificationCards,
+      };
+
+      await gotoRoute(page, '/guida');
+      const guideSurface = page.locator('[data-teacher-surface="support-guide"]').first();
+      await guideSurface.waitFor({ state: 'visible', timeout: 5000 });
+      const guideTasks = await guideSurface.locator('article').count();
+      const guideSurfacePass = check('SUP-H3 Guida opens the task-first support surface', await guideSurface.isVisible().catch(() => false));
+      const guideTasksPass = check('SUP-H3 Guida exposes task cards instead of a serial legacy manual', guideTasks >= 5);
+      const guideOverflowPass = check('SUP-H3 Guida has no material horizontal overflow', await noHorizontalOverflow(page));
+      evidence.tasks['SUP-H3-GUIDA'][profile.id] = {
+        status: [guideSurfacePass, guideTasksPass, guideOverflowPass].every(Boolean)
+          ? 'AUTOMATED_EVIDENCE_PASS'
+          : 'AUTOMATED_EVIDENCE_FAIL',
+        guideTasks,
+      };
+
+      await page.screenshot({
+        path: path.join(artifactDir, `${profile.id}-support-surfaces.png`),
+        fullPage: true,
+      });
+
+      check('no uncaught page errors in curriculum/provenance/support journey', pageErrors.length === 0);
       const profileStatus = result.checks.every((item) => item.pass) ? 'AUTOMATED_EVIDENCE_PASS' : 'AUTOMATED_EVIDENCE_FAIL';
       evidence.tasks['HT-BETA-CURRICULUM-CONTEXT'][profile.id] = { status: profileStatus, checks: result.checks };
       evidence.tasks['UX-CURR-01'][profile.id] = { status: profileStatus };

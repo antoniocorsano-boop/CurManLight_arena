@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Archive, BookOpen, CheckCircle2, FilePlus2, ShieldCheck } from 'lucide-react';
+import { Archive, BookOpen, CheckCircle2, FilePlus2, Files, ShieldCheck } from 'lucide-react';
 import type { AppViewsLayerProps } from '../../session';
 import {
   USER_VISIBLE_BUILT_IN_KNOWLEDGE_SOURCES,
@@ -7,6 +7,7 @@ import {
 } from '../lib/knowledgeBuiltInSources';
 import { deriveKnowledgeSourcePresentation } from '../lib/knowledgeSourcePresentation';
 import { verifyLocalKnowledgeSource } from '../lib/localKnowledgeStore';
+import { AVAILABLE_DEPARTMENT_PUBLICATION } from '../../curriculum/data/curriculumPublicationRegistry';
 
 export type FontiTabProps = Pick<AppViewsLayerProps,
   | 'customKbDocs'
@@ -17,6 +18,7 @@ export type FontiTabProps = Pick<AppViewsLayerProps,
   | 'setShowAddKbModal'
   | 'handleTabSwitch'
   | 'showToast'
+  | 'institutionalProfile'
 >;
 
 const shortVersion = (versionId: string): string => versionId.startsWith('sha256:')
@@ -32,6 +34,7 @@ export function FontiTab({
   setShowAddKbModal,
   handleTabSwitch,
   showToast,
+  institutionalProfile,
 }: FontiTabProps) {
   const [verificationCandidateId, setVerificationCandidateId] = useState<string | null>(null);
   const [isVerifying, setIsVerifying] = useState(false);
@@ -83,6 +86,62 @@ export function FontiTab({
 
   return (
     <div className="space-y-4 fade-in text-left" data-teacher-surface="sources" data-human-task="source-registry">
+      <header className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
+        <div className="flex items-start gap-3">
+          <Files className="mt-0.5 h-6 w-6 shrink-0 text-indigo-700" aria-hidden="true" />
+          <div className="min-w-0">
+            <p className="text-xs font-bold uppercase tracking-wide text-indigo-700">Supporto</p>
+            <h1 className="mt-1 text-2xl font-black text-slate-950">Fascicolo</h1>
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
+              Qui trovi la provenienza del curricolo, le versioni, le fonti collegate e gli archivi locali. La presenza di una fonte non equivale a un’adozione istituzionale.
+            </p>
+          </div>
+        </div>
+      </header>
+
+      <section className="rounded-2xl border border-indigo-200 bg-indigo-50/30 p-4 sm:p-5" aria-labelledby="source-publication-title" data-canonical-source-publication>
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div className="min-w-0">
+            <p className="text-xs font-bold uppercase tracking-wide text-indigo-700">Pubblicazione curricolare sorgente</p>
+            <h2 id="source-publication-title" className="mt-1 text-lg font-black text-slate-950">{AVAILABLE_DEPARTMENT_PUBLICATION.label}</h2>
+            <p className="mt-2 text-sm leading-6 text-slate-600">
+              Fonte: <strong className="text-slate-800">{AVAILABLE_DEPARTMENT_PUBLICATION.sourceInstitutionName}</strong>
+            </p>
+            <p className="text-sm leading-6 text-slate-600">
+              Versione {AVAILABLE_DEPARTMENT_PUBLICATION.sourceVersionLabel} · A.S. {AVAILABLE_DEPARTMENT_PUBLICATION.academicYear}
+            </p>
+          </div>
+          <span className="shrink-0 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-bold text-emerald-800">
+            Fonte identificata
+          </span>
+        </div>
+
+        <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm leading-6 text-amber-950">
+          {institutionalProfile.configured ? (
+            <>
+              <strong>Contesto corrente:</strong> {institutionalProfile.instituteName}. Il fascicolo sorgente resta distinto dallo stato di adozione dell’istituto corrente.
+            </>
+          ) : (
+            <>
+              <strong>Contesto istituzionale non configurato.</strong> Il fascicolo è consultabile come fonte tracciata, ma non attesta l’adozione da parte di un istituto corrente.
+            </>
+          )}
+        </div>
+
+        <details className="mt-4 rounded-xl border border-slate-200 bg-white p-3" data-hcm-level="3">
+          <summary className="cursor-pointer text-sm font-bold text-slate-700">Catena e tracciabilità</summary>
+          <div className="mt-3 space-y-2 text-xs leading-5 text-slate-600">
+            <p><strong className="text-slate-800">Stato:</strong> pubblicazione sorgente disponibile e versionata.</p>
+            {AVAILABLE_DEPARTMENT_PUBLICATION.driveFileId && (
+              <p><strong className="text-slate-800">Riferimento documento:</strong> {AVAILABLE_DEPARTMENT_PUBLICATION.driveFileId}</p>
+            )}
+            {AVAILABLE_DEPARTMENT_PUBLICATION.sourceSha256 && (
+              <p className="break-all"><strong className="text-slate-800">Impronta:</strong> {AVAILABLE_DEPARTMENT_PUBLICATION.sourceSha256}</p>
+            )}
+            <p><strong className="text-slate-800">Autorità:</strong> la tracciabilità della fonte non attribuisce automaticamente stato deliberativo.</p>
+          </div>
+        </details>
+      </section>
       <details
         className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-5"
         data-local-source-registry

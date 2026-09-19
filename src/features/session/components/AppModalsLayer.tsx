@@ -13,7 +13,7 @@ const LOCAL_AGENT_STATUSES = ['not_installed', 'downloading', 'installed'] as co
 const LOCAL_AGENT_SIZES = ['light', 'full', 'none'] as const;
 const OLLAMA_STATUSES = ['idle', 'testing', 'connected', 'error'] as const;
 const CLOUD_ACCOUNT_TYPES = ['scolastica', 'personale'] as const;
-const APP_TABS = ['dashboard', 'curricolo', 'revisione', 'progetta-evidenze', 'progetta-annuale', 'processo', 'esportazioni', 'certificazione-pa', 'fonti', 'guida', 'second-brain'] as const;
+const APP_TABS = ['dashboard', 'curricolo', 'revisione', 'progetta-evidenze', 'progetta-annuale', 'processo', 'esportazioni', 'certificazione-pa', 'verifiche', 'fonti', 'guida', 'second-brain'] as const;
 
 const isLocalAgentStatus = (value: string): value is LocalAgentStatus => (LOCAL_AGENT_STATUSES as readonly string[]).includes(value);
 const isLocalAgentSize = (value: string): value is LocalAgentSize => (LOCAL_AGENT_SIZES as readonly string[]).includes(value);

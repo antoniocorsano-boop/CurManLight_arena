@@ -259,3 +259,26 @@ La candidata Beta implementa il primo incremento della fase H5:
 - i testi selezionati nella bozza non diventano una nuova fonte curricolare canonica.
 
 Questo incremento non costituisce validazione professionale, adozione o vigenza del master.
+
+---
+
+## 15. Stato di attuazione — SUPPORT_CANONICAL_V1
+
+La navigazione secondaria **Supporto** converge su tre destinazioni canoniche:
+
+1. **Fascicolo** → `/fascicolo`
+2. **Verifiche** → `/verifiche`
+3. **Guida** → `/guida`
+
+`/documents` resta esclusivamente la superficie **Documenti / Handoff**.
+
+La precedente voce nominale **Controlli e checklist** non definisce più la navigazione di prodotto. La chiave tecnica interna `certificazione-pa` può sopravvivere temporaneamente come adapter di compatibilità, ma emette `/verifiche` e non autorizza una superficie autonoma diversa da Verifiche.
+
+Compiti:
+
+- Fascicolo: provenienza, versioni, fonti, catena documentale, registri e archivio;
+- Verifiche: readiness, prerequisiti, blocchi e recovery;
+- Guida: assistenza task-first e spiegazione dei confini operativi.
+
+Questa convergenza non modifica autorità, governance o il contratto Arena ↔ Docente OS.
+
