@@ -9,7 +9,7 @@ const headerProps = (openLocalProfileEditor: () => void): ComponentProps<typeof 
   localAgentStatus: 'none', localAgentType: 'none', ollamaStatus: 'disconnected', ollamaModelName: '', localAgentSize: 'none',
   setShowSaveModal: vi.fn(), roleDropdownOpen: false, setRoleDropdownOpen: vi.fn(), isWorkspaceLoggedIn: false,
   cloudAccountType: 'personale', workspaceUserEmail: '', handleWorkspaceSync: vi.fn(), showToast: vi.fn(),
-  handleClearLocalStorageWithReset: vi.fn(), handleWorkspaceLogout: vi.fn(), openLocalProfileEditor, openInstitutionConfig: vi.fn(), setShowCloudAccountModal: vi.fn(),
+  handleClearLocalStorageWithReset: vi.fn(), handleWorkspaceLogout: vi.fn(), openLocalProfileEditor, setShowCloudAccountModal: vi.fn(),
 });
 
 describe('local profile editor remains reachable after onboarding', () => {
