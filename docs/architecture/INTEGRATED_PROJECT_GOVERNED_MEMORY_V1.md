@@ -3,7 +3,7 @@
 Status: CANONICAL_SHARED_MEMORY
 Scope: CurManLight Arena + Docente OS
 Date: 2026-08-29
-Amended: 2026-09-18 — Dual-system completion and maturation reset
+Amended: 2026-09-20 — ECO-01 architecture-only maturity bridge authorization
 Memory ID: CML-DOS-INTEGRATED-GOVERNANCE-V1
 
 ## 1. Purpose
@@ -153,11 +153,11 @@ The integrated project must advance in this order unless this memory is explicit
 - ARENA-S0 authority/baseline audit — completed with follow-ups.
 - ARENA-S1 curriculum runtime consolidation — complete.
 - ARENA-S2 product-surface rationalization — complete.
-- ARENA-S3 human validation closure — **still the active Arena gate**.
-  - S3A validation contract/release binding — complete and integrated.
-  - S3B critical desktop/mobile browser evidence — automated evidence is complete on the evolved candidate `a64560202567f67eac5fd6ecaad30c6062199c0f` in PR #222.
-  - S3C immutable Beta deploy + actual human acceptance — **pending for the evolved candidate**. The candidate is not promoted merely because its automatic gates are green.
-- ARENA-S4 bidirectional interoperability stabilization — blocked until S3 closes.
+- ARENA-S3 human validation closure — **complete for the governed S3 release chain**.
+- Arena M4 closure sequence M4-S1 through M4-S7 — implementation and exact-head automation complete.
+- Final M4 promotion candidate: `a315aa72ce68a52da7d4d960996b6470774104b0`, published immutably with public smoke identity PASS and mobile human review PASS.
+- **Final M4 promotion remains pending same-candidate desktop human review required by `BETA_G5_HUMAN_ACCEPTANCE_PROTOCOL_v2.md`.** Until that desktop review is completed and recorded, the effective formal classification remains M3.3 / M4 promotion candidate; `ARENA_M4_CONTROLLED_PRODUCTION_PILOT` is not yet effective.
+- ARENA-S4 or any new cross-system feature phase is not automatically authorized by the M4 candidate. Controlled-pilot stabilization/maintenance is the intended next state only after final M4 promotion; cross-system expansion still requires an explicit governance decision.
 
 ### Docente OS stabilization and Teacher OS V1
 
@@ -187,10 +187,34 @@ The integrated project is now explicitly in **completion and maturation mode**.
 
 - Docente OS H8 lifecycle governance and H9-A governed replanning consumption are complete.
 - Docente OS must prefer release-candidate freeze, sustained teacher pilot evidence and maturity closure over another broad feature train.
-- Arena must prefer S3 immutable deploy + actual human acceptance and G5/G6 closure over further product expansion.
+- Arena must complete the same-candidate desktop human acceptance for the final M4 candidate before formal controlled-production-pilot promotion; further product expansion remains deferred.
 - New capabilities in either product default to `DEFERRED` unless classified `MATURITY_REQUIRED`, `PILOT_REQUIRED` or `PROFESSIONAL_GAP_CONFIRMED`.
 - The canonical completion checkpoint is `docs/architecture/DUAL_SYSTEM_CANONICAL_RESET_2026-09-18.md`.
 - This reset does not authorize Arena S4 early, does not weaken exact-head certification and does not change the product ownership or authority boundary.
+
+### ECO-01 — curricular lesson-preparation maturity bridge
+
+ECO-01 is explicitly classified **MATURITY_REQUIRED / ARCHITECTURE_ONLY**.
+
+Authorized now:
+- **ECO-01/S1 — CurriculumSnapshot v1 contract + mapping into the canonical lesson-preparation model**;
+- documentation, schemas, fixtures, validators and non-operational read-model prototypes only;
+- a real Technology lesson fixture may be used as evidence;
+- `CurriculumSnapshot v1` must carry a deterministic structural/authority fingerprint;
+- Docente OS mapping must converge on `NextLessonPreparation` and `LessonPreparationManifest.materialSlots`.
+
+Invariants:
+- the direct `Arena -> Docente OS` curriculum intake/revalidation boundary remains canonical for authority;
+- Atlas is subordinate for publication/navigation/LO/material resources and does not intermediate curriculum authority;
+- Atlas resources must enter the canonical lesson manifest; no parallel material path is authorized;
+- `DOS-A1` remains **RUNTIME_DEFERRED**;
+- no automatic sync, new shared persistence, runtime API coupling, user-data mutation or institutional-approval change is authorized by ECO-01/S1.
+
+Later ECO-01 slices require their own governed evidence and do not become authorized merely because S1 closes.
+
+Canonical plan:
+- Drive document: `ECO-01 — Preparazione curricolare della lezione — Contratto e prototipo non operativo`;
+- plan version at authorization: v0.1 / 2026-09-20.
 
 ### AILit
 
@@ -203,25 +227,29 @@ No AILit runtime, UI, database, dedicated store or authority implementation is a
 ### CurManLight Arena
 
 Repository: `antoniocorsano-boop/CurManLight_arena`  
-Canonical integrated baseline at this amendment: `main@dd46122cc0038c3e5de3fe8714e14e25b895bc18`
+Canonical integrated baseline at this amendment: `main@5438514c71fe75e4e2781d896aff949c685a2acf`
 
-Current evolved S3 candidate:
-- PR: `#222`;
-- head: `a64560202567f67eac5fd6ecaad30c6062199c0f`;
+Current M4 promotion candidate:
+- source candidate: `a315aa72ce68a52da7d4d960996b6470774104b0`;
+- M4-S7 merged to main in PR #290 as `9bc3bb3f57b4c6bc17453fce044d478a0994976a`;
 - automatic exact-head gates: PASS;
-- immutable deploy + actual human G5/G6 acceptance for this exact evolved candidate: pending;
-- status: candidate evidence, not yet a promoted Arena M4 baseline.
+- immutable Beta deployment and public smoke identity: PASS;
+- mobile human review: PASS;
+- same-candidate desktop human review: PENDING;
+- effective formal status: M3.3 / M4 promotion candidate until desktop HVA is completed.
 
 ### Docente OS
 
 Repository: `antoniocorsano-boop/docente-os-2026-27`  
-Canonical active product baseline at this amendment: `develop@7f714e6ac6f4264af86f15f8a6f5b99121a52a41`
+Canonical active product baseline at this amendment: `develop@d190d028ae37109a2893b974ffec05bd6ce9180c`
 
 Current completion state:
 - Teacher OS V1 convergence is the active product program;
 - H8 governed reflection/replanning lifecycle: complete;
 - H9-A accepted replanning read model: complete and post-merge certified;
 - next maturity move: freeze a real release candidate and collect sustained teacher-pilot evidence rather than continue indefinite feature accumulation.
+
+ECO-00 cross-product governance documentation is integrated in both current baselines. ECO-01/S1 is the next authorized architecture-only maturity slice.
 
 Agents must re-check live PR/gate state before promotion or merge; this memory records governance and point-in-time state, not permission to merge stale candidates.
 
