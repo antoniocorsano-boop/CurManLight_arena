@@ -1,0 +1,96 @@
+{
+  "program": "ECO-01",
+  "slice": "S3",
+  "contract": "ECO01_S3_TECHNOLOGY_MULTI_CASE_V1",
+  "mode": "NON_OPERATIONAL_VALIDATION",
+  "dosA1": "RUNTIME_DEFERRED",
+  "canonicalCurriculumSource": {
+    "product": "CurManLight Arena",
+    "repositoryPath": "src/features/curriculum/data/departmentCurriculumV31.section-09.json"
+  },
+  "caseShapeVersion": "teacher-first-v1",
+  "cases": [
+    {
+      "caseId": "TEC-I-SYSTEMS",
+      "grade": "I",
+      "curriculumRegime": "DM221_FIRST_APPLICATION",
+      "title": "Bisogni, risorse e sistemi",
+      "curriculumLink": {
+        "nucleus": "Cultura tecnica e sistemi",
+        "outcome": "Legge oggetti e sistemi semplici in rapporto a bisogni e funzioni.",
+        "annualizedObjective": "Analizzare struttura/funzione; riconoscere risorse, input/output, rischi d’uso."
+      },
+      "teachingDesign": {
+        "sourceKind": "ECO01_S2_BASELINE",
+        "state": "STATIC_BASELINE",
+        "sectionBinding": "UNBOUND",
+        "durationMinutes": 60
+      },
+      "snapshotBinding": {
+        "status": "MATERIALIZED_IN_S1_S2",
+        "curriculumVersionRef": "technology-grade-1@2026-27",
+        "structuralAuthorityFingerprint": "616de781",
+        "downstreamState": "AWAITING_TEACHER_DECISION"
+      }
+    },
+    {
+      "caseId": "TEC-II-AGRICULTURE",
+      "grade": "II",
+      "curriculumRegime": "TRANSITION_2012",
+      "title": "Agricoltura come sistema tecnologico",
+      "curriculumLink": {
+        "nucleus": "Cultura tecnica e sistemi",
+        "outcome": "Analizza sistemi, servizi e filiere con più componenti.",
+        "annualizedObjective": "Individuare relazioni, flussi e criticità; confrontare alternative."
+      },
+      "teachingDesign": {
+        "sourceKind": "ACT_B01_2",
+        "driveRef": "1t3l4A5-yIPh1m5r-CCSyAzCRY87RL0S1lmpLwe-wES0",
+        "packDriveRef": "1Ae8nHM_pppBw65bmhIhYpe_KMVbG7jEq2i4CHQTl38A",
+        "state": "PREPARED_NOT_SECTION_BOUND",
+        "sectionBinding": "UNBOUND",
+        "durationMinutes": 120
+      },
+      "snapshotBinding": {
+        "status": "NOT_MATERIALIZED_IN_S3_STATIC_CASE",
+        "curriculumVersionRef": null,
+        "structuralAuthorityFingerprint": null,
+        "downstreamState": "NOT_BOUND_STATIC_VALIDATION"
+      }
+    },
+    {
+      "caseId": "TEC-III-ENERGY",
+      "grade": "III",
+      "curriculumRegime": "TRANSITION_2012_FINAL",
+      "title": "Forme e trasformazioni dell’energia",
+      "curriculumLink": {
+        "nucleus": "Energia, elettricità e sostenibilità",
+        "outcome": "Valuta fonti, trasformazioni, reti e transizione energetica.",
+        "annualizedObjective": "Confrontare fonti; interpretare rendimento/consumi; schematizzare circuiti; proporre soluzioni."
+      },
+      "teachingDesign": {
+        "sourceKind": "ACT_B01_3",
+        "driveRef": "1KmwuVWLp6By4eB93tB2eesWO-gNWTuzwcw2ot6qenVU",
+        "packDriveRef": "1HAzlPImnX2oImHBpxNestc5Y4UIe5xaG_TklkJNyBOU",
+        "state": "PREPARED_NOT_SECTION_BOUND",
+        "sectionBinding": "UNBOUND",
+        "durationMinutes": 120
+      },
+      "snapshotBinding": {
+        "status": "NOT_MATERIALIZED_IN_S3_STATIC_CASE",
+        "curriculumVersionRef": null,
+        "structuralAuthorityFingerprint": null,
+        "downstreamState": "NOT_BOUND_STATIC_VALIDATION"
+      }
+    }
+  ],
+  "invariants": {
+    "sameTeacherFirstShape": true,
+    "arenaCurriculumAuthority": true,
+    "teachingDesignIsNotCurriculumAuthority": true,
+    "atlasMaterialOnly": true,
+    "noParallelMaterialPath": true,
+    "noSectionDateInference": true,
+    "noRuntimeIntegration": true
+  }
+}
