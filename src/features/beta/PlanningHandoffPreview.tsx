@@ -170,7 +170,7 @@ export function PlanningHandoffPreview() {
               <div>Anno {resolvedSchoolYear}</div>
             </div>
             <div className="rounded-xl border border-slate-200 bg-white p-3">
-              <strong className="block text-xs uppercase tracking-wide text-slate-500">Baseline risultante</strong>
+              <strong className="block text-xs uppercase tracking-wide text-slate-500">Contesto curricolare risultante</strong>
               <div className="mt-1">{curriculumStateLabel(preview.handoff.curricularContext.curriculumState)}</div>
               <div>{preview.handoff.curricularContext.applicabilityStatus === 'TRANSITIONAL' ? 'Coorte in transizione' : 'Quadro direttamente applicabile'}</div>
               <div>{preview.mandatoryRequirements}/{preview.totalRequirements} requisiti obbligatori</div>
