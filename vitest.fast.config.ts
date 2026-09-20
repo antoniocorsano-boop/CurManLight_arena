@@ -69,13 +69,16 @@ export default defineConfig({
       'src/__tests__/dm221-technology-human-verification.test.ts',
       'src/__tests__/dm221-technology-source-review-ui.test.tsx',
       'src/__tests__/interop-runtime-context-scope.test.ts',
+      'src/__tests__/team-review-role-recovery.test.ts',
       'src/__tests__/team-review-deferred-continuation.test.ts',
       'src/__tests__/vertical-review-institutional-handoff.test.ts',
       'src/__tests__/h3-bound-institutional-decision.test.ts',
       'src/__tests__/h4-canonical-adoption-handoff.test.ts',
       'src/__tests__/h4-bound-canonical-adoption.test.ts',
       'src/__tests__/curriculum-release-contract-v1.test.ts',
-      'src/__tests__/operations-governance-m4s6.test.ts'
+      'src/__tests__/operations-governance-m4s6.test.ts',
+      'src/__tests__/a3-planning-source-applicability.test.ts',
+      'src/__tests__/teacher-workspace-part1.test.tsx'
     ],
     exclude: ['**/node_modules/**', '**/.git/**'],
     pool: 'threads',

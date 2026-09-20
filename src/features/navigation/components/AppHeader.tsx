@@ -1,4 +1,4 @@
-import { Bot, DownloadCloud, Layers3, LogIn, LogOut, RotateCcw, Save, ServerCog, Settings, ShieldAlert, UserCog, X } from 'lucide-react';
+import { Bot, DownloadCloud, Layers3, LogIn, LogOut, RotateCcw, ServerCog, Settings, ShieldAlert, Sliders, UserCog, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { getOptionalSupabaseBrowserClient } from '../../../infrastructure/supabase/client';
 import { UiConfirmDialog } from '../../../ui/components/UiConfirmDialog';
@@ -194,9 +194,10 @@ export function AppHeader(props: AppHeaderProps) {
                         type="button"
                         onClick={() => { props.setShowSaveModal(true); props.setRoleDropdownOpen(false); }}
                         className="flex w-full items-center gap-2.5 px-4 py-2.5 text-left font-bold text-slate-200 hover:bg-slate-700"
+                        data-local-settings-entry="canonical"
                       >
-                        <Save className="h-4 w-4" aria-hidden="true" />
-                        <span>Copia della sessione</span>
+                        <Sliders className="h-4 w-4" aria-hidden="true" />
+                        <span>Impostazioni locali</span>
                       </button>
                     </div>
                     <div className="border-t border-slate-700 py-1">

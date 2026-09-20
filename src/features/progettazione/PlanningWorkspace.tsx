@@ -1,10 +1,13 @@
 import { ExternalLink, Route, ShieldCheck } from 'lucide-react';
+import { getA04InstitutionalRead, getInstitutionalConfigurationSummary } from '../../domain/institution';
+import {
+  resolvePlanningSourceContext,
+  type PlanningSourceContext,
+} from '../../domain/curriculum/institute/planningSourceContext';
 import { useCurriculumStore } from '../../store/useCurriculumStore';
-import { INSTITUTE_CURRICULUM_CURRENT_SOURCE } from '../../domain/curriculum/institute/currentSource';
 import { PlanningHandoffPreview } from '../beta/PlanningHandoffPreview';
 import type { ProgettazioneTabProps } from './components/ProgettazioneTab';
 
-const CANONICAL_MASTER_ID = 'CAN-CURR-MASTER-00';
 const CURRICULUM_ATLAS_URL = 'https://antoniocorsano-boop.github.io/Curriculum-Atlas/';
 
 const ORDER_LABELS: Record<string, string> = {
@@ -31,41 +34,120 @@ const DISCIPLINE_LABELS: Record<string, string> = {
 };
 
 function classLabel(order: string, targetClass: string, targetSection: string) {
-  if (order === 'infanzia') return targetSection ? `Sezione ${targetSection}` : 'Sezione da definire';
-  const normalizedClass = targetClass?.trim() || '—';
+  if (order === 'infanzia') return targetSection ? `Sezione ${targetSection}` : 'Sezione da scegliere';
+  const normalizedClass = targetClass?.trim();
+  if (!normalizedClass) return 'Classe da scegliere';
   const normalizedSection = targetSection?.trim();
   return `Classe ${normalizedClass}${normalizedSection ? ` ${normalizedSection}` : ''}`;
+}
+
+function classOptionsForOrder(order: string): string[] {
+  if (order === 'primaria') return ['1', '2', '3', '4', '5'];
+  if (order === 'secondaria') return ['1', '2', '3'];
+  return [];
+}
+
+function sectionsForClass(combinations: string[], targetClass: string): string[] {
+  if (!targetClass) return [];
+  return Array.from(new Set(
+    combinations
+      .map((combo) => {
+        const [classLevel, rawSection = ''] = combo.split('^');
+        return { classLevel, section: rawSection.trim() };
+      })
+      .filter(({ classLevel, section }) => classLevel === targetClass && Boolean(section))
+      .map(({ section }) => section),
+  ));
+}
+
+function teacherFacingCurriculumStatus(sourceContext: PlanningSourceContext): string {
+  switch (sourceContext.masterInstitutionalStatus) {
+    case 'IN_FORCE':
+      return 'Curricolo d’Istituto vigente';
+    case 'PENDING_PROFESSIONAL_VALIDATION':
+      return 'Riferimento curricolare di lavoro · validazione professionale ancora aperta';
+    case 'PENDING_VERTICALITY_REVIEW':
+      return 'Riferimento curricolare di lavoro · revisione verticale finale ancora aperta';
+    case 'NOT_READY_FOR_COLLEGIO':
+      return 'Riferimento curricolare di lavoro · non ancora pronto per il Collegio';
+    case 'READY_FOR_COLLEGIO_PENDING_APPROVAL':
+      return 'Pronto per il Collegio · approvazione collegiale non ancora registrata';
+    case 'APPROVED_PENDING_CANONICAL_PROMOTION':
+      return 'Approvazione collegiale registrata · aggiornamento del riferimento non ancora autorizzato';
+    case 'PROMOTION_AUTHORIZED_PENDING_IN_FORCE':
+      return 'Aggiornamento del riferimento autorizzato · vigenza non ancora registrata';
+  }
 }
 
 function buildAtlasContextUrl(input: {
   discipline: string;
   order: string;
   targetClass: string;
+  sourceContext: PlanningSourceContext;
 }) {
   const params = new URLSearchParams({
     sourceProduct: 'curmanlight-arena',
-    masterId: CANONICAL_MASTER_ID,
-    masterVersion: INSTITUTE_CURRICULUM_CURRENT_SOURCE.sourceVersion,
-    curriculumState: INSTITUTE_CURRICULUM_CURRENT_SOURCE.curriculumInForce ? 'IN_FORCE' : 'WORKING_REFERENCE',
+    masterId: input.sourceContext.masterId,
+    masterVersion: input.sourceContext.masterVersion,
+    curriculumState: input.sourceContext.masterInstitutionalStatus === 'IN_FORCE'
+      ? 'IN_FORCE'
+      : 'WORKING_REFERENCE',
+    masterGovernanceStatus: input.sourceContext.masterInstitutionalStatus,
+    masterLifecycleState: input.sourceContext.masterLifecycleState,
+    sourceRepertoryId: input.sourceContext.sourceRepertoryId,
+    sourceRepertoryVersion: input.sourceContext.sourceRepertoryVersion,
+    applicabilityState: input.sourceContext.applicabilityState,
+    academicYear: input.sourceContext.academicYear || 'unspecified',
     discipline: input.discipline,
     order: input.order,
     classLevel: input.targetClass?.trim() || 'unspecified',
   });
+
+  if (input.sourceContext.framework) {
+    params.set('applicableFramework', input.sourceContext.framework);
+  }
+  if (input.sourceContext.applicableSource) {
+    params.set('applicableSourceCode', input.sourceContext.applicableSource.code);
+  }
+
   return `${CURRICULUM_ATLAS_URL}?${params.toString()}`;
 }
 
 export function PlanningWorkspace(props: ProgettazioneTabProps) {
-  const { discipline, order } = useCurriculumStore();
+  const {
+    discipline,
+    order,
+    schoolYear,
+    institutionalArchive,
+  } = useCurriculumStore();
   const disciplineLabel = DISCIPLINE_LABELS[discipline] ?? discipline;
   const orderLabel = ORDER_LABELS[order] ?? order;
-  const authorityLabel = INSTITUTE_CURRICULUM_CURRENT_SOURCE.curriculumInForce
-    ? `Curricolo vigente · master ${INSTITUTE_CURRICULUM_CURRENT_SOURCE.sourceVersion}`
-    : `Riferimento di lavoro · master ${INSTITUTE_CURRICULUM_CURRENT_SOURCE.sourceVersion} non vigente`;
+  const institutionalContext = getA04InstitutionalRead(institutionalArchive, order);
+  const configurationSummary = getInstitutionalConfigurationSummary(institutionalArchive);
+  const effectiveSchoolYear = institutionalContext.academicYearLabel
+    ?? configurationSummary.academicYearLabel
+    ?? schoolYear;
+  const sourceContext = resolvePlanningSourceContext({
+    schoolYear: effectiveSchoolYear,
+    order,
+    targetClass: props.targetClass,
+  });
   const atlasContextUrl = buildAtlasContextUrl({
     discipline,
     order,
     targetClass: props.targetClass,
+    sourceContext,
   });
+  const classOptions = classOptionsForOrder(order);
+  const availableSections = sectionsForClass(props.assignedCombinations, props.targetClass);
+
+  const selectClass = (targetClass: string) => {
+    const sections = sectionsForClass(props.assignedCombinations, targetClass);
+    props.setTargetClass(targetClass);
+    if (!sections.includes(props.targetSection)) {
+      props.setTargetSection('');
+    }
+  };
 
   return (
     <div
@@ -83,10 +165,123 @@ export function PlanningWorkspace(props: ProgettazioneTabProps) {
           </p>
         </div>
 
-        <div className="rounded-xl border border-slate-200 bg-slate-50 p-4" aria-label="Contesto curricolare">
-          <p className="text-sm font-extrabold text-slate-950">{disciplineLabel}</p>
-          <p className="mt-1 text-sm text-slate-700">{orderLabel} · {classLabel(order, props.targetClass, props.targetSection)}</p>
-          <p className="mt-2 text-xs font-bold text-amber-800">{authorityLabel}</p>
+        <div className="space-y-3 rounded-xl border border-slate-200 bg-slate-50 p-4" aria-label="Contesto curricolare">
+          {configurationSummary.instituteDefined && (
+            <div
+              className="rounded-lg border border-slate-200 bg-white px-3 py-2.5"
+              data-planning-institution-phase={configurationSummary.phase}
+            >
+              <p className="text-xs font-extrabold text-slate-900">
+                Istituto definito: {configurationSummary.instituteName}
+              </p>
+              <p className="mt-1 text-xs leading-5 text-slate-600">
+                {configurationSummary.phase === 'ACTIVE'
+                  ? 'Anno scolastico e contesto istituzionale attivi.'
+                  : configurationSummary.phase === 'CONFIRMED_INACTIVE'
+                    ? 'Istituto confermato localmente; anno e contesto devono ancora essere attivati.'
+                    : 'Configurazione salvata come bozza; non è ancora un contesto istituzionale attivo.'}
+                {configurationSummary.academicYearLabel ? ` A.S. ${configurationSummary.academicYearLabel}.` : ''}
+              </p>
+            </div>
+          )}
+          <div>
+            <p className="text-sm font-extrabold text-slate-950">{disciplineLabel}</p>
+            <p className="mt-1 text-sm text-slate-700">
+              {orderLabel} · {classLabel(order, props.targetClass, props.targetSection)}
+              {sourceContext.academicYear ? ` · A.S. ${sourceContext.academicYear}` : ''}
+            </p>
+          </div>
+
+          {classOptions.length > 0 && (
+            <div className="rounded-lg border border-slate-200 bg-white p-3" data-planning-target-selection>
+              <p className="text-xs font-extrabold text-slate-900">Classe di riferimento</p>
+              <p className="mt-1 text-xs leading-5 text-slate-600">
+                Scegli la classe: Arena non assegna automaticamente una classe o una sezione.
+              </p>
+              <div className="mt-3 flex flex-wrap gap-2" aria-label="Scegli la classe di riferimento">
+                {classOptions.map((targetClass) => (
+                  <button
+                    key={targetClass}
+                    type="button"
+                    onClick={() => selectClass(targetClass)}
+                    aria-pressed={props.targetClass === targetClass}
+                    data-planning-target-class={targetClass}
+                    className={`min-h-10 rounded-xl border px-3 py-2 text-xs font-bold ${
+                      props.targetClass === targetClass
+                        ? 'border-indigo-600 bg-indigo-600 text-white'
+                        : 'border-slate-300 bg-white text-slate-700'
+                    }`}
+                  >
+                    Classe {targetClass}
+                  </button>
+                ))}
+              </div>
+
+              {props.targetClass && availableSections.length > 0 && (
+                <div className="mt-3 border-t border-slate-100 pt-3">
+                  <p className="text-xs font-bold text-slate-700">Sezione</p>
+                  <div className="mt-2 flex flex-wrap gap-2" aria-label="Scegli la sezione">
+                    {availableSections.map((section) => (
+                      <button
+                        key={section}
+                        type="button"
+                        onClick={() => props.setTargetSection(section)}
+                        aria-pressed={props.targetSection === section}
+                        data-planning-target-section={section}
+                        className={`min-h-10 rounded-xl border px-3 py-2 text-xs font-bold ${
+                          props.targetSection === section
+                            ? 'border-indigo-600 bg-indigo-600 text-white'
+                            : 'border-slate-300 bg-white text-slate-700'
+                        }`}
+                      >
+                        Sezione {section}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {props.targetClass && availableSections.length === 0 && (
+                <p className="mt-3 text-xs leading-5 text-slate-500">
+                  Nessuna sezione è stata associata a questa classe nel profilo locale. La sezione resta non indicata.
+                </p>
+              )}
+            </div>
+          )}
+
+          <div className="grid gap-2 sm:grid-cols-2">
+            <div
+              className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5"
+              data-planning-master-state={sourceContext.masterInstitutionalStatus}
+            >
+              <p className="text-xs font-extrabold text-amber-950">Curricolo di lavoro Arena · versione {sourceContext.masterVersion}</p>
+              <p className="mt-1 text-xs leading-5 text-amber-900">{teacherFacingCurriculumStatus(sourceContext)}</p>
+            </div>
+
+            <div
+              className={`rounded-lg border px-3 py-2.5 ${
+                sourceContext.framework
+                  ? 'border-emerald-200 bg-emerald-50'
+                  : 'border-slate-200 bg-white'
+              }`}
+              data-planning-applicability={sourceContext.applicabilityState}
+            >
+              <p className={`text-xs font-extrabold ${
+                sourceContext.framework ? 'text-emerald-950' : 'text-slate-800'
+              }`}>
+                {sourceContext.applicabilityLabel}
+              </p>
+              <p className={`mt-1 text-xs leading-5 ${
+                sourceContext.framework ? 'text-emerald-900' : 'text-slate-600'
+              }`}>
+                {sourceContext.applicabilityDetail}
+              </p>
+            </div>
+          </div>
+
+          <p className="text-[11px] leading-5 text-slate-600">
+            Il quadro nazionale applicabile alla coorte e lo stato di approvazione del riferimento curricolare d’Istituto sono informazioni distinte. Arena conserva entrambe senza trasformare un riferimento di lavoro in un’adozione istituzionale.
+          </p>
         </div>
 
         <div className="grid gap-3 lg:grid-cols-3" aria-label="Confine tra i tre ambienti">
@@ -114,7 +309,7 @@ export function PlanningWorkspace(props: ProgettazioneTabProps) {
               <strong>Curriculum Atlas · naviga</strong>
             </div>
             <p className="mt-2 text-sm leading-6 text-slate-700">
-              Esplora relazioni, verticale, timeline e provenienza in modalità read-only. L’anteprima non approva né modifica il curricolo.
+              Esplora relazioni, sviluppo verticale, linea temporale e provenienza in sola consultazione. L’anteprima non approva né modifica il curricolo.
             </p>
             <a
               href={atlasContextUrl}
@@ -128,7 +323,7 @@ export function PlanningWorkspace(props: ProgettazioneTabProps) {
               <ExternalLink className="h-4 w-4" aria-hidden="true" />
             </a>
             <p className="mt-2 text-[11px] leading-5 text-slate-500">
-              Anteprima S1 pubblica · sola consultazione. Il link conserva master, versione, disciplina, ordine e classe senza dati personali.
+              Anteprima pubblica · sola consultazione. Il collegamento conserva versione curricolare, repertorio delle fonti, regime della coorte, disciplina, ordine e classe senza dati personali.
             </p>
           </article>
 
@@ -159,8 +354,10 @@ export function PlanningWorkspace(props: ProgettazioneTabProps) {
         <details className="rounded-xl border border-slate-200 bg-white p-4" data-hcm-level="3">
           <summary className="cursor-pointer text-sm font-bold text-slate-600">Verifica e tracciabilità</summary>
           <div className="mt-3 space-y-1 text-xs leading-5 text-slate-600">
-            <p>Master: {CANONICAL_MASTER_ID}@{INSTITUTE_CURRICULUM_CURRENT_SOURCE.sourceVersion}</p>
-            <p>Stato: validazione professionale {INSTITUTE_CURRICULUM_CURRENT_SOURCE.humanProfessionalValidation.toLowerCase()} · curricolo vigente: {INSTITUTE_CURRICULUM_CURRENT_SOURCE.curriculumInForce ? 'sì' : 'no'}.</p>
+            <p>Master: {sourceContext.masterId}@{sourceContext.masterVersion}</p>
+            <p>Stato master d’Istituto: {sourceContext.masterStatusLabel}.</p>
+            <p>Repertorio fonti: {sourceContext.sourceRepertoryId}@{sourceContext.sourceRepertoryVersion}.</p>
+            <p>Applicabilità: {sourceContext.applicabilityLabel}{sourceContext.applicableSource ? ` · ${sourceContext.applicableSource.code}` : ''}.</p>
             <p>Atlas è una proiezione di consultazione e non trasferisce autorità. Il passaggio a Docente OS conserva identità, provenienza e stato del curricolo.</p>
           </div>
         </details>

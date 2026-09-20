@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { ArrowLeft, BookOpen, ExternalLink, FileText, Layers3, Network } from 'lucide-react';
-import type { A07InstitutionalDocumentRead } from '../../../domain/institution';
+import type { A07InstitutionalDocumentRead, InstitutionalConfigurationSummary } from '../../../domain/institution';
 import {
   DEPARTMENT_CURRICULUM_MANIFEST,
   DEPARTMENT_CURRICULUM_SECTIONS,
@@ -47,6 +47,7 @@ const SECTION_NAVIGATION: CurriculumSectionNavigation[] = [
 
 type ProfessionalCurriculumReaderProps = {
   institutionalProfile: A07InstitutionalDocumentRead;
+  institutionalConfiguration?: InstitutionalConfigurationSummary;
   onUseInPlanning: (context: CurriculumExploreContext) => void;
   onOpenReview: (context: CurriculumExploreContext) => void;
   canOpenReview: (context: CurriculumExploreContext) => boolean;
@@ -55,6 +56,7 @@ type ProfessionalCurriculumReaderProps = {
 
 export function ProfessionalCurriculumReader({
   institutionalProfile,
+  institutionalConfiguration,
   onUseInPlanning,
   onOpenReview,
   canOpenReview,
@@ -66,9 +68,26 @@ export function ProfessionalCurriculumReader({
   const selectedNavigation = SECTION_NAVIGATION.find((section) => section.id === sectionId) ?? SECTION_NAVIGATION[0];
   const selectedNavigationIndex = SECTION_NAVIGATION.findIndex((section) => section.id === selectedNavigation.id);
   const selectedSection = DEPARTMENT_CURRICULUM_SECTIONS.find((section) => section.number === selectedNavigation.number) ?? DEPARTMENT_CURRICULUM_SECTIONS[0];
-  const academicYear = institutionalProfile.academicYearLabel || DEPARTMENT_CURRICULUM_MANIFEST.institution.academicYear;
-  const instituteName = institutionalProfile.instituteName || DEPARTMENT_CURRICULUM_MANIFEST.institution.name;
-  const localContextLabel = institutionalProfile.configured ? instituteName : 'Contesto istituzionale non configurato';
+  const effectiveConfiguration = institutionalConfiguration ?? {
+    phase: institutionalProfile.configured ? 'ACTIVE' : 'UNCONFIGURED',
+    instituteDefined: institutionalProfile.configured,
+    instituteName: institutionalProfile.instituteName,
+    configuredOrders: [],
+    academicYearLabel: institutionalProfile.academicYearLabel,
+    academicYearCount: institutionalProfile.academicYearLabel ? 1 : 0,
+    contextActive: institutionalProfile.configured,
+  } satisfies InstitutionalConfigurationSummary;
+  const contextActive = effectiveConfiguration.phase === 'ACTIVE';
+  const academicYear = institutionalProfile.academicYearLabel
+    || effectiveConfiguration.academicYearLabel
+    || DEPARTMENT_CURRICULUM_MANIFEST.institution.academicYear;
+  const localContextLabel = contextActive
+    ? institutionalProfile.instituteName
+    : effectiveConfiguration.phase === 'DRAFT'
+      ? `${effectiveConfiguration.instituteName} · bozza locale`
+      : effectiveConfiguration.phase === 'CONFIRMED_INACTIVE'
+        ? `${effectiveConfiguration.instituteName} · contesto non attivo`
+        : 'Contesto istituzionale non configurato';
 
   const openAvailablePublication = (disciplineId?: string) => {
     setSelectedDisciplineId(disciplineId);
@@ -95,21 +114,25 @@ export function ProfessionalCurriculumReader({
         className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm"
         data-curriculum-catalog
         data-curriculum-primary-task="scope-selection"
-        data-curriculum-scope-state={institutionalProfile.configured ? 'configured-institution' : 'source-only'}
+        data-curriculum-scope-state={contextActive ? 'configured-institution' : effectiveConfiguration.instituteDefined ? 'defined-inactive-institution' : 'source-only'}
         data-curriculum-ux-contract="ARENA_UX_CONTRACT@1.0.0"
         data-hcm-level="1"
       >
         <header className="border-b border-slate-200 bg-gradient-to-b from-slate-50 to-white px-5 py-7 sm:px-8 sm:py-10">
           <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-slate-500">{localContextLabel}</p>
           <h1 className="mt-3 text-2xl font-black tracking-tight text-slate-950 sm:text-4xl">
-            {institutionalProfile.configured ? 'Curricolo d’Istituto' : 'Catalogo curricolare'}
+            {contextActive ? 'Curricolo d’Istituto' : 'Catalogo curricolare'}
           </h1>
           <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
             Seleziona prima l’area o una disciplina. Ogni fascicolo mantiene fonte, versione e stato propri: l’interfaccia non estende un fascicolo dipartimentale all’intero curricolo.
           </p>
-          {!institutionalProfile.configured && (
+          {!contextActive && (
             <p className="mt-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-6 text-amber-950" data-curriculum-unconfigured-context>
-              La configurazione locale dell’istituto non è attiva. I contenuti disponibili sotto sono pubblicazioni sorgente tracciate e non attestano, da soli, l’adozione da parte dell’istituto corrente.
+              {effectiveConfiguration.phase === 'DRAFT'
+                ? `L’istituto “${effectiveConfiguration.instituteName}” è definito come bozza locale. Il catalogo resta una raccolta di fonti finché la configurazione non viene confermata e attivata.`
+                : effectiveConfiguration.phase === 'CONFIRMED_INACTIVE'
+                  ? `L’istituto “${effectiveConfiguration.instituteName}” è confermato localmente, ma anno e contesto non sono ancora attivi. Le fonti restano consultabili senza dichiararne l’adozione.`
+                  : 'La configurazione locale dell’istituto non è attiva. I contenuti disponibili sotto sono pubblicazioni sorgente tracciate e non attestano, da soli, l’adozione da parte dell’istituto corrente.'}
             </p>
           )}
         </header>
@@ -144,7 +167,7 @@ export function ProfessionalCurriculumReader({
                     {available && (
                       <>
                         <dl className="mt-3 grid gap-2 text-xs text-slate-600 sm:grid-cols-2">
-                          <div><dt className="font-bold text-slate-800">Fonte</dt><dd>{area.sourceInstitutionName}</dd></div>
+                          <div><dt className="font-bold text-slate-800">Fonte del fascicolo</dt><dd>{area.sourceInstitutionName}</dd></div>
                           <div><dt className="font-bold text-slate-800">Versione</dt><dd>{area.sourceVersionLabel} · A.S. {area.academicYear}</dd></div>
                         </dl>
                         <button
@@ -268,7 +291,7 @@ export function ProfessionalCurriculumReader({
             sections={DEPARTMENT_CURRICULUM_SECTIONS}
             initialDisciplineId={selectedDisciplineId}
             sourceInstitutionName={DEPARTMENT_CURRICULUM_MANIFEST.institution.name}
-            institutionalContextConfigured={institutionalProfile.configured}
+            institutionalContextConfigured={contextActive}
             view={mode}
             onViewChange={setExploreView}
             onUseInPlanning={onUseInPlanning}
