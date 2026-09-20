@@ -51,9 +51,12 @@ function sectionsForClass(combinations: string[], targetClass: string): string[]
   if (!targetClass) return [];
   return Array.from(new Set(
     combinations
-      .map((combo) => combo.split('^'))
-      .filter(([classLevel, section]) => classLevel === targetClass && Boolean(section?.trim()))
-      .map(([, section]) => section.trim()),
+      .map((combo) => {
+        const [classLevel, rawSection = ''] = combo.split('^');
+        return { classLevel, section: rawSection.trim() };
+      })
+      .filter(({ classLevel, section }) => classLevel === targetClass && Boolean(section))
+      .map(({ section }) => section),
   ));
 }
 
