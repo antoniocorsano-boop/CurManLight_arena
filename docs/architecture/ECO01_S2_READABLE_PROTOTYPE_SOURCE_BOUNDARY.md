@@ -18,9 +18,27 @@ The prototype may render, read-only:
 - authority state and decision evidence;
 - discipline and grade applicability;
 - relevant curriculum-node / requirement labels;
-- provenance and acquisition/export timestamp.
+- provenance and acquisition/export timestamp;
+- **downstream intake/revalidation state in Docente OS**, kept separate from institutional approval and Arena human-review evidence.
 
 The prototype must not imply that Atlas supplied any of these authority fields.
+
+## Downstream intake/revalidation state
+
+Institutional approval in Arena is not the same as teacher acceptance/revalidation in Docente OS.
+
+For the S2 non-operational prototype, the displayed downstream state is:
+
+`AWAITING_TEACHER_DECISION`
+
+Meaning:
+- Arena curriculum authority is visible and may be institutionally APPROVED;
+- the prototype is still PREVIEW_ONLY;
+- no teacher acceptance/revalidation is persisted;
+- no write is authorized;
+- the readable card may show the curriculum content, but must not imply that Docente OS has already adopted it.
+
+If a future governed implementation uses a different downstream state, that state must come from the canonical Docente OS acceptance/revalidation model, never be inferred from Arena approval.
 
 ## Authority boundary
 
@@ -57,6 +75,7 @@ The S2 human reviewer should be able to answer yes to all of these:
 
 1. Is Arena unmistakably the curriculum source?
 2. Can the reviewer see version/fingerprint/authority without technical ambiguity?
-3. Is Atlas visually and semantically separated from curriculum authority?
-4. Is the prototype clearly non-operational?
-5. Is `DOS-A1` still explicitly deferred?
+3. Is the Arena institutional approval state clearly distinct from the Docente OS intake/revalidation state?
+4. Is Atlas visually and semantically separated from curriculum authority?
+5. Is the prototype clearly non-operational?
+6. Is `DOS-A1` still explicitly deferred?
