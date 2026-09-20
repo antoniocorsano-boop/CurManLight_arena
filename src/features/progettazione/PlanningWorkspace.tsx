@@ -1,5 +1,5 @@
 import { ExternalLink, Route, ShieldCheck } from 'lucide-react';
-import { getA04InstitutionalRead } from '../../domain/institution';
+import { getA04InstitutionalRead, getInstitutionalConfigurationSummary } from '../../domain/institution';
 import {
   resolvePlanningSourceContext,
   type PlanningSourceContext,
@@ -38,6 +38,25 @@ function classLabel(order: string, targetClass: string, targetSection: string) {
   const normalizedClass = targetClass?.trim() || '—';
   const normalizedSection = targetSection?.trim();
   return `Classe ${normalizedClass}${normalizedSection ? ` ${normalizedSection}` : ''}`;
+}
+
+function teacherFacingCurriculumStatus(sourceContext: PlanningSourceContext): string {
+  switch (sourceContext.masterInstitutionalStatus) {
+    case 'IN_FORCE':
+      return 'Curricolo d’Istituto vigente';
+    case 'PENDING_PROFESSIONAL_VALIDATION':
+      return 'Riferimento curricolare di lavoro · validazione professionale ancora aperta';
+    case 'PENDING_VERTICALITY_REVIEW':
+      return 'Riferimento curricolare di lavoro · revisione verticale finale ancora aperta';
+    case 'NOT_READY_FOR_COLLEGIO':
+      return 'Riferimento curricolare di lavoro · non ancora pronto per il Collegio';
+    case 'READY_FOR_COLLEGIO_PENDING_APPROVAL':
+      return 'Pronto per il Collegio · approvazione collegiale non ancora registrata';
+    case 'APPROVED_PENDING_CANONICAL_PROMOTION':
+      return 'Approvazione collegiale registrata · aggiornamento del riferimento non ancora autorizzato';
+    case 'PROMOTION_AUTHORIZED_PENDING_IN_FORCE':
+      return 'Aggiornamento del riferimento autorizzato · vigenza non ancora registrata';
+  }
 }
 
 function buildAtlasContextUrl(input: {
@@ -84,7 +103,10 @@ export function PlanningWorkspace(props: ProgettazioneTabProps) {
   const disciplineLabel = DISCIPLINE_LABELS[discipline] ?? discipline;
   const orderLabel = ORDER_LABELS[order] ?? order;
   const institutionalContext = getA04InstitutionalRead(institutionalArchive, order);
-  const effectiveSchoolYear = institutionalContext.academicYearLabel ?? schoolYear;
+  const configurationSummary = getInstitutionalConfigurationSummary(institutionalArchive);
+  const effectiveSchoolYear = institutionalContext.academicYearLabel
+    ?? configurationSummary.academicYearLabel
+    ?? schoolYear;
   const sourceContext = resolvePlanningSourceContext({
     schoolYear: effectiveSchoolYear,
     order,
@@ -114,6 +136,24 @@ export function PlanningWorkspace(props: ProgettazioneTabProps) {
         </div>
 
         <div className="space-y-3 rounded-xl border border-slate-200 bg-slate-50 p-4" aria-label="Contesto curricolare">
+          {configurationSummary.instituteDefined && (
+            <div
+              className="rounded-lg border border-slate-200 bg-white px-3 py-2.5"
+              data-planning-institution-phase={configurationSummary.phase}
+            >
+              <p className="text-xs font-extrabold text-slate-900">
+                Istituto definito: {configurationSummary.instituteName}
+              </p>
+              <p className="mt-1 text-xs leading-5 text-slate-600">
+                {configurationSummary.phase === 'ACTIVE'
+                  ? 'Anno scolastico e contesto istituzionale attivi.'
+                  : configurationSummary.phase === 'CONFIRMED_INACTIVE'
+                    ? 'Istituto confermato localmente; anno e contesto devono ancora essere attivati.'
+                    : 'Configurazione salvata come bozza; non è ancora un contesto istituzionale attivo.'}
+                {configurationSummary.academicYearLabel ? ` A.S. ${configurationSummary.academicYearLabel}.` : ''}
+              </p>
+            </div>
+          )}
           <div>
             <p className="text-sm font-extrabold text-slate-950">{disciplineLabel}</p>
             <p className="mt-1 text-sm text-slate-700">
@@ -127,8 +167,8 @@ export function PlanningWorkspace(props: ProgettazioneTabProps) {
               className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5"
               data-planning-master-state={sourceContext.masterInstitutionalStatus}
             >
-              <p className="text-xs font-extrabold text-amber-950">{sourceContext.masterLabel}</p>
-              <p className="mt-1 text-xs leading-5 text-amber-900">{sourceContext.masterStatusLabel}</p>
+              <p className="text-xs font-extrabold text-amber-950">Curricolo di lavoro Arena · versione {sourceContext.masterVersion}</p>
+              <p className="mt-1 text-xs leading-5 text-amber-900">{teacherFacingCurriculumStatus(sourceContext)}</p>
             </div>
 
             <div
@@ -153,7 +193,7 @@ export function PlanningWorkspace(props: ProgettazioneTabProps) {
           </div>
 
           <p className="text-[11px] leading-5 text-slate-600">
-            Il quadro nazionale applicabile alla coorte e lo stato di approvazione del master d’Istituto sono informazioni distinte. Arena conserva entrambe senza trasformare una baseline di lavoro in un’adozione istituzionale.
+            Il quadro nazionale applicabile alla coorte e lo stato di approvazione del riferimento curricolare d’Istituto sono informazioni distinte. Arena conserva entrambe senza trasformare un riferimento di lavoro in un’adozione istituzionale.
           </p>
         </div>
 
@@ -182,7 +222,7 @@ export function PlanningWorkspace(props: ProgettazioneTabProps) {
               <strong>Curriculum Atlas · naviga</strong>
             </div>
             <p className="mt-2 text-sm leading-6 text-slate-700">
-              Esplora relazioni, verticale, timeline e provenienza in modalità read-only. L’anteprima non approva né modifica il curricolo.
+              Esplora relazioni, sviluppo verticale, linea temporale e provenienza in sola consultazione. L’anteprima non approva né modifica il curricolo.
             </p>
             <a
               href={atlasContextUrl}
@@ -196,7 +236,7 @@ export function PlanningWorkspace(props: ProgettazioneTabProps) {
               <ExternalLink className="h-4 w-4" aria-hidden="true" />
             </a>
             <p className="mt-2 text-[11px] leading-5 text-slate-500">
-              Anteprima S1 pubblica · sola consultazione. Il link conserva master, repertorio fonti, regime della coorte, disciplina, ordine e classe senza dati personali.
+              Anteprima pubblica · sola consultazione. Il collegamento conserva versione curricolare, repertorio delle fonti, regime della coorte, disciplina, ordine e classe senza dati personali.
             </p>
           </article>
 

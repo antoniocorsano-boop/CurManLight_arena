@@ -17,11 +17,92 @@ export interface A04InstitutionalReadModel {
   siteName?: string;
 }
 
+export type InstitutionalConfigurationPhase =
+  | 'UNCONFIGURED'
+  | 'DRAFT'
+  | 'CONFIRMED_INACTIVE'
+  | 'ACTIVE';
+
+export interface InstitutionalConfigurationSummary {
+  phase: InstitutionalConfigurationPhase;
+  instituteDefined: boolean;
+  instituteName: string;
+  configuredOrders: SchoolOrder[];
+  academicYearLabel?: string;
+  academicYearCount: number;
+  contextActive: boolean;
+}
+
 function validatedActiveInstitute(archive: InstitutionalArchive): Institute | undefined {
   if (!validateArchiveIntegrity(archive).valid) return undefined;
   const found = archive.institutes.find(item => item.id === archive.activeInstituteRef?.id);
   if (!found || !validateInstitute(found).valid || found.status === 'archived' || found.status === 'legacy-imported') return undefined;
   return found;
+}
+
+function validatedDefinedInstitute(archive: InstitutionalArchive): Institute | undefined {
+  if (!validateArchiveIntegrity(archive).valid) return undefined;
+  return validatedActiveInstitute(archive)
+    ?? archive.institutes.find(item =>
+      validateInstitute(item).valid
+      && item.status !== 'archived'
+      && item.status !== 'legacy-imported'
+    );
+}
+
+export function getInstitutionalConfigurationSummary(
+  archive: InstitutionalArchive,
+): InstitutionalConfigurationSummary {
+  const institute = validatedDefinedInstitute(archive);
+  if (!institute) {
+    return {
+      phase: 'UNCONFIGURED',
+      instituteDefined: false,
+      instituteName: NEUTRAL_INSTITUTE_NAME,
+      configuredOrders: [],
+      academicYearCount: 0,
+      contextActive: false,
+    };
+  }
+
+  const years = archive.academicYears.filter(year =>
+    year.instituteRef.id === institute.id
+    && year.status !== 'archived'
+    && year.status !== 'legacy'
+  );
+  const context = archive.contexts.find(item =>
+    item.id === archive.currentContextRef?.id
+    && item.instituteRef.id === institute.id
+  );
+  const activeYear = archive.academicYears.find(year =>
+    year.id === context?.academicYearRef?.id
+    && year.instituteRef.id === institute.id
+    && year.status === 'active'
+  ) ?? archive.academicYears.find(year =>
+    year.id === institute.activeAcademicYearRef?.id
+    && year.instituteRef.id === institute.id
+    && year.status === 'active'
+  );
+  const onlyConfiguredYear = years.length === 1 ? years[0] : undefined;
+  const contextActive = Boolean(
+    archive.activeInstituteRef?.id === institute.id
+    && context
+    && activeYear
+  );
+
+  return {
+    phase: contextActive
+      ? 'ACTIVE'
+      : institute.status === 'confirmed-local'
+        ? 'CONFIRMED_INACTIVE'
+        : 'DRAFT',
+    instituteDefined: true,
+    instituteName: institute.name,
+    configuredOrders: [...institute.schoolOrders],
+    academicYearLabel: (activeYear ?? onlyConfiguredYear)?.label,
+    academicYearCount: years.length,
+    contextActive,
+  };
 }
 
 export function getActiveInstitute(archive: InstitutionalArchive): Institute | undefined { const found = validatedActiveInstitute(archive); return found ? cloneInstitutionalValue(found) : undefined; }
