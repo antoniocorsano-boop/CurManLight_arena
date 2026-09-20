@@ -142,9 +142,13 @@ describe('M4-S7 A3 planning source applicability closure', () => {
   it('removes the ambiguous non-current master label from the primary planning surface', () => {
     expect(planningWorkspaceSource).not.toContain('master ${INSTITUTE_CURRICULUM_CURRENT_SOURCE.sourceVersion} non vigente');
     expect(planningWorkspaceSource).not.toContain('Riferimento di lavoro · master');
-    expect(planningWorkspaceSource).toContain('Il quadro nazionale applicabile alla coorte e lo stato di approvazione del master d’Istituto sono informazioni distinte.');
+    expect(planningWorkspaceSource).toContain('Il quadro nazionale applicabile alla coorte e lo stato di approvazione del riferimento curricolare d’Istituto sono informazioni distinte.');
     expect(planningWorkspaceSource).toContain('data-planning-master-state');
     expect(planningWorkspaceSource).toContain('data-planning-applicability');
+    expect(planningWorkspaceSource).toContain('Curricolo di lavoro Arena · versione');
+    expect(planningWorkspaceSource).toContain('Riferimento curricolare di lavoro');
+    expect(planningWorkspaceSource).toContain('sviluppo verticale, linea temporale e provenienza in sola consultazione');
+    expect(planningWorkspaceSource).not.toContain('Anteprima S1 pubblica');
   });
 
   it('carries source repertory and applicability provenance into the read-only Atlas handoff', () => {

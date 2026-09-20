@@ -25,9 +25,9 @@ describe('M4-S4 Arena / Atlas / Docente OS surface boundary', () => {
     expect(planningWorkspaceSource).not.toContain('Programmazione Annuale delle Attività');
   });
 
-  it('presents Curriculum Atlas as read-only navigation, never authority', () => {
+  it('presents Curriculum Atlas as consultation-only navigation, never authority', () => {
     expect(planningWorkspaceSource).toContain('https://antoniocorsano-boop.github.io/Curriculum-Atlas/');
-    expect(planningWorkspaceSource).toContain('Anteprima S1 pubblica · sola consultazione.');
+    expect(planningWorkspaceSource).toContain('Anteprima pubblica · sola consultazione.');
     expect(planningWorkspaceSource).toContain('L’anteprima non approva né modifica il curricolo.');
     expect(planningWorkspaceSource).toContain('Atlas è una proiezione di consultazione e non trasferisce autorità.');
     expect(planningWorkspaceSource).toContain("sourceProduct: 'curmanlight-arena'");
