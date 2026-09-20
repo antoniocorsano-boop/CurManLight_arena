@@ -67,6 +67,8 @@ export function RevisionWorkspace(props: RevisionWorkspaceProps) {
 
   const selectedRole = team.selectedMembership?.role;
   const canSharePersonalContribution = selectedRole === 'docente' || selectedRole === 'dipartimento' || selectedRole === 'referente';
+  const isConsultationOnlyRole = selectedRole === 'collegio' || selectedRole === 'dirigente' || selectedRole === 'amministratore';
+  const showOperationalReviewJourney = !isConsultationOnlyRole;
   const isCoordinator = selectedRole === 'dipartimento' || selectedRole === 'referente';
   const selectedRoleLabel = roleLabel(selectedRole);
   const matchingOperationalAcademicYears = useMemo(
@@ -159,12 +161,12 @@ export function RevisionWorkspace(props: RevisionWorkspaceProps) {
   }, [stage, sharePersistence.complete]);
 
   useEffect(() => {
-    if (!canSharePersonalContribution && stage !== 'EXAMINE') {
+    if (isConsultationOnlyRole && stage !== 'EXAMINE') {
       setOutcomeProposalRef(null);
       setStage('EXAMINE');
       setExamineSurface('OVERVIEW');
     }
-  }, [canSharePersonalContribution, stage]);
+  }, [isConsultationOnlyRole, stage]);
 
   const stepState = (index: number): 'complete' | 'active' | 'future' => {
     if (stage === 'EXAMINE') return index === 0 ? 'active' : 'future';
@@ -198,13 +200,13 @@ export function RevisionWorkspace(props: RevisionWorkspaceProps) {
         <div className="flex items-start justify-between gap-3">
           <div>
             <span className="text-[10px] font-black uppercase tracking-wide text-indigo-600">
-              {canSharePersonalContribution ? 'Il tuo percorso' : 'Consultazione'}
+              {showOperationalReviewJourney ? 'Il tuo percorso' : 'Consultazione'}
             </span>
             <strong className="mt-1 block text-base text-slate-900">
-              {canSharePersonalContribution ? 'Rivedi il curricolo con i colleghi' : 'Consulta il riesame del curricolo'}
+              {showOperationalReviewJourney ? 'Rivedi il curricolo con i colleghi' : 'Consulta il riesame del curricolo'}
             </strong>
             <p className="mt-1 text-xs leading-relaxed text-slate-600">
-              {canSharePersonalContribution
+              {showOperationalReviewJourney
                 ? 'Adesso pensa soltanto al tuo parere. I passaggi successivi si aprono quando servono.'
                 : 'Questo ruolo può consultare stato, casi e tracciabilità, ma non svolge il percorso operativo Valuta → Condividi → Confronta.'}
             </p>
@@ -214,7 +216,7 @@ export function RevisionWorkspace(props: RevisionWorkspaceProps) {
           )}
         </div>
 
-        {canSharePersonalContribution ? (
+        {showOperationalReviewJourney ? (
           <ol className="mt-3 grid grid-cols-4 gap-1.5" aria-label="Avanzamento della revisione">
             {SESSION_STEPS.map((step, index) => {
               const state = stepState(index);
@@ -248,8 +250,8 @@ export function RevisionWorkspace(props: RevisionWorkspaceProps) {
       </section>
 
       {stage === 'EXAMINE' && (
-        <div className="space-y-3" data-revision-stage="review" aria-label={canSharePersonalContribution ? 'Valuta le schede del curricolo' : 'Consulta il riesame del curricolo'}>
-          {!canSharePersonalContribution && (
+        <div className="space-y-3" data-revision-stage="review" aria-label={showOperationalReviewJourney ? 'Valuta le schede del curricolo' : 'Consulta il riesame del curricolo'}>
+          {isConsultationOnlyRole && (
             <section className="rounded-2xl border border-indigo-200 bg-white p-4 shadow-sm" data-non-contributor-review-mode>
               <span className="text-[10px] font-black uppercase tracking-wide text-indigo-600">Stato del riesame</span>
               <strong className="mt-2 block text-lg text-slate-950">Percorso operativo non previsto per questo ruolo</strong>
@@ -259,7 +261,7 @@ export function RevisionWorkspace(props: RevisionWorkspaceProps) {
             </section>
           )}
 
-          {canSharePersonalContribution && examineSurface === 'OVERVIEW' && (
+          {showOperationalReviewJourney && examineSurface === 'OVERVIEW' && (
             <section className="rounded-2xl border border-indigo-200 bg-white p-4 shadow-sm" data-general-review-overview>
               <span className="text-[10px] font-black uppercase tracking-wide text-indigo-600">Adesso</span>
               <div className="mt-2 flex items-end justify-between gap-4">
@@ -305,7 +307,7 @@ export function RevisionWorkspace(props: RevisionWorkspaceProps) {
             </section>
           )}
 
-          {canSharePersonalContribution && examineSurface === 'PERSONAL_REVIEW' && (
+          {showOperationalReviewJourney && examineSurface === 'PERSONAL_REVIEW' && (
             <div className="space-y-3" data-general-personal-review>
               <section className="rounded-2xl border border-slate-200 bg-slate-50 p-3">
                 <button
@@ -342,7 +344,7 @@ export function RevisionWorkspace(props: RevisionWorkspaceProps) {
             </div>
           )}
 
-          {canSharePersonalContribution && examineSurface === 'REOPEN_CASE' && (
+          {showOperationalReviewJourney && examineSurface === 'REOPEN_CASE' && (
             <section className="space-y-3 rounded-2xl border border-slate-200 bg-white p-3" data-targeted-review-tools>
               <div className="flex items-start justify-between gap-3 px-1">
                 <div>
