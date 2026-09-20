@@ -4,6 +4,77 @@
   "title": "CurriculumSnapshot v1 — ECO-01 profile of CML_CURRICULUM_RELEASE_CONTRACT_V1",
   "type": "object",
   "additionalProperties": true,
+  "$defs": {
+    "canonicalRef": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "namespace",
+        "entityType",
+        "entityId"
+      ],
+      "properties": {
+        "namespace": {
+          "type": "string",
+          "minLength": 1
+        },
+        "entityType": {
+          "type": "string",
+          "minLength": 1
+        },
+        "entityId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "versionId": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "requirementRef": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "requirementId",
+        "kind",
+        "authorityLevel",
+        "curriculumNodeRef",
+        "coverageRequired",
+        "sourceRefs"
+      ],
+      "properties": {
+        "requirementId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "kind": {
+          "type": "string",
+          "minLength": 1
+        },
+        "authorityLevel": {
+          "type": "string",
+          "minLength": 1
+        },
+        "curriculumNodeRef": {
+          "$ref": "#/$defs/canonicalRef"
+        },
+        "coverageRequired": {
+          "type": "boolean"
+        },
+        "sourceRefs": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/canonicalRef"
+          }
+        },
+        "transitionOriginRef": {
+          "$ref": "#/$defs/canonicalRef"
+        }
+      }
+    }
+  },
   "required": [
     "contract",
     "contractVersion",
@@ -33,14 +104,24 @@
     "sourceContextContract": {
       "const": "CML_CURRICULUM_CONTEXT_V1"
     },
+    "curriculumId": {
+      "$ref": "#/$defs/canonicalRef"
+    },
+    "curriculumVersionRef": {
+      "$ref": "#/$defs/canonicalRef"
+    },
     "authorityState": {
       "enum": [
         "APPROVED",
         "PROVISIONAL_COMPLETE"
       ]
     },
+    "authorityReceiptRef": {
+      "$ref": "#/$defs/canonicalRef"
+    },
     "structuralFingerprint": {
       "type": "object",
+      "additionalProperties": true,
       "required": [
         "algorithm",
         "version",
@@ -61,6 +142,7 @@
     },
     "applicabilityContext": {
       "type": "object",
+      "additionalProperties": true,
       "required": [
         "institutionRef",
         "schoolYearRef",
@@ -70,6 +152,9 @@
         "transitionRuleRef"
       ],
       "properties": {
+        "institutionRef": {
+          "$ref": "#/$defs/canonicalRef"
+        },
         "schoolYearRef": {
           "type": "string",
           "minLength": 1
@@ -82,20 +167,47 @@
           "type": "string",
           "minLength": 1
         },
+        "sectionRef": {
+          "type": "string",
+          "minLength": 1
+        },
+        "cohortRef": {
+          "type": "string",
+          "minLength": 1
+        },
         "applicabilityStatus": {
           "enum": [
             "APPLICABLE",
             "TRANSITIONAL"
           ]
+        },
+        "transitionRuleRef": {
+          "$ref": "#/$defs/canonicalRef"
         }
-      }
+      },
+      "anyOf": [
+        {
+          "required": [
+            "sectionRef"
+          ]
+        },
+        {
+          "required": [
+            "cohortRef"
+          ]
+        }
+      ]
     },
     "provenanceRefs": {
       "type": "array",
-      "minItems": 1
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/canonicalRef"
+      }
     },
     "planningSemantics": {
       "type": "object",
+      "additionalProperties": true,
       "required": [
         "requirements",
         "nodeRefs"
@@ -103,11 +215,17 @@
       "properties": {
         "requirements": {
           "type": "array",
-          "minItems": 1
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/requirementRef"
+          }
         },
         "nodeRefs": {
           "type": "array",
-          "minItems": 1
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/canonicalRef"
+          }
         }
       }
     },
@@ -120,6 +238,7 @@
     },
     "downstreamPolicy": {
       "type": "object",
+      "additionalProperties": true,
       "required": [
         "targetProduct",
         "importMode",
@@ -141,5 +260,43 @@
         }
       }
     }
-  }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "authorityState": {
+            "const": "APPROVED"
+          }
+        },
+        "required": [
+          "authorityState"
+        ]
+      },
+      "then": {
+        "required": [
+          "authorityReceiptRef"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "authorityState": {
+            "const": "PROVISIONAL_COMPLETE"
+          }
+        },
+        "required": [
+          "authorityState"
+        ]
+      },
+      "then": {
+        "not": {
+          "required": [
+            "authorityReceiptRef"
+          ]
+        }
+      }
+    }
+  ]
 }
