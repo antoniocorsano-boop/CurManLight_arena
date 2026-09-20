@@ -1,7 +1,7 @@
 # Arena M4 — Evidence Registry
 
-Status: CURRENT M4-S6 EVIDENCE HYGIENE INDEX  
-Date: 2026-09-19
+Status: FINAL M4 EVIDENCE HYGIENE INDEX  
+Date: 2026-09-20
 
 ## Current canonical governance
 
@@ -12,7 +12,7 @@ Date: 2026-09-19
 | `ARENA_MAIN_PROTECTION_REQUIRED_M4S6.json` | CURRENT VERIFIED STATE + DESIRED CONTRACT | effective GitHub main governance and required configuration |
 | `ARENA_BOUNDED_HYBRID_PERSISTENCE_M4S5.md` | CURRENT | M4 persistence decision |
 | `ARENA_ATLAS_DOCENTE_OS_SURFACE_BOUNDARY_M4S4.md` | CURRENT | three-product responsibility boundary |
-| issue #280 | CURRENT OPEN FINDING | A3 source-registry/non-current planning reference |
+| issue #280 | CLOSED | A3 source-registry/applicability finding closed by M4-S7 / PR #290 |
 | issue #105 | CURRENT CLOSED EVIDENCE | GOV-01 repository-hosting governance verified and closed |
 
 ## Current repository-hosting evidence
@@ -33,6 +33,17 @@ Re-read after the administrative GitHub action on 2026-09-19:
 Issue #105 is therefore closed. This is mutable hosting-state evidence and must be re-read again if repository rules are changed.
 
 ## Current release evidence
+
+Final M4 human-validated Beta candidate:
+
+- exact SHA: `a315aa72ce68a52da7d4d960996b6470774104b0`;
+- Deploy Arena Beta run #102: PASS;
+- public smoke identity: `BETA_PUBLISHED_SMOKE_PASS a315aa72ce68a52da7d4d960996b6470774104b0`;
+- mobile human validation: PASS;
+- M4-S7 merged to `main` as `9bc3bb3f57b4c6bc17453fce044d478a0994976a`.
+
+The final promotion decision is recorded in:
+`ARENA_M4_CONTROLLED_PRODUCTION_PILOT_DECISION_2026-09-20.md`.
 
 A release receipt is current only if it names:
 - the exact candidate SHA;
@@ -69,7 +80,9 @@ Stale evidence is retained for audit history; it is never silently rewritten as 
 
 ## M4 decision rule
 
-The final M4 decision must be based on:
+The final M4 decision has been made: `ARENA_M4_CONTROLLED_PRODUCTION_PILOT`.
+
+The decision is based on:
 - current tracker #121;
 - current repository-hosting governance state;
 - current known limitations/blockers;
