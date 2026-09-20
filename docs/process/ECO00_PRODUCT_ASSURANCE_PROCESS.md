@@ -112,3 +112,17 @@ Drive pin used for this review:
 - verified 2026-09-20.
 
 The Drive canonical documents prevail on semantic conflict until an explicit coordinated revision updates the repository documents.
+
+
+## Governed-memory precedence
+
+For product ownership, institutional authority, direct Arena → Docente OS curriculum intake/revalidation and execution order, `CML-DOS-INTEGRATED-GOVERNANCE-V1` remains authoritative.
+
+The Arena → Atlas → Docente OS ecosystem path documents publication/navigation/LO flow only. It does not replace the direct governed curriculum handoff into Docente OS.
+
+If ECO-00 Drive text and governed memory diverge on those matters, the change is blocked until an explicit governed-memory amendment is approved and mirrored.
+
+Drive baseline used by this review:
+- ECO-00 Masterplan v0.2 — revision 6;
+- ECO-00 Product & Assurance Process v0.2 — revision 5;
+- verified 2026-09-20.
