@@ -70,6 +70,8 @@ Each claim must identify subject, version/SHA and evidence.
 - no personal data is exported;
 - Atlas validates the fixture;
 - incompatible versions fail closed;
+- a deterministic structural/authority fingerprint is present and validated;
+- a fingerprint change triggers downstream revalidation even if the nominal version is unchanged;
 - export can be reproduced from a named Arena release.
 
 ## Human authority
@@ -107,11 +109,11 @@ State dimensions remain separate:
 - badges are derived and cannot promote a state.
 
 Drive pin used for this review:
-- ECO-00 Masterplan v0.2 — revision 5;
-- ECO-00 Product & Assurance Process v0.2 — revision 4;
+- ECO-00 Masterplan v0.2 — revision 6;
+- ECO-00 Product & Assurance Process v0.2 — revision 5;
 - verified 2026-09-20.
 
-The Drive canonical documents prevail on semantic conflict until an explicit coordinated revision updates the repository documents.
+For ownership, authority, cross-system handoff and execution order, `CML-DOS-INTEGRATED-GOVERNANCE-V1` remains authoritative. Semantic divergence is a blocker pending an explicit mirrored governance amendment.
 
 
 ## Governed-memory precedence
