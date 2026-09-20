@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { ArrowRight, Building2, CheckCircle2, Download, ShieldCheck, TriangleAlert } from 'lucide-react';
 import { useAppContext } from '../../components/layout/AppContext';
-import { getA04InstitutionalRead } from '../../domain/institution';
+import { getA04InstitutionalRead, getInstitutionalConfigurationSummary } from '../../domain/institution';
 import { useCurriculumStore } from '../../store/useCurriculumStore';
 import {
   buildPlanningHandoffPreview,
@@ -31,9 +31,16 @@ export function PlanningHandoffPreview() {
     () => getA04InstitutionalRead(institutionalArchive, order),
     [institutionalArchive, order],
   );
+  const configurationSummary = useMemo(
+    () => getInstitutionalConfigurationSummary(institutionalArchive),
+    [institutionalArchive],
+  );
   const resolvedSchoolYear = useMemo(
-    () => resolvePlanningSchoolYear(institutionalContext.academicYearLabel, schoolYear),
-    [institutionalContext.academicYearLabel, schoolYear],
+    () => resolvePlanningSchoolYear(
+      institutionalContext.academicYearLabel ?? configurationSummary.academicYearLabel,
+      schoolYear,
+    ),
+    [configurationSummary.academicYearLabel, institutionalContext.academicYearLabel, schoolYear],
   );
   const classContext = useMemo(
     () => resolvePlanningHandoffClassContext(order, targetClass, targetSection),
@@ -63,7 +70,23 @@ export function PlanningHandoffPreview() {
     : `Classe ${targetClass}${targetSection}`;
 
   const institutionConfigurationRequired = preview.status === 'blocked'
-    && preview.reason.includes('Configura prima l’istituto');
+    && !institutionalProfile.configured;
+
+  const contextualBlockedReason = preview.status === 'blocked' && !institutionalProfile.configured
+    ? configurationSummary.phase === 'DRAFT'
+      ? `L’istituto “${configurationSummary.instituteName}” è salvato come bozza. Confermalo localmente e poi attiva anno scolastico e contesto.`
+      : configurationSummary.phase === 'CONFIRMED_INACTIVE'
+        ? `L’istituto “${configurationSummary.instituteName}” è confermato localmente, ma il contesto non è attivo. Attiva${configurationSummary.academicYearLabel ? ` l’A.S. ${configurationSummary.academicYearLabel} e` : ''} il contesto prima del passaggio a Docente OS.`
+        : preview.reason
+    : preview.status === 'blocked'
+      ? preview.reason
+      : '';
+
+  const recoveryLabel = configurationSummary.phase === 'DRAFT'
+    ? 'Completa e conferma l’istituto'
+    : configurationSummary.phase === 'CONFIRMED_INACTIVE'
+      ? 'Attiva anno e contesto'
+      : 'Configura l’istituto';
 
   const downloadHandoff = () => {
     if (preview.status !== 'ready' || !preview.valid || typeof document === 'undefined') return;
@@ -104,9 +127,19 @@ export function PlanningHandoffPreview() {
             <TriangleAlert className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
             <div>
               <strong className="block">Il passaggio non è ancora pronto</strong>
-              <span>{preview.reason}</span>
+              <span>{contextualBlockedReason}</span>
             </div>
           </div>
+          {!institutionalProfile.configured && configurationSummary.instituteDefined && (
+            <div className="rounded-xl border border-slate-200 bg-white p-3 text-slate-700" data-institution-definition-state={configurationSummary.phase}>
+              <strong className="block text-slate-900">Istituto definito localmente</strong>
+              <span>{configurationSummary.instituteName}</span>
+              {configurationSummary.academicYearLabel && <span> · A.S. {configurationSummary.academicYearLabel}</span>}
+              <p className="mt-1 text-xs leading-5 text-slate-500">
+                Il nome inserito resta visibile, ma non viene presentato come contesto istituzionale attivo finché non completi l’attivazione.
+              </p>
+            </div>
+          )}
           {institutionConfigurationRequired && (
             <button
               type="button"
@@ -115,7 +148,7 @@ export function PlanningHandoffPreview() {
               className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-amber-300 bg-white px-4 py-2.5 font-semibold text-amber-950 transition hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 sm:w-auto"
             >
               <Building2 className="h-4 w-4" aria-hidden="true" />
-              Configura l’istituto
+              {recoveryLabel}
             </button>
           )}
           <div className="rounded-xl border border-slate-200 bg-white p-3">
