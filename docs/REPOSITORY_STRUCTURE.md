@@ -358,14 +358,16 @@ Use current governed evidence and exact runtime tests.
 
 For product work:
 
-1. `README.md`;
-2. `AGENTS.md`;
-3. `docs/README.md`;
-4. `docs/architecture/INTEGRATED_PROJECT_GOVERNED_MEMORY_V1.md`;
-5. live tracker/release evidence;
-6. relevant architecture contract;
+1. `AGENTS.md` — mandatory operating instructions and conditional load order;
+2. `docs/architecture/INTEGRATED_PROJECT_GOVERNED_MEMORY_V1.md` when required by `AGENTS.md`;
+3. live tracker/release evidence and session state required by `AGENTS.md`;
+4. `README.md` — public repository orientation, never an override of governance;
+5. `docs/README.md`;
+6. relevant architecture/domain contract;
 7. relevant domain implementation/tests;
 8. historical documents only as supporting context.
+
+If `AGENTS.md` prescribes a more specific conditional order for the task, that order takes precedence over this navigation guide.
 
 For cross-product work also read:
 
