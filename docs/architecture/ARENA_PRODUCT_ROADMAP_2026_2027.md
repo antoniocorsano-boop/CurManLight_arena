@@ -23,6 +23,10 @@ The roadmap is subordinate to:
 
 A phase listed here may be **prepared** without being **authorized**.
 
+### Execution-order compatibility
+
+This document does **not** define a second execution sequence. The canonical cross-system execution order remains the H0–H5 completion/reset sequence in `DUAL_SYSTEM_CANONICAL_RESET_2026-09-18.md` together with the current governed memory. The labels used below are therefore **H0–H9 (strategic horizons)**, not execution phases. An H-horizon may advance only when the canonical execution order and current governance explicitly allow the corresponding tranche.
+
 ---
 
 ## 2. Product North Star
@@ -114,27 +118,27 @@ Release claims are bound to exact SHA, automated evidence, deployment identity a
 
 ---
 
-## 4. Roadmap overview
+## 4. Strategic-horizon overview (non-execution)
 
 ```mermaid
 flowchart TD
-    R0["R0 — M4 formal closure"]
-    R1["R1 — AD-0 Adoption & Validation domain freeze"]
-    R2["R2 — AD-1 Decision / Baseline / Adoption separation"]
-    R3["R3 — AD-2 Evidence & Validation loop"]
-    R4["R4 — AD-3 Canonical product projection"]
-    R5["R5 — CML-A1 Arena → Atlas CurriculumSnapshot v1"]
-    R6["R6 — Curriculum-to-Practice closed loop"]
-    R7["R7 — AD-4 Human acceptance"]
-    R8["R8 — Controlled institutional pilot"]
-    R9["R9 — Evidence-based next maturity decision"]
+    H0["H0 — M4 formal closure"]
+    H1["H1 — AD-0 Adoption & Validation domain freeze"]
+    H2["H2 — AD-1 Decision / Baseline / Adoption separation"]
+    H3["H3 — AD-2 Evidence & Validation loop"]
+    H4["H4 — AD-3 Canonical product projection"]
+    H5["H5 — CML-A1 Arena → Atlas CurriculumSnapshot v1"]
+    H6["H6 — Curriculum-to-Practice closed loop"]
+    H7["H7 — AD-4 Human acceptance"]
+    H8["H8 — Controlled institutional pilot"]
+    H9["H9 — Evidence-based next maturity decision"]
 
-    R0 --> R1 --> R2 --> R3 --> R4 --> R5 --> R6 --> R7 --> R8 --> R9
+    H0 --> H1 --> H2 --> H3 --> H4 --> H5 --> H6 --> H7 --> H8 --> H9
 ```
 
 ---
 
-## 5. R0 — M4 formal closure
+## 5. H0 — M4 formal closure
 
 ### Goal
 
@@ -163,7 +167,7 @@ Convert the current advanced controlled Beta / M4 promotion candidate into a for
 
 ---
 
-## 6. R1 — AD-0 Adoption & Validation domain freeze
+## 6. H1 — AD-0 Adoption & Validation domain freeze
 
 ### Goal
 
@@ -244,7 +248,7 @@ Professional evidence only; no direct authority mutation.
 
 ---
 
-## 7. R2 — AD-1 Decision → Baseline → Adoption separation
+## 7. H2 — AD-1 Decision → Baseline → Adoption separation
 
 ### Goal
 
@@ -286,7 +290,7 @@ without inferring any of these states from the others.
 
 ---
 
-## 8. R3 — AD-2 Evidence & Validation loop
+## 8. H3 — AD-2 Evidence & Validation loop
 
 ### Goal
 
@@ -348,7 +352,7 @@ Adoption metadata should support:
 
 ---
 
-## 9. R4 — AD-3 Canonical product projection
+## 9. H4 — AD-3 Canonical product projection
 
 ### Goal
 
@@ -432,7 +436,7 @@ Must explain human tasks, not internal architecture.
 
 ---
 
-## 10. R5 — CML-A1 Arena → Atlas canonical snapshot
+## 10. H5 — CML-A1 Arena → Atlas canonical snapshot
 
 ### Goal
 
@@ -475,7 +479,7 @@ Minimum:
 
 ---
 
-## 11. R6 — Curriculum-to-Practice closed loop
+## 11. H6 — Curriculum-to-Practice closed loop
 
 ### Goal
 
@@ -518,7 +522,7 @@ Each tranche remains independently governed.
 
 ---
 
-## 12. R7 — AD-4 Human Adoption & Validation Acceptance
+## 12. H7 — AD-4 Human Adoption & Validation Acceptance
 
 ### Goal
 
@@ -549,7 +553,7 @@ Desktop and mobile where required by the active acceptance protocol.
 
 ---
 
-## 13. R8 — Controlled institutional pilot
+## 13. H8 — Controlled institutional pilot
 
 ### Goal
 
@@ -586,7 +590,7 @@ At the end of the window classify each finding:
 
 ---
 
-## 14. R9 — Next maturity decision
+## 14. H9 — Next maturity decision
 
 Only evidence from the controlled pilot may justify the next major product phase.
 
@@ -665,7 +669,7 @@ A slice is done only when:
 
 This file describes direction. It does not authorize implementation.
 
-Before starting a phase:
+Before starting or authorizing work associated with a strategic horizon:
 
 1. re-read governed memory;
 2. check current `main` SHA;
