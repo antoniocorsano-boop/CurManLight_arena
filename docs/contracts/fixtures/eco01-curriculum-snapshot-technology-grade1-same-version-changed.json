@@ -1,0 +1,133 @@
+{
+  "ecoContractName": "CurriculumSnapshot",
+  "ecoContractVersion": "1.0",
+  "profileOf": "CML_CURRICULUM_RELEASE_CONTRACT_V1",
+  "contract": "CML_CURRICULUM_RELEASE_CONTRACT_V1",
+  "contractVersion": 1,
+  "sourceHandoffFormat": "CML_LOCAL_HANDOFF_V2",
+  "sourceContextContract": "CML_CURRICULUM_CONTEXT_V1",
+  "curriculumId": {
+    "namespace": "curmanlight.arena",
+    "entityType": "Curriculum",
+    "entityId": "technology"
+  },
+  "curriculumVersionRef": {
+    "namespace": "curmanlight.arena",
+    "entityType": "CurriculumVersion",
+    "entityId": "technology-grade-1",
+    "versionId": "2026-27"
+  },
+  "authorityState": "APPROVED",
+  "authorityReceiptRef": {
+    "namespace": "curmanlight.arena",
+    "entityType": "InstitutionalDecision",
+    "entityId": "decision-tech-grade1-2026-27"
+  },
+  "structuralFingerprint": {
+    "algorithm": "fnv1a",
+    "version": 1,
+    "hash": "5e4f7ba5"
+  },
+  "applicabilityContext": {
+    "institutionRef": {
+      "namespace": "curmanlight.arena",
+      "entityType": "Institution",
+      "entityId": "school-demo"
+    },
+    "schoolYearRef": "2026-2027",
+    "disciplineRef": "technology",
+    "gradeRef": "grade-1",
+    "sectionRef": "section-A",
+    "applicabilityStatus": "APPLICABLE",
+    "transitionRuleRef": {
+      "namespace": "curmanlight.arena",
+      "entityType": "TransitionRule",
+      "entityId": "dm221-2025-first-entry"
+    }
+  },
+  "provenanceRefs": [
+    {
+      "namespace": "curmanlight.arena",
+      "entityType": "InstitutionalCurriculum",
+      "entityId": "technology-vertical-v31"
+    },
+    {
+      "namespace": "curmanlight.arena",
+      "entityType": "NationalFramework",
+      "entityId": "indicazioni-2025"
+    }
+  ],
+  "planningSemantics": {
+    "requirements": [
+      {
+        "requirementId": "tec1-systems-001",
+        "kind": "SPECIFIC_LEARNING_OBJECTIVE",
+        "authorityLevel": "NATIONAL_PRESCRIPTIVE",
+        "curriculumNodeRef": {
+          "namespace": "curmanlight.arena",
+          "entityType": "CurriculumNode",
+          "entityId": "technology-grade1-systems"
+        },
+        "coverageRequired": true,
+        "sourceRefs": [
+          {
+            "namespace": "curmanlight.arena",
+            "entityType": "NationalFramework",
+            "entityId": "indicazioni-2025"
+          }
+        ]
+      },
+      {
+        "requirementId": "tec1-evidence-001",
+        "kind": "INSTITUTIONAL_REQUIREMENT",
+        "authorityLevel": "INSTITUTIONAL_REQUIRED",
+        "curriculumNodeRef": {
+          "namespace": "curmanlight.arena",
+          "entityType": "CurriculumNode",
+          "entityId": "technology-grade1-system-map"
+        },
+        "coverageRequired": true,
+        "sourceRefs": [
+          {
+            "namespace": "curmanlight.arena",
+            "entityType": "InstitutionalCurriculum",
+            "entityId": "technology-vertical-v31"
+          }
+        ]
+      }
+    ],
+    "nodeRefs": [
+      {
+        "namespace": "curmanlight.arena",
+        "entityType": "CurriculumNode",
+        "entityId": "technology-grade1-systems"
+      },
+      {
+        "namespace": "curmanlight.arena",
+        "entityType": "CurriculumNode",
+        "entityId": "technology-grade1-system-map"
+      }
+    ]
+  },
+  "issuedAt": "2026-09-20T10:05:00.000Z",
+  "privacyClass": "PROFESSIONAL_NON_PERSONAL",
+  "downstreamPolicy": {
+    "targetProduct": "DOCENTE_OS",
+    "importMode": "PREVIEW_ONLY",
+    "acceptanceRequired": true,
+    "automaticWriteAllowed": false
+  },
+  "demoSemantics": {
+    "disciplineLabel": "Tecnologia",
+    "gradeLabel": "Classe prima",
+    "achievementTarget": "Legge oggetti e sistemi semplici in rapporto a bisogni e funzioni.",
+    "learningObjective": "Analizzare struttura e funzione; riconoscere risorse, input/output, rischi e condizioni di uso sicuro.",
+    "evidence": "Scheda tecnica o mappa di sistema.",
+    "sourceFramework": "Indicazioni 2025 / N4"
+  },
+  "demoChange": {
+    "sameNominalCurriculumVersion": true,
+    "reason": "Meaningful requirement wording/scope changed in the source handoff; consumer must require revalidation.",
+    "expected": "fingerprint differs from baseline"
+  }
+}
