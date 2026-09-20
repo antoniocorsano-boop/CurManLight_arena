@@ -89,12 +89,13 @@ describe('M4-S6 governance and operations contract', () => {
     expect(incidentTemplate).toContain('I did not include student personal data, credentials, tokens or secrets.');
   });
 
-  it('keeps the open source finding distinct from the closed governance finding', () => {
+  it('records A3 closure while preserving the bounded A7 limitation and closed governance finding', () => {
     const a3 = limitations.items.find((item: { id: string }) => item.id === 'A3-SOURCES-REGISTRY');
     const a7 = limitations.items.find((item: { id: string }) => item.id === 'A7-LEGACY-ONLY-PERSISTENCE');
     const gov = limitations.items.find((item: { id: string }) => item.id === 'GOV-01-MAIN-PROTECTION');
 
-    expect(a3).toMatchObject({ state: 'OPEN', classification: 'OPEN_MATURITY_FINDING' });
+    expect(a3).toMatchObject({ state: 'CLOSED', classification: 'CLOSED_MATURITY_FINDING' });
+    expect(a3.resolution).toMatchObject({ issue: 280, pull_request: 290, final_m4_desktop_hva: 'PENDING' });
     expect(a7).toMatchObject({ state: 'GOVERNED', classification: 'ACCEPTED_BOUNDED_LIMITATION' });
     expect(gov).toMatchObject({
       state: 'CLOSED',

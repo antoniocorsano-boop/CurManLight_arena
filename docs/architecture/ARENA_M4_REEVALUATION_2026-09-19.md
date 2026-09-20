@@ -130,3 +130,26 @@ Formal M4 promotion becomes eligible only when A2, A3, A4, A5, A6 and A10 are cl
 Start **M4-S1** by reconciling SUP-01 / PR #258 onto current `main@5c748401337e8476d4b06a555b0d40867cac6923`.
 
 The existing #258 branch is **divergent** from current main and must be treated as a source of reviewed changes, not as a merge candidate.
+
+
+---
+
+## 8. Closure addendum — 2026-09-20
+
+The re-evaluation recorded above is preserved as historical decision input. Its open/blocker states have now been resolved by the governed M4 closure sequence.
+
+Final closure chain:
+
+- M4-S1 / PR #276 — routing/support consolidation;
+- M4-S2 / PR #278 — browser-human parity;
+- M4-S3 / PR #282 — revision presentation convergence;
+- M4-S4 / PR #285 — Arena / Curriculum Atlas / Docente OS boundary;
+- M4-S5 / PR #287 — bounded hybrid persistence decision;
+- M4-S6 / PR #289 — operations/governance closure;
+- M4-S7 / PR #290 — A3 source applicability closure.
+
+A3 issue #280 is closed. The final M4-S7 candidate `a315aa72ce68a52da7d4d960996b6470774104b0` passed the full exact-head gate set, was published immutably to Beta, passed public smoke identity verification and passed final mobile human review.
+
+The implementation closure chain is complete, but the final M4 promotion decision remains pending the same-candidate desktop human review required by the G5 protocol. The intended decision is **M4 — CONTROLLED PRODUCTION PILOT** with token `ARENA_M4_CONTROLLED_PRODUCTION_PILOT`, but that token is not effective until the desktop review is completed and recorded.
+
+See `ARENA_M4_CONTROLLED_PRODUCTION_PILOT_DECISION_2026-09-20.md` for the authoritative promotion-candidate statement and accepted M4 limitation.

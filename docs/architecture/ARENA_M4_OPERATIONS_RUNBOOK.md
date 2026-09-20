@@ -213,8 +213,8 @@ Issue #121 is the canonical M4 tracker. If its body conflicts with merged eviden
 ### Governed bounded limitation
 - canonical curriculum persistence remains `legacy-only` for M4, per M4-S5; this does not authorize automatic migration.
 
-### Parallel source finding
-- A3/#280: non-current planning reference / source-registry convergence remains open and is not absorbed by M4-S6.
+### Closed source finding
+- A3/#280: source-registry/applicability convergence is closed by M4-S7 / PR #290. The final M4 candidate must still satisfy the same-candidate human-review requirements before promotion.
 
 ### Closed release-governance finding
 - #105: `main` hosting protection is verified effective through active ruleset `Protect main`; closure evidence is recorded in #105 and the M4 evidence registry.
@@ -244,7 +244,7 @@ M4-S6 may close only when:
 - GitHub `main` protection is observed as effective;
 - #105 is closed with evidence.
 
-A3/#280 remains a separate maturity finding and is evaluated independently for the final M4 decision.
+A3/#280 is closed by M4-S7 / PR #290. The remaining final M4 blocker is same-candidate desktop human review on the final immutable candidate.
 
 Exit token:
 
