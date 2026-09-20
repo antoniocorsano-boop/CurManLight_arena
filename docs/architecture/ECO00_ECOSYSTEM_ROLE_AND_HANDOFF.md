@@ -29,6 +29,8 @@ Arena does **not** own:
 
 **Arena governs → Atlas makes the curriculum intelligible/navigable → Docente OS makes it operational.**
 
+This ecosystem path does **not** replace the already governed direct Arena → Docente OS curriculum intake/revalidation boundary. Atlas is a publication/navigation/LO layer, not an intermediary for curriculum authority.
+
 The three products remain independently deployable and do not share a database.
 
 ## Canonical contracts and versions
@@ -57,6 +59,8 @@ Minimum fields:
 - normative references where applicable.
 
 Arena exports; Atlas consumes read-only.
+
+`CurriculumSnapshot v1` MUST also carry a deterministic structural/authority fingerprint derived from the meaningful curriculum structure and authority state. The fingerprint must change when that footprint changes even if a nominal curriculum/snapshot version does not, so downstream consumers can trigger required revalidation.
 
 No downstream system may silently promote a proposal or mutate the Arena baseline.
 
@@ -160,9 +164,10 @@ A lifecycle value such as REVIEWED does not imply HUMAN_REVIEWED assurance or in
 
 ## Canonical Drive pin
 
-- Masterplan: **ECO-00 v0.2**, Drive revision **5**, verified 2026-09-20.
-- Product & Assurance Process: **v0.2**, Drive revision **4**, verified 2026-09-20.
-- If repository text diverges semantically, the pinned Drive canonical documents prevail until an explicit coordinated revision updates both sides.
+- Masterplan: **ECO-00 v0.2**, Drive revision **6**, verified 2026-09-20.
+- Product & Assurance Process: **v0.2**, Drive revision **5**, verified 2026-09-20.
+- For product ownership, authority, cross-system handoff and execution order, `CML-DOS-INTEGRATED-GOVERNANCE-V1` remains authoritative.
+- A semantic conflict between governed memory and ECO-00 documents is a blocker; neither Drive nor this PR may override governed memory implicitly.
 
 ## References
 
