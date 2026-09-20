@@ -1,24 +1,27 @@
 {
-  "asOf": "2026-09-18",
-  "canonicalMainSha": "dd46122cc0038c3e5de3fe8714e14e25b895bc18",
+  "asOf": "2026-09-20",
+  "canonicalMainSha": "9bc3bb3f57b4c6bc17453fce044d478a0994976a",
   "maturity": {
     "level": "M3.3",
-    "classification": "ADVANCED_CONTROLLED_BETA"
+    "classification": "M4_PROMOTION_CANDIDATE_DESKTOP_HVA_PENDING"
   },
   "beta": {
-    "phase": "S3 / BETA-G5-G6",
-    "status": "IN_PROGRESS",
+    "phase": "M4 FINAL PROMOTION",
+    "status": "DESKTOP_HVA_PENDING",
     "evolvedCandidate": {
-      "pullRequest": 222,
-      "candidateSha": "a64560202567f67eac5fd6ecaad30c6062199c0f",
+      "pullRequest": 304,
+      "candidateSha": "a315aa72ce68a52da7d4d960996b6470774104b0",
+      "m4s7MainMergeSha": "9bc3bb3f57b4c6bc17453fce044d478a0994976a",
       "automaticExactHeadGates": "PASS",
-      "immutableDeployOfCandidate": "PENDING",
-      "actualHumanAcceptanceOfCandidate": "PENDING"
+      "immutableDeployOfCandidate": "PASS",
+      "publicSmokeIdentity": "PASS",
+      "mobileHumanAcceptanceOfCandidate": "PASS",
+      "desktopHumanAcceptanceOfCandidate": "PENDING"
     },
     "gates": {
       "BETA-G4": "PASS",
-      "BETA-G5": "PENDING_HUMAN_ON_EVOLVED_CANDIDATE",
-      "BETA-G6": "PENDING_HUMAN_ACCESSIBILITY"
+      "BETA-G5": "PARTIAL_HUMAN_EVIDENCE_DESKTOP_PENDING_ON_FINAL_CANDIDATE",
+      "BETA-G6": "PASS_PREVIOUSLY_ACCEPTED_NO_REPRODUCIBLE_REGRESSION"
     }
   },
   "institutionalAuthority": {
@@ -41,19 +44,13 @@
     "runtimeCrossProductTransport": false
   },
   "readinessBlockers": [
-    "Reconcile evolved PR #222 candidate with current main",
-    "Immutable deploy of the reconciled exact candidate",
-    "BETA-G5 actual human acceptance on the deployed exact candidate",
-    "BETA-G6 accessibility acceptance",
-    "Remaining M4 governance/operations blockers after S3"
+    "Complete and record desktop human review on final immutable candidate a315aa72ce68a52da7d4d960996b6470774104b0 before M4 promotion"
   ],
   "nextSequence": [
-    "reconcile-evolved-candidate-with-main",
-    "immutable-beta-deploy",
-    "BETA-G5-human-acceptance",
-    "BETA-G6-accessibility",
-    "re-evaluate-M4-A1-A10-against-evolved-candidate",
-    "ARENA-S4-only-after-S3-closes"
+    "desktop-human-review-final-M4-candidate",
+    "record-same-candidate-human-acceptance",
+    "finalize-ARENA_M4_CONTROLLED_PRODUCTION_PILOT-decision",
+    "controlled-pilot-stabilization-maintenance"
   ],
-  "auditRef": "docs/architecture/DUAL_SYSTEM_CANONICAL_RESET_2026-09-18.md"
+  "auditRef": "docs/architecture/ARENA_M4_CONTROLLED_PRODUCTION_PILOT_DECISION_2026-09-20.md"
 }
