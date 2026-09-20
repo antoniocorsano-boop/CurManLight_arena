@@ -7,6 +7,7 @@ const WIZARD_STEP_MAX = 5;
 const WIZARD_STEP_KEY = 'curman_wizardStep';
 const TARGET_CLASS_KEY = 'curman_targetClass';
 const TARGET_SECTION_KEY = 'curman_targetSection';
+const TARGET_SELECTION_CONFIRMED_KEY = 'curman_targetSelectionConfirmedV1';
 
 function readWizardStep(): number {
  const raw = safeLocalStorageGetItem(WIZARD_STEP_KEY, '');
@@ -15,6 +16,20 @@ function readWizardStep(): number {
   return Math.round(n);
  }
  return 1;
+}
+
+function readTargetSelection(): { targetClass: string; targetSection: string } {
+ const storedClass = safeLocalStorageGetItem(TARGET_CLASS_KEY, '');
+ const storedSection = safeLocalStorageGetItem(TARGET_SECTION_KEY, '');
+ const confirmed = safeLocalStorageGetItem(TARGET_SELECTION_CONFIRMED_KEY, '') === '1';
+
+ // Before explicit-selection tracking existed, 1/A was written automatically
+ // for every new session. It is therefore not reliable evidence of a real class.
+ if (!confirmed && storedClass === '1' && storedSection === 'A') {
+  return { targetClass: '', targetSection: '' };
+ }
+
+ return { targetClass: storedClass, targetSection: storedSection };
 }
 
 interface UseAppWorkflowStateArgs {
@@ -29,8 +44,8 @@ export function useAppWorkflowState({ initialNodes }: UseAppWorkflowStateArgs) {
  const [wizardStep, setWizardStep] = useState<number>(() => readWizardStep());
  const [revisioneMode, setRevisioneMode] = useState<'list' | 'wizard'>('list');
  const [revisioneWizardIndex, setRevisioneWizardIndex] = useState<number>(0);
- const [targetClass, setTargetClass] = useState(() => safeLocalStorageGetItem(TARGET_CLASS_KEY, '1'));
- const [targetSection, setTargetSection] = useState<string>(() => safeLocalStorageGetItem(TARGET_SECTION_KEY, 'A'));
+ const [targetClass, setTargetClass] = useState(() => readTargetSelection().targetClass);
+ const [targetSection, setTargetSection] = useState<string>(() => readTargetSelection().targetSection);
  const [activeCompetencyExplorer, setActiveCompetencyExplorer] = useState<string | null>('KC1');
  const [graphNodes] = useState<GraphNode[]>(initialNodes);
  const [selectedNodeId, setSelectedNodeId] = useState<string | null>('app');
@@ -41,11 +56,11 @@ export function useAppWorkflowState({ initialNodes }: UseAppWorkflowStateArgs) {
 
  useEffect(() => {
   safeLocalStorageSetItem(TARGET_CLASS_KEY, targetClass);
- }, [targetClass]);
-
- useEffect(() => {
   safeLocalStorageSetItem(TARGET_SECTION_KEY, targetSection);
- }, [targetSection]);
+  if (targetClass.trim() || targetSection.trim()) {
+   safeLocalStorageSetItem(TARGET_SELECTION_CONFIRMED_KEY, '1');
+  }
+ }, [targetClass, targetSection]);
 
  return {
   classeSubTab,
