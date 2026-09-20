@@ -150,12 +150,6 @@ Final closure chain:
 
 A3 issue #280 is closed. The final M4-S7 candidate `a315aa72ce68a52da7d4d960996b6470774104b0` passed the full exact-head gate set, was published immutably to Beta, passed public smoke identity verification and passed final mobile human review.
 
-The canonical M4 decision is now:
+The implementation closure chain is complete, but the final M4 promotion decision remains pending the same-candidate desktop human review required by the G5 protocol. The intended decision is **M4 — CONTROLLED PRODUCTION PILOT** with token `ARENA_M4_CONTROLLED_PRODUCTION_PILOT`, but that token is not effective until the desktop review is completed and recorded.
 
-**M4 — CONTROLLED PRODUCTION PILOT**
-
-Decision token:
-
-`ARENA_M4_CONTROLLED_PRODUCTION_PILOT`
-
-See `ARENA_M4_CONTROLLED_PRODUCTION_PILOT_DECISION_2026-09-20.md` for the authoritative final promotion statement and accepted M4 limitation.
+See `ARENA_M4_CONTROLLED_PRODUCTION_PILOT_DECISION_2026-09-20.md` for the authoritative promotion-candidate statement and accepted M4 limitation.
