@@ -125,6 +125,24 @@ describe('C2P-02 CurriculumReleaseContract v1 profile', () => {
     expect(first.issuedAt).not.toBe(second.issuedAt);
   });
 
+  it('detects a meaningful same-version curriculum change through the structural fingerprint', () => {
+    const firstContext = provisionalContext();
+    const secondContext: CurriculumContextForClassV1 = {
+      ...firstContext,
+      requirements: firstContext.requirements.map((requirement, index) => (
+        index === 0
+          ? { ...requirement, description: `${requirement.description} Include safe-use conditions.` }
+          : requirement
+      )),
+    };
+
+    const first = createCurriculumReleaseContractV1(handoff(firstContext, '2026-09-20T10:00:00.000Z'));
+    const second = createCurriculumReleaseContractV1(handoff(secondContext, '2026-09-20T10:05:00.000Z'));
+
+    expect(first.curriculumVersionRef).toEqual(second.curriculumVersionRef);
+    expect(first.structuralFingerprint.hash).not.toBe(second.structuralFingerprint.hash);
+  });
+
   it('fails closed if the release fingerprint no longer matches the source handoff', () => {
     const source = handoff();
     const release = createCurriculumReleaseContractV1(source);
