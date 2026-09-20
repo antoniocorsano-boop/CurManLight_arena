@@ -17,7 +17,7 @@ Arena **non è** il workspace quotidiano del docente e non deve diventarlo.
 ## Accesso rapido
 
 - **Beta pubblica:** https://antoniocorsano-boop.github.io/CurManLight_arena/
-- **Curriculum Atlas:** https://antoniocorsano-boop.github.io/Curriculum-Atlas/
+- **Curriculum Atlas — anteprima esplorativa S1, read-only/non autoritativa:** https://antoniocorsano-boop.github.io/Curriculum-Atlas/
 - **Docente OS:** https://github.com/antoniocorsano-boop/docente-os-2026-27
 - **Tracker maturità M4:** [issue #121](https://github.com/antoniocorsano-boop/CurManLight_arena/issues/121)
 - **Decisione M4 in preparazione:** [PR #304](https://github.com/antoniocorsano-boop/CurManLight_arena/pull/304)
@@ -132,31 +132,31 @@ La superficie di progettazione operativa non è un editor UDA Arena: è il **bou
 
 ## Roadmap
 
-La roadmap evita un nuovo feature train dispersivo. La priorità è chiudere il ciclo curricolare.
+La roadmap evita un nuovo feature train dispersivo. La priorità è chiudere il ciclo curricolare. Gli identificatori **H0–H8 sono orizzonti strategici, non fasi di esecuzione**: non sostituiscono né riordinano le fasi R0–R5 del completion reset canonico, che restano governate da `DUAL_SYSTEM_CANONICAL_RESET_2026-09-18.md` e dalla memoria condivisa.
 
 ```mermaid
 flowchart LR
-    M4["R0<br/>M4 closure"] --> AD0["R1<br/>AD-0 Domain Freeze"]
-    AD0 --> AD1["R2<br/>AD-1 Adoption"]
-    AD1 --> AD2["R3<br/>AD-2 Evidence & Review Loop"]
-    AD2 --> AD3["R4<br/>AD-3 Product Projection"]
-    AD3 --> A1["R5<br/>CurriculumSnapshot v1 → Atlas"]
-    A1 --> C2P["R6<br/>Curriculum-to-Practice loop"]
-    C2P --> AD4["R7<br/>AD-4 Human Acceptance"]
-    AD4 --> PILOT["R8<br/>Controlled institutional pilot"]
+    M4["H0<br/>M4 closure"] --> AD0["H1<br/>AD-0 Domain Freeze"]
+    AD0 --> AD1["H2<br/>AD-1 Adoption"]
+    AD1 --> AD2["H3<br/>AD-2 Evidence & Review Loop"]
+    AD2 --> AD3["H4<br/>AD-3 Product Projection"]
+    AD3 --> A1["H5<br/>CurriculumSnapshot v1 → Atlas"]
+    A1 --> C2P["H6<br/>Curriculum-to-Practice loop"]
+    C2P --> AD4["H7<br/>AD-4 Human Acceptance"]
+    AD4 --> PILOT["H8<br/>Controlled institutional pilot"]
 ```
 
 | Orizzonte | Obiettivo | Gate |
 |---|---|---|
-| **R0** | chiudere formalmente M4 | same-candidate desktop HVA + decision receipt |
-| **R1** | congelare dominio Adoption/Validation | `ARENA_AD0_DOMAIN_CONTRACT_FROZEN` |
-| **R2** | separare decisione, baseline e adozione | `ARENA_AD1_ADOPTION_CANONICAL` |
-| **R3** | evidenze, trigger e validation loop | `ARENA_AD2_VALIDATION_LOOP_CANONICAL` |
-| **R4** | proiettare il modello nelle superfici esistenti | `ARENA_AD3_PRODUCT_PROJECTION_PASS` |
-| **R5** | snapshot canonico Arena → Atlas | `CML-A1` / contract validation |
-| **R6** | ciclo Arena ↔ Docente OS senza mutazione automatica | tranche C2P governate |
-| **R7** | validazione umana end-to-end | `ARENA_AD4_HUMAN_ACCEPTANCE_PASS` |
-| **R8** | pilot prolungato, metriche, manutenzione | evidence-based continuation |
+| **H0** | chiudere formalmente M4 | same-candidate desktop HVA + decision receipt |
+| **H1** | congelare dominio Adoption/Validation | `ARENA_AD0_DOMAIN_CONTRACT_FROZEN` |
+| **H2** | separare decisione, baseline e adozione | `ARENA_AD1_ADOPTION_CANONICAL` |
+| **H3** | evidenze, trigger e validation loop | `ARENA_AD2_VALIDATION_LOOP_CANONICAL` |
+| **H4** | proiettare il modello nelle superfici esistenti | `ARENA_AD3_PRODUCT_PROJECTION_PASS` |
+| **H5** | snapshot canonico Arena → Atlas | `CML-A1` / contract validation |
+| **H6** | ciclo Arena ↔ Docente OS senza mutazione automatica | tranche C2P governate |
+| **H7** | validazione umana end-to-end | `ARENA_AD4_HUMAN_ACCEPTANCE_PASS` |
+| **H8** | pilot prolungato, metriche, manutenzione | evidence-based continuation |
 
 Dettagli: [ARENA_PRODUCT_ROADMAP_2026_2027.md](docs/architecture/ARENA_PRODUCT_ROADMAP_2026_2027.md).
 
