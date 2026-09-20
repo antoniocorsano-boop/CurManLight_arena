@@ -12,6 +12,7 @@ import {
   createInstituteDraft,
   createInstituteSite,
   createInstitutionalContext,
+  getInstitutionalConfigurationSummary,
   instituteReference,
   setActiveAcademicYear,
   setActiveInstitute,
@@ -54,6 +55,7 @@ interface InstitutionConfigPanelProps {
 export function InstitutionConfigPanel({ onExportBackup, onExportError }: InstitutionConfigPanelProps) {
   const archive = useCurriculumStore(state => state.institutionalArchive);
   const replaceInstitutionalArchive = useCurriculumStore(state => state.replaceInstitutionalArchive);
+  const configurationSummary = getInstitutionalConfigurationSummary(archive);
   const activeInstitute = archive.institutes.find(item => item.id === archive.activeInstituteRef?.id);
   const institute = activeInstitute ?? archive.institutes.find(item => !['archived', 'legacy-imported'].includes(item.status));
   const instituteYears = institute ? archive.academicYears.filter(item => item.instituteRef.id === institute.id && item.status !== 'archived') : [];
@@ -291,20 +293,26 @@ export function InstitutionConfigPanel({ onExportBackup, onExportError }: Instit
     setMessage('Configurazione archiviata e contesto attivo azzerato.');
   };
 
-  const statusLabel = !institute
-    ? 'Istituto non configurato'
-    : institute.status === 'confirmed-local' && archive.activeInstituteRef?.id === institute.id
-      ? 'Stato: configurato localmente'
-      : institute.status === 'confirmed-local'
-        ? 'Stato: confermato localmente, contesto non attivo'
-        : 'Stato: bozza';
+  const statusLabel = configurationSummary.phase === 'ACTIVE'
+    ? 'Stato: anno scolastico e contesto attivi'
+    : configurationSummary.phase === 'CONFIRMED_INACTIVE'
+      ? 'Stato: istituto confermato localmente, contesto non attivo'
+      : configurationSummary.phase === 'DRAFT'
+        ? 'Stato: bozza istituzionale salvata'
+        : 'Istituto non configurato';
 
   return (
     <section aria-labelledby="institution-config-title" className="space-y-4 rounded-xl border border-slate-200 bg-white p-4">
       <div className="space-y-1">
         <h2 id="institution-config-title" className="text-base font-black text-slate-900">Configurazione istituzionale</h2>
         <p className="font-bold text-indigo-800" role="status">{statusLabel}</p>
-        <p className="text-xs text-slate-600">La modalità personale resta utilizzabile senza configurazione. Le esportazioni istituzionali richiedono la configurazione.</p>
+        <p className="text-xs text-slate-600">La modalità personale resta utilizzabile senza configurazione. Una bozza o una conferma locale non equivalgono a un contesto istituzionale attivo.</p>
+        {configurationSummary.instituteDefined && (
+          <p className="text-xs text-slate-600">
+            Istituto definito: <strong>{configurationSummary.instituteName}</strong>
+            {configurationSummary.academicYearLabel ? ` · A.S. ${configurationSummary.academicYearLabel}` : ''}
+          </p>
+        )}
         {institute && <p className="text-xs text-slate-600">Ordini configurati: {institute.schoolOrders.join(', ') || 'nessuno'}</p>}
       </div>
 
