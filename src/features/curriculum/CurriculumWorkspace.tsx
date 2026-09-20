@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { getInstitutionalConfigurationSummary } from '../../domain/institution';
 import { useCurriculumStore } from '../../store/useCurriculumStore';
 import type { SchoolOrder } from '../../types/curriculum';
 import type { AppViewsLayerProps } from '../session/types/appViewContracts';
@@ -19,7 +20,8 @@ function toSchoolOrder(value: string): SchoolOrder | null {
 }
 
 export function CurriculumWorkspace(props: CurriculumWorkspaceProps) {
-  const { setActiveCurricoloView, setActiveProgTab, setOrder, setDiscipline } = useCurriculumStore();
+  const { setActiveCurricoloView, setActiveProgTab, setOrder, setDiscipline, institutionalArchive } = useCurriculumStore();
+  const institutionalConfiguration = getInstitutionalConfigurationSummary(institutionalArchive);
   const [sourceDisclosureOpen, setSourceDisclosureOpen] = useState(false);
   const [sourceToolsOpen, setSourceToolsOpen] = useState(false);
   const [legacyOpen, setLegacyOpen] = useState(false);
@@ -66,6 +68,7 @@ export function CurriculumWorkspace(props: CurriculumWorkspaceProps) {
       {!legacyOpen && (
         <ProfessionalCurriculumReader
           institutionalProfile={props.institutionalProfile}
+          institutionalConfiguration={institutionalConfiguration}
           onUseInPlanning={useInPlanning}
           onOpenReview={openCurriculumReview}
           canOpenReview={canOpenReview}
