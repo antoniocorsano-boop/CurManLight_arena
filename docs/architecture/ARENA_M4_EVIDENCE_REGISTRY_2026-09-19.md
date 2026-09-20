@@ -1,6 +1,6 @@
 # Arena M4 — Evidence Registry
 
-Status: FINAL M4 EVIDENCE HYGIENE INDEX  
+Status: M4 PROMOTION-CANDIDATE EVIDENCE HYGIENE INDEX  
 Date: 2026-09-20
 
 ## Current canonical governance
@@ -42,8 +42,10 @@ Final M4 human-validated Beta candidate:
 - mobile human validation: PASS;
 - M4-S7 merged to `main` as `9bc3bb3f57b4c6bc17453fce044d478a0994976a`.
 
-The final promotion decision is recorded in:
+The promotion-candidate decision record is:
 `ARENA_M4_CONTROLLED_PRODUCTION_PILOT_DECISION_2026-09-20.md`.
+
+Same-candidate mobile human review is PASS. Same-candidate desktop human review is PENDING and remains the final promotion blocker.
 
 A release receipt is current only if it names:
 - the exact candidate SHA;
@@ -80,9 +82,9 @@ Stale evidence is retained for audit history; it is never silently rewritten as 
 
 ## M4 decision rule
 
-The final M4 decision has been made: `ARENA_M4_CONTROLLED_PRODUCTION_PILOT`.
+The final M4 decision is **pending** same-candidate desktop human review. The intended decision token is `ARENA_M4_CONTROLLED_PRODUCTION_PILOT` and is not effective until that gate passes.
 
-The decision is based on:
+The promotion decision must be based on:
 - current tracker #121;
 - current repository-hosting governance state;
 - current known limitations/blockers;
