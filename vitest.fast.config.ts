@@ -77,7 +77,8 @@ export default defineConfig({
       'src/__tests__/h4-bound-canonical-adoption.test.ts',
       'src/__tests__/curriculum-release-contract-v1.test.ts',
       'src/__tests__/operations-governance-m4s6.test.ts',
-      'src/__tests__/a3-planning-source-applicability.test.ts'
+      'src/__tests__/a3-planning-source-applicability.test.ts',
+      'src/__tests__/teacher-workspace-part1.test.tsx'
     ],
     exclude: ['**/node_modules/**', '**/.git/**'],
     pool: 'threads',

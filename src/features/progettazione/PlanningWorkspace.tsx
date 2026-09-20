@@ -34,10 +34,30 @@ const DISCIPLINE_LABELS: Record<string, string> = {
 };
 
 function classLabel(order: string, targetClass: string, targetSection: string) {
-  if (order === 'infanzia') return targetSection ? `Sezione ${targetSection}` : 'Sezione da definire';
-  const normalizedClass = targetClass?.trim() || '—';
+  if (order === 'infanzia') return targetSection ? `Sezione ${targetSection}` : 'Sezione da scegliere';
+  const normalizedClass = targetClass?.trim();
+  if (!normalizedClass) return 'Classe da scegliere';
   const normalizedSection = targetSection?.trim();
   return `Classe ${normalizedClass}${normalizedSection ? ` ${normalizedSection}` : ''}`;
+}
+
+function classOptionsForOrder(order: string): string[] {
+  if (order === 'primaria') return ['1', '2', '3', '4', '5'];
+  if (order === 'secondaria') return ['1', '2', '3'];
+  return [];
+}
+
+function sectionsForClass(combinations: string[], targetClass: string): string[] {
+  if (!targetClass) return [];
+  return Array.from(new Set(
+    combinations
+      .map((combo) => {
+        const [classLevel, rawSection = ''] = combo.split('^');
+        return { classLevel, section: rawSection.trim() };
+      })
+      .filter(({ classLevel, section }) => classLevel === targetClass && Boolean(section))
+      .map(({ section }) => section),
+  ));
 }
 
 function teacherFacingCurriculumStatus(sourceContext: PlanningSourceContext): string {
@@ -118,6 +138,16 @@ export function PlanningWorkspace(props: ProgettazioneTabProps) {
     targetClass: props.targetClass,
     sourceContext,
   });
+  const classOptions = classOptionsForOrder(order);
+  const availableSections = sectionsForClass(props.assignedCombinations, props.targetClass);
+
+  const selectClass = (targetClass: string) => {
+    const sections = sectionsForClass(props.assignedCombinations, targetClass);
+    props.setTargetClass(targetClass);
+    if (!sections.includes(props.targetSection)) {
+      props.setTargetSection('');
+    }
+  };
 
   return (
     <div
@@ -161,6 +191,63 @@ export function PlanningWorkspace(props: ProgettazioneTabProps) {
               {sourceContext.academicYear ? ` · A.S. ${sourceContext.academicYear}` : ''}
             </p>
           </div>
+
+          {classOptions.length > 0 && (
+            <div className="rounded-lg border border-slate-200 bg-white p-3" data-planning-target-selection>
+              <p className="text-xs font-extrabold text-slate-900">Classe di riferimento</p>
+              <p className="mt-1 text-xs leading-5 text-slate-600">
+                Scegli la classe: Arena non assegna automaticamente una classe o una sezione.
+              </p>
+              <div className="mt-3 flex flex-wrap gap-2" aria-label="Scegli la classe di riferimento">
+                {classOptions.map((targetClass) => (
+                  <button
+                    key={targetClass}
+                    type="button"
+                    onClick={() => selectClass(targetClass)}
+                    aria-pressed={props.targetClass === targetClass}
+                    data-planning-target-class={targetClass}
+                    className={`min-h-10 rounded-xl border px-3 py-2 text-xs font-bold ${
+                      props.targetClass === targetClass
+                        ? 'border-indigo-600 bg-indigo-600 text-white'
+                        : 'border-slate-300 bg-white text-slate-700'
+                    }`}
+                  >
+                    Classe {targetClass}
+                  </button>
+                ))}
+              </div>
+
+              {props.targetClass && availableSections.length > 0 && (
+                <div className="mt-3 border-t border-slate-100 pt-3">
+                  <p className="text-xs font-bold text-slate-700">Sezione</p>
+                  <div className="mt-2 flex flex-wrap gap-2" aria-label="Scegli la sezione">
+                    {availableSections.map((section) => (
+                      <button
+                        key={section}
+                        type="button"
+                        onClick={() => props.setTargetSection(section)}
+                        aria-pressed={props.targetSection === section}
+                        data-planning-target-section={section}
+                        className={`min-h-10 rounded-xl border px-3 py-2 text-xs font-bold ${
+                          props.targetSection === section
+                            ? 'border-indigo-600 bg-indigo-600 text-white'
+                            : 'border-slate-300 bg-white text-slate-700'
+                        }`}
+                      >
+                        Sezione {section}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {props.targetClass && availableSections.length === 0 && (
+                <p className="mt-3 text-xs leading-5 text-slate-500">
+                  Nessuna sezione è stata associata a questa classe nel profilo locale. La sezione resta non indicata.
+                </p>
+              )}
+            </div>
+          )}
 
           <div className="grid gap-2 sm:grid-cols-2">
             <div

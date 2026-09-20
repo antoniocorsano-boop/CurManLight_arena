@@ -83,7 +83,24 @@ describe('Teacher Workspace Part 1 — wizardStep persistence', () => {
   expect(result2.current.wizardStep).toBe(1);
  });
 
- it('does not affect other persisted fields', () => {
+ it('does not invent a class or section when no selection exists', () => {
+  const { result } = renderHook(() => useAppWorkflowState({ initialNodes: mockNodes }));
+  expect(result.current.targetClass).toBe('');
+  expect(result.current.targetSection).toBe('');
+ });
+
+ it('migrates the historical implicit 1/A default back to an unselected context', () => {
+  localStorage.setItem('curman_targetClass', '1');
+  localStorage.setItem('curman_targetSection', 'A');
+
+  const { result } = renderHook(() => useAppWorkflowState({ initialNodes: mockNodes }));
+  expect(result.current.targetClass).toBe('');
+  expect(result.current.targetSection).toBe('');
+  expect(localStorage.getItem('curman_targetClass')).toBe('');
+  expect(localStorage.getItem('curman_targetSection')).toBe('');
+ });
+
+ it('preserves a non-default historical selection as evidence of prior explicit choice', () => {
   localStorage.setItem('curman_progettazioneMode', 'wizard');
   localStorage.setItem('curman_targetClass', '3');
   localStorage.setItem('curman_targetSection', 'B');
@@ -92,6 +109,22 @@ describe('Teacher Workspace Part 1 — wizardStep persistence', () => {
   expect(result.current.progettazioneMode).toBe('wizard');
   expect(result.current.targetClass).toBe('3');
   expect(result.current.targetSection).toBe('B');
+  expect(localStorage.getItem('curman_targetSelectionConfirmedV1')).toBe('1');
+ });
+
+ it('preserves 1/A after the user explicitly selects it in the new model', () => {
+  const { result, unmount } = renderHook(() => useAppWorkflowState({ initialNodes: mockNodes }));
+
+  act(() => {
+    result.current.setTargetClass('1');
+    result.current.setTargetSection('A');
+  });
+  expect(localStorage.getItem('curman_targetSelectionConfirmedV1')).toBe('1');
+
+  unmount();
+  const { result: reloaded } = renderHook(() => useAppWorkflowState({ initialNodes: mockNodes }));
+  expect(reloaded.current.targetClass).toBe('1');
+  expect(reloaded.current.targetSection).toBe('A');
  });
 
  it('handles empty string value', () => {

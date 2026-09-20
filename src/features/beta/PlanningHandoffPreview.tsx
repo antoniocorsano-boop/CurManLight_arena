@@ -66,8 +66,10 @@ export function PlanningHandoffPreview() {
   ]);
 
   const classLabel = order === 'infanzia'
-    ? `${targetClass}${targetSection ? ` · Sezione ${targetSection}` : ''}`
-    : `Classe ${targetClass}${targetSection}`;
+    ? (targetSection ? `Sezione ${targetSection}` : 'Sezione da scegliere')
+    : targetClass
+      ? `Classe ${targetClass}${targetSection ? ` ${targetSection}` : ''}`
+      : 'Classe da scegliere';
 
   const institutionConfigurationRequired = preview.status === 'blocked'
     && !institutionalProfile.configured;

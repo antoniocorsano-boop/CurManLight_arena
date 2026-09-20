@@ -221,4 +221,12 @@ describe('M4-S7 A3 planning source applicability closure', () => {
     expect(planningWorkspaceSource).toContain('Istituto definito:');
   });
 
+  it('requires explicit class context before resolving cohort applicability', () => {
+    expect(planningWorkspaceSource).toContain('Classe da scegliere');
+    expect(planningWorkspaceSource).toContain('data-planning-target-selection');
+    expect(planningWorkspaceSource).toContain('Arena non assegna automaticamente una classe o una sezione.');
+    expect(planningWorkspaceSource).toContain('data-planning-target-class');
+    expect(planningHandoffSource).toContain('Classe da scegliere');
+  });
+
 });
