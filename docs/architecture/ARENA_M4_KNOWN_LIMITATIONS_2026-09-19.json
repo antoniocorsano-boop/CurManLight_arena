@@ -1,14 +1,24 @@
 {
   "schema": "CML_ARENA_M4_LIMITATIONS_V1",
-  "date": "2026-09-19",
+  "date": "2026-09-20",
   "items": [
     {
       "id": "A3-SOURCES-REGISTRY",
       "issue": 280,
-      "classification": "OPEN_MATURITY_FINDING",
-      "state": "OPEN",
-      "summary": "Non-current planning reference / source-registry convergence remains unresolved.",
-      "absorbed_by_m4s6": false
+      "classification": "CLOSED_MATURITY_FINDING",
+      "state": "CLOSED",
+      "summary": "Source-registry/applicability convergence closed by M4-S7 / PR #290; planning no longer presents an invented class/section context.",
+      "absorbed_by_m4s6": false,
+      "resolution": {
+        "issue": 280,
+        "pull_request": 290,
+        "m4s7_candidate_sha": "a315aa72ce68a52da7d4d960996b6470774104b0",
+        "main_merge_sha": "9bc3bb3f57b4c6bc17453fce044d478a0994976a",
+        "exact_head_gates": "PASS",
+        "immutable_beta_smoke": "PASS",
+        "mobile_human_review": "PASS",
+        "final_m4_desktop_hva": "PENDING"
+      }
     },
     {
       "id": "A7-LEGACY-ONLY-PERSISTENCE",
@@ -54,6 +64,8 @@
   "rules": {
     "blocker_cannot_be_relabelled_without_explicit_decision": true,
     "historical_evidence_cannot_close_current_blocker": true,
-    "m4s6_does_not_modify_a3": true
+    "m4s6_does_not_modify_a3": true,
+    "a3_closed_by_m4s7": true,
+    "final_m4_promotion_requires_same_candidate_desktop_hva": true
   }
 }
