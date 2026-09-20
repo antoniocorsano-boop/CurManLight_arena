@@ -33,6 +33,15 @@ describe('G5 mobile contribution role recovery', () => {
     expect(revisionSource).toContain("if (role === 'amministratore') return 'Amministratore'");
   });
 
+  it('makes explicit institutional observer roles consultation-only before the journey is rendered', () => {
+    expect(revisionSource).toContain("selectedRole === 'collegio' || selectedRole === 'dirigente' || selectedRole === 'amministratore'");
+    expect(revisionSource).toContain('data-role-aware-review-mode="consultation"');
+    expect(revisionSource).toContain('Consulta il riesame del curricolo');
+    expect(revisionSource).toContain('Percorso operativo non previsto per questo ruolo');
+    expect(revisionSource).toContain('showOperationalReviewJourney && examineSurface');
+    expect(revisionSource).toContain('isConsultationOnlyRole && stage !== \'EXAMINE\'');
+  });
+
   it('keeps contribution authority fail-closed while explaining recovery', () => {
     expect(publisherSource).toContain('data-team-contribution-role-blocked');
     expect(publisherSource).toContain('Questo ruolo non può pubblicare contributi disciplinari');
