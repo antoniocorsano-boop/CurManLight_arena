@@ -160,7 +160,7 @@ A lifecycle value such as REVIEWED does not imply HUMAN_REVIEWED assurance or in
 
 ## Canonical Drive pin
 
-- Masterplan: **ECO-00 v0.2**, Drive revision **4**, verified 2026-09-20.
+- Masterplan: **ECO-00 v0.2**, Drive revision **5**, verified 2026-09-20.
 - Product & Assurance Process: **v0.2**, Drive revision **4**, verified 2026-09-20.
 - If repository text diverges semantically, the pinned Drive canonical documents prevail until an explicit coordinated revision updates both sides.
 
