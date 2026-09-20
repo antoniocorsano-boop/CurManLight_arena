@@ -1,5 +1,5 @@
 import { ExternalLink, Route, ShieldCheck } from 'lucide-react';
-import { getA04InstitutionalRead } from '../../domain/institution';
+import { getA04InstitutionalRead, getInstitutionalConfigurationSummary } from '../../domain/institution';
 import {
   resolvePlanningSourceContext,
   type PlanningSourceContext,
@@ -84,7 +84,10 @@ export function PlanningWorkspace(props: ProgettazioneTabProps) {
   const disciplineLabel = DISCIPLINE_LABELS[discipline] ?? discipline;
   const orderLabel = ORDER_LABELS[order] ?? order;
   const institutionalContext = getA04InstitutionalRead(institutionalArchive, order);
-  const effectiveSchoolYear = institutionalContext.academicYearLabel ?? schoolYear;
+  const configurationSummary = getInstitutionalConfigurationSummary(institutionalArchive);
+  const effectiveSchoolYear = institutionalContext.academicYearLabel
+    ?? configurationSummary.academicYearLabel
+    ?? schoolYear;
   const sourceContext = resolvePlanningSourceContext({
     schoolYear: effectiveSchoolYear,
     order,
@@ -114,6 +117,24 @@ export function PlanningWorkspace(props: ProgettazioneTabProps) {
         </div>
 
         <div className="space-y-3 rounded-xl border border-slate-200 bg-slate-50 p-4" aria-label="Contesto curricolare">
+          {configurationSummary.instituteDefined && (
+            <div
+              className="rounded-lg border border-slate-200 bg-white px-3 py-2.5"
+              data-planning-institution-phase={configurationSummary.phase}
+            >
+              <p className="text-xs font-extrabold text-slate-900">
+                Istituto definito: {configurationSummary.instituteName}
+              </p>
+              <p className="mt-1 text-xs leading-5 text-slate-600">
+                {configurationSummary.phase === 'ACTIVE'
+                  ? 'Anno scolastico e contesto istituzionale attivi.'
+                  : configurationSummary.phase === 'CONFIRMED_INACTIVE'
+                    ? 'Istituto confermato localmente; anno e contesto devono ancora essere attivati.'
+                    : 'Configurazione salvata come bozza; non è ancora un contesto istituzionale attivo.'}
+                {configurationSummary.academicYearLabel ? ` A.S. ${configurationSummary.academicYearLabel}.` : ''}
+              </p>
+            </div>
+          )}
           <div>
             <p className="text-sm font-extrabold text-slate-950">{disciplineLabel}</p>
             <p className="mt-1 text-sm text-slate-700">
