@@ -12,6 +12,17 @@ Memory ID: `CML-DOS-INTEGRATED-GOVERNANCE-V1`.
 
 This file is the canonical shared logical memory for CurManLight Arena + Docente OS. It overrides stale conversation summaries, old PR descriptions and local assumptions on cross-system boundaries. Do not change the Arena/Docente OS ownership boundary, authority model, handoff contract or governed execution order without an explicit governance change mirrored in both repositories.
 
+
+## Mandatory ECO Agentic Officina
+
+Before any significant agent-assisted task involving cross-system behavior, authority/provenance, Human Task/HIM, persistence, security/privacy, external dependencies, release/deploy, governed memory or material product behavior, read:
+
+`docs/architecture/ECO_AGENTIC_OFFICINA_V1.md`
+
+Contract ID: `ECO-AGENTIC-OFFICINA-V1`.
+
+Use the sequence `intent -> plan -> test contract -> execute -> independent review -> verify -> human gate -> remember`. This execution contract is subordinate to the integrated governed memory and repository-specific architecture/governance. It creates no new product or institutional authority and does not authorize autonomous promotion, merge, deploy or canonical memory mutation.
+
 ## Mandatory Arena curriculum adoption/validation guide
 
 Before any work that can affect curriculum governance, adoption, validation, revision, institutional decisions, baseline/adoption state, evidence-driven review or Arena ↔ Docente OS curricular feedback, also read:
