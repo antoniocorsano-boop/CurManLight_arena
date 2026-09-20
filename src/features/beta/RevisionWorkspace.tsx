@@ -158,6 +158,14 @@ export function RevisionWorkspace(props: RevisionWorkspaceProps) {
     }
   }, [stage, sharePersistence.complete]);
 
+  useEffect(() => {
+    if (!canSharePersonalContribution && stage !== 'EXAMINE') {
+      setOutcomeProposalRef(null);
+      setStage('EXAMINE');
+      setExamineSurface('OVERVIEW');
+    }
+  }, [canSharePersonalContribution, stage]);
+
   const stepState = (index: number): 'complete' | 'active' | 'future' => {
     if (stage === 'EXAMINE') return index === 0 ? 'active' : 'future';
     if (stage === 'SHARE') {
@@ -189,10 +197,16 @@ export function RevisionWorkspace(props: RevisionWorkspaceProps) {
       >
         <div className="flex items-start justify-between gap-3">
           <div>
-            <span className="text-[10px] font-black uppercase tracking-wide text-indigo-600">Il tuo percorso</span>
-            <strong className="mt-1 block text-base text-slate-900">Rivedi il curricolo con i colleghi</strong>
+            <span className="text-[10px] font-black uppercase tracking-wide text-indigo-600">
+              {canSharePersonalContribution ? 'Il tuo percorso' : 'Consultazione'}
+            </span>
+            <strong className="mt-1 block text-base text-slate-900">
+              {canSharePersonalContribution ? 'Rivedi il curricolo con i colleghi' : 'Consulta il riesame del curricolo'}
+            </strong>
             <p className="mt-1 text-xs leading-relaxed text-slate-600">
-              Adesso pensa soltanto al tuo parere. I passaggi successivi si aprono quando servono.
+              {canSharePersonalContribution
+                ? 'Adesso pensa soltanto al tuo parere. I passaggi successivi si aprono quando servono.'
+                : 'Questo ruolo può consultare stato, casi e tracciabilità, ma non svolge il percorso operativo Valuta → Condividi → Confronta.'}
             </p>
           </div>
           {selectedRoleLabel && (
@@ -200,33 +214,52 @@ export function RevisionWorkspace(props: RevisionWorkspaceProps) {
           )}
         </div>
 
-        <ol className="mt-3 grid grid-cols-4 gap-1.5" aria-label="Avanzamento della revisione">
-          {SESSION_STEPS.map((step, index) => {
-            const state = stepState(index);
-            return (
-              <li
-                key={step.id}
-                data-work-session-step={step.id}
-                data-work-session-step-state={state}
-                className={`rounded-lg border px-2 py-2 text-center text-[10px] font-bold leading-tight ${
-                  state === 'complete'
-                    ? 'border-emerald-200 bg-emerald-50 text-emerald-800'
-                    : state === 'active'
-                      ? 'border-indigo-300 bg-indigo-50 text-indigo-800'
-                      : 'border-slate-200 bg-slate-50 text-slate-500'
-                }`}
-              >
-                <span className="block text-[9px] font-black">{state === 'complete' ? '✓' : index + 1}</span>
-                {step.label}
-              </li>
-            );
-          })}
-        </ol>
+        {canSharePersonalContribution ? (
+          <ol className="mt-3 grid grid-cols-4 gap-1.5" aria-label="Avanzamento della revisione">
+            {SESSION_STEPS.map((step, index) => {
+              const state = stepState(index);
+              return (
+                <li
+                  key={step.id}
+                  data-work-session-step={step.id}
+                  data-work-session-step-state={state}
+                  className={`rounded-lg border px-2 py-2 text-center text-[10px] font-bold leading-tight ${
+                    state === 'complete'
+                      ? 'border-emerald-200 bg-emerald-50 text-emerald-800'
+                      : state === 'active'
+                        ? 'border-indigo-300 bg-indigo-50 text-indigo-800'
+                        : 'border-slate-200 bg-slate-50 text-slate-500'
+                  }`}
+                >
+                  <span className="block text-[9px] font-black">{state === 'complete' ? '✓' : index + 1}</span>
+                  {step.label}
+                </li>
+              );
+            })}
+          </ol>
+        ) : (
+          <div className="mt-3 rounded-xl border border-slate-200 bg-slate-50 p-3" data-role-aware-review-mode="consultation">
+            <strong className="block text-xs text-slate-900">Modalità di consultazione</strong>
+            <p className="mt-1 text-xs leading-5 text-slate-600">
+              {selectedRoleLabel ?? 'Il ruolo corrente'} non pubblica pareri disciplinari e non registra esiti del gruppo da questa superficie.
+            </p>
+          </div>
+        )}
       </section>
 
       {stage === 'EXAMINE' && (
-        <div className="space-y-3" data-revision-stage="review" aria-label="Valuta le schede del curricolo">
-          {examineSurface === 'OVERVIEW' && (
+        <div className="space-y-3" data-revision-stage="review" aria-label={canSharePersonalContribution ? 'Valuta le schede del curricolo' : 'Consulta il riesame del curricolo'}>
+          {!canSharePersonalContribution && (
+            <section className="rounded-2xl border border-indigo-200 bg-white p-4 shadow-sm" data-non-contributor-review-mode>
+              <span className="text-[10px] font-black uppercase tracking-wide text-indigo-600">Stato del riesame</span>
+              <strong className="mt-2 block text-lg text-slate-950">Percorso operativo non previsto per questo ruolo</strong>
+              <p className="mt-1 text-sm leading-6 text-slate-600">
+                {selectedRoleLabel ?? 'Il ruolo corrente'} può consultare le informazioni disponibili e la tracciabilità. Per esprimere e condividere un parere disciplinare serve una partecipazione attiva come Docente, Dipartimento o Referente.
+              </p>
+            </section>
+          )}
+
+          {canSharePersonalContribution && examineSurface === 'OVERVIEW' && (
             <section className="rounded-2xl border border-indigo-200 bg-white p-4 shadow-sm" data-general-review-overview>
               <span className="text-[10px] font-black uppercase tracking-wide text-indigo-600">Adesso</span>
               <div className="mt-2 flex items-end justify-between gap-4">
@@ -272,7 +305,7 @@ export function RevisionWorkspace(props: RevisionWorkspaceProps) {
             </section>
           )}
 
-          {examineSurface === 'PERSONAL_REVIEW' && (
+          {canSharePersonalContribution && examineSurface === 'PERSONAL_REVIEW' && (
             <div className="space-y-3" data-general-personal-review>
               <section className="rounded-2xl border border-slate-200 bg-slate-50 p-3">
                 <button
@@ -309,7 +342,7 @@ export function RevisionWorkspace(props: RevisionWorkspaceProps) {
             </div>
           )}
 
-          {examineSurface === 'REOPEN_CASE' && (
+          {canSharePersonalContribution && examineSurface === 'REOPEN_CASE' && (
             <section className="space-y-3 rounded-2xl border border-slate-200 bg-white p-3" data-targeted-review-tools>
               <div className="flex items-start justify-between gap-3 px-1">
                 <div>
