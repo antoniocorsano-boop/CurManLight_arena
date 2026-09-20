@@ -1,18 +1,20 @@
 # ECO-00 — CurManLight Arena ecosystem role and handoff
 
 Status: PROPOSED_CANONICAL  
-Date: 2026-09-19  
+Date: 2026-09-20  
 Scope: CurManLight Arena ↔ Curriculum Atlas ↔ Docente OS
 
 ## Product role
 
-CurManLight Arena is the **curriculum governance authority** of the ecosystem.
+CurManLight Arena is the **authoritative system of record and governance for curriculum state** in the ecosystem.
+
+The authority to approve, reject or adopt curriculum belongs to the competent human/institutional role. Arena records, enforces and audits that authority boundary; it does not become the decision-maker.
 
 Arena owns:
 - canonical curriculum sources and baselines;
 - revisions and proposal state;
 - institutional decision boundaries;
-- human approval/rejection;
+- recorded human/institutional approval/rejection evidence;
 - curriculum provenance and audit;
 - versioned curriculum snapshots for downstream consumers.
 
@@ -28,6 +30,18 @@ Arena does **not** own:
 **Arena governs → Atlas makes the curriculum intelligible/navigable → Docente OS makes it operational.**
 
 The three products remain independently deployable and do not share a database.
+
+## Canonical contracts and versions
+
+| Boundary | Canonical contract | Rule |
+| --- | --- | --- |
+| Arena → Atlas | `CurriculumSnapshot v1` | authoritative curriculum snapshot; read-only for Atlas |
+| Atlas → Docente OS | `LearningObjectManifest v1` | owned by Atlas; outside Arena runtime |
+| Atlas asset references | `MaterialAssetManifest v1` | asset sub-contract referenced by `LearningObjectManifest v1` |
+| Docente OS → Atlas | `TeachingUseReceipt v1` | future minimized use-evidence contract; not an Arena authority signal |
+| Cross-product | `AssuranceRecord v1`, `HandoffContext v1`, `NormativeReference v1` | specialized transverse contracts |
+
+`AtlasLearningObjectRef` is a Docente OS local DTO/projection of `LearningObjectManifest v1`; it is not a fourth cross-product contract.
 
 ## Canonical outbound contract
 
@@ -121,6 +135,34 @@ Deliver:
 6. no personal data;
 7. Atlas consumer test;
 8. failure closed on incompatible schema/source state.
+
+## State separation
+
+The ecosystem keeps these state dimensions distinct:
+
+- `loLifecycle`: DRAFT | GENERATED | REVIEWED | CANONICAL | RETIRED;
+- `assuranceState`: UNVERIFIED | AUTOMATED_PASS | HUMAN_REVIEWED;
+- `curriculumDecisionState`: PROPOSED | APPROVED | REJECTED | SUPERSEDED, where applicable;
+- display badges are derived projections only.
+
+A lifecycle value such as REVIEWED does not imply HUMAN_REVIEWED assurance or institutional approval.
+
+## ECO-00 slice governance
+
+- Owner: cross-product ECO-00 governance with final human review.
+- Source of truth: ECO-00 Drive Masterplan + Product & Assurance Process.
+- In scope: role, authority, contract vocabulary, compatibility, privacy and evidence semantics.
+- Out of scope: runtime coupling, shared DB, student-data transport, automatic state promotion.
+- Compatibility: v1 major contracts; compatible minors require fixture/validator/consumer evidence; breaking changes require a new major.
+- Rollback: revert the documentation PR/revision; no runtime mutation is introduced here.
+- Known limitation: these documents define contracts; they do not implement the contracts.
+- Closure receipt: exact PR head + pinned Drive revisions + cross-product human review.
+
+## Canonical Drive pin
+
+- Masterplan: **ECO-00 v0.2**, Drive revision **4**, verified 2026-09-20.
+- Product & Assurance Process: **v0.2**, Drive revision **4**, verified 2026-09-20.
+- If repository text diverges semantically, the pinned Drive canonical documents prevail until an explicit coordinated revision updates both sides.
 
 ## References
 
