@@ -1,5 +1,18 @@
 import { describe, expect, it } from 'vitest';
 import {
+  addAcademicYear,
+  addInstitute,
+  confirmInstitute,
+  createAcademicYear,
+  createEmptyInstitutionalArchive,
+  createInstituteDraft,
+  createInstitutionalContext,
+  getInstitutionalConfigurationSummary,
+  setActiveAcademicYear,
+  setActiveInstitute,
+  setInstitutionalContext,
+} from '../domain/institution';
+import {
   normalizePlanningAcademicYear,
   resolvePlanningMasterGovernanceState,
   resolvePlanningSourceContext,
@@ -143,11 +156,65 @@ describe('M4-S7 A3 planning source applicability closure', () => {
     expect(planningWorkspaceSource).toContain('applicableFramework');
     expect(planningWorkspaceSource).toContain('applicableSourceCode');
   });
-  it('exposes contextual recovery to the canonical institution configuration panel', () => {
-    expect(planningHandoffSource).toContain("preview.reason.includes('Configura prima l’istituto')");
+  it('distinguishes defined, confirmed-inactive and active institutional states', () => {
+    const now = '2026-09-20T00:00:00.000Z';
+    const institute = createInstituteDraft({ name: 'Istituto Test', schoolOrders: ['secondaria'] }, now);
+    let archive = addInstitute(createEmptyInstitutionalArchive(now), institute, now).archive!;
+
+    expect(getInstitutionalConfigurationSummary(archive)).toMatchObject({
+      phase: 'DRAFT',
+      instituteDefined: true,
+      instituteName: 'Istituto Test',
+      contextActive: false,
+    });
+
+    const year = createAcademicYear({
+      instituteRef: { id: institute.id, entityType: 'institute' },
+      label: '2026/2027',
+      startsOn: '2026-09-01',
+      endsOn: '2027-08-31',
+      status: 'planned',
+    }, now);
+    archive = addAcademicYear(archive, year, now).archive!;
+    archive = confirmInstitute(archive, institute.id, now).archive!;
+
+    expect(getInstitutionalConfigurationSummary(archive)).toMatchObject({
+      phase: 'CONFIRMED_INACTIVE',
+      instituteName: 'Istituto Test',
+      academicYearLabel: '2026/2027',
+      contextActive: false,
+    });
+
+    archive = setActiveInstitute(archive, institute.id, now).archive!;
+    archive = setActiveAcademicYear(archive, institute.id, year.id, now).archive!;
+    const context = createInstitutionalContext({
+      instituteRef: { id: institute.id, entityType: 'institute' },
+      academicYearRef: { id: year.id, entityType: 'academic-year', snapshotLabel: year.label },
+    }, now);
+    archive = setInstitutionalContext(archive, context, now).archive!;
+
+    expect(getInstitutionalConfigurationSummary(archive)).toMatchObject({
+      phase: 'ACTIVE',
+      instituteName: 'Istituto Test',
+      academicYearLabel: '2026/2027',
+      contextActive: true,
+    });
+  });
+
+  it('exposes phase-aware recovery to the canonical institution configuration panel', () => {
+    expect(planningHandoffSource).toContain('getInstitutionalConfigurationSummary');
+    expect(planningHandoffSource).toContain("configurationSummary.phase === 'DRAFT'");
+    expect(planningHandoffSource).toContain("configurationSummary.phase === 'CONFIRMED_INACTIVE'");
+    expect(planningHandoffSource).toContain('Completa e conferma l’istituto');
+    expect(planningHandoffSource).toContain('Attiva anno e contesto');
     expect(planningHandoffSource).toContain('data-human-next-action="configure-institution"');
-    expect(planningHandoffSource).toContain('Configura l’istituto');
     expect(planningHandoffSource).toContain('setShowSaveModal(true)');
+  });
+
+  it('uses a configured academic-year candidate for national applicability without promoting institutional authority', () => {
+    expect(planningWorkspaceSource).toContain('configurationSummary.academicYearLabel');
+    expect(planningWorkspaceSource).toContain('data-planning-institution-phase');
+    expect(planningWorkspaceSource).toContain('Istituto definito:');
   });
 
 });
