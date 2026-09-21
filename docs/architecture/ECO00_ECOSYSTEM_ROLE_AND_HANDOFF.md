@@ -33,6 +33,25 @@ This ecosystem path does **not** replace the already governed direct Arena → D
 
 The three products remain independently deployable and do not share a database.
 
+
+## Atlas integral and Material Studio boundary
+
+The ecosystem principle is refined without changing Arena authority:
+
+- Atlas is the **integral curriculum visualization and intelligent-navigation layer**, not merely a material library or Spatial view;
+- Atlas may expose progressions, prerequisites, semantic paths, Learning Objects and publishable resources, all bound to Arena curriculum references;
+- Docente OS remains the teacher professional orchestrator;
+- the specialist **Material Studio / Officina materiali** may transform a teacher-approved brief into editable artifact proposals, optionally using Atlas patterns/resources;
+- Material Studio has no curriculum authority, no institutional decision capability and no publication authority;
+- a generated material is not an approved curriculum artifact and does not alter Arena state;
+- the direct Arena → Docente OS authority intake/revalidation path remains canonical.
+
+Target material-preparation flow:
+
+`Arena curriculum context → Docente OS → Atlas reuse search → brief → Material Studio → teacher review → lesson use → optional Atlas publication`.
+
+This is a product-boundary clarification only. It does not authorize new Arena runtime integration, shared persistence or automatic downstream state change.
+
 ## Canonical contracts and versions
 
 | Boundary | Canonical contract | Rule |
