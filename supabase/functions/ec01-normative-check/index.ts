@@ -17,6 +17,7 @@ type RequestBody = {
   institutionId: string;
   frameworkId: string;
   frameworkVersionLabel: string;
+  clientRequestId?: string;
 };
 
 function json(status: number, body: unknown): Response {
@@ -40,6 +41,15 @@ function isRequestBody(value: unknown): value is RequestBody {
     && typeof body.frameworkVersionLabel === 'string'
     && body.frameworkVersionLabel.trim() === body.frameworkVersionLabel
     && body.frameworkVersionLabel.length > 0
+    && (
+      body.clientRequestId === undefined
+      || (
+        typeof body.clientRequestId === 'string'
+        && body.clientRequestId.trim() === body.clientRequestId
+        && body.clientRequestId.length > 0
+        && body.clientRequestId.length <= 200
+      )
+    )
   );
 }
 
@@ -74,10 +84,11 @@ export default {
   }
 
   const loader: CivicNormativeBaselineLoader = {
-    async loadActiveBaselines(): Promise<CivicNormativeSourceBaseline[]> {
+    async loadActiveBaselines(frameworkVersionLabel: string): Promise<CivicNormativeSourceBaseline[]> {
       const { data: heads, error: headsError } = await serviceClient
         .from('civic_education_normative_source_heads')
-        .select('source_key,baseline_id')
+        .select('framework_version_label,source_key,baseline_id')
+        .eq('framework_version_label', frameworkVersionLabel)
         .order('source_key');
       if (headsError) throw new Error('CIVIC_NORMATIVE_BASELINE_LOAD_FAILED');
       if (!heads?.length) return [];
@@ -107,8 +118,16 @@ export default {
 
   try {
     if (body.mode === 'preview') {
-      const result = await previewTrustedCivicNormativeCheck(loader, fetch);
+      const result = await previewTrustedCivicNormativeCheck(
+        loader,
+        fetch,
+        body.frameworkVersionLabel,
+      );
       return json(result.status === 'verified' ? 200 : 409, result);
+    }
+
+    if (!body.clientRequestId) {
+      return json(400, { error: 'CIVIC_NORMATIVE_CLIENT_REQUEST_ID_REQUIRED' });
     }
 
     const recorder: CivicNormativeReceiptRecorder = {
@@ -121,16 +140,25 @@ export default {
             p_institution_id: input.scope.institutionId,
             p_framework_id: input.scope.frameworkId,
             p_framework_version_label: input.scope.frameworkVersionLabel,
+            p_client_request_id: input.scope.clientRequestId,
             p_verification_snapshot: input.verification,
             p_source_observations: input.observations,
           },
         );
         if (error || !data) throw new Error(error?.message ?? 'CIVIC_NORMATIVE_RECEIPT_RECORD_FAILED');
-        const receipt = data as { id?: string; normative_fingerprint?: string };
-        if (!receipt.id || !receipt.normative_fingerprint) {
+        const receipt = data as {
+          id?: string;
+          normative_fingerprint?: string;
+          verification_snapshot?: unknown;
+        };
+        if (!receipt.id || !receipt.normative_fingerprint || !receipt.verification_snapshot) {
           throw new Error('CIVIC_NORMATIVE_RECEIPT_INVALID');
         }
-        return { id: receipt.id, normativeFingerprint: receipt.normative_fingerprint };
+        return {
+          id: receipt.id,
+          normativeFingerprint: receipt.normative_fingerprint,
+          verificationSnapshot: receipt.verification_snapshot as Parameters<CivicNormativeReceiptRecorder['record']>[0]['verification'],
+        };
       },
     };
 
@@ -142,6 +170,7 @@ export default {
         institutionId: body.institutionId,
         frameworkId: body.frameworkId,
         frameworkVersionLabel: body.frameworkVersionLabel,
+        clientRequestId: body.clientRequestId,
       },
       loader,
       recorder,
