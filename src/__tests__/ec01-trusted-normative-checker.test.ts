@@ -373,6 +373,9 @@ describe('EC-01/Arena-F4 — Edge CI contract', () => {
     expect(productCiWorkflow).toContain(
       'deno check --node-modules-dir=auto supabase/functions/ec01-normative-check/index.ts',
     );
+    expect(productCiWorkflow).toContain('deno bundle --platform=deno --node-modules-dir=auto');
+    expect(productCiWorkflow).toContain('-o /tmp/ec01-normative-check.js');
+    expect(productCiWorkflow).toContain('supabase/functions/ec01-normative-check/index.ts');
   });
 });
 
