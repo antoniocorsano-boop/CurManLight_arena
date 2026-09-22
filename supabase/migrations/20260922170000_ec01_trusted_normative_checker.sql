@@ -54,7 +54,12 @@ alter table public.civic_education_normative_check_receipts
   add column if not exists client_request_id text,
   add column if not exists source_observations jsonb,
   add column if not exists baseline_set_fingerprint text
-    check (baseline_set_fingerprint is null or baseline_set_fingerprint ~ '^[a-f0-9]{64}
+    check (baseline_set_fingerprint is null or baseline_set_fingerprint ~ '^[a-f0-9]{64}$');
+
+create unique index if not exists civic_education_normative_check_receipts_request_idx
+  on public.civic_education_normative_check_receipts(workspace_id, client_request_id)
+  where client_request_id is not null;
+
 create index if not exists civic_education_normative_source_baselines_authority_idx
   on public.civic_education_normative_source_baselines(authority, created_at desc);
 
