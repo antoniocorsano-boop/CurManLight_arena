@@ -237,7 +237,11 @@ export async function readCivicNormativeResponseBytes(
       if (!value) continue;
       total += value.byteLength;
       if (total > maxBytes) {
-        await reader.cancel();
+        try {
+          await reader.cancel();
+        } catch {
+          // The response is already rejected for size; cancellation errors do not change that result.
+        }
         return null;
       }
       chunks.push(value);
@@ -312,7 +316,17 @@ async function fetchAndVerify(
       };
     }
 
-    const bytes = await readCivicNormativeResponseBytes(response);
+    let bytes: Uint8Array | null;
+    try {
+      bytes = await readCivicNormativeResponseBytes(response);
+    } catch {
+      return {
+        status: 'blocked',
+        reason: 'FETCH_FAILED',
+        sourceKey: baseline.sourceKey,
+        message: `La lettura della fonte ufficiale è fallita: ${baseline.sourceKey}.`,
+      };
+    }
     if (!bytes) {
       return {
         status: 'blocked',
@@ -322,7 +336,17 @@ async function fetchAndVerify(
       };
     }
 
-    const fingerprint = await sha256Hex(bytes);
+    let fingerprint: string;
+    try {
+      fingerprint = await sha256Hex(bytes);
+    } catch {
+      return {
+        status: 'blocked',
+        reason: 'FETCH_FAILED',
+        sourceKey: baseline.sourceKey,
+        message: `La verifica crittografica della fonte è fallita: ${baseline.sourceKey}.`,
+      };
+    }
     const observation: CivicNormativeSourceObservation = {
       sourceKey: baseline.sourceKey,
       authority: baseline.authority,
