@@ -52,7 +52,7 @@ jobs:
           deno-version: v2.x
 
       - name: EC-01 Edge Function Deno check
-        run: deno check supabase/functions/ec01-normative-check/index.ts
+        run: deno check --node-modules-dir=auto supabase/functions/ec01-normative-check/index.ts
 
       - name: Production build
         run: npm run build
