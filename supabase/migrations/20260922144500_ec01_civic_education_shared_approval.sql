@@ -810,6 +810,7 @@ begin
     and receipt.framework_version_label = v_version_label
     and receipt.normative_fingerprint = v_norm_fingerprint
     and receipt.verification_snapshot = v_norm
+    and receipt.checked_at = (v_norm->>'checkedAt')::timestamptz
     and receipt.result = v_norm->>'result';
   if not found then
     raise exception 'CIVIC_NORMATIVE_SERVER_RECEIPT_REQUIRED' using errcode = '23514';
