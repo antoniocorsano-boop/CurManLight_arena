@@ -247,6 +247,24 @@ describe('EC-01/Arena-F2 — local draft workspace', () => {
     expect(getCivicEducationDraft(three.archive, proposed.id)?.status).toBe('proposed-to-collegio');
   });
 
+  it('rifiuta operazioni su un archivio locale già corrotto', () => {
+    const invalid: CivicEducationDraftArchive = {
+      schemaVersion: 1,
+      updatedAt: '2026-09-22T09:00:00Z',
+      frameworks: [framework('approved', {
+        approvedAt: '2026-09-22T08:59:00Z',
+        approvedByRole: 'collegio',
+      })],
+    };
+    const candidate = framework('draft');
+
+    const save = saveCivicEducationDraft(invalid, candidate, bindingContext(candidate));
+    const remove = removeCivicEducationDraft(invalid, invalid.frameworks[0].id);
+
+    expect(save.success).toBe(false);
+    expect(remove.success).toBe(false);
+  });
+
   it('rimuove soltanto una bozza esistente', () => {
     const empty = createEmptyCivicEducationDraftArchive();
     const value = framework();
@@ -302,6 +320,59 @@ describe('EC-01/Arena-F2 — local draft workspace', () => {
     if (!result.success) return;
     expect(result.command.candidate.status).toBe('proposed-to-collegio');
     expect(result.command.expectedCurrentApprovedFrameworkId).toBe('current-approved');
+  });
+
+  it('blocca un comando di approvazione con baseline shared obsoleta', () => {
+    const candidate = approvableFramework();
+    const current = framework('approved', {
+      id: 'current-approved',
+      approvedAt: '2026-09-15T08:00:00Z',
+      approvedByRole: 'collegio',
+    });
+
+    const result = prepareCivicEducationInstitutionalApprovalCommand(
+      candidate,
+      bindingContext(candidate),
+      [current, candidate],
+      {
+        workspaceId: 'workspace-1',
+        clientRequestId: 'request-stale',
+        expectedCurrentApprovedFrameworkId: 'different-approved',
+      },
+    );
+
+    expect(result.success).toBe(false);
+    if (result.success) return;
+    expect(result.errors.some(error => error.code === 'CIVIC_APPROVAL_STALE_CURRENT_HEAD')).toBe(true);
+  });
+
+  it('blocca un set shared già ambiguo con due approved concorrenti', () => {
+    const candidate = approvableFramework();
+    const first = framework('approved', {
+      id: 'approved-1',
+      approvedAt: '2026-09-15T08:00:00Z',
+      approvedByRole: 'collegio',
+    });
+    const second = framework('approved', {
+      id: 'approved-2',
+      approvedAt: '2026-09-16T08:00:00Z',
+      approvedByRole: 'collegio',
+    });
+
+    const result = prepareCivicEducationInstitutionalApprovalCommand(
+      candidate,
+      bindingContext(candidate),
+      [first, second, candidate],
+      {
+        workspaceId: 'workspace-1',
+        clientRequestId: 'request-ambiguous',
+        expectedCurrentApprovedFrameworkId: first.id,
+      },
+    );
+
+    expect(result.success).toBe(false);
+    if (result.success) return;
+    expect(result.errors.some(error => error.code === 'CIVIC_APPROVAL_SHARED_SET_AMBIGUOUS')).toBe(true);
   });
 
   it('rifiuta un candidato che non è proposed-to-collegio', () => {
