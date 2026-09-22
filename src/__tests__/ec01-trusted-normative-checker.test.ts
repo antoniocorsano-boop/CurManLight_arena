@@ -438,9 +438,57 @@ describe('EC-01/Arena-F4 — trusted normative SQL boundary', () => {
     expect(migration).toContain('p_client_request_id');
   });
 
-  it('keeps the migration structurally complete after hardening', () => {
-    expect(migration).toContain("baseline_set_fingerprint ~ '^[a-f0-9]{64}$'");
+  it('keeps a single canonical F4 migration structure after hardening', () => {
+    const occurrences = (needle: string) => migration.split(needle).length - 1;
+
+    expect(occurrences('create table if not exists public.civic_education_normative_source_baselines')).toBe(1);
+    expect(occurrences('create table if not exists public.civic_education_normative_source_heads')).toBe(1);
+    expect(occurrences('create unique index if not exists civic_education_normative_check_receipts_request_idx')).toBe(1);
+    expect(occurrences('create or replace function public.record_civic_education_normative_check_v1')).toBe(1);
+    expect(occurrences('create or replace function public.enforce_current_civic_normative_receipt_v1')).toBe(1);
+    expect(occurrences(':EC01-NORMATIVE-REQUEST:')).toBe(1);
+    expect(occurrences(':EC01-NORMATIVE-CHECK:')).toBe(0);
+    expect(migration).toContain("baseline_set_fingerprint ~ '^[a-f0-9]{64}
+
+  it('serializes retry identity before the idempotency lookup', () => {
+    const lockNeedle = "p_workspace_id::text || ':EC01-NORMATIVE-REQUEST:' || p_client_request_id";
+    const lookupNeedle = 'where receipt.workspace_id = p_workspace_id';
+    expect(migration).toContain('pg_advisory_xact_lock(hashtextextended(');
+    expect(migration.indexOf(lockNeedle)).toBeGreaterThanOrEqual(0);
+    expect(migration.indexOf(lookupNeedle)).toBeGreaterThan(migration.indexOf(lockNeedle));
+  });
+
+  it('binds receipts to the exact baseline head set and enforces freshness at final approval insert', () => {
+    expect(migration).toContain('baseline_set_fingerprint text');
+    expect(migration).toContain("head.source_key || ':' || head.baseline_id::text");
+    expect(migration).toContain('v_baseline_set_fingerprint');
     expect(migration).toContain('create or replace function public.enforce_current_civic_normative_receipt_v1()');
+    expect(migration).toContain('before insert on public.civic_education_approved_frameworks');
+    expect(migration).toContain('receipt.baseline_set_fingerprint = v_current_baseline_set_fingerprint');
+    expect(migration).toContain("raise exception 'CIVIC_NORMATIVE_CURRENT_RECEIPT_REQUIRED'");
+  });
+
+  it('locks the baseline head set while the trusted receipt is validated', () => {
+    expect(migration).toContain('lock table public.civic_education_normative_source_heads in share mode');
+  });
+
+  it('fails closed on missing baselines, set mismatch or source drift', () => {
+    expect(migration).toContain("raise exception 'CIVIC_NORMATIVE_BASELINE_NOT_CONFIGURED'");
+    expect(migration).toContain("raise exception 'CIVIC_NORMATIVE_SOURCE_SET_MISMATCH'");
+    expect(migration).toContain("raise exception 'CIVIC_NORMATIVE_SOURCE_BASELINE_MISSING'");
+    expect(migration).toContain("raise exception 'CIVIC_NORMATIVE_SOURCE_DRIFT'");
+    expect(migration).toContain("raise exception 'CIVIC_NORMATIVE_BASELINE_INCOMPLETE'");
+  });
+
+  it('requires confirmation to follow the automatic check and uses retry-stable idempotency', () => {
+    expect(migration).toContain("raise exception 'CIVIC_NORMATIVE_CONFIRMATION_PRECEDES_CHECK'");
+    expect(migration).toContain('receipt.client_request_id = p_client_request_id');
+    expect(migration).toContain("raise exception 'CIVIC_NORMATIVE_REQUEST_ID_REUSE_MISMATCH'");
+    expect(migration).toContain("raise exception 'CIVIC_NORMATIVE_REQUEST_RETRY_BASELINE_MISMATCH'");
+    expect(migration).toContain('insert into public.civic_education_normative_check_receipts');
+  });
+});
+");
     expect(migration).toMatch(
       /create or replace function public\.enforce_current_civic_normative_receipt_v1\(\)[\s\S]*?as \$\$[\s\S]*?end;\s*\$\$;/,
     );
