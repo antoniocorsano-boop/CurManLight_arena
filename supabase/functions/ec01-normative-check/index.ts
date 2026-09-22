@@ -1,0 +1,178 @@
+// EC-01/Arena-F4 — trusted normative checker Edge Function.
+// Deployment is intentionally outside this slice.
+
+import { createClient } from 'npm:@supabase/supabase-js@2.112.3';
+import {
+  confirmTrustedCivicNormativeCheck,
+  previewTrustedCivicNormativeCheck,
+  type CivicNormativeBaselineLoader,
+  type CivicNormativeReceiptRecorder,
+  type CivicNormativeSourceBaseline,
+  type CivicNormativeConfirmationRole,
+} from '../../../src/infrastructure/server/civicEducationNormativeChecker.ts';
+
+type RequestBody = {
+  mode: 'preview' | 'confirm';
+  workspaceId: string;
+  institutionId: string;
+  frameworkId: string;
+  frameworkVersionLabel: string;
+};
+
+const SUPABASE_URL = Deno.env.get('SUPABASE_URL') ?? '';
+const SUPABASE_ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY') ?? '';
+const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
+
+function json(status: number, body: unknown): Response {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { 'content-type': 'application/json; charset=utf-8' },
+  });
+}
+
+function isRequestBody(value: unknown): value is RequestBody {
+  if (!value || typeof value !== 'object') return false;
+  const body = value as Partial<RequestBody>;
+  return (
+    (body.mode === 'preview' || body.mode === 'confirm')
+    && typeof body.workspaceId === 'string'
+    && body.workspaceId.trim() === body.workspaceId
+    && body.workspaceId.length > 0
+    && typeof body.institutionId === 'string'
+    && body.institutionId.trim() === body.institutionId
+    && body.institutionId.length > 0
+    && typeof body.frameworkId === 'string'
+    && body.frameworkId.trim() === body.frameworkId
+    && body.frameworkId.length > 0
+    && typeof body.frameworkVersionLabel === 'string'
+    && body.frameworkVersionLabel.trim() === body.frameworkVersionLabel
+    && body.frameworkVersionLabel.length > 0
+  );
+}
+
+Deno.serve(async (request: Request) => {
+  if (request.method !== 'POST') return json(405, { error: 'METHOD_NOT_ALLOWED' });
+  if (!SUPABASE_URL || !SUPABASE_ANON_KEY || !SUPABASE_SERVICE_ROLE_KEY) {
+    return json(503, { error: 'TRUSTED_SERVER_NOT_CONFIGURED' });
+  }
+
+  const authorization = request.headers.get('authorization');
+  if (!authorization?.startsWith('Bearer ')) {
+    return json(401, { error: 'AUTHENTICATION_REQUIRED' });
+  }
+
+  let body: unknown;
+  try {
+    body = await request.json();
+  } catch {
+    return json(400, { error: 'INVALID_JSON' });
+  }
+  if (!isRequestBody(body)) return json(400, { error: 'INVALID_REQUEST' });
+
+  const userClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    global: { headers: { Authorization: authorization } },
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
+  const serviceClient = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
+
+  const { data: userData, error: userError } = await userClient.auth.getUser();
+  const userId = userData.user?.id;
+  if (userError || !userId) return json(401, { error: 'AUTHENTICATION_REQUIRED' });
+
+  const { data: memberships, error: membershipError } = await serviceClient
+    .from('workspace_memberships')
+    .select('role,status')
+    .eq('workspace_id', body.workspaceId)
+    .eq('user_id', userId)
+    .eq('status', 'active')
+    .limit(1);
+
+  if (membershipError) return json(503, { error: 'MEMBERSHIP_LOOKUP_FAILED' });
+  const role = memberships?.[0]?.role as string | undefined;
+  if (role !== 'referente' && role !== 'collegio') {
+    return json(403, { error: 'CIVIC_NORMATIVE_CONFIRMATION_ROLE_REQUIRED' });
+  }
+
+  const loader: CivicNormativeBaselineLoader = {
+    async loadActiveBaselines(): Promise<CivicNormativeSourceBaseline[]> {
+      const { data: heads, error: headsError } = await serviceClient
+        .from('civic_education_normative_source_heads')
+        .select('source_key,baseline_id')
+        .order('source_key');
+      if (headsError) throw new Error('CIVIC_NORMATIVE_BASELINE_LOAD_FAILED');
+      if (!heads?.length) return [];
+
+      const ids = heads.map(head => head.baseline_id);
+      const { data: rows, error: baselineError } = await serviceClient
+        .from('civic_education_normative_source_baselines')
+        .select('id,source_key,authority,title,source_url,normalization_version,expected_sha256')
+        .in('id', ids);
+      if (baselineError) throw new Error('CIVIC_NORMATIVE_BASELINE_LOAD_FAILED');
+
+      const byId = new Map((rows ?? []).map(row => [row.id, row]));
+      return heads.map(head => {
+        const row = byId.get(head.baseline_id);
+        if (!row) throw new Error('CIVIC_NORMATIVE_BASELINE_HEAD_DANGLING');
+        return {
+          sourceKey: row.source_key,
+          authority: row.authority,
+          title: row.title,
+          url: row.source_url,
+          normalizationVersion: row.normalization_version,
+          expectedSha256: row.expected_sha256,
+        } as CivicNormativeSourceBaseline;
+      });
+    },
+  };
+
+  try {
+    if (body.mode === 'preview') {
+      const result = await previewTrustedCivicNormativeCheck(loader, fetch);
+      return json(result.status === 'verified' ? 200 : 409, result);
+    }
+
+    const recorder: CivicNormativeReceiptRecorder = {
+      async record(input) {
+        const { data, error } = await serviceClient.rpc(
+          'record_civic_education_normative_check_v1',
+          {
+            p_workspace_id: input.scope.workspaceId,
+            p_requested_by_user_id: input.scope.requestedByUserId,
+            p_institution_id: input.scope.institutionId,
+            p_framework_id: input.scope.frameworkId,
+            p_framework_version_label: input.scope.frameworkVersionLabel,
+            p_verification_snapshot: input.verification,
+            p_source_observations: input.observations,
+          },
+        );
+        if (error || !data) throw new Error(error?.message ?? 'CIVIC_NORMATIVE_RECEIPT_RECORD_FAILED');
+        const receipt = data as { id?: string; normative_fingerprint?: string };
+        if (!receipt.id || !receipt.normative_fingerprint) {
+          throw new Error('CIVIC_NORMATIVE_RECEIPT_INVALID');
+        }
+        return { id: receipt.id, normativeFingerprint: receipt.normative_fingerprint };
+      },
+    };
+
+    const result = await confirmTrustedCivicNormativeCheck(
+      {
+        workspaceId: body.workspaceId,
+        requestedByUserId: userId,
+        requestedByRole: role as CivicNormativeConfirmationRole,
+        institutionId: body.institutionId,
+        frameworkId: body.frameworkId,
+        frameworkVersionLabel: body.frameworkVersionLabel,
+      },
+      loader,
+      recorder,
+      fetch,
+    );
+
+    return json(result.status === 'recorded' ? 200 : 409, result);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'CIVIC_NORMATIVE_CHECK_FAILED';
+    return json(503, { error: message });
+  }
+});
