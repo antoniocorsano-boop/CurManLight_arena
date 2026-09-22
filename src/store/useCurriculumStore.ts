@@ -29,6 +29,12 @@ import {
   verifyDesignIntegrity,
   type DesignArchive,
 } from '../domain/design';
+import {
+  createEmptyCivicEducationDraftArchive,
+  cloneCivicEducationDraftArchive,
+  validateCivicEducationDraftArchive,
+  type CivicEducationDraftArchive,
+} from '../domain/curriculum/civicEducationWorkspace';
 import { GuidedTeacherWorkflowState } from '../features/guided-workflow/types';
 
 const getCurriculumBaselineData = () => {
@@ -131,12 +137,17 @@ type CurriculumStoreState = UserState & {
   documentArchive: DocumentArchive;
   revisionArchive: RevisionArchive;
   designArchive: DesignArchive;
+  civicEducationDraftArchive: CivicEducationDraftArchive;
   guidedWorkflowState: GuidedTeacherWorkflowState | undefined;
 };
 
 export type RestoreBackupResult =
   | { success: true }
-  | { success: false; error: 'invalid-backup' | 'invalid-institutional-archive'; message: string };
+  | {
+      success: false;
+      error: 'invalid-backup' | 'invalid-institutional-archive' | 'invalid-civic-education-draft-archive';
+      message: string;
+    };
 
 const USER_STATE_KEYS: readonly (keyof UserState)[] = [
   'role',
@@ -214,6 +225,7 @@ interface StoreActions extends CurriculumStoreState {
   replaceDocumentArchive: (archive: DocumentArchive) => void;
   replaceRevisionArchive: (archive: RevisionArchive) => void;
   replaceDesignArchive: (archive: DesignArchive) => void;
+  replaceCivicEducationDraftArchive: (archive: CivicEducationDraftArchive) => void;
   addDocumentExportEvent: (event: DocumentExportEvent) => void;
   clearDocumentExportHistory: () => void;
   setGuidedWorkflowState: (state: GuidedTeacherWorkflowState) => void;
@@ -245,6 +257,7 @@ export const useCurriculumStore = create<StoreActions>()(
       documentArchive: createEmptyDocumentArchive(),
       revisionArchive: createEmptyRevisionStore(),
       designArchive: createEmptyDesignStore(),
+      civicEducationDraftArchive: createEmptyCivicEducationDraftArchive(),
       guidedWorkflowState: undefined,
 
       setRole: (role) => set({ role }),
@@ -329,11 +342,30 @@ export const useCurriculumStore = create<StoreActions>()(
         const institutionalArchive = hasArchive
           ? cloneInstitutionalValue(newState.institutionalArchive as InstitutionalArchive)
           : createEmptyInstitutionalArchive();
+        const hasCivicEducationDraftArchive = Object.prototype.hasOwnProperty.call(newState, 'civicEducationDraftArchive');
+        if (
+          hasCivicEducationDraftArchive
+          && !validateCivicEducationDraftArchive(newState.civicEducationDraftArchive).valid
+        ) {
+          return {
+            success: false,
+            error: 'invalid-civic-education-draft-archive',
+            message: 'Archivio locale di Educazione civica non valido o con versione non supportata.',
+          };
+        }
+        const civicEducationDraftArchive = hasCivicEducationDraftArchive
+          ? cloneCivicEducationDraftArchive(newState.civicEducationDraftArchive as CivicEducationDraftArchive)
+          : createEmptyCivicEducationDraftArchive();
         const hasRevision = Object.prototype.hasOwnProperty.call(newState, 'revisionArchive');
         const revisionArchive = hasRevision && verifyRevisionArchiveIntegrity(newState.revisionArchive as RevisionArchive)
           ? cloneRevisionArchiveStore(newState.revisionArchive as RevisionArchive)
           : createEmptyRevisionStore();
-        set({ ...sanitizeUserState(newState), institutionalArchive, revisionArchive });
+        set({
+          ...sanitizeUserState(newState),
+          institutionalArchive,
+          civicEducationDraftArchive,
+          revisionArchive,
+        });
         return { success: true };
       },
       replaceInstitutionalArchive: (institutionalArchive) => {
@@ -351,6 +383,10 @@ export const useCurriculumStore = create<StoreActions>()(
       replaceDesignArchive: (designArchive) => {
         if (!verifyDesignIntegrity(designArchive)) return;
         set({ designArchive: cloneDesignArchive(designArchive) });
+      },
+      replaceCivicEducationDraftArchive: (civicEducationDraftArchive) => {
+        if (!validateCivicEducationDraftArchive(civicEducationDraftArchive).valid) return;
+        set({ civicEducationDraftArchive: cloneCivicEducationDraftArchive(civicEducationDraftArchive) });
       },
       addDocumentExportEvent: (event) => set((state) => ({
         documentExportHistory: [event, ...state.documentExportHistory].slice(0, 5)
@@ -376,8 +412,21 @@ export const useCurriculumStore = create<StoreActions>()(
         const designArchive = persisted.designArchive && verifyDesignIntegrity(persisted.designArchive as DesignArchive)
           ? cloneDesignArchive(persisted.designArchive as DesignArchive)
           : createEmptyDesignStore();
+        const civicEducationDraftArchive = persisted.civicEducationDraftArchive
+          && validateCivicEducationDraftArchive(persisted.civicEducationDraftArchive).valid
+          ? cloneCivicEducationDraftArchive(persisted.civicEducationDraftArchive as CivicEducationDraftArchive)
+          : createEmptyCivicEducationDraftArchive();
         const guidedWorkflowState = (persisted.guidedWorkflowState ?? undefined) as GuidedTeacherWorkflowState | undefined;
-        return { ...currentState, ...sanitizeUserState(persisted), institutionalArchive, documentArchive, revisionArchive, designArchive, guidedWorkflowState };
+        return {
+          ...currentState,
+          ...sanitizeUserState(persisted),
+          institutionalArchive,
+          documentArchive,
+          revisionArchive,
+          designArchive,
+          civicEducationDraftArchive,
+          guidedWorkflowState,
+        };
       }
     }
   )
