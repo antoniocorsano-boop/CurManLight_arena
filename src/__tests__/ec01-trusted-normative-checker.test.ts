@@ -528,6 +528,15 @@ describe('EC-01/Arena-F4 — trusted normative SQL boundary', () => {
     expect(migration).not.toContain("expected_sha256 ~ '^[a-f0-9]{64} if not exists");
   });
 
+  it('serializes the retry identity before the idempotent receipt lookup', () => {
+    const lock = migration.indexOf('pg_advisory_xact_lock(hashtextextended(');
+    const lookup = migration.indexOf('receipt.client_request_id = p_client_request_id');
+    expect(lock).toBeGreaterThan(-1);
+    expect(lookup).toBeGreaterThan(-1);
+    expect(lock).toBeLessThan(lookup);
+    expect(migration).toContain("':EC01-NORMATIVE-CHECK:' || p_client_request_id");
+  });
+
   it('locks the baseline head set while the trusted receipt is validated', () => {
     expect(migration).toContain(
       'lock table public.civic_education_normative_source_heads in share mode',
