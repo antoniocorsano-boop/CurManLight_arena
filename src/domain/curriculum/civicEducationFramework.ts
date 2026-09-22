@@ -8,7 +8,11 @@
 
 import type { AcademicYear, SchoolOrder } from '../../types/curriculumTransition';
 import type { EntityId, EntityReference } from './identity/types';
+import type { CurriculumNode } from './node';
+import type { CurriculumSegment } from './segment';
+import type { InstituteCurriculumVersion } from './version';
 import type { DisciplineCode } from './model/vocabularies';
+import { isDisciplineSupportedForOrder, resolveDisciplineCode } from './model/vocabularies';
 import type { DomainValidationIssue, InstituteCurriculumStatus } from './types';
 
 export const CIVIC_EDUCATION_FRAMEWORK_SCHEMA_VERSION =
@@ -107,6 +111,12 @@ export interface CivicEducationAnnualFramework {
   approvedByRole?: 'collegio';
 }
 
+export interface CivicEducationCurriculumBindingContext {
+  curriculumVersion: InstituteCurriculumVersion;
+  segments: CurriculumSegment[];
+  nodes: CurriculumNode[];
+}
+
 export interface CivicEducationApprovalGateResult {
   approvable: boolean;
   issues: DomainValidationIssue[];
@@ -198,6 +208,114 @@ export function getUncoveredCivicEducationNuclei(
   );
 
   return CIVIC_EDUCATION_REQUIRED_NUCLEI.filter(nucleus => !covered.has(nucleus));
+}
+
+function isCivicEducationSegment(segment: CurriculumSegment): boolean {
+  return segment.subjectOrFieldId === 'educazione-civica'
+    || resolveDisciplineCode(segment.subjectOrFieldId) === 'educazione-civica';
+}
+
+function validateObjectiveReferencesAgainstCurriculum(
+  framework: CivicEducationAnnualFramework,
+  refs: EntityReference[],
+  context: CivicEducationCurriculumBindingContext,
+): DomainValidationIssue[] {
+  const issues: DomainValidationIssue[] = [];
+
+  for (const ref of refs) {
+    const node = context.nodes.find(candidate => candidate.id === ref.id);
+    if (!node) {
+      issues.push(domainIssue(
+        'CIVIC_OBJECTIVE_REF_NOT_FOUND',
+        'error',
+        framework,
+        `Il riferimento curricolare "${String(ref.id)}" non è risolvibile nella versione Arena selezionata.`,
+      ));
+      continue;
+    }
+
+    if (node.type !== 'objective') {
+      issues.push(domainIssue(
+        'CIVIC_OBJECTIVE_REF_NOT_OBJECTIVE',
+        'error',
+        framework,
+        `Il nodo "${node.id}" deve essere un obiettivo curricolare.`,
+      ));
+    }
+
+    if (node.versionId !== framework.curriculumVersionId) {
+      issues.push(domainIssue(
+        'CIVIC_OBJECTIVE_VERSION_MISMATCH',
+        'error',
+        framework,
+        `Il nodo "${node.id}" non appartiene alla versione curricolare del quadro.`,
+      ));
+    }
+
+    const segment = context.segments.find(candidate => candidate.id === node.segmentId);
+    if (!segment) {
+      issues.push(domainIssue(
+        'CIVIC_OBJECTIVE_SEGMENT_NOT_FOUND',
+        'error',
+        framework,
+        `Il segmento del nodo "${node.id}" non è risolvibile.`,
+      ));
+      continue;
+    }
+
+    if (segment.versionId !== framework.curriculumVersionId) {
+      issues.push(domainIssue(
+        'CIVIC_OBJECTIVE_SEGMENT_VERSION_MISMATCH',
+        'error',
+        framework,
+        `Il segmento del nodo "${node.id}" non appartiene alla versione curricolare del quadro.`,
+      ));
+    }
+
+    if (segment.schoolLevel !== framework.schoolOrder) {
+      issues.push(domainIssue(
+        'CIVIC_OBJECTIVE_SCHOOL_ORDER_MISMATCH',
+        'error',
+        framework,
+        `Il nodo "${node.id}" appartiene a un ordine di scuola diverso dal quadro.`,
+      ));
+    }
+
+    if (framework.schoolOrder !== 'infanzia' && !isCivicEducationSegment(segment)) {
+      issues.push(domainIssue(
+        'CIVIC_OBJECTIVE_NOT_CIVIC',
+        'error',
+        framework,
+        `Il nodo "${node.id}" non appartiene al segmento di Educazione civica.`,
+      ));
+    }
+  }
+
+  return issues;
+}
+
+export function validateCivicEducationCurriculumBindings(
+  framework: CivicEducationAnnualFramework,
+  context: CivicEducationCurriculumBindingContext,
+): DomainValidationIssue[] {
+  const issues: DomainValidationIssue[] = [];
+
+  if (context.curriculumVersion.id !== framework.curriculumVersionId) {
+    issues.push(domainIssue(
+      'CIVIC_CURRICULUM_VERSION_MISMATCH',
+      'error',
+      framework,
+      'Il quadro non è legato alla versione curricolare Arena fornita al gate.',
+    ));
+  }
+
+  const refs = framework.schoolOrder === 'infanzia'
+    ? framework.infanziaMappings.flatMap(mapping => mapping.objectiveRefs)
+    : framework.allocations.flatMap(allocation => allocation.objectiveRefs);
+
+  issues.push(...validateObjectiveReferencesAgainstCurriculum(framework, refs, context));
+
+  return issues;
 }
 
 export function validateCivicEducationAnnualFramework(
@@ -363,6 +481,13 @@ export function validateCivicEducationAnnualFramework(
             'Un ambito deve avere identificativo ed etichetta.',
           ));
         }
+      } else if (!isDisciplineSupportedForOrder(allocation.target.disciplineCode, framework.schoolOrder)) {
+        issues.push(domainIssue(
+          'CIVIC_ALLOCATION_DISCIPLINE_ORDER_MISMATCH',
+          'error',
+          framework,
+          'La disciplina destinataria della quota non è prevista per questo ordine di scuola.',
+        ));
       }
 
       const key = targetKey(allocation.target);
@@ -430,8 +555,12 @@ export function validateCivicEducationAnnualFramework(
 
 export function evaluateCivicEducationApprovalGate(
   framework: CivicEducationAnnualFramework,
+  context: CivicEducationCurriculumBindingContext,
 ): CivicEducationApprovalGateResult {
-  const issues = [...validateCivicEducationAnnualFramework(framework)];
+  const issues = [
+    ...validateCivicEducationAnnualFramework(framework),
+    ...validateCivicEducationCurriculumBindings(framework, context),
+  ];
   const totalAnnualHours = getCivicEducationAnnualHours(framework);
   const uncoveredNuclei = getUncoveredCivicEducationNuclei(framework);
 
@@ -580,9 +709,12 @@ export function validateCivicEducationFrameworkSet(
 
 export function canProjectCivicEducationFramework(
   framework: CivicEducationAnnualFramework,
+  context: CivicEducationCurriculumBindingContext,
 ): boolean {
   if (framework.status !== 'approved') return false;
-  return evaluateCivicEducationApprovalGate(framework).approvable;
+  if (context.curriculumVersion.id !== framework.curriculumVersionId) return false;
+  if (context.curriculumVersion.status !== 'approved') return false;
+  return evaluateCivicEducationApprovalGate(framework, context).approvable;
 }
 
 export function cloneCivicEducationFrameworkForAcademicYear(
