@@ -10,6 +10,7 @@ import type {
 import { CIVIC_EDUCATION_FRAMEWORK_SCHEMA_VERSION } from '../../domain/curriculum/civicEducationFramework';
 import {
   assertCivicEducationSharedApprovalActor,
+  CIVIC_EDUCATION_LOCAL_AUTHORITY_PLANE,
   cloneCivicEducationDraftArchive,
   createEmptyCivicEducationDraftArchive,
   getCivicEducationDraft,
@@ -186,6 +187,21 @@ describe('EC-01/Arena-F2 — local draft workspace', () => {
     expect(archive.frameworks).toEqual([]);
   });
 
+  it('dichiara esplicitamente che l’archivio locale non è autorità istituzionale', () => {
+    const archive = createEmptyCivicEducationDraftArchive('2026-09-22T08:00:00Z');
+
+    expect(archive.authorityPlane).toBe('LOCAL_DEVICE_NON_AUTHORITATIVE');
+
+    const tampered = {
+      ...archive,
+      authorityPlane: 'SHARED_INSTITUTIONAL',
+    };
+    const validation = validateCivicEducationDraftArchive(tampered);
+
+    expect(validation.valid).toBe(false);
+    expect(validation.errors.some(error => error.code === 'CIVIC_DRAFT_ARCHIVE_AUTHORITY_PLANE_INVALID')).toBe(true);
+  });
+
   it('salva una bozza come copia indipendente', () => {
     const archive = createEmptyCivicEducationDraftArchive();
     const value = framework();
@@ -250,6 +266,7 @@ describe('EC-01/Arena-F2 — local draft workspace', () => {
   it('rifiuta operazioni su un archivio locale già corrotto', () => {
     const invalid: CivicEducationDraftArchive = {
       schemaVersion: 1,
+      authorityPlane: CIVIC_EDUCATION_LOCAL_AUTHORITY_PLANE,
       updatedAt: '2026-09-22T09:00:00Z',
       frameworks: [framework('approved', {
         approvedAt: '2026-09-22T08:59:00Z',
@@ -284,6 +301,7 @@ describe('EC-01/Arena-F2 — local draft workspace', () => {
   it('l’integrità dell’archivio rifiuta evidenze di approvazione locale', () => {
     const invalid: CivicEducationDraftArchive = {
       schemaVersion: 1,
+      authorityPlane: CIVIC_EDUCATION_LOCAL_AUTHORITY_PLANE,
       updatedAt: '2026-09-22T09:00:00Z',
       frameworks: [framework('draft', {
         approvedAt: '2026-09-22T08:59:00Z',
