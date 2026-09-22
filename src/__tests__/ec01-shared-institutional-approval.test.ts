@@ -172,6 +172,37 @@ describe('EC-01/Arena-F3 — shared institutional approval migration', () => {
     expect(migration).toContain("v_canonical_version.status <> 'ACTIVE'");
   });
 
+  it('binds institution, objectives and discipline/order to the ACTIVE canonical materialization', () => {
+    expect(migration).toContain('from public.shared_canonical_materializations materialization');
+    expect(migration).toContain("v_canonical_curriculum->>'institutionId' is distinct from v_institution_id");
+    expect(migration).toContain("v_canonical_curriculum->>'curriculumVersionRef' is distinct from v_curriculum_version_id");
+    expect(migration).toContain("value->>'nodeRef' = v_ref->>'id'");
+    expect(migration).toContain("v_node->>'nodeType' <> 'obiettivo'");
+    expect(migration).toContain("CIVIC_OBJECTIVE_REF_NOT_FOUND_OR_INVALID");
+    expect(migration).toContain("CIVIC_OBJECTIVE_SEGMENT_BINDING_MISMATCH");
+    expect(migration).toContain("CIVIC_ALLOCATION_DISCIPLINE_ORDER_MISMATCH");
+    expect(migration).toContain("'dm221-framework-educazione-civica'");
+  });
+
+  it('requires a server-known normative receipt and parseable timestamps', () => {
+    expect(migration).toContain('create table if not exists public.civic_education_normative_check_receipts');
+    expect(migration).toContain("checker_authority text not null default 'SERVER_AUTOMATIC_CHECK'");
+    expect(migration).toContain('revoke insert, update, delete on public.civic_education_normative_check_receipts from public, anon, authenticated');
+    expect(migration).toContain("raise exception 'CIVIC_NORMATIVE_SERVER_RECEIPT_REQUIRED'");
+    expect(migration).toContain("perform (p_candidate->>'createdAt')::timestamptz");
+    expect(migration).toContain("perform (p_candidate->>'updatedAt')::timestamptz");
+    expect(migration).toContain("perform (v_norm->>'checkedAt')::timestamptz");
+    expect(migration).toContain("perform (v_norm->>'humanConfirmedAt')::timestamptz");
+    expect(migration).toContain("perform (v_source->>'checkedAt')::timestamptz");
+  });
+
+  it('enforces immutability of historical framework, approval and normative receipts at DB level', () => {
+    expect(migration).toContain('CIVIC_EDUCATION_HISTORY_IMMUTABLE');
+    expect(migration).toContain('before update or delete on public.civic_education_approved_frameworks');
+    expect(migration).toContain('before update or delete on public.civic_education_approval_receipts');
+    expect(migration).toContain('before update or delete on public.civic_education_normative_check_receipts');
+  });
+
   it('uses an advisory lock, CAS and idempotent request identity', () => {
     expect(migration).toContain("pg_advisory_xact_lock(hashtextextended(");
     expect(migration).toContain("where receipt.workspace_id = p_workspace_id");
@@ -186,6 +217,7 @@ describe('EC-01/Arena-F3 — shared institutional approval migration', () => {
     expect(migration).toContain('insert into public.civic_education_approved_heads');
     expect(migration).not.toMatch(/update\s+public\.civic_education_approved_frameworks/i);
     expect(migration).not.toMatch(/update\s+public\.civic_education_approval_receipts/i);
+    expect(migration).not.toMatch(/update\s+public\.civic_education_normative_check_receipts/i);
   });
 });
 
