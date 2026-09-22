@@ -140,6 +140,30 @@ describe('EC-01/Arena-F4 — trusted normative checker core', () => {
     });
   });
 
+  it('converts response-body read failures into FETCH_FAILED', async () => {
+    const values = await baselines();
+    const get: CivicNormativeFetcher = vi.fn(async (url: string) => ({
+      ok: true,
+      status: 200,
+      url,
+      arrayBuffer: async () => {
+        throw new Error('body read failed');
+      },
+    }));
+
+    const result = await previewTrustedCivicNormativeCheck(
+      loader(values),
+      get,
+      '2026-27-v1',
+    );
+
+    expect(result).toMatchObject({
+      status: 'blocked',
+      reason: 'FETCH_FAILED',
+      sourceKey: 'mim-dm183-2024',
+    });
+  });
+
   it('blocks failed fetches and redirects outside the official authority boundary', async () => {
     const values = await baselines();
 
