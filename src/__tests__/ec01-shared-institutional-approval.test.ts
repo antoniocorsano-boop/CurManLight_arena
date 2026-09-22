@@ -159,6 +159,8 @@ describe('EC-01/Arena-F3 — shared institutional approval migration', () => {
     expect(migration).toContain("raise exception 'INVALID_CIVIC_NORMATIVE_VERIFICATION'");
     expect(migration).toContain("raise exception 'CIVIC_NORMATIVE_SOURCE_NOT_OFFICIAL'");
     expect(migration).toContain("raise exception 'CIVIC_NORMATIVE_BASELINE_INCOMPLETE'");
+    expect(migration).toContain("raise exception 'CIVIC_NORMATIVE_CHANGE_RESULT_MISMATCH'");
+    expect(migration).toContain("raise exception 'CIVIC_ALLOCATION_DUPLICATE_TARGET'");
     expect(migration).toContain("v_norm->'automaticCheck' is distinct from 'true'::jsonb");
   });
 
@@ -270,6 +272,41 @@ describe('SupabaseSharedCivicEducationFrameworkRepository', () => {
       expectedCurrentApprovedFrameworkId: null,
       candidate: candidate(),
     })).rejects.toThrow('principal autenticato');
+  });
+
+  it('rejects a current snapshot returned outside the requested scope', async () => {
+    const snapshot = approvedSnapshot();
+    snapshot.framework.institutionId = 'other-institute';
+    snapshot.receipt.institutionId = 'other-institute';
+    const rpc = vi.fn().mockResolvedValue({ data: snapshot, error: null });
+    const repository = new SupabaseSharedCivicEducationFrameworkRepository(
+      { rpc } as unknown as SupabaseClient,
+      workspaceRepository(true),
+    );
+
+    await expect(repository.getCurrentApproved(
+      context,
+      'institute-1',
+      { startYear: 2026, endYear: 2027 },
+      'secondaria',
+    )).rejects.toThrow('fuori dallo scope richiesto');
+  });
+
+  it('rejects an approval response bound to a different candidate', async () => {
+    const snapshot = approvedSnapshot();
+    snapshot.framework.versionLabel = 'different-version';
+    const rpc = vi.fn().mockResolvedValue({ data: snapshot, error: null });
+    const repository = new SupabaseSharedCivicEducationFrameworkRepository(
+      { rpc } as unknown as SupabaseClient,
+      workspaceRepository(true),
+    );
+
+    await expect(repository.approve(context, {
+      workspaceId,
+      clientRequestId: 'request-4',
+      expectedCurrentApprovedFrameworkId: null,
+      candidate: candidate(),
+    })).rejects.toThrow('diverso dal candidato richiesto');
   });
 
   it('rejects inconsistent framework/receipt server payloads', async () => {
