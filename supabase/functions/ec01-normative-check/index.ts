@@ -131,6 +131,45 @@ export default {
     }
 
     const recorder: CivicNormativeReceiptRecorder = {
+      async findExisting(scope) {
+        const { data, error } = await serviceClient
+          .from('civic_education_normative_check_receipts')
+          .select(
+            'id,normative_fingerprint,verification_snapshot,source_observations,institution_id,framework_id,framework_version_label,confirmed_by_user_id,confirmed_by_role',
+          )
+          .eq('workspace_id', scope.workspaceId)
+          .eq('client_request_id', scope.clientRequestId)
+          .maybeSingle();
+
+        if (error) throw new Error('CIVIC_NORMATIVE_RECEIPT_LOOKUP_FAILED');
+        if (!data) return null;
+
+        if (
+          data.institution_id !== scope.institutionId
+          || data.framework_id !== scope.frameworkId
+          || data.framework_version_label !== scope.frameworkVersionLabel
+          || data.confirmed_by_user_id !== scope.requestedByUserId
+          || data.confirmed_by_role !== scope.requestedByRole
+        ) {
+          throw new Error('CIVIC_NORMATIVE_REQUEST_ID_REUSE_MISMATCH');
+        }
+
+        if (
+          !data.id
+          || !data.normative_fingerprint
+          || !data.verification_snapshot
+          || !Array.isArray(data.source_observations)
+        ) {
+          throw new Error('CIVIC_NORMATIVE_RECEIPT_INVALID');
+        }
+
+        return {
+          id: data.id,
+          normativeFingerprint: data.normative_fingerprint,
+          verificationSnapshot: data.verification_snapshot as Parameters<CivicNormativeReceiptRecorder['record']>[0]['verification'],
+          observations: data.source_observations as Parameters<CivicNormativeReceiptRecorder['record']>[0]['observations'],
+        };
+      },
       async record(input) {
         const { data, error } = await serviceClient.rpc(
           'record_civic_education_normative_check_v1',
@@ -158,6 +197,7 @@ export default {
           id: receipt.id,
           normativeFingerprint: receipt.normative_fingerprint,
           verificationSnapshot: receipt.verification_snapshot as Parameters<CivicNormativeReceiptRecorder['record']>[0]['verification'],
+          observations: input.observations,
         };
       },
     };
