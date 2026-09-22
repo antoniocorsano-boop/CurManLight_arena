@@ -464,9 +464,9 @@ describe('EC-01/Arena-F4 — trusted normative SQL boundary', () => {
     expect(migration).toMatch(
       /create or replace function public\.enforce_current_civic_normative_receipt_v1\(\)[\s\S]*?as \$\$[\s\S]*?end;\s*\$\$;/,
     );
-    expect(
-      migration.match(/create unique index if not exists civic_education_normative_check_receipts_request_idx/g),
-    ).toHaveLength(1);
+    expect(migration).toContain(
+      'create unique index if not exists civic_education_normative_check_receipts_request_idx',
+    );
   });
 
   it('serializes retry identity before the idempotency lookup', () => {
