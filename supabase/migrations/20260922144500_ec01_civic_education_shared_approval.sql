@@ -348,6 +348,7 @@ begin
      or p_candidate is null
      or jsonb_typeof(p_candidate) <> 'object'
      or nullif(trim(p_client_request_id), '') is null
+     or p_client_request_id <> trim(p_client_request_id)
      or char_length(p_client_request_id) > 200
      or position(chr(31) in p_client_request_id) > 0 then
     raise exception 'INVALID_CIVIC_APPROVAL_INPUT' using errcode = '22023';
@@ -397,6 +398,10 @@ begin
   if v_end_year <> v_start_year + 1
      or v_start_year < 2000
      or v_start_year > 2200
+     or p_candidate->>'id' <> v_framework_id
+     or p_candidate->>'institutionId' <> v_institution_id
+     or p_candidate->>'curriculumVersionId' <> v_curriculum_version_id
+     or p_candidate->>'versionLabel' <> v_version_label
      or char_length(v_framework_id) > 240
      or char_length(v_institution_id) > 240
      or char_length(v_curriculum_version_id) > 240
@@ -418,6 +423,7 @@ begin
   if p_expected_current_approved_framework_id is not null
      and (
        nullif(trim(p_expected_current_approved_framework_id), '') is null
+       or p_expected_current_approved_framework_id <> trim(p_expected_current_approved_framework_id)
        or char_length(p_expected_current_approved_framework_id) > 240
        or position(chr(31) in p_expected_current_approved_framework_id) > 0
      ) then
