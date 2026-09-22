@@ -63,16 +63,20 @@ export interface CivicNormativeBaselineLoader {
   loadActiveBaselines(frameworkVersionLabel: string): Promise<CivicNormativeSourceBaseline[]>;
 }
 
+export interface CivicNormativeRecordedReceipt {
+  id: string;
+  normativeFingerprint: string;
+  verificationSnapshot: CivicNormativeVerificationSnapshot;
+  observations: CivicNormativeSourceObservation[];
+}
+
 export interface CivicNormativeReceiptRecorder {
+  findExisting(scope: CivicNormativeCheckScope): Promise<CivicNormativeRecordedReceipt | null>;
   record(input: {
     scope: CivicNormativeCheckScope;
     verification: CivicNormativeVerificationSnapshot;
     observations: CivicNormativeSourceObservation[];
-  }): Promise<{
-    id: string;
-    normativeFingerprint: string;
-    verificationSnapshot?: CivicNormativeVerificationSnapshot;
-  }>;
+  }): Promise<CivicNormativeRecordedReceipt>;
 }
 
 export interface CivicNormativeFetchResponse {
@@ -203,9 +207,8 @@ function validateBaselines(
 }
 
 async function sha256Hex(bytes: Uint8Array): Promise<string> {
-  const copy = new Uint8Array(bytes.byteLength);
-  copy.set(bytes);
-  const digest = await globalThis.crypto.subtle.digest('SHA-256', copy.buffer);
+  const copy = Uint8Array.from(bytes);
+  const digest = await globalThis.crypto.subtle.digest('SHA-256', copy);
   return [...new Uint8Array(digest)]
     .map(value => value.toString(16).padStart(2, '0'))
     .join('');
@@ -387,6 +390,19 @@ export async function confirmTrustedCivicNormativeCheck(
     throw new Error('CIVIC_NORMATIVE_CLIENT_REQUEST_ID_REQUIRED');
   }
 
+  const existing = await recorder.findExisting(scope);
+  if (existing) {
+    return {
+      status: 'recorded',
+      verification: existing.verificationSnapshot,
+      observations: existing.observations,
+      receipt: {
+        id: existing.id,
+        normativeFingerprint: existing.normativeFingerprint,
+      },
+    };
+  }
+
   const checkedAt = now().toISOString();
   const baselines = await loader.loadActiveBaselines(scope.frameworkVersionLabel);
   const verified = await fetchAndVerify(baselines, fetcher, checkedAt);
@@ -408,12 +424,11 @@ export async function confirmTrustedCivicNormativeCheck(
     verification,
     observations: verified.observations,
   });
-  const recordedVerification = receipt.verificationSnapshot ?? verification;
 
   return {
     status: 'recorded',
-    verification: recordedVerification,
-    observations: verified.observations,
+    verification: receipt.verificationSnapshot,
+    observations: receipt.observations,
     receipt: {
       id: receipt.id,
       normativeFingerprint: receipt.normativeFingerprint,
