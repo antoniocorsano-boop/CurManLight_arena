@@ -491,7 +491,7 @@ describe('EC-01/Arena-F4 — trusted normative SQL boundary', () => {
   it('serializes retry identity before the idempotent receipt lookup', () => {
     const lock = migration.indexOf("pg_advisory_xact_lock(hashtextextended(");
     const lookup = migration.indexOf(
-      "where receipt.workspace_id = p_workspace_id\n    and receipt.client_request_id = p_client_request_id",
+      "where receipt.workspace_id = p_workspace_id\\n    and receipt.client_request_id = p_client_request_id",
     );
     expect(lock).toBeGreaterThan(-1);
     expect(lookup).toBeGreaterThan(lock);
@@ -499,7 +499,14 @@ describe('EC-01/Arena-F4 — trusted normative SQL boundary', () => {
   });
 
   it('keeps the F4 migration syntactically complete around the freshness trigger', () => {
-    expect(migration).toContain("baseline_set_fingerprint ~ '^[a-f0-9]{64}
+    expect(migration).toContain("baseline_set_fingerprint ~ '^[a-f0-9]{64}$'");
+    expect(migration).toContain('as $$\\ndeclare');
+    expect(migration).toContain('end;\\n$$;\\n\\ndrop trigger');
+    expect(migration).not.toContain('end;\\n$;');
+    expect(migration).not.toContain("expected_sha256 ~ '^[a-f0-9]{64} if not exists");
+  });
+
+  it('locks the baseline head set while the trusted receipt is validated', () => {
     expect(migration).toContain(
       'lock table public.civic_education_normative_source_heads in share mode',
     );
@@ -521,28 +528,6 @@ describe('EC-01/Arena-F4 — trusted normative SQL boundary', () => {
     expect(migration).toContain('insert into public.civic_education_normative_check_receipts');
   });
 });
-");
-    expect(migration).toContain('as $\\ndeclare');
-    expect(migration).toContain('end;\\n$;\\n\\ndrop trigger');
-    expect(migration).not.toContain('end;\\n$;');
-    expect(migration).not.toContain("expected_sha256 ~ '^[a-f0-9]{64} if not exists");
-  });
-
-  it('serializes the retry identity before the idempotent receipt lookup', () => {
-    const lock = migration.indexOf('pg_advisory_xact_lock(hashtextextended(');
-    const lookup = migration.indexOf('receipt.client_request_id = p_client_request_id');
-    expect(lock).toBeGreaterThan(-1);
-    expect(lookup).toBeGreaterThan(-1);
-    expect(lock).toBeLessThan(lookup);
-    expect(migration).toContain("':EC01-NORMATIVE-CHECK:' || p_client_request_id");
-  });
-
-  it('locks the baseline head set while the trusted receipt is validated', () => {
-    expect(migration).toContain(
-      'lock table public.civic_education_normative_source_heads in share mode',
-    );
-  });
-
   it('fails closed on missing baselines, set mismatch or source drift', () => {
     expect(migration).toContain("raise exception 'CIVIC_NORMATIVE_BASELINE_NOT_CONFIGURED'");
     expect(migration).toContain("raise exception 'CIVIC_NORMATIVE_SOURCE_SET_MISMATCH'");
