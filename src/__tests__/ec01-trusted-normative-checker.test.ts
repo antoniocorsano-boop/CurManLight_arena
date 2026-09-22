@@ -238,12 +238,15 @@ describe('EC-01/Arena-F4 — trusted normative checker core', () => {
 });
 
 describe('EC-01/Arena-F4 — trusted server adapter contract', () => {
-  it('keeps the privileged credential in the server environment and authenticates the caller', () => {
-    expect(edgeFunction).toContain("Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')");
-    expect(edgeFunction).toContain("Deno.env.get('SUPABASE_ANON_KEY')");
-    expect(edgeFunction).toContain('userClient.auth.getUser()');
+  it('uses current Supabase server auth without reading privileged API keys manually', () => {
+    expect(edgeFunction).toContain("withSupabase({ auth: 'user' }");
+    expect(edgeFunction).toContain('ctx.userClaims?.id');
+    expect(edgeFunction).toContain('ctx.supabaseAdmin');
     expect(edgeFunction).toContain(".eq('status', 'active')");
     expect(edgeFunction).toContain("role !== 'referente' && role !== 'collegio'");
+    expect(edgeFunction).not.toContain('SUPABASE_SERVICE_ROLE_KEY');
+    expect(edgeFunction).not.toContain('SUPABASE_ANON_KEY');
+    expect(edgeFunction).not.toContain('createClient(');
   });
 
   it('routes preview and confirmation through the trusted checker and server-only RPC', () => {
@@ -289,7 +292,6 @@ describe('EC-01/Arena-F4 — trusted normative SQL boundary', () => {
   });
 
   it('exposes receipt recording only to service_role and revalidates the human actor', () => {
-    expect(migration).toContain("coalesce(auth.role(), '') <> 'service_role'");
     expect(migration).toContain("v_role not in ('referente','collegio')");
     expect(migration).toContain('from public.workspace_memberships membership');
     expect(migration).toContain(
@@ -298,6 +300,13 @@ describe('EC-01/Arena-F4 — trusted normative SQL boundary', () => {
     expect(migration).toContain('to service_role;');
     expect(migration).toContain(
       ') from public, anon, authenticated;',
+    );
+    expect(migration).not.toContain('auth.role()');
+  });
+
+  it('locks the baseline head set while the trusted receipt is validated', () => {
+    expect(migration).toContain(
+      'lock table public.civic_education_normative_source_heads in share mode',
     );
   });
 
