@@ -52,7 +52,387 @@ alter table public.civic_education_normative_check_receipts
     check (confirmed_by_role in ('referente','collegio')),
   add column if not exists confirmed_at timestamptz,
   add column if not exists client_request_id text,
-  add column if not exists source_observations jsonb;
+  add column if not exists source_observations jsonb,
+  add column if not exists baseline_set_fingerprint text
+    check (baseline_set_fingerprint is null or baseline_set_fingerprint ~ '^[a-f0-9]{64}
+
+create unique index if not exists civic_education_normative_check_receipts_request_idx
+  on public.civic_education_normative_check_receipts(workspace_id, client_request_id)
+  where client_request_id is not null;
+
+create index if not exists civic_education_normative_source_baselines_authority_idx
+  on public.civic_education_normative_source_baselines(authority, created_at desc);
+
+alter table public.civic_education_normative_source_baselines enable row level security;
+alter table public.civic_education_normative_source_heads enable row level security;
+
+revoke all on public.civic_education_normative_source_baselines from public, anon, authenticated;
+revoke all on public.civic_education_normative_source_heads from public, anon, authenticated;
+grant select, insert on public.civic_education_normative_source_baselines to service_role;
+grant select, insert, update on public.civic_education_normative_source_heads to service_role;
+
+create or replace function public.reject_civic_education_normative_baseline_mutation_v1()
+returns trigger
+language plpgsql
+set search_path = public, pg_temp
+as $$
+begin
+  raise exception 'CIVIC_NORMATIVE_BASELINE_IMMUTABLE' using errcode = '55000';
+end;
+$$;
+
+drop trigger if exists civic_education_normative_source_baselines_immutable
+  on public.civic_education_normative_source_baselines;
+create trigger civic_education_normative_source_baselines_immutable
+before update or delete on public.civic_education_normative_source_baselines
+for each row execute function public.reject_civic_education_normative_baseline_mutation_v1();
+
+create or replace function public.record_civic_education_normative_check_v1(
+  p_workspace_id uuid,
+  p_requested_by_user_id uuid,
+  p_institution_id text,
+  p_framework_id text,
+  p_framework_version_label text,
+  p_client_request_id text,
+  p_verification_snapshot jsonb,
+  p_source_observations jsonb
+)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public, extensions, pg_temp
+as $$
+declare
+  v_role text;
+  v_norm_fingerprint text;
+  v_baseline_set_fingerprint text;
+  v_checked_at timestamptz;
+  v_human_confirmed_at timestamptz;
+  v_source jsonb;
+  v_observation jsonb;
+  v_baseline public.civic_education_normative_source_baselines%rowtype;
+  v_observed_keys text[] := array[]::text[];
+  v_active_count integer;
+  v_has_mim boolean := false;
+  v_has_legal boolean := false;
+  v_existing public.civic_education_normative_check_receipts%rowtype;
+  v_receipt public.civic_education_normative_check_receipts%rowtype;
+begin
+  -- Execution is granted only to the privileged server role below.
+  -- SECURITY DEFINER supplies table access; browser roles have no EXECUTE grant.
+
+  if p_workspace_id is null
+     or p_requested_by_user_id is null
+     or nullif(trim(p_institution_id), '') is null
+     or p_institution_id <> trim(p_institution_id)
+     or nullif(trim(p_framework_id), '') is null
+     or p_framework_id <> trim(p_framework_id)
+     or nullif(trim(p_framework_version_label), '') is null
+     or p_framework_version_label <> trim(p_framework_version_label)
+     or nullif(trim(p_client_request_id), '') is null
+     or p_client_request_id <> trim(p_client_request_id)
+     or char_length(p_client_request_id) > 200
+     or jsonb_typeof(p_verification_snapshot) <> 'object'
+     or jsonb_typeof(p_source_observations) <> 'array'
+     or jsonb_array_length(p_source_observations) = 0 then
+    raise exception 'INVALID_CIVIC_NORMATIVE_CHECK_INPUT' using errcode = '22023';
+  end if;
+
+  select membership.role into v_role
+  from public.workspace_memberships membership
+  join public.workspaces workspace on workspace.id = membership.workspace_id
+  where membership.workspace_id = p_workspace_id
+    and membership.user_id = p_requested_by_user_id
+    and membership.status = 'active'
+    and workspace.status = 'active';
+
+  if v_role is null then
+    raise exception 'ACTIVE_WORKSPACE_MEMBERSHIP_REQUIRED' using errcode = '42501';
+  end if;
+  if v_role not in ('referente','collegio') then
+    raise exception 'CIVIC_NORMATIVE_CONFIRMATION_ROLE_REQUIRED' using errcode = '42501';
+  end if;
+
+  perform pg_advisory_xact_lock(hashtextextended(
+    p_workspace_id::text || ':EC01-NORMATIVE-REQUEST:' || p_client_request_id,
+    0
+  ));
+
+  select * into v_existing
+  from public.civic_education_normative_check_receipts receipt
+  where receipt.workspace_id = p_workspace_id
+    and receipt.client_request_id = p_client_request_id;
+
+  if found then
+    if v_existing.institution_id <> p_institution_id
+       or v_existing.framework_id <> p_framework_id
+       or v_existing.framework_version_label <> p_framework_version_label
+       or v_existing.confirmed_by_user_id is distinct from p_requested_by_user_id
+       or v_existing.confirmed_by_role is distinct from v_role then
+      raise exception 'CIVIC_NORMATIVE_REQUEST_ID_REUSE_MISMATCH' using errcode = '23505';
+    end if;
+    if v_existing.source_observations is null
+       or v_existing.source_observations <> p_source_observations then
+      raise exception 'CIVIC_NORMATIVE_REQUEST_RETRY_BASELINE_MISMATCH' using errcode = '23505';
+    end if;
+    return to_jsonb(v_existing);
+  end if;
+
+  if p_verification_snapshot->'automaticCheck' is distinct from 'true'::jsonb
+     or nullif(trim(p_verification_snapshot->>'checkedAt'), '') is null
+     or p_verification_snapshot->>'verifiedFrameworkVersion' is distinct from p_framework_version_label
+     or p_verification_snapshot->>'result' is distinct from 'no-relevant-change'
+     or nullif(trim(p_verification_snapshot->>'humanConfirmedAt'), '') is null
+     or p_verification_snapshot->>'humanConfirmedByRole' is distinct from v_role
+     or jsonb_typeof(p_verification_snapshot->'sources') <> 'array'
+     or jsonb_array_length(p_verification_snapshot->'sources') = 0 then
+    raise exception 'INVALID_CIVIC_NORMATIVE_VERIFICATION' using errcode = '23514';
+  end if;
+
+  begin
+    v_checked_at := (p_verification_snapshot->>'checkedAt')::timestamptz;
+    v_human_confirmed_at := (p_verification_snapshot->>'humanConfirmedAt')::timestamptz;
+  exception when others then
+    raise exception 'INVALID_CIVIC_NORMATIVE_TIMESTAMP' using errcode = '22007';
+  end;
+  if v_human_confirmed_at < v_checked_at then
+    raise exception 'CIVIC_NORMATIVE_CONFIRMATION_PRECEDES_CHECK' using errcode = '23514';
+  end if;
+
+  lock table public.civic_education_normative_source_heads in share mode;
+
+  select
+    count(*),
+    encode(
+      digest(
+        convert_to(
+          coalesce(
+            string_agg(
+              head.source_key || ':' || head.baseline_id::text,
+              '|' order by head.source_key
+            ),
+            ''
+          ),
+          'UTF8'
+        ),
+        'sha256'
+      ),
+      'hex'
+    )
+  into v_active_count, v_baseline_set_fingerprint
+  from public.civic_education_normative_source_heads head
+  join public.civic_education_normative_source_baselines baseline on baseline.id = head.baseline_id
+  where head.framework_version_label = p_framework_version_label;
+
+  if v_active_count = 0 then
+    raise exception 'CIVIC_NORMATIVE_BASELINE_NOT_CONFIGURED' using errcode = '23514';
+  end if;
+  if jsonb_array_length(p_source_observations) <> v_active_count
+     or jsonb_array_length(p_verification_snapshot->'sources') <> v_active_count then
+    raise exception 'CIVIC_NORMATIVE_SOURCE_SET_MISMATCH' using errcode = '23514';
+  end if;
+
+  for v_observation in select value from jsonb_array_elements(p_source_observations)
+  loop
+    if jsonb_typeof(v_observation) <> 'object'
+       or nullif(trim(v_observation->>'sourceKey'), '') is null
+       or nullif(trim(v_observation->>'sha256'), '') is null
+       or coalesce(v_observation->>'normalizationVersion', '') <> 'RAW_RESPONSE_BYTES_V1'
+       or coalesce(v_observation->>'sha256', '') !~ '^[a-f0-9]{64}$' then
+      raise exception 'INVALID_CIVIC_NORMATIVE_SOURCE_OBSERVATION' using errcode = '23514';
+    end if;
+
+    if (v_observation->>'sourceKey') = any(v_observed_keys) then
+      raise exception 'CIVIC_NORMATIVE_DUPLICATE_SOURCE_OBSERVATION' using errcode = '23514';
+    end if;
+    v_observed_keys := array_append(v_observed_keys, v_observation->>'sourceKey');
+
+    select baseline.* into v_baseline
+    from public.civic_education_normative_source_heads head
+    join public.civic_education_normative_source_baselines baseline on baseline.id = head.baseline_id
+    where head.framework_version_label = p_framework_version_label
+      and head.source_key = v_observation->>'sourceKey';
+
+    if not found then
+      raise exception 'CIVIC_NORMATIVE_SOURCE_BASELINE_MISSING' using errcode = '23514';
+    end if;
+
+    if v_baseline.expected_sha256 <> v_observation->>'sha256'
+       or v_baseline.normalization_version <> v_observation->>'normalizationVersion'
+       or v_baseline.source_url <> v_observation->>'url'
+       or v_baseline.authority <> v_observation->>'authority' then
+      raise exception 'CIVIC_NORMATIVE_SOURCE_DRIFT' using errcode = '23514';
+    end if;
+
+    if v_baseline.authority = 'MIM' then v_has_mim := true; end if;
+    if v_baseline.authority in ('NORMATTIVA','GAZZETTA_UFFICIALE') then v_has_legal := true; end if;
+
+    select value into v_source
+    from jsonb_array_elements(p_verification_snapshot->'sources')
+    where value->>'id' = v_observation->>'sourceKey'
+    limit 1;
+
+    if v_source is null
+       or v_source->>'authority' is distinct from v_baseline.authority
+       or v_source->>'title' is distinct from v_baseline.title
+       or v_source->>'url' is distinct from v_baseline.source_url
+       or v_source->>'outcome' is distinct from 'unchanged'
+       or (v_source->>'checkedAt')::timestamptz is distinct from v_checked_at then
+      raise exception 'CIVIC_NORMATIVE_VERIFICATION_SOURCE_MISMATCH' using errcode = '23514';
+    end if;
+  end loop;
+
+  if not v_has_mim or not v_has_legal then
+    raise exception 'CIVIC_NORMATIVE_BASELINE_INCOMPLETE' using errcode = '23514';
+  end if;
+
+  v_norm_fingerprint := encode(
+    digest(convert_to(p_verification_snapshot::text, 'UTF8'), 'sha256'),
+    'hex'
+  );
+
+  insert into public.civic_education_normative_check_receipts (
+    workspace_id,
+    institution_id,
+    framework_id,
+    framework_version_label,
+    normative_fingerprint,
+    verification_snapshot,
+    checked_at,
+    result,
+    checker_authority,
+    confirmed_by_user_id,
+    confirmed_by_role,
+    confirmed_at,
+    client_request_id,
+    source_observations,
+    baseline_set_fingerprint
+  ) values (
+    p_workspace_id,
+    p_institution_id,
+    p_framework_id,
+    p_framework_version_label,
+    v_norm_fingerprint,
+    p_verification_snapshot,
+    v_checked_at,
+    'no-relevant-change',
+    'SERVER_AUTOMATIC_CHECK',
+    p_requested_by_user_id,
+    v_role,
+    v_human_confirmed_at,
+    p_client_request_id,
+    p_source_observations,
+    v_baseline_set_fingerprint
+  )
+  returning * into v_receipt;
+
+  return to_jsonb(v_receipt);
+end;
+$$;
+
+revoke all on function public.record_civic_education_normative_check_v1(
+  uuid,uuid,text,text,text,text,jsonb,jsonb
+) from public, anon, authenticated;
+grant execute on function public.record_civic_education_normative_check_v1(
+  uuid,uuid,text,text,text,text,jsonb,jsonb
+) to service_role;
+
+create or replace function public.enforce_current_civic_normative_receipt_v1()
+returns trigger
+language plpgsql
+security definer
+set search_path = public, extensions, pg_temp
+as $
+declare
+  v_norm jsonb;
+  v_norm_fingerprint text;
+  v_current_baseline_set_fingerprint text;
+  v_receipt public.civic_education_normative_check_receipts%rowtype;
+begin
+  v_norm := new.framework_snapshot->'normativeVerification';
+  if jsonb_typeof(v_norm) <> 'object' then
+    raise exception 'CIVIC_NORMATIVE_CURRENT_RECEIPT_REQUIRED' using errcode = '23514';
+  end if;
+
+  lock table public.civic_education_normative_source_heads in share mode;
+
+  select encode(
+    digest(
+      convert_to(
+        coalesce(
+          string_agg(
+            head.source_key || ':' || head.baseline_id::text,
+            '|' order by head.source_key
+          ),
+          ''
+        ),
+        'UTF8'
+      ),
+      'sha256'
+    ),
+    'hex'
+  )
+  into v_current_baseline_set_fingerprint
+  from public.civic_education_normative_source_heads head
+  where head.framework_version_label = new.version_label;
+
+  if not exists (
+    select 1
+    from public.civic_education_normative_source_heads head
+    where head.framework_version_label = new.version_label
+  ) then
+    raise exception 'CIVIC_NORMATIVE_BASELINE_NOT_CONFIGURED' using errcode = '23514';
+  end if;
+
+  v_norm_fingerprint := encode(
+    digest(convert_to(v_norm::text, 'UTF8'), 'sha256'),
+    'hex'
+  );
+
+  select * into v_receipt
+  from public.civic_education_normative_check_receipts receipt
+  where receipt.workspace_id = new.workspace_id
+    and receipt.institution_id = new.institution_id
+    and receipt.framework_id = new.framework_id
+    and receipt.framework_version_label = new.version_label
+    and receipt.normative_fingerprint = v_norm_fingerprint
+    and receipt.verification_snapshot = v_norm
+    and receipt.checked_at = (v_norm->>'checkedAt')::timestamptz
+    and receipt.result = v_norm->>'result'
+    and receipt.baseline_set_fingerprint = v_current_baseline_set_fingerprint
+    and receipt.confirmed_by_user_id is not null
+    and receipt.confirmed_by_role in ('referente','collegio')
+    and receipt.confirmed_at is not null
+    and nullif(trim(receipt.client_request_id), '') is not null
+    and jsonb_typeof(receipt.source_observations) = 'array'
+  limit 1;
+
+  if not found then
+    raise exception 'CIVIC_NORMATIVE_CURRENT_RECEIPT_REQUIRED' using errcode = '23514';
+  end if;
+
+  return new;
+end;
+$;
+
+drop trigger if exists civic_education_approved_frameworks_current_normative_receipt
+  on public.civic_education_approved_frameworks;
+create trigger civic_education_approved_frameworks_current_normative_receipt
+before insert on public.civic_education_approved_frameworks
+for each row execute function public.enforce_current_civic_normative_receipt_v1();
+
+revoke all on function public.enforce_current_civic_normative_receipt_v1()
+  from public, anon, authenticated;
+
+comment on table public.civic_education_normative_source_baselines is
+  'Append-only server-controlled official-source fingerprints for EC-01 automatic normative verification. No baseline is seeded by this migration.';
+comment on table public.civic_education_normative_source_heads is
+  'Server-controlled pointer to the accepted official-source fingerprint baseline per EC-01 framework version.';
+comment on function public.record_civic_education_normative_check_v1(
+  uuid,uuid,text,text,text,text,jsonb,jsonb
+) is
+  'Trusted-server-only EC-01 receipt boundary. Records a no-relevant-change receipt only when every active official-source baseline matches exactly.';
+);
 
 create unique index if not exists civic_education_normative_check_receipts_request_idx
   on public.civic_education_normative_check_receipts(workspace_id, client_request_id)
