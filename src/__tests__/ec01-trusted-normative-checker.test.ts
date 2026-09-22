@@ -233,10 +233,12 @@ describe('EC-01/Arena-F4 — trusted normative checker core', () => {
     );
     expect(preview.status).toBe('verified');
 
-    const record = vi.fn().mockResolvedValue({
+    const record = vi.fn(async (input: Parameters<CivicNormativeReceiptRecorder['record']>[0]) => ({
       id: 'receipt-1',
       normativeFingerprint: 'a'.repeat(64),
-    });
+      verificationSnapshot: input.verification,
+      observations: input.observations,
+    }));
     const recorder: CivicNormativeReceiptRecorder = {
       findExisting: vi.fn().mockResolvedValue(null),
       record,
