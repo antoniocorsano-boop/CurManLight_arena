@@ -23,6 +23,13 @@ create table if not exists public.civic_education_normative_source_baselines (
   check (nullif(trim(source_key), '') is not null),
   check (nullif(trim(title), '') is not null),
   check (nullif(trim(source_url), '') is not null),
+  check (source_key = trim(source_key)),
+  check (source_url = trim(source_url)),
+  check (
+    (authority = 'MIM' and lower(source_url) ~ '^https://([a-z0-9-]+\\.)*mim\\.gov\\.it([/:?#]|$)')
+    or (authority = 'NORMATTIVA' and lower(source_url) ~ '^https://([a-z0-9-]+\\.)*normattiva\\.it([/:?#]|$)')
+    or (authority = 'GAZZETTA_UFFICIALE' and lower(source_url) ~ '^https://([a-z0-9-]+\\.)*gazzettaufficiale\\.it([/:?#]|$)')
+  ),
   check (nullif(trim(evidence_note), '') is not null)
 );
 
@@ -43,6 +50,8 @@ alter table public.civic_education_normative_source_heads enable row level secur
 
 revoke all on public.civic_education_normative_source_baselines from public, anon, authenticated;
 revoke all on public.civic_education_normative_source_heads from public, anon, authenticated;
+grant select, insert on public.civic_education_normative_source_baselines to service_role;
+grant select, insert, update on public.civic_education_normative_source_heads to service_role;
 
 create or replace function public.reject_civic_education_normative_baseline_mutation_v1()
 returns trigger
@@ -78,6 +87,7 @@ declare
   v_role text;
   v_norm_fingerprint text;
   v_checked_at timestamptz;
+  v_human_confirmed_at timestamptz;
   v_source jsonb;
   v_observation jsonb;
   v_baseline public.civic_education_normative_source_baselines%rowtype;
@@ -90,7 +100,7 @@ declare
 begin
   -- Only the Supabase service role / trusted backend may execute this function.
   -- No grant is made to authenticated below.
-  if current_user <> 'service_role' then
+  if coalesce(auth.role(), '') <> 'service_role' then
     raise exception 'CIVIC_NORMATIVE_TRUSTED_SERVER_REQUIRED' using errcode = '42501';
   end if;
 
@@ -136,10 +146,13 @@ begin
 
   begin
     v_checked_at := (p_verification_snapshot->>'checkedAt')::timestamptz;
-    perform (p_verification_snapshot->>'humanConfirmedAt')::timestamptz;
+    v_human_confirmed_at := (p_verification_snapshot->>'humanConfirmedAt')::timestamptz;
   exception when others then
     raise exception 'INVALID_CIVIC_NORMATIVE_TIMESTAMP' using errcode = '22007';
   end;
+  if v_human_confirmed_at < v_checked_at then
+    raise exception 'CIVIC_NORMATIVE_CONFIRMATION_PRECEDES_CHECK' using errcode = '23514';
+  end if;
 
   select count(*) into v_active_count
   from public.civic_education_normative_source_heads head
