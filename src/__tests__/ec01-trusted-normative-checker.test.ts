@@ -439,9 +439,11 @@ describe('EC-01/Arena-F4 — trusted normative SQL boundary', () => {
   });
 
   it('keeps the migration structurally complete after hardening', () => {
-    expect(migration).toContain("baseline_set_fingerprint ~ '^[a-f0-9]{64}
+    expect(migration).toContain("baseline_set_fingerprint ~ '^[a-f0-9]{64}$'");
     expect(migration).toContain('create or replace function public.enforce_current_civic_normative_receipt_v1()');
-    expect(migration).toMatch(/create or replace function public\.enforce_current_civic_normative_receipt_v1\(\)[\s\S]*?as \$\$[\s\S]*?end;\s*\$\$;/);
+    expect(migration).toMatch(
+      /create or replace function public\.enforce_current_civic_normative_receipt_v1\(\)[\s\S]*?as \$\$[\s\S]*?end;\s*\$\$;/,
+    );
   });
 
   it('serializes retry identity before the idempotency lookup', () => {
