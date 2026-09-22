@@ -397,10 +397,10 @@ describe('EC-01/Arena-F4 — trusted normative SQL boundary', () => {
   });
 
   it('keeps baseline mutation closed to browser roles and permits the trusted server role', () => {
-    expect(migration).toContain('revoke all on public.civic_education_normative_source_baselines from public, anon, authenticated');
-    expect(migration).toContain('revoke all on public.civic_education_normative_source_heads from public, anon, authenticated');
-    expect(migration).toContain('grant select, insert on public.civic_education_normative_source_baselines to service_role');
-    expect(migration).toContain('grant select, insert, update on public.civic_education_normative_source_heads to service_role');
+    expect(migration).toMatch(/revoke all on public\.civic_education_normative_source_baselines\s+from public, anon, authenticated;/);
+    expect(migration).toMatch(/revoke all on public\.civic_education_normative_source_heads\s+from public, anon, authenticated;/);
+    expect(migration).toMatch(/grant select, insert on public\.civic_education_normative_source_baselines\s+to service_role;/);
+    expect(migration).toMatch(/grant select, insert, update on public\.civic_education_normative_source_heads\s+to service_role;/);
   });
 
   it('enforces official domains at database level', () => {
