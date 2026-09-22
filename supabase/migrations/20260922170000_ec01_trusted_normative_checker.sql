@@ -98,11 +98,8 @@ declare
   v_existing public.civic_education_normative_check_receipts%rowtype;
   v_receipt public.civic_education_normative_check_receipts%rowtype;
 begin
-  -- Only the Supabase service role / trusted backend may execute this function.
-  -- No grant is made to authenticated below.
-  if coalesce(auth.role(), '') <> 'service_role' then
-    raise exception 'CIVIC_NORMATIVE_TRUSTED_SERVER_REQUIRED' using errcode = '42501';
-  end if;
+  -- Execution is granted only to the privileged server role below.
+  -- SECURITY DEFINER supplies table access; browser roles have no EXECUTE grant.
 
   if p_workspace_id is null
      or p_requested_by_user_id is null
@@ -153,6 +150,8 @@ begin
   if v_human_confirmed_at < v_checked_at then
     raise exception 'CIVIC_NORMATIVE_CONFIRMATION_PRECEDES_CHECK' using errcode = '23514';
   end if;
+
+  lock table public.civic_education_normative_source_heads in share mode;
 
   select count(*) into v_active_count
   from public.civic_education_normative_source_heads head
