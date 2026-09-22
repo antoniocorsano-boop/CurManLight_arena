@@ -172,7 +172,19 @@ implements SharedCivicEducationFrameworkRepository {
     });
 
     if (error) throw new Error(`Quadro EC-01 approvato non leggibile: ${error.message}`);
-    return data == null ? null : asSnapshot(data);
+    if (data == null) return null;
+
+    const snapshot = asSnapshot(data);
+    if (
+      snapshot.receipt.workspaceId !== context.membership.workspaceId
+      || snapshot.framework.institutionId !== institutionId.trim()
+      || snapshot.framework.academicYear.startYear !== academicYear.startYear
+      || snapshot.framework.academicYear.endYear !== academicYear.endYear
+      || snapshot.framework.schoolOrder !== schoolOrder
+    ) {
+      throw new Error('Il server ha restituito un quadro EC-01 fuori dallo scope richiesto.');
+    }
+    return snapshot;
   }
 
   async approve(
@@ -207,6 +219,17 @@ implements SharedCivicEducationFrameworkRepository {
       !== command.expectedCurrentApprovedFrameworkId
     ) {
       throw new Error('Il server non ha rispettato la baseline CAS EC-01 richiesta.');
+    }
+    if (
+      snapshot.framework.id !== command.candidate.id
+      || snapshot.framework.institutionId !== command.candidate.institutionId
+      || snapshot.framework.curriculumVersionId !== command.candidate.curriculumVersionId
+      || snapshot.framework.versionLabel !== command.candidate.versionLabel
+      || snapshot.framework.schoolOrder !== command.candidate.schoolOrder
+      || snapshot.framework.academicYear.startYear !== command.candidate.academicYear.startYear
+      || snapshot.framework.academicYear.endYear !== command.candidate.academicYear.endYear
+    ) {
+      throw new Error('Il server ha approvato un quadro EC-01 diverso dal candidato richiesto.');
     }
     return snapshot;
   }
