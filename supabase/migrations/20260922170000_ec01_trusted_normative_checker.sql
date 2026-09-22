@@ -166,6 +166,12 @@ begin
     0
   ));
 
+  -- Serialize retries for the same request identity before the idempotent lookup.
+  -- This prevents concurrent confirmations from racing to the unique index.
+  perform pg_advisory_xact_lock(hashtextextended(
+    p_workspace_id::text || ':EC01-NORMATIVE-CHECK:' || p_client_request_id, 0
+  ));
+
   select * into v_existing
   from public.civic_education_normative_check_receipts receipt
   where receipt.workspace_id = p_workspace_id
