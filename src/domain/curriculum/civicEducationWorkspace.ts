@@ -278,6 +278,7 @@ export function saveCivicEducationDraft(
     return { success: false, errors: archiveValidation.errors };
   }
 
+  const frameworkId = framework.id;
   const structural = validateCivicEducationAnnualFramework(framework);
   const bindings = validateCivicEducationCurriculumBindings(framework, context);
   const errors = [...structural, ...bindings]
