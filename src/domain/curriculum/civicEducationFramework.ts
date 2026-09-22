@@ -161,6 +161,26 @@ function academicYearKey(year: AcademicYear): string {
   return `${year.startYear}-${year.endYear}`;
 }
 
+function approvedFrameworkKey(framework: CivicEducationAnnualFramework): string {
+  return [
+    framework.institutionId,
+    academicYearKey(framework.academicYear),
+    framework.schoolOrder,
+  ].join(':');
+}
+
+function hasApprovedFrameworkConflict(
+  framework: CivicEducationAnnualFramework,
+  frameworkSet: CivicEducationAnnualFramework[],
+): boolean {
+  const key = approvedFrameworkKey(framework);
+  return frameworkSet.some(candidate =>
+    candidate.id !== framework.id
+    && candidate.status === 'approved'
+    && approvedFrameworkKey(candidate) === key
+  );
+}
+
 function isAcademicYearValid(year: AcademicYear): boolean {
   return Number.isInteger(year.startYear)
     && Number.isInteger(year.endYear)
@@ -306,6 +326,18 @@ export function validateCivicEducationCurriculumBindings(
       'error',
       framework,
       'Il quadro non è legato alla versione curricolare Arena fornita al gate.',
+    ));
+  }
+
+  if (
+    context.curriculumVersion.institutionId
+    && context.curriculumVersion.institutionId !== framework.institutionId
+  ) {
+    issues.push(domainIssue(
+      'CIVIC_CURRICULUM_INSTITUTION_MISMATCH',
+      'error',
+      framework,
+      'La versione curricolare Arena appartiene a un istituto diverso dal quadro di Educazione civica.',
     ));
   }
 
@@ -556,6 +588,7 @@ export function validateCivicEducationAnnualFramework(
 export function evaluateCivicEducationApprovalGate(
   framework: CivicEducationAnnualFramework,
   context: CivicEducationCurriculumBindingContext,
+  frameworkSet: CivicEducationAnnualFramework[],
 ): CivicEducationApprovalGateResult {
   const issues = [
     ...validateCivicEducationAnnualFramework(framework),
@@ -667,6 +700,15 @@ export function evaluateCivicEducationApprovalGate(
     }
   }
 
+  if (hasApprovedFrameworkConflict(framework, frameworkSet)) {
+    issues.push(domainIssue(
+      'CIVIC_APPROVED_FRAMEWORK_CONFLICT',
+      'error',
+      framework,
+      'Esiste già un altro quadro approvato per lo stesso istituto, anno scolastico e ordine.',
+    ));
+  }
+
   return {
     approvable: !issues.some(issue => issue.severity === 'error'),
     issues,
@@ -685,11 +727,7 @@ export function validateCivicEducationFrameworkSet(
     issues.push(...validateCivicEducationAnnualFramework(framework));
     if (framework.status !== 'approved') continue;
 
-    const key = [
-      framework.institutionId,
-      academicYearKey(framework.academicYear),
-      framework.schoolOrder,
-    ].join(':');
+    const key = approvedFrameworkKey(framework);
 
     const existing = approvedKeys.get(key);
     if (existing) {
@@ -710,11 +748,17 @@ export function validateCivicEducationFrameworkSet(
 export function canProjectCivicEducationFramework(
   framework: CivicEducationAnnualFramework,
   context: CivicEducationCurriculumBindingContext,
+  frameworkSet: CivicEducationAnnualFramework[],
 ): boolean {
   if (framework.status !== 'approved') return false;
   if (context.curriculumVersion.id !== framework.curriculumVersionId) return false;
+  if (
+    context.curriculumVersion.institutionId
+    && context.curriculumVersion.institutionId !== framework.institutionId
+  ) return false;
   if (context.curriculumVersion.status !== 'approved') return false;
-  return evaluateCivicEducationApprovalGate(framework, context).approvable;
+  if (hasApprovedFrameworkConflict(framework, frameworkSet)) return false;
+  return evaluateCivicEducationApprovalGate(framework, context, frameworkSet).approvable;
 }
 
 export function cloneCivicEducationFrameworkForAcademicYear(
