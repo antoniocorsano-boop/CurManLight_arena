@@ -316,7 +316,8 @@ describe('EC-01/Arena-F4 — trusted server adapter contract', () => {
   });
 
   it('routes preview and confirmation through the trusted checker and server-only RPC', () => {
-    expect(edgeFunction).toContain('previewTrustedCivicNormativeCheck(loader, fetch)');
+    expect(edgeFunction).toContain('previewTrustedCivicNormativeCheck(');
+    expect(edgeFunction).toContain('body.frameworkVersionLabel');
     expect(edgeFunction).toContain('confirmTrustedCivicNormativeCheck(');
     expect(edgeFunction).toContain("'record_civic_education_normative_check_v1'");
     expect(edgeFunction).toContain(".eq('framework_version_label', frameworkVersionLabel)");
