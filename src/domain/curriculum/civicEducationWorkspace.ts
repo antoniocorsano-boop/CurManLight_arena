@@ -20,6 +20,7 @@ import {
 import { canTransitionVersionStatus } from './validation-legacy';
 
 export const CIVIC_EDUCATION_DRAFT_ARCHIVE_SCHEMA_VERSION = 1 as const;
+export const CIVIC_EDUCATION_LOCAL_AUTHORITY_PLANE = 'LOCAL_DEVICE_NON_AUTHORITATIVE' as const;
 
 export type CivicEducationLocalDraftStatus =
   | 'draft'
@@ -28,6 +29,7 @@ export type CivicEducationLocalDraftStatus =
 
 export interface CivicEducationDraftArchive {
   schemaVersion: typeof CIVIC_EDUCATION_DRAFT_ARCHIVE_SCHEMA_VERSION;
+  authorityPlane: typeof CIVIC_EDUCATION_LOCAL_AUTHORITY_PLANE;
   updatedAt: string;
   frameworks: CivicEducationAnnualFramework[];
 }
@@ -111,6 +113,7 @@ export function createEmptyCivicEducationDraftArchive(
 ): CivicEducationDraftArchive {
   return {
     schemaVersion: CIVIC_EDUCATION_DRAFT_ARCHIVE_SCHEMA_VERSION,
+    authorityPlane: CIVIC_EDUCATION_LOCAL_AUTHORITY_PLANE,
     updatedAt: now,
     frameworks: [],
   };
@@ -121,6 +124,7 @@ export function cloneCivicEducationDraftArchive(
 ): CivicEducationDraftArchive {
   return {
     schemaVersion: CIVIC_EDUCATION_DRAFT_ARCHIVE_SCHEMA_VERSION,
+    authorityPlane: CIVIC_EDUCATION_LOCAL_AUTHORITY_PLANE,
     updatedAt: archive.updatedAt,
     frameworks: archive.frameworks.map(cloneFramework),
   };
@@ -151,6 +155,12 @@ export function validateCivicEducationDraftArchive(
     errors.push({
       code: 'CIVIC_DRAFT_ARCHIVE_SCHEMA_UNSUPPORTED',
       message: 'Versione schema archivio Educazione civica non supportata.',
+    });
+  }
+  if (archive.authorityPlane !== CIVIC_EDUCATION_LOCAL_AUTHORITY_PLANE) {
+    errors.push({
+      code: 'CIVIC_DRAFT_ARCHIVE_AUTHORITY_PLANE_INVALID',
+      message: 'L’archivio locale deve dichiararsi esplicitamente non autorevole.',
     });
   }
   if (!Array.isArray(archive.frameworks)) {
