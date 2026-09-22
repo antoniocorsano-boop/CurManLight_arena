@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import migration from '../../supabase/migrations/20260922170000_ec01_trusted_normative_checker.sql?raw';
 import edgeFunction from '../../supabase/functions/ec01-normative-check/index.ts?raw';
+import productCiWorkflow from '../../.github/workflows/product-ci.yml?raw';
 import {
   CIVIC_NORMATIVE_MAX_SOURCE_BYTES,
   CIVIC_NORMATIVE_NORMALIZATION_VERSION,
@@ -296,6 +297,16 @@ describe('EC-01/Arena-F4 — trusted normative checker core', () => {
   });
 });
 
+describe('EC-01/Arena-F4 — Edge CI contract', () => {
+  it('runs a real Deno typecheck for the trusted Edge Function in Product CI', () => {
+    expect(productCiWorkflow).toContain('uses: denoland/setup-deno@v2');
+    expect(productCiWorkflow).toContain('deno-version: v2.x');
+    expect(productCiWorkflow).toContain(
+      'deno check supabase/functions/ec01-normative-check/index.ts',
+    );
+  });
+});
+
 describe('EC-01/Arena-F4 — trusted server adapter contract', () => {
   it('keeps a complete request-validation shell in the Edge adapter', () => {
     expect(edgeFunction).toContain('function json(status: number, body: unknown): Response');
@@ -393,6 +404,15 @@ describe('EC-01/Arena-F4 — trusted normative SQL boundary', () => {
     );
     expect(migration).toContain('p_requested_by_user_id');
     expect(migration).toContain('p_client_request_id');
+  });
+
+  it('serializes retry identity before the idempotency lookup', () => {
+    const lockNeedle = "p_workspace_id::text || ':EC01-NORMATIVE-REQUEST:' || p_client_request_id";
+    const lookupNeedle = 'where receipt.workspace_id = p_workspace_id';
+
+    expect(migration).toContain('pg_advisory_xact_lock(hashtextextended(');
+    expect(migration.indexOf(lockNeedle)).toBeGreaterThanOrEqual(0);
+    expect(migration.indexOf(lookupNeedle)).toBeGreaterThan(migration.indexOf(lockNeedle));
   });
 
   it('locks the baseline head set while the trusted receipt is validated', () => {
