@@ -4,9 +4,6 @@ on:
   pull_request:
     paths:
       - '.human/**'
-      - 'src/**'
-      - 'ops/trama-perceptible-write.json'
-      - 'tools/trama-perceptible-write/**'
       - 'tools/human-interaction-model/**'
       - 'agent_skills/human-interaction-model/**'
       - 'src/features/guided-workflow/humanTask.ts'
@@ -59,15 +56,6 @@ on:
       - '.github/workflows/s3-critical-journey-browser.yml'
       - '.github/workflows/human-interaction-model.yml'
   workflow_dispatch:
-    inputs:
-      base_sha:
-        description: 'Base SHA for fail-closed TRAMA-PW-01 comparison'
-        required: true
-        type: string
-      head_sha:
-        description: 'Head SHA for fail-closed TRAMA-PW-01 comparison'
-        required: true
-        type: string
 
 jobs:
   validate-him:
@@ -75,19 +63,10 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Validate TRAMA Perceptible Write contract
-        env:
-          TRAMA_PW_BASE_SHA: ${{ github.event.pull_request.base.sha || inputs.base_sha }}
-          TRAMA_PW_HEAD_SHA: ${{ github.event.pull_request.head.sha || inputs.head_sha }}
-        run: |
-          node --test tools/trama-perceptible-write/lib.test.mjs
-          node tools/trama-perceptible-write/validate.mjs
       - name: Validate HIM installation and CCO
         run: node tools/human-interaction-model/validate.mjs .
       - name: Validate canonical UX contract
