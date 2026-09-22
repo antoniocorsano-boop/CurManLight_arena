@@ -153,22 +153,7 @@ begin
     raise exception 'CIVIC_NORMATIVE_CONFIRMATION_ROLE_REQUIRED' using errcode = '42501';
   end if;
 
-  perform pg_advisory_xact_lock(hashtextextended(
-    p_workspace_id::text || ':EC01-NORMATIVE-REQUEST:' || p_client_request_id,
-    0
-  ));
-
   -- Serialize retries for the same logical request before the idempotency lookup.
-  -- Without this lock, concurrent callers can both miss v_existing and race
-  -- into the unique index; the loser would see unique_violation instead of
-  -- the canonical receipt produced by the winner.
-  perform pg_advisory_xact_lock(hashtextextended(
-    p_workspace_id::text || ':EC01-NORMATIVE-CHECK:' || p_client_request_id,
-    0
-  ));
-
-  -- Serialize retries for the same request identity before the idempotent lookup.
-  -- This prevents concurrent confirmations from racing to the unique index.
   perform pg_advisory_xact_lock(hashtextextended(
     p_workspace_id::text || ':EC01-NORMATIVE-CHECK:' || p_client_request_id, 0
   ));
@@ -447,22 +432,9 @@ comment on function public.record_civic_education_normative_check_v1(
   uuid,uuid,text,text,text,text,jsonb,jsonb
 ) is
   'Trusted-server-only EC-01 receipt boundary. Records a no-relevant-change receipt only when every active official-source baseline matches exactly.';
-);
 
-create unique index if not exists civic_education_normative_check_receipts_request_idx
-  on public.civic_education_normative_check_receipts(workspace_id, client_request_id)
-  where client_request_id is not null;
-
-create index if not exists civic_education_normative_source_baselines_authority_idx
-  on public.civic_education_normative_source_baselines(authority, created_at desc);
-
-alter table public.civic_education_normative_source_baselines enable row level security;
-alter table public.civic_education_normative_source_heads enable row level security;
-
-revoke all on public.civic_education_normative_source_baselines from public, anon, authenticated;
-revoke all on public.civic_education_normative_source_heads from public, anon, authenticated;
-grant select, insert on public.civic_education_normative_source_baselines to service_role;
-grant select, insert, update on public.civic_education_normative_source_heads to service_role;
+comment on function public.enforce_current_civic_normative_receipt_v1() is
+  'Fails closed when an EC approval attempts to consume a normative receipt that is incomplete or no longer bound to the current baseline head set.';
 
 create or replace function public.reject_civic_education_normative_baseline_mutation_v1()
 returns trigger
