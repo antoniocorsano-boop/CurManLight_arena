@@ -26,9 +26,9 @@ create table if not exists public.civic_education_normative_source_baselines (
   check (source_key = trim(source_key)),
   check (source_url = trim(source_url)),
   check (
-    (authority = 'MIM' and lower(source_url) ~ '^https://([a-z0-9-]+\\.)*mim\\.gov\\.it([/:?#]|$)')
-    or (authority = 'NORMATTIVA' and lower(source_url) ~ '^https://([a-z0-9-]+\\.)*normattiva\\.it([/:?#]|$)')
-    or (authority = 'GAZZETTA_UFFICIALE' and lower(source_url) ~ '^https://([a-z0-9-]+\\.)*gazzettaufficiale\\.it([/:?#]|$)')
+    (authority = 'MIM' and lower(source_url) ~ '^https://([a-z0-9-]+\.)*mim\.gov\.it([/:?#]|$)')
+    or (authority = 'NORMATTIVA' and lower(source_url) ~ '^https://([a-z0-9-]+\.)*normattiva\.it([/:?#]|$)')
+    or (authority = 'GAZZETTA_UFFICIALE' and lower(source_url) ~ '^https://([a-z0-9-]+\.)*gazzettaufficiale\.it([/:?#]|$)')
   ),
   check (nullif(trim(evidence_note), '') is not null)
 );
