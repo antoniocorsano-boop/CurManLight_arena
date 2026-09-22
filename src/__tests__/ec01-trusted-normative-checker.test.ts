@@ -428,7 +428,7 @@ describe('EC-01/Arena-F4 — trusted normative SQL boundary', () => {
   });
 
   it('persists the confirming person and a stable retry identity in the immutable receipt', () => {
-    expect(migration).toContain('confirmed_by_user_id uuid references auth.users(id)');
+    expect(migration).toMatch(/confirmed_by_user_id uuid\s+references auth\.users\(id\)/);
     expect(migration).toContain("confirmed_by_role in ('referente','collegio')");
     expect(migration).toContain('client_request_id text');
     expect(migration).toContain('confirmed_at timestamptz');
