@@ -178,21 +178,42 @@ export function validateCivicEducationDraftArchive(
   }
 
   const ids = new Set<string>();
-  for (const framework of archive.frameworks) {
-    if (ids.has(framework.id)) {
+  for (const rawFramework of archive.frameworks as unknown[]) {
+    if (!rawFramework || typeof rawFramework !== 'object' || Array.isArray(rawFramework)) {
+      errors.push({
+        code: 'CIVIC_DRAFT_ARCHIVE_FRAMEWORK_INVALID',
+        message: 'L’archivio contiene una voce quadro non valida.',
+      });
+      continue;
+    }
+
+    const framework = rawFramework as Partial<CivicEducationAnnualFramework>;
+    const frameworkId = typeof framework.id === 'string' ? framework.id : undefined;
+    if (!frameworkId) {
+      errors.push({
+        code: 'CIVIC_DRAFT_ARCHIVE_FRAMEWORK_ID_REQUIRED',
+        message: 'Ogni quadro locale deve avere un identificativo valido.',
+      });
+      continue;
+    }
+
+    if (ids.has(frameworkId)) {
       errors.push({
         code: 'CIVIC_DRAFT_ARCHIVE_DUPLICATE_ID',
-        message: `Quadro duplicato nell’archivio: ${framework.id}.`,
-        frameworkId: framework.id,
+        message: `Quadro duplicato nell’archivio: ${frameworkId}.`,
+        frameworkId,
       });
     }
-    ids.add(framework.id);
+    ids.add(frameworkId);
 
-    if (!isLocalCivicEducationDraftStatus(framework.status)) {
+    if (
+      typeof framework.status !== 'string'
+      || !isLocalCivicEducationDraftStatus(framework.status as CivicEducationAnnualFramework['status'])
+    ) {
       errors.push({
         code: 'CIVIC_LOCAL_AUTHORITY_FORBIDDEN',
         message: 'Lo stato locale non può rappresentare un quadro approved o superseded.',
-        frameworkId: framework.id,
+        frameworkId,
       });
     }
 
@@ -200,16 +221,24 @@ export function validateCivicEducationDraftArchive(
       errors.push({
         code: 'CIVIC_LOCAL_APPROVAL_EVIDENCE_FORBIDDEN',
         message: 'Il dispositivo locale non può conservare evidenza che trasformi una bozza in approvazione istituzionale.',
-        frameworkId: framework.id,
+        frameworkId,
       });
     }
 
-    for (const issue of validateCivicEducationAnnualFramework(framework)) {
-      const target = issue.severity === 'error' ? errors : warnings;
-      target.push({
-        code: issue.code,
-        message: issue.message,
-        frameworkId: framework.id,
+    try {
+      for (const issue of validateCivicEducationAnnualFramework(framework as CivicEducationAnnualFramework)) {
+        const target = issue.severity === 'error' ? errors : warnings;
+        target.push({
+          code: issue.code,
+          message: issue.message,
+          frameworkId,
+        });
+      }
+    } catch {
+      errors.push({
+        code: 'CIVIC_DRAFT_ARCHIVE_FRAMEWORK_MALFORMED',
+        message: 'Il quadro locale è incompleto o strutturalmente non valido.',
+        frameworkId,
       });
     }
   }
@@ -259,7 +288,7 @@ export function saveCivicEducationDraft(
     errors.push({
       code: 'CIVIC_LOCAL_AUTHORITY_FORBIDDEN',
       message: 'Un quadro approved o superseded non può essere salvato come autorità locale.',
-      frameworkId: framework.id,
+      frameworkId,
     });
   }
 
@@ -267,11 +296,18 @@ export function saveCivicEducationDraft(
     errors.push({
       code: 'CIVIC_LOCAL_APPROVAL_EVIDENCE_FORBIDDEN',
       message: 'Una bozza locale non può contenere evidenza di approvazione istituzionale.',
-      frameworkId: framework.id,
+      frameworkId,
     });
   }
 
   const existing = archive.frameworks.find(candidate => candidate.id === framework.id);
+  if (!existing && framework.status !== 'draft') {
+    errors.push({
+      code: 'CIVIC_LOCAL_INITIAL_STATUS_MUST_BE_DRAFT',
+      message: 'Un nuovo quadro locale deve iniziare dallo stato draft.',
+      frameworkId: framework.id,
+    });
+  }
   if (
     existing
     && existing.status !== framework.status
@@ -280,7 +316,7 @@ export function saveCivicEducationDraft(
     errors.push({
       code: 'CIVIC_LOCAL_INVALID_STATUS_TRANSITION',
       message: `Transizione locale non consentita: ${existing.status} → ${framework.status}.`,
-      frameworkId: framework.id,
+      frameworkId,
     });
   }
 
@@ -333,7 +369,7 @@ export function prepareCivicEducationInstitutionalApprovalCommand(
     errors.push({
       code: 'CIVIC_APPROVAL_CANDIDATE_NOT_PROPOSED',
       message: 'Solo un quadro proposed-to-collegio può essere preparato per l’approvazione istituzionale.',
-      frameworkId: framework.id,
+      frameworkId,
     });
   }
 
@@ -341,14 +377,14 @@ export function prepareCivicEducationInstitutionalApprovalCommand(
     errors.push({
       code: 'CIVIC_APPROVAL_WORKSPACE_REQUIRED',
       message: 'Il workspace istituzionale è obbligatorio.',
-      frameworkId: framework.id,
+      frameworkId,
     });
   }
   if (!input.clientRequestId.trim()) {
     errors.push({
       code: 'CIVIC_APPROVAL_REQUEST_ID_REQUIRED',
       message: 'L’identificativo idempotente della richiesta è obbligatorio.',
-      frameworkId: framework.id,
+      frameworkId,
     });
   }
 
@@ -364,7 +400,7 @@ export function prepareCivicEducationInstitutionalApprovalCommand(
     errors.push({
       code: 'CIVIC_APPROVAL_SHARED_SET_AMBIGUOUS',
       message: 'Il piano condiviso contiene più quadri approved concorrenti e deve essere risanato prima di procedere.',
-      frameworkId: framework.id,
+      frameworkId,
     });
   } else {
     const actualCurrentId = currentApproved[0]?.id ?? null;
@@ -372,7 +408,7 @@ export function prepareCivicEducationInstitutionalApprovalCommand(
       errors.push({
         code: 'CIVIC_APPROVAL_STALE_CURRENT_HEAD',
         message: 'Il quadro approved corrente non coincide con la baseline attesa: ricaricare prima di approvare.',
-        frameworkId: framework.id,
+        frameworkId,
       });
     }
   }
