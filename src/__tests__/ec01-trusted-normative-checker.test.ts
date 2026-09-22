@@ -533,6 +533,8 @@ describe('EC-01/Arena-F4 — trusted normative SQL boundary', () => {
 
   it('requires confirmation to follow the automatic check and uses retry-stable idempotency', () => {
     expect(migration).toContain("raise exception 'CIVIC_NORMATIVE_CONFIRMATION_PRECEDES_CHECK'");
+    expect(migration).toContain('pg_advisory_xact_lock');
+    expect(migration).toContain("p_workspace_id::text || ':EC01-NORMATIVE-REQUEST:' || p_client_request_id");
     expect(migration).toContain('receipt.client_request_id = p_client_request_id');
     expect(migration).toContain("raise exception 'CIVIC_NORMATIVE_REQUEST_ID_REUSE_MISMATCH'");
     expect(migration).toContain("raise exception 'CIVIC_NORMATIVE_REQUEST_RETRY_BASELINE_MISMATCH'");
