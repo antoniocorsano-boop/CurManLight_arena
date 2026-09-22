@@ -267,8 +267,11 @@ declare
   v_mapping jsonb;
   v_candidate_fingerprint text;
   v_total_hours numeric := 0;
+  v_target_key text;
+  v_seen_targets text[] := array[]::text[];
   v_has_mim boolean := false;
   v_has_legal boolean := false;
+  v_any_changed boolean := false;
   v_now timestamptz := now();
   v_approved_snapshot jsonb;
 begin
@@ -307,6 +310,8 @@ begin
      or nullif(trim(p_candidate->>'institutionId'), '') is null
      or nullif(trim(p_candidate->>'curriculumVersionId'), '') is null
      or nullif(trim(p_candidate->>'versionLabel'), '') is null
+     or nullif(trim(p_candidate->>'createdAt'), '') is null
+     or nullif(trim(p_candidate->>'updatedAt'), '') is null
      or (p_candidate ? 'approvedAt')
      or (p_candidate ? 'approvedByRole')
      or jsonb_typeof(p_candidate->'academicYear') <> 'object'
@@ -424,6 +429,17 @@ begin
          ) then
         raise exception 'INVALID_CIVIC_AREA_TARGET' using errcode = '23514';
       end if;
+
+      v_target_key := case
+        when v_alloc #>> '{target,type}' = 'discipline'
+          then 'discipline:' || lower(trim(v_alloc #>> '{target,disciplineCode}'))
+        else 'area:' || lower(trim(v_alloc #>> '{target,areaId}'))
+      end;
+      if v_target_key = any(v_seen_targets) then
+        raise exception 'CIVIC_ALLOCATION_DUPLICATE_TARGET' using errcode = '23514';
+      end if;
+      v_seen_targets := array_append(v_seen_targets, v_target_key);
+
       v_total_hours := v_total_hours + (v_alloc->>'annualHours')::numeric;
     end loop;
 
@@ -459,6 +475,10 @@ begin
       raise exception 'INVALID_CIVIC_NORMATIVE_SOURCE' using errcode = '23514';
     end if;
 
+    if v_source->>'outcome' = 'changed' then
+      v_any_changed := true;
+    end if;
+
     if v_source->>'authority' = 'MIM' then
       if lower(v_source->>'url') !~ '^https://([a-z0-9-]+\.)*mim\.gov\.it([/:?#]|$)' then
         raise exception 'CIVIC_NORMATIVE_SOURCE_NOT_OFFICIAL' using errcode = '23514';
@@ -478,6 +498,12 @@ begin
   end loop;
   if not v_has_mim or not v_has_legal then
     raise exception 'CIVIC_NORMATIVE_BASELINE_INCOMPLETE' using errcode = '23514';
+  end if;
+  if v_any_changed and v_norm->>'result' <> 'relevant-change-incorporated' then
+    raise exception 'CIVIC_NORMATIVE_CHANGE_RESULT_MISMATCH' using errcode = '23514';
+  end if;
+  if not v_any_changed and v_norm->>'result' = 'relevant-change-incorporated' then
+    raise exception 'CIVIC_NORMATIVE_CHANGE_RESULT_MISMATCH' using errcode = '23514';
   end if;
 
   perform pg_advisory_xact_lock(hashtextextended(
