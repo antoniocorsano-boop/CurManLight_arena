@@ -237,7 +237,10 @@ describe('EC-01/Arena-F4 — trusted normative checker core', () => {
       id: 'receipt-1',
       normativeFingerprint: 'a'.repeat(64),
     });
-    const recorder: CivicNormativeReceiptRecorder = { record };
+    const recorder: CivicNormativeReceiptRecorder = {
+      findExisting: vi.fn().mockResolvedValue(null),
+      record,
+    };
     const dates = [
       new Date('2026-09-22T14:01:00Z'),
       new Date('2026-09-22T14:01:01Z'),
@@ -264,6 +267,46 @@ describe('EC-01/Arena-F4 — trusted normative checker core', () => {
     });
   });
 
+  it('returns an already committed receipt before loading baselines or fetching sources', async () => {
+    const loadActiveBaselines = vi.fn();
+    const get = vi.fn();
+    const record = vi.fn();
+    const existingVerification = {
+      automaticCheck: true as const,
+      checkedAt: '2026-09-22T14:01:00.000Z',
+      verifiedFrameworkVersion: scope.frameworkVersionLabel,
+      sources: [],
+      result: 'no-relevant-change' as const,
+      humanConfirmedAt: '2026-09-22T14:01:01.000Z',
+      humanConfirmedByRole: scope.requestedByRole,
+    };
+    const result = await confirmTrustedCivicNormativeCheck(
+      scope,
+      { loadActiveBaselines },
+      {
+        findExisting: vi.fn().mockResolvedValue({
+          id: 'receipt-existing',
+          normativeFingerprint: 'b'.repeat(64),
+          verificationSnapshot: existingVerification,
+          observations: [],
+        }),
+        record,
+      },
+      get as unknown as CivicNormativeFetcher,
+    );
+
+    expect(result).toMatchObject({
+      status: 'recorded',
+      receipt: {
+        id: 'receipt-existing',
+        normativeFingerprint: 'b'.repeat(64),
+      },
+    });
+    expect(loadActiveBaselines).not.toHaveBeenCalled();
+    expect(get).not.toHaveBeenCalled();
+    expect(record).not.toHaveBeenCalled();
+  });
+
   it('does not record when a source drifts between preview and confirmation', async () => {
     const values = await baselines();
     let round = 0;
@@ -288,7 +331,7 @@ describe('EC-01/Arena-F4 — trusted normative checker core', () => {
     const confirmed = await confirmTrustedCivicNormativeCheck(
       scope,
       loader(values),
-      { record },
+      { findExisting: vi.fn().mockResolvedValue(null), record },
       get,
     );
 
@@ -331,6 +374,9 @@ describe('EC-01/Arena-F4 — trusted server adapter contract', () => {
     expect(edgeFunction).toContain('body.frameworkVersionLabel');
     expect(edgeFunction).toContain('confirmTrustedCivicNormativeCheck(');
     expect(edgeFunction).toContain("'record_civic_education_normative_check_v1'");
+    expect(edgeFunction).toContain("from('civic_education_normative_check_receipts')");
+    expect(edgeFunction).toContain(".eq('client_request_id', scope.clientRequestId)");
+    expect(edgeFunction).toContain('CIVIC_NORMATIVE_REQUEST_ID_REUSE_MISMATCH');
     expect(edgeFunction).toContain(".eq('framework_version_label', frameworkVersionLabel)");
     expect(edgeFunction).toContain('p_client_request_id: input.scope.clientRequestId');
     expect(edgeFunction).toContain('p_source_observations: input.observations');
@@ -413,6 +459,16 @@ describe('EC-01/Arena-F4 — trusted normative SQL boundary', () => {
     expect(migration).toContain('pg_advisory_xact_lock(hashtextextended(');
     expect(migration.indexOf(lockNeedle)).toBeGreaterThanOrEqual(0);
     expect(migration.indexOf(lookupNeedle)).toBeGreaterThan(migration.indexOf(lockNeedle));
+  });
+
+  it('binds receipts to the exact baseline head set and enforces freshness at final approval insert', () => {
+    expect(migration).toContain('baseline_set_fingerprint text');
+    expect(migration).toContain("head.source_key || ':' || head.baseline_id::text");
+    expect(migration).toContain('v_baseline_set_fingerprint');
+    expect(migration).toContain('create or replace function public.enforce_current_civic_normative_receipt_v1()');
+    expect(migration).toContain('before insert on public.civic_education_approved_frameworks');
+    expect(migration).toContain('receipt.baseline_set_fingerprint = v_current_baseline_set_fingerprint');
+    expect(migration).toContain("raise exception 'CIVIC_NORMATIVE_CURRENT_RECEIPT_REQUIRED'");
   });
 
   it('locks the baseline head set while the trusted receipt is validated', () => {
