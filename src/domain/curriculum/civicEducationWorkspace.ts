@@ -365,6 +365,7 @@ export function prepareCivicEducationInstitutionalApprovalCommand(
 ): { success: true; command: CivicEducationInstitutionalApprovalCommand; gate: CivicEducationApprovalGateResult }
   | { success: false; errors: CivicEducationDraftArchiveIssue[]; gate?: CivicEducationApprovalGateResult } {
   const errors: CivicEducationDraftArchiveIssue[] = [];
+  const frameworkId = framework.id;
 
   if (framework.status !== 'proposed-to-collegio') {
     errors.push({
