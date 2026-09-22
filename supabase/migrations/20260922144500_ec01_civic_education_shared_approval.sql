@@ -301,8 +301,8 @@ begin
     raise exception 'REVISION_DECIDE_REQUIRED' using errcode = '42501';
   end if;
 
-  if p_candidate->>'schemaVersion' <> 'cml-civic-education-framework-v1'
-     or p_candidate->>'status' <> 'proposed-to-collegio'
+  if p_candidate->>'schemaVersion' is distinct from 'cml-civic-education-framework-v1'
+     or p_candidate->>'status' is distinct from 'proposed-to-collegio'
      or nullif(trim(p_candidate->>'id'), '') is null
      or nullif(trim(p_candidate->>'institutionId'), '') is null
      or nullif(trim(p_candidate->>'curriculumVersionId'), '') is null
@@ -312,7 +312,7 @@ begin
      or jsonb_typeof(p_candidate->'academicYear') <> 'object'
      or coalesce(p_candidate #>> '{academicYear,startYear}', '') !~ '^[0-9]{4}$'
      or coalesce(p_candidate #>> '{academicYear,endYear}', '') !~ '^[0-9]{4}$'
-     or p_candidate->>'schoolOrder' not in ('infanzia','primaria','secondaria')
+     or coalesce(p_candidate->>'schoolOrder', '') not in ('infanzia','primaria','secondaria')
      or jsonb_typeof(p_candidate->'allocations') <> 'array'
      or jsonb_typeof(p_candidate->'infanziaMappings') <> 'array' then
     raise exception 'INVALID_CIVIC_FRAMEWORK_CANDIDATE' using errcode = '22023';
@@ -410,7 +410,7 @@ begin
              or nullif(trim(ref->>'id'), '') is null
          )
          or jsonb_typeof(v_alloc->'target') <> 'object'
-         or v_alloc #>> '{target,type}' not in ('discipline','area') then
+         or coalesce(v_alloc #>> '{target,type}', '') not in ('discipline','area') then
         raise exception 'INVALID_CIVIC_ANNUAL_ALLOCATION' using errcode = '23514';
       end if;
       if v_alloc #>> '{target,type}' = 'discipline'
@@ -435,12 +435,12 @@ begin
   v_norm := p_candidate->'normativeVerification';
   if v_norm is null
      or jsonb_typeof(v_norm) <> 'object'
-     or v_norm->'automaticCheck' <> 'true'::jsonb
+     or v_norm->'automaticCheck' is distinct from 'true'::jsonb
      or nullif(trim(v_norm->>'checkedAt'), '') is null
-     or v_norm->>'verifiedFrameworkVersion' <> v_version_label
-     or v_norm->>'result' not in ('no-relevant-change','relevant-change-incorporated')
+     or v_norm->>'verifiedFrameworkVersion' is distinct from v_version_label
+     or coalesce(v_norm->>'result', '') not in ('no-relevant-change','relevant-change-incorporated')
      or nullif(trim(v_norm->>'humanConfirmedAt'), '') is null
-     or v_norm->>'humanConfirmedByRole' not in ('referente','collegio')
+     or coalesce(v_norm->>'humanConfirmedByRole', '') not in ('referente','collegio')
      or jsonb_typeof(v_norm->'sources') <> 'array'
      or jsonb_array_length(v_norm->'sources') = 0 then
     raise exception 'INVALID_CIVIC_NORMATIVE_VERIFICATION' using errcode = '23514';
@@ -453,8 +453,8 @@ begin
        or nullif(trim(v_source->>'id'), '') is null
        or nullif(trim(v_source->>'title'), '') is null
        or nullif(trim(v_source->>'checkedAt'), '') is null
-       or v_source->>'authority' not in ('MIM','NORMATTIVA','GAZZETTA_UFFICIALE')
-       or v_source->>'outcome' not in ('unchanged','changed')
+       or coalesce(v_source->>'authority', '') not in ('MIM','NORMATTIVA','GAZZETTA_UFFICIALE')
+       or coalesce(v_source->>'outcome', '') not in ('unchanged','changed')
        or nullif(trim(v_source->>'url'), '') is null then
       raise exception 'INVALID_CIVIC_NORMATIVE_SOURCE' using errcode = '23514';
     end if;
