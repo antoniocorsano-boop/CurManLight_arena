@@ -700,7 +700,7 @@ export function evaluateCivicEducationApprovalGate(
     }
   }
 
-  if (hasApprovedFrameworkConflict(framework, frameworkSet)) {
+  if (framework.status === 'approved' && hasApprovedFrameworkConflict(framework, frameworkSet)) {
     issues.push(domainIssue(
       'CIVIC_APPROVED_FRAMEWORK_CONFLICT',
       'error',
