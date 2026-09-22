@@ -385,6 +385,8 @@ describe('EC-01/Arena-F4 — trusted normative SQL boundary', () => {
     expect(migration).toContain('confirmed_by_user_id uuid references auth.users(id)');
     expect(migration).toContain("confirmed_by_role in ('referente','collegio')");
     expect(migration).toContain('client_request_id text');
+    expect(migration).toContain('confirmed_at timestamptz');
+    expect(migration).toContain('source_observations jsonb');
     expect(migration).toContain(
       'civic_education_normative_check_receipts_request_idx',
     );
@@ -410,6 +412,7 @@ describe('EC-01/Arena-F4 — trusted normative SQL boundary', () => {
     expect(migration).toContain("raise exception 'CIVIC_NORMATIVE_CONFIRMATION_PRECEDES_CHECK'");
     expect(migration).toContain('receipt.client_request_id = p_client_request_id');
     expect(migration).toContain("raise exception 'CIVIC_NORMATIVE_REQUEST_ID_REUSE_MISMATCH'");
+    expect(migration).toContain("raise exception 'CIVIC_NORMATIVE_REQUEST_RETRY_BASELINE_MISMATCH'");
     expect(migration).toContain('insert into public.civic_education_normative_check_receipts');
   });
 });
