@@ -2,10 +2,12 @@ import { describe, expect, it, vi } from 'vitest';
 import migration from '../../supabase/migrations/20260922170000_ec01_trusted_normative_checker.sql?raw';
 import edgeFunction from '../../supabase/functions/ec01-normative-check/index.ts?raw';
 import {
+  CIVIC_NORMATIVE_MAX_SOURCE_BYTES,
   CIVIC_NORMATIVE_NORMALIZATION_VERSION,
   confirmTrustedCivicNormativeCheck,
   isOfficialCivicNormativeSource,
   previewTrustedCivicNormativeCheck,
+  readCivicNormativeResponseBytes,
   type CivicNormativeBaselineLoader,
   type CivicNormativeFetcher,
   type CivicNormativeReceiptRecorder,
@@ -73,6 +75,7 @@ const scope = {
   institutionId: 'istituto-1',
   frameworkId: 'ec-secondaria-2026-v1',
   frameworkVersionLabel: '2026-27-v1',
+  clientRequestId: 'confirm-ec-2026-27-v1-001',
 };
 
 describe('EC-01/Arena-F4 — trusted normative checker core', () => {
@@ -87,6 +90,7 @@ describe('EC-01/Arena-F4 — trusted normative checker core', () => {
     const result = await previewTrustedCivicNormativeCheck(
       loader([]),
       fetcher({}),
+      '2026-27-v1',
       () => new Date('2026-09-22T14:00:00Z'),
     );
 
@@ -106,6 +110,7 @@ describe('EC-01/Arena-F4 — trusted normative checker core', () => {
     const result = await previewTrustedCivicNormativeCheck(
       loader(values),
       get,
+      '2026-27-v1',
       () => new Date('2026-09-22T14:00:00Z'),
     );
 
@@ -124,6 +129,7 @@ describe('EC-01/Arena-F4 — trusted normative checker core', () => {
         [mimUrl]: 'mim-changed',
         [normattivaUrl]: 'law-current',
       }),
+      '2026-27-v1',
     );
 
     expect(result).toMatchObject({
@@ -142,6 +148,7 @@ describe('EC-01/Arena-F4 — trusted normative checker core', () => {
         { [mimUrl]: 'mim-current', [normattivaUrl]: 'law-current' },
         { fail: mimUrl },
       ),
+      '2026-27-v1',
     );
     expect(failed).toMatchObject({ status: 'blocked', reason: 'FETCH_FAILED' });
 
@@ -151,11 +158,62 @@ describe('EC-01/Arena-F4 — trusted normative checker core', () => {
         { [mimUrl]: 'mim-current', [normattivaUrl]: 'law-current' },
         { redirectedUrl: { [mimUrl]: 'https://example.com/copied.pdf' } },
       ),
+      '2026-27-v1',
     );
     expect(redirected).toMatchObject({
       status: 'blocked',
       reason: 'SOURCE_REDIRECTED_OFFICIAL_BOUNDARY',
     });
+  });
+
+  it('loads only the baseline set bound to the requested framework version', async () => {
+    const values = await baselines();
+    const loadActiveBaselines = vi.fn().mockResolvedValue(values);
+    const result = await previewTrustedCivicNormativeCheck(
+      { loadActiveBaselines },
+      fetcher({ [mimUrl]: 'mim-current', [normattivaUrl]: 'law-current' }),
+      '2026-27-v1',
+    );
+
+    expect(result.status).toBe('verified');
+    expect(loadActiveBaselines).toHaveBeenCalledWith('2026-27-v1');
+  });
+
+  it('enforces the response-size cap before buffering and while streaming', async () => {
+    const arrayBuffer = vi.fn().mockResolvedValue(new ArrayBuffer(0));
+    const declaredTooLarge = await readCivicNormativeResponseBytes(
+      {
+        ok: true,
+        status: 200,
+        url: mimUrl,
+        headers: { get: name => name.toLowerCase() === 'content-length'
+          ? String(CIVIC_NORMATIVE_MAX_SOURCE_BYTES + 1)
+          : null },
+        arrayBuffer,
+      },
+      8,
+    );
+    expect(declaredTooLarge).toBeNull();
+    expect(arrayBuffer).not.toHaveBeenCalled();
+
+    const body = new ReadableStream<Uint8Array>({
+      start(controller) {
+        controller.enqueue(new Uint8Array([1, 2, 3]));
+        controller.enqueue(new Uint8Array([4, 5, 6]));
+        controller.close();
+      },
+    });
+    const streamedTooLarge = await readCivicNormativeResponseBytes(
+      {
+        ok: true,
+        status: 200,
+        url: mimUrl,
+        body,
+        arrayBuffer: vi.fn(),
+      },
+      5,
+    );
+    expect(streamedTooLarge).toBeNull();
   });
 
   it('performs a second fetch at human confirmation and records only the fresh result', async () => {
@@ -169,6 +227,7 @@ describe('EC-01/Arena-F4 — trusted normative checker core', () => {
     const preview = await previewTrustedCivicNormativeCheck(
       load,
       get,
+      '2026-27-v1',
       () => new Date('2026-09-22T14:00:00Z'),
     );
     expect(preview.status).toBe('verified');
@@ -221,7 +280,7 @@ describe('EC-01/Arena-F4 — trusted normative checker core', () => {
       };
     });
 
-    const preview = await previewTrustedCivicNormativeCheck(loader(values), get);
+    const preview = await previewTrustedCivicNormativeCheck(loader(values), get, '2026-27-v1');
     expect(preview.status).toBe('verified');
 
     const record = vi.fn();
@@ -260,7 +319,10 @@ describe('EC-01/Arena-F4 — trusted server adapter contract', () => {
     expect(edgeFunction).toContain('previewTrustedCivicNormativeCheck(loader, fetch)');
     expect(edgeFunction).toContain('confirmTrustedCivicNormativeCheck(');
     expect(edgeFunction).toContain("'record_civic_education_normative_check_v1'");
+    expect(edgeFunction).toContain(".eq('framework_version_label', frameworkVersionLabel)");
+    expect(edgeFunction).toContain('p_client_request_id: input.scope.clientRequestId');
     expect(edgeFunction).toContain('p_source_observations: input.observations');
+    expect(edgeFunction).toContain('CIVIC_NORMATIVE_CLIENT_REQUEST_ID_REQUIRED');
     expect(edgeFunction).not.toContain('insert(');
   });
 });
@@ -311,6 +373,25 @@ describe('EC-01/Arena-F4 — trusted normative SQL boundary', () => {
     expect(migration).not.toContain('auth.role()');
   });
 
+  it('binds the active baseline head set to the framework version being certified', () => {
+    expect(migration).toContain('framework_version_label text not null');
+    expect(migration).toContain('primary key (framework_version_label, source_key)');
+    expect(migration).toContain(
+      'where head.framework_version_label = p_framework_version_label',
+    );
+  });
+
+  it('persists the confirming person and a stable retry identity in the immutable receipt', () => {
+    expect(migration).toContain('confirmed_by_user_id uuid references auth.users(id)');
+    expect(migration).toContain("confirmed_by_role in ('referente','collegio')");
+    expect(migration).toContain('client_request_id text');
+    expect(migration).toContain(
+      'civic_education_normative_check_receipts_request_idx',
+    );
+    expect(migration).toContain('p_requested_by_user_id');
+    expect(migration).toContain('p_client_request_id');
+  });
+
   it('locks the baseline head set while the trusted receipt is validated', () => {
     expect(migration).toContain(
       'lock table public.civic_education_normative_source_heads in share mode',
@@ -325,10 +406,10 @@ describe('EC-01/Arena-F4 — trusted normative SQL boundary', () => {
     expect(migration).toContain("raise exception 'CIVIC_NORMATIVE_BASELINE_INCOMPLETE'");
   });
 
-  it('requires confirmation to follow the automatic check and records idempotently', () => {
+  it('requires confirmation to follow the automatic check and uses retry-stable idempotency', () => {
     expect(migration).toContain("raise exception 'CIVIC_NORMATIVE_CONFIRMATION_PRECEDES_CHECK'");
-    expect(migration).toContain('v_existing.verification_snapshot <> p_verification_snapshot');
-    expect(migration).toContain("raise exception 'CIVIC_NORMATIVE_RECEIPT_IDEMPOTENCY_MISMATCH'");
+    expect(migration).toContain('receipt.client_request_id = p_client_request_id');
+    expect(migration).toContain("raise exception 'CIVIC_NORMATIVE_REQUEST_ID_REUSE_MISMATCH'");
     expect(migration).toContain('insert into public.civic_education_normative_check_receipts');
   });
 });
