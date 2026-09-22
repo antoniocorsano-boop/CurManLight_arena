@@ -294,7 +294,8 @@ describe('SupabaseSharedCivicEducationFrameworkRepository', () => {
 
   it('rejects an approval response bound to a different candidate', async () => {
     const snapshot = approvedSnapshot();
-    snapshot.framework.versionLabel = 'different-version';
+    snapshot.framework.id = 'different-framework';
+    snapshot.receipt.frameworkId = 'different-framework';
     const rpc = vi.fn().mockResolvedValue({ data: snapshot, error: null });
     const repository = new SupabaseSharedCivicEducationFrameworkRepository(
       { rpc } as unknown as SupabaseClient,
