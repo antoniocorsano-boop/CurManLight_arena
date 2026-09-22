@@ -238,6 +238,13 @@ describe('EC-01/Arena-F4 — trusted normative checker core', () => {
 });
 
 describe('EC-01/Arena-F4 — trusted server adapter contract', () => {
+  it('keeps a complete request-validation shell in the Edge adapter', () => {
+    expect(edgeFunction).toContain('function json(status: number, body: unknown): Response');
+    expect(edgeFunction).toContain('function isRequestBody(value: unknown): value is RequestBody');
+    expect(edgeFunction).toContain("body.mode === 'preview' || body.mode === 'confirm'");
+    expect(edgeFunction).toContain("request.method !== 'POST'");
+  });
+
   it('uses current Supabase server auth without reading privileged API keys manually', () => {
     expect(edgeFunction).toContain("withSupabase({ auth: 'user' }");
     expect(edgeFunction).toContain('ctx.userClaims?.id');
