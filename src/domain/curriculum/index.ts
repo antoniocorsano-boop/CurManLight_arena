@@ -36,6 +36,37 @@ export {
 } from './types';
 
 export type { InstituteCurriculumVersion } from './version';
+
+export type {
+  CivicEducationNucleusId,
+  CivicEducationNormativeAuthority,
+  CivicEducationNormativeSourceOutcome,
+  CivicEducationNormativeVerificationResult,
+  CivicEducationNormativeSourceCheck,
+  CivicEducationNormativeVerification,
+  CivicEducationAllocationTarget,
+  CivicEducationAnnualAllocation,
+  CivicEducationInfanziaMapping,
+  CivicEducationAnnualFramework,
+  CivicEducationApprovalGateResult,
+  CloneCivicEducationFrameworkInput,
+  CivicEducationObjectiveReference,
+} from './civicEducationFramework';
+
+export {
+  CIVIC_EDUCATION_FRAMEWORK_SCHEMA_VERSION,
+  CIVIC_EDUCATION_MIN_ANNUAL_HOURS,
+  CIVIC_EDUCATION_REQUIRED_NUCLEI,
+  isOfficialCivicEducationNormativeSourceUrl,
+  getCivicEducationAnnualHours,
+  getUncoveredCivicEducationNuclei,
+  validateCivicEducationAnnualFramework,
+  evaluateCivicEducationApprovalGate,
+  validateCivicEducationFrameworkSet,
+  canProjectCivicEducationFramework,
+  cloneCivicEducationFrameworkForAcademicYear,
+} from './civicEducationFramework';
+
 export type { CurriculumSegment, CurriculumSegmentContent } from './segment';
 export type { CurriculumNode } from './node';
 export type { VerticalCurriculumLink } from './verticalLink';
