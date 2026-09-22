@@ -150,6 +150,11 @@ begin
     raise exception 'CIVIC_NORMATIVE_CONFIRMATION_ROLE_REQUIRED' using errcode = '42501';
   end if;
 
+  perform pg_advisory_xact_lock(hashtextextended(
+    p_workspace_id::text || ':EC01-NORMATIVE-REQUEST:' || p_client_request_id,
+    0
+  ));
+
   select * into v_existing
   from public.civic_education_normative_check_receipts receipt
   where receipt.workspace_id = p_workspace_id
