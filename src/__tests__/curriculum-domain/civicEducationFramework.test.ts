@@ -396,14 +396,17 @@ describe('EC-01/Arena-F1 — quadro annuale Educazione civica', () => {
     expect(canProjectCivicEducationFramework(second, bindingContext(second), activeSet)).toBe(false);
   });
 
-  it('blocca il gate di approvazione se esiste già un altro quadro approvato concorrente', () => {
+  it('consente di preparare la versione successiva mentre esiste il quadro approved corrente', () => {
     const existing = primaryFramework({
       id: 'approved-existing',
       status: 'approved',
       approvedAt: '2026-09-22T09:00:00Z',
       approvedByRole: 'collegio',
     });
-    const candidate = primaryFramework({ id: 'candidate' });
+    const candidate = primaryFramework({
+      id: 'candidate',
+      status: 'proposed-to-collegio',
+    });
 
     const gate = evaluateCivicEducationApprovalGate(
       candidate,
@@ -411,8 +414,8 @@ describe('EC-01/Arena-F1 — quadro annuale Educazione civica', () => {
       [existing, candidate],
     );
 
-    expect(gate.approvable).toBe(false);
-    expect(gate.issues.some(issue => issue.code === 'CIVIC_APPROVED_FRAMEWORK_CONFLICT')).toBe(true);
+    expect(gate.approvable).toBe(true);
+    expect(gate.issues.some(issue => issue.code === 'CIVIC_APPROVED_FRAMEWORK_CONFLICT')).toBe(false);
   });
 
   it('blocca un riferimento che non risolve a un vero obiettivo curricolare', () => {
