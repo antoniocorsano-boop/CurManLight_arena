@@ -475,6 +475,18 @@ describe('EC-01/Arena-F4 — trusted normative SQL boundary', () => {
     expect(migration).toContain("raise exception 'CIVIC_NORMATIVE_CURRENT_RECEIPT_REQUIRED'");
   });
 
+  it('serializes the logical request before the idempotency lookup', () => {
+    const lockIndex = migration.indexOf(
+      "p_workspace_id::text || ':EC01-NORMATIVE-CHECK:' || p_client_request_id",
+    );
+    const lookupIndex = migration.indexOf(
+      'where receipt.workspace_id = p_workspace_id',
+    );
+    expect(migration).toContain('perform pg_advisory_xact_lock(hashtextextended(');
+    expect(lockIndex).toBeGreaterThan(-1);
+    expect(lookupIndex).toBeGreaterThan(lockIndex);
+  });
+
   it('locks the baseline head set while the trusted receipt is validated', () => {
     expect(migration).toContain(
       'lock table public.civic_education_normative_source_heads in share mode',
