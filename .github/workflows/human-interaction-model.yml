@@ -4,6 +4,8 @@ on:
   pull_request:
     paths:
       - '.human/**'
+      - 'ops/trama-perceptible-write.json'
+      - 'tools/trama-perceptible-write/**'
       - 'tools/human-interaction-model/**'
       - 'agent_skills/human-interaction-model/**'
       - 'src/features/guided-workflow/humanTask.ts'
@@ -63,10 +65,17 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Validate TRAMA Perceptible Write contract
+        env:
+          TRAMA_PW_BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+          TRAMA_PW_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: node tools/trama-perceptible-write/validate.mjs
       - name: Validate HIM installation and CCO
         run: node tools/human-interaction-model/validate.mjs .
       - name: Validate canonical UX contract
