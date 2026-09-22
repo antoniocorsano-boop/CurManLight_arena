@@ -50,7 +50,9 @@ alter table public.civic_education_normative_check_receipts
   add column if not exists confirmed_by_user_id uuid references auth.users(id) on delete restrict,
   add column if not exists confirmed_by_role text
     check (confirmed_by_role in ('referente','collegio')),
-  add column if not exists client_request_id text;
+  add column if not exists confirmed_at timestamptz,
+  add column if not exists client_request_id text,
+  add column if not exists source_observations jsonb;
 
 create unique index if not exists civic_education_normative_check_receipts_request_idx
   on public.civic_education_normative_check_receipts(workspace_id, client_request_id)
@@ -160,6 +162,10 @@ begin
        or v_existing.confirmed_by_user_id is distinct from p_requested_by_user_id
        or v_existing.confirmed_by_role is distinct from v_role then
       raise exception 'CIVIC_NORMATIVE_REQUEST_ID_REUSE_MISMATCH' using errcode = '23505';
+    end if;
+    if v_existing.source_observations is null
+       or v_existing.source_observations <> p_source_observations then
+      raise exception 'CIVIC_NORMATIVE_REQUEST_RETRY_BASELINE_MISMATCH' using errcode = '23505';
     end if;
     return to_jsonb(v_existing);
   end if;
@@ -271,7 +277,9 @@ begin
     checker_authority,
     confirmed_by_user_id,
     confirmed_by_role,
-    client_request_id
+    confirmed_at,
+    client_request_id,
+    source_observations
   ) values (
     p_workspace_id,
     p_institution_id,
@@ -284,7 +292,9 @@ begin
     'SERVER_AUTOMATIC_CHECK',
     p_requested_by_user_id,
     v_role,
-    p_client_request_id
+    v_human_confirmed_at,
+    p_client_request_id,
+    p_source_observations
   )
   returning * into v_receipt;
 
