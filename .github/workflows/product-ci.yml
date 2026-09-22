@@ -51,6 +51,14 @@ jobs:
         with:
           deno-version: v2.x
 
+      - name: Edge Function typecheck
+        run: deno check supabase/functions/ec01-normative-check/index.ts
+
+      - name: Setup Deno
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
       - name: EC-01 Edge Function Deno check
         run: deno check --node-modules-dir=auto supabase/functions/ec01-normative-check/index.ts
 
