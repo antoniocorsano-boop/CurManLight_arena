@@ -487,6 +487,7 @@ export default function App() {
   order,
   institutionalArchive,
   revisionArchive,
+  civicEducationDraftArchive,
   stateRef,
   restoreBackupState,
   setIsSyncingWorkspace,
