@@ -207,8 +207,10 @@ function validateBaselines(
 }
 
 async function sha256Hex(bytes: Uint8Array): Promise<string> {
-  const copy = Uint8Array.from(bytes);
-  const digest = await globalThis.crypto.subtle.digest('SHA-256', copy);
+  // Re-materialize the bytes through a plain number array so the BufferSource
+  // belongs to the active WebCrypto realm (Node/jsdom and Deno compatible).
+  const webCryptoBytes = new Uint8Array(Array.from(bytes));
+  const digest = await globalThis.crypto.subtle.digest('SHA-256', webCryptoBytes);
   return [...new Uint8Array(digest)]
     .map(value => value.toString(16).padStart(2, '0'))
     .join('');
