@@ -234,6 +234,11 @@ export function saveCivicEducationDraft(
   context: CivicEducationCurriculumBindingContext,
   now = new Date().toISOString(),
 ): CivicEducationDraftArchiveOperationResult {
+  const archiveValidation = validateCivicEducationDraftArchive(archive);
+  if (!archiveValidation.valid) {
+    return { success: false, errors: archiveValidation.errors };
+  }
+
   const structural = validateCivicEducationAnnualFramework(framework);
   const bindings = validateCivicEducationCurriculumBindings(framework, context);
   const errors = [...structural, ...bindings]
@@ -286,6 +291,11 @@ export function removeCivicEducationDraft(
   id: string,
   now = new Date().toISOString(),
 ): CivicEducationDraftArchiveOperationResult {
+  const archiveValidation = validateCivicEducationDraftArchive(archive);
+  if (!archiveValidation.valid) {
+    return { success: false, errors: archiveValidation.errors };
+  }
+
   const existing = archive.frameworks.find(candidate => candidate.id === id);
   if (!existing) {
     return {
@@ -330,6 +340,31 @@ export function prepareCivicEducationInstitutionalApprovalCommand(
       message: 'L’identificativo idempotente della richiesta è obbligatorio.',
       frameworkId: framework.id,
     });
+  }
+
+  const currentApproved = sharedFrameworkSet.filter(candidate =>
+    candidate.status === 'approved'
+    && candidate.institutionId === framework.institutionId
+    && candidate.schoolOrder === framework.schoolOrder
+    && candidate.academicYear.startYear === framework.academicYear.startYear
+    && candidate.academicYear.endYear === framework.academicYear.endYear
+  );
+
+  if (currentApproved.length > 1) {
+    errors.push({
+      code: 'CIVIC_APPROVAL_SHARED_SET_AMBIGUOUS',
+      message: 'Il piano condiviso contiene più quadri approved concorrenti e deve essere risanato prima di procedere.',
+      frameworkId: framework.id,
+    });
+  } else {
+    const actualCurrentId = currentApproved[0]?.id ?? null;
+    if (actualCurrentId !== input.expectedCurrentApprovedFrameworkId) {
+      errors.push({
+        code: 'CIVIC_APPROVAL_STALE_CURRENT_HEAD',
+        message: 'Il quadro approved corrente non coincide con la baseline attesa: ricaricare prima di approvare.',
+        frameworkId: framework.id,
+      });
+    }
   }
 
   const gate = evaluateCivicEducationApprovalGate(framework, context, sharedFrameworkSet);
