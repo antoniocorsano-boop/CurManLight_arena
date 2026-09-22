@@ -1,10 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import type { EntityReference } from '../../domain/curriculum/identity/types';
 import type { DisciplineCode } from '../../domain/curriculum/model/vocabularies';
+import type { CurriculumNode } from '../../domain/curriculum/node';
+import type { CurriculumSegment } from '../../domain/curriculum/segment';
+import type { InstituteCurriculumVersion } from '../../domain/curriculum/version';
 import type {
   CivicEducationAnnualAllocation,
   CivicEducationAnnualFramework,
   CivicEducationInfanziaMapping,
+  CivicEducationCurriculumBindingContext,
 } from '../../domain/curriculum/civicEducationFramework';
 import {
   CIVIC_EDUCATION_FRAMEWORK_SCHEMA_VERSION,
@@ -12,6 +16,7 @@ import {
   cloneCivicEducationFrameworkForAcademicYear,
   evaluateCivicEducationApprovalGate,
   validateCivicEducationAnnualFramework,
+  validateCivicEducationCurriculumBindings,
   validateCivicEducationFrameworkSet,
 } from '../../domain/curriculum/civicEducationFramework';
 
@@ -104,9 +109,75 @@ function infanziaMapping(id: string): CivicEducationInfanziaMapping {
   };
 }
 
+function bindingContext(
+  framework: CivicEducationAnnualFramework,
+  options: {
+    curriculumStatus?: InstituteCurriculumVersion['status'];
+    nodeType?: CurriculumNode['type'];
+    segmentSubject?: string;
+    curriculumVersionId?: string;
+  } = {},
+): CivicEducationCurriculumBindingContext {
+  const curriculumVersionId = options.curriculumVersionId ?? framework.curriculumVersionId;
+  const segmentId = `segment-${framework.schoolOrder}`;
+  const curriculumVersion: InstituteCurriculumVersion = {
+    id: curriculumVersionId,
+    title: `Curricolo ${framework.versionLabel}`,
+    versionNumber: framework.versionLabel,
+    status: options.curriculumStatus ?? 'approved',
+    createdAt: '2026-09-01T08:00:00Z',
+    updatedAt: '2026-09-22T08:00:00Z',
+    approvedAt: options.curriculumStatus === 'draft' ? undefined : '2026-09-22T07:00:00Z',
+  };
+
+  const segment: CurriculumSegment = {
+    id: segmentId,
+    versionId: curriculumVersionId,
+    schoolLevel: framework.schoolOrder,
+    subjectOrFieldId: options.segmentSubject
+      ?? (framework.schoolOrder === 'infanzia' ? 'il-se-e-l-altro' : 'educazione-civica'),
+    scope: { type: 'school-level' },
+    frameworkApplicability: {
+      framework: 'IN2025',
+      resolutionStatus: 'resolved',
+      resolutionReason: 'EC-01',
+    },
+    workStatus: 'effective',
+    content: {
+      traguardi: [],
+      obiettivi: [],
+      evidenze: [],
+      conoscenze: [],
+      abilita: [],
+      competenze: [],
+      nucleiFondanti: [],
+      proposals: [],
+    },
+    createdAt: '2026-09-01T08:00:00Z',
+    updatedAt: '2026-09-22T08:00:00Z',
+  };
+
+  const refs = framework.schoolOrder === 'infanzia'
+    ? framework.infanziaMappings.flatMap(mapping => mapping.objectiveRefs)
+    : framework.allocations.flatMap(item => item.objectiveRefs);
+
+  const nodes: CurriculumNode[] = refs.map(ref => ({
+    id: String(ref.id),
+    versionId: curriculumVersionId,
+    segmentId,
+    type: options.nodeType ?? 'objective',
+    title: ref.snapshotLabel ?? String(ref.id),
+    createdAt: '2026-09-01T08:00:00Z',
+    updatedAt: '2026-09-22T08:00:00Z',
+  }));
+
+  return { curriculumVersion, segments: [segment], nodes };
+}
+
 describe('EC-01/Arena-F1 — quadro annuale Educazione civica', () => {
   it('rende approvabile un quadro primaria da 33 ore con verifica normativa completa', () => {
-    const gate = evaluateCivicEducationApprovalGate(primaryFramework());
+    const framework = primaryFramework();
+    const gate = evaluateCivicEducationApprovalGate(framework, bindingContext(framework));
 
     expect(gate.totalAnnualHours).toBe(33);
     expect(gate.uncoveredNuclei).toEqual([]);
@@ -122,7 +193,7 @@ describe('EC-01/Arena-F1 — quadro annuale Educazione civica', () => {
       ],
     });
 
-    const gate = evaluateCivicEducationApprovalGate(framework);
+    const gate = evaluateCivicEducationApprovalGate(framework, bindingContext(framework));
 
     expect(gate.totalAnnualHours).toBe(32.5);
     expect(gate.approvable).toBe(false);
@@ -138,7 +209,7 @@ describe('EC-01/Arena-F1 — quadro annuale Educazione civica', () => {
       ],
     });
 
-    const gate = evaluateCivicEducationApprovalGate(framework);
+    const gate = evaluateCivicEducationApprovalGate(framework, bindingContext(framework));
 
     expect(gate.totalAnnualHours).toBe(34);
     expect(gate.approvable).toBe(true);
@@ -152,7 +223,7 @@ describe('EC-01/Arena-F1 — quadro annuale Educazione civica', () => {
       ],
     });
 
-    const gate = evaluateCivicEducationApprovalGate(framework);
+    const gate = evaluateCivicEducationApprovalGate(framework, bindingContext(framework));
 
     expect(gate.uncoveredNuclei).toEqual(['cittadinanza-digitale']);
     expect(gate.issues.some(issue =>
@@ -187,7 +258,7 @@ describe('EC-01/Arena-F1 — quadro annuale Educazione civica', () => {
       }),
     });
 
-    const gate = evaluateCivicEducationApprovalGate(framework);
+    const gate = evaluateCivicEducationApprovalGate(framework, bindingContext(framework));
 
     expect(gate.approvable).toBe(false);
     expect(gate.issues.some(issue => issue.code === 'CIVIC_NORMATIVE_SOURCE_NOT_OFFICIAL')).toBe(true);
@@ -200,7 +271,7 @@ describe('EC-01/Arena-F1 — quadro annuale Educazione civica', () => {
       }),
     });
 
-    const gate = evaluateCivicEducationApprovalGate(framework);
+    const gate = evaluateCivicEducationApprovalGate(framework, bindingContext(framework));
 
     expect(gate.approvable).toBe(false);
     expect(gate.issues.some(issue => issue.code === 'CIVIC_NORMATIVE_CHANGE_UNRESOLVED')).toBe(true);
@@ -214,7 +285,7 @@ describe('EC-01/Arena-F1 — quadro annuale Educazione civica', () => {
       }),
     });
 
-    const gate = evaluateCivicEducationApprovalGate(framework);
+    const gate = evaluateCivicEducationApprovalGate(framework, bindingContext(framework));
 
     expect(gate.approvable).toBe(false);
     expect(gate.issues.some(issue => issue.code === 'CIVIC_NORMATIVE_HUMAN_CONFIRMATION_REQUIRED')).toBe(true);
@@ -295,8 +366,42 @@ describe('EC-01/Arena-F1 — quadro annuale Educazione civica', () => {
       approvedByRole: 'collegio',
     });
 
-    expect(canProjectCivicEducationFramework(draft)).toBe(false);
-    expect(canProjectCivicEducationFramework(approved)).toBe(true);
+    expect(canProjectCivicEducationFramework(draft, bindingContext(draft))).toBe(false);
+    expect(canProjectCivicEducationFramework(approved, bindingContext(approved))).toBe(true);
+    expect(canProjectCivicEducationFramework(
+      approved,
+      bindingContext(approved, { curriculumStatus: 'draft' }),
+    )).toBe(false);
+  });
+
+  it('blocca un riferimento che non risolve a un vero obiettivo curricolare', () => {
+    const framework = primaryFramework();
+    const issues = validateCivicEducationCurriculumBindings(
+      framework,
+      bindingContext(framework, { nodeType: 'competence' }),
+    );
+
+    expect(issues.some(issue => issue.code === 'CIVIC_OBJECTIVE_REF_NOT_OBJECTIVE')).toBe(true);
+  });
+
+  it('blocca un obiettivo primaria/secondaria che non appartiene al segmento di Educazione civica', () => {
+    const framework = primaryFramework();
+    const issues = validateCivicEducationCurriculumBindings(
+      framework,
+      bindingContext(framework, { segmentSubject: 'italiano' }),
+    );
+
+    expect(issues.some(issue => issue.code === 'CIVIC_OBJECTIVE_NOT_CIVIC')).toBe(true);
+  });
+
+  it('blocca il binding a una versione curricolare Arena differente', () => {
+    const framework = primaryFramework();
+    const issues = validateCivicEducationCurriculumBindings(
+      framework,
+      bindingContext(framework, { curriculumVersionId: 'curriculum-other' }),
+    );
+
+    expect(issues.some(issue => issue.code === 'CIVIC_CURRICULUM_VERSION_MISMATCH')).toBe(true);
   });
 
   it('gestisce l’infanzia senza monte ore e con collegamenti ai campi di esperienza', () => {
@@ -316,7 +421,7 @@ describe('EC-01/Arena-F1 — quadro annuale Educazione civica', () => {
       updatedAt: '2026-09-22T08:00:00Z',
     };
 
-    const gate = evaluateCivicEducationApprovalGate(framework);
+    const gate = evaluateCivicEducationApprovalGate(framework, bindingContext(framework));
 
     expect(gate.totalAnnualHours).toBeNull();
     expect(gate.approvable).toBe(true);
