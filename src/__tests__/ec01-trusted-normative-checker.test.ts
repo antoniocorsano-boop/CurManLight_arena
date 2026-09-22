@@ -347,7 +347,7 @@ describe('EC-01/Arena-F4 — Edge CI contract', () => {
     expect(productCiWorkflow).toContain('uses: denoland/setup-deno@v2');
     expect(productCiWorkflow).toContain('deno-version: v2.x');
     expect(productCiWorkflow).toContain(
-      'deno check supabase/functions/ec01-normative-check/index.ts',
+      'deno check --node-modules-dir=auto supabase/functions/ec01-normative-check/index.ts',
     );
   });
 });
