@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import migration from '../../supabase/migrations/20260922170000_ec01_trusted_normative_checker.sql?raw';
+import edgeFunction from '../../supabase/functions/ec01-normative-check/index.ts?raw';
 import {
   CIVIC_NORMATIVE_NORMALIZATION_VERSION,
   confirmTrustedCivicNormativeCheck,
@@ -233,6 +234,24 @@ describe('EC-01/Arena-F4 — trusted normative checker core', () => {
 
     expect(confirmed).toMatchObject({ status: 'blocked', reason: 'SOURCE_DRIFT' });
     expect(record).not.toHaveBeenCalled();
+  });
+});
+
+describe('EC-01/Arena-F4 — trusted server adapter contract', () => {
+  it('keeps the privileged credential in the server environment and authenticates the caller', () => {
+    expect(edgeFunction).toContain("Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')");
+    expect(edgeFunction).toContain("Deno.env.get('SUPABASE_ANON_KEY')");
+    expect(edgeFunction).toContain('userClient.auth.getUser()');
+    expect(edgeFunction).toContain(".eq('status', 'active')");
+    expect(edgeFunction).toContain("role !== 'referente' && role !== 'collegio'");
+  });
+
+  it('routes preview and confirmation through the trusted checker and server-only RPC', () => {
+    expect(edgeFunction).toContain('previewTrustedCivicNormativeCheck(loader, fetch)');
+    expect(edgeFunction).toContain('confirmTrustedCivicNormativeCheck(');
+    expect(edgeFunction).toContain("'record_civic_education_normative_check_v1'");
+    expect(edgeFunction).toContain('p_source_observations: input.observations');
+    expect(edgeFunction).not.toContain('insert(');
   });
 });
 
