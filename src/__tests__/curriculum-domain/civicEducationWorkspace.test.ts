@@ -22,6 +22,7 @@ import {
 import type { CivicEducationDraftArchive } from '../../domain/curriculum/civicEducationWorkspace';
 import type { WorkspaceActorContext } from '../../domain/institution/sharedWorkspacePort';
 import { useCurriculumStore } from '../../store/useCurriculumStore';
+import workspaceSyncSource from '../../features/workspace/hooks/useWorkspaceSyncHandlers.ts?raw';
 
 function ref(id: string): EntityReference {
   return {
@@ -202,6 +203,28 @@ describe('EC-01/Arena-F2 — local draft workspace', () => {
     expect(validation.errors.some(error => error.code === 'CIVIC_DRAFT_ARCHIVE_AUTHORITY_PLANE_INVALID')).toBe(true);
   });
 
+  it('rifiuta senza eccezioni voci persistite malformate', () => {
+    expect(() => validateCivicEducationDraftArchive({
+      schemaVersion: 1,
+      authorityPlane: CIVIC_EDUCATION_LOCAL_AUTHORITY_PLANE,
+      updatedAt: '2026-09-22T09:00:00Z',
+      frameworks: [null, 42, { id: 'incomplete', status: 'draft' }],
+    })).not.toThrow();
+
+    const validation = validateCivicEducationDraftArchive({
+      schemaVersion: 1,
+      authorityPlane: CIVIC_EDUCATION_LOCAL_AUTHORITY_PLANE,
+      updatedAt: '2026-09-22T09:00:00Z',
+      frameworks: [null, 42, { id: 'incomplete', status: 'draft' }],
+    });
+
+    expect(validation.valid).toBe(false);
+    expect(validation.errors.some(error =>
+      error.code === 'CIVIC_DRAFT_ARCHIVE_FRAMEWORK_INVALID'
+      || error.code === 'CIVIC_DRAFT_ARCHIVE_FRAMEWORK_MALFORMED'
+    )).toBe(true);
+  });
+
   it('salva una bozza come copia indipendente', () => {
     const archive = createEmptyCivicEducationDraftArchive();
     const value = framework();
@@ -226,6 +249,24 @@ describe('EC-01/Arena-F2 — local draft workspace', () => {
     expect(result.success).toBe(false);
     if (result.success) return;
     expect(result.errors.some(error => error.code === 'CIVIC_LOCAL_AUTHORITY_FORBIDDEN')).toBe(true);
+  });
+
+  it('richiede draft come stato iniziale di un nuovo quadro locale', () => {
+    const empty = createEmptyCivicEducationDraftArchive();
+    const review = framework('under-review', { id: 'new-review' });
+    const proposed = framework('proposed-to-collegio', { id: 'new-proposed' });
+
+    const reviewResult = saveCivicEducationDraft(empty, review, bindingContext(review));
+    const proposedResult = saveCivicEducationDraft(empty, proposed, bindingContext(proposed));
+
+    expect(reviewResult.success).toBe(false);
+    expect(proposedResult.success).toBe(false);
+    if (!reviewResult.success) {
+      expect(reviewResult.errors.some(error => error.code === 'CIVIC_LOCAL_INITIAL_STATUS_MUST_BE_DRAFT')).toBe(true);
+    }
+    if (!proposedResult.success) {
+      expect(proposedResult.errors.some(error => error.code === 'CIVIC_LOCAL_INITIAL_STATUS_MUST_BE_DRAFT')).toBe(true);
+    }
   });
 
   it('rifiuta un salto draft → proposed-to-collegio', () => {
@@ -437,6 +478,12 @@ describe('EC-01/Arena-F2 — local draft workspace', () => {
     useCurriculumStore.getState().replaceCivicEducationDraftArchive(invalid);
 
     expect(useCurriculumStore.getState().civicEducationDraftArchive.frameworks[0].status).toBe('draft');
+  });
+
+  it('include le bozze EC in tutti i payload di backup Workspace/Drive', () => {
+    const occurrences = workspaceSyncSource.match(/civicEducationDraftArchive/g) ?? [];
+    expect(occurrences.length).toBeGreaterThanOrEqual(5);
+    expect(workspaceSyncSource).toContain('revisionArchive, civicEducationDraftArchive');
   });
 
   it('restoreBackupState rifiuta un archivio EC locale non valido', () => {
