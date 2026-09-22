@@ -56,10 +56,11 @@ export interface CivicNormativeCheckScope {
   institutionId: string;
   frameworkId: string;
   frameworkVersionLabel: string;
+  clientRequestId: string;
 }
 
 export interface CivicNormativeBaselineLoader {
-  loadActiveBaselines(): Promise<CivicNormativeSourceBaseline[]>;
+  loadActiveBaselines(frameworkVersionLabel: string): Promise<CivicNormativeSourceBaseline[]>;
 }
 
 export interface CivicNormativeReceiptRecorder {
@@ -67,13 +68,19 @@ export interface CivicNormativeReceiptRecorder {
     scope: CivicNormativeCheckScope;
     verification: CivicNormativeVerificationSnapshot;
     observations: CivicNormativeSourceObservation[];
-  }): Promise<{ id: string; normativeFingerprint: string }>;
+  }): Promise<{
+    id: string;
+    normativeFingerprint: string;
+    verificationSnapshot?: CivicNormativeVerificationSnapshot;
+  }>;
 }
 
 export interface CivicNormativeFetchResponse {
   ok: boolean;
   status: number;
   url: string;
+  headers?: { get(name: string): string | null };
+  body?: ReadableStream<Uint8Array> | null;
   arrayBuffer(): Promise<ArrayBuffer>;
 }
 
@@ -195,11 +202,52 @@ function validateBaselines(
   return { valid: true };
 }
 
-async function sha256Hex(bytes: ArrayBuffer): Promise<string> {
+async function sha256Hex(bytes: Uint8Array): Promise<string> {
   const digest = await globalThis.crypto.subtle.digest('SHA-256', bytes);
   return [...new Uint8Array(digest)]
     .map(value => value.toString(16).padStart(2, '0'))
     .join('');
+}
+
+export async function readCivicNormativeResponseBytes(
+  response: CivicNormativeFetchResponse,
+  maxBytes = CIVIC_NORMATIVE_MAX_SOURCE_BYTES,
+): Promise<Uint8Array | null> {
+  const lengthHeader = response.headers?.get('content-length');
+  if (lengthHeader) {
+    const declaredLength = Number(lengthHeader);
+    if (Number.isFinite(declaredLength) && declaredLength > maxBytes) return null;
+  }
+
+  if (response.body) {
+    const reader = response.body.getReader();
+    const chunks: Uint8Array[] = [];
+    let total = 0;
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      if (!value) continue;
+      total += value.byteLength;
+      if (total > maxBytes) {
+        await reader.cancel();
+        return null;
+      }
+      chunks.push(value);
+    }
+
+    const bytes = new Uint8Array(total);
+    let offset = 0;
+    for (const chunk of chunks) {
+      bytes.set(chunk, offset);
+      offset += chunk.byteLength;
+    }
+    return bytes;
+  }
+
+  const buffered = await response.arrayBuffer();
+  if (buffered.byteLength > maxBytes) return null;
+  return new Uint8Array(buffered);
 }
 
 async function fetchAndVerify(
@@ -257,8 +305,8 @@ async function fetchAndVerify(
       };
     }
 
-    const bytes = await response.arrayBuffer();
-    if (bytes.byteLength > CIVIC_NORMATIVE_MAX_SOURCE_BYTES) {
+    const bytes = await readCivicNormativeResponseBytes(response);
+    if (!bytes) {
       return {
         status: 'blocked',
         reason: 'SOURCE_TOO_LARGE',
@@ -303,9 +351,17 @@ async function fetchAndVerify(
 export async function previewTrustedCivicNormativeCheck(
   loader: CivicNormativeBaselineLoader,
   fetcher: CivicNormativeFetcher,
+  frameworkVersionLabel: string,
   now: () => Date = () => new Date(),
 ): Promise<CivicNormativePreviewResult> {
-  const baselines = await loader.loadActiveBaselines();
+  if (!frameworkVersionLabel || frameworkVersionLabel !== frameworkVersionLabel.trim()) {
+    return {
+      status: 'blocked',
+      reason: 'BASELINE_INVALID',
+      message: 'Versione del quadro non valida per il controllo normativo.',
+    };
+  }
+  const baselines = await loader.loadActiveBaselines(frameworkVersionLabel);
   return fetchAndVerify(baselines, fetcher, now().toISOString());
 }
 
@@ -325,8 +381,12 @@ export async function confirmTrustedCivicNormativeCheck(
     throw new Error('CIVIC_NORMATIVE_CONFIRMATION_ROLE_REQUIRED');
   }
 
+  if (!scope.clientRequestId || scope.clientRequestId !== scope.clientRequestId.trim()) {
+    throw new Error('CIVIC_NORMATIVE_CLIENT_REQUEST_ID_REQUIRED');
+  }
+
   const checkedAt = now().toISOString();
-  const baselines = await loader.loadActiveBaselines();
+  const baselines = await loader.loadActiveBaselines(scope.frameworkVersionLabel);
   const verified = await fetchAndVerify(baselines, fetcher, checkedAt);
   if (verified.status === 'blocked') return verified;
 
@@ -346,11 +406,15 @@ export async function confirmTrustedCivicNormativeCheck(
     verification,
     observations: verified.observations,
   });
+  const recordedVerification = receipt.verificationSnapshot ?? verification;
 
   return {
     status: 'recorded',
-    verification,
+    verification: recordedVerification,
     observations: verified.observations,
-    receipt,
+    receipt: {
+      id: receipt.id,
+      normativeFingerprint: receipt.normativeFingerprint,
+    },
   };
 }
