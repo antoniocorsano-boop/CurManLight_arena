@@ -116,6 +116,7 @@ export interface CivicEducationApprovalGateResult {
 
 export interface CloneCivicEducationFrameworkInput {
   id: string;
+  curriculumVersionId: string;
   academicYear: AcademicYear;
   versionLabel: string;
   now: string;
@@ -591,6 +592,7 @@ export function cloneCivicEducationFrameworkForAcademicYear(
   return {
     ...previous,
     id: input.id,
+    curriculumVersionId: input.curriculumVersionId,
     academicYear: { ...input.academicYear },
     versionLabel: input.versionLabel,
     previousFrameworkId: previous.id,
