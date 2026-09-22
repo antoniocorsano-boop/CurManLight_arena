@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { EntityReference } from '../../domain/curriculum/identity/types';
+import type { DisciplineCode } from '../../domain/curriculum/model/vocabularies';
 import type {
   CivicEducationAnnualAllocation,
   CivicEducationAnnualFramework,
@@ -24,9 +25,7 @@ function objectiveRef(id: string): EntityReference {
 
 function allocation(
   id: string,
-  disciplineCode: CivicEducationAnnualAllocation['target'] extends { type: 'discipline'; disciplineCode: infer T }
-    ? T
-    : never,
+  disciplineCode: Exclude<DisciplineCode, 'educazione-civica'>,
   annualHours: number,
   nucleusIds: CivicEducationAnnualAllocation['nucleusIds'],
 ): CivicEducationAnnualAllocation {
@@ -272,6 +271,7 @@ describe('EC-01/Arena-F1 — quadro annuale Educazione civica', () => {
 
     const cloned = cloneCivicEducationFrameworkForAcademicYear(approved, {
       id: 'next',
+      curriculumVersionId: 'curriculum-2027',
       academicYear: { startYear: 2027, endYear: 2028 },
       versionLabel: '2027-28-v1',
       now: '2027-09-01T08:00:00Z',
@@ -279,6 +279,7 @@ describe('EC-01/Arena-F1 — quadro annuale Educazione civica', () => {
 
     expect(cloned.status).toBe('draft');
     expect(cloned.previousFrameworkId).toBe('previous');
+    expect(cloned.curriculumVersionId).toBe('curriculum-2027');
     expect(cloned.normativeVerification).toBeUndefined();
     expect(cloned.approvedAt).toBeUndefined();
     expect(cloned.approvedByRole).toBeUndefined();
