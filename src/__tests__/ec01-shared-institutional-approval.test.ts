@@ -189,6 +189,7 @@ describe('EC-01/Arena-F3 — shared institutional approval migration', () => {
     expect(migration).toContain("checker_authority text not null default 'SERVER_AUTOMATIC_CHECK'");
     expect(migration).toContain('revoke insert, update, delete on public.civic_education_normative_check_receipts from public, anon, authenticated');
     expect(migration).toContain("raise exception 'CIVIC_NORMATIVE_SERVER_RECEIPT_REQUIRED'");
+    expect(migration).toContain("receipt.checked_at = (v_norm->>'checkedAt')::timestamptz");
     expect(migration).toContain("perform (p_candidate->>'createdAt')::timestamptz");
     expect(migration).toContain("perform (p_candidate->>'updatedAt')::timestamptz");
     expect(migration).toContain("perform (v_norm->>'checkedAt')::timestamptz");
