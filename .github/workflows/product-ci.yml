@@ -56,9 +56,9 @@ jobs:
 
       - name: EC-01 Edge Function bundle
         run: >-
-          deno bundle --platform=server --node-modules-dir=auto
+          deno bundle --platform=deno --node-modules-dir=auto
+          -o /tmp/ec01-normative-check.js
           supabase/functions/ec01-normative-check/index.ts
-          /tmp/ec01-normative-check.js
 
       - name: Production build
         run: npm run build
