@@ -203,6 +203,15 @@ describe('EC-01/Arena-F3 — shared institutional approval migration', () => {
     expect(migration).toContain('before update or delete on public.civic_education_normative_check_receipts');
   });
 
+  it('rejects noncanonical whitespace before persisting framework or request identities', () => {
+    expect(migration).toContain("p_candidate->>'id' <> v_framework_id");
+    expect(migration).toContain("p_candidate->>'institutionId' <> v_institution_id");
+    expect(migration).toContain("p_candidate->>'curriculumVersionId' <> v_curriculum_version_id");
+    expect(migration).toContain("p_candidate->>'versionLabel' <> v_version_label");
+    expect(migration).toContain("p_expected_current_approved_framework_id <> trim(p_expected_current_approved_framework_id)");
+    expect(migration).toContain("p_client_request_id <> trim(p_client_request_id)");
+  });
+
   it('uses an advisory lock, CAS and idempotent request identity', () => {
     expect(migration).toContain("pg_advisory_xact_lock(hashtextextended(");
     expect(migration).toContain("where receipt.workspace_id = p_workspace_id");
