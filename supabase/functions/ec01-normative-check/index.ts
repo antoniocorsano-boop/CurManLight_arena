@@ -19,6 +19,30 @@ type RequestBody = {
   frameworkVersionLabel: string;
 };
 
+function json(status: number, body: unknown): Response {
+  return Response.json(body, { status });
+}
+
+function isRequestBody(value: unknown): value is RequestBody {
+  if (!value || typeof value !== 'object') return false;
+  const body = value as Partial<RequestBody>;
+  return (
+    (body.mode === 'preview' || body.mode === 'confirm')
+    && typeof body.workspaceId === 'string'
+    && body.workspaceId.trim() === body.workspaceId
+    && body.workspaceId.length > 0
+    && typeof body.institutionId === 'string'
+    && body.institutionId.trim() === body.institutionId
+    && body.institutionId.length > 0
+    && typeof body.frameworkId === 'string'
+    && body.frameworkId.trim() === body.frameworkId
+    && body.frameworkId.length > 0
+    && typeof body.frameworkVersionLabel === 'string'
+    && body.frameworkVersionLabel.trim() === body.frameworkVersionLabel
+    && body.frameworkVersionLabel.length > 0
+  );
+}
+
 export default {
   fetch: withSupabase({ auth: 'user' }, async (request, ctx) => {
   if (request.method !== 'POST') return json(405, { error: 'METHOD_NOT_ALLOWED' });
