@@ -82,7 +82,7 @@ const asFramework = (value: unknown): CivicEducationAnnualFramework & { status: 
   if (!framework || framework.status !== 'approved') {
     throw new Error('Il server non ha restituito un quadro EC-01 approved.');
   }
-  let issues;
+  let issues: ReturnType<typeof validateCivicEducationAnnualFramework>;
   try {
     issues = validateCivicEducationAnnualFramework(framework);
   } catch {
