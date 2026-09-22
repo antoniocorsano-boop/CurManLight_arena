@@ -84,6 +84,7 @@ export type {
 
 export {
   CIVIC_EDUCATION_DRAFT_ARCHIVE_SCHEMA_VERSION,
+  CIVIC_EDUCATION_LOCAL_AUTHORITY_PLANE,
   createEmptyCivicEducationDraftArchive,
   cloneCivicEducationDraftArchive,
   isLocalCivicEducationDraftStatus,
