@@ -1,7 +1,7 @@
 // EC-01/Arena-F4 — trusted normative checker Edge Function.
 // Deployment is intentionally outside this slice.
 
-import { createClient } from 'npm:@supabase/supabase-js@2.112.3';
+import { withSupabase } from 'npm:@supabase/server@^1';
 import {
   confirmTrustedCivicNormativeCheck,
   previewTrustedCivicNormativeCheck,
@@ -19,47 +19,9 @@ type RequestBody = {
   frameworkVersionLabel: string;
 };
 
-const SUPABASE_URL = Deno.env.get('SUPABASE_URL') ?? '';
-const SUPABASE_ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY') ?? '';
-const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
-
-function json(status: number, body: unknown): Response {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: { 'content-type': 'application/json; charset=utf-8' },
-  });
-}
-
-function isRequestBody(value: unknown): value is RequestBody {
-  if (!value || typeof value !== 'object') return false;
-  const body = value as Partial<RequestBody>;
-  return (
-    (body.mode === 'preview' || body.mode === 'confirm')
-    && typeof body.workspaceId === 'string'
-    && body.workspaceId.trim() === body.workspaceId
-    && body.workspaceId.length > 0
-    && typeof body.institutionId === 'string'
-    && body.institutionId.trim() === body.institutionId
-    && body.institutionId.length > 0
-    && typeof body.frameworkId === 'string'
-    && body.frameworkId.trim() === body.frameworkId
-    && body.frameworkId.length > 0
-    && typeof body.frameworkVersionLabel === 'string'
-    && body.frameworkVersionLabel.trim() === body.frameworkVersionLabel
-    && body.frameworkVersionLabel.length > 0
-  );
-}
-
-Deno.serve(async (request: Request) => {
+export default {
+  fetch: withSupabase({ auth: 'user' }, async (request, ctx) => {
   if (request.method !== 'POST') return json(405, { error: 'METHOD_NOT_ALLOWED' });
-  if (!SUPABASE_URL || !SUPABASE_ANON_KEY || !SUPABASE_SERVICE_ROLE_KEY) {
-    return json(503, { error: 'TRUSTED_SERVER_NOT_CONFIGURED' });
-  }
-
-  const authorization = request.headers.get('authorization');
-  if (!authorization?.startsWith('Bearer ')) {
-    return json(401, { error: 'AUTHENTICATION_REQUIRED' });
-  }
 
   let body: unknown;
   try {
@@ -69,17 +31,9 @@ Deno.serve(async (request: Request) => {
   }
   if (!isRequestBody(body)) return json(400, { error: 'INVALID_REQUEST' });
 
-  const userClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-    global: { headers: { Authorization: authorization } },
-    auth: { persistSession: false, autoRefreshToken: false },
-  });
-  const serviceClient = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
-    auth: { persistSession: false, autoRefreshToken: false },
-  });
-
-  const { data: userData, error: userError } = await userClient.auth.getUser();
-  const userId = userData.user?.id;
-  if (userError || !userId) return json(401, { error: 'AUTHENTICATION_REQUIRED' });
+  const userId = ctx.userClaims?.id;
+  if (!userId) return json(401, { error: 'AUTHENTICATION_REQUIRED' });
+  const serviceClient = ctx.supabaseAdmin;
 
   const { data: memberships, error: membershipError } = await serviceClient
     .from('workspace_memberships')
@@ -175,4 +129,5 @@ Deno.serve(async (request: Request) => {
     const message = error instanceof Error ? error.message : 'CIVIC_NORMATIVE_CHECK_FAILED';
     return json(503, { error: message });
   }
-});
+  }),
+};
