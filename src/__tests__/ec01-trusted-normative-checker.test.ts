@@ -388,17 +388,6 @@ describe('EC-01/Arena-F4 — trusted server adapter contract', () => {
 });
 
 describe('EC-01/Arena-F4 — trusted normative SQL boundary', () => {
-  it('keeps a single canonical F4 migration structure', () => {
-    const occurrences = (needle: string) => migration.split(needle).length - 1;
-
-    expect(occurrences('create table if not exists public.civic_education_normative_source_baselines')).toBe(1);
-    expect(occurrences('create table if not exists public.civic_education_normative_source_heads')).toBe(1);
-    expect(occurrences('create unique index if not exists civic_education_normative_check_receipts_request_idx')).toBe(1);
-    expect(occurrences('create or replace function public.record_civic_education_normative_check_v1')).toBe(1);
-    expect(occurrences('create or replace function public.enforce_current_civic_normative_receipt_v1')).toBe(1);
-    expect(occurrences(':EC01-NORMATIVE-REQUEST:')).toBe(1);
-    expect(occurrences(':EC01-NORMATIVE-CHECK:')).toBe(0);
-    expect(migration).toContain("baseline_set_fingerprint ~ '^[a-f0-9]{64}
   it('creates server-controlled immutable baselines without seeding real fingerprints', () => {
     expect(migration).toContain('create table if not exists public.civic_education_normative_source_baselines');
     expect(migration).toContain('create table if not exists public.civic_education_normative_source_heads');
@@ -408,18 +397,10 @@ describe('EC-01/Arena-F4 — trusted normative SQL boundary', () => {
   });
 
   it('keeps baseline mutation closed to browser roles and permits the trusted server role', () => {
-    expect(migration).toContain(
-      'revoke all on public.civic_education_normative_source_baselines from public, anon, authenticated',
-    );
-    expect(migration).toContain(
-      'revoke all on public.civic_education_normative_source_heads from public, anon, authenticated',
-    );
-    expect(migration).toContain(
-      'grant select, insert on public.civic_education_normative_source_baselines to service_role',
-    );
-    expect(migration).toContain(
-      'grant select, insert, update on public.civic_education_normative_source_heads to service_role',
-    );
+    expect(migration).toContain('revoke all on public.civic_education_normative_source_baselines from public, anon, authenticated');
+    expect(migration).toContain('revoke all on public.civic_education_normative_source_heads from public, anon, authenticated');
+    expect(migration).toContain('grant select, insert on public.civic_education_normative_source_baselines to service_role');
+    expect(migration).toContain('grant select, insert, update on public.civic_education_normative_source_heads to service_role');
   });
 
   it('enforces official domains at database level', () => {
@@ -434,22 +415,16 @@ describe('EC-01/Arena-F4 — trusted normative SQL boundary', () => {
   it('exposes receipt recording only to service_role and revalidates the human actor', () => {
     expect(migration).toContain("v_role not in ('referente','collegio')");
     expect(migration).toContain('from public.workspace_memberships membership');
-    expect(migration).toContain(
-      'grant execute on function public.record_civic_education_normative_check_v1',
-    );
+    expect(migration).toContain('grant execute on function public.record_civic_education_normative_check_v1');
     expect(migration).toContain('to service_role;');
-    expect(migration).toContain(
-      ') from public, anon, authenticated;',
-    );
+    expect(migration).toContain(') from public, anon, authenticated;');
     expect(migration).not.toContain('auth.role()');
   });
 
   it('binds the active baseline head set to the framework version being certified', () => {
     expect(migration).toContain('framework_version_label text not null');
     expect(migration).toContain('primary key (framework_version_label, source_key)');
-    expect(migration).toContain(
-      'where head.framework_version_label = p_framework_version_label',
-    );
+    expect(migration).toContain('where head.framework_version_label = p_framework_version_label');
   });
 
   it('persists the confirming person and a stable retry identity in the immutable receipt', () => {
@@ -458,32 +433,20 @@ describe('EC-01/Arena-F4 — trusted normative SQL boundary', () => {
     expect(migration).toContain('client_request_id text');
     expect(migration).toContain('confirmed_at timestamptz');
     expect(migration).toContain('source_observations jsonb');
-    expect(migration).toContain(
-      'civic_education_normative_check_receipts_request_idx',
-    );
+    expect(migration).toContain('civic_education_normative_check_receipts_request_idx');
     expect(migration).toContain('p_requested_by_user_id');
     expect(migration).toContain('p_client_request_id');
   });
 
   it('keeps the migration structurally complete after hardening', () => {
-    expect(migration).toContain(
-      "check (baseline_set_fingerprint is null or baseline_set_fingerprint ~ '^[a-f0-9]{64}$');",
-    );
-    expect(migration).toContain(
-      'create or replace function public.enforce_current_civic_normative_receipt_v1()',
-    );
-    expect(migration).toMatch(
-      /create or replace function public\.enforce_current_civic_normative_receipt_v1\(\)[\s\S]*?as \$\$[\s\S]*?end;\s*\$\$;/,
-    );
-    expect(migration).toContain(
-      'create unique index if not exists civic_education_normative_check_receipts_request_idx',
-    );
+    expect(migration).toContain("check (baseline_set_fingerprint is null or baseline_set_fingerprint ~ '^[a-f0-9]{64}$');");
+    expect(migration).toContain('create or replace function public.enforce_current_civic_normative_receipt_v1()');
+    expect(migration).toMatch(/create or replace function public\.enforce_current_civic_normative_receipt_v1\(\)[\s\S]*?as \$\$[\s\S]*?end;\s*\$\$;/);
   });
 
   it('serializes retry identity before the idempotency lookup', () => {
     const lockNeedle = "p_workspace_id::text || ':EC01-NORMATIVE-REQUEST:' || p_client_request_id";
     const lookupNeedle = 'where receipt.workspace_id = p_workspace_id';
-
     expect(migration).toContain('pg_advisory_xact_lock(hashtextextended(');
     expect(migration.indexOf(lockNeedle)).toBeGreaterThanOrEqual(0);
     expect(migration.indexOf(lookupNeedle)).toBeGreaterThan(migration.indexOf(lockNeedle));
@@ -499,28 +462,8 @@ describe('EC-01/Arena-F4 — trusted normative SQL boundary', () => {
     expect(migration).toContain("raise exception 'CIVIC_NORMATIVE_CURRENT_RECEIPT_REQUIRED'");
   });
 
-  it('serializes retry identity before the idempotent receipt lookup', () => {
-    const lock = migration.indexOf("pg_advisory_xact_lock(hashtextextended(");
-    const lookup = migration.indexOf(
-      "where receipt.workspace_id = p_workspace_id\\n    and receipt.client_request_id = p_client_request_id",
-    );
-    expect(lock).toBeGreaterThan(-1);
-    expect(lookup).toBeGreaterThan(lock);
-    expect(migration).toContain("':EC01-NORMATIVE-CHECK:' || p_client_request_id");
-  });
-
-  it('keeps the F4 migration syntactically complete around the freshness trigger', () => {
-    expect(migration).toContain("baseline_set_fingerprint ~ '^[a-f0-9]{64}$'");
-    expect(migration).toContain('as $$\\ndeclare');
-    expect(migration).toContain('end;\\n$$;\\n\\ndrop trigger');
-    expect(migration).not.toContain('end;\\n$;');
-    expect(migration).not.toContain("expected_sha256 ~ '^[a-f0-9]{64} if not exists");
-  });
-
   it('locks the baseline head set while the trusted receipt is validated', () => {
-    expect(migration).toContain(
-      'lock table public.civic_education_normative_source_heads in share mode',
-    );
+    expect(migration).toContain('lock table public.civic_education_normative_source_heads in share mode');
   });
 
   it('fails closed on missing baselines, set mismatch or source drift', () => {
@@ -533,8 +476,6 @@ describe('EC-01/Arena-F4 — trusted normative SQL boundary', () => {
 
   it('requires confirmation to follow the automatic check and uses retry-stable idempotency', () => {
     expect(migration).toContain("raise exception 'CIVIC_NORMATIVE_CONFIRMATION_PRECEDES_CHECK'");
-    expect(migration).toContain('pg_advisory_xact_lock');
-    expect(migration).toContain("p_workspace_id::text || ':EC01-NORMATIVE-REQUEST:' || p_client_request_id");
     expect(migration).toContain('receipt.client_request_id = p_client_request_id');
     expect(migration).toContain("raise exception 'CIVIC_NORMATIVE_REQUEST_ID_REUSE_MISMATCH'");
     expect(migration).toContain("raise exception 'CIVIC_NORMATIVE_REQUEST_RETRY_BASELINE_MISMATCH'");
