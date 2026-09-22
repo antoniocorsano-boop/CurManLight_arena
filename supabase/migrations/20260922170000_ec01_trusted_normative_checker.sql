@@ -157,6 +157,15 @@ begin
     0
   ));
 
+  -- Serialize retries for the same logical request before the idempotency lookup.
+  -- Without this lock, concurrent callers can both miss v_existing and race
+  -- into the unique index; the loser would see unique_violation instead of
+  -- the canonical receipt produced by the winner.
+  perform pg_advisory_xact_lock(hashtextextended(
+    p_workspace_id::text || ':EC01-NORMATIVE-CHECK:' || p_client_request_id,
+    0
+  ));
+
   select * into v_existing
   from public.civic_education_normative_check_receipts receipt
   where receipt.workspace_id = p_workspace_id
