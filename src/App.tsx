@@ -23,7 +23,7 @@ import { resolveOperationalReviewProposals } from './domain/curriculum/validatio
 
 export default function App() {
  const {
-  role, discipline, order, schoolYear, decisions: legacyDecisions, customTexts: legacyCustomTexts, revisionArchive, savedUda, institutionalArchive,
+  role, discipline, order, schoolYear, decisions: legacyDecisions, customTexts: legacyCustomTexts, revisionArchive, savedUda, institutionalArchive, civicEducationDraftArchive,
   selectedTraguardi, selectedObiettivi, selectedEvidenze,
   activeProgTab, activeCurricoloView, activeProcessoTab, activeGeneralSubtab,
   setRole, setDiscipline, setOrder, setDecision, setCustomText,
@@ -281,6 +281,7 @@ export default function App() {
   order,
   institutionalArchive,
   revisionArchive,
+  civicEducationDraftArchive,
   isWorkspaceLoggedIn,
   workspaceAccessToken,
   isWorkspaceSyncLocked,
@@ -486,6 +487,7 @@ export default function App() {
   order,
   institutionalArchive,
   revisionArchive,
+  civicEducationDraftArchive,
   stateRef,
   restoreBackupState,
   setIsSyncingWorkspace,

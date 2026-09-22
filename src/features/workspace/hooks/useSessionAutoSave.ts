@@ -8,6 +8,7 @@ import {
 } from '../../../domain/institution';
 import type { RestoreBackupResult } from '../../../store/useCurriculumStore';
 import type { RevisionArchive } from '../../../domain/revision';
+import type { CivicEducationDraftArchive } from '../../../domain/curriculum/civicEducationWorkspace';
 
 interface SessionAutoSaveState {
   localCurriculum: CurriculumMap;
@@ -20,6 +21,7 @@ interface SessionAutoSaveState {
   order: SchoolOrder;
   institutionalArchive: InstitutionalArchive;
   revisionArchive?: RevisionArchive;
+  civicEducationDraftArchive?: CivicEducationDraftArchive;
   isWorkspaceLoggedIn: boolean;
   workspaceAccessToken: string;
   isWorkspaceSyncLocked: boolean;
@@ -36,6 +38,7 @@ interface EmergencyBackupPayload {
   order: SchoolOrder;
   institutionalArchive: InstitutionalArchive;
   revisionArchive?: RevisionArchive;
+  civicEducationDraftArchive?: CivicEducationDraftArchive;
 }
 
 interface UseSessionAutoSaveArgs extends SessionAutoSaveState {
@@ -53,7 +56,8 @@ const toEmergencyBackupPayload = (state: SessionAutoSaveState): EmergencyBackupP
   discipline: state.discipline,
   order: state.order,
   institutionalArchive: state.institutionalArchive,
-  revisionArchive: state.revisionArchive
+  revisionArchive: state.revisionArchive,
+  civicEducationDraftArchive: state.civicEducationDraftArchive
 });
 
 export const useSessionAutoSave = ({
@@ -67,6 +71,7 @@ export const useSessionAutoSave = ({
   order,
   institutionalArchive,
   revisionArchive,
+  civicEducationDraftArchive,
   isWorkspaceLoggedIn,
   workspaceAccessToken,
   isWorkspaceSyncLocked,
@@ -84,6 +89,7 @@ export const useSessionAutoSave = ({
     order,
     institutionalArchive,
     revisionArchive,
+    civicEducationDraftArchive,
     isWorkspaceLoggedIn,
     workspaceAccessToken,
     isWorkspaceSyncLocked
@@ -101,11 +107,12 @@ export const useSessionAutoSave = ({
       order,
       institutionalArchive,
       revisionArchive,
+      civicEducationDraftArchive,
       isWorkspaceLoggedIn,
       workspaceAccessToken,
       isWorkspaceSyncLocked
     };
-  }, [localCurriculum, savedUda, decisions, customTexts, schoolYear, role, discipline, order, institutionalArchive, revisionArchive, isWorkspaceLoggedIn, workspaceAccessToken, isWorkspaceSyncLocked]);
+  }, [localCurriculum, savedUda, decisions, customTexts, schoolYear, role, discipline, order, institutionalArchive, revisionArchive, civicEducationDraftArchive, isWorkspaceLoggedIn, workspaceAccessToken, isWorkspaceSyncLocked]);
 
   useEffect(() => {
     const performSessionAutoSave = () => {

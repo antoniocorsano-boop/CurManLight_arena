@@ -69,6 +69,34 @@ export {
   cloneCivicEducationFrameworkForAcademicYear,
 } from './civicEducationFramework';
 
+export type {
+  CivicEducationLocalDraftStatus,
+  CivicEducationDraftArchive,
+  CivicEducationDraftArchiveIssue,
+  CivicEducationDraftArchiveValidationResult,
+  CivicEducationDraftArchiveOperationResult,
+  CivicEducationInstitutionalApprovalCommand,
+  CivicEducationInstitutionalApprovalReceipt,
+  CivicEducationApprovedSnapshot,
+  SharedCivicEducationFrameworkRepository,
+  PrepareCivicEducationApprovalCommandInput,
+} from './civicEducationWorkspace';
+
+export {
+  CIVIC_EDUCATION_DRAFT_ARCHIVE_SCHEMA_VERSION,
+  CIVIC_EDUCATION_LOCAL_AUTHORITY_PLANE,
+  createEmptyCivicEducationDraftArchive,
+  cloneCivicEducationDraftArchive,
+  isLocalCivicEducationDraftStatus,
+  validateCivicEducationDraftArchive,
+  listCivicEducationDrafts,
+  getCivicEducationDraft,
+  saveCivicEducationDraft,
+  removeCivicEducationDraft,
+  prepareCivicEducationInstitutionalApprovalCommand,
+  assertCivicEducationSharedApprovalActor,
+} from './civicEducationWorkspace';
+
 export type { CurriculumSegment, CurriculumSegmentContent } from './segment';
 export type { CurriculumNode } from './node';
 export type { VerticalCurriculumLink } from './verticalLink';
