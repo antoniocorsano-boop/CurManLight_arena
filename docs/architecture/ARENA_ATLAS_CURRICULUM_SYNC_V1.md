@@ -8,13 +8,16 @@ Arena remains the only curriculum authority. Atlas consumes a versioned read-onl
 
 `Arena canonical master → Arena export bundle → Atlas sync watcher → Atlas PR → authority gate → human review → merge/publication`
 
-Transport is automatic. Institutional approval is not.
+Transport is automatic. Public visibility of an explicitly provisional/non-vigente curriculum may also be automatic after Atlas gates; institutional approval and vigency are not.
 
-## Authority gate
+## Authority and publication gate
 
-- `PROVISIONAL_COMPLETE`: Atlas may fetch and preview the candidate, but the sync PR MUST NOT be promoted to public `main`.
-- `APPROVED`: requires `authorityReceiptRef` and a collision-resistant `sha256` integrity digest. Only then may Atlas publish after its own review/gates.
-- A fingerprint change triggers a new Atlas sync PR even when the nominal curriculum version is unchanged.
+Public visibility and institutional vigency are distinct states.
+
+- `PROVISIONAL_COMPLETE`: Atlas may publish the structurally complete curriculum publicly **only** with an explicit, persistent disclosure equivalent to **“Curriculum provvisorio — non vigente”** and with the pending institutional approval clearly stated. It MUST NOT claim an `authorityReceiptRef`, approval or vigency.
+- `APPROVED`: requires `authorityReceiptRef` and a collision-resistant `sha256` integrity digest. Only this state may be presented by Atlas as approved/vigente after its own review/gates.
+- Atlas never upgrades `PROVISIONAL_COMPLETE` to `APPROVED`; only Arena may propagate that authority transition.
+- A fingerprint, authority-state, source-revision **or publication-policy** change must trigger/update the Atlas sync PR even when the nominal curriculum version is unchanged.
 - Withdrawal/supersession must produce a new Arena export state; Atlas never infers it locally.
 
 ## Canonical source
