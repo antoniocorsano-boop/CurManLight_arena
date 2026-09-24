@@ -6,8 +6,10 @@
   "authorityReceiptRef": null,
   "publicationPolicy": {
     "atlasAutomaticSync": true,
-    "atlasAutomaticMerge": false,
-    "publicPromotionRequiresAuthorityState": "APPROVED",
+    "provisionalPublicVisibility": "VISIBLE_WITH_NON_VIGENTE_NOTICE",
+    "provisionalLabelRequired": true,
+    "publicVigencyRequiresAuthorityState": "APPROVED",
+    "collegioApprovalRequiredForVigency": true,
     "humanApprovalRequired": true
   },
   "structuralFingerprint": {
