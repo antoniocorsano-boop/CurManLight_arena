@@ -5,16 +5,12 @@
 Mandatory order:
 
 1. `AGENTS.md`
-2. `docs/README.md`
-3. `docs/architecture/INTEGRATED_PROJECT_GOVERNED_MEMORY_V1.md`
-4. the relevant architecture/domain contract
-5. the live tracker/release state
-6. current source/tests
+2. `docs/architecture/INTEGRATED_PROJECT_GOVERNED_MEMORY_V1.md`
+3. the relevant architecture/domain contract
+4. the live tracker/release state
+5. current source/tests
 
-For adoption/validation work also read:
-
-- `docs/architecture/CURRICULUM_ADOPTION_VALIDATION_DEVELOPMENT_GUIDE_V1.md`
-- `docs/architecture/ARENA_PRODUCT_ROADMAP_2026_2027.md`
+For adoption/validation work, read the current adoption/validation contracts and evidence referenced by governed memory and the live tracker. Do not rely on a roadmap file unless it is present on the current base and explicitly marked current.
 
 For cross-product work also read:
 
@@ -187,7 +183,7 @@ Avoid unsupported claims such as:
 
 unless the relevant authority/evidence supports the exact claim.
 
-Update `docs/README.md` when adding a new canonical entrypoint.
+When adding a canonical entrypoint, update the nearest existing canonical registry/index if one exists. Do not create or reference an index by implication.
 
 ## 11. PR description minimum
 
