@@ -9,6 +9,18 @@ req(input.contract==="ARENA_ATLAS_CURRICULUM_EXPORT_V1","unsupported contract");
 req(input.contractVersion===1,"unsupported contractVersion");
 req(input.profiles==="CurriculumSnapshot v1","bundle must profile CurriculumSnapshot v1");
 req(["PROVISIONAL_COMPLETE","APPROVED"].includes(input.authorityState),"invalid authorityState");
+req(input.publicationPolicy?.atlasAutomaticSync===true,"publication policy must enable Atlas automatic sync");
+req(input.publicationPolicy?.atlasAutomaticMerge===false,"publication policy must keep Atlas automatic merge disabled");
+req(Array.isArray(input.publicationPolicy?.publicVisibilityAllowedAuthorityStates)
+  && input.publicationPolicy.publicVisibilityAllowedAuthorityStates.includes("PROVISIONAL_COMPLETE")
+  && input.publicationPolicy.publicVisibilityAllowedAuthorityStates.includes("APPROVED"),
+  "publication policy must allow explicit provisional and approved public visibility");
+req(input.publicationPolicy?.provisionalPublicDisclosureRequired===true,
+  "provisional public visibility must require explicit disclosure");
+req(input.publicationPolicy?.vigencyRequiresAuthorityState==="APPROVED",
+  "vigency must require APPROVED authorityState");
+req(input.publicationPolicy?.humanApprovalRequired===true,
+  "institutional authority transition must remain human-approved");
 if(input.authorityState==="APPROVED"){
   req(input.authorityReceiptRef && typeof input.authorityReceiptRef==="object","APPROVED requires authorityReceiptRef");
   req(input.integrityDigest?.algorithm==="sha256" && /^[0-9a-f]{64}$/.test(input.integrityDigest?.hash||""),"APPROVED requires sha256 integrity digest");
