@@ -22,7 +22,6 @@ interface UseAppStartupEffectsArgs {
  setOnboardingOrdLocal: (value: SchoolOrder) => void;
  setShowOnboardingModal: (value: boolean) => void;
  showToast: (msg: string, success?: boolean) => void;
- handleWorkspaceAutoPull: (token: string) => void;
 }
 
 export function useAppStartupEffects({
@@ -41,8 +40,7 @@ export function useAppStartupEffects({
  setOnboardingDiscLocal,
  setOnboardingOrdLocal,
  setShowOnboardingModal,
- showToast,
- handleWorkspaceAutoPull
+ showToast
 }: UseAppStartupEffectsArgs) {
  useEffect(() => {
   let onboardingTimer: ReturnType<typeof setTimeout> | null = null;
