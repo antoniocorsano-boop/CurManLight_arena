@@ -517,8 +517,7 @@ export default function App() {
   setOnboardingDiscLocal,
   setOnboardingOrdLocal,
   setShowOnboardingModal,
-  showToast,
-  handleWorkspaceAutoPull
+  showToast
  });
 
  const {
