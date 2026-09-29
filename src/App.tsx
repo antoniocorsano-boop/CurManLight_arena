@@ -470,8 +470,7 @@ export default function App() {
   handleWorkspaceLogin,
   handleWorkspaceSync,
   handleLocalDriveSync,
-  handleWorkspaceLogout,
-  handleWorkspaceAutoPull
+  handleWorkspaceLogout
  } = useWorkspaceSyncHandlers({
   isWorkspaceLoggedIn,
   workspaceAccessToken,
