@@ -82,6 +82,10 @@ function acquireLocalStorageLease(): () => void {
   };
 }
 
+export function acquireDriveBackupLease(): () => void {
+  return acquireLocalStorageLease();
+}
+
 export async function withDriveBackupLock<T>(operation: () => Promise<T>): Promise<T> {
   const locks = typeof navigator !== 'undefined' ? navigator.locks : undefined;
 
