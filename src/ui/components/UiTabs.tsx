@@ -23,7 +23,7 @@ export function UiTabs({ tabs, defaultTab, className = '', onChange }: UiTabsPro
     onChange?.(id);
   };
 
-  const moveFocus = (currentIndex: number, nextIndex: number) => {
+  const moveFocus = (nextIndex: number) => {
     const nextTab = tabs[nextIndex];
     if (!nextTab) return;
     tabRefs.current[nextIndex]?.focus();
@@ -41,7 +41,7 @@ export function UiTabs({ tabs, defaultTab, className = '', onChange }: UiTabsPro
 
     if (nextIndex === null) return;
     event.preventDefault();
-    moveFocus(index, nextIndex);
+    moveFocus(nextIndex);
   };
 
   const activeTab = tabs.find((t) => t.id === activeId);
