@@ -22,7 +22,6 @@ interface UseAppStartupEffectsArgs {
  setOnboardingOrdLocal: (value: SchoolOrder) => void;
  setShowOnboardingModal: (value: boolean) => void;
  showToast: (msg: string, success?: boolean) => void;
- handleWorkspaceAutoPull: (token: string) => void;
 }
 
 export function useAppStartupEffects({
@@ -41,8 +40,7 @@ export function useAppStartupEffects({
  setOnboardingDiscLocal,
  setOnboardingOrdLocal,
  setShowOnboardingModal,
- showToast,
- handleWorkspaceAutoPull
+ showToast
 }: UseAppStartupEffectsArgs) {
  useEffect(() => {
   let onboardingTimer: ReturnType<typeof setTimeout> | null = null;
@@ -139,12 +137,10 @@ export function useAppStartupEffects({
         safeLocalStorageSetItem('curman_workspaceUserEmail', data.email);
 
          showToast(`Sessione Google Drive attiva per ${data.email}. Tipo di account non verificato.`, true);
-        handleWorkspaceAutoPull(token);
        }
       })
       .catch(() => {
         showToast("Sessione Google avviata, ma le informazioni dell'account non sono state verificate.", false);
-       handleWorkspaceAutoPull(token);
       });
 
      window.history.replaceState(null, '', window.location.pathname + window.location.search);

@@ -470,8 +470,7 @@ export default function App() {
   handleWorkspaceLogin,
   handleWorkspaceSync,
   handleLocalDriveSync,
-  handleWorkspaceLogout,
-  handleWorkspaceAutoPull
+  handleWorkspaceLogout
  } = useWorkspaceSyncHandlers({
   isWorkspaceLoggedIn,
   workspaceAccessToken,
@@ -517,8 +516,7 @@ export default function App() {
   setOnboardingDiscLocal,
   setOnboardingOrdLocal,
   setShowOnboardingModal,
-  showToast,
-  handleWorkspaceAutoPull
+  showToast
  });
 
  const {
