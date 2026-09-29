@@ -1,0 +1,42 @@
+name: Drive Security Regression
+
+on:
+  pull_request:
+    paths:
+      - 'src/features/session/hooks/useAppStartupEffects.ts'
+      - 'src/features/workspace/hooks/useWorkspaceSyncHandlers.ts'
+      - 'src/features/workspace/lib/driveCostGuard.ts'
+      - 'src/__tests__/drive-oauth-security-regression.test.ts'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/drive-security-regression.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'src/features/session/hooks/useAppStartupEffects.ts'
+      - 'src/features/workspace/hooks/useWorkspaceSyncHandlers.ts'
+      - 'src/features/workspace/lib/driveCostGuard.ts'
+      - 'src/__tests__/drive-oauth-security-regression.test.ts'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/drive-security-regression.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  security-regression:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Dependency security audit
+        run: npm audit --audit-level=high
+      - name: Drive OAuth focused security regression
+        run: npx vitest run --project unit src/__tests__/drive-oauth-security-regression.test.ts
+      - name: Drive zero-cost source invariants
+        run: npx vitest run --project unit src/__tests__/drive-zero-cost-source-invariants.test.ts
