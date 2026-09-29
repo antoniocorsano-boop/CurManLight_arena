@@ -6,6 +6,12 @@ import type { RestoreBackupResult } from '../../../store/useCurriculumStore';
 import type { InstitutionalArchive } from '../../../domain/institution';
 import type { RevisionArchive } from '../../../domain/revision';
 import type { CivicEducationDraftArchive } from '../../../domain/curriculum/civicEducationWorkspace';
+import {
+ assertDriveBackupWithinLimit,
+ acquireDriveBackupLease,
+ DriveBackupBusyError,
+ DriveBackupTooLargeError
+} from '../lib/driveCostGuard';
 
 type WorkspaceStateRef = React.MutableRefObject<{
  savedUda: UdaModel[];
@@ -87,7 +93,33 @@ export function useWorkspaceSyncHandlers({
  showToast
 }: UseWorkspaceSyncHandlersArgs) {
  // Google Workspace Cloud Sync Handlers (Real Implicit Grant OAuth2 Flow & Google Drive REST API)
+ const buildWorkspaceBackupState = () => ({
+  localCurriculum,
+  savedUda,
+  decisions,
+  customTexts,
+  schoolYear,
+  role,
+  discipline,
+  order,
+  institutionalArchive,
+  revisionArchive,
+  civicEducationDraftArchive,
+  lastUpdated: Date.now()
+ });
+
+ const serializeWorkspaceBackup = () => JSON.stringify(buildWorkspaceBackupState(), null, 2);
  const handleWorkspaceLogin = (type: 'scolastica' | 'personale') => {
+  try {
+   assertDriveBackupWithinLimit(serializeWorkspaceBackup());
+  } catch (error) {
+   if (error instanceof DriveBackupTooLargeError) {
+    showToast('La copia supera 25 MiB: riduci o esporta localmente prima di collegare Drive.', false);
+    return;
+   }
+   throw error;
+  }
+
   setIsSyncingWorkspace(true);
   setCloudAccountType(type);
   safeLocalStorageSetItem('curman_cloudAccountType', type);
@@ -116,25 +148,14 @@ export function useWorkspaceSyncHandlers({
    return;
   }
   setIsSyncingWorkspace(true);
+  let releaseDriveBackupLease: (() => void) | null = null;
    showToast(`Copia JSON in corso sul Drive dell'account ${cloudAccountType === "scolastica" ? "dichiarato scolastico, non verificato" : "personale"}...`);
 
   try {
-   const stateToBackup = {
-    localCurriculum,
-    savedUda,
-    decisions,
-    customTexts,
-    schoolYear,
-    role,
-    discipline,
-     order,
-     institutionalArchive,
-     revisionArchive,
-     civicEducationDraftArchive,
-    lastUpdated: Date.now()
-   };
-
+   const stateToBackup = buildWorkspaceBackupState();
    const fileContent = JSON.stringify(stateToBackup, null, 2);
+   assertDriveBackupWithinLimit(fileContent);
+   releaseDriveBackupLease = acquireDriveBackupLease();
     const fileName = `curmanlight_copia_sicurezza_${schoolYear || 'sessione'}.json`;
 
    // 1. Search for existing file on Google Drive to update
@@ -225,6 +246,10 @@ export function useWorkspaceSyncHandlers({
     throw new Error("Errore durante il caricamento");
    }
   } catch (err) {
+   if (err instanceof DriveBackupTooLargeError || err instanceof DriveBackupBusyError) {
+    showToast(err.message, false);
+    return;
+   }
    console.warn("Errore Sincronizzazione Google:", err);
     showToast("Sessione Google scaduta. Riconnetti l'account per ottenere un nuovo token.", false);
    
@@ -239,6 +264,7 @@ export function useWorkspaceSyncHandlers({
     showToast("Sincronizzazione di emergenza: Copia scaricata in locale.", true);
    }, 1500);
   } finally {
+   releaseDriveBackupLease?.();
    setIsSyncingWorkspace(false);
   }
  };
