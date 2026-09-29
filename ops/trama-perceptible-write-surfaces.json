@@ -2,5 +2,20 @@
   "contract": "TRAMA-PW-01",
   "version": 1,
   "product": "Arena",
-  "surfaces": []
+  "surfaces": [
+    {
+      "id": "arena-drive-portability-backup",
+      "critical": false,
+      "sourcePatterns": [
+        "src/features/workspace/hooks/useWorkspaceSyncHandlers.ts",
+        "src/features/workspace/lib/driveCostGuard.ts"
+      ],
+      "feedbackFiles": [
+        "src/features/workspace/hooks/useWorkspaceSyncHandlers.ts"
+      ],
+      "testFiles": [
+        "src/__tests__/drive-zero-cost-source-invariants.test.ts"
+      ]
+    }
+  ]
 }
