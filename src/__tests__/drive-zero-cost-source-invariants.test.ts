@@ -1,3 +1,4 @@
+// @trama-feedback-test Drive backup emits explicit user-visible success/failure feedback through showToast.
 import { describe, expect, it } from 'vitest';
 import startupSource from '../features/session/hooks/useAppStartupEffects.ts?raw';
 import syncSource from '../features/workspace/hooks/useWorkspaceSyncHandlers.ts?raw';
