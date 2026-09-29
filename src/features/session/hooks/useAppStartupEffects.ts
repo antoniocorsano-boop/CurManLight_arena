@@ -139,12 +139,10 @@ export function useAppStartupEffects({
         safeLocalStorageSetItem('curman_workspaceUserEmail', data.email);
 
          showToast(`Sessione Google Drive attiva per ${data.email}. Tipo di account non verificato.`, true);
-        handleWorkspaceAutoPull(token);
        }
       })
       .catch(() => {
         showToast("Sessione Google avviata, ma le informazioni dell'account non sono state verificate.", false);
-       handleWorkspaceAutoPull(token);
       });
 
      window.history.replaceState(null, '', window.location.pathname + window.location.search);
