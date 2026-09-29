@@ -38,6 +38,7 @@ Draft
 | RT-009 | Runtime | `unregister()` e `caches.delete()` all'avvio sono comportamento development-era | [CML-603A](./CML-603A_RUNTIME_DISTRIBUTION_STRATEGY.md) | Approved | Alto |
 | RT-010 | Runtime | Runtime, schema dati, export, template e cache hanno versioni separate | [CML-603A](./CML-603A_RUNTIME_DISTRIBUTION_STRATEGY.md) | Approved | Medio |
 | RT-011 | Runtime | Gli stati di errore sono stati di prodotto con recovery visibile | [CML-603A](./CML-603A_RUNTIME_DISTRIBUTION_STRATEGY.md) | Approved | Alto |
+| RT-012 | Runtime | Le operazioni cloud sono esplicite, opzionali e zero-cost-by-design | [CML-DRIVE-01](./CML-DRIVE-01_ZERO_COST_CLOUD_OPERATIONS.md) | Implemented | Alto |
 | UT-001 | Utility | `src/lib` is the canonical shared utility layer | [CML-603B](./CML-603B_UTILITY_LAYER_CONSOLIDATION.md) | Verified | Alto |
 | TY-001 | Types | Boundary-first typed architecture | [CML-603C](./CML-603C_TYPE_BOUNDARY_STRATEGY.md) | Verified | Alto |
 | TS-001 | Tests | Interaction tests govern primary user flows | [CML-603D](./CML-603D_INTERACTION_TESTS.md) | Verified | Medio |
@@ -89,6 +90,7 @@ Draft
 | RT-009 | [CML-603A](./CML-603A_RUNTIME_DISTRIBUTION_STRATEGY.md) | Removal or gating of startup cache reset in `src/main.tsx` | Runtime startup regression test |
 | RT-010 | [CML-603A](./CML-603A_RUNTIME_DISTRIBUTION_STRATEGY.md) | Runtime/data/export/template/cache version constants | Migration/version unit tests |
 | RT-011 | [CML-603A](./CML-603A_RUNTIME_DISTRIBUTION_STRATEGY.md) | Global alerts, storage guard, recovery UX | Failure-mode interaction tests |
+| RT-012 | [CML-DRIVE-01](./CML-DRIVE-01_ZERO_COST_CLOUD_OPERATIONS.md) | Explicit Drive flow, startup auto-pull removal, 25 MiB preflight and shared lease | Drive zero-cost unit/source-invariant tests; Product CI |
 | UT-001 | [CML-603B](./CML-603B_UTILITY_LAYER_CONSOLIDATION.md) | `src/lib` canonical imports; duplicate `src/utils` utilities removed | No `src/utils` imports; no duplicate utility files; `tsc`; tests; build |
 | TY-001 | [CML-603C](./CML-603C_TYPE_BOUNDARY_STRATEGY.md) | Batches 1-5 complete: App layer contracts, selected shared hooks, shared store contracts, feature component props, domain ViewModels and runtime/browser boundary adapters; deferred: legacy simulator outside TY-001 | `src/features` contains 0 `any`/`as any` matches; selected shared hooks and stores contain no public `any`; `npx tsc --noEmit`; `npm test` 59/59; `npm run build`; legacy simulator deferred outside TY-001 |
 | TS-001 | [CML-603D](./CML-603D_INTERACTION_TESTS.md) | `src/__tests__/interaction.cml603d.test.tsx` covers 5/5 priority flows using React interaction harnesses and mocked runtime/network boundaries | `npx vitest run src/__tests__/interaction.cml603d.test.tsx` 5/5; `npx tsc --noEmit`; `npm test` 64/64; `npm run build`; scoped `git diff --check` clean; global `git diff --check` blocked only by BL-001 outside TS-001 scope |
