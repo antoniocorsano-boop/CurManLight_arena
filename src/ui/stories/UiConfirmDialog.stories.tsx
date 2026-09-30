@@ -64,7 +64,9 @@ export const DangerConfirm: Story = {
     await expect(dialog).toHaveAttribute('aria-labelledby');
     await expect(dialog).toHaveAttribute('aria-describedby');
     await expect(canvas.getByRole('heading', { name: 'Azzera la memoria' })).toBeVisible();
-    await expect(canvas.getByRole('button', { name: 'Annulla' })).toBeVisible();
+    const cancel = canvas.getByRole('button', { name: 'Annulla' });
+    await expect(cancel).toBeVisible();
+    await expect(cancel).toHaveFocus();
     await expect(canvas.getByRole('button', { name: 'Azzera' })).toBeVisible();
   },
 };
