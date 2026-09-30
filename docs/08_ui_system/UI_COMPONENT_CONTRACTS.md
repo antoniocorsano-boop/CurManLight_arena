@@ -142,7 +142,9 @@ Per stati vuoti con o senza azione.
 ### Comportamento
 
 - `showModal()` quando open = true
-- Focus trap
+- Focus trap nativo del dialogo modale
+- nei flussi `danger` il focus iniziale va all'azione meno distruttiva (`Annulla`)
+- nei flussi `primary` il focus iniziale può privilegiare l'azione di conferma
 - Escape chiude
 - Focus restituito all'elemento che ha aperto
 
