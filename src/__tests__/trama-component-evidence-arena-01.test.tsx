@@ -23,6 +23,20 @@ describe('TRAMA component evidence — Arena slice 01', () => {
     expect(screen.getByRole('heading', { name: 'Conferma eliminazione' })).toBeInTheDocument();
   });
 
+  it('UiTabs exposes an accessible tablist name', () => {
+    render(
+      <UiTabs
+        ariaLabel="Sezioni curricolo"
+        tabs={[
+          { id: 'a', label: 'A', content: <p>Pannello A</p> },
+          { id: 'b', label: 'B', content: <p>Pannello B</p> },
+        ]}
+      />
+    );
+
+    expect(screen.getByRole('tablist', { name: 'Sezioni curricolo' })).toBeInTheDocument();
+  });
+
   it('UiTabs implements roving tabindex and automatic keyboard activation', async () => {
     const user = userEvent.setup();
     const onChange = vi.fn();
@@ -78,7 +92,7 @@ describe('TRAMA component evidence — Arena slice 01', () => {
     expect(tabs[2]).toHaveFocus();
   });
 
-  it('UiTabs exposes aria-controls only when the referenced panel exists', async () => {
+  it('UiTabs keeps every aria-controls target mounted without mounting inactive content', async () => {
     const user = userEvent.setup();
 
     render(
@@ -91,19 +105,23 @@ describe('TRAMA component evidence — Arena slice 01', () => {
     );
 
     const tabs = screen.getAllByRole('tab');
-    const firstPanel = screen.getByRole('tabpanel');
+    const panels = screen.getAllByRole('tabpanel', { hidden: true });
 
-    expect(tabs[0]).toHaveAttribute('aria-controls', firstPanel.id);
-    expect(document.getElementById(tabs[0].getAttribute('aria-controls')!)).toBe(firstPanel);
-    expect(tabs[1]).not.toHaveAttribute('aria-controls');
+    expect(document.getElementById(tabs[0].getAttribute('aria-controls')!)).toBe(panels[0]);
+    expect(document.getElementById(tabs[1].getAttribute('aria-controls')!)).toBe(panels[1]);
+    expect(panels[0]).not.toHaveAttribute('hidden');
+    expect(panels[1]).toHaveAttribute('hidden');
+    expect(screen.getByText('Pannello A')).toBeInTheDocument();
+    expect(screen.queryByText('Pannello B')).not.toBeInTheDocument();
 
     tabs[0].focus();
     await user.keyboard('{ArrowRight}');
 
-    const secondPanel = screen.getByRole('tabpanel');
-    expect(tabs[0]).not.toHaveAttribute('aria-controls');
-    expect(tabs[1]).toHaveAttribute('aria-controls', secondPanel.id);
-    expect(document.getElementById(tabs[1].getAttribute('aria-controls')!)).toBe(secondPanel);
+    const updatedPanels = screen.getAllByRole('tabpanel', { hidden: true });
+    expect(updatedPanels[0]).toHaveAttribute('hidden');
+    expect(updatedPanels[1]).not.toHaveAttribute('hidden');
+    expect(screen.queryByText('Pannello A')).not.toBeInTheDocument();
+    expect(screen.getByText('Pannello B')).toBeInTheDocument();
   });
 
   it('UiTabs falls back to a reachable first tab when defaultTab is invalid', () => {
