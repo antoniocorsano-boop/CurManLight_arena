@@ -23,6 +23,82 @@ describe('TRAMA component evidence — Arena slice 01', () => {
     expect(screen.getByRole('heading', { name: 'Conferma eliminazione' })).toBeInTheDocument();
   });
 
+  it('UiConfirmDialog initially focuses the least destructive action for danger confirmations', () => {
+    render(
+      <UiConfirmDialog
+        open={true}
+        title="Conferma eliminazione"
+        message="Questa operazione non può essere annullata."
+        variant="danger"
+        onConfirm={vi.fn()}
+        onCancel={vi.fn()}
+      />
+    );
+
+    expect(screen.getByRole('button', { name: 'Annulla' })).toHaveFocus();
+  });
+
+  it('UiConfirmDialog may prioritize the primary action for non-destructive confirmations', () => {
+    render(
+      <UiConfirmDialog
+        open={true}
+        title="Esporta"
+        message="Vuoi continuare?"
+        variant="primary"
+        onConfirm={vi.fn()}
+        onCancel={vi.fn()}
+      />
+    );
+
+    expect(screen.getByRole('button', { name: 'Conferma' })).toHaveFocus();
+  });
+
+  it('UiConfirmDialog preserves the original return-focus target across updates while open', () => {
+    const onConfirm = vi.fn();
+    const onCancel = vi.fn();
+
+    const renderTree = (open: boolean, variant: 'danger' | 'primary') => (
+      <>
+        <button type="button">Apri conferma</button>
+        <UiConfirmDialog
+          open={open}
+          title="Conferma"
+          message="Messaggio"
+          variant={variant}
+          onConfirm={onConfirm}
+          onCancel={onCancel}
+        />
+      </>
+    );
+
+    const { rerender } = render(renderTree(false, 'danger'));
+    const opener = screen.getByRole('button', { name: 'Apri conferma' });
+    opener.focus();
+
+    rerender(renderTree(true, 'danger'));
+    expect(screen.getByRole('button', { name: 'Annulla' })).toHaveFocus();
+
+    rerender(renderTree(true, 'primary'));
+    expect(screen.getByRole('button', { name: 'Annulla' })).toHaveFocus();
+
+    rerender(renderTree(false, 'primary'));
+    expect(opener).toHaveFocus();
+  });
+
+  it('UiTabs exposes an accessible tablist name', () => {
+    render(
+      <UiTabs
+        ariaLabel="Sezioni curricolo"
+        tabs={[
+          { id: 'a', label: 'A', content: <p>Pannello A</p> },
+          { id: 'b', label: 'B', content: <p>Pannello B</p> },
+        ]}
+      />
+    );
+
+    expect(screen.getByRole('tablist', { name: 'Sezioni curricolo' })).toBeInTheDocument();
+  });
+
   it('UiTabs implements roving tabindex and automatic keyboard activation', async () => {
     const user = userEvent.setup();
     const onChange = vi.fn();
@@ -78,7 +154,86 @@ describe('TRAMA component evidence — Arena slice 01', () => {
     expect(tabs[2]).toHaveFocus();
   });
 
-  it('UiTabs binds each selected tab to the active tabpanel', () => {
+  it('UiTabs keeps every aria-controls target mounted without mounting inactive content', async () => {
+    const user = userEvent.setup();
+
+    render(
+      <UiTabs
+        tabs={[
+          { id: 'a', label: 'A', content: <p>Pannello A</p> },
+          { id: 'b', label: 'B', content: <p>Pannello B</p> },
+        ]}
+      />
+    );
+
+    const tabs = screen.getAllByRole('tab');
+    const panels = screen.getAllByRole('tabpanel', { hidden: true });
+
+    expect(document.getElementById(tabs[0].getAttribute('aria-controls')!)).toBe(panels[0]);
+    expect(document.getElementById(tabs[1].getAttribute('aria-controls')!)).toBe(panels[1]);
+    expect(panels[0]).not.toHaveAttribute('hidden');
+    expect(panels[1]).toHaveAttribute('hidden');
+    expect(screen.getByText('Pannello A')).toBeInTheDocument();
+    expect(screen.queryByText('Pannello B')).not.toBeInTheDocument();
+
+    tabs[0].focus();
+    await user.keyboard('{ArrowRight}');
+
+    const updatedPanels = screen.getAllByRole('tabpanel', { hidden: true });
+    expect(updatedPanels[0]).toHaveAttribute('hidden');
+    expect(updatedPanels[1]).not.toHaveAttribute('hidden');
+    expect(screen.queryByText('Pannello A')).not.toBeInTheDocument();
+    expect(screen.getByText('Pannello B')).toBeInTheDocument();
+  });
+
+  it('UiTabs falls back to a reachable first tab when defaultTab is invalid', () => {
+    render(
+      <UiTabs
+        defaultTab="missing"
+        tabs={[
+          { id: 'a', label: 'A', content: <p>Pannello A</p> },
+          { id: 'b', label: 'B', content: <p>Pannello B</p> },
+        ]}
+      />
+    );
+
+    const tabs = screen.getAllByRole('tab');
+    expect(tabs[0]).toHaveAttribute('aria-selected', 'true');
+    expect(tabs[0]).toHaveAttribute('tabindex', '0');
+    expect(tabs[1]).toHaveAttribute('tabindex', '-1');
+    expect(screen.getByRole('tabpanel')).toHaveTextContent('Pannello A');
+  });
+
+  it('UiTabs preserves a reachable fallback when the active tab is removed', () => {
+    const { rerender } = render(
+      <UiTabs
+        defaultTab="b"
+        tabs={[
+          { id: 'a', label: 'A', content: <p>Pannello A</p> },
+          { id: 'b', label: 'B', content: <p>Pannello B</p> },
+        ]}
+      />
+    );
+
+    expect(screen.getByRole('tab', { name: 'B' })).toHaveAttribute('aria-selected', 'true');
+
+    rerender(
+      <UiTabs
+        tabs={[
+          { id: 'a', label: 'A', content: <p>Pannello A</p> },
+          { id: 'c', label: 'C', content: <p>Pannello C</p> },
+        ]}
+      />
+    );
+
+    const tabs = screen.getAllByRole('tab');
+    expect(tabs[0]).toHaveAttribute('aria-selected', 'true');
+    expect(tabs[0]).toHaveAttribute('tabindex', '0');
+    expect(tabs[1]).toHaveAttribute('tabindex', '-1');
+    expect(screen.getByRole('tabpanel')).toHaveTextContent('Pannello A');
+  });
+
+  it('UiTabs binds the selected tab to the active tabpanel', () => {
     render(
       <UiTabs
         defaultTab="b"

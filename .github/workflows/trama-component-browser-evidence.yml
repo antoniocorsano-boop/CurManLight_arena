@@ -1,0 +1,83 @@
+name: TRAMA Component Browser Evidence
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'src/ui/**'
+      - 'src/index.css'
+      - 'tailwind.config.js'
+      - 'postcss.config.js'
+      - 'vite.config.ts'
+      - 'vitest.config.ts'
+      - 'scripts/capture-trama-component-evidence.mjs'
+      - '.storybook/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/trama-component-browser-evidence.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'src/ui/**'
+      - 'src/index.css'
+      - 'tailwind.config.js'
+      - 'postcss.config.js'
+      - 'vite.config.ts'
+      - 'vitest.config.ts'
+      - 'scripts/capture-trama-component-evidence.mjs'
+      - '.storybook/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/trama-component-browser-evidence.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  governed-component-evidence:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      TRAMA_EXACT_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+      TRAMA_RUN_ID: ${{ github.run_id }}
+
+    steps:
+      - name: Checkout exact head
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Run Storybook browser and accessibility tests
+        run: npm run test:storybook
+
+      - name: Build Storybook evidence surface
+        run: npm run build-storybook
+
+      - name: Capture responsive visual evidence
+        run: node scripts/capture-trama-component-evidence.mjs
+
+      - name: Upload governed component evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: trama-component-browser-evidence-${{ github.event.pull_request.head.sha || github.sha }}
+          path: artifacts/trama-component-evidence-arena-01
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Qualification boundary
+        if: always()
+        run: echo 'Automated browser/accessibility evidence does not substitute for human assistive-technology review or lifecycle promotion.'

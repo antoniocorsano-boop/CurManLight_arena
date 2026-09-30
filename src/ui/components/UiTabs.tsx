@@ -1,4 +1,4 @@
-import { useId, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
+import { useEffect, useId, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
 
 export type UiTab = {
   id: string;
@@ -10,13 +10,29 @@ type UiTabsProps = {
   tabs: UiTab[];
   defaultTab?: string;
   className?: string;
+  ariaLabel?: string;
   onChange?: (tabId: string) => void;
 };
 
-export function UiTabs({ tabs, defaultTab, className = '', onChange }: UiTabsProps) {
+export function UiTabs({
+  tabs,
+  defaultTab,
+  className = '',
+  ariaLabel = 'Sezioni',
+  onChange,
+}: UiTabsProps) {
   const [activeId, setActiveId] = useState(defaultTab || tabs[0]?.id || '');
   const baseId = useId();
   const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
+
+  const activeIdStillExists = tabs.some((tab) => tab.id === activeId);
+  const resolvedActiveId = activeIdStillExists ? activeId : (tabs[0]?.id || '');
+
+  useEffect(() => {
+    if (activeId !== resolvedActiveId) {
+      setActiveId(resolvedActiveId);
+    }
+  }, [activeId, resolvedActiveId]);
 
   const handleChange = (id: string) => {
     setActiveId(id);
@@ -44,15 +60,15 @@ export function UiTabs({ tabs, defaultTab, className = '', onChange }: UiTabsPro
     moveFocus(nextIndex);
   };
 
-  const activeTab = tabs.find((t) => t.id === activeId);
-  const activeTabId = activeTab ? `${baseId}-tab-${activeTab.id}` : undefined;
-  const activePanelId = activeTab ? `${baseId}-panel-${activeTab.id}` : undefined;
-
   return (
     <div className={className}>
-      <div className="flex border-b border-ui-border" role="tablist">
+      <div
+        className="flex overflow-x-auto border-b border-ui-border"
+        role="tablist"
+        aria-label={ariaLabel}
+      >
         {tabs.map((tab, index) => {
-          const selected = tab.id === activeId;
+          const selected = tab.id === resolvedActiveId;
           const tabId = `${baseId}-tab-${tab.id}`;
           const panelId = `${baseId}-panel-${tab.id}`;
           return (
@@ -67,7 +83,7 @@ export function UiTabs({ tabs, defaultTab, className = '', onChange }: UiTabsPro
               onClick={() => handleChange(tab.id)}
               onKeyDown={(event) => handleKeyDown(event, index)}
               className={`
-                px-4 py-2 text-[13px] font-medium transition-colors
+                shrink-0 whitespace-nowrap px-4 py-2 text-[13px] font-medium transition-colors
                 border-b-2 -mb-px
                 ${selected
                   ? 'border-ui-action text-ui-action'
@@ -80,14 +96,23 @@ export function UiTabs({ tabs, defaultTab, className = '', onChange }: UiTabsPro
           );
         })}
       </div>
-      <div
-        id={activePanelId}
-        role="tabpanel"
-        aria-labelledby={activeTabId}
-        className="pt-4"
-      >
-        {activeTab?.content}
-      </div>
+      {tabs.map((tab) => {
+        const selected = tab.id === resolvedActiveId;
+        const tabId = `${baseId}-tab-${tab.id}`;
+        const panelId = `${baseId}-panel-${tab.id}`;
+        return (
+          <div
+            key={tab.id}
+            id={panelId}
+            role="tabpanel"
+            aria-labelledby={tabId}
+            hidden={!selected}
+            className="pt-4"
+          >
+            {selected ? tab.content : null}
+          </div>
+        );
+      })}
     </div>
   );
 }

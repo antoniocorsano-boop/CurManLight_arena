@@ -1,11 +1,17 @@
 import { useState } from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
+import { expect, within } from 'storybook/test';
 import { UiConfirmDialog } from '../components/UiConfirmDialog';
 
 const meta: Meta<typeof UiConfirmDialog> = {
   title: 'UI System/UiConfirmDialog',
   component: UiConfirmDialog,
   tags: ['autodocs'],
+  parameters: {
+    a11y: {
+      test: 'error',
+    },
+  },
 };
 
 export default meta;
@@ -50,6 +56,19 @@ export const DangerConfirm: Story = {
       variant="danger"
     />
   ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const dialog = await canvas.findByRole('dialog');
+
+    await expect(dialog).toBeVisible();
+    await expect(dialog).toHaveAttribute('aria-labelledby');
+    await expect(dialog).toHaveAttribute('aria-describedby');
+    await expect(canvas.getByRole('heading', { name: 'Azzera la memoria' })).toBeVisible();
+    const cancel = canvas.getByRole('button', { name: 'Annulla' });
+    await expect(cancel).toBeVisible();
+    await expect(cancel).toHaveFocus();
+    await expect(canvas.getByRole('button', { name: 'Azzera' })).toBeVisible();
+  },
 };
 
 export const PrimaryConfirm: Story = {

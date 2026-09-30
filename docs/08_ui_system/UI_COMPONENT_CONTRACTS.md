@@ -142,7 +142,9 @@ Per stati vuoti con o senza azione.
 ### Comportamento
 
 - `showModal()` quando open = true
-- Focus trap
+- Focus trap nativo del dialogo modale
+- nei flussi `danger` il focus iniziale va all'azione meno distruttiva (`Annulla`)
+- nei flussi `primary` il focus iniziale può privilegiare l'azione di conferma
 - Escape chiude
 - Focus restituito all'elemento che ha aperto
 
@@ -154,7 +156,18 @@ Per stati vuoti con o senza azione.
 
 - tabs (obbligatorio, array di {id, label, content})
 - defaultTab (opzionale)
+- ariaLabel (opzionale, default: "Sezioni")
 - onChange (opzionale)
+
+### Comportamento accessibile
+
+- `tablist` con nome accessibile tramite `aria-label`
+- un solo tab selezionato e raggiungibile nella sequenza Tab
+- navigazione ArrowLeft/ArrowRight con wrap, Home ed End
+- ogni tab mantiene `aria-controls` verso un `tabpanel` realmente presente nel DOM
+- i gusci `tabpanel` inattivi restano montati e `hidden`, ma il loro contenuto non viene montato
+- se `defaultTab` è invalido o il tab attivo viene rimosso, il primo tab disponibile diventa fallback raggiungibile
+- su viewport stretti il `tablist` contiene l'overflow orizzontale senza imporre overflow alla pagina; le etichette dei tab non vengono spezzate
 
 ### Stile
 
