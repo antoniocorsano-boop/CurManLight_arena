@@ -165,6 +165,7 @@ Per stati vuoti con o senza azione.
 - ogni tab mantiene `aria-controls` verso un `tabpanel` realmente presente nel DOM
 - i gusci `tabpanel` inattivi restano montati e `hidden`, ma il loro contenuto non viene montato
 - se `defaultTab` è invalido o il tab attivo viene rimosso, il primo tab disponibile diventa fallback raggiungibile
+- su viewport stretti il `tablist` contiene l'overflow orizzontale senza imporre overflow alla pagina; le etichette dei tab non vengono spezzate
 
 ### Stile
 
