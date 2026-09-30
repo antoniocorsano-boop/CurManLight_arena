@@ -1,9 +1,9 @@
 # TRAMA Component Evidence — Arena slice 01
 
-**Status:** PROPOSED / QUALIFICATION  
-**Date:** 2026-09-29  
-**TRAMA registry baseline:** `b3077d93e1398911565544e8458afbe19a921900`  
-**Arena baseline:** `9da1cf65ae86ff5a3a65888636bf04f3a7312a7b`
+**Status:** PROPOSED / QUALIFICATION — R1 remediation  
+**Date:** 2026-09-30  
+**TRAMA registry baseline:** `12387e245c0387654ed4492d834472d82aba353b`  
+**Arena baseline:** `acf781af64cb097fcf80c3bce9fdf56274f9bbde`
 
 ## Scope
 
@@ -37,7 +37,26 @@ Qualification intent:
 - ArrowLeft/ArrowRight wrap;
 - Home/End navigation;
 - automatic activation;
-- explicit tab-to-panel binding.
+- explicit tab-to-panel binding;
+- no dangling `aria-controls` references;
+- deterministic reachable fallback when the requested/previous active tab is unavailable.
+
+## R1 post-merge remediation
+
+The review posted after merge of Arena PR #341 identified two accessibility defects that were not present in the pre-merge qualification evidence:
+
+1. inactive tabs declared `aria-controls` IDs for panels that were not mounted;
+2. an invalid `defaultTab`, or removal of the active tab during a later `tabs` update, could leave every tab at `tabIndex=-1`.
+
+R1 resolves both findings while preserving the existing mount semantics of tab content:
+
+- only the selected tab declares `aria-controls`, so every declared target exists;
+- `resolvedActiveId` falls back to the first available tab whenever the stored active ID is absent;
+- the fallback is persisted into component state without emitting a user-originated `onChange`;
+- an empty tab collection does not expose an orphan `tabpanel`;
+- targeted tests cover invalid defaults, active-tab removal and target existence before and after keyboard activation.
+
+This is intentionally preferred over mounting every inactive panel because Arena tab contents may contain stateful or effectful compositions; mounting all of them would be a broader runtime semantic change.
 
 ### ARENA.TOOLTIP.LEGACY
 Implementation:
@@ -51,8 +70,9 @@ This slice does not remediate or extend the legacy tooltip. A source guard recor
 - no migration of legacy ConfirmDialog/Tabs usages;
 - no Tooltip replacement;
 - no global visual redesign;
-- no change to Arena curriculum authority.
+- no change to Arena curriculum authority;
+- no eager mounting of inactive tab content.
 
 ## Exit criteria
 
-The slice is qualified only when Arena CI passes on the exact PR head. The resulting immutable PR head/run can then be written back into the TRAMA component evidence registry as executable evidence.
+R1 is qualified only when Arena CI passes on the exact PR head and an independent review finds no unresolved blocker. The resulting immutable PR head/run can then replace the earlier Arena Tabs evidence in the TRAMA component evidence registry. The Dialog evidence from PR #341 remains valid unless a new review finds a Dialog-specific defect.
