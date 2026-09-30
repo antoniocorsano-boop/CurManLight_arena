@@ -35,11 +35,13 @@ export function UiConfirmDialog({
     if (!dialog) return;
 
     if (open) {
-      returnFocusRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
-      try { dialog.showModal(); } catch { dialog.setAttribute('open', ''); }
-      const initialFocus = variant === 'danger' ? cancelButtonRef.current : confirmButtonRef.current;
-      initialFocus?.focus();
-    } else {
+      if (!dialog.open) {
+        returnFocusRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+        try { dialog.showModal(); } catch { dialog.setAttribute('open', ''); }
+        const initialFocus = variant === 'danger' ? cancelButtonRef.current : confirmButtonRef.current;
+        initialFocus?.focus();
+      }
+    } else if (dialog.open) {
       try { dialog.close(); } catch { dialog.removeAttribute('open'); }
       returnFocusRef.current?.focus();
       returnFocusRef.current = null;
