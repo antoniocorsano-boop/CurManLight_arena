@@ -23,6 +23,36 @@ describe('TRAMA component evidence — Arena slice 01', () => {
     expect(screen.getByRole('heading', { name: 'Conferma eliminazione' })).toBeInTheDocument();
   });
 
+  it('UiConfirmDialog initially focuses the least destructive action for danger confirmations', () => {
+    render(
+      <UiConfirmDialog
+        open={true}
+        title="Conferma eliminazione"
+        message="Questa operazione non può essere annullata."
+        variant="danger"
+        onConfirm={vi.fn()}
+        onCancel={vi.fn()}
+      />
+    );
+
+    expect(screen.getByRole('button', { name: 'Annulla' })).toHaveFocus();
+  });
+
+  it('UiConfirmDialog may prioritize the primary action for non-destructive confirmations', () => {
+    render(
+      <UiConfirmDialog
+        open={true}
+        title="Esporta"
+        message="Vuoi continuare?"
+        variant="primary"
+        onConfirm={vi.fn()}
+        onCancel={vi.fn()}
+      />
+    );
+
+    expect(screen.getByRole('button', { name: 'Conferma' })).toHaveFocus();
+  });
+
   it('UiTabs exposes an accessible tablist name', () => {
     render(
       <UiTabs
