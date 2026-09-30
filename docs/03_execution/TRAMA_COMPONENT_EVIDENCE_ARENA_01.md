@@ -38,6 +38,7 @@ Qualification intent:
 - Home/End navigation;
 - automatic activation;
 - explicit tab-to-panel binding;
+- accessible name for the `tablist`;
 - no dangling `aria-controls` references;
 - deterministic reachable fallback when the requested/previous active tab is unavailable.
 
@@ -48,15 +49,17 @@ The review posted after merge of Arena PR #341 identified two accessibility defe
 1. inactive tabs declared `aria-controls` IDs for panels that were not mounted;
 2. an invalid `defaultTab`, or removal of the active tab during a later `tabs` update, could leave every tab at `tabIndex=-1`.
 
-R1 resolves both findings while preserving the existing mount semantics of tab content:
+R1 resolves the findings while preserving the existing mount semantics of tab content:
 
-- only the selected tab declares `aria-controls`, so every declared target exists;
+- every tab keeps `aria-controls` and points to a real, mounted `tabpanel` shell;
+- inactive panel shells are `hidden`, while their content remains unmounted until activation;
+- the `tablist` receives an accessible name through `ariaLabel` (default: `Sezioni`);
 - `resolvedActiveId` falls back to the first available tab whenever the stored active ID is absent;
 - the fallback is persisted into component state without emitting a user-originated `onChange`;
-- an empty tab collection does not expose an orphan `tabpanel`;
-- targeted tests cover invalid defaults, active-tab removal and target existence before and after keyboard activation.
+- an empty tab collection exposes neither tabs nor orphan panels;
+- targeted tests cover the accessible tablist name, invalid defaults, active-tab removal, complete tab-to-panel references and lazy inactive content.
 
-This is intentionally preferred over mounting every inactive panel because Arena tab contents may contain stateful or effectful compositions; mounting all of them would be a broader runtime semantic change.
+The mounted-shell approach follows the WAI-ARIA tabs relationship while avoiding eager mounting of stateful or effectful inactive content.
 
 ### ARENA.TOOLTIP.LEGACY
 Implementation:
