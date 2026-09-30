@@ -53,10 +53,6 @@ export function UiTabs({ tabs, defaultTab, className = '', onChange }: UiTabsPro
     moveFocus(nextIndex);
   };
 
-  const activeTab = tabs.find((tab) => tab.id === resolvedActiveId);
-  const activeTabId = activeTab ? `${baseId}-tab-${activeTab.id}` : undefined;
-  const activePanelId = activeTab ? `${baseId}-panel-${activeTab.id}` : undefined;
-
   return (
     <div className={className}>
       <div className="flex border-b border-ui-border" role="tablist">
@@ -71,7 +67,7 @@ export function UiTabs({ tabs, defaultTab, className = '', onChange }: UiTabsPro
               id={tabId}
               role="tab"
               aria-selected={selected}
-              aria-controls={selected ? panelId : undefined}
+              aria-controls={panelId}
               tabIndex={selected ? 0 : -1}
               onClick={() => handleChange(tab.id)}
               onKeyDown={(event) => handleKeyDown(event, index)}
@@ -89,16 +85,23 @@ export function UiTabs({ tabs, defaultTab, className = '', onChange }: UiTabsPro
           );
         })}
       </div>
-      {activeTab && (
-        <div
-          id={activePanelId}
-          role="tabpanel"
-          aria-labelledby={activeTabId}
-          className="pt-4"
-        >
-          {activeTab.content}
-        </div>
-      )}
+      {tabs.map((tab) => {
+        const selected = tab.id === resolvedActiveId;
+        const tabId = `${baseId}-tab-${tab.id}`;
+        const panelId = `${baseId}-panel-${tab.id}`;
+        return (
+          <div
+            key={tab.id}
+            id={panelId}
+            role="tabpanel"
+            aria-labelledby={tabId}
+            hidden={!selected}
+            className="pt-4"
+          >
+            {selected ? tab.content : null}
+          </div>
+        );
+      })}
     </div>
   );
 }
