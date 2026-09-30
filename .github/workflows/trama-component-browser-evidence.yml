@@ -4,26 +4,28 @@ on:
   pull_request:
     branches: [main]
     paths:
-      - 'src/ui/components/UiConfirmDialog.tsx'
-      - 'src/ui/components/UiTabs.tsx'
-      - 'src/ui/stories/UiConfirmDialog.stories.tsx'
-      - 'src/ui/stories/UiTabs.stories.tsx'
+      - 'src/ui/**'
+      - 'src/index.css'
+      - 'tailwind.config.js'
+      - 'postcss.config.js'
+      - 'vite.config.ts'
+      - 'vitest.config.ts'
       - 'scripts/capture-trama-component-evidence.mjs'
       - '.storybook/**'
-      - 'vitest.config.ts'
       - 'package.json'
       - 'package-lock.json'
       - '.github/workflows/trama-component-browser-evidence.yml'
   push:
     branches: [main]
     paths:
-      - 'src/ui/components/UiConfirmDialog.tsx'
-      - 'src/ui/components/UiTabs.tsx'
-      - 'src/ui/stories/UiConfirmDialog.stories.tsx'
-      - 'src/ui/stories/UiTabs.stories.tsx'
+      - 'src/ui/**'
+      - 'src/index.css'
+      - 'tailwind.config.js'
+      - 'postcss.config.js'
+      - 'vite.config.ts'
+      - 'vitest.config.ts'
       - 'scripts/capture-trama-component-evidence.mjs'
       - '.storybook/**'
-      - 'vitest.config.ts'
       - 'package.json'
       - 'package-lock.json'
       - '.github/workflows/trama-component-browser-evidence.yml'
