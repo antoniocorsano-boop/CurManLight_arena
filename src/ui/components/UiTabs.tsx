@@ -10,10 +10,17 @@ type UiTabsProps = {
   tabs: UiTab[];
   defaultTab?: string;
   className?: string;
+  ariaLabel?: string;
   onChange?: (tabId: string) => void;
 };
 
-export function UiTabs({ tabs, defaultTab, className = '', onChange }: UiTabsProps) {
+export function UiTabs({
+  tabs,
+  defaultTab,
+  className = '',
+  ariaLabel = 'Sezioni',
+  onChange,
+}: UiTabsProps) {
   const [activeId, setActiveId] = useState(defaultTab || tabs[0]?.id || '');
   const baseId = useId();
   const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
@@ -55,7 +62,7 @@ export function UiTabs({ tabs, defaultTab, className = '', onChange }: UiTabsPro
 
   return (
     <div className={className}>
-      <div className="flex border-b border-ui-border" role="tablist">
+      <div className="flex border-b border-ui-border" role="tablist" aria-label={ariaLabel}>
         {tabs.map((tab, index) => {
           const selected = tab.id === resolvedActiveId;
           const tabId = `${baseId}-tab-${tab.id}`;
