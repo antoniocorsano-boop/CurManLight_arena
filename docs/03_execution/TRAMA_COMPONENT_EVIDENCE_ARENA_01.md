@@ -21,7 +21,9 @@ Evidence surfaces:
 Qualification intent:
 - native dialog semantics;
 - labelled/described content;
-- existing confirmation behavior remains intact.
+- least-destructive initial focus for `danger` confirmations;
+- primary-action initial focus retained for non-destructive `primary` confirmations;
+- focus return and existing confirmation behavior remain intact.
 
 ### ARENA.TABS.GOVERNED
 Implementation:
