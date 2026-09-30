@@ -53,6 +53,38 @@ describe('TRAMA component evidence — Arena slice 01', () => {
     expect(screen.getByRole('button', { name: 'Conferma' })).toHaveFocus();
   });
 
+  it('UiConfirmDialog preserves the original return-focus target across updates while open', () => {
+    const onConfirm = vi.fn();
+    const onCancel = vi.fn();
+
+    const renderTree = (open: boolean, variant: 'danger' | 'primary') => (
+      <>
+        <button type="button">Apri conferma</button>
+        <UiConfirmDialog
+          open={open}
+          title="Conferma"
+          message="Messaggio"
+          variant={variant}
+          onConfirm={onConfirm}
+          onCancel={onCancel}
+        />
+      </>
+    );
+
+    const { rerender } = render(renderTree(false, 'danger'));
+    const opener = screen.getByRole('button', { name: 'Apri conferma' });
+    opener.focus();
+
+    rerender(renderTree(true, 'danger'));
+    expect(screen.getByRole('button', { name: 'Annulla' })).toHaveFocus();
+
+    rerender(renderTree(true, 'primary'));
+    expect(screen.getByRole('button', { name: 'Annulla' })).toHaveFocus();
+
+    rerender(renderTree(false, 'primary'));
+    expect(opener).toHaveFocus();
+  });
+
   it('UiTabs exposes an accessible tablist name', () => {
     render(
       <UiTabs
