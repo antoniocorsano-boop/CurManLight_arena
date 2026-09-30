@@ -24,6 +24,7 @@ export function UiConfirmDialog({
   onCancel,
 }: UiConfirmDialogProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
+  const cancelButtonRef = useRef<HTMLButtonElement>(null);
   const confirmButtonRef = useRef<HTMLButtonElement>(null);
   const returnFocusRef = useRef<HTMLElement | null>(null);
   const titleId = useId();
@@ -36,13 +37,14 @@ export function UiConfirmDialog({
     if (open) {
       returnFocusRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
       try { dialog.showModal(); } catch { dialog.setAttribute('open', ''); }
-      confirmButtonRef.current?.focus();
+      const initialFocus = variant === 'danger' ? cancelButtonRef.current : confirmButtonRef.current;
+      initialFocus?.focus();
     } else {
       try { dialog.close(); } catch { dialog.removeAttribute('open'); }
       returnFocusRef.current?.focus();
       returnFocusRef.current = null;
     }
-  }, [open]);
+  }, [open, variant]);
 
   return (
     <dialog
@@ -76,7 +78,7 @@ export function UiConfirmDialog({
         <p id={messageId} className="text-[14px] text-ui-text-secondary leading-relaxed">{message}</p>
       </div>
       <div className="flex justify-end gap-2 px-6 pb-6">
-        <UiButton variant="secondary" size="small" onClick={onCancel}>
+        <UiButton ref={cancelButtonRef} variant="secondary" size="small" onClick={onCancel}>
           {cancelLabel}
         </UiButton>
         <UiButton ref={confirmButtonRef} variant={variant} size="small" onClick={onConfirm}>
