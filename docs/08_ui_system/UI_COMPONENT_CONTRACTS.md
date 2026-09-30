@@ -154,7 +154,17 @@ Per stati vuoti con o senza azione.
 
 - tabs (obbligatorio, array di {id, label, content})
 - defaultTab (opzionale)
+- ariaLabel (opzionale, default: "Sezioni")
 - onChange (opzionale)
+
+### Comportamento accessibile
+
+- `tablist` con nome accessibile tramite `aria-label`
+- un solo tab selezionato e raggiungibile nella sequenza Tab
+- navigazione ArrowLeft/ArrowRight con wrap, Home ed End
+- ogni tab mantiene `aria-controls` verso un `tabpanel` realmente presente nel DOM
+- i gusci `tabpanel` inattivi restano montati e `hidden`, ma il loro contenuto non viene montato
+- se `defaultTab` è invalido o il tab attivo viene rimosso, il primo tab disponibile diventa fallback raggiungibile
 
 ### Stile
 
