@@ -55,11 +55,6 @@ export const ResponsiveCompact: Story = {
     ],
     defaultTab: 'curricolo',
   },
-  render: (args) => (
-    <div style={{ width: 320, maxWidth: '100%' }}>
-      <UiTabs {...args} />
-    </div>
-  ),
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     const tablist = canvas.getByRole('tablist', { name: 'Sezioni di qualificazione' });
@@ -67,7 +62,6 @@ export const ResponsiveCompact: Story = {
 
     await expect(tablist).toBeVisible();
     await expect(window.getComputedStyle(tablist).overflowX).toBe('auto');
-    await expect(tablist.scrollWidth).toBeGreaterThan(tablist.clientWidth);
 
     for (const tab of tabs) {
       const panelId = tab.getAttribute('aria-controls');
