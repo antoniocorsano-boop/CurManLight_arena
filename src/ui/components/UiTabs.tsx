@@ -62,7 +62,11 @@ export function UiTabs({
 
   return (
     <div className={className}>
-      <div className="flex border-b border-ui-border" role="tablist" aria-label={ariaLabel}>
+      <div
+        className="flex overflow-x-auto border-b border-ui-border"
+        role="tablist"
+        aria-label={ariaLabel}
+      >
         {tabs.map((tab, index) => {
           const selected = tab.id === resolvedActiveId;
           const tabId = `${baseId}-tab-${tab.id}`;
@@ -79,7 +83,7 @@ export function UiTabs({
               onClick={() => handleChange(tab.id)}
               onKeyDown={(event) => handleKeyDown(event, index)}
               className={`
-                px-4 py-2 text-[13px] font-medium transition-colors
+                shrink-0 whitespace-nowrap px-4 py-2 text-[13px] font-medium transition-colors
                 border-b-2 -mb-px
                 ${selected
                   ? 'border-ui-action text-ui-action'
