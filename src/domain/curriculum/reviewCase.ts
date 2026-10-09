@@ -1,9 +1,9 @@
 import type {
-  CurriculumReviewCase,
-  CurriculumReviewCaseReadiness,
-  CurriculumUnitReference,
-  RevisionTrigger,
-} from '../../types/curriculum';
+  CurricoloReviewCase,
+  CurricoloReviewCaseReadiness,
+  CurricoloUnitReference,
+} from '../../types/curricolo';
+import type { RevisionTrigger } from '../../types/curriculum';
 import { isQualifiedRevisionTrigger } from './revisionTrigger';
 
 const normalizeText = (value: string | undefined, maxLength = 1200): string | undefined => {
@@ -11,13 +11,13 @@ const normalizeText = (value: string | undefined, maxLength = 1200): string | un
   return normalized ? normalized.slice(0, maxLength) : undefined;
 };
 
-const sameMaster = (trigger: RevisionTrigger, curriculumUnit: CurriculumUnitReference): boolean => (
+const sameMaster = (trigger: RevisionTrigger, curriculumUnit: CurricoloUnitReference): boolean => (
   trigger.currentMaster.id === curriculumUnit.masterId
   && trigger.currentMaster.driveFileId === curriculumUnit.masterDriveFileId
   && trigger.currentMaster.version === curriculumUnit.masterVersion
 );
 
-const sameUnitScope = (trigger: RevisionTrigger, curriculumUnit: CurriculumUnitReference): boolean => (
+const sameUnitScope = (trigger: RevisionTrigger, curriculumUnit: CurricoloUnitReference): boolean => (
   trigger.potentialCurriculumScope.curriculumUnitKey === curriculumUnit.unitKey
   && trigger.applicability.order === curriculumUnit.order
   && trigger.applicability.classOrAgeBand === curriculumUnit.classOrAgeBand
@@ -26,7 +26,7 @@ const sameUnitScope = (trigger: RevisionTrigger, curriculumUnit: CurriculumUnitR
 
 export interface EvaluateCurriculumReviewCaseReadinessInput {
   trigger: RevisionTrigger;
-  curriculumUnit: CurriculumUnitReference;
+  curriculumUnit: CurricoloUnitReference;
   availableProposalRefs: string[];
   selectedProposalRefs: string[];
   scopeReason?: string;
@@ -38,7 +38,7 @@ export function evaluateCurriculumReviewCaseReadiness({
   availableProposalRefs,
   selectedProposalRefs,
   scopeReason,
-}: EvaluateCurriculumReviewCaseReadinessInput): CurriculumReviewCaseReadiness {
+}: EvaluateCurriculumReviewCaseReadinessInput): CurricoloReviewCaseReadiness {
   const available = new Set(availableProposalRefs);
   const selected = [...new Set(selectedProposalRefs.filter(Boolean))];
   const checks = {
@@ -50,7 +50,7 @@ export function evaluateCurriculumReviewCaseReadiness({
     explicitScopeReason: Boolean(normalizeText(scopeReason)),
   };
 
-  const blockers: CurriculumReviewCaseReadiness['blockers'] = [];
+  const blockers: CurricoloReviewCaseReadiness['blockers'] = [];
   if (!checks.qualifiedTrigger) blockers.push('TRIGGER_NOT_QUALIFIED');
   if (!checks.currentMasterMatch) blockers.push('CURRENT_MASTER_MISMATCH');
   if (!checks.curriculumUnitScopeMatch) blockers.push('CURRICULUM_UNIT_SCOPE_MISMATCH');
@@ -66,7 +66,7 @@ export function evaluateCurriculumReviewCaseReadiness({
 }
 
 export interface BuildCurriculumReviewCaseInput extends EvaluateCurriculumReviewCaseReadinessInput {
-  existingCases?: CurriculumReviewCase[];
+  existingCases?: CurricoloReviewCase[];
   openedAt?: string;
   actorId?: string;
   roleContext?: string;
@@ -82,7 +82,7 @@ export function buildCurriculumReviewCase({
   openedAt = new Date().toISOString(),
   actorId,
   roleContext,
-}: BuildCurriculumReviewCaseInput): CurriculumReviewCase {
+}: BuildCurriculumReviewCaseInput): CurricoloReviewCase {
   const alreadyOpen = existingCases.some((reviewCase) => (
     reviewCase.originTriggerSnapshot.id === trigger.id
     && reviewCase.currentMaster.id === trigger.currentMaster.id
@@ -144,8 +144,8 @@ export function buildCurriculumReviewCase({
 }
 
 export function reviewCaseMatchesCurrentUnit(
-  reviewCase: CurriculumReviewCase,
-  curriculumUnit: CurriculumUnitReference,
+  reviewCase: CurricoloReviewCase,
+  curriculumUnit: CurricoloUnitReference,
 ): boolean {
   return reviewCase.curriculumUnit.unitKey === curriculumUnit.unitKey
     && reviewCase.currentMaster.id === curriculumUnit.masterId
