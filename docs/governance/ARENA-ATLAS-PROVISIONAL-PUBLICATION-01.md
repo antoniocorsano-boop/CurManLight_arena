@@ -10,7 +10,7 @@ Arena può propagare ad Atlas una versione completa del curricolo anche quando l
 In tale stato:
 
 - Atlas può renderla visibile pubblicamente;
-- la versione deve essere etichettata come **«Curriculum provvisorio — non vigente»**;
+- la versione deve essere etichettata come **«Curricolo provvisorio — non vigente»**;
 - deve essere esplicitato che **l’approvazione del Collegio dei docenti è in attesa**;
 - `authorityReceiptRef` deve restare assente;
 - la visibilità non attribuisce vigenza né approvazione;

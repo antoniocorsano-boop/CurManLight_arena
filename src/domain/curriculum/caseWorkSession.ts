@@ -1,16 +1,15 @@
 import type {
-  CaseScopedCurriculumWorkSession,
-  CurriculumReviewCase,
-  CurriculumWorkSessionStage,
-  DecisionStatus,
-  Proposal,
-} from '../../types/curriculum';
+  CaseScopedCurricoloWorkSession,
+  CurricoloReviewCase,
+  CurricoloWorkSessionStage,
+} from '../../types/curricolo';
+import type { DecisionStatus, Proposal } from '../../types/curriculum';
 
 const normalizeText = (value: string | undefined, maxLength = 2400): string =>
   value?.trim().replace(/\s+/g, ' ').slice(0, maxLength) ?? '';
 
 export function getCaseScopedProposals(
-  reviewCase: CurriculumReviewCase,
+  reviewCase: CurricoloReviewCase,
   availableProposals: Proposal[],
 ): Proposal[] {
   const byId = new Map(availableProposals.map((proposal) => [proposal.id, proposal]));
@@ -20,7 +19,7 @@ export function getCaseScopedProposals(
 }
 
 export function assertCaseScopeIsResolvable(
-  reviewCase: CurriculumReviewCase,
+  reviewCase: CurricoloReviewCase,
   availableProposals: Proposal[],
 ): void {
   if (reviewCase.targetedProposalRefs.length === 0) throw new Error('CASE_WORK_SESSION_EMPTY_SCOPE');
@@ -31,11 +30,11 @@ export function assertCaseScopeIsResolvable(
 }
 
 export function buildCaseScopedCurriculumWorkSession(input: {
-  reviewCase: CurriculumReviewCase;
+  reviewCase: CurricoloReviewCase;
   availableProposals: Proposal[];
   actorId?: string;
   startedAt?: string;
-}): CaseScopedCurriculumWorkSession {
+}): CaseScopedCurricoloWorkSession {
   const { reviewCase, availableProposals, actorId, startedAt = new Date().toISOString() } = input;
   assertCaseScopeIsResolvable(reviewCase, availableProposals);
   if (reviewCase.caseState === 'PROFESSIONAL_REVIEW_COMPLETE') throw new Error('REVIEW_CASE_ALREADY_COMPLETE');
@@ -70,7 +69,7 @@ export function buildCaseScopedCurriculumWorkSession(input: {
 }
 
 export function isCaseDecisionPrepared(
-  session: CaseScopedCurriculumWorkSession,
+  session: CaseScopedCurricoloWorkSession,
   proposalRef: string,
 ): boolean {
   if (!session.targetedProposalRefs.includes(proposalRef)) return false;
@@ -80,22 +79,22 @@ export function isCaseDecisionPrepared(
   return true;
 }
 
-export function casePreparedCount(session: CaseScopedCurriculumWorkSession): number {
+export function casePreparedCount(session: CaseScopedCurricoloWorkSession): number {
   return session.targetedProposalRefs.filter((proposalRef) => isCaseDecisionPrepared(session, proposalRef)).length;
 }
 
-export function isCasePersonalReviewComplete(session: CaseScopedCurriculumWorkSession): boolean {
+export function isCasePersonalReviewComplete(session: CaseScopedCurricoloWorkSession): boolean {
   return session.targetedProposalRefs.length > 0
     && casePreparedCount(session) === session.targetedProposalRefs.length;
 }
 
 export function recordCaseDecision(input: {
-  session: CaseScopedCurriculumWorkSession;
+  session: CaseScopedCurricoloWorkSession;
   proposalRef: string;
   decision: DecisionStatus;
   customText?: string;
   updatedAt?: string;
-}): CaseScopedCurriculumWorkSession {
+}): CaseScopedCurricoloWorkSession {
   const { session, proposalRef, decision, updatedAt = new Date().toISOString() } = input;
   if (!session.targetedProposalRefs.includes(proposalRef)) {
     throw new Error('CASE_WORK_SESSION_PROPOSAL_OUT_OF_SCOPE');
@@ -119,10 +118,10 @@ export function recordCaseDecision(input: {
 }
 
 export function resetCaseDecision(
-  session: CaseScopedCurriculumWorkSession,
+  session: CaseScopedCurricoloWorkSession,
   proposalRef: string,
   updatedAt = new Date().toISOString(),
-): CaseScopedCurriculumWorkSession {
+): CaseScopedCurricoloWorkSession {
   if (!session.targetedProposalRefs.includes(proposalRef)) throw new Error('CASE_WORK_SESSION_PROPOSAL_OUT_OF_SCOPE');
   const decisions = { ...session.decisions };
   const customTexts = { ...session.customTexts };
@@ -132,12 +131,12 @@ export function resetCaseDecision(
 }
 
 export function transitionCaseWorkSessionStage(input: {
-  session: CaseScopedCurriculumWorkSession;
-  nextStage: CurriculumWorkSessionStage;
+  session: CaseScopedCurricoloWorkSession;
+  nextStage: CurricoloWorkSessionStage;
   persistedShareComplete?: boolean;
   teamOutcomeComplete?: boolean;
   updatedAt?: string;
-}): CaseScopedCurriculumWorkSession {
+}): CaseScopedCurricoloWorkSession {
   const {
     session,
     nextStage,
@@ -159,18 +158,18 @@ export function transitionCaseWorkSessionStage(input: {
 }
 
 export function pauseCaseWorkSession(
-  session: CaseScopedCurriculumWorkSession,
+  session: CaseScopedCurricoloWorkSession,
   updatedAt = new Date().toISOString(),
-): CaseScopedCurriculumWorkSession {
+): CaseScopedCurricoloWorkSession {
   if (session.sessionState === 'COMPLETE') return session;
   return { ...session, sessionState: 'PAUSED', updatedAt };
 }
 
 export function resumeCaseWorkSession(
-  session: CaseScopedCurriculumWorkSession,
+  session: CaseScopedCurricoloWorkSession,
   actorId?: string,
   updatedAt = new Date().toISOString(),
-): CaseScopedCurriculumWorkSession {
+): CaseScopedCurricoloWorkSession {
   if (session.sessionState === 'COMPLETE') throw new Error('CASE_WORK_SESSION_COMPLETE');
   const normalizedActor = normalizeText(actorId, 300) || undefined;
   if (session.actor.actorId && normalizedActor && session.actor.actorId !== normalizedActor) {
@@ -188,9 +187,9 @@ export function resumeCaseWorkSession(
 }
 
 export function completeCaseWorkSession(
-  session: CaseScopedCurriculumWorkSession,
+  session: CaseScopedCurricoloWorkSession,
   updatedAt = new Date().toISOString(),
-): CaseScopedCurriculumWorkSession {
+): CaseScopedCurricoloWorkSession {
   if (!isCasePersonalReviewComplete(session)) throw new Error('CASE_PERSONAL_REVIEW_INCOMPLETE');
   return { ...session, sessionState: 'COMPLETE', stage: 'RECORD_TEAM_OUTCOME', updatedAt };
 }

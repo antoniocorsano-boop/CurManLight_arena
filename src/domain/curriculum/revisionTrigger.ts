@@ -1,5 +1,5 @@
+import type { CurricoloUnitReference } from '../../types/curricolo';
 import type {
-  CurriculumUnitReference,
   ExternalNormativeRevisionTrigger,
   ExternalNormativeSourceType,
   ImplementationObservation,
@@ -40,7 +40,7 @@ const requireText = (value: string | undefined, errorCode: string, maxLength = 8
   return normalized;
 };
 
-const assertCurrentMasterReference = (curriculumUnit: CurriculumUnitReference): void => {
+const assertCurrentMasterReference = (curriculumUnit: CurricoloUnitReference): void => {
   if (
     curriculumUnit.masterId !== 'CAN-CURR-MASTER-00'
     || !normalizeText(curriculumUnit.masterDriveFileId)
@@ -52,7 +52,7 @@ const assertCurrentMasterReference = (curriculumUnit: CurriculumUnitReference): 
 };
 
 const buildCommonFields = (
-  curriculumUnit: CurriculumUnitReference,
+  curriculumUnit: CurricoloUnitReference,
   recordedAt: string,
   professionalReason?: string,
   signal?: ImplementationSignal,
@@ -193,7 +193,7 @@ export function buildPracticeRevisionTrigger({
 }
 
 export interface BuildExternalNormativeRevisionTriggerInput {
-  curriculumUnit: CurriculumUnitReference;
+  curriculumUnit: CurricoloUnitReference;
   sourceReference: string;
   sourceType: ExternalNormativeSourceType;
   sourceQualification: 'QUALIFIED' | 'UNQUALIFIED';
@@ -236,7 +236,7 @@ export function buildExternalNormativeRevisionTrigger({
 }
 
 export interface BuildInstituteNeedRevisionTriggerInput {
-  curriculumUnit: CurriculumUnitReference;
+  curriculumUnit: CurricoloUnitReference;
   needReference: string;
   needStatement: string;
   declaredNonNational: boolean;
@@ -273,7 +273,7 @@ export function buildInstituteNeedRevisionTrigger({
 }
 
 export interface BuildPeriodicReviewRevisionTriggerInput {
-  curriculumUnit: CurriculumUnitReference;
+  curriculumUnit: CurricoloUnitReference;
   reviewCycle: 'ANNUAL' | 'MULTIYEAR' | 'OTHER';
   reviewReason: string;
   recordedAt?: string;

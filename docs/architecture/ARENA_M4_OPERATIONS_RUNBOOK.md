@@ -15,8 +15,8 @@ It consolidates release, rollback, incident, recovery, ownership, evidence fresh
 
 The runbook preserves the canonical ecosystem boundary:
 
-- **CurManLight Arena** — curriculum authority, provenance, review, validation and governed handoff;
-- **Curriculum Atlas** — read-only semantic projection/navigation;
+- **CurManLight Arena** — curricolo authority, provenance, review, validation and governed handoff;
+- **Atlas** — read-only semantic projection/navigation;
 - **Docente OS** — teacher operational planning, UDA, lessons, materials, evidence and replanning.
 
 Operations must not introduce a shared database, implicit synchronization or authority transfer across products.
@@ -33,7 +33,7 @@ For the controlled pilot, one repository owner may temporarily hold multiple ope
 | Recovery Authority | authorizes rollback when data/authority/release integrity is at risk | repository owner/admin |
 | Evidence Steward | marks evidence current/stale and maintains closeout receipts | repository owner/admin |
 
-These roles govern software operations only. They do not confer institutional curriculum authority.
+These roles govern software operations only. They do not confer institutional curricolo authority.
 
 ## 4. Release rule
 
@@ -211,7 +211,7 @@ Issue #121 is the canonical M4 tracker. If its body conflicts with merged eviden
 ## 10. Known limitations and blockers
 
 ### Governed bounded limitation
-- canonical curriculum persistence remains `legacy-only` for M4, per M4-S5; this does not authorize automatic migration.
+- canonical curricolo persistence remains `legacy-only` for M4, per M4-S5; this does not authorize automatic migration.
 
 ### Parallel source finding
 - A3/#280: non-current planning reference / source-registry convergence remains open and is not absorbed by M4-S6.
