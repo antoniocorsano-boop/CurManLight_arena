@@ -30,7 +30,7 @@ Arena security design preserves:
 - explicit authority;
 - server-enforced membership/RLS for shared institutional writes;
 - local state not treated as institutional authority;
-- no shared database across Arena, Curriculum Atlas and Docente OS;
+- no shared database across Arena, Atlas and Docente OS;
 - no automatic cross-product authority mutation;
 - credentials not treated as durable domain state;
 - exact-SHA release identity.
@@ -60,7 +60,7 @@ The repository includes a dependency-security workflow. A green dependency scan 
 
 ## Privacy boundary
 
-Arena is a curriculum-governance product. Pupil-level operational data are outside its intended product boundary.
+Arena governs the institutional curricolo. Pupil-level operational data are outside its intended product boundary.
 
 Any proposal to introduce student personal data is a separate privacy/security program and must not be inferred from existing architecture.
 

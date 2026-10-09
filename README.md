@@ -5,7 +5,7 @@
 CurManLight Arena è il livello di **governance curricolare istituzionale** dell'ecosistema TRAMA.
 
 - **Arena governa** fonti, provenienza, applicabilità, baseline, proposte, riesame, decisioni e handoff versionati.
-- **Curriculum Atlas** rende il curricolo pubblico, intelligibile e navigabile e ospita risorse/learning objects secondo i relativi contratti.
+- **Atlas** rende il curricolo pubblico, intelligibile e navigabile e ospita risorse/learning objects secondo i relativi contratti.
 - **Docente OS** rende il curricolo operativo nel lavoro del docente.
 
 Arena non è il workspace quotidiano del docente e non è il repository operativo dei materiali di lezione.

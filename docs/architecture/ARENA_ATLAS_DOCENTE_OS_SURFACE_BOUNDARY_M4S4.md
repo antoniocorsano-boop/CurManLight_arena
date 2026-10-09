@@ -1,4 +1,4 @@
-# M4-S4 — Arena / Curriculum Atlas / Docente OS Surface Boundary
+# M4-S4 — Arena / Atlas / Docente OS Surface Boundary
 
 Status: IMPLEMENTATION CONTRACT
 Date: 2026-09-19
@@ -6,7 +6,7 @@ Tracker: #284
 
 ## Canonical product rule
 
-**CurManLight Arena governs → Curriculum Atlas makes the governed curriculum intelligible and navigable → Docente OS makes it operational.**
+**CurManLight Arena governs the institutional curricolo → Atlas makes the governed curricolo intelligible and navigable → Docente OS makes it operational.**
 
 This boundary is a product-authority contract, not a deployment shortcut. The three products remain independently deployable and must not share a database or silently mutate each other's state.
 
@@ -22,11 +22,11 @@ This boundary is a product-authority contract, not a deployment shortcut. The th
 ### CurManLight Arena — GOVERN
 
 Arena owns:
-- canonical curriculum sources and provenance;
+- canonical curricolo sources and provenance;
 - institutional applicability and cohort context;
-- curriculum review, validation and adoption state;
-- approved/provisional curriculum baseline;
-- curriculum requirements and constraints;
+- curricolo review, validation and adoption state;
+- approved/provisional curricolo baseline;
+- curricolo requirements and constraints;
 - institutional process and human authority;
 - versioned snapshots and handoffs;
 - intake of operational feedback as non-authoritative evidence pending human review.
@@ -37,18 +37,18 @@ Arena does **not** own:
 - lesson sequencing, timetable or daily execution;
 - teacher-owned materials or evidence archive.
 
-### Curriculum Atlas — NAVIGATE
+### Atlas — NAVIGATE
 
 Atlas owns:
-- read-only semantic projection of governed curriculum;
+- read-only semantic projection of the governed curricolo;
 - Verticale, Mappa, Timeline, Matrice, Galaxy/Spatial and Focus views;
-- provenance-aware links between curriculum nodes, paths/UDA references, Learning Objects and material references;
+- provenance-aware links between curricolo nodes, paths/UDA references, Learning Objects and material references;
 - public/professional discovery and comprehension.
 
 Atlas does **not**:
-- approve or mutate curriculum;
+- approve or mutate the curricolo;
 - author operational UDA;
-- become a second curriculum source of truth;
+- become a second curricolo source of truth;
 - write into Docente OS;
 - infer authority from visualization.
 
@@ -68,7 +68,7 @@ Docente OS owns:
 - teaching evidence, progress and replanning;
 - teacher-owned operational history.
 
-Docente OS consumes governed curriculum context only through explicit acceptance/revalidation. It never writes directly into Arena canonical state.
+Docente OS consumes governed curricolo context only through explicit acceptance/revalidation. It never writes directly into Arena canonical state.
 
 ## Surface inventory
 
@@ -79,8 +79,8 @@ Docente OS consumes governed curriculum context only through explicit acceptance
 | Processo | GOVERN | KEEP |
 | Fonti / provenance | GOVERN | KEEP |
 | Verifiche | GOVERN | KEEP |
-| Institutional documents | GOVERN | KEEP, bounded to curriculum/governance |
-| Curriculum graph/eTwin | GOVERN analysis | KEEP where used for governance; public/exploratory navigation converges toward Atlas |
+| Institutional documents | GOVERN | KEEP, bounded to curricolo/governance |
+| Grafo del curricolo/eTwin | GOVERN analysis | KEEP where used for governance; public/exploratory navigation converges toward Atlas |
 | Progettazione — context entry | HANDOFF | REFRAME as boundary hub |
 | Compilatore UDA (wizard) | OPERATE | REMOVE from primary Arena runtime |
 | Archivio UDA locale | OPERATE | REMOVE from primary Arena runtime |
@@ -88,11 +88,11 @@ Docente OS consumes governed curriculum context only through explicit acceptance
 | Suggested UDA import/clone | OPERATE | REMOVE from primary Arena runtime |
 | Matrice competenze | GOVERN/NAVIGATE | retain only as read-only curricular support; no operational authoring |
 | Planning handoff preview | HANDOFF | KEEP and make primary operational exit toward Docente OS |
-| Curriculum Atlas link | NAVIGATE | ADD as explicit read-only exploration path |
-| Copilot | GOVERN | retain only as curriculum/process specialist |
+| Atlas link | NAVIGATE | ADD as explicit read-only exploration path |
+| Copilot | GOVERN | retain only as curricolo/process specialist |
 | Classroom / daily teaching operations | OPERATE | must not expand in Arena |
 | Teacher calendar/timetable/TeachingSession | OPERATE | Docente OS only |
-| Curriculum feedback from practice | HANDOFF → GOVERN | receive as evidence only, pending human review |
+| Feedback sul curricolo dalla pratica | HANDOFF → GOVERN | receive as evidence only, pending human review |
 
 ## M4-S4 primary runtime rule
 
@@ -106,14 +106,14 @@ The primary Arena planning route must not render or expose:
 The route instead exposes exactly three user-understandable actions:
 
 1. **Verify governed context in Arena**
-2. **Explore relationships in Curriculum Atlas (read-only)**
+2. **Explore relationships in Atlas (read-only)**
 3. **Prepare an explicit planning handoff to Docente OS**
 
 ## Handoff invariants
 
 Every cross-product handoff must preserve:
 - source product;
-- source version / exact curriculum identity;
+- source version / exact curricolo identity;
 - provenance;
 - applicability state;
 - validation/adoption state;
@@ -140,7 +140,7 @@ Avoid:
 
 Prefer:
 - “Verifica il contesto curricolare”;
-- “Esplora in Curriculum Atlas”;
+- “Esplora in Atlas”;
 - “Prepara il passaggio a Docente OS”;
 - “anteprima read-only” for the current Atlas S1 publication;
 - “trasferimento esplicito e versionato”.

@@ -14,19 +14,19 @@ The canonical ecosystem sequence is owned by TRAMA. This document must not creat
 Product boundary:
 
 - **Arena:** GOVERN
-- **Curriculum Atlas:** NAVIGATE / PUBLISH within its authority
+- **Atlas:** NAVIGATE / PUBLISH within its authority
 - **Docente OS:** OPERATE
 - **TRAMA:** ecosystem governance/coherence; not a fourth operational product
 
 ## 2. North Star
 
-Arena is the governed institutional memory of curriculum.
+Arena is the governed institutional memory of the curricolo.
 
 It should make it possible to establish, with provenance:
 
 ```text
 applicable sources
-  -> governed curriculum baseline
+  -> governed curricolo baseline
   -> proposal / review
   -> explicit institutional decision
   -> adoption / applicability state where governed
@@ -54,7 +54,7 @@ Every Arena increment must preserve:
 3. no pupil-level operational data enters Arena by implication;
 4. no shared canonical mutable database with Atlas or Docente OS;
 5. no automatic cross-product authority write;
-6. teacher/professional evidence may trigger review but not mutate canonical curriculum automatically;
+6. teacher/professional evidence may trigger review but not mutate the canonical curricolo automatically;
 7. AI may assist analysis/drafting but may not grant authority, approve, adopt or silently write canonical state;
 8. exact-head evidence is required for promotion claims;
 9. human review remains distinct from automated PASS;
@@ -68,26 +68,26 @@ At the time of this reconciliation the relevant priorities are:
 
 ### A. Preserve and close current governed work
 
-- keep Arena authoritative for curriculum;
+- keep Arena authoritative for the curricolo;
 - support ECO-02/P1 until the integrated real-case human test is complete;
 - avoid introducing side capabilities that distract from the active pilot and Atlas closure work;
 - keep DOS-A1 deferred unless separately authorized.
 
 ### B. Maintain the Arena → Docente OS boundary
 
-The direct curriculum intake/revalidation path remains canonical for authority.
+The direct curricolo intake/revalidation path remains canonical for authority.
 
 Arena should continue to provide:
-- versioned curriculum context;
+- versioned curricolo context;
 - provenance and authority state;
 - structural/authority fingerprints where required;
 - explicit revalidation semantics.
 
-Atlas does not intermediate curriculum authority.
+Atlas does not intermediate curricolo authority.
 
 ### C. Maintain the Arena → Atlas publication/projection boundary
 
-Arena may provide governed curriculum snapshots/projections to Atlas.
+Arena may provide governed curricolo snapshots/projections to Atlas.
 
 Required properties:
 - stable identity/version;
@@ -184,7 +184,7 @@ This roadmap does not authorize:
 - Docente OS → Atlas publication runtime;
 - Material Studio / Officina runtime;
 - broad new AI surfaces without a bounded human task;
-- external reference frameworks becoming curriculum authority by ingestion.
+- external reference frameworks becoming curricolo authority by ingestion.
 
 ## 7. External reference frameworks
 
