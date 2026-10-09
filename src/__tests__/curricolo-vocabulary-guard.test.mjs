@@ -8,6 +8,7 @@ import {
 const syntheticRegistry = {
   canonicalTerm: 'curricolo',
   legacyToken: 'curriculum',
+  legacyTokens: ['curriculum', 'curricular'],
   exceptions: [
     {
       path: 'src/legacy-adapter.ts',
@@ -87,6 +88,7 @@ describe('TRAMA-TERM-01 — Arena diff-aware vocabulary guard', () => {
   it('declares curricolo as canonical and documents every active exception', () => {
     expect(registry.canonicalTerm).toBe('curricolo');
     expect(registry.legacyToken).toBe('curriculum');
+    expect(registry.legacyTokens).toEqual(['curriculum', 'curricular']);
     expect(() => validateVocabularyRegistry(registry)).not.toThrow();
     expect(registry.exceptions.length).toBeGreaterThan(0);
     for (const exception of registry.exceptions) {
