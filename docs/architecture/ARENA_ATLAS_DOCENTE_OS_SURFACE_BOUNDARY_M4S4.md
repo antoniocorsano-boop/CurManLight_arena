@@ -12,7 +12,7 @@ This boundary is a product-authority contract, not a deployment shortcut. The th
 
 ## Responsibility classes
 
-- **GOVERN** — institutional/curricular authority, provenance, applicability, human review, validation, approved baseline, versioned handoff.
+- **GOVERN** — institutional authority over the curricolo, provenance, applicability, human review, validation, approved baseline, versioned handoff.
 - **NAVIGATE** — read-only semantic projection, graph traversal, discovery and provenance-aware drill-down.
 - **OPERATE** — teacher-owned annual planning, UDA authoring, lesson preparation/execution, materials, evidence and replanning.
 - **HANDOFF** — explicit, versioned transfer between authority boundaries; never synchronization by implication.
@@ -86,7 +86,7 @@ Docente OS consumes governed curricolo context only through explicit acceptance/
 | Archivio UDA locale | OPERATE | REMOVE from primary Arena runtime |
 | Programmazione annuale locale | OPERATE | REMOVE from primary Arena runtime |
 | Suggested UDA import/clone | OPERATE | REMOVE from primary Arena runtime |
-| Matrice competenze | GOVERN/NAVIGATE | retain only as read-only curricular support; no operational authoring |
+| Matrice competenze | GOVERN/NAVIGATE | retain only as read-only support for the curricolo; no operational authoring |
 | Planning handoff preview | HANDOFF | KEEP and make primary operational exit toward Docente OS |
 | Atlas link | NAVIGATE | ADD as explicit read-only exploration path |
 | Copilot | GOVERN | retain only as curricolo/process specialist |
