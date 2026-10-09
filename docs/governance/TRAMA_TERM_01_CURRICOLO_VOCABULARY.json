@@ -2,7 +2,11 @@
   "schemaVersion": 1,
   "canonicalTerm": "curricolo",
   "legacyToken": "curriculum",
-  "policy": "New occurrences of the legacy token are forbidden unless this registry declares the exact path, matching fragment and reason.",
+  "legacyTokens": [
+    "curriculum",
+    "curricular"
+  ],
+  "policy": "New occurrences of the governed legacy tokens are forbidden unless this registry declares the exact path, matching fragment and reason.",
   "exceptions": [
     {
       "path": "src/types/curricolo.ts",
@@ -28,6 +32,11 @@
       "path": "src/__tests__/curricolo-vocabulary-guard.test.mjs",
       "contains": "curriculum",
       "reason": "Policy tests intentionally exercise forbidden and allowed legacy-token examples."
+    },
+    {
+      "path": "src/__tests__/curricolo-vocabulary-guard.test.mjs",
+      "contains": "curricular",
+      "reason": "Policy tests intentionally exercise the forbidden English derivative to prove the guard remains fail-closed."
     },
     {
       "path": "src/domain/curriculum/didacticBinding.ts",
