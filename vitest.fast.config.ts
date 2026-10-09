@@ -64,6 +64,7 @@ export default defineConfig({
       'src/__tests__/curriculum-foundation-authority.test.ts',
       'src/__tests__/curriculum-foundation-completeness.test.ts',
       'src/__tests__/curricolo-domain-consumers.test.ts',
+      'src/__tests__/curricolo-active-language.test.ts',
       'src/__tests__/dm221-canonical-structure.test.ts',
       'src/__tests__/dm221-requirement-profile.test.ts',
       'src/__tests__/dm221-legacy-structure-audit.test.ts',
