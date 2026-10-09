@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "canonicalTerm": "curricolo",
+  "legacyToken": "curriculum",
+  "policy": "New occurrences of the legacy token are forbidden unless this registry declares the exact path, matching fragment and reason.",
+  "exceptions": [
+    {
+      "path": "src/types/curricolo.ts",
+      "contains": "Curriculum",
+      "reason": "Compatibility facade must name the published legacy v1 TypeScript shapes while exposing Curricolo* aliases internally."
+    },
+    {
+      "path": "src/__tests__/curricolo-vocabulary-compat.test.ts",
+      "contains": "Curriculum",
+      "reason": "Compatibility test must name both legacy v1 and canonical Curricolo* types to prove structural equivalence during migration."
+    },
+    {
+      "path": "src/__tests__/curricolo-domain-consumers.test.ts",
+      "contains": "domain/curriculum",
+      "reason": "Regression test reads existing legacy directory paths; repository structure is intentionally not renamed in TRAMA-TERM-01."
+    },
+    {
+      "path": "src/__tests__/curricolo-active-language.test.ts",
+      "contains": "curriculum",
+      "reason": "Negative language assertion must name the forbidden legacy token in order to prevent its return on active surfaces."
+    },
+    {
+      "path": "src/__tests__/curricolo-vocabulary-guard.test.mjs",
+      "contains": "curriculum",
+      "reason": "Policy tests intentionally exercise forbidden and allowed legacy-token examples."
+    },
+    {
+      "path": "src/domain/curriculum/didacticBinding.ts",
+      "contains": "../../types/curriculum",
+      "reason": "Temporary compatibility import for unchanged v1 DidacticBinding, DidacticBindingTarget and SchoolOrder shapes."
+    },
+    {
+      "path": "src/domain/curriculum/reviewCase.ts",
+      "contains": "../../types/curriculum",
+      "reason": "Temporary compatibility import for the unchanged v1 RevisionTrigger shape while review-case types use Curricolo*."
+    },
+    {
+      "path": "src/domain/curriculum/revisionTrigger.ts",
+      "contains": "../../types/curriculum",
+      "reason": "Temporary compatibility import for unchanged v1 trigger and observation shapes while the curricolo unit reference is canonicalized."
+    },
+    {
+      "path": "src/domain/curriculum/caseWorkSession.ts",
+      "contains": "../../types/curriculum",
+      "reason": "Temporary compatibility import for unchanged DecisionStatus and Proposal shapes; work-session types use Curricolo*."
+    }
+  ]
+}
