@@ -36,6 +36,15 @@ describe('TRAMA-TERM-01 — Arena diff-aware vocabulary guard', () => {
     expect(violations).toHaveLength(1);
   });
 
+  it('rejects the curricular derivative', () => {
+    const violations = validateAddedVocabulary(
+      '+Arena is the curricular authority.\n',
+      syntheticRegistry,
+      'docs/current.md',
+    );
+    expect(violations).toHaveLength(1);
+  });
+
   it('ignores removals because the guard only blocks new debt', () => {
     const violations = validateAddedVocabulary(
       '-Curriculum Atlas\n+Atlas\n',
