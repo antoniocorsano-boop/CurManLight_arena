@@ -35,14 +35,49 @@
       "reason": "Temporary compatibility import for unchanged v1 DidacticBinding, DidacticBindingTarget and SchoolOrder shapes."
     },
     {
+      "path": "src/domain/curriculum/didacticBinding.ts",
+      "contains": "ResolveCurriculumUnitReferenceInput",
+      "reason": "Existing exported input type is retained as a compatibility API while the returned domain type is canonicalized to CurricoloUnitReference."
+    },
+    {
       "path": "src/domain/curriculum/reviewCase.ts",
       "contains": "../../types/curriculum",
       "reason": "Temporary compatibility import for the unchanged v1 RevisionTrigger shape while review-case types use Curricolo*."
     },
     {
+      "path": "src/domain/curriculum/reviewCase.ts",
+      "contains": "curriculumUnit",
+      "reason": "Existing review-case input/property name is retained for v1 call-shape compatibility while its TypeScript type is CurricoloUnitReference."
+    },
+    {
+      "path": "src/domain/curriculum/reviewCase.ts",
+      "contains": "EvaluateCurriculumReviewCaseReadinessInput",
+      "reason": "Existing exported input type is retained as a compatibility API during the additive Curricolo* migration."
+    },
+    {
+      "path": "src/domain/curriculum/reviewCase.ts",
+      "contains": "BuildCurriculumReviewCaseInput",
+      "reason": "Existing exported input type is retained as a compatibility API during the additive Curricolo* migration."
+    },
+    {
       "path": "src/domain/curriculum/revisionTrigger.ts",
       "contains": "../../types/curriculum",
       "reason": "Temporary compatibility import for unchanged v1 trigger and observation shapes while the curricolo unit reference is canonicalized."
+    },
+    {
+      "path": "src/domain/curriculum/revisionTrigger.ts",
+      "contains": "curriculumUnit",
+      "reason": "Existing trigger input/property name is retained for v1 call-shape compatibility while its TypeScript type is CurricoloUnitReference."
+    },
+    {
+      "path": "src/domain/curriculum/sharedReviewCase.ts",
+      "contains": "SharedCurriculumReviewCase",
+      "reason": "Existing exported shared-case type name is retained for repository/API compatibility while its base type is CurricoloReviewCase."
+    },
+    {
+      "path": "src/domain/curriculum/sharedReviewCase.ts",
+      "contains": "curriculumUnit",
+      "reason": "Existing local/boundary name mirrors the persisted v1 curriculum_unit_key field and is retained until a separately governed compatibility adapter exists."
     },
     {
       "path": "src/domain/curriculum/caseWorkSession.ts",
