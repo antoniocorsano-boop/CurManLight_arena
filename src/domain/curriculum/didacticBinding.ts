@@ -1,5 +1,5 @@
+import type { CurricoloUnitReference } from '../../types/curricolo';
 import type {
-  CurriculumUnitReference,
   DidacticBinding,
   DidacticBindingTarget,
   SchoolOrder,
@@ -38,7 +38,7 @@ export function resolveCurriculumUnitReference({
   order,
   targetClass,
   disciplineOrField,
-}: ResolveCurriculumUnitReferenceInput): CurriculumUnitReference {
+}: ResolveCurriculumUnitReferenceInput): CurricoloUnitReference {
   const master = INSTITUTE_CURRICULUM_CURRENT_SOURCE;
   const classOrAgeBand = resolveCurriculumClassOrAgeBand(order, targetClass);
   const disciplineKey = normalizeKeyPart(disciplineOrField);
