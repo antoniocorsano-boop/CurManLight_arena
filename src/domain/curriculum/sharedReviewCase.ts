@@ -1,4 +1,4 @@
-import type { CurriculumReviewCase, CurriculumUnitReference } from '../../types/curriculum';
+import type { CurricoloReviewCase, CurricoloUnitReference } from '../../types/curricolo';
 
 export type SharedReviewCaseAssignmentState = 'ASSIGNED';
 
@@ -28,8 +28,8 @@ export interface SharedReviewCaseRow {
   master_drive_file_id: string;
   master_version: string;
   trigger_id: string;
-  trigger_type: CurriculumReviewCase['originTriggerSnapshot']['triggerType'];
-  qualification_basis: CurriculumReviewCase['originTriggerSnapshot']['qualificationBasis'];
+  trigger_type: CurricoloReviewCase['originTriggerSnapshot']['triggerType'];
+  qualification_basis: CurricoloReviewCase['originTriggerSnapshot']['qualificationBasis'];
   trigger_recorded_at: string;
   targeted_proposal_refs: string[];
   scope_reason: string;
@@ -43,17 +43,17 @@ export interface SharedReviewCaseRow {
   assignment_count: number;
 }
 
-export type SharedCurriculumReviewCase = CurriculumReviewCase & {
+export type SharedCurriculumReviewCase = CurricoloReviewCase & {
   sharedContext: SharedReviewCaseContext;
 };
 
 const canonicalText = (value: string): string => value.trim().replace(/\s+/g, ' ');
 
-export function getSharedReviewCaseContext(reviewCase: CurriculumReviewCase): SharedReviewCaseContext | null {
-  return (reviewCase as CurriculumReviewCase & { sharedContext?: SharedReviewCaseContext }).sharedContext ?? null;
+export function getSharedReviewCaseContext(reviewCase: CurricoloReviewCase): SharedReviewCaseContext | null {
+  return (reviewCase as CurricoloReviewCase & { sharedContext?: SharedReviewCaseContext }).sharedContext ?? null;
 }
 
-export function isSharedReviewCase(reviewCase: CurriculumReviewCase): reviewCase is SharedCurriculumReviewCase {
+export function isSharedReviewCase(reviewCase: CurricoloReviewCase): reviewCase is SharedCurriculumReviewCase {
   return Boolean(getSharedReviewCaseContext(reviewCase));
 }
 
@@ -71,7 +71,7 @@ export function sharedRowToCurriculumReviewCase(row: SharedReviewCaseRow): Share
     throw new Error('SHARED_REVIEW_CASE_ASSIGNMENT_COUNT_INVALID');
   }
 
-  const curriculumUnit: CurriculumUnitReference = {
+  const curriculumUnit: CurricoloUnitReference = {
     masterId: row.master_id,
     masterDriveFileId: row.master_drive_file_id,
     masterVersion: row.master_version,
@@ -147,7 +147,7 @@ export function sharedRowToCurriculumReviewCase(row: SharedReviewCaseRow): Share
   };
 }
 
-export function sameReviewCaseOpeningSnapshot(a: CurriculumReviewCase, b: CurriculumReviewCase): boolean {
+export function sameReviewCaseOpeningSnapshot(a: CurricoloReviewCase, b: CurricoloReviewCase): boolean {
   return a.id === b.id
     && a.originTriggerSnapshot.id === b.originTriggerSnapshot.id
     && a.originTriggerSnapshot.triggerType === b.originTriggerSnapshot.triggerType
@@ -164,9 +164,9 @@ export function sameReviewCaseOpeningSnapshot(a: CurriculumReviewCase, b: Curric
 }
 
 export function mergeAssignedReviewCases(
-  localCases: CurriculumReviewCase[],
+  localCases: CurricoloReviewCase[],
   assignedCases: SharedCurriculumReviewCase[],
-): CurriculumReviewCase[] {
+): CurricoloReviewCase[] {
   const merged = [...localCases];
   for (const assigned of assignedCases) {
     const index = merged.findIndex((candidate) => candidate.id === assigned.id);
@@ -178,13 +178,13 @@ export function mergeAssignedReviewCases(
     if (!sameReviewCaseOpeningSnapshot(existing, assigned)) throw new Error('SHARED_REVIEW_CASE_SNAPSHOT_MISMATCH');
     merged[index] = {
       ...existing,
-      ...(assigned as CurriculumReviewCase),
+      ...(assigned as CurricoloReviewCase),
       workSession: existing.workSession,
       caseState: existing.workSession ? existing.caseState : assigned.caseState,
       currentHumanPhase: existing.workSession ? existing.currentHumanPhase : assigned.currentHumanPhase,
       professionalValidationState: existing.workSession ? existing.professionalValidationState : assigned.professionalValidationState,
       sharedContext: assigned.sharedContext,
-    } as CurriculumReviewCase;
+    } as CurricoloReviewCase;
   }
   return merged;
 }
