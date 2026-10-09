@@ -66,6 +66,7 @@ export default defineConfig({
       'src/__tests__/curricolo-domain-consumers.test.ts',
       'src/__tests__/curricolo-active-language.test.ts',
       'src/__tests__/curricolo-vocabulary-guard.test.mjs',
+      'src/__tests__/curricolo-vocabulary-workflow.test.ts',
       'src/__tests__/dm221-canonical-structure.test.ts',
       'src/__tests__/dm221-requirement-profile.test.ts',
       'src/__tests__/dm221-legacy-structure-audit.test.ts',
