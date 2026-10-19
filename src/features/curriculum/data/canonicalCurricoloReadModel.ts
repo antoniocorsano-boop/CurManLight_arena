@@ -149,11 +149,13 @@ const projectScope = (
 
   if (segment.scope.type === 'grade-range') {
     const grades = [...segment.scope.grades];
+    const firstGrade = romanGrade(grades[0]);
+    const lastGrade = romanGrade(grades[grades.length - 1]);
     return {
       segmentId: segment.id,
       type: 'grade-range',
       grades,
-      label: `Classi ${grades.map(romanGrade).join('–')}`,
+      label: `Classi ${firstGrade}–${lastGrade}`,
       targetClass: null,
       content: segment.content,
       workStatus: segment.workStatus,
