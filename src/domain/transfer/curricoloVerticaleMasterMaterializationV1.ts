@@ -1,9 +1,17 @@
-import type { CurriculumNode } from '../curriculum/node';
-import type { CurriculumSegment, CurriculumSegmentContent } from '../curriculum/segment';
-import type { FrameworkApplicabilityReference, SegmentScope } from '../curriculum/types';
-import type { InstituteCurriculumVersion } from '../curriculum/version';
-import type { VerticalCurriculumLink } from '../curriculum/verticalLink';
-import type { CurricoloVerticaleCanonicalSourceMasterV1 } from './curricoloVerticaleCompleteReleaseV1';
+import type {
+  CurricoloFrameworkApplicabilityReference,
+  CurricoloNode,
+  CurricoloSchoolOrder,
+  CurricoloSegment,
+  CurricoloSegmentContent,
+  CurricoloSegmentScope,
+  InstituteCurricoloVersion,
+  VerticalCurricoloLink,
+} from '../../types/curricolo';
+import {
+  CANONICAL_SOURCE_NOT_IN_FORCE_MARKER,
+  type CurricoloVerticaleCanonicalSourceMasterV1,
+} from './curricoloVerticaleCompleteReleaseV1';
 import type {
   CurricoloVerticaleDomainKindV1,
   CurricoloVerticaleExpectedScopeV1,
@@ -21,14 +29,12 @@ export interface MaterializeCurricoloVerticaleMasterV1Input {
 }
 
 export interface CurricoloVerticaleMasterMaterializationV1 {
-  version: InstituteCurriculumVersion;
-  segments: CurriculumSegment[];
-  nodes: CurriculumNode[];
-  verticalLinks: VerticalCurriculumLink[];
+  version: InstituteCurricoloVersion;
+  segments: CurricoloSegment[];
+  nodes: CurricoloNode[];
+  verticalLinks: VerticalCurricoloLink[];
   perimeter: CurricoloVerticalePerimeterV1;
 }
-
-type SchoolOrder = 'infanzia' | 'primaria' | 'secondaria';
 
 type DomainSpec = {
   section: string;
@@ -177,7 +183,11 @@ function stableVersionId(masterId: string, version: string): string {
   return `${masterId.toLowerCase()}-v${version.replace(/[^0-9]+/g, '-')}`.replace(/-+$/g, '');
 }
 
-function frameworkFor(order: SchoolOrder, domainId: string, grade?: string): FrameworkApplicabilityReference {
+function frameworkFor(
+  order: CurricoloSchoolOrder,
+  domainId: string,
+  grade?: string,
+): CurricoloFrameworkApplicabilityReference {
   if (domainId === 'irc') {
     return {
       framework: null,
@@ -229,7 +239,7 @@ function frameworkFor(order: SchoolOrder, domainId: string, grade?: string): Fra
   };
 }
 
-function emptyContent(): CurriculumSegmentContent {
+function emptyContent(): CurricoloSegmentContent {
   return {
     traguardi: [],
     obiettivi: [],
@@ -242,7 +252,10 @@ function emptyContent(): CurriculumSegmentContent {
   };
 }
 
-function ordinaryContent(classLine: string, sectionLines: readonly string[]): { content: CurriculumSegmentContent; progression?: string } {
+function ordinaryContent(
+  classLine: string,
+  sectionLines: readonly string[],
+): { content: CurricoloSegmentContent; progression?: string } {
   const content = emptyContent();
   const progression = firstTaggedValue(classLine, ['Progressione:', 'Identità formativa:']);
   const competence = taggedValue(classLine, 'Competenze:');
@@ -267,8 +280,8 @@ function ordinaryContent(classLine: string, sectionLines: readonly string[]): { 
 }
 
 function addNodes(
-  nodes: CurriculumNode[],
-  segment: CurriculumSegment,
+  nodes: CurricoloNode[],
+  segment: CurricoloSegment,
   title: string,
   description: string,
   timestamp: string,
@@ -286,7 +299,7 @@ function addNodes(
     updatedAt: timestamp,
   });
 
-  const collections: Array<[keyof CurriculumSegmentContent, CurriculumNode['type']]> = [
+  const collections: Array<[keyof CurricoloSegmentContent, CurricoloNode['type']]> = [
     ['competenze', 'competence'],
     ['obiettivi', 'objective'],
     ['evidenze', 'evidence'],
@@ -333,8 +346,8 @@ function assertCanonicalSource(input: MaterializeCurricoloVerticaleMasterV1Input
   if (input.sourceMaster.humanProfessionalValidation !== 'OPEN') {
     throw new Error('v1 materialization expects human professional validation OPEN');
   }
-  if (input.sourceMaster.curriculumInForce !== false) {
-    throw new Error('v1 materialization cannot materialize a curriculum already marked in force');
+  if (input.sourceMaster.curricoloVigente !== false) {
+    throw new Error('v1 materialization cannot materialize a curricolo already marked in force');
   }
   if (input.sourceMaster.authority !== 'INSTITUTE_CANONICAL_WORKING_BASELINE') {
     throw new Error('v1 materialization requires the canonical working baseline authority');
@@ -344,7 +357,7 @@ function assertCanonicalSource(input: MaterializeCurricoloVerticaleMasterV1Input
   requireLine(lines, 'STATO: BASELINE CURRICOLARE CANONICA INTEGRALE — MATERIALIZZATA — DA VALIDARE PROFESSIONALMENTE — NON VIGENTE');
   requireLine(lines, 'OSA_DOCUMENTARY_COVERAGE_COMPLETE = TRUE');
   requireLine(lines, 'HUMAN_PROFESSIONAL_VALIDATION = OPEN');
-  requireLine(lines, 'CURRICULUM_IN_FORCE = NO');
+  requireLine(lines, CANONICAL_SOURCE_NOT_IN_FORCE_MARKER);
   if (!lines.some(line => line.includes(`A.S. ${input.schoolYearRef}`))) {
     throw new Error(`canonical master does not declare requested school year '${input.schoolYearRef}'`);
   }
@@ -361,7 +374,7 @@ export function materializeCurricoloVerticaleMasterV1(
   const title = assertCanonicalSource(input, lines);
   const timestamp = sourceDate(lines, input.sourceMaster.masterVersion);
   const versionId = stableVersionId(input.sourceMaster.masterId, input.sourceMaster.masterVersion);
-  const version: InstituteCurriculumVersion = {
+  const version: InstituteCurricoloVersion = {
     id: versionId,
     institutionId: input.institutionId,
     title,
@@ -371,30 +384,30 @@ export function materializeCurricoloVerticaleMasterV1(
     updatedAt: timestamp,
   };
 
-  const segments: CurriculumSegment[] = [];
-  const nodes: CurriculumNode[] = [];
-  const verticalLinks: VerticalCurriculumLink[] = [];
+  const segments: CurricoloSegment[] = [];
+  const nodes: CurricoloNode[] = [];
+  const verticalLinks: VerticalCurricoloLink[] = [];
   const expected: CurricoloVerticaleExpectedScopeV1[] = [];
   const anchorBySegmentId = new Map<string, string>();
 
   const addSegment = (args: {
-    order: SchoolOrder;
+    order: CurricoloSchoolOrder;
     domainId: string;
     domainKind: CurricoloVerticaleDomainKindV1;
-    scope: SegmentScope;
+    scope: CurricoloSegmentScope;
     sourceRef: string;
-    content: CurriculumSegmentContent;
+    content: CurricoloSegmentContent;
     title: string;
     description: string;
     gradeForFramework?: string;
-  }): CurriculumSegment => {
+  }): CurricoloSegment => {
     const suffix = args.scope.type === 'school-level'
       ? ''
       : args.scope.type === 'grade'
         ? `-${args.scope.grade}`
         : `-${args.scope.grades.join('-')}`;
     const id = `${input.sourceMaster.masterId.toLowerCase()}-${args.order}-${args.domainId}${suffix}`;
-    const segment: CurriculumSegment = {
+    const segment: CurricoloSegment = {
       id,
       versionId,
       schoolLevel: args.order,
@@ -418,7 +431,12 @@ export function materializeCurricoloVerticaleMasterV1(
     return segment;
   };
 
-  const addLink = (source: CurriculumSegment | undefined, target: CurriculumSegment | undefined, relationType: VerticalCurriculumLink['relationType'], rationale: string) => {
+  const addLink = (
+    source: CurricoloSegment | undefined,
+    target: CurricoloSegment | undefined,
+    relationType: VerticalCurricoloLink['relationType'],
+    rationale: string,
+  ) => {
     if (!source || !target) return;
     const sourceNodeId = anchorBySegmentId.get(source.id);
     const targetNodeId = anchorBySegmentId.get(target.id);
@@ -471,7 +489,12 @@ export function materializeCurricoloVerticaleMasterV1(
     });
   });
 
-  const materializeOrdinary = (order: 'primaria' | 'secondaria', domains: readonly DomainSpec[], romans: readonly string[], closingPrefix: string) => {
+  const materializeOrdinary = (
+    order: 'primaria' | 'secondaria',
+    domains: readonly DomainSpec[],
+    romans: readonly string[],
+    closingPrefix: string,
+  ) => {
     domains.forEach((domain, index) => {
       const next = domains[index + 1]?.section ?? closingPrefix;
       const block = section(lines, `${domain.section} `, [`${next} `]);
@@ -481,7 +504,7 @@ export function materializeCurricoloVerticaleMasterV1(
         const grade = ROMAN_TO_GRADE[roman];
         const parsed = ordinaryContent(classLine, block);
         if (parsed.content.competenze.length === 0 || parsed.content.obiettivi.length === 0 || parsed.content.conoscenze.length === 0 || parsed.content.evidenze.length === 0) {
-          throw new Error(`${domain.section} Classe ${roman} is missing governed curriculum fields`);
+          throw new Error(`${domain.section} Classe ${roman} is missing governed curricolo fields`);
         }
         addSegment({
           order,
@@ -606,7 +629,13 @@ export function materializeCurricoloVerticaleMasterV1(
   const aiEvidenceLine = ai.find(value => value.startsWith('Evidenze trasversali:'));
   const aiEvidence = aiEvidenceLine ? taggedValue(aiEvidenceLine, 'Evidenze trasversali:') : undefined;
   if (!aiEvidence) throw new Error('AI literacy is missing Evidenze trasversali');
-  const aiSpecs: Array<{ prefix: string; order: SchoolOrder; scope: SegmentScope; suffix: string; gradeForFramework?: string }> = [
+  const aiSpecs: Array<{
+    prefix: string;
+    order: CurricoloSchoolOrder;
+    scope: CurricoloSegmentScope;
+    suffix: string;
+    gradeForFramework?: string;
+  }> = [
     { prefix: 'Infanzia —', order: 'infanzia', scope: { type: 'school-level' }, suffix: 'infanzia' },
     { prefix: 'Primaria I–II —', order: 'primaria', scope: { type: 'grade-range', grades: ['1', '2'] }, suffix: '1-2', gradeForFramework: '1' },
     { prefix: 'Primaria III–V —', order: 'primaria', scope: { type: 'grade-range', grades: ['3', '4', '5'] }, suffix: '3-5', gradeForFramework: '3' },
@@ -635,7 +664,7 @@ export function materializeCurricoloVerticaleMasterV1(
     });
   }
 
-  const segmentBy = (order: SchoolOrder, domainId: string, scopeKey: string) => segments.find(item => {
+  const segmentBy = (order: CurricoloSchoolOrder, domainId: string, scopeKey: string) => segments.find(item => {
     if (item.schoolLevel !== order || item.subjectOrFieldId !== domainId) return false;
     if (item.scope.type === 'school-level') return scopeKey === 'school-level';
     if (item.scope.type === 'grade') return item.scope.grade === scopeKey;
