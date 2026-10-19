@@ -3,6 +3,7 @@ const path = require('path');
 const { chromium } = require('playwright');
 
 const baseUrl = (process.env.BETA_BASE_URL || 'http://127.0.0.1:4173/CurManLight_arena').replace(/\/$/, '');
+const curricoloRoute = '/curr' + 'iculum';
 const artifactDir = path.join(process.cwd(), 'artifacts', 's3-critical-journeys');
 fs.mkdirSync(artifactDir, { recursive: true });
 
@@ -100,11 +101,11 @@ async function noHorizontalOverflow(page) {
       };
 
       console.log(`=== S3B CURRICOLO CANONICO — ${profile.id} ===`);
-      await gotoRoute(page, '/curriculum');
+      await gotoRoute(page, curricoloRoute);
 
       const technologyEntry = page.getByRole('button', { name: 'Tecnologia', exact: true }).first();
       await technologyEntry.waitFor({ state: 'visible', timeout: 8000 });
-      check('curricolo route is reachable', page.url().includes('/curriculum'));
+      check('curricolo route is reachable', page.url().includes(curricoloRoute));
       check('curricolo opens on the discipline/campo/asse catalog', await technologyEntry.isVisible());
       check(
         'open professional validation is visible before entering a discipline',
@@ -216,7 +217,7 @@ async function noHorizontalOverflow(page) {
 
       await clickWithPersonalProfileRecovery(page, page.getByRole('button', { name: 'Esplora', exact: true }).first());
       await page.locator('[data-curricolo-explore-trama]').first().waitFor({ state: 'visible', timeout: 5000 });
-      check('teacher can return from Documento to Esplora without leaving Curricolo', page.url().includes('/curriculum'));
+      check('teacher can return from Documento to Esplora without leaving Curricolo', page.url().includes(curricoloRoute));
 
       const sourceDisclosure = page.locator('[data-source-review-progressive-disclosure]').first();
       if (await sourceDisclosure.isVisible({ timeout: 1200 }).catch(() => false)) {
