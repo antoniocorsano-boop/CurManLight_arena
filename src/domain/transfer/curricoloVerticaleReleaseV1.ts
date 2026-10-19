@@ -1,8 +1,11 @@
-import type { CurriculumNode } from '../curriculum/node';
-import type { CurriculumSegment } from '../curriculum/segment';
-import type { SchoolOrder, SegmentScope } from '../curriculum/types';
-import type { InstituteCurriculumVersion } from '../curriculum/version';
-import type { VerticalCurriculumLink } from '../curriculum/verticalLink';
+import type {
+  CurricoloNode,
+  CurricoloSchoolOrder,
+  CurricoloSegment,
+  CurricoloSegmentScope,
+  InstituteCurricoloVersion,
+  VerticalCurricoloLink,
+} from '../../types/curricolo';
 import type { StructuralFootprint } from './types';
 import { canonicalSerialize, computeStructuralFootprint } from './signatures';
 
@@ -15,8 +18,8 @@ export type CurricoloVerticaleDomainKindV1 =
   | 'AMBITO_TRASVERSALE';
 
 export interface CurricoloVerticaleExpectedScopeV1 {
-  schoolOrder: SchoolOrder;
-  scope: SegmentScope;
+  schoolOrder: CurricoloSchoolOrder;
+  scope: CurricoloSegmentScope;
   domainId: string;
   domainKind: CurricoloVerticaleDomainKindV1;
 }
@@ -40,7 +43,7 @@ export type CurricoloVerticaleAuthorityV1 =
 
 export interface CurricoloVerticaleManifestV1 {
   coverageStatus: 'SATISFIED' | 'INCOMPLETE';
-  schoolOrders: SchoolOrder[];
+  schoolOrders: CurricoloSchoolOrder[];
   expected: CurricoloVerticaleExpectedScopeV1[];
   present: CurricoloVerticaleExpectedScopeV1[];
   missing: CurricoloVerticaleExpectedScopeV1[];
@@ -52,12 +55,12 @@ export interface CurricoloVerticaleReleaseV1 {
   contractVersion: 1;
   institutionId: string;
   schoolYearRef: string;
-  version: InstituteCurriculumVersion;
+  version: InstituteCurricoloVersion;
   authority: CurricoloVerticaleAuthorityV1;
   manifest: CurricoloVerticaleManifestV1;
-  segments: CurriculumSegment[];
-  nodes: CurriculumNode[];
-  verticalLinks: VerticalCurriculumLink[];
+  segments: CurricoloSegment[];
+  nodes: CurricoloNode[];
+  verticalLinks: VerticalCurricoloLink[];
   downstreamPolicy: {
     acceptanceRequired: true;
     automaticWriteAllowed: false;
@@ -69,16 +72,16 @@ export interface CurricoloVerticaleReleaseV1 {
 export interface CreateCurricoloVerticaleReleaseV1Input {
   institutionId: string;
   schoolYearRef: string;
-  version: InstituteCurriculumVersion;
-  segments: readonly CurriculumSegment[];
-  nodes: readonly CurriculumNode[];
-  verticalLinks: readonly VerticalCurriculumLink[];
+  version: InstituteCurricoloVersion;
+  segments: readonly CurricoloSegment[];
+  nodes: readonly CurricoloNode[];
+  verticalLinks: readonly VerticalCurricoloLink[];
   perimeter: CurricoloVerticalePerimeterV1;
   authority: CurricoloVerticaleAuthorityV1;
   issuedAt?: string;
 }
 
-const ORDER_RANK: Record<SchoolOrder, number> = {
+const ORDER_RANK: Record<CurricoloSchoolOrder, number> = {
   infanzia: 0,
   primaria: 1,
   secondaria: 2,
@@ -90,7 +93,7 @@ function sortedUnique<T>(values: readonly T[], key: (value: T) => string): T[] {
   return [...unique.values()].sort((left, right) => key(left).localeCompare(key(right)));
 }
 
-function normalizeScope(scope: SegmentScope): SegmentScope {
+function normalizeScope(scope: CurricoloSegmentScope): CurricoloSegmentScope {
   if (scope.type === 'grade-range') {
     return { type: 'grade-range', grades: [...scope.grades].map(String).sort((a, b) => Number(a) - Number(b)) };
   }
@@ -107,7 +110,7 @@ function expectedKey(value: CurricoloVerticaleExpectedScopeV1): string {
   });
 }
 
-function segmentScopeKey(segment: CurriculumSegment): string {
+function segmentScopeKey(segment: CurricoloSegment): string {
   return canonicalSerialize({
     schoolOrder: segment.schoolLevel,
     domainId: segment.subjectOrFieldId,
@@ -123,7 +126,7 @@ function expectedSegmentKey(value: CurricoloVerticaleExpectedScopeV1): string {
   });
 }
 
-function validateScopeBounds(segment: CurriculumSegment): string[] {
+function validateScopeBounds(segment: CurricoloSegment): string[] {
   const errors: string[] = [];
   const scope = segment.scope;
   if (segment.schoolLevel === 'infanzia' && scope.type !== 'school-level') {
@@ -162,7 +165,7 @@ function validateAuthority(authority: CurricoloVerticaleAuthorityV1 | Record<str
 }
 
 export function buildCurricoloVerticaleManifestV1(input: {
-  segments: readonly CurriculumSegment[];
+  segments: readonly CurricoloSegment[];
   perimeter: CurricoloVerticalePerimeterV1;
 }): CurricoloVerticaleManifestV1 {
   const expected = sortedUnique(input.perimeter.expected, expectedKey);
@@ -190,10 +193,10 @@ export function buildCurricoloVerticaleManifestV1(input: {
 }
 
 function validateGraph(input: {
-  version: InstituteCurriculumVersion;
-  segments: readonly CurriculumSegment[];
-  nodes: readonly CurriculumNode[];
-  verticalLinks: readonly VerticalCurriculumLink[];
+  version: InstituteCurricoloVersion;
+  segments: readonly CurricoloSegment[];
+  nodes: readonly CurricoloNode[];
+  verticalLinks: readonly VerticalCurricoloLink[];
 }): string[] {
   const errors: string[] = [];
   const segmentIds = new Set(input.segments.map(item => item.id));
@@ -201,13 +204,13 @@ function validateGraph(input: {
 
   for (const segment of input.segments) {
     if (segment.versionId !== input.version.id) {
-      errors.push(`segment '${segment.id}' belongs to another curriculum version`);
+      errors.push(`segment '${segment.id}' belongs to another curricolo version`);
     }
     errors.push(...validateScopeBounds(segment));
   }
   for (const node of input.nodes) {
     if (node.versionId !== input.version.id) {
-      errors.push(`node '${node.id}' belongs to another curriculum version`);
+      errors.push(`node '${node.id}' belongs to another curricolo version`);
     }
     if (!segmentIds.has(node.segmentId)) {
       errors.push(`node '${node.id}' references a segment outside the release`);
@@ -215,13 +218,13 @@ function validateGraph(input: {
   }
   for (const link of input.verticalLinks) {
     if (link.versionId !== input.version.id) {
-      errors.push(`vertical link '${link.id}' belongs to another curriculum version`);
+      errors.push(`vertical link '${link.id}' belongs to another curricolo version`);
     }
     if (!nodeIds.has(link.sourceNodeId) || !nodeIds.has(link.targetNodeId)) {
       errors.push(`vertical link '${link.id}' references a node outside the release`);
     }
   }
-  if (input.segments.length === 0) errors.push('vertical curriculum release requires at least one usable segment');
+  if (input.segments.length === 0) errors.push('vertical curricolo release requires at least one usable segment');
   return errors;
 }
 
@@ -245,7 +248,7 @@ export function createCurricoloVerticaleReleaseV1(
   if (!input.institutionId.trim()) errors.push('institutionId is required');
   if (!input.schoolYearRef.trim()) errors.push('schoolYearRef is required');
   if (input.version.institutionId && input.version.institutionId !== input.institutionId) {
-    errors.push('curriculum version institutionId does not match release institutionId');
+    errors.push('curricolo version institutionId does not match release institutionId');
   }
   errors.push(...validateAuthority(input.authority));
   errors.push(...validateGraph(input));
