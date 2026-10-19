@@ -14,6 +14,7 @@
     "test:browser": "vitest run --project indexeddb-browser",
     "test:storybook": "vitest run --project storybook",
     "test:full": "vitest run --project unit --project indexeddb-browser --project storybook",
+    "curricolo:materialize-master": "node scripts/materialize-canonical-curricolo-v1.mjs",
     "memory:start": "powershell -ExecutionPolicy Bypass -File scripts/agent-memory.ps1 start",
     "memory:checkpoint": "powershell -ExecutionPolicy Bypass -File scripts/agent-memory.ps1 checkpoint",
     "memory:status": "powershell -ExecutionPolicy Bypass -File scripts/agent-memory.ps1 status",
