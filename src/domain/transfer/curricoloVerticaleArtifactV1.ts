@@ -69,9 +69,24 @@ function hasStableFootprint(value: unknown): value is StableFootprintV1 {
     && candidate.hash.trim().length > 0;
 }
 
+function assertArtifactSource(input: CreateCurricoloVerticaleArtifactV1Input): void {
+  const source = input.sourceMaster;
+  if (source.masterId !== 'CAN-CURR-MASTER-00') throw new Error('unsupported canonical master id');
+  if (source.masterVersion !== '1.3') throw new Error('canonical artifact requires master version 1.3');
+  if (!source.revisionId.trim()) throw new Error('canonical artifact requires revisionId');
+  if (source.authority !== 'INSTITUTE_CANONICAL_WORKING_BASELINE') {
+    throw new Error('canonical artifact requires working-baseline authority');
+  }
+  if (source.humanProfessionalValidation !== 'OPEN') {
+    throw new Error('canonical artifact requires open human professional validation');
+  }
+  if (source.curricoloVigente !== false) throw new Error('canonical artifact requires non-vigente source');
+}
+
 export function createCurricoloVerticaleArtifactV1(
   input: CreateCurricoloVerticaleArtifactV1Input,
 ): CurricoloVerticaleArtifactV1 {
+  assertArtifactSource(input);
   const materialized = materializeCurricoloVerticaleMasterV1(input);
   const sourceContentFootprint = stableFootprint({
     format: input.sourceSnapshot.format,
@@ -83,14 +98,14 @@ export function createCurricoloVerticaleArtifactV1(
     institutionId: input.institutionId,
     schoolYearRef: input.schoolYearRef,
     source: {
-      masterId: input.sourceMaster.masterId,
+      masterId: 'CAN-CURR-MASTER-00',
       driveFileId: input.sourceMaster.driveFileId,
       masterVersion: input.sourceMaster.masterVersion,
       revisionId: input.sourceMaster.revisionId,
       sourceContentFootprint,
-      authority: input.sourceMaster.authority,
-      humanProfessionalValidation: input.sourceMaster.humanProfessionalValidation,
-      curricoloVigente: input.sourceMaster.curricoloVigente,
+      authority: 'INSTITUTE_CANONICAL_WORKING_BASELINE',
+      humanProfessionalValidation: 'OPEN',
+      curricoloVigente: false,
     },
     materialization: {
       version: materialized.version,
