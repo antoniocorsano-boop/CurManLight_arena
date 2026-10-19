@@ -1,0 +1,60 @@
+name: Assemble Canonical Curricolo Artifact
+
+on:
+  push:
+    branches:
+      - feat/curricolo-verticale-release-v1
+    paths:
+      - '.tmp/curricolo-artifact/**'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: assemble-canonical-curricolo-artifact
+  cancel-in-progress: false
+
+jobs:
+  assemble:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          ref: feat/curricolo-verticale-release-v1
+          fetch-depth: 0
+
+      - name: Assemble only when all fragments exist
+        shell: bash
+        run: |
+          set -euo pipefail
+          for index in 00 01 02 03 04 05 06 07 08; do
+            test -f ".tmp/curricolo-artifact/part-${index}.txt" || {
+              echo "ARTIFACT_ASSEMBLY_WAITING part-${index}.txt"
+              exit 0
+            }
+          done
+
+          mkdir -p src/features/curriculum/data
+          cat .tmp/curricolo-artifact/part-*.txt > src/features/curriculum/data/canonicalCurricoloV13.generated.json
+
+          node - <<'NODE'
+          const fs = require('fs');
+          const path = 'src/features/curriculum/data/canonicalCurricoloV13.generated.json';
+          const artifact = JSON.parse(fs.readFileSync(path, 'utf8'));
+          if (artifact.schemaVersion !== 'ARENA_CANONICAL_CURRICOLO_ARTIFACT_V1') throw new Error('schema mismatch');
+          if (artifact.source?.revisionId !== '27') throw new Error('revision mismatch');
+          if (artifact.source?.sourceContentFootprint?.hash !== '99c4ccc3') throw new Error('source footprint mismatch');
+          if (artifact.artifactFootprint?.hash !== '5157a7c4') throw new Error('artifact footprint mismatch');
+          if (artifact.materialization?.segments?.length !== 113) throw new Error('segment count mismatch');
+          if (artifact.materialization?.perimeter?.expected?.length !== 113) throw new Error('perimeter count mismatch');
+          if (JSON.stringify(artifact).includes('computedAt')) throw new Error('computedAt forbidden');
+          console.log('CANONICAL_CURRICOLO_ARTIFACT_ASSEMBLY_PASS');
+          NODE
+
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add src/features/curriculum/data/canonicalCurricoloV13.generated.json
+          git rm -r .tmp/curricolo-artifact
+          git commit -m 'feat(arena): materialize canonical curricolo revision 27'
+          git push origin HEAD:feat/curricolo-verticale-release-v1
