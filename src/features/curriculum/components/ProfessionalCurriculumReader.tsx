@@ -1,52 +1,20 @@
 import { useState } from 'react';
-import { ArrowLeft, BookOpen, ExternalLink, FileText, Network } from 'lucide-react';
+import { ArrowLeft, BookOpen, FileText, Network } from 'lucide-react';
 import type { A07InstitutionalDocumentRead, InstitutionalConfigurationSummary } from '../../../domain/institution';
-import {
-  DEPARTMENT_CURRICULUM_MANIFEST,
-  DEPARTMENT_CURRICULUM_SECTIONS,
-  DepartmentCurriculumPublication,
-} from './DepartmentCurriculumPublication';
 import {
   type CurriculumExploreContext,
   type CurriculumExploreView,
 } from './CurriculumExploreTrama';
 import { CanonicalCurricoloExploreTrama } from './CanonicalCurricoloExploreTrama';
 import artifact from '../data/canonicalCurricoloV13.generated.json';
-import { loadCanonicalCurricoloReadModel } from '../data/canonicalCurricoloReadModel';
-
-const DEPARTMENT_CURRICULUM_DOC_ID = '1VYNvik8oLAVWjwB5Y_Q960D62t-eUZRc';
-const DEPARTMENT_FOUNDATIONS_DOC_ID = '1KNjcyBzNAOsK-1FD1_HpasN9cyfASQTm';
-const DEPARTMENT_CURRICULUM_DOC_URL = `https://docs.google.com/document/d/${DEPARTMENT_CURRICULUM_DOC_ID}/edit`;
-const DEPARTMENT_CURRICULUM_PREVIEW_URL = `https://docs.google.com/document/d/${DEPARTMENT_CURRICULUM_DOC_ID}/preview`;
-const DEPARTMENT_FOUNDATIONS_DOC_URL = `https://docs.google.com/document/d/${DEPARTMENT_FOUNDATIONS_DOC_ID}/edit`;
+import {
+  loadCanonicalCurricoloReadModel,
+  type CanonicalCurricoloScope,
+} from '../data/canonicalCurricoloReadModel';
 
 const CANONICAL_READ_RESULT = loadCanonicalCurricoloReadModel(artifact);
 
 type CurriculumPresentationMode = CurriculumExploreView | 'document' | 'catalog';
-
-type CurriculumSectionNavigation = {
-  id: string;
-  number: number;
-};
-
-const SECTION_NAVIGATION: CurriculumSectionNavigation[] = [
-  { id: 'identita', number: 1 },
-  { id: 'quadro', number: 2 },
-  { id: 'architettura', number: 3 },
-  { id: 'profilo', number: 4 },
-  { id: 'stem', number: 5 },
-  { id: 'verticalita', number: 6 },
-  { id: 'matematica', number: 7 },
-  { id: 'scienze', number: 8 },
-  { id: 'tecnologia', number: 9 },
-  { id: 'informatica', number: 10 },
-  { id: 'assi', number: 11 },
-  { id: 'metodologie', number: 12 },
-  { id: 'inclusione', number: 13 },
-  { id: 'valutazione', number: 14 },
-  { id: 'monitoraggio', number: 15 },
-  { id: 'validazione', number: 16 },
-];
 
 type ProfessionalCurriculumReaderProps = {
   institutionalProfile: A07InstitutionalDocumentRead;
@@ -56,6 +24,45 @@ type ProfessionalCurriculumReaderProps = {
   canOpenReview: (context: CurriculumExploreContext) => boolean;
   onOpenSource: (context: CurriculumExploreContext) => void;
 };
+
+type CanonicalDocumentField = {
+  label: string;
+  values: string[];
+};
+
+function canonicalDocumentFields(scope: CanonicalCurricoloScope): CanonicalDocumentField[] {
+  const fields: CanonicalDocumentField[] = [
+    { label: 'Nuclei fondanti', values: scope.content.nucleiFondanti },
+    { label: 'Traguardi', values: scope.content.traguardi },
+    { label: 'Obiettivi', values: scope.content.obiettivi },
+    { label: 'Conoscenze', values: scope.content.conoscenze },
+    { label: 'Abilità', values: scope.content.abilita },
+    { label: 'Competenze', values: scope.content.competenze },
+    { label: 'Evidenze', values: scope.content.evidenze },
+  ];
+  return fields.filter((field) => field.values.length > 0);
+}
+
+function CanonicalScopeDocumentContent({ scope }: { scope: CanonicalCurricoloScope }) {
+  const fields = canonicalDocumentFields(scope);
+  return (
+    <div className="mt-4 grid gap-4 md:grid-cols-2" data-curricolo-document-content>
+      {fields.map((field) => (
+        <section key={field.label} className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+          <h6 className="text-xs font-black uppercase tracking-wide text-slate-600">{field.label}</h6>
+          <ul className="mt-2 space-y-2 text-sm leading-6 text-slate-700">
+            {field.values.map((value, index) => (
+              <li key={`${field.label}-${index}`} className="flex gap-2">
+                <span aria-hidden="true" className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-indigo-500" />
+                <span>{value}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ))}
+    </div>
+  );
+}
 
 export function ProfessionalCurriculumReader({
   institutionalProfile,
@@ -67,10 +74,6 @@ export function ProfessionalCurriculumReader({
 }: ProfessionalCurriculumReaderProps) {
   const [mode, setMode] = useState<CurriculumPresentationMode>('catalog');
   const [selectedDomainId, setSelectedDomainId] = useState<string | undefined>(undefined);
-  const [sectionId, setSectionId] = useState(SECTION_NAVIGATION[0].id);
-  const selectedNavigation = SECTION_NAVIGATION.find((section) => section.id === sectionId) ?? SECTION_NAVIGATION[0];
-  const selectedNavigationIndex = SECTION_NAVIGATION.findIndex((section) => section.id === selectedNavigation.id);
-  const selectedSection = DEPARTMENT_CURRICULUM_SECTIONS.find((section) => section.number === selectedNavigation.number) ?? DEPARTMENT_CURRICULUM_SECTIONS[0];
   const effectiveConfiguration = institutionalConfiguration ?? {
     phase: institutionalProfile.configured ? 'ACTIVE' : 'UNCONFIGURED',
     instituteDefined: institutionalProfile.configured,
@@ -114,11 +117,6 @@ export function ProfessionalCurriculumReader({
   const returnToCatalog = () => {
     setSelectedDomainId(undefined);
     setMode('catalog');
-  };
-  const moveSection = (offset: number) => {
-    const nextIndex = selectedNavigationIndex + offset;
-    if (nextIndex < 0 || nextIndex >= SECTION_NAVIGATION.length) return;
-    setSectionId(SECTION_NAVIGATION[nextIndex].id);
   };
   const setExploreView = (view: CurriculumExploreView) => setMode(view);
 
@@ -250,98 +248,48 @@ export function ProfessionalCurriculumReader({
           />
         </div>
       ) : (
-        <div className="mx-auto max-w-6xl space-y-5 px-5 py-6 sm:px-8 sm:py-8" data-curriculum-document-reader>
+        <div className="mx-auto max-w-6xl space-y-6 px-5 py-6 sm:px-8 sm:py-8" data-curricolo-document-reader>
           <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5 sm:p-6">
             <p className="text-xs font-bold uppercase tracking-wide text-indigo-700">Documento del curricolo</p>
-            <h2 className="mt-2 text-xl font-black text-slate-950">Curricolo verticale · versione v3.1</h2>
-            <p className="mt-2 text-sm leading-6 text-slate-600">
-              La consultazione principale usa la versione d’Istituto 1.3. Questa sezione conserva temporaneamente la resa editoriale dipartimentale come provenienza storica durante il riallineamento della proiezione Documento.
+            <h2 className="mt-2 text-xl font-black text-slate-950">{model.identity.title} · versione {model.identity.masterVersion}</h2>
+            <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
+              Questa proiezione sequenziale legge la stessa versione strutturata usata da Esplora e Trama. Ordini di scuola, annualità e contenuti restano quelli della versione di lavoro sottoposta a validazione professionale.
             </p>
-            <p className="mt-2 text-sm font-semibold text-slate-700">{DEPARTMENT_CURRICULUM_MANIFEST.institution.disciplines.join(' · ')}</p>
-            <div className="mt-4 flex flex-col gap-2 sm:flex-row">
-              <a
-                href={DEPARTMENT_CURRICULUM_DOC_URL}
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-indigo-600 px-5 py-3 text-sm font-bold text-white hover:bg-indigo-700"
-                data-open-department-curriculum-document
-              >
-                <FileText className="h-4 w-4" aria-hidden="true" />
-                Apri il documento completo
-                <ExternalLink className="h-4 w-4" aria-hidden="true" />
-              </a>
-              <a
-                href={DEPARTMENT_FOUNDATIONS_DOC_URL}
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-5 py-3 text-sm font-bold text-slate-700 hover:border-indigo-300"
-                data-open-department-foundations-document
-              >
-                Fondamenti e tracciabilità
-                <ExternalLink className="h-4 w-4" aria-hidden="true" />
-              </a>
-            </div>
           </div>
 
-          <div className="hidden overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm lg:block" data-curriculum-document-preview>
-            <iframe
-              title="Curricolo verticale del Dipartimento Scientifico-Matematico-Tecnologico"
-              src={DEPARTMENT_CURRICULUM_PREVIEW_URL}
-              className="h-[72vh] w-full border-0"
-            />
+          <div className="space-y-8">
+            {model.domains.map((domain) => (
+              <section
+                key={domain.id}
+                className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7"
+                data-curricolo-document-domain={domain.id}
+              >
+                <h3 className="text-xl font-black text-slate-950 sm:text-2xl">{domain.label}</h3>
+                <div className="mt-5 space-y-6">
+                  {domain.orders.map((order) => (
+                    <section key={order.id} className="rounded-2xl border border-slate-200 bg-slate-50/60 p-4 sm:p-5">
+                      <h4 className="text-base font-black text-slate-900">{order.label}</h4>
+                      <div className="mt-4 space-y-4">
+                        {order.scopes.map((scope) => (
+                          <article
+                            key={scope.segmentId}
+                            className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-5"
+                            data-curricolo-document-scope={scope.segmentId}
+                          >
+                            <div className="flex flex-wrap items-center justify-between gap-2">
+                              <h5 className="text-sm font-black text-slate-950">{scope.label}</h5>
+                              <span className="rounded-full bg-amber-50 px-2.5 py-1 text-[11px] font-bold text-amber-900">In revisione</span>
+                            </div>
+                            <CanonicalScopeDocumentContent scope={scope} />
+                          </article>
+                        ))}
+                      </div>
+                    </section>
+                  ))}
+                </div>
+              </section>
+            ))}
           </div>
-
-          <p className="text-sm leading-6 text-slate-500 lg:hidden">
-            Su smartphone il documento completo si apre in una scheda dedicata, evitando una seconda area di scorrimento dentro la pagina.
-          </p>
-
-          <details className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-5" data-curriculum-integral-web-publication>
-            <summary className="cursor-pointer text-sm font-bold text-slate-700">Consulta l’edizione web integrale per sezione</summary>
-            <p className="mt-3 text-sm leading-6 text-slate-600">Per la consultazione ordinaria torna a Esplora o Trama.</p>
-
-            <div className="mt-5 space-y-2 lg:hidden">
-              <label htmlFor="curriculum-section" className="text-xs font-bold uppercase tracking-wide text-slate-500">Sezione del documento</label>
-              <select
-                id="curriculum-section"
-                value={sectionId}
-                onChange={(event) => setSectionId(event.target.value)}
-                className="min-h-12 w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-800 shadow-sm focus:border-indigo-500 focus:outline-none"
-                data-curriculum-section-selector
-              >
-                {SECTION_NAVIGATION.map((navigation) => {
-                  const section = DEPARTMENT_CURRICULUM_SECTIONS.find((item) => item.number === navigation.number);
-                  return <option key={navigation.id} value={navigation.id}>{navigation.number}. {section?.title}</option>;
-                })}
-              </select>
-            </div>
-
-            <article className="mt-5 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7" data-curriculum-section={selectedNavigation.id}>
-              <p className="text-xs font-bold uppercase tracking-wide text-indigo-700">Sezione {selectedSection.number} di {DEPARTMENT_CURRICULUM_SECTIONS.length}</p>
-              <h3 className="mt-2 text-xl font-black leading-tight text-slate-950 sm:text-2xl">{selectedSection.title}</h3>
-              <div className="mt-5 border-t border-slate-100 pt-1">
-                <DepartmentCurriculumPublication section={selectedSection} />
-              </div>
-            </article>
-
-            <div className="mt-4 flex items-center justify-between gap-3">
-              <button
-                type="button"
-                onClick={() => moveSection(-1)}
-                disabled={selectedNavigationIndex === 0}
-                className="min-h-11 rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 disabled:cursor-not-allowed disabled:opacity-40"
-              >
-                Sezione precedente
-              </button>
-              <button
-                type="button"
-                onClick={() => moveSection(1)}
-                disabled={selectedNavigationIndex === SECTION_NAVIGATION.length - 1}
-                className="min-h-11 rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 disabled:cursor-not-allowed disabled:opacity-40"
-              >
-                Sezione successiva
-              </button>
-            </div>
-          </details>
         </div>
       )}
     </section>
