@@ -1,4 +1,4 @@
-import type { CurriculumRepositories } from '../curriculum/persistence/repositories';
+import type { CurricoloRepositories } from '../../types/curricolo';
 import {
   createCurricoloVerticaleReleaseV1,
   type CurricoloVerticaleAuthorityV1,
@@ -7,7 +7,7 @@ import {
 } from './curricoloVerticaleReleaseV1';
 
 export interface ExportCurricoloVerticaleFromRepositoriesV1Input {
-  repositories: CurriculumRepositories;
+  repositories: CurricoloRepositories;
   versionId: string;
   institutionId: string;
   schoolYearRef: string;
@@ -21,7 +21,7 @@ export async function exportCurricoloVerticaleFromRepositoriesV1(
 ): Promise<CurricoloVerticaleReleaseV1> {
   const version = await input.repositories.versions.getById(input.versionId);
   if (!version) {
-    throw new Error(`Curriculum version '${input.versionId}' was not found`);
+    throw new Error(`Curricolo version '${input.versionId}' was not found`);
   }
 
   const [segments, nodes, verticalLinks] = await Promise.all([
