@@ -45,9 +45,9 @@ describe('G5 curricolo information architecture', () => {
     expect(screen.getByText('Validazione professionale aperta')).toBeInTheDocument();
     expect(screen.getByText('Non vigente')).toBeInTheDocument();
 
-    const firstCard = document.querySelector('[data-curriculum-unit-card]');
+    const firstCard = document.querySelector('[data-curricolo-unit-card]');
     expect(firstCard).not.toBeNull();
-    expect(firstCard).toHaveAttribute('data-curriculum-card-density', 'compact-disclosure');
+    expect(firstCard).toHaveAttribute('data-curricolo-card-density', 'compact-disclosure');
   });
 
   it('keeps Infanzia and grade ranges native in the professional navigation', async () => {
