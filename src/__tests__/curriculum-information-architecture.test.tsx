@@ -4,7 +4,6 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { createEmptyInstitutionalArchive, getA07InstitutionalDocumentRead } from '../domain/institution';
 import { ProfessionalCurriculumReader } from '../features/curriculum/components/ProfessionalCurriculumReader';
-import { AVAILABLE_DEPARTMENT_PUBLICATION, CURRICULUM_AREA_REGISTRY } from '../features/curriculum/data/curriculumPublicationRegistry';
 
 function renderReader() {
   return render(
@@ -18,47 +17,53 @@ function renderReader() {
   );
 }
 
-describe('G5 curriculum information architecture', () => {
-  it('starts from a neutral catalog instead of presenting one department as the whole curriculum', () => {
+describe('G5 curricolo information architecture', () => {
+  it('starts from the complete canonical institute curricolo instead of the pilot catalog', () => {
     renderReader();
 
-    expect(screen.getByRole('heading', { name: 'Catalogo curricolare' })).toBeInTheDocument();
-    expect(screen.getByText('Contesto istituzionale non configurato')).toBeInTheDocument();
-    expect(screen.getByText(AVAILABLE_DEPARTMENT_PUBLICATION.label)).toBeInTheDocument();
-    expect(screen.getByText('Fascicolo pilota disponibile')).toBeInTheDocument();
-    expect(screen.getAllByText('Non acquisito nella Beta')).toHaveLength(
-      CURRICULUM_AREA_REGISTRY.filter((area) => area.availability === 'not-acquired').length,
-    );
+    expect(screen.getByRole('heading', { name: 'Curricolo verticale d’Istituto' })).toBeInTheDocument();
+    expect(screen.getByText('Validazione professionale aperta')).toBeInTheDocument();
+    expect(screen.getByText('Non vigente')).toBeInTheDocument();
+    expect(screen.getByText('A.S. 2026/2027')).toBeInTheDocument();
+    expect(screen.queryByText('Fascicolo pilota disponibile')).not.toBeInTheDocument();
+    expect(screen.queryByText('Non acquisito nella Beta')).not.toBeInTheDocument();
+
+    expect(screen.getByRole('button', { name: 'Tecnologia' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Educazione civica' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Alfabetizzazione all’intelligenza artificiale' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'I discorsi e le parole' })).toBeInTheDocument();
   });
 
-  it('opens a single discipline directly while preserving department source identity', async () => {
+  it('opens a canonical discipline through discipline order and native annuality scope', async () => {
     const user = userEvent.setup();
     renderReader();
 
     await user.click(screen.getByRole('button', { name: 'Tecnologia' }));
 
-    expect(screen.getByRole('button', { name: 'Torna al catalogo' })).toBeInTheDocument();
-    expect(screen.getByText(/Fonte del fascicolo:/)).toHaveTextContent(AVAILABLE_DEPARTMENT_PUBLICATION.sourceInstitutionName ?? '');
-    expect(screen.getByRole('button', { name: 'Tecnologia' })).toHaveAttribute('aria-pressed', 'true');
-    expect(screen.getByText(/stesso fascicolo curricolare sorgente/i)).toBeInTheDocument();
-    expect(screen.getByText('Riferimenti del fascicolo sorgente')).toBeInTheDocument();
-    expect(screen.getByText(/non attestano, da soli, l’adozione da parte dell’istituto corrente/i)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Scuola primaria' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Scuola secondaria di primo grado' })).toBeInTheDocument();
+    expect(screen.getByText('Validazione professionale aperta')).toBeInTheDocument();
+    expect(screen.getByText('Non vigente')).toBeInTheDocument();
 
     const firstCard = document.querySelector('[data-curriculum-unit-card]');
     expect(firstCard).not.toBeNull();
     expect(firstCard).toHaveAttribute('data-curriculum-card-density', 'compact-disclosure');
-    const disclosure = firstCard?.querySelector('details[data-curriculum-unit-disclosure]') as HTMLDetailsElement | null;
-    expect(disclosure).not.toBeNull();
-    expect(disclosure?.open).toBe(false);
   });
 
-  it('does not expose unavailable areas as actionable publications', () => {
+  it('keeps Infanzia and grade ranges native in the professional navigation', async () => {
+    const user = userEvent.setup();
     renderReader();
 
-    for (const area of CURRICULUM_AREA_REGISTRY.filter((item) => item.availability === 'not-acquired')) {
-      const card = screen.getByText(area.label).closest('article');
-      expect(card).not.toBeNull();
-      expect(card?.querySelector('[data-open-curriculum-area]')).toBeNull();
-    }
+    await user.click(screen.getByRole('button', { name: 'I discorsi e le parole' }));
+    expect(screen.getByRole('button', { name: 'Infanzia' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '3–5 anni' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Classe [1-5]/ })).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Torna al catalogo' }));
+    await user.click(screen.getByRole('button', { name: 'Alfabetizzazione all’intelligenza artificiale' }));
+    await user.click(screen.getByRole('button', { name: 'Scuola primaria' }));
+
+    expect(screen.getByRole('button', { name: 'Classi I–II' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Classi III–V' })).toBeInTheDocument();
   });
 });
