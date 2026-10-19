@@ -116,6 +116,7 @@ function buildMasterFixture(): string {
     'Secondaria I — Classe I: esperienza AI secondaria I.',
     'Secondaria I — Classe II: esperienza AI secondaria II.',
     'Secondaria I — Classe III: esperienza AI secondaria III.',
+    'Evidenze trasversali: verifica output; documenta l’uso; protegge dati e integrità del lavoro.',
     'Stato: MATERIALIZZATO NEL MASTER — DA VALIDARE VERTICALMENTE DA TEAM/DIPARTIMENTI.',
     '17.11 Esito documentale del gate',
     'OSA_DOCUMENTARY_COVERAGE_COMPLETE = TRUE',
