@@ -141,7 +141,7 @@ export function ProfessionalCurriculumReader({
           </p>
           <div className="mt-4 flex flex-wrap gap-2 text-xs font-semibold">
             <span className="rounded-full bg-indigo-50 px-3 py-1.5 text-indigo-800">Versione di lavoro · {model.identity.masterVersion}</span>
-            <span className="rounded-full bg-amber-50 px-3 py-1.5 text-amber-900">{model.identity.validationLabel}</span>
+            <span className="rounded-full bg-amber-50 px-3 py-1.5 text-amber-900">Validazione professionale aperta</span>
             <span className="rounded-full bg-slate-100 px-3 py-1.5 text-slate-700">{model.identity.vigencyLabel}</span>
             <span className="rounded-full bg-slate-100 px-3 py-1.5 text-slate-700">A.S. {model.identity.schoolYearRef}</span>
           </div>
@@ -193,7 +193,7 @@ export function ProfessionalCurriculumReader({
         </div>
         <div className="mt-4 flex flex-wrap items-center justify-center gap-2 text-xs font-semibold">
           <span className="rounded-full bg-slate-100 px-3 py-1.5 text-slate-700">A.S. {model.identity.schoolYearRef}</span>
-          <span className="rounded-full bg-amber-50 px-3 py-1.5 text-amber-900">{model.identity.validationLabel}</span>
+          <span className="rounded-full bg-amber-50 px-3 py-1.5 text-amber-900">Validazione professionale aperta</span>
           <span className="rounded-full bg-slate-100 px-3 py-1.5 text-slate-700">{model.identity.vigencyLabel}</span>
           <span className="rounded-full bg-slate-100 px-3 py-1.5 text-slate-700">Percorso verticale 3–14</span>
         </div>
