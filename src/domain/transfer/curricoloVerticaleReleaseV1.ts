@@ -11,6 +11,7 @@ export const TRAMA_CURRICOLO_VERTICALE_RELEASE_V1 = 'TRAMA_CURRICOLO_VERTICALE_R
 export type CurricoloVerticaleDomainKindV1 =
   | 'DISCIPLINA'
   | 'CAMPO_ESPERIENZA'
+  | 'PERCORSO_CURRICOLARE'
   | 'AMBITO_TRASVERSALE';
 
 export interface CurricoloVerticaleExpectedScopeV1 {
