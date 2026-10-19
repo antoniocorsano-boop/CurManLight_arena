@@ -1,4 +1,4 @@
-import type { SchoolOrder, SegmentScope } from '../curriculum/types';
+import type { CurricoloSchoolOrder, CurricoloSegmentScope } from '../../types/curricolo';
 import { canonicalSerialize } from './signatures';
 import type {
   CurricoloVerticaleExpectedScopeV1,
@@ -6,7 +6,7 @@ import type {
 } from './curricoloVerticaleReleaseV1';
 
 export interface BuildCurricoloVerticalePerimeterV1Input {
-  schoolOrders: readonly SchoolOrder[];
+  schoolOrders: readonly CurricoloSchoolOrder[];
   expectedScopes: readonly CurricoloVerticaleExpectedScopeV1[];
   intentionallyNotApplicable: readonly CurricoloVerticaleExpectedScopeV1[];
 }
@@ -15,7 +15,7 @@ function scopeKey(value: CurricoloVerticaleExpectedScopeV1): string {
   return canonicalSerialize(value);
 }
 
-function copyScope(scope: SegmentScope): SegmentScope {
+function copyScope(scope: CurricoloSegmentScope): CurricoloSegmentScope {
   if (scope.type === 'grade-range') return { type: 'grade-range', grades: [...scope.grades] };
   if (scope.type === 'grade') return { type: 'grade', grade: scope.grade };
   return { type: 'school-level' };
@@ -72,7 +72,7 @@ export function buildCurricoloVerticalePerimeterV1(
 
   for (const order of configuredOrders) {
     if (!declared.some(entry => entry.schoolOrder === order)) {
-      errors.push(`${order} is configured for the institute but has no declared curriculum perimeter`);
+      errors.push(`${order} is configured for the institute but has no declared curricolo perimeter`);
     }
   }
 
