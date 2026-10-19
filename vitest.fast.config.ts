@@ -87,6 +87,7 @@ export default defineConfig({
       'src/__tests__/curricolo-verticale-master-materialization-v1.test.ts',
       'src/__tests__/curricolo-verticale-artifact-v1.test.ts',
       'src/__tests__/curricolo-verticale-artifact-generator-v1.test.mjs',
+      'src/features/**/canonical-curricolo-read-model.test.mjs',
       'src/__tests__/operations-governance-m4s6.test.ts',
       'src/__tests__/a3-planning-source-applicability.test.ts',
       'src/__tests__/teacher-workspace-part1.test.tsx'
