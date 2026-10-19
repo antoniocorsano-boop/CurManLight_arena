@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { buildCurricoloVerticaleManifestV1 } from '../domain/transfer/curricoloVerticaleReleaseV1';
 import { buildCurricoloVerticalePerimeterV1 } from '../domain/transfer/curricoloVerticalePerimeterV1';
-import type { CurriculumSegment } from '../domain/curriculum/segment';
+import type { CurricoloSegment } from '../types/curricolo';
 
 const NOW = '2026-10-19T12:00:00.000Z';
 const content = {
@@ -10,7 +10,7 @@ const content = {
   nucleiFondanti: ['Nucleo'], proposals: [],
 };
 
-function segment(overrides: Partial<CurriculumSegment>): CurriculumSegment {
+function segment(overrides: Partial<CurricoloSegment>): CurricoloSegment {
   return {
     id: 'segment',
     versionId: 'version-1',
