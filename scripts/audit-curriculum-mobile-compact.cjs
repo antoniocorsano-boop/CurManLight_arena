@@ -109,7 +109,7 @@ async function visibleButtonsMeetTouchTarget(locator) {
       check('canonical semantic explorer is visible', await explorer.isVisible());
 
       await clickWithPersonalProfileRecovery(page, explorer.getByRole('button', { name: 'Tecnologia', exact: true }).first());
-      await clickWithPersonalProfileRecovery(page, explorer.getByRole('button', { name: 'Secondaria', exact: true }).first());
+      await clickWithPersonalProfileRecovery(page, explorer.getByRole('button', { name: 'Scuola secondaria di primo grado', exact: true }).first());
       await clickWithPersonalProfileRecovery(page, explorer.getByRole('button', { name: 'Classe II', exact: true }).first());
 
       const focusedExplorer = page.locator('[data-curricolo-focused-explorer]').first();
