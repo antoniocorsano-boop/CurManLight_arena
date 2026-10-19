@@ -28,15 +28,17 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          for index in 00 01 02 03 04 05 06 07 08 09 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24; do
-            test -f ".tmp/curricolo-artifact/part-${index}.txt" || {
-              echo "ARTIFACT_ASSEMBLY_WAITING part-${index}.txt"
+          for index in 00 01 02 03; do
+            test -f ".tmp/curricolo-artifact/part-${index}.b64" || {
+              echo "ARTIFACT_ASSEMBLY_WAITING part-${index}.b64"
               exit 0
             }
           done
 
           mkdir -p src/features/curriculum/data
-          cat .tmp/curricolo-artifact/part-*.txt > src/features/curriculum/data/canonicalCurricoloV13.generated.json
+          cat .tmp/curricolo-artifact/part-*.b64 > /tmp/canonical-curricolo-artifact.gz.b64
+          base64 --decode /tmp/canonical-curricolo-artifact.gz.b64 > /tmp/canonical-curricolo-artifact.json.gz
+          gzip --decompress --stdout /tmp/canonical-curricolo-artifact.json.gz > src/features/curriculum/data/canonicalCurricoloV13.generated.json
 
           node - <<'NODE'
           const fs = require('fs');
