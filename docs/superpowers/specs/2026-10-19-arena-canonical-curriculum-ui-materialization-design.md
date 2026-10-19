@@ -51,13 +51,19 @@ Catena canonica:
 Introdurre un artefatto generato, versionato nel repository, con struttura logica:
 
 ```ts
+interface StableFootprintV1 {
+  algorithm: 'fnv1a';
+  version: 1;
+  hash: string;
+}
+
 interface CanonicalCurriculumMaterializedArtifactV1 {
   schemaVersion: 'ARENA_CANONICAL_CURRICULUM_ARTIFACT_V1';
   source: {
     masterId: 'CAN-CURR-MASTER-00';
     masterVersion: string;
     revisionId: string;
-    sourceContentFootprint: string;
+    sourceContentFootprint: StableFootprintV1;
     authority: 'INSTITUTE_CANONICAL_WORKING_BASELINE';
     humanProfessionalValidation: 'OPEN';
     curricoloVigente: false;
@@ -69,7 +75,7 @@ interface CanonicalCurriculumMaterializedArtifactV1 {
     verticalLinks: VerticalCurricoloLink[];
     perimeter: CurricoloVerticalePerimeterV1;
   };
-  artifactFootprint: string;
+  artifactFootprint: StableFootprintV1;
 }
 ```
 
@@ -77,7 +83,9 @@ Percorso previsto:
 
 `src/features/curriculum/data/canonicalCurriculumV13.generated.json`
 
-L’artefatto **non deve contenere timestamp variabili di generazione**. Le date necessarie devono derivare dal master o essere escluse dal materiale firmato, così da preservare la determinismo.
+L’artefatto **non deve contenere timestamp variabili di generazione**. In particolare, i `computedAt` prodotti dalle primitive di impronta esistenti non fanno parte dell’artefatto persistito: si conservano soltanto algoritmo, versione e hash. Le date necessarie devono derivare dal master o essere escluse dal materiale firmato, così da preservare il determinismo.
+
+`artifactFootprint` è calcolata sulla rappresentazione canonica dell’artefatto **escludendo il campo `artifactFootprint` stesso**, evitando una definizione auto-referenziale. `revisionId` e l’impronta del contenuto sorgente rientrano invece nel materiale firmato: una loro modifica produce quindi una nuova impronta dell’artefatto.
 
 ### 4.2 Generazione
 
@@ -89,14 +97,14 @@ Il generatore:
 
 - riceve un file di snapshot testuale già acquisito in un contesto autorizzato;
 - riceve i metadati del master (`masterId`, `masterVersion`, `revisionId`);
-- calcola l’impronta del contenuto sorgente;
+- calcola l’impronta stabile del contenuto sorgente;
 - invoca **esclusivamente** `materializeCurricoloVerticaleMasterV1` per produrre i dati curricolari;
 - verifica i 113 scope e lo stato non vigente;
 - serializza con ordinamento stabile;
-- calcola l’impronta dell’artefatto;
+- calcola l’impronta stabile dell’artefatto sul payload privo del campo `artifactFootprint`;
 - scrive il file generato.
 
-Il generatore non introduce codice di rete nel prodotto e non rende Drive una dipendenza dell’applicazione.
+Il file sorgente fornito al generatore è un input operativo controllato e non è una dipendenza dell’applicazione. Il generatore non introduce codice di rete nel prodotto e non rende Drive una dipendenza runtime.
 
 ## 5. Modello di lettura UI
 
