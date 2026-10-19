@@ -1,8 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import type { CurriculumSegment } from '../domain/curriculum/segment';
-import type { CurriculumNode } from '../domain/curriculum/node';
-import type { InstituteCurriculumVersion } from '../domain/curriculum/version';
-import type { VerticalCurriculumLink } from '../domain/curriculum/verticalLink';
+import type {
+  CurricoloNode,
+  CurricoloSegment,
+  InstituteCurricoloVersion,
+  VerticalCurricoloLink,
+} from '../types/curricolo';
 import {
   createCurricoloVerticaleReleaseV1,
   validateCurricoloVerticaleReleaseV1,
@@ -10,7 +12,7 @@ import {
 
 const NOW = '2026-10-19T12:00:00.000Z';
 
-const version: InstituteCurriculumVersion = {
+const version: InstituteCurricoloVersion = {
   id: 'arena-curricolo-istituto-2026-27-v1',
   institutionId: 'ic-calvario-covotta-don-milani',
   title: 'Curricolo verticale di istituto 2026/2027',
@@ -35,8 +37,8 @@ function segment(
   id: string,
   schoolLevel: 'infanzia' | 'primaria' | 'secondaria',
   subjectOrFieldId: string,
-  scope: CurriculumSegment['scope'],
-): CurriculumSegment {
+  scope: CurricoloSegment['scope'],
+): CurricoloSegment {
   return {
     id,
     versionId: version.id,
@@ -55,7 +57,7 @@ function segment(
   };
 }
 
-const segments: CurriculumSegment[] = [
+const segments: CurricoloSegment[] = [
   segment('seg-infanzia-linguaggi', 'infanzia', 'i-discorsi-e-le-parole', { type: 'school-level' }),
   segment('seg-primaria-italiano', 'primaria', 'italiano', {
     type: 'grade-range',
@@ -67,7 +69,7 @@ const segments: CurriculumSegment[] = [
   }),
 ];
 
-const nodes: CurriculumNode[] = [
+const nodes: CurricoloNode[] = [
   {
     id: 'node-infanzia-linguaggi',
     versionId: version.id,
@@ -100,7 +102,7 @@ const nodes: CurriculumNode[] = [
   },
 ];
 
-const verticalLinks: VerticalCurriculumLink[] = [
+const verticalLinks: VerticalCurricoloLink[] = [
   {
     id: 'link-infanzia-primaria',
     versionId: version.id,
