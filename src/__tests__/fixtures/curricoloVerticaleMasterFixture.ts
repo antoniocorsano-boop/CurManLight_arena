@@ -1,8 +1,8 @@
-import { CANONICAL_SOURCE_NOT_IN_FORCE_MARKER } from '../../domain/transfer/curricoloVerticaleCompleteReleaseV1';
 import {
-  materializeCurricoloVerticaleMasterV1,
+  CANONICAL_SOURCE_NOT_IN_FORCE_MARKER,
   type CurricoloVerticaleCanonicalSourceMasterV1,
-} from '../../domain/transfer/curricoloVerticaleMasterMaterializationV1';
+} from '../../domain/transfer/curricoloVerticaleCompleteReleaseV1';
+import { materializeCurricoloVerticaleMasterV1 } from '../../domain/transfer/curricoloVerticaleMasterMaterializationV1';
 
 const PRIMARY = [
   'ITALIANO',
