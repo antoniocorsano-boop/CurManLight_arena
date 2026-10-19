@@ -69,7 +69,7 @@ function input() {
       revisionId: 'drive-revision-fixture',
       materializationState: 'COMPLETE' as const,
       humanProfessionalValidation: 'OPEN' as const,
-      curriculumInForce: false,
+      curricoloVigente: false,
       authority: 'INSTITUTE_CANONICAL_WORKING_BASELINE' as const,
     },
     sourceSnapshot: {
@@ -86,7 +86,7 @@ describe('canonical master snapshot in vertical release', () => {
 
     expect(release.sourceMaster.masterId).toBe('CAN-CURR-MASTER-00');
     expect(release.sourceMaster.masterVersion).toBe('1.3');
-    expect(release.sourceMaster.curriculumInForce).toBe(false);
+    expect(release.sourceMaster.curricoloVigente).toBe(false);
     expect(release.sourceSnapshot.content).toBe(MASTER_TEXT);
     expect(release.sourceSnapshot.content).toContain('17.11 Esito documentale del gate');
     expect(release.manifest.coverageStatus).toBe('SATISFIED');
@@ -104,8 +104,8 @@ describe('canonical master snapshot in vertical release', () => {
     const value = input();
     expect(() => createCurricoloVerticaleCompleteReleaseV1({
       ...value,
-      sourceMaster: { ...value.sourceMaster, curriculumInForce: true },
-    })).toThrow(/curriculumInForce/i);
+      sourceMaster: { ...value.sourceMaster, curricoloVigente: true },
+    })).toThrow(/curricoloVigente/i);
   });
 
   it('binds snapshot content into the structural footprint', () => {
