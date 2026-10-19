@@ -89,12 +89,14 @@ describe('canonical curricolo read model', () => {
     expect(result.errors.join(' ')).toMatch(/113|segment/i);
   });
 
-  it('retains proposed relation status without promoting it', () => {
+  it('retains proposed relation status and source relation type without promoting either', () => {
     const model = buildCanonicalCurricoloReadModel(artifact);
 
     expect(model.relations).toHaveLength(artifact.materialization.verticalLinks.length);
     expect(model.relations.length).toBeGreaterThan(0);
     expect(new Set(model.relations.map((relation) => relation.status))).toEqual(new Set(['proposed']));
-    expect(model.relations.every((relation) => relation.relationType === 'continuity')).toBe(true);
+    expect(model.relations.map((relation) => relation.relationType)).toEqual(
+      artifact.materialization.verticalLinks.map((relation) => relation.relationType),
+    );
   });
 });
