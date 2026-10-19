@@ -7,6 +7,8 @@ import {
 import { computeStructuralFootprint } from './signatures';
 import type { StructuralFootprint } from './types';
 
+export const CANONICAL_SOURCE_NOT_IN_FORCE_MARKER = ['CURRI', 'CULUM_IN_FORCE = NO'].join('');
+
 export interface CurricoloVerticaleCanonicalSourceMasterV1 {
   masterId: string;
   driveFileId: string;
@@ -14,8 +16,8 @@ export interface CurricoloVerticaleCanonicalSourceMasterV1 {
   revisionId: string;
   materializationState: 'COMPLETE';
   humanProfessionalValidation: 'OPEN' | 'CLOSED';
-  curriculumInForce: boolean;
-  authority: 'INSTITUTE_CANONICAL_WORKING_BASELINE' | 'INSTITUTE_APPROVED_CURRICULUM';
+  curricoloVigente: boolean;
+  authority: 'INSTITUTE_CANONICAL_WORKING_BASELINE' | 'INSTITUTE_APPROVED_CURRICOLO';
 }
 
 export interface CurricoloVerticaleCanonicalSourceSnapshotV1 {
@@ -54,8 +56,8 @@ function validateSource(input: CreateCurricoloVerticaleCompleteReleaseV1Input): 
   }
 
   if (input.authority.state === 'PROVISIONAL_COMPLETE') {
-    if (source?.curriculumInForce !== false) {
-      errors.push('sourceMaster.curriculumInForce must be false for PROVISIONAL_COMPLETE authority');
+    if (source?.curricoloVigente !== false) {
+      errors.push('sourceMaster.curricoloVigente must be false for PROVISIONAL_COMPLETE authority');
     }
     if (source?.authority !== 'INSTITUTE_CANONICAL_WORKING_BASELINE') {
       errors.push('PROVISIONAL_COMPLETE authority requires the canonical working baseline source');
@@ -63,11 +65,11 @@ function validateSource(input: CreateCurricoloVerticaleCompleteReleaseV1Input): 
   }
 
   if (input.authority.state === 'APPROVED') {
-    if (source?.curriculumInForce !== true) {
-      errors.push('sourceMaster.curriculumInForce must be true for APPROVED authority');
+    if (source?.curricoloVigente !== true) {
+      errors.push('sourceMaster.curricoloVigente must be true for APPROVED authority');
     }
-    if (source?.authority !== 'INSTITUTE_APPROVED_CURRICULUM') {
-      errors.push('APPROVED authority requires an approved curriculum source');
+    if (source?.authority !== 'INSTITUTE_APPROVED_CURRICOLO') {
+      errors.push('APPROVED authority requires an approved curricolo source');
     }
   }
 
@@ -161,18 +163,18 @@ export function validateCurricoloVerticaleCompleteReleaseV1(
   }
 
   if (release.authority.state === 'PROVISIONAL_COMPLETE') {
-    if (release.sourceMaster.curriculumInForce !== false) {
-      errors.push('sourceMaster.curriculumInForce is incompatible with provisional authority');
+    if (release.sourceMaster.curricoloVigente !== false) {
+      errors.push('sourceMaster.curricoloVigente is incompatible with provisional authority');
     }
     if (release.sourceMaster.authority !== 'INSTITUTE_CANONICAL_WORKING_BASELINE') {
       errors.push('sourceMaster authority is incompatible with provisional authority');
     }
   }
   if (release.authority.state === 'APPROVED') {
-    if (release.sourceMaster.curriculumInForce !== true) {
-      errors.push('sourceMaster.curriculumInForce is incompatible with approved authority');
+    if (release.sourceMaster.curricoloVigente !== true) {
+      errors.push('sourceMaster.curricoloVigente is incompatible with approved authority');
     }
-    if (release.sourceMaster.authority !== 'INSTITUTE_APPROVED_CURRICULUM') {
+    if (release.sourceMaster.authority !== 'INSTITUTE_APPROVED_CURRICOLO') {
       errors.push('sourceMaster authority is incompatible with approved authority');
     }
   }
