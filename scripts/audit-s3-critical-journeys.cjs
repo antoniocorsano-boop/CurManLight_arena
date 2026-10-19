@@ -212,7 +212,11 @@ async function noHorizontalOverflow(page) {
       const documentHeading = page.getByText('Documento del curricolo', { exact: true }).first();
       await documentHeading.waitFor({ state: 'visible', timeout: 5000 });
       check('Documento opens only after an explicit teacher action', await documentHeading.isVisible());
-      check('Documento remains subordinate to ordinary consultation', await page.getByText(/Per la consultazione ordinaria torna a Esplora o Trama/i).first().isVisible().catch(() => false));
+      check(
+        'Documento remains subordinate to ordinary consultation',
+        await page.getByRole('button', { name: 'Esplora', exact: true }).first().isVisible() &&
+          await page.getByRole('button', { name: 'Trama', exact: true }).first().isVisible()
+      );
       check('Documento does not create page-level horizontal overflow', await noHorizontalOverflow(page));
 
       await clickWithPersonalProfileRecovery(page, page.getByRole('button', { name: 'Esplora', exact: true }).first());
