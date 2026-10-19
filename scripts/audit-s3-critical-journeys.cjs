@@ -148,7 +148,7 @@ async function noHorizontalOverflow(page) {
       );
 
       const technologyButton = explorer.getByRole('button', { name: 'Tecnologia', exact: true }).first();
-      const secondaryButton = explorer.getByRole('button', { name: 'Secondaria', exact: true }).first();
+      const secondaryButton = explorer.getByRole('button', { name: 'Scuola secondaria di primo grado', exact: true }).first();
       const class2Button = explorer.getByRole('button', { name: 'Classe II', exact: true }).first();
       await clickWithPersonalProfileRecovery(page, technologyButton);
       await secondaryButton.waitFor({ state: 'visible', timeout: 5000 });
