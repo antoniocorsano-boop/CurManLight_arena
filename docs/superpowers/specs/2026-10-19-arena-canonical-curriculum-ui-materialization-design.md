@@ -22,6 +22,7 @@ Il risultato deve sostituire, come percorso principale del lettore professionale
 6. Il collegamento deve essere tracciabile almeno a: `masterId`, `masterVersion`, `revisionId`, impronta strutturale del contenuto sorgente e impronta dell’artefatto materializzato.
 7. La generazione deve essere deterministica: a parità di snapshot e metadati sorgente, l’artefatto prodotto deve essere byte-per-byte identico.
 8. Nessun merge, deploy o promozione Beta è parte di questo intervento.
+9. L’esperienza utente resta subordinata a `ARENA_UX_CONTRACT@1.0.0`: il collegamento al master non ridefinisce gerarchia di consultazione, linguaggio di primo livello o politica della Trama.
 
 ## 3. Stato attuale verificato
 
@@ -115,10 +116,10 @@ Aggiungere un adattatore puro, ad esempio:
 Responsabilità:
 
 - validare l’artefatto importato prima dell’uso;
-- raggruppare i 113 segmenti per ordine di scuola, disciplina/campo/asse e scope;
+- raggruppare i 113 segmenti per disciplina/campo/asse, ordine di scuola e scope;
 - produrre etichette leggibili senza alterare gli identificativi governati;
 - esporre i contenuti materializzati (`competenze`, `obiettivi`, `conoscenze`, `evidenze`, `nucleiFondanti`, ecc.);
-- esporre i raccordi soltanto quando presenti nei `verticalLinks` materializzati;
+- conservare i raccordi materializzati con tipo e stato, senza promuoverli implicitamente;
 - fornire a `ProfessionalCurriculumReader` fonte, versione, revisione, stato di validazione e vigenza.
 
 L’adattatore non interpreta l’assenza di un dato come autorizzazione a inventarlo.
@@ -147,40 +148,46 @@ Non devono più comparire, sul percorso canonico, le etichette **“Non acquisit
 Nel primo livello informativo devono essere visibili:
 
 - `Curricolo verticale d’Istituto`;
-- `CAN-CURR-MASTER-00 · versione 1.3`;
+- `Versione di lavoro · 1.3`;
 - `Validazione professionale aperta`;
 - `Non vigente`;
 - anno scolastico `2026/2027`.
+
+L’identificativo tecnico `CAN-CURR-MASTER-00`, la revisione e le impronte restano disponibili nella tracciabilità o tramite attributi macchina, non come copia primaria per il docente, in coerenza con `ARENA_UX_CONTRACT@1.0.0`.
 
 La presenza del master non equivale ad adozione collegiale.
 
 ### Esplorazione
 
-Il lettore deve consentire la sequenza:
+Il lettore deve mantenere la sequenza canonica prevista dal contratto UX:
 
-`ordine di scuola → disciplina/campo/asse → annualità/scope → contenuti`
+`disciplina/campo/asse → ordine di scuola → annualità/scope → contenuti`
+
+Il collegamento al master non ridefinisce questa gerarchia.
 
 Per Infanzia non viene inventata una classe numerica: lo scope resta `school-level` e i riferimenti 3/4/5 anni rimangono nel contenuto governato.
 
 Per gli scope `grade-range` (ad esempio AI literacy) la UI mostra l’intervallo nativo e non lo espande artificialmente in annualità non presenti.
 
-## 7. Riutilizzo dell’UI esistente
+## 7. Riutilizzo dell’UI esistente e politica della Trama
 
 Per limitare il rischio, non va riscritto l’intero lettore.
 
-`CurriculumExploreTrama` può essere adattato a ricevere un catalogo pre-costruito dal nuovo modello di lettura, mantenendo il percorso legacy soltanto come compatibilità interna dove ancora necessario.
+`CurriculumExploreTrama` può essere adattato a ricevere un catalogo pre-costruito dal nuovo modello di lettura, mantenendo il percorso precedente soltanto come compatibilità interna dove ancora necessario.
 
 Il vecchio fascicolo dipartimentale può restare nel repository come **provenienza/archivio**, ma non deve più determinare la copertura principale del curricolo d’Istituto.
 
-La vista “Trama” non deve inferire nuovi raccordi dal semplice fatto che due annualità condividono una stringa. Sul percorso canonico, le relazioni mostrate devono derivare dai `verticalLinks` materializzati oppure essere omesse.
+La vista “Trama” del percorso canonico non deve inferire raccordi dal semplice fatto che due annualità condividono una stringa. I `verticalLinks` prodotti dalla materializzazione 1.3 restano nello stato `proposed`; questo intervento non li presenta come raccordi professionali già validati.
+
+Poiché `ARENA_UX_CONTRACT@1.0.0` mantiene per la Trama v1 la politica `same-nucleus-exact-only`, tale politica resta confinata al percorso precedente e non viene usata come ripiego sul nuovo percorso canonico. In modalità canonica, una relazione non ancora autorizzata per la pubblicazione viene **omessa**: nessun raccordo viene inventato e nessun `proposed` viene promosso implicitamente.
 
 ## 8. Gestione errori — fail closed
 
 Se l’artefatto manca, è corrotto, non contiene 113 scope, ha impronte incoerenti, dichiara una versione diversa da `CAN-CURR-MASTER-00@1.3`, oppure presenta `curricoloVigente=true` / stato approvato incompatibile con la baseline corrente:
 
 - il lettore canonico non viene presentato come valido;
-- la UI mostra uno stato tecnico-istituzionale neutro di “baseline curricolare non verificabile”;
-- non avviene fallback silenzioso al vecchio fascicolo pilota come se fosse il curricolo completo.
+- la UI mostra uno stato neutro di **“Curricolo d’Istituto non verificabile”**;
+- non avviene ripiego silenzioso al vecchio fascicolo pilota come se fosse il curricolo completo.
 
 ## 9. Strategia di test
 
@@ -206,13 +213,15 @@ La stessa coppia snapshot + metadati deve produrre esattamente gli stessi byte. 
 
 Testare che il lettore:
 
-- identifichi `CAN-CURR-MASTER-00@1.3`;
-- mostri `Validazione professionale aperta` e `Non vigente`;
+- mantenga tracciabile `CAN-CURR-MASTER-00@1.3` senza esporre l’identificativo tecnico come copia primaria;
+- mostri `Versione di lavoro · 1.3`, `Validazione professionale aperta` e `Non vigente`;
 - non mostri più “Non acquisito nella Beta” sul percorso canonico;
 - esponga campi di esperienza, ordini, discipline e assi realmente presenti;
+- mantenga la gerarchia `disciplina/campo/asse → ordine → annualità/scope`;
 - consenta di raggiungere almeno un caso Infanzia, uno Primaria, uno Secondaria, Educazione civica, Latino e AI literacy;
 - non inventi classi per Infanzia o annualità per scope `grade-range`;
-- non mostri relazioni non presenti nei `verticalLinks`.
+- in modalità canonica non crei relazioni per semplice coincidenza del nucleo;
+- non presenti `verticalLinks` con stato `proposed` come relazioni professionali validate.
 
 ### Regressione
 
@@ -223,6 +232,7 @@ Devono restare verdi i test esistenti della PR #347, compresi:
 - release completa;
 - export repository;
 - snapshot sorgente;
+- contratto canonico UX;
 - gate Product CI e relativi gate di interazione/contratto già attivi.
 
 ## 10. Fuori perimetro
@@ -232,6 +242,8 @@ Non fanno parte di questo intervento:
 - chiusura della validazione professionale;
 - modifica del master Drive;
 - approvazione collegiale o promozione a curricolo vigente;
+- promozione dei `verticalLinks` da `proposed` a `validated`;
+- modifica della politica canonica della Trama v1;
 - sincronizzazione automatica verso Docente OS o Atlas;
 - nuova persistenza Supabase;
 - redesign generale di Arena;
@@ -247,5 +259,6 @@ Il collegamento può essere considerato tecnicamente qualificato quando, su un u
 3. i 113 scope sono leggibili dalla UI senza Drive runtime;
 4. il vecchio catalogo pilota non determina più la copertura principale;
 5. lo stato istituzionale resta esplicitamente `OPEN / NON VIGENTE`;
-6. tutti i test mirati e i gate richiesti sono verdi;
-7. la PR resta Draft, non mergiata e non deployata.
+6. gerarchia, linguaggio e Trama restano conformi a `ARENA_UX_CONTRACT@1.0.0`;
+7. tutti i test mirati e i gate richiesti sono verdi;
+8. la PR resta Draft, non mergiata e non deployata.
