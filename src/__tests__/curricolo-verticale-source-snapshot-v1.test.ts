@@ -60,7 +60,7 @@ function input() {
     },
     authority: {
       state: 'PROVISIONAL_COMPLETE' as const,
-      requiresRevalidationOnApproval: true,
+      requiresRevalidationOnApproval: true as const,
     },
     sourceMaster: {
       masterId: 'CAN-CURR-MASTER-00',
