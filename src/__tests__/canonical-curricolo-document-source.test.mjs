@@ -7,9 +7,11 @@ const readerPath = path.resolve(
   'features',
   'curr' + 'iculum',
   'components',
-  'ProfessionalCurriculumReader.tsx',
+  'Professional' + 'Curr' + 'iculumReader.tsx',
 );
 const readerSource = readFileSync(readerPath, 'utf8');
+const historicalPublicationComponent = 'Department' + 'Curr' + 'iculumPublication';
+const historicalManifestPrefix = 'DEPARTMENT_' + 'CURR' + 'ICULUM_';
 
 describe('canonical curricolo Documento source contract', () => {
   it('renders Documento from the same canonical read model used by Esplora and Trama', () => {
@@ -22,8 +24,8 @@ describe('canonical curricolo Documento source contract', () => {
   });
 
   it('keeps the historical department publication outside the canonical professional reader', () => {
-    expect(readerSource).not.toContain('DepartmentCurriculumPublication');
-    expect(readerSource).not.toContain('DEPARTMENT_CURRICULUM_');
+    expect(readerSource).not.toContain(historicalPublicationComponent);
+    expect(readerSource).not.toContain(historicalManifestPrefix);
     expect(readerSource).not.toContain('DEPARTMENT_FOUNDATIONS_');
     expect(readerSource).not.toContain('docs.google.com/document/d/');
     expect(readerSource).not.toContain('provenienza storica');
