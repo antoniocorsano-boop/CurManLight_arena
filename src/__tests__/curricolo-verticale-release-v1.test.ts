@@ -151,7 +151,7 @@ function validInput(issuedAt = NOW) {
     perimeter,
     authority: {
       state: 'PROVISIONAL_COMPLETE' as const,
-      requiresRevalidationOnApproval: true,
+      requiresRevalidationOnApproval: true as const,
     },
     issuedAt,
   };
@@ -195,9 +195,9 @@ describe('TRAMA_CURRICOLO_VERTICALE_RELEASE_V1', () => {
     expect(() => createCurricoloVerticaleReleaseV1({
       ...validInput(),
       authority: {
-        state: 'APPROVED' as const,
+        state: 'APPROVED',
         requiresRevalidationOnApproval: false,
-      },
+      } as never,
     })).toThrow(/authorityReceiptRef/i);
   });
 
