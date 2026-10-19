@@ -92,6 +92,156 @@
       "path": "src/domain/curriculum/caseWorkSession.ts",
       "contains": "../../types/curriculum",
       "reason": "Temporary compatibility import for unchanged DecisionStatus and Proposal shapes; work-session types use Curricolo*."
+    },
+    {
+      "path": "docs/superpowers/specs/2026-10-19-arena-canonical-curriculum-ui-materialization-design.md",
+      "contains": "ProfessionalCurriculumReader",
+      "reason": "Approved design must identify the pre-existing reader component whose historical TypeScript name is retained during this bounded integration."
+    },
+    {
+      "path": "docs/superpowers/specs/2026-10-19-arena-canonical-curriculum-ui-materialization-design.md",
+      "contains": "curriculumPublicationRegistry.ts",
+      "reason": "Approved design records the pre-existing static registry file that is being displaced as the authority for coverage."
+    },
+    {
+      "path": "docs/superpowers/specs/2026-10-19-arena-canonical-curriculum-ui-materialization-design.md",
+      "contains": "CanonicalCurriculumMaterializedArtifactV1",
+      "reason": "Approved design records the originally proposed artifact identifier; implementation uses canonical Curricolo naming without rewriting the accepted design history."
+    },
+    {
+      "path": "docs/superpowers/specs/2026-10-19-arena-canonical-curriculum-ui-materialization-design.md",
+      "contains": "ARENA_CANONICAL_CURRICULUM_ARTIFACT_V1",
+      "reason": "Approved design records the originally proposed schema literal; implementation canonicalizes the new identifier to Curricolo."
+    },
+    {
+      "path": "docs/superpowers/specs/2026-10-19-arena-canonical-curriculum-ui-materialization-design.md",
+      "contains": "canonicalCurriculumV13.generated.json",
+      "reason": "Approved design records the originally proposed generated-file name; implementation canonicalizes the new filename to Curricolo."
+    },
+    {
+      "path": "docs/superpowers/specs/2026-10-19-arena-canonical-curriculum-ui-materialization-design.md",
+      "contains": "materialize-canonical-curriculum-v1",
+      "reason": "Approved design records the originally proposed generator name; implementation canonicalizes the new filename to Curricolo."
+    },
+    {
+      "path": "docs/superpowers/specs/2026-10-19-arena-canonical-curriculum-ui-materialization-design.md",
+      "contains": "canonicalCurriculumReadModel",
+      "reason": "Approved design records the originally proposed read-model name; implementation canonicalizes the new module to Curricolo."
+    },
+    {
+      "path": "docs/superpowers/specs/2026-10-19-arena-canonical-curriculum-ui-materialization-design.md",
+      "contains": "CURRICULUM_AREA_REGISTRY",
+      "reason": "Approved design names the pre-existing compatibility registry whose historical exported identifier remains unchanged."
+    },
+    {
+      "path": "docs/superpowers/specs/2026-10-19-arena-canonical-curriculum-ui-materialization-design.md",
+      "contains": "CurriculumExploreTrama",
+      "reason": "Approved design must identify the pre-existing exploration component whose historical TypeScript name remains unchanged."
+    },
+    {
+      "path": "docs/superpowers/plans/2026-10-19-arena-canonical-curriculum-ui-materialization.md",
+      "contains": "Arena Canonical Curriculum UI Materialization Implementation Plan",
+      "reason": "Accepted plan title is preserved as execution history; new production identifiers use canonical Curricolo naming."
+    },
+    {
+      "path": "docs/superpowers/plans/2026-10-19-arena-canonical-curriculum-ui-materialization.md",
+      "contains": "ProfessionalCurriculumReader",
+      "reason": "Execution plan must identify the pre-existing reader component whose historical TypeScript name remains unchanged."
+    },
+    {
+      "path": "docs/superpowers/plans/2026-10-19-arena-canonical-curriculum-ui-materialization.md",
+      "contains": "canonical-curriculum-ui-materialization-design.md",
+      "reason": "Execution plan references the already accepted design document path, retained as immutable planning history."
+    },
+    {
+      "path": "docs/superpowers/plans/2026-10-19-arena-canonical-curriculum-ui-materialization.md",
+      "contains": "ARENA_CANONICAL_CURRICULUM_ARTIFACT_V1",
+      "reason": "Accepted plan records the original proposed schema literal; new implementation uses canonical Curricolo naming."
+    },
+    {
+      "path": "docs/superpowers/plans/2026-10-19-arena-canonical-curriculum-ui-materialization.md",
+      "contains": "canonical curriculum artifact",
+      "reason": "Accepted plan preserves exact planned commit messages as execution history; commits may use canonical Curricolo wording instead."
+    },
+    {
+      "path": "docs/superpowers/plans/2026-10-19-arena-canonical-curriculum-ui-materialization.md",
+      "contains": "materialize-canonical-curriculum-v1",
+      "reason": "Accepted plan records the original proposed generator filename; implementation uses canonical Curricolo naming."
+    },
+    {
+      "path": "docs/superpowers/plans/2026-10-19-arena-canonical-curriculum-ui-materialization.md",
+      "contains": "canonicalCurriculumV13.generated.json",
+      "reason": "Accepted plan records the original proposed generated-file name; implementation uses canonical Curricolo naming."
+    },
+    {
+      "path": "docs/superpowers/plans/2026-10-19-arena-canonical-curriculum-ui-materialization.md",
+      "contains": "curriculum:materialize-master",
+      "reason": "Accepted plan records the original proposed npm command; implementation uses a canonical curricolo-prefixed command."
+    },
+    {
+      "path": "docs/superpowers/plans/2026-10-19-arena-canonical-curriculum-ui-materialization.md",
+      "contains": "src/features/curriculum/",
+      "reason": "Execution plan must name the pre-existing repository directory; TRAMA-TERM-01 intentionally does not rename legacy directory structure in this intervention."
+    },
+    {
+      "path": "docs/superpowers/plans/2026-10-19-arena-canonical-curriculum-ui-materialization.md",
+      "contains": "canonical-curriculum-read-model",
+      "reason": "Accepted plan records originally proposed new test/module names; implementation uses canonical Curricolo naming."
+    },
+    {
+      "path": "docs/superpowers/plans/2026-10-19-arena-canonical-curriculum-ui-materialization.md",
+      "contains": "CanonicalCurriculum",
+      "reason": "Accepted plan records originally proposed TypeScript read-model identifiers; implementation uses canonical Curricolo naming."
+    },
+    {
+      "path": "docs/superpowers/plans/2026-10-19-arena-canonical-curriculum-ui-materialization.md",
+      "contains": "CurriculumExploreTrama",
+      "reason": "Execution plan must identify the pre-existing exploration component whose historical TypeScript name remains unchanged."
+    },
+    {
+      "path": "docs/superpowers/plans/2026-10-19-arena-canonical-curriculum-ui-materialization.md",
+      "contains": "canonical curriculum read model",
+      "reason": "Accepted plan preserves an originally proposed commit message as execution history; implementation uses canonical Curricolo wording."
+    },
+    {
+      "path": "docs/superpowers/plans/2026-10-19-arena-canonical-curriculum-ui-materialization.md",
+      "contains": "canonical-curriculum-reader",
+      "reason": "Accepted plan records an originally proposed test filename; implementation uses canonical Curricolo naming."
+    },
+    {
+      "path": "docs/superpowers/plans/2026-10-19-arena-canonical-curriculum-ui-materialization.md",
+      "contains": "curriculum-information-architecture",
+      "reason": "Execution plan references a pre-existing regression test whose historical filename remains unchanged."
+    },
+    {
+      "path": "docs/superpowers/plans/2026-10-19-arena-canonical-curriculum-ui-materialization.md",
+      "contains": "canonical-curriculum-entry",
+      "reason": "Execution plan references a pre-existing regression test whose historical filename remains unchanged."
+    },
+    {
+      "path": "docs/superpowers/plans/2026-10-19-arena-canonical-curriculum-ui-materialization.md",
+      "contains": "curriculum-explore-trama-v2-contract",
+      "reason": "Execution plan references a pre-existing regression test whose historical filename remains unchanged."
+    },
+    {
+      "path": "docs/superpowers/plans/2026-10-19-arena-canonical-curriculum-ui-materialization.md",
+      "contains": "curriculum-mobile-compact-contract",
+      "reason": "Execution plan references a pre-existing regression test whose historical filename remains unchanged."
+    },
+    {
+      "path": "docs/superpowers/plans/2026-10-19-arena-canonical-curriculum-ui-materialization.md",
+      "contains": "canonical curriculum in professional UI",
+      "reason": "Accepted plan preserves an originally proposed commit message as execution history; implementation uses canonical Curricolo wording."
+    },
+    {
+      "path": "docs/superpowers/plans/2026-10-19-arena-canonical-curriculum-ui-materialization.md",
+      "contains": "curriculum-alignment",
+      "reason": "Execution plan references the pre-existing workflow filename; workflow renaming is outside this bounded intervention."
+    },
+    {
+      "path": "docs/superpowers/plans/2026-10-19-arena-canonical-curriculum-ui-materialization.md",
+      "contains": "Curriculum Alignment",
+      "reason": "Execution plan references the pre-existing workflow display name; workflow renaming is outside this bounded intervention."
     }
   ]
 }
