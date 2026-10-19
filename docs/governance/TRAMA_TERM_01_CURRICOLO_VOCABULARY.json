@@ -257,6 +257,56 @@
       "path": ".github/workflows/assemble-canonical-curricolo-artifact.yml",
       "contains": "src/features/curriculum/",
       "reason": "Assembly workflow must write the generated canonical Curricolo artifact into the pre-existing legacy directory; directory renaming is outside this bounded intervention."
+    },
+    {
+      "path": "src/features/curriculum/components/ProfessionalCurriculumReader.tsx",
+      "contains": "data-canonical-curriculum-entry",
+      "reason": "Published reader machine marker is retained for compatibility with existing Arena regression contracts; visible and domain language remains curricolo."
+    },
+    {
+      "path": "src/features/curriculum/components/ProfessionalCurriculumReader.tsx",
+      "contains": "data-curriculum-primary-task",
+      "reason": "Published ARENA UX machine attribute is retained for compatibility while teacher-facing vocabulary remains curricolo."
+    },
+    {
+      "path": "src/features/curriculum/components/ProfessionalCurriculumReader.tsx",
+      "contains": "data-curriculum-presentation",
+      "reason": "Published ARENA UX machine attribute is retained for compatibility while teacher-facing vocabulary remains curricolo."
+    },
+    {
+      "path": "src/features/curriculum/components/ProfessionalCurriculumReader.tsx",
+      "contains": "data-curriculum-ux-contract",
+      "reason": "Published ARENA UX machine attribute is retained for compatibility while teacher-facing vocabulary remains curricolo."
+    },
+    {
+      "path": "src/features/curriculum/components/ProfessionalCurriculumReader.tsx",
+      "contains": "data-curriculum-read-state",
+      "reason": "Reader integrity state stays in the established machine-attribute namespace; the attribute is not teacher-facing copy."
+    },
+    {
+      "path": "src/features/curriculum/components/ProfessionalCurriculumReader.tsx",
+      "contains": "data-curriculum-domain-catalog",
+      "reason": "Reader catalog instrumentation stays in the established machine-attribute namespace for regression compatibility."
+    },
+    {
+      "path": "src/features/curriculum/components/ProfessionalCurriculumReader.tsx",
+      "contains": "data-open-curriculum-discipline",
+      "reason": "Reader action instrumentation stays in the established machine-attribute namespace for regression compatibility."
+    },
+    {
+      "path": "src/features/curriculum/components/ProfessionalCurriculumReader.tsx",
+      "contains": "DEPARTMENT_CURRICULUM_",
+      "reason": "Historical department publication constants are retained temporarily only inside the subordinate Documento provenance projection."
+    },
+    {
+      "path": "src/features/curriculum/components/ProfessionalCurriculumReader.tsx",
+      "contains": "data-curriculum-section",
+      "reason": "Existing document-section machine marker is retained while the subordinate Documento projection is migrated in the next bounded TDD slice."
+    },
+    {
+      "path": "src/features/curriculum/components/ProfessionalCurriculumReader.tsx",
+      "contains": "DepartmentCurriculumPublication",
+      "reason": "Historical publication component remains temporarily only in the subordinate Documento projection pending its canonical read-model migration."
     }
   ]
 }
