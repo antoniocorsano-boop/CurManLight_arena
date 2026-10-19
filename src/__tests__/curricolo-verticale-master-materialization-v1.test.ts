@@ -1,4 +1,8 @@
 import { describe, expect, it } from 'vitest';
+import {
+  MemoryCurriculumPersistenceBackend,
+  createCurriculumRepositories,
+} from '../domain/curriculum/persistence';
 import { materializeCurricoloVerticaleMasterV1 } from '../domain/transfer/curricoloVerticaleMasterMaterializationV1';
 
 const PRIMARY = [
@@ -105,7 +109,10 @@ function buildMasterFixture(): string {
     '9.2 PRIMARIA — QUADRO ANNUALE PROPOSTO DI 33 ORE',
   );
   ROMAN_PRIMARY.forEach(roman => lines.push(`Classe ${roman} — Costituzione. Evidenze: evidenza civica primaria ${roman}.`));
-  lines.push('Stato: MATERIALIZZATO — DISTRIBUZIONE ISTRUTTORIA DA VALIDARE;', '9.3 SECONDARIA DI PRIMO GRADO — QUADRO ANNUALE PROPOSTO DI 33 ORE');
+  lines.push(
+    'Stato: MATERIALIZZATO — DISTRIBUZIONE ISTRUTTORIA DA VALIDARE;',
+    '9.3 SECONDARIA DI PRIMO GRADO — QUADRO ANNUALE PROPOSTO DI 33 ORE',
+  );
   ROMAN_SECONDARY.forEach(roman => lines.push(`Classe ${roman} — Costituzione. Evidenze: evidenza civica secondaria ${roman}.`));
   lines.push(
     'Stato: MATERIALIZZATO — DISTRIBUZIONE ISTRUTTORIA DA VALIDARE;',
@@ -140,14 +147,18 @@ function sourceMaster() {
   };
 }
 
+function materializeFixture() {
+  return materializeCurricoloVerticaleMasterV1({
+    institutionId: 'ics-lorenzo-milani',
+    schoolYearRef: '2026/2027',
+    sourceMaster: sourceMaster(),
+    sourceSnapshot: { format: 'text/plain' as const, content: buildMasterFixture() },
+  });
+}
+
 describe('CAN-CURR-MASTER-00 productive materialization v1', () => {
   it('materializes the complete governed working baseline without inventing approval', () => {
-    const result = materializeCurricoloVerticaleMasterV1({
-      institutionId: 'ics-lorenzo-milani',
-      schoolYearRef: '2026/2027',
-      sourceMaster: sourceMaster(),
-      sourceSnapshot: { format: 'text/plain' as const, content: buildMasterFixture() },
-    });
+    const result = materializeFixture();
 
     expect(result.version.versionNumber).toBe('1.3');
     expect(result.version.status).toBe('under-review');
@@ -173,10 +184,23 @@ describe('CAN-CURR-MASTER-00 productive materialization v1', () => {
     expect(secondaryTech1?.frameworkApplicability.framework).toBe('IN2025');
     expect(secondaryTech2?.frameworkApplicability.framework).toBe('IN2012');
     expect(primaryTech1?.content.obiettivi).toEqual(['obiettivo I']);
-    expect(primaryTech1?.sourceSegmentId).toMatch(/^CAN-CURR-MASTER-00@1\.3:/);
+    expect(primaryTech1?.sourceSegmentId).toBeUndefined();
 
     expect(JSON.stringify(result)).not.toContain('"status":"approved"');
     expect(JSON.stringify(result)).not.toContain('"workStatus":"effective"');
+  });
+
+  it('persists all native master segments without inventing segment ancestry', async () => {
+    const result = materializeFixture();
+    const backend = new MemoryCurriculumPersistenceBackend();
+    const repositories = createCurriculumRepositories(backend);
+
+    await repositories.versions.save(result.version);
+    for (const segment of result.segments) {
+      await repositories.segments.save(segment);
+    }
+
+    expect(await repositories.segments.listByVersion(result.version.id)).toHaveLength(113);
   });
 
   it('fails closed when a required ordinary section is absent', () => {
