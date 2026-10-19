@@ -100,7 +100,7 @@ function ScopeCard({
   });
 
   return (
-    <div className="grid gap-3 xl:grid-cols-2" data-curriculum-node-cards>
+    <div className="grid gap-3 xl:grid-cols-2" data-curricolo-node-cards>
       {nuclei.map((nucleus) => {
         const context = scopeContext(domain, order, scope, nucleus);
         const reviewAvailable = Boolean(onOpenReview && (canOpenReview ? canOpenReview(context) : true));
@@ -108,12 +108,12 @@ function ScopeCard({
           <article
             key={`${scope.segmentId}-${nucleus}`}
             className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5"
-            data-curriculum-unit-card
-            data-curriculum-card-density="compact-disclosure"
+            data-curricolo-unit-card
+            data-curricolo-card-density="compact-disclosure"
           >
             <p className="text-xs font-bold uppercase tracking-wide text-slate-500">Nucleo</p>
             <h4 className="mt-1 text-base font-black text-slate-950">{nucleus}</h4>
-            <dl className="mt-4 space-y-3" data-curriculum-detail-fields="canonical">
+            <dl className="mt-4 space-y-3" data-curricolo-detail-fields="canonical">
               {fields.map((field) => (
                 <div key={field.label}>
                   <dt className="text-xs font-bold uppercase tracking-wide text-indigo-700">{field.label}</dt>
@@ -126,13 +126,13 @@ function ScopeCard({
               type="button"
               onClick={() => onOpenTrama(nucleus)}
               className="mt-4 inline-flex min-h-11 items-center gap-2 rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-2 text-sm font-bold text-indigo-800"
-              data-open-curriculum-trama
+              data-open-curricolo-trama
             >
               <Network className="h-4 w-4" aria-hidden="true" />
               Vedi nella Trama
             </button>
 
-            <details className="mt-3 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2" data-curriculum-context-actions>
+            <details className="mt-3 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2" data-curricolo-context-actions>
               <summary className="cursor-pointer py-1 text-sm font-bold text-slate-700">Altre azioni</summary>
               <div className="mt-2 grid gap-2 sm:grid-cols-2">
                 {onUseInPlanning && scope.targetClass && (
@@ -140,7 +140,7 @@ function ScopeCard({
                     type="button"
                     onClick={() => onUseInPlanning(context)}
                     className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700"
-                    data-use-curriculum-in-planning
+                    data-use-curricolo-in-planning
                   >
                     <Send className="h-4 w-4" aria-hidden="true" />
                     Usa in Progettazione
@@ -151,7 +151,7 @@ function ScopeCard({
                     type="button"
                     onClick={() => onOpenReview?.(context)}
                     className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700"
-                    data-send-curriculum-to-review
+                    data-send-curricolo-to-review
                   >
                     <SearchCheck className="h-4 w-4" aria-hidden="true" />
                     Segnala per il Riesame
@@ -166,7 +166,7 @@ function ScopeCard({
                     type="button"
                     onClick={() => onOpenSource(context)}
                     className="min-h-11 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700"
-                    data-open-curriculum-source
+                    data-open-curricolo-source
                   >
                     Vedi fonte
                   </button>
@@ -176,7 +176,7 @@ function ScopeCard({
                     type="button"
                     onClick={onOpenDocument}
                     className="min-h-11 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700"
-                    data-open-curriculum-document-from-unit
+                    data-open-curricolo-document-from-unit
                   >
                     Apri Documento
                   </button>
@@ -237,9 +237,9 @@ export function CanonicalCurricoloExploreTrama({
   return (
     <section
       className="rounded-2xl border border-indigo-100 bg-gradient-to-b from-indigo-50/70 to-white p-4 shadow-sm sm:p-6"
-      data-curriculum-explore-trama
-      data-curriculum-explore-source="canonical-curricolo-v1.3"
-      data-curriculum-ux-contract="ARENA_UX_CONTRACT@1.0.0"
+      data-curricolo-explore-trama
+      data-curricolo-explore-source="canonical-curricolo-v1.3"
+      data-curricolo-ux-contract="ARENA_UX_CONTRACT@1.0.0"
     >
       <div>
         <p className="text-xs font-bold uppercase tracking-wide text-indigo-700">Consultazione del curricolo</p>
@@ -252,7 +252,7 @@ export function CanonicalCurricoloExploreTrama({
       <div className="mt-6 space-y-5">
         <div>
           <p className="mb-2 text-xs font-bold uppercase tracking-wide text-slate-500">Disciplina, campo o asse</p>
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4" data-curriculum-discipline-selector>
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4" data-curricolo-discipline-selector>
             {model.domains.map((item) => (
               <button
                 key={item.id}
@@ -269,7 +269,7 @@ export function CanonicalCurricoloExploreTrama({
 
         <div>
           <p className="mb-2 text-xs font-bold uppercase tracking-wide text-slate-500">Ordine di scuola</p>
-          <div className="flex flex-wrap gap-2" data-curriculum-order-selector>
+          <div className="flex flex-wrap gap-2" data-curricolo-order-selector>
             {domain.orders.map((item) => (
               <button
                 key={item.id}
@@ -286,7 +286,7 @@ export function CanonicalCurricoloExploreTrama({
 
         <div>
           <p className="mb-2 text-xs font-bold uppercase tracking-wide text-slate-500">Annualità o ambito</p>
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5" data-curriculum-annuality-selector data-annuality-semantics="consultation-only">
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5" data-curricolo-annuality-selector data-annuality-semantics="consultation-only">
             {activeOrder.scopes.map((scope) => (
               <button
                 key={scope.segmentId}
@@ -306,7 +306,7 @@ export function CanonicalCurricoloExploreTrama({
       </div>
 
       {view === 'explore' ? (
-        <div className="mt-7" data-curriculum-focused-explorer>
+        <div className="mt-7" data-curricolo-focused-explorer>
           <div className="mb-4 rounded-2xl border border-slate-200 bg-white p-4 sm:p-5">
             <p className="text-xs font-bold uppercase tracking-wide text-indigo-700">{domain.label}</p>
             <h3 className="mt-1 text-lg font-black text-slate-950 sm:text-xl">{activeOrder.label} · {selectedScope.label}</h3>
@@ -327,7 +327,7 @@ export function CanonicalCurricoloExploreTrama({
           />
         </div>
       ) : (
-        <div className="mt-7" data-curriculum-trama-view>
+        <div className="mt-7" data-curricolo-trama-view>
           <div className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-5">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
               <div>
@@ -351,7 +351,7 @@ export function CanonicalCurricoloExploreTrama({
 
           <div
             className="mt-5 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-4 text-sm leading-6 text-amber-950"
-            data-curriculum-trama-no-inferred-edge
+            data-curricolo-trama-no-inferred-edge
             data-relation-policy="canonical-validated-only"
           >
             Nessun raccordo professionale validato è disponibile in questa versione. Nessuna relazione viene inferita dalla coincidenza del testo e nessun link proposto viene presentato come validato.
