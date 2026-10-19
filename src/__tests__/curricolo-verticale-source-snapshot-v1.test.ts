@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { createCurricoloVerticaleReleaseV1 } from '../domain/transfer/curricoloVerticaleReleaseV1';
+import {
+  createCurricoloVerticaleCompleteReleaseV1,
+  validateCurricoloVerticaleCompleteReleaseV1,
+} from '../domain/transfer/curricoloVerticaleCompleteReleaseV1';
 
 const NOW = '2026-10-19T12:00:00.000Z';
 const MASTER_TEXT = `CAN-CURR-MASTER-00 — CURRICOLO VERTICALE INTEGRALE UNIFICATO 3–14\nSTATO: BASELINE CURRICOLARE CANONICA INTEGRALE — MATERIALIZZATA — DA VALIDARE PROFESSIONALMENTE — NON VIGENTE\n17.11 Esito documentale del gate\nOSA_DOCUMENTARY_COVERAGE_COMPLETE = TRUE`;
@@ -79,7 +82,7 @@ function input() {
 
 describe('canonical master snapshot in vertical release', () => {
   it('carries the complete canonical source snapshot together with the operational projection', () => {
-    const release = createCurricoloVerticaleReleaseV1(input());
+    const release = createCurricoloVerticaleCompleteReleaseV1(input());
 
     expect(release.sourceMaster.masterId).toBe('CAN-CURR-MASTER-00');
     expect(release.sourceMaster.masterVersion).toBe('1.3');
@@ -87,27 +90,28 @@ describe('canonical master snapshot in vertical release', () => {
     expect(release.sourceSnapshot.content).toBe(MASTER_TEXT);
     expect(release.sourceSnapshot.content).toContain('17.11 Esito documentale del gate');
     expect(release.manifest.coverageStatus).toBe('SATISFIED');
+    expect(validateCurricoloVerticaleCompleteReleaseV1(release)).toEqual({ valid: true, errors: [] });
   });
 
   it('rejects a complete provisional release when the canonical source snapshot is absent', () => {
     const value = input();
     const { sourceSnapshot: _sourceSnapshot, ...withoutSnapshot } = value;
 
-    expect(() => createCurricoloVerticaleReleaseV1(withoutSnapshot as never)).toThrow(/sourceSnapshot/i);
+    expect(() => createCurricoloVerticaleCompleteReleaseV1(withoutSnapshot as never)).toThrow(/sourceSnapshot/i);
   });
 
   it('rejects a source marked in force while authority remains provisional', () => {
     const value = input();
-    expect(() => createCurricoloVerticaleReleaseV1({
+    expect(() => createCurricoloVerticaleCompleteReleaseV1({
       ...value,
       sourceMaster: { ...value.sourceMaster, curriculumInForce: true },
     })).toThrow(/curriculumInForce/i);
   });
 
   it('binds snapshot content into the structural footprint', () => {
-    const first = createCurricoloVerticaleReleaseV1(input());
+    const first = createCurricoloVerticaleCompleteReleaseV1(input());
     const value = input();
-    const second = createCurricoloVerticaleReleaseV1({
+    const second = createCurricoloVerticaleCompleteReleaseV1({
       ...value,
       sourceSnapshot: { ...value.sourceSnapshot, content: `${MASTER_TEXT}\nMODIFICA` },
     });
