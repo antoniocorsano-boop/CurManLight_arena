@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
-  MemoryCurriculumPersistenceBackend,
-  createCurriculumRepositories,
-} from '../domain/curriculum/persistence';
+  MemoryCurricoloPersistenceBackend,
+  createCurricoloRepositories,
+} from '../types/curricolo';
+import { CANONICAL_SOURCE_NOT_IN_FORCE_MARKER } from '../domain/transfer/curricoloVerticaleCompleteReleaseV1';
 import { materializeCurricoloVerticaleMasterV1 } from '../domain/transfer/curricoloVerticaleMasterMaterializationV1';
 
 const PRIMARY = [
@@ -128,7 +129,7 @@ function buildMasterFixture(): string {
     '17.11 Esito documentale del gate',
     'OSA_DOCUMENTARY_COVERAGE_COMPLETE = TRUE',
     'HUMAN_PROFESSIONAL_VALIDATION = OPEN',
-    'CURRICULUM_IN_FORCE = NO',
+    CANONICAL_SOURCE_NOT_IN_FORCE_MARKER,
   );
 
   return lines.join('\n');
@@ -142,7 +143,7 @@ function sourceMaster() {
     revisionId: 'drive-revision-fixture',
     materializationState: 'COMPLETE' as const,
     humanProfessionalValidation: 'OPEN' as const,
-    curriculumInForce: false,
+    curricoloVigente: false,
     authority: 'INSTITUTE_CANONICAL_WORKING_BASELINE' as const,
   };
 }
@@ -192,8 +193,8 @@ describe('CAN-CURR-MASTER-00 productive materialization v1', () => {
 
   it('persists all native master segments without inventing segment ancestry', async () => {
     const result = materializeFixture();
-    const backend = new MemoryCurriculumPersistenceBackend();
-    const repositories = createCurriculumRepositories(backend);
+    const backend = new MemoryCurricoloPersistenceBackend();
+    const repositories = createCurricoloRepositories(backend);
 
     await repositories.versions.save(result.version);
     for (const segment of result.segments) {
