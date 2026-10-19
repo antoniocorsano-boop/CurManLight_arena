@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
-  MemoryCurriculumPersistenceBackend,
-  createCurriculumRepositories,
-} from '../domain/curriculum/persistence';
+  MemoryCurricoloPersistenceBackend,
+  createCurricoloRepositories,
+} from '../types/curricolo';
 import {
   createCurricoloVerticaleReleaseV1,
   type CurricoloVerticalePerimeterV1,
@@ -31,10 +31,10 @@ const content = {
   proposals: [],
 };
 
-describe('vertical curriculum repository export v1', () => {
+describe('vertical curricolo repository export v1', () => {
   it('exports only the requested productive version with deterministic ordering and footprint', async () => {
-    const backend = new MemoryCurriculumPersistenceBackend();
-    const repositories = createCurriculumRepositories(backend);
+    const backend = new MemoryCurricoloPersistenceBackend();
+    const repositories = createCurricoloRepositories(backend);
 
     const version = {
       id: 'version-target',
@@ -147,8 +147,8 @@ describe('vertical curriculum repository export v1', () => {
     expect(exported.structuralFootprint.hash).toBe(pure.structuralFootprint.hash);
   });
 
-  it('fails closed when the requested curriculum version does not exist', async () => {
-    const repositories = createCurriculumRepositories(new MemoryCurriculumPersistenceBackend());
+  it('fails closed when the requested curricolo version does not exist', async () => {
+    const repositories = createCurricoloRepositories(new MemoryCurricoloPersistenceBackend());
 
     await expect(exportCurricoloVerticaleFromRepositoriesV1({
       repositories,
