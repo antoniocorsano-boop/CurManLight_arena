@@ -74,11 +74,25 @@ function validateSource(input: CreateCurricoloVerticaleCompleteReleaseV1Input): 
   return errors;
 }
 
-function fullStructuralMaterial(
-  release: Omit<CurricoloVerticaleCompleteReleaseV1, 'structuralFootprint'>,
+function projectionStructuralMaterial(
+  release: Omit<CurricoloVerticaleReleaseV1, 'structuralFootprint'>,
 ): Record<string, unknown> {
   const { issuedAt: _issuedAt, ...stable } = release;
   return stable as unknown as Record<string, unknown>;
+}
+
+function completeStructuralMaterial(
+  release: Omit<CurricoloVerticaleCompleteReleaseV1, 'structuralFootprint'>,
+): Record<string, unknown> {
+  const { issuedAt: _issuedAt, ...stable } = release;
+  const { computedAt: _snapshotComputedAt, ...snapshotFootprint } = stable.sourceSnapshot.contentFootprint;
+  return {
+    ...stable,
+    sourceSnapshot: {
+      ...stable.sourceSnapshot,
+      contentFootprint: snapshotFootprint,
+    },
+  } as unknown as Record<string, unknown>;
 }
 
 export function createCurricoloVerticaleCompleteReleaseV1(
@@ -87,7 +101,8 @@ export function createCurricoloVerticaleCompleteReleaseV1(
   const errors = validateSource(input);
   if (errors.length > 0) throw new Error(errors.join('; '));
 
-  const base = createCurricoloVerticaleReleaseV1(input);
+  const projection = createCurricoloVerticaleReleaseV1(input);
+  const { structuralFootprint: _projectionFootprint, ...projectionBase } = projection;
   const sourceSnapshot: CurricoloVerticaleCanonicalSourceSnapshotV1 = {
     format: 'text/plain',
     content: input.sourceSnapshot.content,
@@ -96,45 +111,51 @@ export function createCurricoloVerticaleCompleteReleaseV1(
       content: input.sourceSnapshot.content,
     }),
   };
-  const completeBase: Omit<CurricoloVerticaleCompleteReleaseV1, 'structuralFootprint'> = {
-    ...base,
+  const withoutFootprint: Omit<CurricoloVerticaleCompleteReleaseV1, 'structuralFootprint'> = {
+    ...projectionBase,
     sourceMaster: { ...input.sourceMaster },
     sourceSnapshot,
   };
-  const { structuralFootprint: _baseFootprint, ...withoutBaseFootprint } = completeBase as CurricoloVerticaleReleaseV1 & {
-    sourceMaster: CurricoloVerticaleCanonicalSourceMasterV1;
-    sourceSnapshot: CurricoloVerticaleCanonicalSourceSnapshotV1;
-  };
 
   return {
-    ...withoutBaseFootprint,
-    structuralFootprint: computeStructuralFootprint(fullStructuralMaterial(withoutBaseFootprint)),
+    ...withoutFootprint,
+    structuralFootprint: computeStructuralFootprint(completeStructuralMaterial(withoutFootprint)),
   };
 }
 
 export function validateCurricoloVerticaleCompleteReleaseV1(
   input: unknown,
 ): { valid: boolean; errors: string[] } {
-  const base = validateCurricoloVerticaleReleaseV1(input);
-  const errors = [...base.errors];
   if (!input || typeof input !== 'object' || Array.isArray(input)) {
-    return { valid: false, errors };
+    return { valid: false, errors: ['release must be an object'] };
   }
 
   const release = input as CurricoloVerticaleCompleteReleaseV1;
+  const errors: string[] = [];
   if (!release.sourceMaster || !release.sourceSnapshot) {
-    errors.push('sourceMaster and sourceSnapshot are required');
-    return { valid: false, errors };
+    return { valid: false, errors: ['sourceMaster and sourceSnapshot are required'] };
   }
+
+  const {
+    sourceMaster: _sourceMaster,
+    sourceSnapshot: _sourceSnapshot,
+    structuralFootprint: _completeFootprint,
+    ...projectionBase
+  } = release;
+  const projection: CurricoloVerticaleReleaseV1 = {
+    ...projectionBase,
+    structuralFootprint: computeStructuralFootprint(projectionStructuralMaterial(projectionBase)),
+  };
+  errors.push(...validateCurricoloVerticaleReleaseV1(projection).errors);
 
   if (release.sourceSnapshot.format !== 'text/plain' || !release.sourceSnapshot.content?.trim()) {
     errors.push('sourceSnapshot content is required');
   } else {
-    const expected = computeStructuralFootprint({
+    const expectedSnapshot = computeStructuralFootprint({
       format: release.sourceSnapshot.format,
       content: release.sourceSnapshot.content,
     });
-    if (expected.hash !== release.sourceSnapshot.contentFootprint?.hash) {
+    if (expectedSnapshot.hash !== release.sourceSnapshot.contentFootprint?.hash) {
       errors.push('sourceSnapshot contentFootprint mismatch');
     }
   }
@@ -154,6 +175,15 @@ export function validateCurricoloVerticaleCompleteReleaseV1(
     if (release.sourceMaster.authority !== 'INSTITUTE_APPROVED_CURRICULUM') {
       errors.push('sourceMaster authority is incompatible with approved authority');
     }
+  }
+
+  const expectedComplete = computeStructuralFootprint(completeStructuralMaterial({
+    ...projectionBase,
+    sourceMaster: release.sourceMaster,
+    sourceSnapshot: release.sourceSnapshot,
+  }));
+  if (expectedComplete.hash !== release.structuralFootprint?.hash) {
+    errors.push('structuralFootprint does not match complete release material');
   }
 
   return { valid: errors.length === 0, errors };
