@@ -252,6 +252,11 @@
       "path": "docs/superpowers/plans/2026-10-19-arena-canonical-curriculum-ui-materialization.md",
       "contains": "gate canonical curriculum UI materialization",
       "reason": "Accepted plan preserves an originally proposed commit message as execution history; implementation uses canonical Curricolo wording."
+    },
+    {
+      "path": ".github/workflows/assemble-canonical-curricolo-artifact.yml",
+      "contains": "src/features/curriculum/",
+      "reason": "Assembly workflow must write the generated canonical Curricolo artifact into the pre-existing legacy directory; directory renaming is outside this bounded intervention."
     }
   ]
 }
