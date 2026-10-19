@@ -358,7 +358,7 @@ export function materializeCurricoloVerticaleMasterV1(
 ): CurricoloVerticaleMasterMaterializationV1 {
   const lines = input.sourceSnapshot.content
     .split(/\r?\n/u)
-    .map(line => line.trim())
+    .map((line, index) => (index === 0 ? line.replace(/^\uFEFF/u, '') : line).trim())
     .filter(Boolean);
   const title = assertCanonicalSource(input, lines);
   const timestamp = sourceDate(lines, input.sourceMaster.masterVersion);
@@ -483,10 +483,8 @@ export function materializeCurricoloVerticaleMasterV1(
         if (!classLine) throw new Error(`${domain.section} ${order} is missing Classe ${roman}`);
         const grade = ROMAN_TO_GRADE[roman];
         const parsed = ordinaryContent(classLine, block);
-        if (domain.domainId !== 'irc') {
-          if (parsed.content.competenze.length === 0 || parsed.content.obiettivi.length === 0 || parsed.content.conoscenze.length === 0 || parsed.content.evidenze.length === 0) {
-            throw new Error(`${domain.section} Classe ${roman} is missing governed curriculum fields`);
-          }
+        if (parsed.content.competenze.length === 0 || parsed.content.obiettivi.length === 0 || parsed.content.conoscenze.length === 0 || parsed.content.evidenze.length === 0) {
+          throw new Error(`${domain.section} Classe ${roman} is missing governed curriculum fields`);
         }
         addSegment({
           order,
@@ -608,8 +606,8 @@ export function materializeCurricoloVerticaleMasterV1(
   }
 
   const ai = section(lines, '10. ALFABETIZZAZIONE ALL’INTELLIGENZA ARTIFICIALE', ['11. INDICE CANONICO DI PROVENIENZA']);
-  const aiText = ai.join(' ');
-  const aiEvidence = taggedValue(aiText, 'Evidenze trasversali:');
+  const aiEvidenceLine = ai.find(value => value.startsWith('Evidenze trasversali:'));
+  const aiEvidence = aiEvidenceLine ? taggedValue(aiEvidenceLine, 'Evidenze trasversali:') : undefined;
   if (!aiEvidence) throw new Error('AI literacy is missing Evidenze trasversali');
   const aiSpecs: Array<{ prefix: string; order: SchoolOrder; scope: SegmentScope; suffix: string; gradeForFramework?: string }> = [
     { prefix: 'Infanzia —', order: 'infanzia', scope: { type: 'school-level' }, suffix: 'infanzia' },
