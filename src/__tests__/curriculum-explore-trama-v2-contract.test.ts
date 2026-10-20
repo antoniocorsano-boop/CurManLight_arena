@@ -121,6 +121,25 @@ describe('Curriculum Explore + Trama V2 — ARENA_UX_CONTRACT alignment', () => 
     expect(workspaceSource).toContain('data-canonical-source-review');
   });
 
+  it('adapts canonical discipline identifiers before the planning handoff', () => {
+    for (const [canonicalId, planningId] of [
+      ['lingua-inglese', 'inglese'],
+      ['seconda-lingua-comunitaria-francese', 'secondaLingua'],
+      ['arte-e-immagine', 'arteImmagine'],
+      ['educazione-fisica', 'educazioneFisica'],
+      ['educazione-motoria-fisica', 'educazioneFisica'],
+      ['educazione-civica', 'educazioneCivica'],
+      ['irc', 'religione'],
+      ['latino-lel', 'latino'],
+    ]) {
+      expect(workspaceSource).toContain(`'${canonicalId}': '${planningId}'`);
+    }
+    expect(workspaceSource).toContain('toPlanningDisciplineId(context.disciplineId)');
+    expect(workspaceSource).toContain('if (!planningDisciplineId) return;');
+    expect(workspaceSource).toContain('setDiscipline(planningDisciplineId)');
+    expect(workspaceSource).not.toContain('setDiscipline(context.disciplineId)');
+  });
+
   it('keeps internal governance jargon out of the level-1 curriculum reader', () => {
     const level1Sources = `${professionalReaderSource}\n${exploreTramaSource}`.toLowerCase();
     for (const forbiddenPhrase of [
