@@ -188,8 +188,9 @@ async function noHorizontalOverflow(page) {
       );
       const tramaText = (await tramaView.innerText()).toLowerCase();
       check(
-        'Trama explicitly refuses inferred or merely proposed links',
-        tramaText.includes('nessun raccordo professionale validato') && tramaText.includes('nessuna relazione viene inferita')
+        'Trama explains the fail-closed state in teacher-facing language',
+        tramaText.includes('non sono ancora disponibili raccordi validati per questo contenuto') &&
+          tramaText.includes('solo dopo la validazione professionale')
       );
       check('Trama remains readable without page-level horizontal overflow', await noHorizontalOverflow(page));
 
