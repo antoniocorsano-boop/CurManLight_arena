@@ -19,7 +19,7 @@ type HandoffContext = {
 
 type ReaderCallbacks = {
   onUseInPlanning?: (context: HandoffContext) => void;
-  canUseInPlanning?: (context: HandoffContext) => boolean;
+  canUseInPlanning?: (context: { disciplineId: string }) => boolean;
   onOpenReview?: (context: HandoffContext) => void;
   canOpenReview?: (context: HandoffContext) => boolean;
 };
