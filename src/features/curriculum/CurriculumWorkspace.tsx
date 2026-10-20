@@ -26,7 +26,7 @@ const PLANNING_DISCIPLINE_ID_BY_CANONICAL: Record<string, string> = {
   'educazione-fisica': 'educazioneFisica',
   'educazione-motoria-fisica': 'educazioneFisica',
   'educazione-civica': 'educazioneCivica',
-  irc: 'religione',
+  'irc': 'religione',
   'latino-lel': 'latino',
 };
 
