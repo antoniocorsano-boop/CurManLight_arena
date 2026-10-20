@@ -19,6 +19,7 @@ type HandoffContext = {
 
 type ReaderCallbacks = {
   onUseInPlanning?: (context: HandoffContext) => void;
+  canUseInPlanning?: (context: HandoffContext) => boolean;
   onOpenReview?: (context: HandoffContext) => void;
   canOpenReview?: (context: HandoffContext) => boolean;
 };
@@ -28,6 +29,7 @@ function renderReader(options: ReaderCallbacks = {}) {
     <ProfessionalCurriculumReader
       institutionalProfile={getA07InstitutionalDocumentRead(createEmptyInstitutionalArchive())}
       onUseInPlanning={options.onUseInPlanning ?? vi.fn()}
+      canUseInPlanning={options.canUseInPlanning ?? (() => true)}
       onOpenReview={options.onOpenReview ?? vi.fn()}
       canOpenReview={options.canOpenReview ?? (() => false)}
       onOpenSource={vi.fn()}
@@ -109,6 +111,17 @@ describe('G5 curricolo information architecture', () => {
 
     expect(screen.getByRole('button', { name: 'Classi I–II' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Classi III–V' })).toBeInTheDocument();
+  });
+
+  it('hides the planning handoff when the selected domain has no compatible planning consumer', async () => {
+    const user = userEvent.setup();
+    renderReader({ canUseInPlanning: (context) => context.disciplineId !== 'ai-literacy' });
+
+    await user.click(screen.getByRole('button', { name: 'Alfabetizzazione all’intelligenza artificiale' }));
+    await user.click(screen.getByRole('button', { name: 'Scuola primaria' }));
+    await user.click(screen.getAllByText('Altre azioni')[0]);
+
+    expect(screen.queryByRole('button', { name: 'Usa in Progettazione' })).not.toBeInTheDocument();
   });
 
   it('passes machine order and native class identifiers to contextual handoffs', async () => {
