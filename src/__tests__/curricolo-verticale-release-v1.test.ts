@@ -9,6 +9,7 @@ import {
   createCurricoloVerticaleReleaseV1,
   validateCurricoloVerticaleReleaseV1,
 } from '../domain/transfer/curricoloVerticaleReleaseV1';
+import { computeStructuralFootprint } from '../domain/transfer/signatures';
 
 const NOW = '2026-10-19T12:00:00.000Z';
 
@@ -157,6 +158,11 @@ function validInput(issuedAt = NOW) {
   };
 }
 
+function refreshReleaseFootprint(release: ReturnType<typeof createCurricoloVerticaleReleaseV1>) {
+  const { structuralFootprint: _structuralFootprint, issuedAt: _issuedAt, ...stable } = release;
+  release.structuralFootprint = computeStructuralFootprint(stable as unknown as Record<string, unknown>);
+}
+
 describe('TRAMA_CURRICOLO_VERTICALE_RELEASE_V1', () => {
   it('emits one governed release covering infancy, primary and lower secondary', () => {
     const release = createCurricoloVerticaleReleaseV1(validInput());
@@ -191,6 +197,13 @@ describe('TRAMA_CURRICOLO_VERTICALE_RELEASE_V1', () => {
     );
   });
 
+  it('rejects an undeclared institutional perimeter before claiming completeness', () => {
+    expect(() => createCurricoloVerticaleReleaseV1({
+      ...validInput(),
+      perimeter: { expected: [], intentionallyNotApplicable: [] },
+    })).toThrow(/perimeter|expected/i);
+  });
+
   it('rejects APPROVED authority without verifiable Arena authority evidence', () => {
     expect(() => createCurricoloVerticaleReleaseV1({
       ...validInput(),
@@ -207,6 +220,32 @@ describe('TRAMA_CURRICOLO_VERTICALE_RELEASE_V1', () => {
       ...input,
       nodes: [{ ...input.nodes[0], versionId: 'other-version' }, ...input.nodes.slice(1)],
     })).toThrow(/version/i);
+  });
+
+  it('returns errors instead of throwing for malformed scalar or graph members', () => {
+    const scalar = structuredClone(createCurricoloVerticaleReleaseV1(validInput()));
+    scalar.institutionId = 42 as never;
+    expect(() => validateCurricoloVerticaleReleaseV1(scalar)).not.toThrow();
+    expect(validateCurricoloVerticaleReleaseV1(scalar).valid).toBe(false);
+
+    const graph = structuredClone(createCurricoloVerticaleReleaseV1(validInput()));
+    graph.segments[0] = null as never;
+    expect(() => validateCurricoloVerticaleReleaseV1(graph)).not.toThrow();
+    expect(validateCurricoloVerticaleReleaseV1(graph).valid).toBe(false);
+  });
+
+  it('rebuilds coverage from actual segments instead of trusting supplied manifest status', () => {
+    const release = structuredClone(createCurricoloVerticaleReleaseV1(validInput()));
+    release.segments = release.segments.filter(item => item.schoolLevel !== 'primaria');
+    release.nodes = release.nodes.filter(item => item.segmentId !== 'seg-primaria-italiano');
+    release.verticalLinks = [];
+    release.manifest.missing = [];
+    release.manifest.coverageStatus = 'SATISFIED';
+    refreshReleaseFootprint(release);
+
+    const validation = validateCurricoloVerticaleReleaseV1(release);
+    expect(validation.valid).toBe(false);
+    expect(validation.errors.join(' ')).toMatch(/manifest|coverage|missing/i);
   });
 
   it('keeps the structural footprint stable when only issuedAt changes', () => {
