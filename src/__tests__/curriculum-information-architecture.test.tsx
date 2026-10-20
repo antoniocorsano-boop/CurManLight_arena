@@ -1,4 +1,3 @@
-import type { ComponentProps } from 'react';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
@@ -6,13 +5,25 @@ import { describe, expect, it, vi } from 'vitest';
 import { createEmptyInstitutionalArchive, getA07InstitutionalDocumentRead } from '../domain/institution';
 import { ProfessionalCurriculumReader } from '../features/curriculum/components/ProfessionalCurriculumReader';
 
-type ReaderProps = ComponentProps<typeof ProfessionalCurriculumReader>;
+type HandoffContext = {
+  disciplineId: string;
+  disciplineLabel: string;
+  order: string;
+  annualityId: string;
+  annualityTitle: string;
+  classLabel: string;
+  targetClass: string;
+  nucleus: string;
+  references: string[];
+};
 
-function renderReader(options: {
-  onUseInPlanning?: ReaderProps['onUseInPlanning'];
-  onOpenReview?: ReaderProps['onOpenReview'];
-  canOpenReview?: ReaderProps['canOpenReview'];
-} = {}) {
+type ReaderCallbacks = {
+  onUseInPlanning?: (context: HandoffContext) => void;
+  onOpenReview?: (context: HandoffContext) => void;
+  canOpenReview?: (context: HandoffContext) => boolean;
+};
+
+function renderReader(options: ReaderCallbacks = {}) {
   return render(
     <ProfessionalCurriculumReader
       institutionalProfile={getA07InstitutionalDocumentRead(createEmptyInstitutionalArchive())}
@@ -76,7 +87,7 @@ describe('G5 curricolo information architecture', () => {
 
   it('passes machine order and native class identifiers to contextual handoffs', async () => {
     const user = userEvent.setup();
-    const onUseInPlanning = vi.fn<NonNullable<ReaderProps['onUseInPlanning']>>();
+    const onUseInPlanning = vi.fn<(context: HandoffContext) => void>();
     renderReader({ onUseInPlanning });
 
     await user.click(screen.getByRole('button', { name: 'Tecnologia' }));
