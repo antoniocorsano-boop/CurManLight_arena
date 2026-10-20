@@ -19,6 +19,7 @@ type HandoffContext = {
 
 type ReaderCallbacks = {
   onUseInPlanning?: (context: HandoffContext) => void;
+  canUseInPlanning?: (context: HandoffContext) => boolean;
   onOpenReview?: (context: HandoffContext) => void;
   canOpenReview?: (context: HandoffContext) => boolean;
 };
@@ -28,6 +29,7 @@ function renderReader(options: ReaderCallbacks = {}) {
     <ProfessionalCurriculumReader
       institutionalProfile={getA07InstitutionalDocumentRead(createEmptyInstitutionalArchive())}
       onUseInPlanning={options.onUseInPlanning ?? vi.fn()}
+      canUseInPlanning={options.canUseInPlanning ?? (() => true)}
       onOpenReview={options.onOpenReview ?? vi.fn()}
       canOpenReview={options.canOpenReview ?? (() => false)}
       onOpenSource={vi.fn()}
@@ -113,7 +115,7 @@ describe('G5 curricolo information architecture', () => {
 
   it('does not expose the planning handoff for AI literacy', async () => {
     const user = userEvent.setup();
-    renderReader();
+    renderReader({ canUseInPlanning: (context) => context.disciplineId !== 'ai-literacy' });
 
     await user.click(screen.getByRole('button', { name: 'Alfabetizzazione all’intelligenza artificiale' }));
     await user.click(screen.getByRole('button', { name: 'Scuola secondaria di primo grado' }));
