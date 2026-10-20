@@ -107,4 +107,22 @@ describe('governed institute vertical perimeter v1', () => {
       intentionallyNotApplicable: [],
     })).toThrow(/primaria/i);
   });
+
+  it('normalizes grade-range order before overlap detection', () => {
+    expect(() => buildCurricoloVerticalePerimeterV1({
+      schoolOrders: ['primaria'],
+      expectedScopes: [{
+        schoolOrder: 'primaria',
+        scope: { type: 'grade-range', grades: ['1', '2'] },
+        domainId: 'italiano',
+        domainKind: 'DISCIPLINA',
+      }],
+      intentionallyNotApplicable: [{
+        schoolOrder: 'primaria',
+        scope: { type: 'grade-range', grades: ['2', '1'] },
+        domainId: 'italiano',
+        domainKind: 'DISCIPLINA',
+      }],
+    })).toThrow(/both expected and intentionally not applicable/i);
+  });
 });
