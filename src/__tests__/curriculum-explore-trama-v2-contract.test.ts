@@ -23,10 +23,7 @@ const annualizedSections = DEPARTMENT_CURRICULUM_SECTIONS.filter(
 const ux = JSON.parse(uxContractRaw) as {
   contract_id: string;
   curriculum: { projections: string[]; annuality_selector_semantics: string };
-  document: {
-    must_not_be_required_for_ordinary_curriculum_consultation: boolean;
-    must_not_be_a_second_source_of_truth: boolean;
-  };
+  document: { must_not_be_a_second_source_of_truth: boolean };
 };
 
 function findAnnuality(title: string): CurriculumAnnualityProjection {
@@ -93,8 +90,9 @@ describe('Curriculum Explore + Trama V2 — ARENA_UX_CONTRACT alignment', () => 
     expect(professionalReaderSource).toContain('domain.orders.map');
     expect(professionalReaderSource).toContain('order.scopes.map');
     expect(professionalReaderSource).toContain('Questa proiezione sequenziale legge la stessa versione strutturata usata da Esplora e Trama.');
-    expect(professionalReaderSource).not.toContain('DEPARTMENT_CURRICULUM_DOC_ID');
-    expect(ux.document.must_not_be_required_for_ordinary_curriculum_consultation).toBe(true);
+    expect(professionalReaderSource).not.toContain('1VYNvik8oLAVWjwB5Y_Q960D62t-eUZRc');
+    expect(professionalReaderSource).not.toContain('1KNjcyBzNAOsK-1FD1_HpasN9cyfASQTm');
+    expect(professionalReaderSource).toContain('onClick={() => setMode(\'document\')}');
     expect(ux.document.must_not_be_a_second_source_of_truth).toBe(true);
   });
 
