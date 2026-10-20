@@ -131,13 +131,6 @@ function validateReceivedSource(release: UnknownRecord): string[] {
   return errors;
 }
 
-function projectionStructuralMaterial(
-  release: Omit<CurricoloVerticaleReleaseV1, 'structuralFootprint'>,
-): Record<string, unknown> {
-  const { issuedAt: _issuedAt, ...stable } = release;
-  return stable as unknown as Record<string, unknown>;
-}
-
 function completeStructuralMaterial(
   release: Omit<CurricoloVerticaleCompleteReleaseV1, 'structuralFootprint'>,
 ): Record<string, unknown> {
