@@ -116,8 +116,14 @@ export function CurriculumWorkspace(props: CurriculumWorkspaceProps) {
           data-hcm-level="3"
           data-legacy-curriculum-disclosure
           data-legacy-default="collapsed"
+          data-legacy-role="historical-only"
         >
-          <summary className="cursor-pointer text-sm font-bold text-slate-700">Archivio precedente</summary>
+          <summary className="cursor-pointer">
+            <span className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+              <span className="text-sm font-bold text-slate-700">Archivio precedente</span>
+              <span className="text-xs font-semibold text-slate-500">Materiale storico · non corrente</span>
+            </span>
+          </summary>
           <div className="mt-3 space-y-3 text-sm leading-6 text-slate-600">
             <p>
               Qui resta disponibile la vecchia copia locale per consultazione storica. Non è il curricolo corrente dell’Istituto.
