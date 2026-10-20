@@ -162,13 +162,13 @@ const projectScope = (
     };
   }
 
-  const targetClass = romanGrade(segment.scope.grade);
+  const gradeLabel = romanGrade(segment.scope.grade);
   return {
     segmentId: segment.id,
     type: 'grade',
     grades: [segment.scope.grade],
-    label: `Classe ${targetClass}`,
-    targetClass,
+    label: `Classe ${gradeLabel}`,
+    targetClass: segment.scope.grade,
     content: segment.content,
     workStatus: segment.workStatus,
   };
