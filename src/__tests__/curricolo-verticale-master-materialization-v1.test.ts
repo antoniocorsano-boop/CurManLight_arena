@@ -50,8 +50,18 @@ describe('CAN-CURR-MASTER-00 productive materialization v1', () => {
     const latinIII = result.segments.find(item => item.id === 'can-curr-master-00-secondaria-latino-lel-3');
 
     expect(infancy?.content.competenze).toEqual(['competenza di campo']);
+    expect(infancy?.content.obiettivi).toEqual([
+      '3 anni — obiettivo 3',
+      '4 anni — obiettivo 4',
+      '5 anni — obiettivo 5',
+    ]);
+    expect(infancy?.content.conoscenze).toEqual([
+      '3 anni — conoscenza 3',
+      '4 anni — conoscenza 4',
+      '5 anni — conoscenza 5',
+    ]);
+    expect(JSON.stringify(infancy?.content.competenze)).not.toContain('3 anni —');
     expect(latinIII?.content.evidenze).toEqual(['evidenza latino III']);
-    expect(JSON.stringify(infancy?.content)).not.toContain('3 anni —');
     expect(JSON.stringify(latinIII?.content)).not.toContain('Stato curricolare');
   });
 
