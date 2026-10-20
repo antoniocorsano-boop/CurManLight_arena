@@ -19,6 +19,32 @@ function toSchoolOrder(value: string): SchoolOrder | null {
   return null;
 }
 
+const PLANNING_DISCIPLINE_ID_BY_CANONICAL: Record<string, string> = {
+  'lingua-inglese': 'inglese',
+  'seconda-lingua-comunitaria-francese': 'secondaLingua',
+  'arte-e-immagine': 'arteImmagine',
+  'educazione-fisica': 'educazioneFisica',
+  'educazione-motoria-fisica': 'educazioneFisica',
+  'educazione-civica': 'educazioneCivica',
+  irc: 'religione',
+  'latino-lel': 'latino',
+};
+
+const PLANNING_DISCIPLINE_PASSTHROUGH = new Set([
+  'italiano',
+  'storia',
+  'geografia',
+  'matematica',
+  'scienze',
+  'tecnologia',
+  'musica',
+]);
+
+function toPlanningDisciplineId(value: string): string | null {
+  if (PLANNING_DISCIPLINE_PASSTHROUGH.has(value)) return value;
+  return PLANNING_DISCIPLINE_ID_BY_CANONICAL[value] ?? null;
+}
+
 export function CurriculumWorkspace(props: CurriculumWorkspaceProps) {
   const { setActiveCurricoloView, setActiveProgTab, setOrder, setDiscipline, institutionalArchive } = useCurriculumStore();
   const institutionalConfiguration = getInstitutionalConfigurationSummary(institutionalArchive);
@@ -32,13 +58,16 @@ export function CurriculumWorkspace(props: CurriculumWorkspaceProps) {
   };
 
   const applyCurriculumContext = (context: CurriculumExploreContext) => {
+    const planningDisciplineId = toPlanningDisciplineId(context.disciplineId);
+    if (!planningDisciplineId) return;
     const schoolOrder = toSchoolOrder(context.order);
     if (schoolOrder) setOrder(schoolOrder);
-    setDiscipline(context.disciplineId);
+    setDiscipline(planningDisciplineId);
     if (context.targetClass) props.setTargetClass(context.targetClass);
   };
 
   const useInPlanning = (context: CurriculumExploreContext) => {
+    if (!toPlanningDisciplineId(context.disciplineId)) return;
     applyCurriculumContext(context);
     setActiveProgTab('annuale');
     props.handleTabSwitch('progetta-annuale');
