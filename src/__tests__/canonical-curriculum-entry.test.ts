@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import workspaceSource from '../features/curriculum/CurriculumWorkspace.tsx?raw';
 import professionalReaderSource from '../features/curriculum/components/ProfessionalCurriculumReader.tsx?raw';
-import exploreTramaSource from '../features/curriculum/components/CanonicalCurricoloExploreTrama.tsx?raw';
 import caseAwareSource from '../features/beta/CaseAwareRevisionSurface.tsx?raw';
 import baselineSource from '../lib/curriculumBaseline.ts?raw';
 import currentSource from '../domain/curriculum/institute/currentSource.ts?raw';
@@ -40,14 +39,11 @@ describe('canonical curriculum entry', () => {
     expect(professionalReaderSource).not.toContain('master canonico');
   });
 
-  it('keeps curricolo annuality consultation independent from review state and uses an explicit handoff to Riesame', () => {
+  it('keeps curricolo consultation independent from review state and uses an explicit handoff to Riesame', () => {
     expect(professionalReaderSource).toContain('CanonicalCurricoloExploreTrama');
-    expect(exploreTramaSource).toContain('data-annuality-semantics="consultation-only"');
-    expect(exploreTramaSource).toContain('data-curricolo-unit-card');
-    expect(exploreTramaSource).toContain('Segnala per il Riesame');
-    expect(exploreTramaSource).toContain('La consultazione resta comunque completa.');
-    expect(exploreTramaSource).not.toContain('preferredTechnologyAnnuality');
-    expect(exploreTramaSource).not.toContain('targetRoman');
+    expect(professionalReaderSource).toContain('onOpenReview={onOpenReview}');
+    expect(professionalReaderSource).toContain('canOpenReview={canOpenReview}');
+    expect(professionalReaderSource).toContain('onOpenDocument={() => setMode(\'document\')}');
     expect(workspaceSource).toContain('applyCurriculumContext(context)');
     expect(workspaceSource).toContain('setOrder(schoolOrder)');
     expect(workspaceSource).toContain('setDiscipline(context.disciplineId)');
