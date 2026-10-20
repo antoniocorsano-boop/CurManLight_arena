@@ -19,6 +19,32 @@ function toSchoolOrder(value: string): SchoolOrder | null {
   return null;
 }
 
+const PLANNING_DISCIPLINE_ID_BY_CANONICAL: Record<string, string> = {
+  'lingua-inglese': 'inglese',
+  'seconda-lingua-comunitaria-francese': 'secondaLingua',
+  'arte-e-immagine': 'arteImmagine',
+  'educazione-fisica': 'educazioneFisica',
+  'educazione-motoria-fisica': 'educazioneFisica',
+  'educazione-civica': 'educazioneCivica',
+  'irc': 'religione',
+  'latino-lel': 'latino',
+};
+
+const PLANNING_DISCIPLINE_PASSTHROUGH = new Set([
+  'italiano',
+  'storia',
+  'geografia',
+  'matematica',
+  'scienze',
+  'tecnologia',
+  'musica',
+]);
+
+function toPlanningDisciplineId(value: string): string | null {
+  if (PLANNING_DISCIPLINE_PASSTHROUGH.has(value)) return value;
+  return PLANNING_DISCIPLINE_ID_BY_CANONICAL[value] ?? null;
+}
+
 export function CurriculumWorkspace(props: CurriculumWorkspaceProps) {
   const { setActiveCurricoloView, setActiveProgTab, setOrder, setDiscipline, institutionalArchive } = useCurriculumStore();
   const institutionalConfiguration = getInstitutionalConfigurationSummary(institutionalArchive);
@@ -32,13 +58,18 @@ export function CurriculumWorkspace(props: CurriculumWorkspaceProps) {
   };
 
   const applyCurriculumContext = (context: CurriculumExploreContext) => {
+    const planningDisciplineId = toPlanningDisciplineId(context.disciplineId);
+    if (!planningDisciplineId) return;
     const schoolOrder = toSchoolOrder(context.order);
     if (schoolOrder) setOrder(schoolOrder);
-    setDiscipline(context.disciplineId);
+    setDiscipline(planningDisciplineId);
     if (context.targetClass) props.setTargetClass(context.targetClass);
   };
 
+  const canUseInPlanning = (context: { disciplineId: string }) => Boolean(toPlanningDisciplineId(context.disciplineId));
+
   const useInPlanning = (context: CurriculumExploreContext) => {
+    if (!canUseInPlanning(context)) return;
     applyCurriculumContext(context);
     setActiveProgTab('annuale');
     props.handleTabSwitch('progetta-annuale');
@@ -70,6 +101,7 @@ export function CurriculumWorkspace(props: CurriculumWorkspaceProps) {
           institutionalProfile={props.institutionalProfile}
           institutionalConfiguration={institutionalConfiguration}
           onUseInPlanning={useInPlanning}
+          canUseInPlanning={canUseInPlanning}
           onOpenReview={openCurriculumReview}
           canOpenReview={canOpenReview}
           onOpenSource={openSource}
@@ -116,8 +148,14 @@ export function CurriculumWorkspace(props: CurriculumWorkspaceProps) {
           data-hcm-level="3"
           data-legacy-curriculum-disclosure
           data-legacy-default="collapsed"
+          data-legacy-role="historical-only"
         >
-          <summary className="cursor-pointer text-sm font-bold text-slate-700">Archivio precedente</summary>
+          <summary className="cursor-pointer">
+            <span className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+              <span className="text-sm font-bold text-slate-700">Archivio precedente</span>
+              <span className="text-xs font-semibold text-slate-500">Materiale storico · non corrente</span>
+            </span>
+          </summary>
           <div className="mt-3 space-y-3 text-sm leading-6 text-slate-600">
             <p>
               Qui resta disponibile la vecchia copia locale per consultazione storica. Non è il curricolo corrente dell’Istituto.

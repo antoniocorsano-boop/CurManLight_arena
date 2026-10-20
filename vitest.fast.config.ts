@@ -84,6 +84,13 @@ export default defineConfig({
       'src/__tests__/h4-canonical-adoption-handoff.test.ts',
       'src/__tests__/h4-bound-canonical-adoption.test.ts',
       'src/__tests__/curriculum-release-contract-v1.test.ts',
+      'src/__tests__/*-information-architecture.test.tsx',
+      'src/__tests__/curricolo-verticale-release-v1.test.ts',
+      'src/__tests__/curricolo-verticale-master-materialization-v1.test.ts',
+      'src/__tests__/curricolo-verticale-artifact-v1.test.ts',
+      'src/__tests__/curricolo-verticale-artifact-generator-v1.test.mjs',
+      'src/__tests__/canonical-curricolo-document-source.test.mjs',
+      'src/features/**/canonical-curricolo-read-model.test.mjs',
       'src/__tests__/operations-governance-m4s6.test.ts',
       'src/__tests__/a3-planning-source-applicability.test.ts',
       'src/__tests__/teacher-workspace-part1.test.tsx'

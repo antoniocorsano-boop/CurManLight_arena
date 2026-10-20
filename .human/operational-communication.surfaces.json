@@ -41,7 +41,7 @@
         "data-canonical-curriculum-entry",
         "data-curriculum-presentation=\"professional-publication\"",
         "ARENA_UX_CONTRACT@1.0.0",
-        "Dipartimento Scientifico-Matematico-Tecnologico",
+        "Curricolo d’Istituto",
         "Versione di lavoro",
         "Validazione professionale aperta",
         "Percorso verticale 3–14",
@@ -52,9 +52,10 @@
         "Trama",
         "Documento",
         "data-curriculum-professional-explorer",
-        "data-curriculum-document-reader",
-        "data-open-department-curriculum-document",
-        "data-open-department-foundations-document"
+        "data-curricolo-document-reader",
+        "data-curricolo-document-domain",
+        "data-curricolo-document-scope",
+        "data-curricolo-document-content"
       ]
     },
     {

@@ -23,6 +23,7 @@ const annualizedSections = DEPARTMENT_CURRICULUM_SECTIONS.filter(
 const ux = JSON.parse(uxContractRaw) as {
   contract_id: string;
   curriculum: { projections: string[]; annuality_selector_semantics: string };
+  document: { must_not_be_a_second_source_of_truth: boolean };
 };
 
 function findAnnuality(title: string): CurriculumAnnualityProjection {
@@ -78,13 +79,21 @@ describe('Curriculum Explore + Trama V2 — ARENA_UX_CONTRACT alignment', () => 
     expect(professionalReaderSource).not.toContain('Vista web');
   });
 
-  it('keeps Document sequential and subordinate while Explore remains semantic-card based', () => {
+  it('keeps Documento sequential and subordinate while Explore remains semantic-card based', () => {
     expect(exploreTramaSource).toContain('data-curriculum-node-cards');
     expect(exploreTramaSource).toContain('data-curriculum-unit-card');
-    expect(professionalReaderSource).toContain('data-curriculum-integral-web-publication');
-    expect(professionalReaderSource).toContain('Sezione precedente');
-    expect(professionalReaderSource).toContain('Sezione successiva');
-    expect(professionalReaderSource).toContain('Per la consultazione ordinaria torna a Esplora o Trama.');
+    expect(professionalReaderSource).toContain('data-curricolo-document-reader');
+    expect(professionalReaderSource).toContain('data-curricolo-document-domain');
+    expect(professionalReaderSource).toContain('data-curricolo-document-scope');
+    expect(professionalReaderSource).toContain('data-curricolo-document-content');
+    expect(professionalReaderSource).toContain('model.domains.map');
+    expect(professionalReaderSource).toContain('domain.orders.map');
+    expect(professionalReaderSource).toContain('order.scopes.map');
+    expect(professionalReaderSource).toContain('Questa proiezione sequenziale legge la stessa versione strutturata usata da Esplora e Trama.');
+    expect(professionalReaderSource).not.toContain('1VYNvik8oLAVWjwB5Y_Q960D62t-eUZRc');
+    expect(professionalReaderSource).not.toContain('1KNjcyBzNAOsK-1FD1_HpasN9cyfASQTm');
+    expect(professionalReaderSource).toContain('onClick={() => setMode(\'document\')}');
+    expect(ux.document.must_not_be_a_second_source_of_truth).toBe(true);
   });
 
   it('keeps Trama fail-closed with exact repeated-nucleus relations only', () => {
@@ -112,6 +121,25 @@ describe('Curriculum Explore + Trama V2 — ARENA_UX_CONTRACT alignment', () => 
     expect(workspaceSource).toContain('data-canonical-source-review');
   });
 
+  it('adapts canonical discipline identifiers before the planning handoff', () => {
+    for (const [canonicalId, planningId] of [
+      ['lingua-inglese', 'inglese'],
+      ['seconda-lingua-comunitaria-francese', 'secondaLingua'],
+      ['arte-e-immagine', 'arteImmagine'],
+      ['educazione-fisica', 'educazioneFisica'],
+      ['educazione-motoria-fisica', 'educazioneFisica'],
+      ['educazione-civica', 'educazioneCivica'],
+      ['irc', 'religione'],
+      ['latino-lel', 'latino'],
+    ]) {
+      expect(workspaceSource).toContain(`'${canonicalId}': '${planningId}'`);
+    }
+    expect(workspaceSource).toContain('toPlanningDisciplineId(context.disciplineId)');
+    expect(workspaceSource).toContain('if (!planningDisciplineId) return;');
+    expect(workspaceSource).toContain('setDiscipline(planningDisciplineId)');
+    expect(workspaceSource).not.toContain('setDiscipline(context.disciplineId)');
+  });
+
   it('keeps internal governance jargon out of the level-1 curriculum reader', () => {
     const level1Sources = `${professionalReaderSource}\n${exploreTramaSource}`.toLowerCase();
     for (const forbiddenPhrase of [
@@ -128,5 +156,10 @@ describe('Curriculum Explore + Trama V2 — ARENA_UX_CONTRACT alignment', () => 
     }
     expect(professionalReaderSource).toContain('Versione di lavoro');
     expect(professionalReaderSource).toContain('Validazione professionale aperta');
+  });
+
+  it('marks the previous archive as historical before it is opened', () => {
+    expect(workspaceSource).toContain('Materiale storico · non corrente');
+    expect(workspaceSource).toContain('data-legacy-role="historical-only"');
   });
 });

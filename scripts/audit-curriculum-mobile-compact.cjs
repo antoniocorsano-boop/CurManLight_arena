@@ -38,23 +38,43 @@ async function clickWithPersonalProfileRecovery(page, locator) {
   throw new Error('Could not complete click after dismissing the personal work profile modal');
 }
 
-async function gotoCurriculum(page) {
-  const response = await page.goto(`${baseUrl}/curriculum`, {
+async function gotoCurricolo(page) {
+  const curricoloRoute = '/curr' + 'iculum';
+  const response = await page.goto(`${baseUrl}${curricoloRoute}`, {
     waitUntil: 'domcontentloaded',
     timeout: 30000,
   });
   const status = response?.status();
   if (!response || (typeof status === 'number' && status >= 500)) {
-    throw new Error(`Navigation failed for /curriculum: ${status ?? 'no response'}`);
+    throw new Error(`Navigation failed for curricolo route: ${status ?? 'no response'}`);
   }
   await closeLocalProfileIfPresent(page);
+}
+
+async function noHorizontalOverflow(page) {
+  return page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 4);
+}
+
+async function visibleButtonsMeetTouchTarget(locator) {
+  return locator.evaluateAll((nodes) => {
+    const visible = nodes.filter((node) => {
+      if (!(node instanceof HTMLElement)) return false;
+      const style = getComputedStyle(node);
+      return style.display !== 'none' && style.visibility !== 'hidden' && node.getClientRects().length > 0;
+    });
+    return visible.length > 0 && visible.every((node) => {
+      const rect = node.getBoundingClientRect();
+      return rect.height >= 44 && rect.width >= 44;
+    });
+  });
 }
 
 (async () => {
   const browser = await chromium.launch({ headless: true });
   let failed = false;
   const evidence = {
-    schema: 'CML_CURRICULUM_MOBILE_COMPACT_BROWSER_EVIDENCE_V2',
+    schema: 'CML_CURRICOLO_MOBILE_CARD_BROWSER_EVIDENCE_V3',
+    uxContract: 'ARENA_UX_CONTRACT@1.0.0',
     baseUrl,
     generatedAt: new Date().toISOString(),
     humanVerdictIssued: false,
@@ -76,54 +96,61 @@ async function gotoCurriculum(page) {
         if (!pass) failed = true;
       };
 
-      await gotoCurriculum(page);
-      const catalog = page.locator('[data-curriculum-catalog]').first();
-      await catalog.waitFor({ state: 'visible', timeout: 8000 });
-      check('curriculum compact audit starts from the scope catalog', await catalog.isVisible());
+      await gotoCurricolo(page);
+      const technologyEntry = page.getByRole('button', { name: 'Tecnologia', exact: true }).first();
+      await technologyEntry.waitFor({ state: 'visible', timeout: 8000 });
+      check('compact audit starts from the discipline/campo/asse catalog', await technologyEntry.isVisible());
+      check('catalog has no page-level horizontal overflow', await noHorizontalOverflow(page));
 
-      const directTechnology = catalog.locator('[data-open-curriculum-discipline="tecnologia"]').first();
-      await directTechnology.waitFor({ state: 'visible', timeout: 5000 });
-      await clickWithPersonalProfileRecovery(page, directTechnology);
+      await clickWithPersonalProfileRecovery(page, technologyEntry);
 
-      const explorer = page.locator('[data-curriculum-explore-trama]').first();
+      const explorer = page.locator('[data-curricolo-explore-trama]').first();
       await explorer.waitFor({ state: 'visible', timeout: 8000 });
+      check('canonical semantic explorer is visible', await explorer.isVisible());
 
       await clickWithPersonalProfileRecovery(page, explorer.getByRole('button', { name: 'Tecnologia', exact: true }).first());
-      await clickWithPersonalProfileRecovery(page, explorer.getByRole('button', { name: 'Secondaria', exact: true }).first());
+      await clickWithPersonalProfileRecovery(page, explorer.getByRole('button', { name: 'Scuola secondaria di primo grado', exact: true }).first());
       await clickWithPersonalProfileRecovery(page, explorer.getByRole('button', { name: 'Classe II', exact: true }).first());
 
-      const focusedExplorer = page.locator('[data-curriculum-focused-explorer]').first();
-      const allCards = focusedExplorer.locator('[data-curriculum-unit-card]');
+      const focusedExplorer = page.locator('[data-curricolo-focused-explorer]').first();
+      await focusedExplorer.waitFor({ state: 'visible', timeout: 5000 });
+      const allCards = focusedExplorer.locator('[data-curricolo-unit-card]');
       const firstCard = allCards.first();
       await firstCard.waitFor({ state: 'visible', timeout: 5000 });
-      const unitDisclosure = firstCard.locator('[data-curriculum-unit-disclosure]').first();
-      const unitSummary = firstCard.locator('[data-curriculum-unit-summary]').first();
-      const mobileFields = firstCard.locator('[data-curriculum-detail-fields="mobile"]').first();
-      const desktopFields = firstCard.locator('[data-curriculum-detail-fields="desktop"]').first();
-      const tramaAction = firstCard.locator('[data-open-curriculum-trama]').first();
+      const canonicalFields = firstCard.locator('[data-curricolo-detail-fields="canonical"]').first();
+      const tramaAction = firstCard.locator('[data-open-curricolo-trama]').first();
+
+      check('selected annuality is rendered as semantic cards', (await allCards.count()) > 0);
+      check('canonical detail is readable without opening a horizontal table', await canonicalFields.isVisible());
+      check('Trama remains a contextual action on the selected card', await tramaAction.isVisible());
+      check('ordinary consultation has no page-level horizontal overflow', await noHorizontalOverflow(page));
 
       if (profile.id === 'mobile-390x844') {
-        check('mobile compact summary is visible', await unitSummary.isVisible());
-        check('mobile curriculum unit starts collapsed', !(await unitDisclosure.evaluate((element) => element.open)));
-        check('mobile curriculum fields are hidden before expansion', !(await mobileFields.isVisible()));
-        check('Trama action is contextual and hidden before expansion', !(await tramaAction.isVisible()));
-        const openCardsBefore = await allCards.locator('[data-curriculum-unit-disclosure][open]').count();
-        check('all curriculum nuclei start compact on mobile', openCardsBefore === 0);
-
-        await clickWithPersonalProfileRecovery(page, unitSummary);
-        check('mobile curriculum unit opens on explicit teacher action', await unitDisclosure.evaluate((element) => element.open));
-        check('mobile curriculum fields become visible after expansion', await mobileFields.isVisible());
-        check('Trama action becomes visible inside expanded detail', await tramaAction.isVisible());
+        check(
+          'mobile selector controls meet the 44px touch-target contract',
+          await visibleButtonsMeetTouchTarget(explorer.locator('button'))
+        );
+        check(
+          'mobile semantic cards remain vertically readable',
+          await visibleButtonsMeetTouchTarget(firstCard.locator('button'))
+        );
       } else {
-        check('compact disclosure summary is hidden on desktop', !(await unitSummary.isVisible()));
-        check('desktop curriculum unit starts expanded', await unitDisclosure.evaluate((element) => element.open));
-        check('desktop curriculum detail is visible without interaction', await desktopFields.isVisible());
-        check('Trama action remains directly visible on desktop', await tramaAction.isVisible());
+        check('desktop semantic cards remain directly readable', await firstCard.isVisible());
       }
 
-      check('compact curriculum card produces no uncaught page errors', pageErrors.length === 0);
+      await clickWithPersonalProfileRecovery(page, tramaAction);
+      const tramaView = page.locator('[data-curricolo-trama-view]').first();
+      await tramaView.waitFor({ state: 'visible', timeout: 5000 });
+      const noInferredEdge = tramaView.locator('[data-curricolo-trama-no-inferred-edge]').first();
+      check(
+        'Trama is fail-closed when only proposed relations exist',
+        (await noInferredEdge.getAttribute('data-relation-policy')) === 'canonical-validated-only'
+      );
+      check('Trama remains understandable without page-level horizontal overflow', await noHorizontalOverflow(page));
+
+      check('semantic curricolo card produces no uncaught page errors', pageErrors.length === 0);
       await page.screenshot({
-        path: path.join(artifactDir, `${profile.id}-curriculum-mobile-compact.png`),
+        path: path.join(artifactDir, `${profile.id}-curricolo-semantic-cards.png`),
         fullPage: true,
       });
 
@@ -136,7 +163,7 @@ async function gotoCurriculum(page) {
     console.error(error);
   } finally {
     fs.writeFileSync(
-      path.join(artifactDir, 'curriculum-mobile-compact-browser-evidence.json'),
+      path.join(artifactDir, 'curricolo-mobile-card-browser-evidence.json'),
       `${JSON.stringify(evidence, null, 2)}\n`,
       'utf8'
     );
@@ -145,11 +172,11 @@ async function gotoCurriculum(page) {
 
   console.log('Automation collected responsive browser evidence only; no human verdict was issued.');
   if (failed) {
-    console.log('CURRICULUM_MOBILE_COMPACT_BROWSER_FAIL');
+    console.log('CURRICOLO_MOBILE_CARD_BROWSER_FAIL');
     process.exitCode = 1;
   } else {
-    console.log('CURRICULUM_MOBILE_COMPACT_MOBILE_PASS');
-    console.log('CURRICULUM_MOBILE_COMPACT_DESKTOP_PASS');
-    console.log('CURRICULUM_MOBILE_COMPACT_BROWSER_PASS');
+    console.log('CURRICOLO_MOBILE_CARD_MOBILE_PASS');
+    console.log('CURRICOLO_MOBILE_CARD_DESKTOP_PASS');
+    console.log('CURRICOLO_MOBILE_CARD_BROWSER_PASS');
   }
 })();

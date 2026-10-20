@@ -1,73 +1,81 @@
 import { useState } from 'react';
-import { ArrowLeft, BookOpen, ExternalLink, FileText, Layers3, Network } from 'lucide-react';
+import { ArrowLeft, BookOpen, FileText, Network } from 'lucide-react';
 import type { A07InstitutionalDocumentRead, InstitutionalConfigurationSummary } from '../../../domain/institution';
 import {
-  DEPARTMENT_CURRICULUM_MANIFEST,
-  DEPARTMENT_CURRICULUM_SECTIONS,
-  DepartmentCurriculumPublication,
-} from './DepartmentCurriculumPublication';
-import {
-  CurriculumExploreTrama,
   type CurriculumExploreContext,
   type CurriculumExploreView,
 } from './CurriculumExploreTrama';
-import { AVAILABLE_DEPARTMENT_PUBLICATION, CURRICULUM_AREA_REGISTRY } from '../data/curriculumPublicationRegistry';
+import { CanonicalCurricoloExploreTrama } from './CanonicalCurricoloExploreTrama';
+import artifact from '../data/canonicalCurricoloV13.generated.json';
+import {
+  loadCanonicalCurricoloReadModel,
+  type CanonicalCurricoloScope,
+} from '../data/canonicalCurricoloReadModel';
 
-const DEPARTMENT_CURRICULUM_DOC_ID = '1VYNvik8oLAVWjwB5Y_Q960D62t-eUZRc';
-const DEPARTMENT_FOUNDATIONS_DOC_ID = '1KNjcyBzNAOsK-1FD1_HpasN9cyfASQTm';
-const DEPARTMENT_CURRICULUM_DOC_URL = `https://docs.google.com/document/d/${DEPARTMENT_CURRICULUM_DOC_ID}/edit`;
-const DEPARTMENT_CURRICULUM_PREVIEW_URL = `https://docs.google.com/document/d/${DEPARTMENT_CURRICULUM_DOC_ID}/preview`;
-const DEPARTMENT_FOUNDATIONS_DOC_URL = `https://docs.google.com/document/d/${DEPARTMENT_FOUNDATIONS_DOC_ID}/edit`;
+const CANONICAL_READ_RESULT = loadCanonicalCurricoloReadModel(artifact);
 
 type CurriculumPresentationMode = CurriculumExploreView | 'document' | 'catalog';
-
-type CurriculumSectionNavigation = {
-  id: string;
-  number: number;
-};
-
-const SECTION_NAVIGATION: CurriculumSectionNavigation[] = [
-  { id: 'identita', number: 1 },
-  { id: 'quadro', number: 2 },
-  { id: 'architettura', number: 3 },
-  { id: 'profilo', number: 4 },
-  { id: 'stem', number: 5 },
-  { id: 'verticalita', number: 6 },
-  { id: 'matematica', number: 7 },
-  { id: 'scienze', number: 8 },
-  { id: 'tecnologia', number: 9 },
-  { id: 'informatica', number: 10 },
-  { id: 'assi', number: 11 },
-  { id: 'metodologie', number: 12 },
-  { id: 'inclusione', number: 13 },
-  { id: 'valutazione', number: 14 },
-  { id: 'monitoraggio', number: 15 },
-  { id: 'validazione', number: 16 },
-];
 
 type ProfessionalCurriculumReaderProps = {
   institutionalProfile: A07InstitutionalDocumentRead;
   institutionalConfiguration?: InstitutionalConfigurationSummary;
   onUseInPlanning: (context: CurriculumExploreContext) => void;
+  canUseInPlanning: (context: { disciplineId: string }) => boolean;
   onOpenReview: (context: CurriculumExploreContext) => void;
   canOpenReview: (context: CurriculumExploreContext) => boolean;
   onOpenSource: (context: CurriculumExploreContext) => void;
 };
 
+type CanonicalDocumentField = {
+  label: string;
+  values: string[];
+};
+
+function canonicalDocumentFields(scope: CanonicalCurricoloScope): CanonicalDocumentField[] {
+  const fields: CanonicalDocumentField[] = [
+    { label: 'Nuclei fondanti', values: scope.content.nucleiFondanti },
+    { label: 'Traguardi', values: scope.content.traguardi },
+    { label: 'Obiettivi', values: scope.content.obiettivi },
+    { label: 'Conoscenze', values: scope.content.conoscenze },
+    { label: 'Abilità', values: scope.content.abilita },
+    { label: 'Competenze', values: scope.content.competenze },
+    { label: 'Evidenze', values: scope.content.evidenze },
+  ];
+  return fields.filter((field) => field.values.length > 0);
+}
+
+function CanonicalScopeDocumentContent({ scope }: { scope: CanonicalCurricoloScope }) {
+  const fields = canonicalDocumentFields(scope);
+  return (
+    <div className="mt-4 grid gap-4 md:grid-cols-2" data-curricolo-document-content>
+      {fields.map((field) => (
+        <section key={field.label} className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+          <h6 className="text-xs font-black uppercase tracking-wide text-slate-600">{field.label}</h6>
+          <ul className="mt-2 space-y-2 text-sm leading-6 text-slate-700">
+            {field.values.map((value, index) => (
+              <li key={`${field.label}-${index}`} className="flex gap-2">
+                <span aria-hidden="true" className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-indigo-500" />
+                <span>{value}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ))}
+    </div>
+  );
+}
+
 export function ProfessionalCurriculumReader({
   institutionalProfile,
   institutionalConfiguration,
   onUseInPlanning,
+  canUseInPlanning,
   onOpenReview,
   canOpenReview,
   onOpenSource,
 }: ProfessionalCurriculumReaderProps) {
   const [mode, setMode] = useState<CurriculumPresentationMode>('catalog');
-  const [selectedDisciplineId, setSelectedDisciplineId] = useState<string | undefined>(undefined);
-  const [sectionId, setSectionId] = useState(SECTION_NAVIGATION[0].id);
-  const selectedNavigation = SECTION_NAVIGATION.find((section) => section.id === sectionId) ?? SECTION_NAVIGATION[0];
-  const selectedNavigationIndex = SECTION_NAVIGATION.findIndex((section) => section.id === selectedNavigation.id);
-  const selectedSection = DEPARTMENT_CURRICULUM_SECTIONS.find((section) => section.number === selectedNavigation.number) ?? DEPARTMENT_CURRICULUM_SECTIONS[0];
+  const [selectedDomainId, setSelectedDomainId] = useState<string | undefined>(undefined);
   const effectiveConfiguration = institutionalConfiguration ?? {
     phase: institutionalProfile.configured ? 'ACTIVE' : 'UNCONFIGURED',
     instituteDefined: institutionalProfile.configured,
@@ -78,134 +86,81 @@ export function ProfessionalCurriculumReader({
     contextActive: institutionalProfile.configured,
   } satisfies InstitutionalConfigurationSummary;
   const contextActive = effectiveConfiguration.phase === 'ACTIVE';
-  const academicYear = institutionalProfile.academicYearLabel
-    || effectiveConfiguration.academicYearLabel
-    || DEPARTMENT_CURRICULUM_MANIFEST.institution.academicYear;
   const localContextLabel = contextActive
     ? institutionalProfile.instituteName
-    : effectiveConfiguration.phase === 'DRAFT'
-      ? `${effectiveConfiguration.instituteName} · bozza locale`
-      : effectiveConfiguration.phase === 'CONFIRMED_INACTIVE'
-        ? `${effectiveConfiguration.instituteName} · contesto non attivo`
-        : 'Contesto istituzionale non configurato';
+    : effectiveConfiguration.instituteDefined
+      ? effectiveConfiguration.instituteName
+      : 'Curricolo d’Istituto';
 
-  const openAvailablePublication = (disciplineId?: string) => {
-    setSelectedDisciplineId(disciplineId);
+  if (!CANONICAL_READ_RESULT.ok) {
+    return (
+      <section
+        className="rounded-2xl border border-rose-200 bg-rose-50 p-5 shadow-sm sm:p-7"
+        data-canonical-curriculum-entry
+        data-curriculum-primary-task="consultation"
+        data-curriculum-presentation="professional-publication"
+        data-curriculum-ux-contract="ARENA_UX_CONTRACT@1.0.0"
+        data-curriculum-read-state="fail-closed"
+        data-hcm-level="1"
+      >
+        <h1 className="text-xl font-black text-rose-950">Curricolo d’Istituto non verificabile</h1>
+        <p className="mt-2 text-sm leading-6 text-rose-900">
+          La consultazione è stata interrotta perché l’artefatto locale non supera i controlli di integrità e copertura. Nessun fascicolo precedente viene usato come sostituto.
+        </p>
+      </section>
+    );
+  }
+
+  const model = CANONICAL_READ_RESULT.value;
+  const openDomain = (domainId: string) => {
+    setSelectedDomainId(domainId);
     setMode('explore');
   };
-
   const returnToCatalog = () => {
-    setSelectedDisciplineId(undefined);
+    setSelectedDomainId(undefined);
     setMode('catalog');
   };
-
-  const moveSection = (offset: number) => {
-    const nextIndex = selectedNavigationIndex + offset;
-    if (nextIndex < 0 || nextIndex >= SECTION_NAVIGATION.length) return;
-    setSectionId(SECTION_NAVIGATION[nextIndex].id);
-  };
-
   const setExploreView = (view: CurriculumExploreView) => setMode(view);
-
 
   if (mode === 'catalog') {
     return (
       <section
         className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm"
-        data-curriculum-catalog
+        data-canonical-curriculum-entry
         data-curriculum-primary-task="scope-selection"
-        data-curriculum-scope-state={contextActive ? 'configured-institution' : effectiveConfiguration.instituteDefined ? 'defined-inactive-institution' : 'source-only'}
+        data-curriculum-presentation="professional-publication"
         data-curriculum-ux-contract="ARENA_UX_CONTRACT@1.0.0"
+        data-curriculum-read-state="verified-local-artifact"
         data-hcm-level="1"
       >
         <header className="border-b border-slate-200 bg-gradient-to-b from-slate-50 to-white px-5 py-7 sm:px-8 sm:py-10">
           <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-slate-500">{localContextLabel}</p>
-          <h1 className="mt-3 text-2xl font-black tracking-tight text-slate-950 sm:text-4xl">
-            {contextActive ? 'Curricolo d’Istituto' : 'Catalogo curricolare'}
-          </h1>
+          <h1 className="mt-3 text-2xl font-black tracking-tight text-slate-950 sm:text-4xl">{model.identity.title}</h1>
           <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
-            Seleziona prima l’area o una disciplina. Ogni fascicolo mantiene fonte, versione e stato propri: l’interfaccia non estende un fascicolo dipartimentale all’intero curricolo.
+            Seleziona una disciplina, un campo di esperienza o un asse. La consultazione mantiene ordine di scuola, annualità e contenuti così come sono presenti nella versione di lavoro dell’Istituto.
           </p>
-          {!contextActive && (
-            <p className="mt-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-6 text-amber-950" data-curriculum-unconfigured-context>
-              {effectiveConfiguration.phase === 'DRAFT'
-                ? `L’istituto “${effectiveConfiguration.instituteName}” è definito come bozza locale. Il catalogo resta una raccolta di fonti finché la configurazione non viene confermata e attivata.`
-                : effectiveConfiguration.phase === 'CONFIRMED_INACTIVE'
-                  ? `L’istituto “${effectiveConfiguration.instituteName}” è confermato localmente, ma anno e contesto non sono ancora attivi. Le fonti restano consultabili senza dichiararne l’adozione.`
-                  : 'La configurazione locale dell’istituto non è attiva. I contenuti disponibili sotto sono pubblicazioni sorgente tracciate e non attestano, da soli, l’adozione da parte dell’istituto corrente.'}
-            </p>
-          )}
+          <div className="mt-4 flex flex-wrap gap-2 text-xs font-semibold">
+            <span className="rounded-full bg-indigo-50 px-3 py-1.5 text-indigo-800">Versione di lavoro · {model.identity.masterVersion}</span>
+            <span className="rounded-full bg-amber-50 px-3 py-1.5 text-amber-900">Validazione professionale aperta</span>
+            <span className="rounded-full bg-slate-100 px-3 py-1.5 text-slate-700">{model.identity.vigencyLabel}</span>
+            <span className="rounded-full bg-slate-100 px-3 py-1.5 text-slate-700">A.S. {model.identity.schoolYearRef}</span>
+          </div>
         </header>
 
-        <div className="space-y-8 px-4 py-6 sm:px-6 sm:py-8">
-          <section aria-labelledby="curriculum-areas-title">
-            <div className="flex items-start gap-3">
-              <Layers3 className="mt-0.5 h-5 w-5 text-indigo-700" aria-hidden="true" />
-              <div>
-                <h2 id="curriculum-areas-title" className="text-lg font-black text-slate-950">Fascicoli e aree curricolari</h2>
-                <p className="mt-1 text-sm leading-6 text-slate-600">
-                  Le aree non ancora acquisite restano visibili come copertura mancante, senza contenuti simulati.
-                </p>
-              </div>
-            </div>
-
-            <div className="mt-4 grid gap-3 lg:grid-cols-2" data-curriculum-area-catalog>
-              {CURRICULUM_AREA_REGISTRY.map((area) => {
-                const available = area.availability === 'available-pilot';
-                return (
-                  <article key={area.id} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5" data-curriculum-area={area.id}>
-                    <div className="flex flex-wrap items-start justify-between gap-2">
-                      <div>
-                        <p className="text-xs font-bold uppercase tracking-wide text-slate-500">{area.scopeLabel}</p>
-                        <h3 className="mt-1 text-base font-black text-slate-950">{area.label}</h3>
-                      </div>
-                      <span className={`rounded-full px-2.5 py-1 text-[11px] font-bold ${available ? 'bg-indigo-50 text-indigo-800' : 'bg-slate-100 text-slate-600'}`}>
-                        {available ? 'Fascicolo pilota disponibile' : 'Non acquisito nella Beta'}
-                      </span>
-                    </div>
-                    <p className="mt-3 text-sm leading-6 text-slate-600">{area.description}</p>
-                    {available && (
-                      <>
-                        <dl className="mt-3 grid gap-2 text-xs text-slate-600 sm:grid-cols-2">
-                          <div><dt className="font-bold text-slate-800">Fonte del fascicolo</dt><dd>{area.sourceInstitutionName}</dd></div>
-                          <div><dt className="font-bold text-slate-800">Versione</dt><dd>{area.sourceVersionLabel} · A.S. {area.academicYear}</dd></div>
-                        </dl>
-                        <button
-                          type="button"
-                          onClick={() => openAvailablePublication()}
-                          className="mt-4 min-h-11 rounded-xl bg-indigo-600 px-4 py-2 text-sm font-bold text-white hover:bg-indigo-700"
-                          data-open-curriculum-area
-                        >
-                          Apri il fascicolo
-                        </button>
-                      </>
-                    )}
-                  </article>
-                );
-              })}
-            </div>
-          </section>
-
-          <section aria-labelledby="curriculum-disciplines-title" className="rounded-2xl border border-indigo-100 bg-indigo-50/40 p-4 sm:p-5">
-            <p className="text-xs font-bold uppercase tracking-wide text-indigo-700">Accesso diretto</p>
-            <h2 id="curriculum-disciplines-title" className="mt-1 text-lg font-black text-slate-950">Discipline disponibili nel fascicolo pilota</h2>
-            <p className="mt-2 text-sm leading-6 text-slate-600">
-              Apri direttamente una disciplina senza dover attraversare il documento dipartimentale. STEM resta un asse trasversale del fascicolo, non una disciplina autonoma in questa vista.
-            </p>
-            <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4" data-curriculum-direct-discipline-catalog>
-              {AVAILABLE_DEPARTMENT_PUBLICATION.disciplines.map((discipline) => (
-                <button
-                  key={discipline.id}
-                  type="button"
-                  onClick={() => openAvailablePublication(discipline.id)}
-                  className="min-h-11 rounded-xl border border-indigo-200 bg-white px-3 py-2 text-sm font-bold text-indigo-800 shadow-sm hover:border-indigo-400"
-                  data-open-curriculum-discipline={discipline.id}
-                >
-                  {discipline.label}
-                </button>
-              ))}
-            </div>
-          </section>
+        <div className="px-4 py-6 sm:px-6 sm:py-8">
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3" data-curriculum-domain-catalog>
+            {model.domains.map((domain) => (
+              <button
+                key={domain.id}
+                type="button"
+                onClick={() => openDomain(domain.id)}
+                className="min-h-14 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-left text-sm font-black text-slate-900 shadow-sm transition hover:border-indigo-300 hover:bg-indigo-50/30"
+                data-open-curriculum-discipline={domain.id}
+              >
+                {domain.label}
+              </button>
+            ))}
+          </div>
         </div>
       </section>
     );
@@ -233,18 +188,13 @@ export function ProfessionalCurriculumReader({
         </button>
         <div className="mt-5 text-center">
           <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-slate-500">{localContextLabel}</p>
-          <p className="mt-2 text-xs font-bold uppercase tracking-wide text-indigo-700">Fascicolo dipartimentale · versione di lavoro</p>
-          <h1 className="mt-3 text-2xl font-black tracking-tight text-slate-950 sm:text-4xl">Curricolo verticale</h1>
-        <p className="mt-2 text-sm font-bold text-indigo-700 sm:text-base">{DEPARTMENT_CURRICULUM_MANIFEST.institution.department}</p>
-          <p className="mt-1 text-sm text-slate-600">{DEPARTMENT_CURRICULUM_MANIFEST.institution.disciplines.join(' · ')}</p>
-          <p className="mt-3 text-xs leading-5 text-slate-500" data-curriculum-source-identity>
-            Fonte del fascicolo: {DEPARTMENT_CURRICULUM_MANIFEST.institution.name} · {DEPARTMENT_CURRICULUM_MANIFEST.source.versionLabel}
-          </p>
+          <h1 className="mt-3 text-2xl font-black tracking-tight text-slate-950 sm:text-4xl">{model.identity.title}</h1>
+          <p className="mt-2 text-sm font-bold text-indigo-700 sm:text-base">Versione di lavoro · {model.identity.masterVersion}</p>
         </div>
         <div className="mt-4 flex flex-wrap items-center justify-center gap-2 text-xs font-semibold">
-          <span className="rounded-full bg-slate-100 px-3 py-1.5 text-slate-700">A.S. {academicYear}</span>
-          <span className="rounded-full bg-indigo-50 px-3 py-1.5 text-indigo-800">Versione di lavoro</span>
+          <span className="rounded-full bg-slate-100 px-3 py-1.5 text-slate-700">A.S. {model.identity.schoolYearRef}</span>
           <span className="rounded-full bg-amber-50 px-3 py-1.5 text-amber-900">Validazione professionale aperta</span>
+          <span className="rounded-full bg-slate-100 px-3 py-1.5 text-slate-700">{model.identity.vigencyLabel}</span>
           <span className="rounded-full bg-slate-100 px-3 py-1.5 text-slate-700">Percorso verticale 3–14</span>
         </div>
       </header>
@@ -286,15 +236,14 @@ export function ProfessionalCurriculumReader({
 
       {mode !== 'document' ? (
         <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8" data-curriculum-professional-explorer>
-          <CurriculumExploreTrama
-            key={selectedDisciplineId ?? 'department-entry'}
-            sections={DEPARTMENT_CURRICULUM_SECTIONS}
-            initialDisciplineId={selectedDisciplineId}
-            sourceInstitutionName={DEPARTMENT_CURRICULUM_MANIFEST.institution.name}
-            institutionalContextConfigured={contextActive}
+          <CanonicalCurricoloExploreTrama
+            key={selectedDomainId ?? 'canonical-entry'}
+            model={model}
+            initialDomainId={selectedDomainId}
             view={mode}
             onViewChange={setExploreView}
             onUseInPlanning={onUseInPlanning}
+            canUseInPlanning={canUseInPlanning}
             onOpenReview={onOpenReview}
             canOpenReview={canOpenReview}
             onOpenSource={onOpenSource}
@@ -302,127 +251,48 @@ export function ProfessionalCurriculumReader({
           />
         </div>
       ) : (
-        <div className="mx-auto max-w-6xl space-y-5 px-5 py-6 sm:px-8 sm:py-8" data-curriculum-document-reader>
+        <div className="mx-auto max-w-6xl space-y-6 px-5 py-6 sm:px-8 sm:py-8" data-curricolo-document-reader>
           <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5 sm:p-6">
             <p className="text-xs font-bold uppercase tracking-wide text-indigo-700">Documento del curricolo</p>
-            <h2 className="mt-2 text-xl font-black text-slate-950">Curricolo verticale · versione v3.1</h2>
-            <p className="mt-2 text-sm leading-6 text-slate-600">
-              Questa è la resa editoriale completa: premessa, quadro normativo, profilo dello studente, progressioni disciplinari, metodologie, inclusione, valutazione e monitoraggio.
+            <h2 className="mt-2 text-xl font-black text-slate-950">{model.identity.title} · versione {model.identity.masterVersion}</h2>
+            <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
+              Questa proiezione sequenziale legge la stessa versione strutturata usata da Esplora e Trama. Ordini di scuola, annualità e contenuti restano quelli della versione di lavoro sottoposta a validazione professionale.
             </p>
-            <div className="mt-4 flex flex-col gap-2 sm:flex-row">
-              <a
-                href={DEPARTMENT_CURRICULUM_DOC_URL}
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-indigo-600 px-5 py-3 text-sm font-bold text-white hover:bg-indigo-700"
-                data-open-department-curriculum-document
-              >
-                <FileText className="h-4 w-4" aria-hidden="true" />
-                Apri il documento completo
-                <ExternalLink className="h-4 w-4" aria-hidden="true" />
-              </a>
-              <a
-                href={DEPARTMENT_FOUNDATIONS_DOC_URL}
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-5 py-3 text-sm font-bold text-slate-700 hover:border-indigo-300"
-                data-open-department-foundations-document
-              >
-                Fondamenti e tracciabilità
-                <ExternalLink className="h-4 w-4" aria-hidden="true" />
-              </a>
-            </div>
           </div>
 
-          <div className="hidden overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm lg:block" data-curriculum-document-preview>
-            <iframe
-              title="Curricolo verticale del Dipartimento Scientifico-Matematico-Tecnologico"
-              src={DEPARTMENT_CURRICULUM_PREVIEW_URL}
-              className="h-[72vh] w-full border-0"
-            />
-          </div>
-
-          <p className="text-sm leading-6 text-slate-500 lg:hidden">
-            Su smartphone il documento completo si apre in una scheda dedicata, evitando una seconda area di scorrimento dentro la pagina.
-          </p>
-
-          <details className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-5" data-curriculum-integral-web-publication>
-            <summary className="cursor-pointer text-sm font-bold text-slate-700">Consulta l’edizione web integrale per sezione</summary>
-            <p className="mt-3 text-sm leading-6 text-slate-600">
-              Questa lettura conserva l’ordine editoriale del documento. Per la consultazione ordinaria torna a Esplora o Trama.
-            </p>
-
-            <div className="mt-5 space-y-2 lg:hidden">
-              <label htmlFor="curriculum-section" className="text-xs font-bold uppercase tracking-wide text-slate-500">Sezione del documento</label>
-              <select
-                id="curriculum-section"
-                value={sectionId}
-                onChange={(event) => setSectionId(event.target.value)}
-                className="min-h-12 w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-800 shadow-sm focus:border-indigo-500 focus:outline-none"
-                data-curriculum-section-selector
+          <div className="space-y-8">
+            {model.domains.map((domain) => (
+              <section
+                key={domain.id}
+                className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7"
+                data-curricolo-document-domain={domain.id}
               >
-                {SECTION_NAVIGATION.map((navigation) => {
-                  const section = DEPARTMENT_CURRICULUM_SECTIONS.find((item) => item.number === navigation.number);
-                  return <option key={navigation.id} value={navigation.id}>{navigation.number}. {section?.title}</option>;
-                })}
-              </select>
-            </div>
-
-            <div className="mt-5 lg:grid lg:grid-cols-[17rem_minmax(0,1fr)] lg:gap-8">
-              <nav className="hidden lg:block" aria-label="Indice del documento" data-curriculum-desktop-index>
-                <div className="sticky top-4 rounded-2xl border border-slate-200 bg-slate-50 p-3">
-                  <p className="px-2 pb-2 text-xs font-bold uppercase tracking-wide text-slate-500">Indice del documento</p>
-                  <div className="max-h-[72vh] space-y-1 overflow-y-auto pr-1">
-                    {SECTION_NAVIGATION.map((navigation) => {
-                      const section = DEPARTMENT_CURRICULUM_SECTIONS.find((item) => item.number === navigation.number);
-                      const active = navigation.id === sectionId;
-                      return (
-                        <button
-                          key={navigation.id}
-                          type="button"
-                          onClick={() => setSectionId(navigation.id)}
-                          aria-current={active ? 'page' : undefined}
-                          className={`w-full rounded-lg px-3 py-2 text-left text-sm leading-5 transition ${active ? 'bg-white font-bold text-indigo-800 shadow-sm ring-1 ring-indigo-100' : 'text-slate-600 hover:bg-white hover:text-slate-900'}`}
-                        >
-                          <span className="mr-2 text-xs font-bold text-slate-400">{navigation.number}</span>
-                          {section?.title}
-                        </button>
-                      );
-                    })}
-                  </div>
+                <h3 className="text-xl font-black text-slate-950 sm:text-2xl">{domain.label}</h3>
+                <div className="mt-5 space-y-6">
+                  {domain.orders.map((order) => (
+                    <section key={order.id} className="rounded-2xl border border-slate-200 bg-slate-50/60 p-4 sm:p-5">
+                      <h4 className="text-base font-black text-slate-900">{order.label}</h4>
+                      <div className="mt-4 space-y-4">
+                        {order.scopes.map((scope) => (
+                          <article
+                            key={scope.segmentId}
+                            className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-5"
+                            data-curricolo-document-scope={scope.segmentId}
+                          >
+                            <div className="flex flex-wrap items-center justify-between gap-2">
+                              <h5 className="text-sm font-black text-slate-950">{scope.label}</h5>
+                              <span className="rounded-full bg-amber-50 px-2.5 py-1 text-[11px] font-bold text-amber-900">In revisione</span>
+                            </div>
+                            <CanonicalScopeDocumentContent scope={scope} />
+                          </article>
+                        ))}
+                      </div>
+                    </section>
+                  ))}
                 </div>
-              </nav>
-
-              <div className="min-w-0">
-                <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7 lg:p-9" data-curriculum-section={selectedNavigation.id}>
-                  <p className="text-xs font-bold uppercase tracking-wide text-indigo-700">Sezione {selectedSection.number} di {DEPARTMENT_CURRICULUM_SECTIONS.length}</p>
-                  <h3 className="mt-2 text-xl font-black leading-tight text-slate-950 sm:text-2xl lg:text-3xl">{selectedSection.title}</h3>
-                  <div className="mt-5 border-t border-slate-100 pt-1">
-                    <DepartmentCurriculumPublication section={selectedSection} />
-                  </div>
-                </article>
-
-                <div className="mt-4 flex items-center justify-between gap-3">
-                  <button
-                    type="button"
-                    onClick={() => moveSection(-1)}
-                    disabled={selectedNavigationIndex === 0}
-                    className="min-h-11 rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 disabled:cursor-not-allowed disabled:opacity-40"
-                  >
-                    Sezione precedente
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => moveSection(1)}
-                    disabled={selectedNavigationIndex === SECTION_NAVIGATION.length - 1}
-                    className="min-h-11 rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 disabled:cursor-not-allowed disabled:opacity-40"
-                  >
-                    Sezione successiva
-                  </button>
-                </div>
-              </div>
-            </div>
-          </details>
+              </section>
+            ))}
+          </div>
         </div>
       )}
     </section>
