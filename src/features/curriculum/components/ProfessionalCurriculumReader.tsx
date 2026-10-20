@@ -20,7 +20,7 @@ type ProfessionalCurriculumReaderProps = {
   institutionalProfile: A07InstitutionalDocumentRead;
   institutionalConfiguration?: InstitutionalConfigurationSummary;
   onUseInPlanning: (context: CurriculumExploreContext) => void;
-  canUseInPlanning: (context: CurriculumExploreContext) => boolean;
+  canUseInPlanning: (context: { disciplineId: string }) => boolean;
   onOpenReview: (context: CurriculumExploreContext) => void;
   canOpenReview: (context: CurriculumExploreContext) => boolean;
   onOpenSource: (context: CurriculumExploreContext) => void;
