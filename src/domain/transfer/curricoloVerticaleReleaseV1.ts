@@ -411,6 +411,14 @@ export function validateCurricoloVerticaleReleaseV1(
   const segments = release.segments;
   const nodes = release.nodes;
   const links = release.verticalLinks;
+  if (
+    isRecord(version)
+    && nonEmptyString(release.institutionId)
+    && nonEmptyString(version.institutionId)
+    && version.institutionId !== release.institutionId
+  ) {
+    errors.push('curricolo version institutionId does not match release institutionId');
+  }
   if (!isRecord(version) || !Array.isArray(segments) || !Array.isArray(nodes) || !Array.isArray(links)) {
     errors.push('release graph is incomplete');
   } else {
