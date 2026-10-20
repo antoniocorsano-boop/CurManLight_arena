@@ -3,6 +3,7 @@ import {
   createCurricoloVerticaleCompleteReleaseV1,
   validateCurricoloVerticaleCompleteReleaseV1,
 } from '../domain/transfer/curricoloVerticaleCompleteReleaseV1';
+import { computeStructuralFootprint } from '../domain/transfer/signatures';
 
 const NOW = '2026-10-19T12:00:00.000Z';
 const MASTER_TEXT = `CAN-CURR-MASTER-00 — CURRICOLO VERTICALE INTEGRALE UNIFICATO 3–14\nSTATO: BASELINE CURRICOLARE CANONICA INTEGRALE — MATERIALIZZATA — DA VALIDARE PROFESSIONALMENTE — NON VIGENTE\n17.11 Esito documentale del gate\nOSA_DOCUMENTARY_COVERAGE_COMPLETE = TRUE`;
@@ -80,6 +81,19 @@ function input() {
   };
 }
 
+function refreshCompleteFootprint(release: ReturnType<typeof createCurricoloVerticaleCompleteReleaseV1>) {
+  const { structuralFootprint: _structuralFootprint, issuedAt: _issuedAt, ...stable } = release;
+  const { computedAt: _computedAt, ...snapshotFootprint } = stable.sourceSnapshot.contentFootprint;
+  const material = {
+    ...stable,
+    sourceSnapshot: {
+      ...stable.sourceSnapshot,
+      contentFootprint: snapshotFootprint,
+    },
+  };
+  release.structuralFootprint = computeStructuralFootprint(material as unknown as Record<string, unknown>);
+}
+
 describe('canonical master snapshot in vertical release', () => {
   it('carries the complete canonical source snapshot together with the operational projection', () => {
     const release = createCurricoloVerticaleCompleteReleaseV1(input());
@@ -106,6 +120,28 @@ describe('canonical master snapshot in vertical release', () => {
       ...value,
       sourceMaster: { ...value.sourceMaster, curricoloVigente: true },
     })).toThrow(/curricoloVigente/i);
+  });
+
+  it('validates received source provenance instead of trusting a matching footprint', () => {
+    const release = structuredClone(createCurricoloVerticaleCompleteReleaseV1(input()));
+    release.sourceMaster.driveFileId = '';
+    refreshCompleteFootprint(release);
+
+    const validation = validateCurricoloVerticaleCompleteReleaseV1(release);
+    expect(validation.valid).toBe(false);
+    expect(validation.errors.join(' ')).toMatch(/driveFileId/i);
+  });
+
+  it('returns accumulated errors instead of throwing when dependent projection fields are absent', () => {
+    const missingAuthority = structuredClone(createCurricoloVerticaleCompleteReleaseV1(input()));
+    delete (missingAuthority as Partial<typeof missingAuthority>).authority;
+    expect(() => validateCurricoloVerticaleCompleteReleaseV1(missingAuthority)).not.toThrow();
+    expect(validateCurricoloVerticaleCompleteReleaseV1(missingAuthority).valid).toBe(false);
+
+    const missingSnapshotFootprint = structuredClone(createCurricoloVerticaleCompleteReleaseV1(input()));
+    delete (missingSnapshotFootprint.sourceSnapshot as Partial<typeof missingSnapshotFootprint.sourceSnapshot>).contentFootprint;
+    expect(() => validateCurricoloVerticaleCompleteReleaseV1(missingSnapshotFootprint)).not.toThrow();
+    expect(validateCurricoloVerticaleCompleteReleaseV1(missingSnapshotFootprint).valid).toBe(false);
   });
 
   it('binds snapshot content into the structural footprint', () => {
