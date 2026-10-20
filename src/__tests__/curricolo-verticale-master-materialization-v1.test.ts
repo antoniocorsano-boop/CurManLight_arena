@@ -44,6 +44,17 @@ describe('CAN-CURR-MASTER-00 productive materialization v1', () => {
     expect(JSON.stringify(result)).not.toContain('"workStatus":"effective"');
   });
 
+  it('preserves field and record boundaries in infancy and Latin', () => {
+    const result = materializeFixture();
+    const infancy = result.segments.find(item => item.id === 'can-curr-master-00-infanzia-i-discorsi-e-le-parole');
+    const latinIII = result.segments.find(item => item.id === 'can-curr-master-00-secondaria-latino-lel-3');
+
+    expect(infancy?.content.competenze).toEqual(['competenza di campo']);
+    expect(latinIII?.content.evidenze).toEqual(['evidenza latino III']);
+    expect(JSON.stringify(infancy?.content)).not.toContain('3 anni —');
+    expect(JSON.stringify(latinIII?.content)).not.toContain('Stato curricolare');
+  });
+
   it('persists all native master segments without inventing segment ancestry', async () => {
     const result = materializeFixture();
     const backend = new MemoryCurricoloPersistenceBackend();
