@@ -20,6 +20,7 @@ type ProfessionalCurriculumReaderProps = {
   institutionalProfile: A07InstitutionalDocumentRead;
   institutionalConfiguration?: InstitutionalConfigurationSummary;
   onUseInPlanning: (context: CurriculumExploreContext) => void;
+  canUseInPlanning: (context: CurriculumExploreContext) => boolean;
   onOpenReview: (context: CurriculumExploreContext) => void;
   canOpenReview: (context: CurriculumExploreContext) => boolean;
   onOpenSource: (context: CurriculumExploreContext) => void;
@@ -68,6 +69,7 @@ export function ProfessionalCurriculumReader({
   institutionalProfile,
   institutionalConfiguration,
   onUseInPlanning,
+  canUseInPlanning,
   onOpenReview,
   canOpenReview,
   onOpenSource,
@@ -241,6 +243,7 @@ export function ProfessionalCurriculumReader({
             view={mode}
             onViewChange={setExploreView}
             onUseInPlanning={onUseInPlanning}
+            canUseInPlanning={canUseInPlanning}
             onOpenReview={onOpenReview}
             canOpenReview={canOpenReview}
             onOpenSource={onOpenSource}
