@@ -76,7 +76,7 @@ describe('canonical curricolo read model', () => {
     expect(latin?.kind).toBe('discipline');
     expect(latin?.orders).toHaveLength(1);
     expect(latin?.orders[0].id).toBe('secondaria');
-    expect(latin?.orders[0].scopes.map((scope) => scope.targetClass)).toEqual(['II', 'III']);
+    expect(latin?.orders[0].scopes.map((scope) => scope.targetClass)).toEqual(['2', '3']);
   });
 
   it('fails closed when the artifact is invalid or incomplete', () => {
