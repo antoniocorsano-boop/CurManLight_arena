@@ -26,6 +26,7 @@ type CanonicalCurricoloExploreTramaProps = {
   view: CurricoloExploreView;
   onViewChange: (view: CurricoloExploreView) => void;
   onUseInPlanning?: (context: CurricoloExploreContext) => void;
+  canUseInPlanning?: (context: CurricoloExploreContext) => boolean;
   onOpenReview?: (context: CurricoloExploreContext) => void;
   canOpenReview?: (context: CurricoloExploreContext) => boolean;
   onOpenSource?: (context: CurricoloExploreContext) => void;
@@ -82,6 +83,7 @@ function ScopeCard({
   scope,
   onOpenTrama,
   onUseInPlanning,
+  canUseInPlanning,
   onOpenReview,
   canOpenReview,
   onOpenSource,
@@ -92,6 +94,7 @@ function ScopeCard({
   scope: CanonicalCurricoloScope;
   onOpenTrama: (nucleus: string) => void;
   onUseInPlanning?: (context: CurricoloExploreContext) => void;
+  canUseInPlanning?: (context: CurricoloExploreContext) => boolean;
   onOpenReview?: (context: CurricoloExploreContext) => void;
   canOpenReview?: (context: CurricoloExploreContext) => boolean;
   onOpenSource?: (context: CurricoloExploreContext) => void;
@@ -110,6 +113,7 @@ function ScopeCard({
     <div className="grid gap-3 xl:grid-cols-2" data-curricolo-node-cards>
       {nuclei.map((nucleus) => {
         const context = scopeContext(domain, order, scope, nucleus);
+        const planningAvailable = Boolean(onUseInPlanning && scope.targetClass && (canUseInPlanning ? canUseInPlanning(context) : true));
         const reviewAvailable = Boolean(onOpenReview && (canOpenReview ? canOpenReview(context) : true));
         return (
           <article
@@ -148,10 +152,10 @@ function ScopeCard({
             <details className="mt-3 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2" data-curricolo-context-actions>
               <summary className="cursor-pointer py-1 text-sm font-bold text-slate-700">Altre azioni</summary>
               <div className="mt-2 grid gap-2 sm:grid-cols-2">
-                {onUseInPlanning && scope.targetClass && (
+                {planningAvailable && (
                   <button
                     type="button"
-                    onClick={() => onUseInPlanning(context)}
+                    onClick={() => onUseInPlanning?.(context)}
                     className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700"
                     data-use-curricolo-in-planning
                   >
@@ -209,6 +213,7 @@ export function CanonicalCurricoloExploreTrama({
   view,
   onViewChange,
   onUseInPlanning,
+  canUseInPlanning,
   onOpenReview,
   canOpenReview,
   onOpenSource,
@@ -333,6 +338,7 @@ export function CanonicalCurricoloExploreTrama({
               onViewChange('trama');
             }}
             onUseInPlanning={onUseInPlanning}
+            canUseInPlanning={canUseInPlanning}
             onOpenReview={onOpenReview}
             canOpenReview={canOpenReview}
             onOpenSource={onOpenSource}
