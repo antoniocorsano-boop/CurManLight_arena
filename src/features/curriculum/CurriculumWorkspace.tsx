@@ -66,8 +66,10 @@ export function CurriculumWorkspace(props: CurriculumWorkspaceProps) {
     if (context.targetClass) props.setTargetClass(context.targetClass);
   };
 
+  const canUseInPlanning = (context: CurriculumExploreContext) => Boolean(toPlanningDisciplineId(context.disciplineId));
+
   const useInPlanning = (context: CurriculumExploreContext) => {
-    if (!toPlanningDisciplineId(context.disciplineId)) return;
+    if (!canUseInPlanning(context)) return;
     applyCurriculumContext(context);
     setActiveProgTab('annuale');
     props.handleTabSwitch('progetta-annuale');
@@ -99,6 +101,7 @@ export function CurriculumWorkspace(props: CurriculumWorkspaceProps) {
           institutionalProfile={props.institutionalProfile}
           institutionalConfiguration={institutionalConfiguration}
           onUseInPlanning={useInPlanning}
+          canUseInPlanning={canUseInPlanning}
           onOpenReview={openCurriculumReview}
           canOpenReview={canOpenReview}
           onOpenSource={openSource}
