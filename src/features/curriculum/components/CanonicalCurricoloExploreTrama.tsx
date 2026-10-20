@@ -59,7 +59,7 @@ function scopeContext(
   return {
     disciplineId: domain.id,
     disciplineLabel: domain.label,
-    order: order.label,
+    order: order.id,
     annualityId: scope.segmentId,
     annualityTitle: scope.label,
     classLabel: scope.label,
