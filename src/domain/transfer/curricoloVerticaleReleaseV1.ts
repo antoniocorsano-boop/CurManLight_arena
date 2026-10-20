@@ -57,6 +57,7 @@ export interface CurricoloVerticaleReleaseV1 {
   schoolYearRef: string;
   version: InstituteCurricoloVersion;
   authority: CurricoloVerticaleAuthorityV1;
+  perimeter: CurricoloVerticalePerimeterV1;
   manifest: CurricoloVerticaleManifestV1;
   segments: CurricoloSegment[];
   nodes: CurricoloNode[];
@@ -109,6 +110,17 @@ function normalizeScope(scope: CurricoloSegmentScope): CurricoloSegmentScope {
   }
   if (scope.type === 'grade') return { type: 'grade', grade: String(scope.grade) };
   return { type: 'school-level' };
+}
+
+function copyPerimeter(perimeter: CurricoloVerticalePerimeterV1): CurricoloVerticalePerimeterV1 {
+  const copy = (item: CurricoloVerticaleExpectedScopeV1): CurricoloVerticaleExpectedScopeV1 => ({
+    ...item,
+    scope: normalizeScope(item.scope),
+  });
+  return {
+    expected: perimeter.expected.map(copy),
+    intentionallyNotApplicable: perimeter.intentionallyNotApplicable.map(copy),
+  };
 }
 
 function expectedKey(value: CurricoloVerticaleExpectedScopeV1): string {
@@ -352,9 +364,10 @@ export function createCurricoloVerticaleReleaseV1(
   if (errors.length > 0) throw new Error(errors.join('; '));
 
   const collections = sortReleaseCollections(input);
+  const perimeter = copyPerimeter(input.perimeter);
   const manifest = buildCurricoloVerticaleManifestV1({
     segments: collections.segments,
-    perimeter: input.perimeter,
+    perimeter,
   });
 
   const base: Omit<CurricoloVerticaleReleaseV1, 'structuralFootprint'> = {
@@ -364,6 +377,7 @@ export function createCurricoloVerticaleReleaseV1(
     schoolYearRef: input.schoolYearRef,
     version: { ...input.version },
     authority: { ...input.authority },
+    perimeter,
     manifest,
     ...collections,
     downstreamPolicy: {
