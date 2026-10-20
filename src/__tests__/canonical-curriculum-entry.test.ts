@@ -1,8 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import workspaceSource from '../features/curriculum/CurriculumWorkspace.tsx?raw';
 import professionalReaderSource from '../features/curriculum/components/ProfessionalCurriculumReader.tsx?raw';
-import exploreTramaSource from '../features/curriculum/components/CurriculumExploreTrama.tsx?raw';
-import technologyPublicationDataSource from '../features/curriculum/data/departmentCurriculumV31.section-09.json?raw';
+import exploreTramaSource from '../features/curriculum/components/CanonicalCurricoloExploreTrama.tsx?raw';
 import caseAwareSource from '../features/beta/CaseAwareRevisionSurface.tsx?raw';
 import baselineSource from '../lib/curriculumBaseline.ts?raw';
 import currentSource from '../domain/curriculum/institute/currentSource.ts?raw';
@@ -14,14 +13,16 @@ import {
 } from '../domain/curriculum/validation/technologySecondaryClassReview';
 
 describe('canonical curriculum entry', () => {
-  it('presents the canonical curriculum through Esplora Trama Documento instead of exposing the raw master', () => {
+  it('presents the canonical curricolo through Esplora Trama Documento instead of exposing the raw master', () => {
     expect(workspaceSource).toContain('ProfessionalCurriculumReader');
     expect(professionalReaderSource).toContain('data-canonical-curriculum-entry');
     expect(professionalReaderSource).toContain('data-curriculum-primary-task="consultation"');
     expect(professionalReaderSource).toContain('data-curriculum-presentation="professional-publication"');
     expect(professionalReaderSource).toContain('ARENA_UX_CONTRACT@1.0.0');
-    expect(professionalReaderSource).toContain('Curricolo verticale');
-    expect(professionalReaderSource).toContain('Dipartimento Scientifico-Matematico-Tecnologico');
+    expect(professionalReaderSource).toContain('canonicalCurricoloV13.generated.json');
+    expect(professionalReaderSource).toContain('loadCanonicalCurricoloReadModel');
+    expect(professionalReaderSource).toContain('model.identity.title');
+    expect(professionalReaderSource).toContain('Curricolo d’Istituto');
     expect(professionalReaderSource).toContain('Versione di lavoro');
     expect(professionalReaderSource).toContain('Validazione professionale aperta');
     expect(professionalReaderSource).toContain('Percorso verticale 3–14');
@@ -32,22 +33,21 @@ describe('canonical curriculum entry', () => {
     expect(professionalReaderSource).toContain('Trama');
     expect(professionalReaderSource).toContain('Documento');
     expect(professionalReaderSource).toContain('data-curriculum-professional-explorer');
-    expect(professionalReaderSource).toContain('data-curriculum-document-reader');
+    expect(professionalReaderSource).toContain('data-curricolo-document-reader');
     expect(professionalReaderSource).not.toContain('Vista web');
     expect(professionalReaderSource).not.toContain('Da esaminare e validare');
     expect(professionalReaderSource).not.toContain('Baseline corrente');
     expect(professionalReaderSource).not.toContain('master canonico');
   });
 
-  it('keeps curriculum annuality consultation independent from review state and uses an explicit handoff to Riesame', () => {
-    expect(professionalReaderSource).toContain('CurriculumExploreTrama');
+  it('keeps curricolo annuality consultation independent from review state and uses an explicit handoff to Riesame', () => {
+    expect(professionalReaderSource).toContain('CanonicalCurricoloExploreTrama');
     expect(exploreTramaSource).toContain('data-annuality-semantics="consultation-only"');
-    expect(exploreTramaSource).toContain('data-curriculum-unit-card');
+    expect(exploreTramaSource).toContain('data-curricolo-unit-card');
     expect(exploreTramaSource).toContain('Segnala per il Riesame');
     expect(exploreTramaSource).toContain('La consultazione resta comunque completa.');
     expect(exploreTramaSource).not.toContain('preferredTechnologyAnnuality');
     expect(exploreTramaSource).not.toContain('targetRoman');
-    expect(technologyPublicationDataSource).toContain('Tecnologia — curricolo verticale');
     expect(workspaceSource).toContain('applyCurriculumContext(context)');
     expect(workspaceSource).toContain('setOrder(schoolOrder)');
     expect(workspaceSource).toContain('setDiscipline(context.disciplineId)');
@@ -76,12 +76,21 @@ describe('canonical curriculum entry', () => {
     expect(workspaceSource).toContain('onClick={() => setLegacyOpen(true)}');
   });
 
-  it('keeps canonical authority in the domain while Department documents remain presentation artifacts', () => {
+  it('keeps canonical authority in the domain while Documento remains a projection of the same local artifact', () => {
     expect(currentSource).toContain('CAN-CURR-MASTER-00_Curricolo_verticale_integrale_unificato_3-14_2026-2027');
     expect(currentSource).toContain('12eWTPUZBJxZixd6-p8drNAaW5_eL8qWpXZUSDyZZAv4');
 
-    expect(professionalReaderSource).toContain("DEPARTMENT_CURRICULUM_DOC_ID = '1VYNvik8oLAVWjwB5Y_Q960D62t-eUZRc'");
-    expect(professionalReaderSource).toContain("DEPARTMENT_FOUNDATIONS_DOC_ID = '1KNjcyBzNAOsK-1FD1_HpasN9cyfASQTm'");
+    expect(professionalReaderSource).toContain('canonicalCurricoloV13.generated.json');
+    expect(professionalReaderSource).toContain('loadCanonicalCurricoloReadModel');
+    expect(professionalReaderSource).toContain('data-curricolo-document-reader');
+    expect(professionalReaderSource).toContain('data-curricolo-document-domain');
+    expect(professionalReaderSource).toContain('data-curricolo-document-scope');
+    expect(professionalReaderSource).toContain('data-curricolo-document-content');
+    expect(professionalReaderSource).toContain('model.domains.map');
+    expect(professionalReaderSource).toContain('domain.orders.map');
+    expect(professionalReaderSource).toContain('order.scopes.map');
+    expect(professionalReaderSource).not.toContain('1VYNvik8oLAVWjwB5Y_Q960D62t-eUZRc');
+    expect(professionalReaderSource).not.toContain('1KNjcyBzNAOsK-1FD1_HpasN9cyfASQTm');
     expect(professionalReaderSource).not.toContain('12eWTPUZBJxZixd6-p8drNAaW5_eL8qWpXZUSDyZZAv4');
     expect(professionalReaderSource).not.toContain('INSTITUTE_CURRICULUM_CURRENT_SOURCE');
 
