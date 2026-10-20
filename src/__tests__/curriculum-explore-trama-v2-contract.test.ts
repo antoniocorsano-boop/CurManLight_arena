@@ -23,6 +23,10 @@ const annualizedSections = DEPARTMENT_CURRICULUM_SECTIONS.filter(
 const ux = JSON.parse(uxContractRaw) as {
   contract_id: string;
   curriculum: { projections: string[]; annuality_selector_semantics: string };
+  document: {
+    must_not_be_required_for_ordinary_curriculum_consultation: boolean;
+    must_not_be_a_second_source_of_truth: boolean;
+  };
 };
 
 function findAnnuality(title: string): CurriculumAnnualityProjection {
@@ -78,13 +82,20 @@ describe('Curriculum Explore + Trama V2 — ARENA_UX_CONTRACT alignment', () => 
     expect(professionalReaderSource).not.toContain('Vista web');
   });
 
-  it('keeps Document sequential and subordinate while Explore remains semantic-card based', () => {
+  it('keeps Documento sequential and subordinate while Explore remains semantic-card based', () => {
     expect(exploreTramaSource).toContain('data-curriculum-node-cards');
     expect(exploreTramaSource).toContain('data-curriculum-unit-card');
-    expect(professionalReaderSource).toContain('data-curriculum-integral-web-publication');
-    expect(professionalReaderSource).toContain('Sezione precedente');
-    expect(professionalReaderSource).toContain('Sezione successiva');
-    expect(professionalReaderSource).toContain('Per la consultazione ordinaria torna a Esplora o Trama.');
+    expect(professionalReaderSource).toContain('data-curricolo-document-reader');
+    expect(professionalReaderSource).toContain('data-curricolo-document-domain');
+    expect(professionalReaderSource).toContain('data-curricolo-document-scope');
+    expect(professionalReaderSource).toContain('data-curricolo-document-content');
+    expect(professionalReaderSource).toContain('model.domains.map');
+    expect(professionalReaderSource).toContain('domain.orders.map');
+    expect(professionalReaderSource).toContain('order.scopes.map');
+    expect(professionalReaderSource).toContain('Questa proiezione sequenziale legge la stessa versione strutturata usata da Esplora e Trama.');
+    expect(professionalReaderSource).not.toContain('DEPARTMENT_CURRICULUM_DOC_ID');
+    expect(ux.document.must_not_be_required_for_ordinary_curriculum_consultation).toBe(true);
+    expect(ux.document.must_not_be_a_second_source_of_truth).toBe(true);
   });
 
   it('keeps Trama fail-closed with exact repeated-nucleus relations only', () => {
