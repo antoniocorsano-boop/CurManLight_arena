@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import technologySectionData from '../features/curriculum/data/departmentCurriculumV31.section-09.json';
 import professionalReaderSource from '../features/curriculum/components/ProfessionalCurriculumReader.tsx?raw';
 import exploreTramaSource from '../features/curriculum/components/CurriculumExploreTrama.tsx?raw';
+import canonicalExploreTramaSource from '../features/curriculum/components/CanonicalCurricoloExploreTrama.tsx?raw';
 import workspaceSource from '../features/curriculum/CurriculumWorkspace.tsx?raw';
 import uxContractRaw from '../../.human/arena-ux.contract.json?raw';
 import {
@@ -137,5 +138,21 @@ describe('Curriculum Explore + Trama V2 — ARENA_UX_CONTRACT alignment', () => 
     }
     expect(professionalReaderSource).toContain('Versione di lavoro');
     expect(professionalReaderSource).toContain('Validazione professionale aperta');
+  });
+
+  it('uses teacher-facing Trama copy, scannable content lists and an explicitly historical legacy disclosure', () => {
+    expect(canonicalExploreTramaSource).toContain('Non sono ancora disponibili raccordi validati per questo contenuto.');
+    expect(canonicalExploreTramaSource).toContain('I collegamenti tra annualità o discipline saranno mostrati qui solo dopo la validazione professionale.');
+    for (const forbiddenPhrase of [
+      'raccordi presenti nell’artefatto hanno stato proposto',
+      'inferenze o promozioni implicite',
+      'nessun link proposto',
+    ]) {
+      expect(canonicalExploreTramaSource).not.toContain(forbiddenPhrase);
+    }
+    expect(canonicalExploreTramaSource).toContain('data-curricolo-detail-list');
+    expect(canonicalExploreTramaSource).not.toContain("field.values.join(' · ')");
+    expect(workspaceSource).toContain('Materiale storico · non corrente');
+    expect(workspaceSource).toContain('data-legacy-role="historical-only"');
   });
 });
