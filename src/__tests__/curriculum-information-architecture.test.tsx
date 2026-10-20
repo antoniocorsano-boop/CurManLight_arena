@@ -5,13 +5,17 @@ import { describe, expect, it, vi } from 'vitest';
 import { createEmptyInstitutionalArchive, getA07InstitutionalDocumentRead } from '../domain/institution';
 import { ProfessionalCurriculumReader } from '../features/curriculum/components/ProfessionalCurriculumReader';
 
-function renderReader() {
+function renderReader(options: {
+  onUseInPlanning?: ReturnType<typeof vi.fn>;
+  onOpenReview?: ReturnType<typeof vi.fn>;
+  canOpenReview?: (context: unknown) => boolean;
+} = {}) {
   return render(
     <ProfessionalCurriculumReader
       institutionalProfile={getA07InstitutionalDocumentRead(createEmptyInstitutionalArchive())}
-      onUseInPlanning={vi.fn()}
-      onOpenReview={vi.fn()}
-      canOpenReview={() => false}
+      onUseInPlanning={options.onUseInPlanning ?? vi.fn()}
+      onOpenReview={options.onOpenReview ?? vi.fn()}
+      canOpenReview={options.canOpenReview ?? (() => false)}
       onOpenSource={vi.fn()}
     />,
   );
@@ -65,5 +69,22 @@ describe('G5 curricolo information architecture', () => {
 
     expect(screen.getByRole('button', { name: 'Classi I–II' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Classi III–V' })).toBeInTheDocument();
+  });
+
+  it('passes machine order and native class identifiers to contextual handoffs', async () => {
+    const user = userEvent.setup();
+    const onUseInPlanning = vi.fn();
+    renderReader({ onUseInPlanning });
+
+    await user.click(screen.getByRole('button', { name: 'Tecnologia' }));
+    await user.click(screen.getByRole('button', { name: 'Classe II' }));
+    await user.click(screen.getAllByText('Altre azioni')[0]);
+    await user.click(screen.getAllByRole('button', { name: 'Usa in Progettazione' })[0]);
+
+    expect(onUseInPlanning).toHaveBeenCalledWith(expect.objectContaining({
+      disciplineId: 'tecnologia',
+      order: 'secondaria',
+      targetClass: '2',
+    }));
   });
 });
