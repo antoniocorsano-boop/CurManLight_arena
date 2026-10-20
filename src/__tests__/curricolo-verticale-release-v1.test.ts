@@ -248,6 +248,16 @@ describe('TRAMA_CURRICOLO_VERTICALE_RELEASE_V1', () => {
     expect(validation.errors.join(' ')).toMatch(/manifest|coverage|missing/i);
   });
 
+  it('rejects a received release whose version belongs to another institution', () => {
+    const release = structuredClone(createCurricoloVerticaleReleaseV1(validInput()));
+    release.version.institutionId = 'other-institution';
+    refreshReleaseFootprint(release);
+
+    const validation = validateCurricoloVerticaleReleaseV1(release);
+    expect(validation.valid).toBe(false);
+    expect(validation.errors).toContain('curricolo version institutionId does not match release institutionId');
+  });
+
   it('keeps the structural footprint stable when only issuedAt changes', () => {
     const first = createCurricoloVerticaleReleaseV1(validInput('2026-10-19T12:00:00.000Z'));
     const second = createCurricoloVerticaleReleaseV1(validInput('2026-10-19T13:00:00.000Z'));
