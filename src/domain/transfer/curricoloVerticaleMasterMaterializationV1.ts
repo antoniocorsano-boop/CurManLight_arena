@@ -119,6 +119,10 @@ const TAGS = [
   'Nuclei d’Istituto:',
   "Nuclei d'Istituto:",
   'Ambiti:',
+  '3 anni —',
+  '4 anni —',
+  '5 anni —',
+  'Stato curricolare:',
 ] as const;
 
 function clean(value: string | undefined): string | undefined {
