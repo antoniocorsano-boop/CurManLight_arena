@@ -66,7 +66,7 @@ export function CurriculumWorkspace(props: CurriculumWorkspaceProps) {
     if (context.targetClass) props.setTargetClass(context.targetClass);
   };
 
-  const canUseInPlanning = (context: CurriculumExploreContext) => Boolean(toPlanningDisciplineId(context.disciplineId));
+  const canUseInPlanning = (context: { disciplineId: string }) => Boolean(toPlanningDisciplineId(context.disciplineId));
 
   const useInPlanning = (context: CurriculumExploreContext) => {
     if (!canUseInPlanning(context)) return;
