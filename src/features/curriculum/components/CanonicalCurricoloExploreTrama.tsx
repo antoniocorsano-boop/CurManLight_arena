@@ -69,6 +69,13 @@ function scopeContext(
   };
 }
 
+function scannableItems(values: string[]): string[] {
+  return values.flatMap((value) => value
+    .split(';')
+    .map((part) => part.trim())
+    .filter(Boolean));
+}
+
 function ScopeCard({
   domain,
   order,
@@ -96,7 +103,7 @@ function ScopeCard({
   const fields = visibleCollections.flatMap(({ key, label }) => {
     const values = scope.content[key];
     if (!Array.isArray(values) || values.length === 0) return [];
-    return [{ label, values: values as string[] }];
+    return [{ label, values: scannableItems(values as string[]) }];
   });
 
   return (
@@ -117,7 +124,13 @@ function ScopeCard({
               {fields.map((field) => (
                 <div key={field.label}>
                   <dt className="text-xs font-bold uppercase tracking-wide text-indigo-700">{field.label}</dt>
-                  <dd className="mt-1 text-sm leading-6 text-slate-700">{field.values.join(' · ')}</dd>
+                  <dd className="mt-1 text-sm leading-6 text-slate-700">
+                    <ul className="list-disc space-y-1 pl-5" data-curricolo-detail-list>
+                      {field.values.map((value, valueIndex) => (
+                        <li key={`${field.label}-${valueIndex}`}>{value}</li>
+                      ))}
+                    </ul>
+                  </dd>
                 </div>
               ))}
             </dl>
@@ -245,7 +258,7 @@ export function CanonicalCurricoloExploreTrama({
         <p className="text-xs font-bold uppercase tracking-wide text-indigo-700">Consultazione del curricolo</p>
         <h2 className="mt-1 text-xl font-black text-slate-950">Trova ciò che si applica per disciplina, ordine e annualità</h2>
         <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
-          La consultazione deriva dall’unica versione di lavoro dell’Istituto. Le relazioni ancora proposte non vengono mostrate come raccordi professionali validati.
+          Qui consulti la versione di lavoro dell’Istituto. I raccordi compaiono nella Trama solo dopo la validazione professionale.
         </p>
       </div>
 
@@ -334,7 +347,7 @@ export function CanonicalCurricoloExploreTrama({
                 <p className="text-xs font-bold uppercase tracking-wide text-indigo-700">Trama del curricolo</p>
                 <h3 className="mt-1 text-lg font-black text-slate-950">Raccordi professionali verificati</h3>
                 <p className="mt-2 text-sm leading-6 text-slate-600">
-                  In questa versione i raccordi presenti nell’artefatto hanno stato proposto. Per evitare inferenze o promozioni implicite, non vengono rappresentati come relazioni validate.
+                  Trama mostra soltanto raccordi che hanno completato la validazione professionale.
                 </p>
               </div>
               <button
@@ -354,7 +367,8 @@ export function CanonicalCurricoloExploreTrama({
             data-curricolo-trama-no-inferred-edge
             data-relation-policy="canonical-validated-only"
           >
-            Nessun raccordo professionale validato è disponibile in questa versione. Nessuna relazione viene inferita dalla coincidenza del testo e nessun link proposto viene presentato come validato.
+            <p className="font-semibold">Non sono ancora disponibili raccordi validati per questo contenuto.</p>
+            <p className="mt-2">I collegamenti tra annualità o discipline saranno mostrati qui solo dopo la validazione professionale.</p>
           </div>
         </div>
       )}
