@@ -11,18 +11,29 @@ export interface BuildCurricoloVerticalePerimeterV1Input {
   intentionallyNotApplicable: readonly CurricoloVerticaleExpectedScopeV1[];
 }
 
-function scopeKey(value: CurricoloVerticaleExpectedScopeV1): string {
-  return canonicalSerialize(value);
-}
-
-function copyScope(scope: CurricoloSegmentScope): CurricoloSegmentScope {
-  if (scope.type === 'grade-range') return { type: 'grade-range', grades: [...scope.grades] };
+function canonicalScope(scope: CurricoloSegmentScope): CurricoloSegmentScope {
+  if (scope.type === 'grade-range') {
+    return {
+      type: 'grade-range',
+      grades: [...scope.grades].sort((left, right) => {
+        const numeric = Number(left) - Number(right);
+        return Number.isFinite(numeric) && numeric !== 0 ? numeric : left.localeCompare(right);
+      }),
+    };
+  }
   if (scope.type === 'grade') return { type: 'grade', grade: scope.grade };
   return { type: 'school-level' };
 }
 
+function scopeKey(value: CurricoloVerticaleExpectedScopeV1): string {
+  return canonicalSerialize({
+    ...value,
+    scope: canonicalScope(value.scope),
+  });
+}
+
 function copyEntry(value: CurricoloVerticaleExpectedScopeV1): CurricoloVerticaleExpectedScopeV1 {
-  return { ...value, scope: copyScope(value.scope) };
+  return { ...value, scope: canonicalScope(value.scope) };
 }
 
 function validateScope(entry: CurricoloVerticaleExpectedScopeV1): string[] {
