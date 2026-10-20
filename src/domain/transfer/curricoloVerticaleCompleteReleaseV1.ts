@@ -39,6 +39,16 @@ export interface CurricoloVerticaleCompleteReleaseV1
   structuralFootprint: StructuralFootprint;
 }
 
+type UnknownRecord = Record<string, unknown>;
+
+function isRecord(value: unknown): value is UnknownRecord {
+  return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
+}
+
+function nonEmptyString(value: unknown): value is string {
+  return typeof value === 'string' && value.trim().length > 0;
+}
+
 function validateSource(input: CreateCurricoloVerticaleCompleteReleaseV1Input): string[] {
   const errors: string[] = [];
   const source = input.sourceMaster;
@@ -76,6 +86,51 @@ function validateSource(input: CreateCurricoloVerticaleCompleteReleaseV1Input): 
   return errors;
 }
 
+function validateReceivedSource(release: UnknownRecord): string[] {
+  const errors: string[] = [];
+  const source = release.sourceMaster;
+  const snapshot = release.sourceSnapshot;
+  const authority = release.authority;
+
+  if (!isRecord(source)) {
+    errors.push('sourceMaster is required');
+  } else {
+    if (!nonEmptyString(source.masterId)) errors.push('sourceMaster.masterId is required');
+    if (!nonEmptyString(source.driveFileId)) errors.push('sourceMaster.driveFileId is required');
+    if (!nonEmptyString(source.masterVersion)) errors.push('sourceMaster.masterVersion is required');
+    if (!nonEmptyString(source.revisionId)) errors.push('sourceMaster.revisionId is required');
+    if (source.materializationState !== 'COMPLETE') {
+      errors.push('sourceMaster.materializationState must be COMPLETE');
+    }
+  }
+
+  if (!isRecord(snapshot) || snapshot.format !== 'text/plain' || !nonEmptyString(snapshot.content)) {
+    errors.push('sourceSnapshot with complete text/plain content is required');
+  }
+
+  if (!isRecord(authority)) {
+    errors.push('authority is required for source validation');
+  } else if (isRecord(source)) {
+    if (authority.state === 'PROVISIONAL_COMPLETE') {
+      if (source.curricoloVigente !== false) {
+        errors.push('sourceMaster.curricoloVigente must be false for PROVISIONAL_COMPLETE authority');
+      }
+      if (source.authority !== 'INSTITUTE_CANONICAL_WORKING_BASELINE') {
+        errors.push('PROVISIONAL_COMPLETE authority requires the canonical working baseline source');
+      }
+    } else if (authority.state === 'APPROVED') {
+      if (source.curricoloVigente !== true) {
+        errors.push('sourceMaster.curricoloVigente must be true for APPROVED authority');
+      }
+      if (source.authority !== 'INSTITUTE_APPROVED_CURRICOLO') {
+        errors.push('APPROVED authority requires an approved curricolo source');
+      }
+    }
+  }
+
+  return errors;
+}
+
 function projectionStructuralMaterial(
   release: Omit<CurricoloVerticaleReleaseV1, 'structuralFootprint'>,
 ): Record<string, unknown> {
@@ -95,6 +150,21 @@ function completeStructuralMaterial(
       contentFootprint: snapshotFootprint,
     },
   } as unknown as Record<string, unknown>;
+}
+
+function completeStructuralMaterialUnknown(release: UnknownRecord): Record<string, unknown> {
+  const { structuralFootprint: _footprint, issuedAt: _issuedAt, ...stable } = release;
+  if (!isRecord(stable.sourceSnapshot)) return stable;
+  const snapshot = stable.sourceSnapshot;
+  if (!isRecord(snapshot.contentFootprint)) return stable;
+  const { computedAt: _computedAt, ...contentFootprint } = snapshot.contentFootprint;
+  return {
+    ...stable,
+    sourceSnapshot: {
+      ...snapshot,
+      contentFootprint,
+    },
+  };
 }
 
 export function createCurricoloVerticaleCompleteReleaseV1(
@@ -128,15 +198,12 @@ export function createCurricoloVerticaleCompleteReleaseV1(
 export function validateCurricoloVerticaleCompleteReleaseV1(
   input: unknown,
 ): { valid: boolean; errors: string[] } {
-  if (!input || typeof input !== 'object' || Array.isArray(input)) {
+  if (!isRecord(input)) {
     return { valid: false, errors: ['release must be an object'] };
   }
 
-  const release = input as CurricoloVerticaleCompleteReleaseV1;
-  const errors: string[] = [];
-  if (!release.sourceMaster || !release.sourceSnapshot) {
-    return { valid: false, errors: ['sourceMaster and sourceSnapshot are required'] };
-  }
+  const release = input;
+  const errors = validateReceivedSource(release);
 
   const {
     sourceMaster: _sourceMaster,
@@ -144,48 +211,44 @@ export function validateCurricoloVerticaleCompleteReleaseV1(
     structuralFootprint: _completeFootprint,
     ...projectionBase
   } = release;
-  const projection: CurricoloVerticaleReleaseV1 = {
-    ...projectionBase,
-    structuralFootprint: computeStructuralFootprint(projectionStructuralMaterial(projectionBase)),
-  };
-  errors.push(...validateCurricoloVerticaleReleaseV1(projection).errors);
 
-  if (release.sourceSnapshot.format !== 'text/plain' || !release.sourceSnapshot.content?.trim()) {
-    errors.push('sourceSnapshot content is required');
-  } else {
+  try {
+    const projection: UnknownRecord = {
+      ...projectionBase,
+      structuralFootprint: computeStructuralFootprint((() => {
+        const { issuedAt: _issuedAt, ...stable } = projectionBase;
+        return stable;
+      })()),
+    };
+    errors.push(...validateCurricoloVerticaleReleaseV1(projection).errors);
+  } catch {
+    errors.push('projection material cannot be canonicalized');
+  }
+
+  const snapshot = release.sourceSnapshot;
+  if (isRecord(snapshot) && snapshot.format === 'text/plain' && nonEmptyString(snapshot.content)) {
     const expectedSnapshot = computeStructuralFootprint({
-      format: release.sourceSnapshot.format,
-      content: release.sourceSnapshot.content,
+      format: snapshot.format,
+      content: snapshot.content,
     });
-    if (expectedSnapshot.hash !== release.sourceSnapshot.contentFootprint?.hash) {
+    if (!isRecord(snapshot.contentFootprint) || !nonEmptyString(snapshot.contentFootprint.hash)) {
+      errors.push('sourceSnapshot contentFootprint is required');
+    } else if (expectedSnapshot.hash !== snapshot.contentFootprint.hash) {
       errors.push('sourceSnapshot contentFootprint mismatch');
     }
   }
 
-  if (release.authority.state === 'PROVISIONAL_COMPLETE') {
-    if (release.sourceMaster.curricoloVigente !== false) {
-      errors.push('sourceMaster.curricoloVigente is incompatible with provisional authority');
+  if (!isRecord(release.structuralFootprint) || !nonEmptyString(release.structuralFootprint.hash)) {
+    errors.push('structuralFootprint is required');
+  } else {
+    try {
+      const expectedComplete = computeStructuralFootprint(completeStructuralMaterialUnknown(release));
+      if (expectedComplete.hash !== release.structuralFootprint.hash) {
+        errors.push('structuralFootprint does not match complete release material');
+      }
+    } catch {
+      errors.push('complete release material cannot be canonicalized');
     }
-    if (release.sourceMaster.authority !== 'INSTITUTE_CANONICAL_WORKING_BASELINE') {
-      errors.push('sourceMaster authority is incompatible with provisional authority');
-    }
-  }
-  if (release.authority.state === 'APPROVED') {
-    if (release.sourceMaster.curricoloVigente !== true) {
-      errors.push('sourceMaster.curricoloVigente is incompatible with approved authority');
-    }
-    if (release.sourceMaster.authority !== 'INSTITUTE_APPROVED_CURRICOLO') {
-      errors.push('sourceMaster authority is incompatible with approved authority');
-    }
-  }
-
-  const expectedComplete = computeStructuralFootprint(completeStructuralMaterial({
-    ...projectionBase,
-    sourceMaster: release.sourceMaster,
-    sourceSnapshot: release.sourceSnapshot,
-  }));
-  if (expectedComplete.hash !== release.structuralFootprint?.hash) {
-    errors.push('structuralFootprint does not match complete release material');
   }
 
   return { valid: errors.length === 0, errors };
