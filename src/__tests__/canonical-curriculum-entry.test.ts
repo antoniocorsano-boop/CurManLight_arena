@@ -46,7 +46,8 @@ describe('canonical curriculum entry', () => {
     expect(professionalReaderSource).toContain('onOpenDocument={() => setMode(\'document\')}');
     expect(workspaceSource).toContain('applyCurriculumContext(context)');
     expect(workspaceSource).toContain('setOrder(schoolOrder)');
-    expect(workspaceSource).toContain('setDiscipline(context.disciplineId)');
+    expect(workspaceSource).toContain('toPlanningDisciplineId(context.disciplineId)');
+    expect(workspaceSource).toContain('setDiscipline(planningDisciplineId)');
     expect(workspaceSource).toContain('props.setTargetClass(context.targetClass)');
     expect(workspaceSource).toContain("props.handleTabSwitch('revisione')");
     expect(workspaceSource).toContain("context.targetClass === '1' || context.targetClass === '2'");
