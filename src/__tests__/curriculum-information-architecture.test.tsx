@@ -68,6 +68,32 @@ describe('G5 curricolo information architecture', () => {
     expect(firstCard).toHaveAttribute('data-curricolo-card-density', 'compact-disclosure');
   });
 
+  it('renders canonical content collections as scannable lists', async () => {
+    const user = userEvent.setup();
+    renderReader();
+
+    await user.click(screen.getByRole('button', { name: 'Tecnologia' }));
+
+    const firstCard = document.querySelector('[data-curricolo-unit-card]');
+    expect(firstCard).not.toBeNull();
+    expect(firstCard?.querySelectorAll('[data-curricolo-detail-list]').length).toBeGreaterThan(0);
+    expect(firstCard?.querySelectorAll('[data-curricolo-detail-list] li').length).toBeGreaterThan(1);
+  });
+
+  it('uses teacher-facing copy when Trama has no validated professional links', async () => {
+    const user = userEvent.setup();
+    renderReader();
+
+    await user.click(screen.getByRole('button', { name: 'Tecnologia' }));
+    await user.click(screen.getAllByRole('button', { name: 'Vedi nella Trama' })[0]);
+
+    expect(screen.getByText('Non sono ancora disponibili raccordi validati per questo contenuto.')).toBeInTheDocument();
+    expect(screen.getByText('I collegamenti tra annualità o discipline saranno mostrati qui solo dopo la validazione professionale.')).toBeInTheDocument();
+    expect(screen.queryByText(/artefatto ha.*stato proposto/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/inferenze o promozioni implicite/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/link proposto/i)).not.toBeInTheDocument();
+  });
+
   it('keeps Infanzia and grade ranges native in the professional navigation', async () => {
     const user = userEvent.setup();
     renderReader();
