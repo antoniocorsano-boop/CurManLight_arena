@@ -5,6 +5,7 @@ import {
   serializeCurricoloVerticaleArtifactV1,
   validateCurricoloVerticaleArtifactV1,
 } from '../domain/transfer/curricoloVerticaleArtifactV1';
+import { computeStructuralFootprint } from '../domain/transfer/signatures';
 import {
   buildMasterFixture,
   sourceMaster,
@@ -20,6 +21,16 @@ function createArtifact(revisionId = 'drive-revision-fixture') {
       content: buildMasterFixture(),
     },
   });
+}
+
+function refreshArtifactFootprint(artifact: ReturnType<typeof createArtifact>) {
+  const { artifactFootprint: _artifactFootprint, ...material } = artifact;
+  const footprint = computeStructuralFootprint(material as unknown as Record<string, unknown>);
+  artifact.artifactFootprint = {
+    algorithm: 'fnv1a',
+    version: 1,
+    hash: footprint.hash,
+  };
 }
 
 describe('CAN-CURR-MASTER-00 repository artifact v1', () => {
@@ -72,6 +83,35 @@ describe('CAN-CURR-MASTER-00 repository artifact v1', () => {
     const effective = structuredClone(artifact);
     effective.materialization.segments[0].workStatus = 'effective';
     expect(validateCurricoloVerticaleArtifactV1(effective).valid).toBe(false);
+  });
+
+  it('returns validation errors instead of throwing for malformed scalar or nested values', () => {
+    const scalar = structuredClone(createArtifact());
+    scalar.institutionId = 42 as never;
+    expect(() => validateCurricoloVerticaleArtifactV1(scalar)).not.toThrow();
+    expect(validateCurricoloVerticaleArtifactV1(scalar).valid).toBe(false);
+
+    const nested = structuredClone(createArtifact());
+    nested.materialization.segments[0] = null as never;
+    refreshArtifactFootprint(nested);
+    expect(() => validateCurricoloVerticaleArtifactV1(nested)).not.toThrow();
+    expect(validateCurricoloVerticaleArtifactV1(nested).valid).toBe(false);
+  });
+
+  it('rejects duplicate governed scopes and dangling graph references even with a recomputed footprint', () => {
+    const duplicate = structuredClone(createArtifact());
+    duplicate.materialization.segments[112] = structuredClone(duplicate.materialization.segments[0]);
+    refreshArtifactFootprint(duplicate);
+    const duplicateValidation = validateCurricoloVerticaleArtifactV1(duplicate);
+    expect(duplicateValidation.valid).toBe(false);
+    expect(duplicateValidation.errors.join(' ')).toMatch(/duplicate|scope|perimeter/i);
+
+    const dangling = structuredClone(createArtifact());
+    dangling.materialization.nodes[0].segmentId = 'missing-segment';
+    refreshArtifactFootprint(dangling);
+    const danglingValidation = validateCurricoloVerticaleArtifactV1(dangling);
+    expect(danglingValidation.valid).toBe(false);
+    expect(danglingValidation.errors.join(' ')).toMatch(/reference|segment/i);
   });
 
   it('persists no computedAt field in stable footprints', () => {
