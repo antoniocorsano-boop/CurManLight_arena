@@ -1,3 +1,4 @@
+import type { ComponentProps } from 'react';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
@@ -5,10 +6,12 @@ import { describe, expect, it, vi } from 'vitest';
 import { createEmptyInstitutionalArchive, getA07InstitutionalDocumentRead } from '../domain/institution';
 import { ProfessionalCurriculumReader } from '../features/curriculum/components/ProfessionalCurriculumReader';
 
+type ReaderProps = ComponentProps<typeof ProfessionalCurriculumReader>;
+
 function renderReader(options: {
-  onUseInPlanning?: ReturnType<typeof vi.fn>;
-  onOpenReview?: ReturnType<typeof vi.fn>;
-  canOpenReview?: (context: unknown) => boolean;
+  onUseInPlanning?: ReaderProps['onUseInPlanning'];
+  onOpenReview?: ReaderProps['onOpenReview'];
+  canOpenReview?: ReaderProps['canOpenReview'];
 } = {}) {
   return render(
     <ProfessionalCurriculumReader
@@ -73,7 +76,7 @@ describe('G5 curricolo information architecture', () => {
 
   it('passes machine order and native class identifiers to contextual handoffs', async () => {
     const user = userEvent.setup();
-    const onUseInPlanning = vi.fn();
+    const onUseInPlanning = vi.fn<NonNullable<ReaderProps['onUseInPlanning']>>();
     renderReader({ onUseInPlanning });
 
     await user.click(screen.getByRole('button', { name: 'Tecnologia' }));
