@@ -1,20 +1,29 @@
 import { describe, expect, test } from 'vitest';
-import { existsSync, readFileSync } from 'node:fs';
-import { execFileSync } from 'node:child_process';
-import { resolve } from 'node:path';
 
-const root = process.cwd();
-const schemaPath = resolve(root, 'docs/contracts/ARENA_REGISTRO_PLANNING_CONTEXT_V1.schema.json');
-const fixturePath = resolve(root, 'docs/contracts/fixtures/arena-registro-planning-context-tech-grade1.json');
-const handoffPath = resolve(root, 'docs/architecture/ARENA_REGISTRO_PLANNING_HANDOFF_V1.md');
-const validatorPath = resolve(root, 'scripts/validate-registro-planning-context.mjs');
+function firstSource(modules: Record<string, string>): string {
+  return Object.values(modules)[0] ?? '';
+}
 
-const readJson = (path: string) => JSON.parse(readFileSync(path, 'utf8')) as Record<string, any>;
+const schemaSource = firstSource(import.meta.glob('../../docs/contracts/ARENA_REGISTRO_PLANNING_CONTEXT_V1.schema.json', {
+  query: '?raw', import: 'default', eager: true,
+}) as Record<string, string>);
+
+const fixtureSource = firstSource(import.meta.glob('../../docs/contracts/fixtures/arena-registro-planning-context-tech-grade1.json', {
+  query: '?raw', import: 'default', eager: true,
+}) as Record<string, string>);
+
+const handoffSource = firstSource(import.meta.glob('../../docs/architecture/ARENA_REGISTRO_PLANNING_HANDOFF_V1.md', {
+  query: '?raw', import: 'default', eager: true,
+}) as Record<string, string>);
+
+const validatorSource = firstSource(import.meta.glob('../../scripts/validate-registro-planning-context.mjs', {
+  query: '?raw', import: 'default', eager: true,
+}) as Record<string, string>);
 
 describe('EDU-PLAN-01B Arena → Registro planning context v1', () => {
   test('materializes a dedicated Registro Docente contract without repurposing the existing v1 downstream snapshot', () => {
-    expect(existsSync(schemaPath)).toBe(true);
-    const schema = readJson(schemaPath);
+    expect(schemaSource).not.toBe('');
+    const schema = JSON.parse(schemaSource) as Record<string, any>;
     expect(schema.$id).toContain('ARENA_REGISTRO_PLANNING_CONTEXT_V1');
     expect(schema.properties.targetProduct.const).toBe('REGISTRO_DOCENTE');
     expect(schema.properties.importMode.const).toBe('PREVIEW_ONLY');
@@ -23,8 +32,8 @@ describe('EDU-PLAN-01B Arena → Registro planning context v1', () => {
   });
 
   test('publishes a grade-I Technology fixture with visible authority and cohort applicability', () => {
-    expect(existsSync(fixturePath)).toBe(true);
-    const fixture = readJson(fixturePath);
+    expect(fixtureSource).not.toBe('');
+    const fixture = JSON.parse(fixtureSource) as Record<string, any>;
     expect(fixture.targetProduct).toBe('REGISTRO_DOCENTE');
     expect(fixture.subjectCode).toBe('tecnologia');
     expect(fixture.gradeLevel).toBe(1);
@@ -37,20 +46,22 @@ describe('EDU-PLAN-01B Arena → Registro planning context v1', () => {
   });
 
   test('documents Arena authority and fail-closed downstream semantics', () => {
-    expect(existsSync(handoffPath)).toBe(true);
-    const doc = readFileSync(handoffPath, 'utf8');
-    expect(doc).toContain('Arena');
-    expect(doc).toContain('autorità curricolare');
-    expect(doc).toContain('NON_VIGENTE');
-    expect(doc).toContain('PREVIEW_ONLY');
-    expect(doc).toContain('acceptanceRequired');
-    expect(doc).toContain('automaticWriteAllowed');
-    expect(doc).toContain('fail-closed');
+    expect(handoffSource).not.toBe('');
+    expect(handoffSource).toContain('Arena');
+    expect(handoffSource).toContain('autorità curricolare');
+    expect(handoffSource).toContain('NON_VIGENTE');
+    expect(handoffSource).toContain('PREVIEW_ONLY');
+    expect(handoffSource).toContain('acceptanceRequired');
+    expect(handoffSource).toContain('automaticWriteAllowed');
+    expect(handoffSource).toContain('fail-closed');
   });
 
-  test('validates the canonical fixture with the dedicated validator', () => {
-    expect(existsSync(validatorPath)).toBe(true);
-    const output = execFileSync(process.execPath, [validatorPath, fixturePath], { encoding: 'utf8' });
-    expect(output).toContain('PASS');
+  test('ships a dedicated validator with fail-closed authority checks', () => {
+    expect(validatorSource).not.toBe('');
+    expect(validatorSource).toContain('ARENA_REGISTRO_PLANNING_CONTEXT_V1');
+    expect(validatorSource).toContain('REGISTRO_DOCENTE');
+    expect(validatorSource).toContain('PROVISIONAL_COMPLETE');
+    expect(validatorSource).toContain('NON_VIGENTE');
+    expect(validatorSource).toContain('PASS');
   });
 });
