@@ -41,7 +41,7 @@ export function validateRegistroPlanningContext(value) {
   }
 
   const provenance = value.provenance;
-  if (!provenance || provenance.repository !== 'antoniocorsano-boop/CurManLight_arena' || !/^[0-9a-f]{40}$/.test(provenance.sourceCommit ?? '') || !nonEmpty(provenance.canonicalExportPath) || !nonEmpty(provenance.sourceDocumentId) || !nonEmpty(provenance.sourceRevisionId)) {
+  if (!provenance || provenance.repository !== 'antoniocorsano-boop/CurManLight_arena' || !/^[0-9a-f]{40}$/.test(provenance.sourceCommit ?? '') || !nonEmpty(provenance.sourceDocumentId) || !nonEmpty(provenance.sourceRevisionId)) {
     errors.push('complete Arena provenance is required');
   }
 

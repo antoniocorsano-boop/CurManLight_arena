@@ -42,7 +42,7 @@ Il contesto espone anno scolastico, ordine, disciplina, classe, regime e stato d
 
 ## Provenienza
 
-Ogni handoff deve mantenere la provenienza verificabile: repository, exact source commit, percorso dell’export canonico, documento Drive/revisione del master e fingerprint strutturale del master. Il fingerprint `b355be71` della fixture è esplicitamente di scope `MASTER`; non è un fingerprint inventato per la singola annualità.
+Ogni handoff deve mantenere la provenienza verificabile: repository, exact source commit, documento Drive/revisione del master, sezione sorgente degli elementi e fingerprint strutturale del master. Il fingerprint `b355be71` della fixture è esplicitamente di scope `MASTER`; non è un fingerprint inventato per la singola annualità.
 
 Il testo della fixture deriva dall’annualità Tecnologia · Classe I materializzata nella sezione `7.3.8` del master corrente.
 
