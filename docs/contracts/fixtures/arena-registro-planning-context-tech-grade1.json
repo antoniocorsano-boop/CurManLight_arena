@@ -1,0 +1,48 @@
+{
+  "contract": "ARENA_REGISTRO_PLANNING_CONTEXT_V1",
+  "contractVersion": 1,
+  "sourceProduct": "ARENA",
+  "targetProduct": "REGISTRO_DOCENTE",
+  "importMode": "PREVIEW_ONLY",
+  "acceptanceRequired": true,
+  "automaticWriteAllowed": false,
+  "instituteName": "Istituto Comprensivo Statale “Lorenzo Milani”",
+  "schoolYear": "2026/27",
+  "sourceSchoolYear": "2026-2027",
+  "schoolOrder": "secondaria",
+  "subjectCode": "tecnologia",
+  "gradeLevel": 1,
+  "cohortRef": "2026-2027:secondaria:classe-i",
+  "cohortRefKind": "DERIVED_APPLICABILITY_KEY",
+  "normativeRegime": "Regime 2025",
+  "applicabilityStatus": "APPLICABLE",
+  "authorityState": "PROVISIONAL_COMPLETE",
+  "vigencyStatus": "NON_VIGENTE",
+  "authorityReceiptRef": null,
+  "masterId": "CAN-CURR-MASTER-00",
+  "masterVersion": "1.3",
+  "structuralFingerprint": {
+    "scope": "MASTER",
+    "algorithm": "fnv1a",
+    "version": 1,
+    "hash": "b355be71"
+  },
+  "provenance": {
+    "repository": "antoniocorsano-boop/CurManLight_arena",
+    "sourceCommit": "7d34344ede0ae5dcd2c0224c83f5a46d40fad825",
+    "canonicalExportPath": "exports/atlas-curriculum/current.json",
+    "sourceDocumentId": "12eWTPUZBJxZixd6-p8drNAaW5_eL8qWpXZUSDyZZAv4",
+    "sourceRevisionId": "ANLCKQkLxZEKpEpelwBOalpWwlV7sKaRAPVB2hlYfCzhbXPhucRjhUvHCb0Z4ihwdTJoszo4h9ifJcIlH9bAQw5rld5j7_cMCkh7PNanMqI"
+  },
+  "curricoloItems": [
+    {
+      "id": "secondaria-di-primo-grado-tecnologia-classe-i",
+      "kind": "ANNUALITA_DISCIPLINARE",
+      "schoolStage": "Secondaria di primo grado",
+      "gradeLabel": "Classe I",
+      "sourceSection": "7.3.8",
+      "text": "Classe I — Regime 2025. Identità formativa: costruire un metodo tecnico di base, dal bisogno/osservazione a misura, rappresentazione, scelta dei materiali, procedura, realizzazione e verifica, integrando sicurezza, sostenibilità e uso responsabile dei sistemi digitali. Competenze: riconoscere bisogni, funzioni, risorse, vincoli e conseguenze; misurare e rappresentare; usare strumenti/materiali; seguire e documentare procedure; confrontare soluzioni; usare sistemi digitali in modo responsabile. Obiettivi: osservare/misurare; produrre rappresentazioni; analizzare oggetti/materiali; seguire procedure; realizzare/verificare; organizzare dati; riconoscere sicurezza e impatti. Conoscenze: oggetti/sistemi; misura; disegno tecnico di base; materiali; procedure; sicurezza; sostenibilità; digitale/dati. Evidenze: misure; elaborato grafico; analisi di oggetto/materiale; prodotto/procedura; documentazione; scelta motivata. Raccordo: analisi di sistemi e proposte in II."
+    }
+  ],
+  "privacyClass": "PROFESSIONAL_NON_PERSONAL"
+}
