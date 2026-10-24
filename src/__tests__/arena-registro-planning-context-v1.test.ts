@@ -12,7 +12,7 @@ const validatorPath = resolve(root, 'scripts/validate-registro-planning-context.
 const readJson = (path: string) => JSON.parse(readFileSync(path, 'utf8')) as Record<string, any>;
 
 describe('EDU-PLAN-01B Arena → Registro planning context v1', () => {
-  test('materializes a dedicated Registro Docente contract without repurposing CurriculumSnapshot v1', () => {
+  test('materializes a dedicated Registro Docente contract without repurposing the existing v1 downstream snapshot', () => {
     expect(existsSync(schemaPath)).toBe(true);
     const schema = readJson(schemaPath);
     expect(schema.$id).toContain('ARENA_REGISTRO_PLANNING_CONTEXT_V1');
@@ -33,7 +33,7 @@ describe('EDU-PLAN-01B Arena → Registro planning context v1', () => {
     expect(fixture.vigencyStatus).toMatch(/^(VIGENTE|NON_VIGENTE)$/);
     expect(fixture.cohortRef).toBeTruthy();
     expect(fixture.normativeRegime).toBeTruthy();
-    expect(fixture.curriculumItems.length).toBeGreaterThan(0);
+    expect(fixture.curricoloItems.length).toBeGreaterThan(0);
   });
 
   test('documents Arena authority and fail-closed downstream semantics', () => {
