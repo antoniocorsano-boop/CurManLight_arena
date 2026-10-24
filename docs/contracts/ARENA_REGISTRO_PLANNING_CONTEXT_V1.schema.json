@@ -116,7 +116,10 @@
         "required": ["vigencyStatus"]
       },
       "then": {
-        "properties": { "authorityState": { "const": "APPROVED" } },
+        "properties": {
+          "authorityState": { "const": "APPROVED" },
+          "authorityReceiptRef": { "type": "string", "minLength": 1 }
+        },
         "required": ["authorityReceiptRef"]
       }
     }
