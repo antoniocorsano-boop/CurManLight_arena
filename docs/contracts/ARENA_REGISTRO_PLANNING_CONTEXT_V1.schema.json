@@ -1,0 +1,127 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://arena.local/contracts/ARENA_REGISTRO_PLANNING_CONTEXT_V1.schema.json",
+  "title": "Arena → Registro Planning Context v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract",
+    "contractVersion",
+    "sourceProduct",
+    "targetProduct",
+    "importMode",
+    "acceptanceRequired",
+    "automaticWriteAllowed",
+    "instituteName",
+    "schoolYear",
+    "sourceSchoolYear",
+    "schoolOrder",
+    "subjectCode",
+    "gradeLevel",
+    "cohortRef",
+    "cohortRefKind",
+    "normativeRegime",
+    "applicabilityStatus",
+    "authorityState",
+    "vigencyStatus",
+    "masterId",
+    "masterVersion",
+    "structuralFingerprint",
+    "provenance",
+    "curricoloItems",
+    "privacyClass"
+  ],
+  "properties": {
+    "contract": { "const": "ARENA_REGISTRO_PLANNING_CONTEXT_V1" },
+    "contractVersion": { "const": 1 },
+    "sourceProduct": { "const": "ARENA" },
+    "targetProduct": { "const": "REGISTRO_DOCENTE" },
+    "importMode": { "const": "PREVIEW_ONLY" },
+    "acceptanceRequired": { "const": true },
+    "automaticWriteAllowed": { "const": false },
+    "instituteName": { "type": "string", "minLength": 1 },
+    "schoolYear": { "type": "string", "minLength": 1 },
+    "sourceSchoolYear": { "type": "string", "minLength": 1 },
+    "schoolOrder": { "enum": ["primaria", "secondaria"] },
+    "subjectCode": { "type": "string", "minLength": 1 },
+    "gradeLevel": { "type": "integer", "minimum": 1, "maximum": 5 },
+    "cohortRef": { "type": "string", "minLength": 1 },
+    "cohortRefKind": { "const": "DERIVED_APPLICABILITY_KEY" },
+    "normativeRegime": { "type": "string", "minLength": 1 },
+    "applicabilityStatus": { "enum": ["APPLICABLE", "TRANSITIONAL"] },
+    "authorityState": { "enum": ["APPROVED", "PROVISIONAL_COMPLETE"] },
+    "vigencyStatus": { "enum": ["VIGENTE", "NON_VIGENTE"] },
+    "authorityReceiptRef": { "type": ["string", "null"] },
+    "masterId": { "type": "string", "minLength": 1 },
+    "masterVersion": { "type": "string", "minLength": 1 },
+    "structuralFingerprint": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["scope", "algorithm", "version", "hash"],
+      "properties": {
+        "scope": { "const": "MASTER" },
+        "algorithm": { "const": "fnv1a" },
+        "version": { "const": 1 },
+        "hash": { "type": "string", "pattern": "^[0-9a-f]{8}$" }
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "repository",
+        "sourceCommit",
+        "sourceDocumentId",
+        "sourceRevisionId"
+      ],
+      "properties": {
+        "repository": { "const": "antoniocorsano-boop/CurManLight_arena" },
+        "sourceCommit": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+        "sourceDocumentId": { "type": "string", "minLength": 1 },
+        "sourceRevisionId": { "type": "string", "minLength": 1 }
+      }
+    },
+    "curricoloItems": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "kind", "schoolStage", "gradeLabel", "sourceSection", "text"],
+        "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "kind": { "const": "ANNUALITA_DISCIPLINARE" },
+          "schoolStage": { "type": "string", "minLength": 1 },
+          "gradeLabel": { "type": "string", "minLength": 1 },
+          "sourceSection": { "type": "string", "minLength": 1 },
+          "text": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "privacyClass": { "const": "PROFESSIONAL_NON_PERSONAL" }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": { "authorityState": { "const": "PROVISIONAL_COMPLETE" } },
+        "required": ["authorityState"]
+      },
+      "then": {
+        "properties": { "vigencyStatus": { "const": "NON_VIGENTE" } }
+      }
+    },
+    {
+      "if": {
+        "properties": { "vigencyStatus": { "const": "VIGENTE" } },
+        "required": ["vigencyStatus"]
+      },
+      "then": {
+        "properties": {
+          "authorityState": { "const": "APPROVED" },
+          "authorityReceiptRef": { "type": "string", "minLength": 1 }
+        },
+        "required": ["authorityReceiptRef"]
+      }
+    }
+  ]
+}

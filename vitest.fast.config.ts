@@ -60,6 +60,7 @@ export default defineConfig({
       'src/__tests__/arena-institutional-planning-language.test.ts',
       'src/__tests__/arena-s3-human-validation-contract.test.ts',
       'src/__tests__/arena-canonical-ux-contract.test.ts',
+      'src/__tests__/arena-registro-planning-context-v1.test.ts',
       'src/__tests__/curriculum-explore-trama-v2-contract.test.ts',
       'src/__tests__/curriculum-foundation-authority.test.ts',
       'src/__tests__/curriculum-foundation-completeness.test.ts',
