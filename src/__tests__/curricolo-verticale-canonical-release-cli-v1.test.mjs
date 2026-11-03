@@ -78,6 +78,7 @@ describe('canonical release CLI without publishing master text', () => {
     expect(receipt.sourceRevisionId).toBe('27');
     expect(receipt.authorityState).toBe('PROVISIONAL_COMPLETE');
     expect(receipt.expectedScopes).toBe(113);
+    expect(receipt.sourceContentFootprint).toBe(release.sourceSnapshot.contentFootprint.hash);
     expect(receipt.structuralFootprint).toBe(release.structuralFootprint.hash);
     expect(release.sourceSnapshot.content).toBe(buildMasterFixture());
     expect(release.sourceMaster.curricoloVigente).toBe(false);
