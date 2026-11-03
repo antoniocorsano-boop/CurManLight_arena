@@ -82,6 +82,7 @@ async function main() {
     authorityState: release.authority.state,
     curricoloVigente: release.sourceMaster.curricoloVigente,
     expectedScopes: release.manifest.expected.length,
+    sourceContentFootprint: release.sourceSnapshot.contentFootprint.hash,
     structuralFootprint: release.structuralFootprint.hash,
   }));
 }
