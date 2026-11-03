@@ -1,0 +1,21 @@
+name: Curricolo local source export only
+on:
+  push:
+    branches:
+      - test/curricolo-local-source-export-only-20261103
+permissions:
+  contents: read
+jobs:
+  export-source:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Bundle existing public-source code only (no master, no secrets)
+        run: |
+          tar -czf /tmp/trama-source-only.tgz             src/domain/transfer             src/types             scripts/emit-canonical-vertical-release-v1.mjs             package.json tsconfig.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: trama-curricolo-source-only
+          path: /tmp/trama-source-only.tgz
+          if-no-files-found: error
+          retention-days: 1
