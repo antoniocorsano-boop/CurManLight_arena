@@ -9,10 +9,10 @@ function requiredOption(name) {
   return value;
 }
 
-function assertOutputIsOutsideRepository(outputPath) {
-  const relative = path.relative(process.cwd(), outputPath);
+function assertPathIsOutsideRepository(filePath, purpose) {
+  const relative = path.relative(process.cwd(), filePath);
   if (!relative.startsWith('..') && !path.isAbsolute(relative)) {
-    throw new Error('release output must be outside the repository to avoid committing canonical source text');
+    throw new Error(`${purpose} must be outside the repository to avoid committing canonical source text`);
   }
 }
 
@@ -22,7 +22,8 @@ async function main() {
   const revisionId = requiredOption('--revision-id');
   const institutionId = requiredOption('--institution-id');
   const targetInstitutionId = requiredOption('--target-institution-id');
-  assertOutputIsOutsideRepository(outputPath);
+  assertPathIsOutsideRepository(inputPath, 'canonical source input');
+  assertPathIsOutsideRepository(outputPath, 'release output');
 
   const content = await readFile(inputPath, 'utf8');
   const server = await createServer({
