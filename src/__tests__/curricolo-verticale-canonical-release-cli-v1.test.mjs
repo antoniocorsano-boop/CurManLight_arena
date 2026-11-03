@@ -46,6 +46,17 @@ describe('canonical release CLI without publishing master text', () => {
     expect(existsSync(ws.output)).toBe(false);
   });
 
+  it('refuses a source input file placed inside the GitHub repository', () => {
+    const ws = workspace();
+    const res = run({
+      input: path.resolve('src/__tests__/fixtures/curricoloVerticaleMasterFixture.ts'),
+      output: ws.output,
+    }, ['--target-institution-id', 'ics-lorenzo-milani']);
+    expect(res.status).not.toBe(0);
+    expect(res.stderr).toMatch(/canonical source input.*outside the repository/i);
+    expect(existsSync(ws.output)).toBe(false);
+  });
+
   it('rejects identity alias mismatch before creating an output file', () => {
     const ws = workspace();
     const res = run(ws, ['--target-institution-id', 'ic-calvario-covotta-don-milani']);
