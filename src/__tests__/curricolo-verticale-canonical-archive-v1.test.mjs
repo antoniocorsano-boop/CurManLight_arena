@@ -1,3 +1,4 @@
+import { spawnSync } from 'node:child_process';
 import { mkdtempSync, readFileSync, rmSync, writeFileSync, mkdirSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
@@ -91,6 +92,33 @@ describe('canonical release independent archive', () => {
     const bytes = releaseBytes();
     const changed = Buffer.from(bytes.toString().replace('"curricoloVigente": false', '"curricoloVigente": true'));
     expect(() => inspectReleaseBytes(changed, releaseSha256(changed))).toThrow(/non-canonical/);
+  });
+
+  it('publishes observable CLI success and failure, with persistent readback evidence', () => {
+    // @trama-feedback-test: verify status receipt on stdout AND failure on stderr.
+    const { input, archiveDir } = tempFiles();
+    const bytes = releaseBytes();
+    writeFileSync(input, bytes);
+    const sha256 = releaseSha256(bytes);
+    const cli = path.resolve('scripts/archive-canonical-vertical-release-v1.mjs');
+    const run = digest => spawnSync(process.execPath, [
+      cli, '--input', input, '--archive-dir', archiveDir,
+      '--expected-sha256', digest,
+    ], { encoding: 'utf8' });
+
+    const ok = run(sha256);
+    expect(ok.status, ok.stderr).toBe(0);
+    const receipt = JSON.parse(ok.stdout.trim());
+    expect(receipt.status).toBe('IMMUTABLE_RELEASE_ARCHIVED');
+    expect(receipt.sha256).toBe(sha256);
+    expect(JSON.parse(readFileSync(receipt.archiveReceiptPath, 'utf8')).sha256).toBe(sha256);
+    expect(readFileSync(receipt.archiveReleasePath).equals(bytes)).toBe(true);
+    expect(ok.stdout).not.toContain('original-source');
+
+    const error = run('0'.repeat(64));
+    expect(error.status).not.toBe(0);
+    expect(error.stderr).toMatch(/SHA-256/);
+    expect(error.stdout.trim()).toBe('');
   });
 
   it('never accepts an archive destination within the repository', async () => {
