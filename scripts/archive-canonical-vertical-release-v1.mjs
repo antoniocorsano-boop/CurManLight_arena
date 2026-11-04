@@ -112,6 +112,18 @@ async function writeImmutableOrVerify(filename, bytes) {
 export async function archiveCanonicalReleaseBytes({ bytes, archiveDir, expectedSha256 }) {
   const directory = assertOutsideRepository(archiveDir, 'primary archive directory');
   const receipt = inspectReleaseBytes(bytes, expectedSha256);
+  const indexPath = sourceIndexPath(directory, receipt);
+  // Check for another release of this source revision BEFORE writing anything:
+  // otherwise a rejected attempt would leave an orphan unqualified JSON file.
+  try {
+    const previous = JSON.parse((await readFile(indexPath)).toString('utf8'));
+    if (previous.contract !== 'ARENA_CANONICAL_RELEASE_SOURCE_INDEX_V1'
+      || previous.sha256 !== receipt.sha256) {
+      throw new Error('archive collision or tampered source revision index');
+    }
+  } catch (error) {
+    if (error?.code !== 'ENOENT') throw error;
+  }
   const destination = path.join(directory, receipt.sha256);
   const releasePath = path.join(destination, 'release.json');
   const receiptPath = path.join(destination, 'receipt.json');
@@ -122,7 +134,6 @@ export async function archiveCanonicalReleaseBytes({ bytes, archiveDir, expected
   inspectReleaseBytes(await readFile(releasePath), expectedSha256);
   // Claim the exact source revision only after the release and receipt
   // are verifiably persisted; a different emission-time hash is rejected.
-  const indexPath = sourceIndexPath(directory, receipt);
   const index = {
     contract: 'ARENA_CANONICAL_RELEASE_SOURCE_INDEX_V1',
     institutionId: receipt.institutionId,
@@ -167,7 +178,8 @@ export async function recoverCanonicalReleaseFromArchive({
     || index.schoolYearRef !== schoolYearRef
     || index.masterVersion !== masterVersion
     || index.revisionId !== revisionId
-    || typeof index.sha256 !== 'string') {
+    || typeof index.sha256 !== 'string'
+    || !/^[a-f0-9]{64}$/.test(index.sha256)) {
     throw new Error('archive source identity index is invalid');
   }
   const releasePath = path.join(directory, index.sha256, 'release.json');
