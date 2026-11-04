@@ -1,8 +1,11 @@
-import { createHash } from 'node:crypto';
+import { hash } from 'node:crypto';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+// @trama-write: explicit, user/operator-initiated immutable archive creation.
+// @trama-feedback: CLI emits machine-readable success, or an error on stderr.
+// @trama-persistent-feedback: receipt.json is read back and verified before success.
 const ARCHIVE_RECEIPT_CONTRACT = 'ARENA_CANONICAL_RELEASE_ARCHIVE_RECEIPT_V1';
 const RELEASE_CONTRACT = 'TRAMA_CURRICOLO_VERTICALE_RELEASE_V1';
 const MAX_RELEASE_BYTES = 2_000_000;
@@ -25,7 +28,7 @@ function assertOutsideRepository(target, label) {
 }
 
 export function releaseSha256(bytes) {
-  return createHash('sha256').update(bytes).digest('hex');
+  return hash('sha256', bytes, 'hex');
 }
 
 export function inspectReleaseBytes(bytes, expectedSha256) {
