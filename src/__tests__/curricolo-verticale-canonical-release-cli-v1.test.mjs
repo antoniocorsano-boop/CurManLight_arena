@@ -1,5 +1,5 @@
 import { spawnSync } from 'node:child_process';
-import { createHash } from 'node:crypto';
+import { hash } from 'node:crypto';
 import { mkdtempSync, existsSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
@@ -82,7 +82,7 @@ describe('canonical release CLI without publishing master text', () => {
     expect(receipt.archiveStatus).toBe('IMMUTABLE_PRIMARY_VERIFIED');
     expect(receipt.driveBackupStatus).toBe('OPTIONAL_NOT_CONFIRMED');
     const releaseBytes = readFileSync(ws.output);
-    const digest = createHash('sha256').update(releaseBytes).digest('hex');
+    const digest = hash('sha256', releaseBytes, 'hex');
     expect(receipt.sha256).toBe(digest);
     expect(receipt.bytes).toBe(releaseBytes.byteLength);
     const stored = readFileSync(path.join(ws.archiveDir, digest, 'release.json'));
