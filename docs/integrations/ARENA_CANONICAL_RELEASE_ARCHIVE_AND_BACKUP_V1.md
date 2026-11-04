@@ -9,7 +9,22 @@
 2. **Release operativa immutabile:** JSON qualificato, depositato in Storage privato e autorizzato, nel percorso previsto da Docente OS #788. Docente OS legge solo questa copia, verificando identità, anno, struttura, stato provvisorio e impronta SHA-256, **senza invocare Google Drive**.
 3. **Backup Drive di recupero:** seconda copia **identica byte per byte** del JSON in un archivio Drive privato. Non è la fonte runtime e non determina approvazione, vigenza o autorizzazione.
 
-La cartella privata verificata è «Arena — Archivio artefatti / Backup release curricolari Arena», ID Drive: **1puDUgasO6NaLA8qsO4hYPQHjjLMZ7QE5**. La creazione della cartella non equivale alla disponibilità del file.
+La cartella privata verificata è «Arena — Archivio artefatti / Backup release curricolari Arena», ID Drive: **1puDUgasO6NaLA8qsO4hYPQHjjLMZ7QE5**. La presenza del file viene confermata soltanto dal confronto dell'impronta in lettura.
+
+## Due emissioni distinte della stessa revisione
+
+La ricevuta storica dell'emissione del **03/11/2026** (Arena PR #350) conserva l'impronta `de58f418b4d1fe0be449895736d6267f6c5a58c1b1a476b1f36558579a200809`, ma non sono disponibili i relativi byte. Questa impronta **non** è quella della nuova emissione.
+
+Il **04/11/2026** è stata prodotta esplicitamente una nuova release, dal master 1.3/rev.27, con queste evidenze:
+- **SHA-256 del file integrale:** `2d34d69a8e3e4df92b2282d0b232353bfe9fd0174ed3335ca0cae878184c9998`;
+- **dimensione:** 725.968 byte; emissione `2026-11-04T08:55:02.145Z`;
+- **SHA-256 del master esportato:** `8ef11dcb5d6f0574270e28ce4d46592078923e6e5518902524c09fed3c71a815`;
+- **coerenza curricolare:** 113 segmenti, 566 nodi, 103 collegamenti, impronte FNV-1a `99c4ccc3` e `8588371c`;
+- **conservazione indipendente da Drive:** file e ricevuta disponibili nella Biblioteca privata ChatGPT, cartella `/Curmanlight-arena/Archivio release canoniche/<SHA-256>/`;
+- **seconda copia:** JSON in Google Drive, sotto la cartella privata sopra indicata, con condivisione disabilitata e solo proprietario;
+- **verifica reale:** rilettura separata delle copie Library e Drive, 725.968 byte e SHA-256 identico, `BACKUP_VERIFIED`.
+
+La nuova release **non** è distribuita nello Storage operativo di Docente OS, né costituisce approvazione collegiale, attestazione del workspace o autorizzazione dei docenti. L'archiviatore della PR #351 resta in bozza; la copia già salvata in Biblioteca privata è conservata separatamente dalla futura attivazione dell'archivio operativo.
 
 ## Release qualificata nota
 
@@ -20,7 +35,7 @@ Dalla PR Arena #350 risultano:
 - 113 segmenti, 566 nodi, 103 collegamenti;
 - impronte sorgente e struttura rispettivamente **99c4ccc3** e **8588371c**.
 
-Il file reale risulta generato in un'esecuzione locale precedente ma non ancora reso disponibile in GitHub, Actions, Drive o Storage. **Non rigenerarlo o sostituirlo tacitamente.** Se non recuperabile, è obbligatoria una nuova emissione esplicita con nuova ricevuta e nuova qualifica dell'impronta, senza attribuire al nuovo file la vecchia identità di byte.
+Il file del 03/11/2026 non è stato recuperato; la release del 04/11/2026 costituisce una **nuova emissione tracciata**, con file e copie verificati. L'assenza dell'originale storico non deve indurre a trattare le due impronte come equivalenti.
 
 ## Archiviazione di una release già emessa
 
@@ -29,7 +44,7 @@ Lo strumento scripts/archive-canonical-vertical-release-v1.mjs richiede il **fil
     node scripts/archive-canonical-vertical-release-v1.mjs \
       --input /private/inbox/release-originale.json \
       --archive-dir /private/durable/arena-release-archive \
-      --expected-sha256 de58f418b4d1fe0be449895736d6267f6c5a58c1b1a476b1f36558579a200809
+      --expected-sha256 2d34d69a8e3e4df92b2282d0b232353bfe9fd0174ed3335ca0cae878184c9998
 
 La directory scelta è **esterna al repository Git e a Drive**, deve essere privata e persistente. I file sono conservati come:
 - [archivio]/[sha256]/release.json — **byte originali**, senza conversione o nuova serializzazione;
@@ -46,6 +61,8 @@ Il comando verifica SHA-256, byte e marcatori provvisori; non sovrascrive conten
 **Persistenza:** se la directory indicata appartiene a un ambiente di esecuzione effimero, il salvataggio non è duraturo. Usare uno spazio persistente e con autorizzazione esplicita. La copia operativa finale rimane lo Storage privato separato in Docente OS.
 
 ## Copia Drive facoltativa
+
+**Stato della nuova emissione del 04/11/2026:** `BACKUP_VERIFIED` su Drive; restituzione dei byte completa e SHA identico alla copia indipendente in Biblioteca privata. La procedura seguente resta il contratto per emissioni successive o ripristini.
 
 Quando i byte dell'originale qualificato saranno accessibili tramite un contesto autorizzato:
 
