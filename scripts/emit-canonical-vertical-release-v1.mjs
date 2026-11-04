@@ -1,7 +1,9 @@
 import { access, mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { createServer } from 'vite';
-import { archiveCanonicalReleaseBytes, releaseSha256 } from './archive-canonical-vertical-release-v1.mjs';
+import {
+  archiveCanonicalReleaseBytes, recoverCanonicalReleaseFromArchive, releaseSha256,
+} from './archive-canonical-vertical-release-v1.mjs';
 
 function requiredOption(name) {
   const index = process.argv.indexOf(name);
@@ -36,6 +38,39 @@ async function main() {
   }
 
   const content = await readFile(inputPath, 'utf8');
+  if (institutionId !== targetInstitutionId) {
+    throw new Error('canonical artifact institution does not match explicit target institution identity');
+  }
+
+  // Reuse the same exact original bytes for a previously emitted version.
+  // Do not regenerate an issuedAt-dependent JSON with a different SHA.
+  const existing = await recoverCanonicalReleaseFromArchive({
+    archiveDir, institutionId, schoolYearRef: '2026/2027',
+    masterVersion: '1.3', revisionId, sourceContent: content,
+  });
+  if (existing) {
+    await mkdir(path.dirname(outputPath), { recursive: true });
+    await writeFile(outputPath, existing.bytes, { mode: 0o600, flag: 'wx' });
+    console.log(JSON.stringify({
+      status: 'PROVISIONAL_RELEASE_REUSED',
+      contract: existing.receipt.releaseContract,
+      institutionId: existing.receipt.institutionId,
+      schoolYearRef: existing.receipt.schoolYearRef,
+      sourceMasterVersion: existing.receipt.masterVersion,
+      sourceRevisionId: existing.receipt.revisionId,
+      authorityState: existing.receipt.authorityState,
+      curricoloVigente: existing.receipt.curricoloVigente,
+      expectedScopes: existing.receipt.scopeCount,
+      sourceContentFootprint: existing.receipt.sourceFootprint,
+      structuralFootprint: existing.receipt.structuralFootprint,
+      sha256: existing.receipt.sha256,
+      bytes: existing.receipt.bytes,
+      archiveStatus: 'IMMUTABLE_PRIMARY_VERIFIED',
+      archiveReceiptPath: existing.receiptPath,
+      driveBackupStatus: 'OPTIONAL_NOT_CONFIRMED',
+    }));
+    return;
+  }
   const server = await createServer({
     logLevel: 'error',
     server: { middlewareMode: true },
