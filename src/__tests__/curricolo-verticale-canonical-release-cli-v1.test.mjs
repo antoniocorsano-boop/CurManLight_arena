@@ -100,6 +100,40 @@ describe('canonical release CLI without publishing master text', () => {
     expect(res.stdout).not.toContain('CAN-CURR-MASTER-00 —');
   });
 
+  it('reuses the exact previously archived bytes for the same source revision', () => {
+    const ws = workspace();
+    const original = run(ws, ['--target-institution-id', 'ics-lorenzo-milani']);
+    expect(original.status, original.stderr).toBe(0);
+    const firstBytes = readFileSync(ws.output);
+    const first = JSON.parse(original.stdout);
+
+    const restoredOutput = path.join(ws.directory, 'release-restored.json');
+    const second = run({ ...ws, output: restoredOutput }, [
+      '--target-institution-id', 'ics-lorenzo-milani',
+    ]);
+    expect(second.status, second.stderr).toBe(0);
+    const receipt = JSON.parse(second.stdout);
+    expect(receipt.status).toBe('PROVISIONAL_RELEASE_REUSED');
+    expect(receipt.sha256).toBe(first.sha256);
+    expect(readFileSync(restoredOutput).equals(firstBytes)).toBe(true);
+  });
+
+  it('rejects revision reuse when its canonical source text changed', () => {
+    const ws = workspace();
+    const first = run(ws, ['--target-institution-id', 'ics-lorenzo-milani']);
+    expect(first.status, first.stderr).toBe(0);
+    const original = readFileSync(ws.output);
+    writeFileSync(ws.input, buildMasterFixture() + '\nSOURCE_CHANGED_WITHOUT_REVISION\n');
+    const restoredOutput = path.join(ws.directory, 'release-changed.json');
+    const second = run({ ...ws, output: restoredOutput }, [
+      '--target-institution-id', 'ics-lorenzo-milani',
+    ]);
+    expect(second.status).not.toBe(0);
+    expect(second.stderr).toMatch(/source content has changed/i);
+    expect(existsSync(restoredOutput)).toBe(false);
+    expect(readFileSync(ws.output).equals(original)).toBe(true);
+  });
+
   it('fails closed rather than overwriting an existing output', () => {
     const ws = workspace();
     writeFileSync(ws.output, 'preexisting', 'utf8');
