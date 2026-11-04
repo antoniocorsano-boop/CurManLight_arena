@@ -33,7 +33,7 @@ function releaseBytes() {
       revisionId: '27',
       curricoloVigente: false,
     },
-    sourceSnapshot: { contentFootprint: { hash: 'original-source' } },
+    sourceSnapshot: { contentFootprint: { hash: 'original-source' }, content: 'PRIVATE_MASTER_SENTINEL_ONLY_IN_FILE' },
     structuralFootprint: { hash: 'original-structure' },
     manifest: { coverageStatus: 'SATISFIED', expected: Array.from({ length: 113 }, (_, i) => i) },
   }, null, 2) + '\n', 'utf8');
@@ -113,7 +113,7 @@ describe('canonical release independent archive', () => {
     expect(receipt.sha256).toBe(sha256);
     expect(JSON.parse(readFileSync(receipt.archiveReceiptPath, 'utf8')).sha256).toBe(sha256);
     expect(readFileSync(receipt.archiveReleasePath).equals(bytes)).toBe(true);
-    expect(ok.stdout).not.toContain('original-source');
+    expect(ok.stdout).not.toContain('PRIVATE_MASTER_SENTINEL_ONLY_IN_FILE');
 
     const error = run('0'.repeat(64));
     expect(error.status).not.toBe(0);
