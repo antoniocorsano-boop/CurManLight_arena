@@ -1,5 +1,5 @@
 import { spawnSync } from 'node:child_process';
-import { mkdtempSync, readFileSync, rmSync, writeFileSync, mkdirSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync, mkdirSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
@@ -83,6 +83,7 @@ describe('canonical release independent archive', () => {
       bytes: replacement, archiveDir, expectedSha256: otherSha,
     })).rejects.toThrow(/collision|tampered/);
     expect(readFileSync(first.releasePath).equals(firstBytes)).toBe(true);
+    expect(existsSync(path.join(archiveDir, otherSha, 'release.json'))).toBe(false);
     const index = JSON.parse(readFileSync(first.sourceIndexPath, 'utf8'));
     expect(index.sha256).toBe(firstSha);
   });
