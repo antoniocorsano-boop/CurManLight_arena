@@ -31,6 +31,20 @@ export function releaseSha256(bytes) {
   return hash('sha256', bytes, 'hex');
 }
 
+// Stable identity is bound to the *source revision*, not the emission time.
+// Once issued, the same source revision cannot produce another silent SHA.
+function releaseSourceIndexKey({ institutionId, schoolYearRef, masterVersion, revisionId }) {
+  const values = [institutionId, schoolYearRef, masterVersion, revisionId];
+  if (values.some(value => typeof value !== 'string' || !value.trim())) {
+    throw new Error('release source identity must be complete');
+  }
+  return releaseSha256(Buffer.from(JSON.stringify(values), 'utf8'));
+}
+
+function sourceIndexPath(directory, identity) {
+  return path.join(directory, 'by-source', releaseSourceIndexKey(identity) + '.json');
+}
+
 export function inspectReleaseBytes(bytes, expectedSha256) {
   if (!Buffer.isBuffer(bytes) || bytes.byteLength === 0 || bytes.byteLength > MAX_RELEASE_BYTES) {
     throw new Error('archive refuses empty or oversized release bytes');
@@ -106,7 +120,77 @@ export async function archiveCanonicalReleaseBytes({ bytes, archiveDir, expected
   await writeImmutableOrVerify(releasePath, bytes);
   await writeImmutableOrVerify(receiptPath, receiptBytes);
   inspectReleaseBytes(await readFile(releasePath), expectedSha256);
-  return { receipt, releasePath, receiptPath };
+  // Claim the exact source revision only after the release and receipt
+  // are verifiably persisted; a different emission-time hash is rejected.
+  const indexPath = sourceIndexPath(directory, receipt);
+  const index = {
+    contract: 'ARENA_CANONICAL_RELEASE_SOURCE_INDEX_V1',
+    institutionId: receipt.institutionId,
+    schoolYearRef: receipt.schoolYearRef,
+    masterVersion: receipt.masterVersion,
+    revisionId: receipt.revisionId,
+    sha256: receipt.sha256,
+    sourceFootprint: receipt.sourceFootprint,
+  };
+  await mkdir(path.dirname(indexPath), { recursive: true, mode: 0o700 });
+  await writeImmutableOrVerify(indexPath, Buffer.from(JSON.stringify(index, null, 2) + '\n'));
+  return { receipt, releasePath, receiptPath, sourceIndexPath: indexPath };
+}
+
+/**
+ * Look up an earlier emission by its canonical source identity.
+ * It fails closed if the source text drifted while keeping the same revision.
+ * The caller does not create a replacement, even if the current time changed.
+ */
+export async function recoverCanonicalReleaseFromArchive({
+  archiveDir, institutionId, schoolYearRef, masterVersion, revisionId, sourceContent,
+}) {
+  const directory = assertOutsideRepository(archiveDir, 'primary archive directory');
+  const indexPath = sourceIndexPath(directory, {
+    institutionId, schoolYearRef, masterVersion, revisionId,
+  });
+  let indexBytes;
+  try {
+    indexBytes = await readFile(indexPath);
+  } catch (error) {
+    if (error?.code === 'ENOENT') return null;
+    throw error;
+  }
+  let index;
+  try {
+    index = JSON.parse(indexBytes.toString('utf8'));
+  } catch {
+    throw new Error('archive source identity index is not valid JSON');
+  }
+  if (index.contract !== 'ARENA_CANONICAL_RELEASE_SOURCE_INDEX_V1'
+    || index.institutionId !== institutionId
+    || index.schoolYearRef !== schoolYearRef
+    || index.masterVersion !== masterVersion
+    || index.revisionId !== revisionId
+    || typeof index.sha256 !== 'string') {
+    throw new Error('archive source identity index is invalid');
+  }
+  const releasePath = path.join(directory, index.sha256, 'release.json');
+  const receiptPath = path.join(directory, index.sha256, 'receipt.json');
+  const bytes = await readFile(releasePath);
+  const receipt = inspectReleaseBytes(bytes, index.sha256);
+  const archivedReceiptBytes = await readFile(receiptPath);
+  if (!archivedReceiptBytes.equals(Buffer.from(JSON.stringify(receipt, null, 2) + '\n'))) {
+    throw new Error('archive source receipt differs from verified release');
+  }
+  if (receipt.institutionId !== institutionId
+    || receipt.schoolYearRef !== schoolYearRef
+    || receipt.masterVersion !== masterVersion
+    || receipt.revisionId !== revisionId
+    || receipt.sourceFootprint !== index.sourceFootprint) {
+    throw new Error('archive source identity no longer matches stored release');
+  }
+  const parsed = JSON.parse(bytes.toString('utf8'));
+  if (typeof sourceContent !== 'string'
+    || parsed.sourceSnapshot?.content !== sourceContent) {
+    throw new Error('archive source content has changed without a new revision');
+  }
+  return { bytes, receipt, releasePath, receiptPath, sourceIndexPath: indexPath };
 }
 
 export async function archiveCanonicalReleaseFile({ inputPath, archiveDir, expectedSha256 }) {
