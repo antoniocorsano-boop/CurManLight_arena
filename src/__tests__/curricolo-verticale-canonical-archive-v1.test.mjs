@@ -63,6 +63,30 @@ describe('canonical release independent archive', () => {
     expect(readFileSync(second.releasePath).equals(bytes)).toBe(true);
   });
 
+  it('refuses to replace an issued source revision with a different byte sequence', async () => {
+    const { archiveDir } = tempFiles();
+    const firstBytes = releaseBytes();
+    const firstSha = releaseSha256(firstBytes);
+    const first = await archiveCanonicalReleaseBytes({
+      bytes: firstBytes, archiveDir, expectedSha256: firstSha,
+    });
+
+    // issuedAt is excluded from the structural footprint, but still changes
+    // the original JSON byte-level release identity. Never silently replace.
+    const replacement = Buffer.from(firstBytes.toString('utf8').replace(
+      '"schoolYearRef": "2026/2027",',
+      '"schoolYearRef": "2026/2027",\n  "issuedAt": "2026-11-04T10:30:00Z",',
+    ));
+    const otherSha = releaseSha256(replacement);
+    expect(otherSha).not.toBe(firstSha);
+    await expect(archiveCanonicalReleaseBytes({
+      bytes: replacement, archiveDir, expectedSha256: otherSha,
+    })).rejects.toThrow(/collision|tampered/);
+    expect(readFileSync(first.releasePath).equals(firstBytes)).toBe(true);
+    const index = JSON.parse(readFileSync(first.sourceIndexPath, 'utf8'));
+    expect(index.sha256).toBe(firstSha);
+  });
+
   it('rejects altered source bytes against the original receipt', async () => {
     const { input, archiveDir } = tempFiles();
     const original = releaseBytes();
