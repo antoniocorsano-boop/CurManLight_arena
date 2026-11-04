@@ -1,4 +1,5 @@
 import { spawnSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import { mkdtempSync, existsSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
@@ -16,15 +17,17 @@ function workspace() {
   directories.push(directory);
   const input = path.join(directory, 'master.txt');
   const output = path.join(directory, 'release.json');
+  const archiveDir = path.join(directory, 'independent-primary-archive');
   writeFileSync(input, buildMasterFixture(), 'utf8');
-  return { directory, input, output };
+  return { directory, input, output, archiveDir };
 }
 
-function run({ input, output }, extras = []) {
+function run({ input, output, archiveDir }, extras = []) {
   return spawnSync(process.execPath, [
     SCRIPT,
     '--input', input,
     '--output', output,
+    '--archive-dir', archiveDir,
     '--revision-id', '27',
     '--institution-id', 'ics-lorenzo-milani',
     ...extras,
@@ -51,6 +54,7 @@ describe('canonical release CLI without publishing master text', () => {
     const res = run({
       input: path.resolve('src/__tests__/fixtures/curricoloVerticaleMasterFixture.ts'),
       output: ws.output,
+      archiveDir: ws.archiveDir,
     }, ['--target-institution-id', 'ics-lorenzo-milani']);
     expect(res.status).not.toBe(0);
     expect(res.stderr).toMatch(/canonical source input.*outside the repository/i);
@@ -75,6 +79,17 @@ describe('canonical release CLI without publishing master text', () => {
     const receipt = JSON.parse(res.stdout.trim());
     expect(validateCurricoloVerticaleCompleteReleaseV1(release)).toEqual({ valid: true, errors: [] });
     expect(receipt.status).toBe('PROVISIONAL_RELEASE_EMITTED');
+    expect(receipt.archiveStatus).toBe('IMMUTABLE_PRIMARY_VERIFIED');
+    expect(receipt.driveBackupStatus).toBe('OPTIONAL_NOT_CONFIRMED');
+    const releaseBytes = readFileSync(ws.output);
+    const digest = createHash('sha256').update(releaseBytes).digest('hex');
+    expect(receipt.sha256).toBe(digest);
+    expect(receipt.bytes).toBe(releaseBytes.byteLength);
+    const stored = readFileSync(path.join(ws.archiveDir, digest, 'release.json'));
+    expect(stored.equals(releaseBytes)).toBe(true);
+    const archiveReceipt = JSON.parse(readFileSync(path.join(ws.archiveDir, digest, 'receipt.json'), 'utf8'));
+    expect(archiveReceipt.sha256).toBe(digest);
+    expect(archiveReceipt.scopeCount).toBe(113);
     expect(receipt.sourceRevisionId).toBe('27');
     expect(receipt.authorityState).toBe('PROVISIONAL_COMPLETE');
     expect(receipt.expectedScopes).toBe(113);
