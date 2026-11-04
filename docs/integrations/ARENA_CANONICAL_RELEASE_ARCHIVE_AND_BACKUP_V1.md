@@ -39,6 +39,10 @@ Il comando verifica SHA-256, byte e marcatori provvisori; non sovrascrive conten
 
 **Nuove emissioni:** l'emettitore scripts/emit-canonical-vertical-release-v1.mjs richiede ora anche il parametro --archive-dir. Prima viene conservata la release nell'archivio indipendente e verificata, poi viene scritta nel percorso output. La ricevuta dell'emissione contiene sha256, byte, archiveStatus=IMMUTABLE_PRIMARY_VERIFIED e driveBackupStatus=OPTIONAL_NOT_CONFIRMED. Nessuna sincronizzazione in rete viene presunta.
 
+**Riuso senza rigenerazione:** ogni emissione conserva anche un indice immutabile per la combinazione di istituto, anno scolastico, versione e revisione del master. Ripetere l'emettitore sullo stesso master e sullo stesso archivio **recupera gli esatti byte già emessi**, inclusa la data di emissione originale: la ricevuta espone `PROVISIONAL_RELEASE_REUSED`, non una nuova emissione. Se il contenuto sorgente è cambiato mantenendo la stessa revisione, il comando si arresta senza generare un nuovo JSON. Una richiesta di archiviazione autonoma con impronta diversa per la stessa revisione viene bloccata prima di scrivere nuovi file, evitando residui non qualificati. L'indice vive nella directory primaria privata, non su Drive.
+
+**Limite determinante:** il riuso funziona **solo se l'archivio primario contiene già una release verificata**. La ricevuta storica della rev.27 da sola non permette di ricostruire i byte della precedente emissione. Questo incremento non riporta in vita il file del 03/11/2026 se era stato conservato in una sessione di lavoro non persistente.
+
 **Persistenza:** se la directory indicata appartiene a un ambiente di esecuzione effimero, il salvataggio non è duraturo. Usare uno spazio persistente e con autorizzazione esplicita. La copia operativa finale rimane lo Storage privato separato in Docente OS.
 
 ## Copia Drive facoltativa
