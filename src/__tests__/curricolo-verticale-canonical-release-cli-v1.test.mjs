@@ -1,4 +1,5 @@
 import { spawnSync } from 'node:child_process';
+import { hash } from 'node:crypto';
 import { mkdtempSync, existsSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
@@ -16,15 +17,17 @@ function workspace() {
   directories.push(directory);
   const input = path.join(directory, 'master.txt');
   const output = path.join(directory, 'release.json');
+  const archiveDir = path.join(directory, 'independent-primary-archive');
   writeFileSync(input, buildMasterFixture(), 'utf8');
-  return { directory, input, output };
+  return { directory, input, output, archiveDir };
 }
 
-function run({ input, output }, extras = []) {
+function run({ input, output, archiveDir }, extras = []) {
   return spawnSync(process.execPath, [
     SCRIPT,
     '--input', input,
     '--output', output,
+    '--archive-dir', archiveDir,
     '--revision-id', '27',
     '--institution-id', 'ics-lorenzo-milani',
     ...extras,
@@ -51,6 +54,7 @@ describe('canonical release CLI without publishing master text', () => {
     const res = run({
       input: path.resolve('src/__tests__/fixtures/curricoloVerticaleMasterFixture.ts'),
       output: ws.output,
+      archiveDir: ws.archiveDir,
     }, ['--target-institution-id', 'ics-lorenzo-milani']);
     expect(res.status).not.toBe(0);
     expect(res.stderr).toMatch(/canonical source input.*outside the repository/i);
@@ -75,6 +79,17 @@ describe('canonical release CLI without publishing master text', () => {
     const receipt = JSON.parse(res.stdout.trim());
     expect(validateCurricoloVerticaleCompleteReleaseV1(release)).toEqual({ valid: true, errors: [] });
     expect(receipt.status).toBe('PROVISIONAL_RELEASE_EMITTED');
+    expect(receipt.archiveStatus).toBe('IMMUTABLE_PRIMARY_VERIFIED');
+    expect(receipt.driveBackupStatus).toBe('OPTIONAL_NOT_CONFIRMED');
+    const releaseBytes = readFileSync(ws.output);
+    const digest = hash('sha256', releaseBytes, 'hex');
+    expect(receipt.sha256).toBe(digest);
+    expect(receipt.bytes).toBe(releaseBytes.byteLength);
+    const stored = readFileSync(path.join(ws.archiveDir, digest, 'release.json'));
+    expect(stored.equals(releaseBytes)).toBe(true);
+    const archiveReceipt = JSON.parse(readFileSync(path.join(ws.archiveDir, digest, 'receipt.json'), 'utf8'));
+    expect(archiveReceipt.sha256).toBe(digest);
+    expect(archiveReceipt.scopeCount).toBe(113);
     expect(receipt.sourceRevisionId).toBe('27');
     expect(receipt.authorityState).toBe('PROVISIONAL_COMPLETE');
     expect(receipt.expectedScopes).toBe(113);
@@ -83,6 +98,40 @@ describe('canonical release CLI without publishing master text', () => {
     expect(release.sourceSnapshot.content).toBe(buildMasterFixture());
     expect(release.sourceMaster.curricoloVigente).toBe(false);
     expect(res.stdout).not.toContain('CAN-CURR-MASTER-00 —');
+  });
+
+  it('reuses the exact previously archived bytes for the same source revision', () => {
+    const ws = workspace();
+    const original = run(ws, ['--target-institution-id', 'ics-lorenzo-milani']);
+    expect(original.status, original.stderr).toBe(0);
+    const firstBytes = readFileSync(ws.output);
+    const first = JSON.parse(original.stdout);
+
+    const restoredOutput = path.join(ws.directory, 'release-restored.json');
+    const second = run({ ...ws, output: restoredOutput }, [
+      '--target-institution-id', 'ics-lorenzo-milani',
+    ]);
+    expect(second.status, second.stderr).toBe(0);
+    const receipt = JSON.parse(second.stdout);
+    expect(receipt.status).toBe('PROVISIONAL_RELEASE_REUSED');
+    expect(receipt.sha256).toBe(first.sha256);
+    expect(readFileSync(restoredOutput).equals(firstBytes)).toBe(true);
+  });
+
+  it('rejects revision reuse when its canonical source text changed', () => {
+    const ws = workspace();
+    const first = run(ws, ['--target-institution-id', 'ics-lorenzo-milani']);
+    expect(first.status, first.stderr).toBe(0);
+    const original = readFileSync(ws.output);
+    writeFileSync(ws.input, buildMasterFixture() + '\nSOURCE_CHANGED_WITHOUT_REVISION\n');
+    const restoredOutput = path.join(ws.directory, 'release-changed.json');
+    const second = run({ ...ws, output: restoredOutput }, [
+      '--target-institution-id', 'ics-lorenzo-milani',
+    ]);
+    expect(second.status).not.toBe(0);
+    expect(second.stderr).toMatch(/source content has changed/i);
+    expect(existsSync(restoredOutput)).toBe(false);
+    expect(readFileSync(ws.output).equals(original)).toBe(true);
   });
 
   it('fails closed rather than overwriting an existing output', () => {

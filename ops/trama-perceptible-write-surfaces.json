@@ -16,6 +16,19 @@
       "testFiles": [
         "src/__tests__/drive-zero-cost-source-invariants.test.ts"
       ]
+    },
+    {
+      "id": "arena-immutable-release-archive-cli",
+      "critical": true,
+      "sourcePatterns": [
+        "scripts/archive-canonical-vertical-release-v1.mjs"
+      ],
+      "feedbackFiles": [
+        "scripts/archive-canonical-vertical-release-v1.mjs"
+      ],
+      "testFiles": [
+        "src/__tests__/curricolo-verticale-canonical-archive-v1.test.mjs"
+      ]
     }
   ]
 }

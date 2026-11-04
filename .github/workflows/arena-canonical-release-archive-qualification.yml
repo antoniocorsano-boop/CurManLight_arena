@@ -1,0 +1,40 @@
+name: Arena Canonical Release Archive Qualification
+
+on:
+  pull_request:
+    paths:
+      - 'scripts/archive-canonical-vertical-release-v1.mjs'
+      - 'scripts/emit-canonical-vertical-release-v1.mjs'
+      - 'src/__tests__/curricolo-verticale-canonical-archive-v1.test.mjs'
+      - 'src/__tests__/curricolo-verticale-canonical-release-cli-v1.test.mjs'
+      - 'vitest.fast.config.ts'
+      - '.github/workflows/arena-canonical-release-archive-qualification.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  archive-regression:
+    name: Archive exact-head verification
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout immutable candidate
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 1
+      - name: Setup Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Fast regression tests including archival contract
+        run: npm run test:fast
+      - name: Typecheck
+        run: npx tsc --noEmit
+      - name: Production build
+        run: npm run build
