@@ -132,6 +132,38 @@ describe('canonical curriculum entry', () => {
     expect(caseAwareSource).toContain('data-class3-h2-not-materialized');
   });
 
+  it('requires explicit secondary class selection before showing operational review cards', () => {
+    expect(resolveClassAwareOperationalReviewProposals('tecnologia', 'secondaria', '', TECHNOLOGY_CLASS1_REVIEW_PROPOSALS)).toEqual([]);
+    expect(resolveClassAwareOperationalReviewProposals('tecnologia', 'secondaria', 'Classe non selezionata', TECHNOLOGY_CLASS1_REVIEW_PROPOSALS)).toEqual([]);
+    expect(caseAwareSource).toContain('normalizeTechnologySecondaryTargetClass(props.targetClass)');
+    expect(caseAwareSource).toContain('data-technology-review-class-required');
+    expect(caseAwareSource).toContain("data-technology-class-selection-state={selectedTechnologyClass ? 'SELECTED' : 'REQUIRED'}");
+    expect(caseAwareSource).toContain('Seleziona la classe prima di esaminare le schede del riesame.');
+    expect(caseAwareSource).toContain('const selected = selectedTechnologyClass === targetClass;');
+    expect(caseAwareSource).not.toContain('Stai lavorando sulla {technologyClassLabel(props.targetClass)}.');
+  });
+
+  it('separates five class-I review proposals from class II, III, and unrelated fields', () => {
+    const fallback = [{ id: 'other-field-proposal', focus: 'Altro', oldText: 'a', newText: 'b', notes: '' }];
+    const first = resolveClassAwareOperationalReviewProposals('Tecnologia', 'secondaria', '1', fallback);
+    const second = resolveClassAwareOperationalReviewProposals('Tecnologia', 'secondaria', '2', fallback);
+    expect(first.map((entry) => entry.id)).toEqual([
+      'tec-sec1-2026-r2-n1',
+      'tec-sec1-2026-r2-n2',
+      'tec-sec1-2026-r2-n3',
+      'tec-sec1-2026-r2-n4',
+      'tec-sec1-2026-r2-verticalita',
+    ]);
+    expect(second).toHaveLength(1);
+    expect(second[0].id).toBe('tec-sec2-2026-r1-n1');
+    expect(resolveClassAwareOperationalReviewProposals('Tecnologia', 'secondaria', '3', fallback)).toEqual([]);
+    expect(resolveClassAwareOperationalReviewProposals('Matematica', 'secondaria', '1', fallback)).toBe(fallback);
+    expect(resolveClassAwareOperationalReviewProposals('Tecnologia', 'primaria', '1', fallback)).toBe(fallback);
+    expect(caseAwareSource).toContain('currentDisciplineProps={operationalProposals}');
+    expect(caseAwareSource).toContain('availableProposals={operationalProposals}');
+    expect(caseAwareSource).toContain('proposals={operationalProposals}');
+  });
+
   it('does not allow the compatibility baseline to regain canonical authority', () => {
     expect(baselineSource).toContain('NON è la baseline curricolare canonica');
     expect(baselineSource).toContain('getCanonicalCurriculumMasterIdentity');
