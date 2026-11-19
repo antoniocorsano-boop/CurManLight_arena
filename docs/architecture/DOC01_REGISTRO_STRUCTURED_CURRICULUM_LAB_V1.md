@@ -4,13 +4,13 @@
 Base Arena `d8b1bf43388cb5c4cdcc940b0c558bb128976c4c`. Registro Docente #356 `b9ce9bb23f5a77366eee0e3c0361c5a66feaef39` 7/7 PASS. Dossier Registro #171, commento 7006704157.
 
 ## Intento e perimetro
-Ridurre la ricompilazione dei documenti professionali conservando testo, categorie, relazioni e provenienza dei contenuti strutturati di Arena. Compatibilità: esperimento di contratto isolato nei test, non nuova fase runtime. Non modifica CML_LOCAL_HANDOFF_V2, CurriculumSnapshot V1, ARENA_REGISTRO_PLANNING_CONTEXT_V1, stato istituzionale, adozione, interfaccia, archivi o trasporto. Le regole integrate, la guida adozione/validazione, C2P e il gate umano M4 restano validi. Nessuna implementazione produttiva autorizzata da questo documento.
+Ridurre la ricompilazione dei documenti professionali conservando testo, categorie, relazioni e provenienza dei contenuti strutturati di Arena. Compatibilità: esperimento di contratto isolato nei test, non nuova fase runtime. Non modifica CML_LOCAL_HANDOFF_V2, snapshot del curricolo V1, ARENA_REGISTRO_PLANNING_CONTEXT_V1, stato istituzionale, adozione, interfaccia, archivi o trasporto. Le regole integrate, la guida adozione/validazione, C2P e il gate umano M4 restano validi. Nessuna implementazione produttiva autorizzata da questo documento.
 
 ## Ricognizione e limiti reali
-- Dominio CML-630E: CurriculumNode e CurriculumSegment contengono tipi nativi; VerticalCurriculumLink è la relazione pedagogica esplicita. Legacy adapters non stabiliscono adozione.
+- Dominio CML-630E: CurricoloNode e CurricoloSegment contengono tipi nativi; VerticalCurricoloLink è la relazione pedagogica esplicita. Legacy adapters non stabiliscono adozione.
 - `src/domain/transfer/curricoloVerticaleMasterMaterializationV1.ts`: materializzatore del master CAN-CURR-MASTER-00 1.3, perimetro 113 segmenti; categorie esplicite e nodi proposti. `curricoloVerticaleArtifactV1.ts` richiede baseline di lavoro, validazione professionale OPEN, curricoloVigente=false. Il test esistente dimostra regime IN2025 per prima e IN2012 per seconda; il nuovo test verifica tutte e tre le annualità di Tecnologia e il blocco di autorità. Non è un audit live dell'istituto.
 - `addNodes` genera un milestone con titolo/descrizione di annualità o progressione, non necessariamente un traguardo esplicito. I nuclei possono provenire da un'intera sezione. Non tutti i sette tipi sono attestati per ogni annualità, né i nodi equivalgono a formulazioni annuali approvate. Non inferire categorie o relazioni da descrizioni, sequenza o somiglianza.
-- Il pilota R7C2 a nove nuclei è non autoritativo; non unirlo automaticamente al master. CML_LOCAL_HANDOFF_V2 contiene requisiti e descrizioni con autorità ma target DOCENTE_OS, mentre CurriculumSnapshot V1 espone principalmente riferimenti. Non riutilizzare un payload con destinatario diverso.
+- Il pilota R7C2 a nove nuclei è non autoritativo; non unirlo automaticamente al master. CML_LOCAL_HANDOFF_V2 contiene requisiti e descrizioni con autorità ma target DOCENTE_OS, mentre snapshot del curricolo V1 espone principalmente riferimenti. Non riutilizzare un payload con destinatario diverso.
 - Non esiste ancora un collegamento verificato e approvato fra tutti i nodi della materializzazione e i passaggi dell'annualità V1. Il master non può essere reso vigente dal contratto o da una modifica di flag. L'adozione deve essere risolta da una fonte Arena autorizzata.
 
 ## Contratto proposto e prove
@@ -29,3 +29,6 @@ Il modello di test `ARENA_REGISTRO_STRUCTURED_CONTENT_LAB_V1` è esplicitamente 
 4. D2b2b Registro: collegare la fonte qualificata a D1d2 e D2a, riesaminare esatto ambito, selezione, revisione e fonte; vietare al consumer la forma LAB. Nessun salvataggio o documento ufficiale per fonte non approvata. D2b3 resta distinta.
 
 Nessun dato reale o personale, IA, costo, rete, migrazione, merge, deploy o pubblicazione. Il risultato corrente è una verifica progettuale riproducibile, non un produttore attivo.
+
+## Correzione R1
+Prima CI: 1/5 PASS. Due gate TypeScript: TS2307 per node:crypto non tipizzato; guardia TRAMA-PW-01 ha classificato la chiamata .update() di hash come mutazione; guardia terminologica ha rilevato nuovi token legacy. Correzione: WebCrypto SHA-256 nativo in test con ambiente Node, prototipo e prove nello stesso file di test, terminologia canonica, nessuna modifica ai controlli o ai loro criteri. Riesame exact-SHA necessario; non si dichiara PASS prima dell'esecuzione.
