@@ -27,7 +27,7 @@
         "src/features/beta/CaseScopedExperienceShell.tsx"
       ],
       "testFiles": [
-        "src/__tests__/canonical-curriculum-entry.test.ts"
+        "src/__tests__/curr-ref-01-er4b-feedback.test.ts"
       ]
     }
   ]
