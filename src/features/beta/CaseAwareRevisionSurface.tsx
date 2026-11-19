@@ -3,6 +3,7 @@ import { resolveCurriculumUnitReference } from '../../domain/curriculum/didactic
 import { reviewCaseMatchesCurrentUnit } from '../../domain/curriculum/reviewCase';
 import { getSharedReviewCaseContext } from '../../domain/curriculum/sharedReviewCase';
 import {
+  normalizeTechnologySecondaryTargetClass,
   resolveClassAwareOperationalReviewProposals,
   type TechnologySecondaryTargetClass,
 } from '../../domain/curriculum/validation/technologySecondaryClassReview';
@@ -40,11 +41,10 @@ const recordCompletionAcknowledgement = (reviewCaseId: string): void => {
   }
 };
 
-const technologyClassLabel = (targetClass: string): string => {
+const technologyClassLabel = (targetClass: TechnologySecondaryTargetClass): string => {
   if (targetClass === '1') return 'Classe I';
   if (targetClass === '2') return 'Classe II';
-  if (targetClass === '3') return 'Classe III';
-  return `Classe ${targetClass}`;
+  return 'Classe III';
 };
 
 export function CaseAwareRevisionSurface(props: Props) {
@@ -66,6 +66,9 @@ export function CaseAwareRevisionSurface(props: Props) {
   ), [props.currentDisciplineProps, props.discipline, props.order, props.targetClass]);
   const isTechnologySecondary = props.order === 'secondaria'
     && props.discipline.trim().toLocaleLowerCase('it-IT') === 'tecnologia';
+  const selectedTechnologyClass = isTechnologySecondary
+    ? normalizeTechnologySecondaryTargetClass(props.targetClass)
+    : null;
 
   const activeCase = useMemo(() => curriculumReviewCases.find((reviewCase) => (
     reviewCase.workSession?.sessionState === 'ACTIVE'
@@ -156,14 +159,18 @@ export function CaseAwareRevisionSurface(props: Props) {
           <div className="mt-1 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <strong className="block text-base text-slate-950">Tecnologia · Secondaria di primo grado</strong>
-              <p className="mt-1 text-sm font-semibold text-indigo-800">Stai lavorando sulla {technologyClassLabel(props.targetClass)}.</p>
+              <p className="mt-1 text-sm font-semibold text-indigo-800" data-technology-class-selection-state={selectedTechnologyClass ? 'SELECTED' : 'REQUIRED'}>
+                {selectedTechnologyClass
+                  ? `Stai lavorando sulla ${technologyClassLabel(selectedTechnologyClass)}.`
+                  : 'Seleziona la classe prima di esaminare le schede del riesame.'}
+              </p>
               <p className="mt-1 text-xs leading-5 text-slate-600">
                 Ogni classe ha le proprie schede. Se cambi classe, il lavoro già fatto resta associato alla classe in cui lo hai svolto.
               </p>
             </div>
             <div className="grid grid-cols-3 gap-2" aria-label="Seleziona la classe di Tecnologia">
               {(['1', '2', '3'] as TechnologySecondaryTargetClass[]).map((targetClass) => {
-                const selected = props.targetClass === targetClass;
+                const selected = selectedTechnologyClass === targetClass;
                 return (
                   <button
                     key={targetClass}
@@ -182,12 +189,12 @@ export function CaseAwareRevisionSurface(props: Props) {
             </div>
           </div>
 
-          {props.targetClass === '2' && (
+          {selectedTechnologyClass === '2' && (
             <p className="mt-3 rounded-xl border border-indigo-100 bg-indigo-50 p-3 text-xs leading-5 text-indigo-950" data-class2-h2-pilot-context>
               La Classe II ha schede proprie, centrate sul percorso previsto per questa annualità. Le schede della Classe I non vengono riutilizzate.
             </p>
           )}
-          {props.targetClass === '3' && operationalProposals.length === 0 && (
+          {selectedTechnologyClass === '3' && operationalProposals.length === 0 && (
             <p className="mt-3 rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs leading-5 text-amber-950" data-class3-h2-not-materialized>
               La Classe III è prevista nel curricolo, ma le sue schede di riesame non sono ancora disponibili in Arena. Per sicurezza non vengono usate quelle di un’altra classe.
             </p>
@@ -196,7 +203,12 @@ export function CaseAwareRevisionSurface(props: Props) {
       )}
 
       <main data-general-review-primary-work>
-        {isTechnologySecondary && operationalProposals.length === 0 ? (
+        {isTechnologySecondary && !selectedTechnologyClass ? (
+          <section className="rounded-2xl border border-indigo-200 bg-indigo-50/70 p-4" data-technology-review-class-required>
+            <strong className="block text-sm text-indigo-950">Prima scegli la classe</strong>
+            <p className="mt-1 text-xs leading-5 text-indigo-900">Seleziona Classe I, II o III qui sopra. Nessuna classe viene scelta automaticamente e nessuna decisione precedente viene trasferita.</p>
+          </section>
+        ) : isTechnologySecondary && operationalProposals.length === 0 ? (
           <section className="rounded-2xl border border-amber-200 bg-amber-50/70 p-4" data-class-aware-review-blocked>
             <strong className="block text-sm text-amber-950">Le schede di questa classe non sono ancora pronte</strong>
             <p className="mt-1 text-xs leading-5 text-amber-900">Scegli una classe con schede disponibili. Arena non sostituisce automaticamente il lavoro con quello di un’altra annualità.</p>
