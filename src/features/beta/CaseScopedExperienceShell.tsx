@@ -134,6 +134,8 @@ export function CaseScopedExperienceShell({ reviewCase, children, onReturnToGene
       <div ref={workframeRef} data-case-ux-workframe data-viewport-anchor="stable-current-task">
         {completed ? (
           <section
+            role="status"
+            aria-live="polite"
             className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4"
             data-case-professional-completion-acknowledgement
             data-hcm-level="1"
