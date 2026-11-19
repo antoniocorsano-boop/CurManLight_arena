@@ -16,6 +16,19 @@
       "testFiles": [
         "src/__tests__/drive-zero-cost-source-invariants.test.ts"
       ]
+    },
+    {
+      "id": "arena-review-case-completion-acknowledgement",
+      "critical": false,
+      "sourcePatterns": [
+        "src/features/beta/CaseAwareRevisionSurface.tsx"
+      ],
+      "feedbackFiles": [
+        "src/features/beta/CaseScopedExperienceShell.tsx"
+      ],
+      "testFiles": [
+        "src/__tests__/curr-ref-01-er4b-feedback.test.ts"
+      ]
     }
   ]
 }
