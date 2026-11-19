@@ -1,0 +1,34 @@
+# DOC-01/D2b2a — Profilo di raccordo curricolare strutturato (laboratorio)
+
+**Stato: PROPOSED / TEST_ONLY / NO_RUNTIME / NO_AUTHORITY_PROMOTION.** 19 novembre 2026.
+Base Arena `d8b1bf43388cb5c4cdcc940b0c558bb128976c4c`. Registro Docente #356 `b9ce9bb23f5a77366eee0e3c0361c5a66feaef39` 7/7 PASS. Dossier Registro #171, commento 7006704157.
+
+## Intento e perimetro
+Ridurre la ricompilazione dei documenti professionali conservando testo, categorie, relazioni e provenienza dei contenuti strutturati di Arena. Compatibilità: esperimento di contratto isolato nei test, non nuova fase runtime. Non modifica CML_LOCAL_HANDOFF_V2, snapshot del curricolo V1, ARENA_REGISTRO_PLANNING_CONTEXT_V1, stato istituzionale, adozione, interfaccia, archivi o trasporto. Le regole integrate, la guida adozione/validazione, C2P e il gate umano M4 restano validi. Nessuna implementazione produttiva autorizzata da questo documento.
+
+## Ricognizione e limiti reali
+- Dominio CML-630E: CurricoloNode e CurricoloSegment contengono tipi nativi; VerticalCurricoloLink è la relazione pedagogica esplicita. Legacy adapters non stabiliscono adozione.
+- `src/domain/transfer/curricoloVerticaleMasterMaterializationV1.ts`: materializzatore del master CAN-CURR-MASTER-00 1.3, perimetro 113 segmenti; categorie esplicite e nodi proposti. `curricoloVerticaleArtifactV1.ts` richiede baseline di lavoro, validazione professionale OPEN, curricoloVigente=false. Il test esistente dimostra regime IN2025 per prima e IN2012 per seconda; il nuovo test verifica tutte e tre le annualità di Tecnologia e il blocco di autorità. Non è un audit live dell'istituto.
+- `addNodes` genera un milestone con titolo/descrizione di annualità o progressione, non necessariamente un traguardo esplicito. I nuclei possono provenire da un'intera sezione. Non tutti i sette tipi sono attestati per ogni annualità, né i nodi equivalgono a formulazioni annuali approvate. Non inferire categorie o relazioni da descrizioni, sequenza o somiglianza.
+- Il pilota R7C2 a nove nuclei è non autoritativo; non unirlo automaticamente al master. CML_LOCAL_HANDOFF_V2 contiene requisiti e descrizioni con autorità ma target DOCENTE_OS, mentre snapshot del curricolo V1 espone principalmente riferimenti. Non riutilizzare un payload con destinatario diverso.
+- Non esiste ancora un collegamento verificato e approvato fra tutti i nodi della materializzazione e i passaggi dell'annualità V1. Il master non può essere reso vigente dal contratto o da una modifica di flag. L'adozione deve essere risolta da una fonte Arena autorizzata.
+
+## Contratto proposto e prove
+Il modello di test `ARENA_REGISTRO_STRUCTURED_CONTENT_LAB_V1` è esplicitamente labOnly, authority=SYNTHETIC_ONLY, con identificatori demo. NON è una forma accettabile per un consumer operativo. Le fixture ipotetiche non sono create promuovendo il master attuale.
+- Un contesto padre V1 esatto, con impronta SHA-256 della serializzazione canonica integrale, anno corrente e sorgente, istituto, disciplina, ordine, grado, coorte, regime e applicabilità, master/versione/revisione/commit, annualItemId e sezione. Non confrontare solo masterVersion o fingerprint MASTER FNV-1a. Il supplemento ha una propria impronta SHA-256, che rileva variazioni e NON autentica l'autorità.
+- Fonte indipendente ipotetica: versione approvata, segmento effective della singola annualità, nodi approved, ricevuta e adozione riferite alla revisione e all'ambito esatto. Nel prototipo sono solo condizioni sintetiche; un oggetto ricevuto dal browser non può mai attestare l'autorità reale.
+- Ogni elemento selezionato deve avere un binding esplicito a nodo/segmento/versione, item annuale, revisione, sezione e passaggio letterale (offset verificato) nella fonte padre. Il tipo nativo resta distinto. Nuclei comuni di ciclo e milestone generici restano fuori senza binding annuale esplicito; eventuale normalizzazione del testo richiederà una decisione e un riferimento verificabili, non una ricerca per somiglianza.
+- Relazioni: solo link nativi validated della stessa versione fra due nodi selezionati, nessuna relazione dedotta. Campi non presenti restano missingKinds; non attestano l'assenza nella fonte intera. Nessuna osservazione, livello, voto o dato studente. Output professionale di prova, non scrittura o approvazione.
+- Mappatura futura Registro: core-theme→nuclei; competence→competenze attese annuali; milestone→traguardi separati; objective→obiettivi specifici/disciplinari solo dopo conferma del tipo e ambito; knowledge→conoscenze; skill→abilità; evidence→descrittori attesi. Obiettivi trasversali richiedono un tipo e un raccordo espliciti non coperti dal prototipo. D2a distingue le varianti del modello e il contributo disciplinare dal quadro collegiale.
+- Il validatore di laboratorio confronta il pacchetto con la ricostruzione dalla base indipendente, non con le sole dichiarazioni del payload. Otto test: master non vigente, categorie/relazioni, transizione, binding e passaggi, autorità, variazioni stesso master, lacune e selezioni, manomissione anche con hash ricalcolato. Aggiunti dopo il prototipo: nessun RED canonico attestato.
+
+## Gate di prosecuzione
+1. Qualificare exact-SHA e ottenere revisione indipendente, senza promozione.
+2. Individuare e verificare con la fonte istituzionale autorizzata l'effettivo collegamento dei nodi al master vigente e l'adozione per coorte. Non usare il file V1 o la fixture come attestazione; il sistema reale deve usare il percorso di verifica dell'autorità Arena.
+3. Solo previa autorizzazione di governance e chiusura dei gate applicabili, definire il profilo produttivo versionato supplementare al V1, con schema rigoroso, corpus condiviso producer/consumer, verifica delle impronte e dell'autorità, applicabilità indipendente e conferma docente. Non creare un nuovo archivio o cambiare i contratti esistenti.
+4. D2b2b Registro: collegare la fonte qualificata a D1d2 e D2a, riesaminare esatto ambito, selezione, revisione e fonte; vietare al consumer la forma LAB. Nessun salvataggio o documento ufficiale per fonte non approvata. D2b3 resta distinta.
+
+Nessun dato reale o personale, IA, costo, rete, migrazione, merge, deploy o pubblicazione. Il risultato corrente è una verifica progettuale riproducibile, non un produttore attivo.
+
+## Correzione R1
+Prima CI: 1/5 PASS. Due gate TypeScript: TS2307 per node:crypto non tipizzato; guardia TRAMA-PW-01 ha classificato la chiamata .update() di hash come mutazione; guardia terminologica ha rilevato nuovi token legacy. Correzione: WebCrypto SHA-256 nativo in test con ambiente Node, prototipo e prove nello stesso file di test, terminologia canonica, nessuna modifica ai controlli o ai loro criteri. Riesame exact-SHA necessario; non si dichiara PASS prima dell'esecuzione.
