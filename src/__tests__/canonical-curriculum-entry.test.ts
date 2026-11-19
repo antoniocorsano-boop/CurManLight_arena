@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import workspaceSource from '../features/curriculum/CurriculumWorkspace.tsx?raw';
 import professionalReaderSource from '../features/curriculum/components/ProfessionalCurriculumReader.tsx?raw';
 import caseAwareSource from '../features/beta/CaseAwareRevisionSurface.tsx?raw';
+import caseShellSource from '../features/beta/CaseScopedExperienceShell.tsx?raw';
 import baselineSource from '../lib/curriculumBaseline.ts?raw';
 import currentSource from '../domain/curriculum/institute/currentSource.ts?raw';
 import { TECHNOLOGY_CLASS1_REVIEW_PROPOSALS } from '../domain/curriculum/validation/technologyClass1Review';
@@ -162,6 +163,17 @@ describe('canonical curriculum entry', () => {
     expect(caseAwareSource).toContain('currentDisciplineProps={operationalProposals}');
     expect(caseAwareSource).toContain('availableProposals={operationalProposals}');
     expect(caseAwareSource).toContain('proposals={operationalProposals}');
+  });
+
+  it('announces completed review acknowledgment and keeps its institutional effect explicit', () => {
+    // @trama-feedback-test: a visible persistent status is required for case-completion acknowledgement.
+    expect(caseShellSource).toContain('role="status"');
+    expect(caseShellSource).toContain('aria-live="polite"');
+    expect(caseShellSource).toContain('data-case-professional-completion-acknowledgement');
+    expect(caseShellSource).toContain('Gli esiti professionali del caso sono stati registrati.');
+    expect(caseShellSource).toContain('non equivale a una decisione istituzionale');
+    expect(caseAwareSource).toContain('recordCompletionAcknowledgement(focusedCase.id)');
+    expect(caseAwareSource).toContain('data-case-completion-awaiting-acknowledgement');
   });
 
   it('does not allow the compatibility baseline to regain canonical authority', () => {
